@@ -183,7 +183,7 @@ test.describe('[Create Case - With resume claim options] @Master @nightly', asyn
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeaderSecure);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],

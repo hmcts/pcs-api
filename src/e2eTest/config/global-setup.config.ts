@@ -1,7 +1,8 @@
-import { chromium, FullConfig, Page } from '@playwright/test';
+import { chromium, FullConfig } from '@playwright/test';
 import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { user } from '@data/user-data';
+import { handlePreLoginCookieBanner, handlePostLoginCookieBanner } from '@utils/cookie.utils';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -17,120 +18,6 @@ function getStorageStatePath(): string {
   return path.join(SESSION_DIR, STORAGE_STATE_FILE);
 }
 
-/**
- * Handle pre-login cookie banner (on hmcts-access.service.gov.uk)
- * Banner ID: #cm_cookie_notification
- * Button: "Accept additional cookies" (id: #cookie-accept-submit)
- */
-async function handlePreLoginCookieBanner(page: Page): Promise<void> {
-  try {
-    const cookieBanner = page.locator('#cm_cookie_notification');
-    const acceptButton = page.locator('#cookie-accept-submit');
-
-    // Wait for banner to appear (with short timeout as it may not always be present)
-    await cookieBanner.waitFor({ state: 'attached', timeout: 5000 }).catch(() => {
-      // Banner not present, skip
-      return;
-    });
-
-    // Check if banner is visible
-    if (await cookieBanner.isVisible()) {
-      console.log('Pre-login cookie banner detected, accepting cookies...');
-      await acceptButton.click({ timeout: 5000 });
-
-      // Wait for banner to be hidden
-      await cookieBanner.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
-        // Banner may have disappeared, continue
-      });
-
-      // Wait for any success banner and hide it if present
-      const successBanner = page.locator('#accept-all-cookies-success');
-      const hideButton = successBanner.getByRole('button', { name: 'Hide this cookie message' });
-
-      if (await successBanner.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await hideButton.click({ timeout: 2000 }).catch(() => {
-          // Hide button may not be present, continue
-        });
-        await successBanner.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
-          // Success banner may have disappeared, continue
-        });
-      }
-
-      console.log('✓ Pre-login cookies accepted');
-    }
-  } catch (error) {
-    // Cookie banner handling is not critical, log and continue
-    console.warn('Pre-login cookie banner not found or failed to handle:', (error as Error).message);
-  }
-}
-
-/**
- * Handle post-login cookie banner (on the service)
- * Banner component: xuilib-cookie-banner
- * Button: "Accept analytics cookies"
- */
-async function handlePostLoginCookieBanner(page: Page): Promise<void> {
-  try {
-    // Wait for page to be fully interactive
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
-      // Network idle may not happen, continue
-    });
-
-    // Try multiple selectors for the cookie banner (Angular component may render differently)
-    const cookieBannerSelectors = [
-      'xuilib-cookie-banner',
-      'xuilib-cookie-banner .govuk-cookie-banner',
-      '[class*="cookie-banner"]',
-      'govuk-cookie-banner'
-    ];
-
-    let cookieBanner = null;
-    let acceptButton = null;
-
-    // Try to find the banner with different selectors
-    for (const selector of cookieBannerSelectors) {
-      try {
-        const banner = page.locator(selector).first();
-        await banner.waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
-
-        if (await banner.isVisible({ timeout: 2000 }).catch(() => false)) {
-          cookieBanner = banner;
-          // Try to find accept button within the banner
-          acceptButton = banner.getByRole('button', { name: /Accept analytics cookies/i });
-
-          // If button not found, try alternative selectors
-          if (!(await acceptButton.isVisible({ timeout: 1000 }).catch(() => false))) {
-            acceptButton = banner.locator('button:has-text("Accept analytics cookies")');
-          }
-
-          if (await acceptButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-            console.log(`Post-login cookie banner detected (selector: ${selector}), accepting analytics cookies...`);
-            break;
-          }
-        }
-      } catch {
-        // Try next selector
-      }
-    }
-
-    if (cookieBanner && acceptButton && await cookieBanner.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await acceptButton.click({ timeout: 5000 });
-
-      // Wait for banner to be hidden or removed
-      await cookieBanner.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
-        // Try detached state as well
-        return cookieBanner.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
-      });
-
-      console.log('✓ Post-login analytics cookies accepted');
-    } else {
-      console.log('Post-login cookie banner not found or already dismissed');
-    }
-  } catch (error) {
-    // Cookie banner handling is not critical, log and continue
-    console.warn('Post-login cookie banner not found or failed to handle:', (error as Error).message);
-  }
-}
 
 async function globalSetupConfig(config: FullConfig): Promise<void> {
   const baseURL = config.projects[0].use?.baseURL || process.env.MANAGE_CASE_BASE_URL || '';
@@ -146,10 +33,29 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       throw new Error('Login failed: missing credentials');
     }
 
-    if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
-      console.log('Valid session found, skipping login...');
-      await browser.close();
-      return;
+    // Check if storage state file exists and validate session
+    if (fs.existsSync(storageStatePath)) {
+      try {
+        if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
+          console.log('Valid session found, skipping login...');
+          // Verify the storage state file is readable and contains cookies
+          const storageStateContent = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
+          const hasSessionCookie = storageStateContent.cookies?.some(
+            (cookie: { name: string }) => cookie.name === SESSION_COOKIE_NAME
+          );
+          if (hasSessionCookie) {
+            console.log(`✓ Using existing session with ${storageStateContent.cookies?.length || 0} cookies`);
+            await browser.close();
+            return;
+          } else {
+            console.log('Storage state exists but session cookie missing, will re-login...');
+          }
+        } else {
+          console.log('Session expired or invalid, will re-login...');
+        }
+      } catch (error) {
+        console.warn('Error validating session, will re-login:', (error as Error).message);
+      }
     }
 
     console.log('Performing login and setting up session...');
@@ -181,31 +87,91 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     // Handle post-login cookie banner (after successful login)
     await handlePostLoginCookieBanner(page);
 
-    // Wait a bit more after accepting cookies to ensure they're saved
-    await page.waitForTimeout(1000);
+    // Wait longer after accepting cookies to ensure they're fully saved by the browser
+    // Cookie consent may trigger additional network requests to save preferences
+    await page.waitForTimeout(3000);
+    
+    // Wait for any pending network requests related to cookie consent
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {
+      // Network idle may not happen, continue
+    });
 
-    // Save storage state again after navigation and cookie acceptance to ensure all cookies are captured
-    // IdamPage.login may save before all cookies are set, and cookie acceptance adds additional cookies
-    await page.context().storageState({ path: storageStatePath });
+    // Get all cookies from the page context before saving
+    const cookiesBeforeSave = await page.context().cookies();
+    console.log(`Cookies in context before saving: ${cookiesBeforeSave.length}`);
+    console.log(`Cookie names: ${cookiesBeforeSave.map(c => c.name).join(', ')}`);
+
+    // Save storage state with atomic write to prevent workers from reading partial file
+    // Write to temp file first, then rename (atomic operation on most filesystems)
+    const tempStorageStatePath = storageStatePath + '.tmp';
+    await page.context().storageState({ path: tempStorageStatePath });
+    
+    // Verify temp file was created
+    if (!fs.existsSync(tempStorageStatePath)) {
+      throw new Error(`Temporary storage state file was not created at ${tempStorageStatePath}`);
+    }
+    
+    // Atomic move: rename temp file to final file (prevents workers from reading partial file)
+    fs.renameSync(tempStorageStatePath, storageStatePath);
+    
+    // Small delay to ensure file system has flushed the write
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     if (!fs.existsSync(storageStatePath)) {
       throw new Error(`Storage state file was not created at ${storageStatePath}`);
     }
 
-    // Verify storage state contains session cookie
+    // Verify storage state contains session cookie and log all cookies
     const storageStateContent = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
-    const hasSessionCookie = storageStateContent.cookies?.some(
+    const allCookies = storageStateContent.cookies || [];
+    const hasSessionCookie = allCookies.some(
       (cookie: { name: string }) => cookie.name === SESSION_COOKIE_NAME
+    );
+
+    // Check for cookie consent cookies (based on actual cookie names from the application)
+    const consentCookieNames = [
+      'cookies_preferences_set',  // Actual cookie name from IDAM
+      'cookies_policy',           // Actual cookie name from IDAM
+      'hmcts-exui-cookies',       // Actual cookie name from XUI (partial match)
+      'seen_cookie_message',      // Cookie banner seen flag
+      'cookie-preferences',       // Alternative format
+      'cookies-preferences',      // Alternative format
+      'cookie_policy',            // Alternative format
+      'cookiePolicy',             // Alternative format
+      'analytics',                // Analytics cookies
+      'cookieConsent'             // Alternative format
+    ];
+    const hasConsentCookies = allCookies.some(
+      (cookie: { name: string }) => consentCookieNames.some(name => 
+        cookie.name.toLowerCase().includes(name.toLowerCase()) || 
+        cookie.name.toLowerCase().startsWith(name.toLowerCase())
+      )
     );
 
     if (!hasSessionCookie) {
       console.error(`ERROR: Storage state created but ${SESSION_COOKIE_NAME} cookie not found!`);
-      console.log('Cookies in storage state:', storageStateContent.cookies?.map((c: { name: string }) => c.name) || 'none');
+      console.log('Cookies in storage state:', allCookies.map((c: { name: string }) => c.name) || 'none');
       console.log('Storage state path:', storageStatePath);
       throw new Error(`Session cookie ${SESSION_COOKIE_NAME} not found in storage state. Login may have failed.`);
     } else {
       console.log(`✓ Storage state created with ${SESSION_COOKIE_NAME} cookie`);
-      console.log(`✓ Total cookies saved: ${storageStateContent.cookies?.length || 0}`);
+      console.log(`✓ Total cookies saved: ${allCookies.length}`);
+      
+      if (hasConsentCookies) {
+        const consentCookies = allCookies.filter((c: { name: string }) => 
+          consentCookieNames.some(name => 
+            c.name.toLowerCase().includes(name.toLowerCase()) || 
+            c.name.toLowerCase().startsWith(name.toLowerCase())
+          )
+        );
+        console.log(`✓ Cookie consent cookies found: ${consentCookies.map((c: { name: string }) => c.name).join(', ')}`);
+      } else {
+        console.warn(`⚠ Warning: Cookie consent cookies not found in storage state. Cookie banner may appear in tests.`);
+        console.log('All cookies:', allCookies.map((c: { name: string; domain?: string; path?: string }) => 
+          `${c.name} (domain: ${c.domain || 'N/A'}, path: ${c.path || 'N/A'})`
+        ).join(', '));
+      }
+      
       console.log(`✓ Storage state file: ${storageStatePath}`);
     }
 
