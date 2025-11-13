@@ -126,6 +126,7 @@ public class PaymentsServiceRequestConsumerTest {
             .body(responseBody)
             .toPact(V4Pact.class);
     }
+    
     @Test
     @PactTestFor(pactMethod = "createServiceRequestPact")
     void shouldReturnServiceRequestReference() {
