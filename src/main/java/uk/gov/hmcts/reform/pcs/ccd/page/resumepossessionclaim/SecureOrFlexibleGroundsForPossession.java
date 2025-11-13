@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAl
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.List;
 import java.util.Set;
@@ -37,7 +38,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
             .optional(PCSCase::getSecureOrFlexibleMandatoryGrounds)
             .optional(PCSCase::getSecureOrFlexibleMandatoryGroundsAlt)
-            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlt);
+            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlt)
+            .label("secureOrFlexibleGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
