@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 
 import java.util.Set;
@@ -35,7 +36,8 @@ public class GroundsForPossession implements CcdPageConfiguration {
                     + "AND typeOfTenancyLicence!=\"OTHER\""
                     + " AND legislativeCountry=\"England\"")
             .label("groundsForPossession-lineSeparator", "---")
-            .mandatory(PCSCase::getGroundsForPossession);
+            .mandatory(PCSCase::getGroundsForPossession)
+            .label("groundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

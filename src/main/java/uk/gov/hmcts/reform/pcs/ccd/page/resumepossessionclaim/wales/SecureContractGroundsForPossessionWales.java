@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 @Component
@@ -52,7 +53,8 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
                 .optional(PCSCase::getSecureContractEstateManagementGroundsWales,
                         "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
-                .optional(PCSCase::getSecureContractMandatoryGroundsWales);
+                .optional(PCSCase::getSecureContractMandatoryGroundsWales)
+                .label("secureOrFlexibleGroundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
