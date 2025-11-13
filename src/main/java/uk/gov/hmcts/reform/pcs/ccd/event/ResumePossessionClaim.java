@@ -150,6 +150,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final CheckingNotice checkingNotice;
+    private final WalesCheckingNotice walesCheckingNotice;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -195,8 +197,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
             .add(mediationAndSettlement)
-            .add(new CheckingNotice())
-            .add(new WalesCheckingNotice())
+            .add(checkingNotice)
+            .add(walesCheckingNotice)
             .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
