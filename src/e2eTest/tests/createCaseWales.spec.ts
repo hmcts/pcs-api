@@ -129,7 +129,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yesRadioOption);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductStandardContractWales.no,
