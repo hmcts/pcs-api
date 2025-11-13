@@ -354,7 +354,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should have correct error message template")
         void shouldHaveCorrectErrorMessageTemplate() {
             assertThat(CHARACTER_LIMIT_ERROR_TEMPLATE).isEqualTo(
-                "In '%s', you have entered more than the maximum number of characters (%d)"
+                "In '%s', you have entered more than the maximum number of characters (%s)"
             );
         }
     }
