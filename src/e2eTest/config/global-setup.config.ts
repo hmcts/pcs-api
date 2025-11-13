@@ -21,7 +21,11 @@ function getStorageStatePath(): string {
 
 
 async function globalSetupConfig(config: FullConfig): Promise<void> {
-  const baseURL = config.projects[0].use?.baseURL || process.env.MANAGE_CASE_BASE_URL || '';
+  const baseURL = process.env.MANAGE_CASE_BASE_URL;
+  if (!baseURL) {
+    throw new Error('MANAGE_CASE_BASE_URL environment variable is required');
+  }
+
   const storageStatePath = getStorageStatePath();
   const browser = await chromium.launch({headless: !!process.env.CI});
   const page = await browser.newPage();
