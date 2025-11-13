@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class StatementOfTruth implements CcdPageConfiguration {
 
@@ -22,6 +23,7 @@ public class StatementOfTruth implements CcdPageConfiguration {
                   This is a placeholder page for the statement of truth functionality.
                 </p>
                 """
-            );
+            )
+            .label("statementOfTruth-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
