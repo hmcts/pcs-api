@@ -718,10 +718,16 @@ export class CreateCaseAction implements IAction {
       question: claimantDetails.completedBy,
       option: claimantDetails.option
     });
+    if(claimantDetails.option == statementOfTruth.claimantRadioOption){
+      await performAction('check', statementOfTruth.iBelieveTheFactsHiddenCheckbox);
+      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, statementOfTruth.fullNameHiddenTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, statementOfTruth.positionOrOfficeHeldHiddenTextInput);
+    }
     if(claimantDetails.option == statementOfTruth.claimantLegalRepresentativeRadioOption){
-      await performAction('inputText', statementOfTruth.fullNameTextLabel, statementOfTruth.fullNameTextInput);
-      await performAction('inputText', statementOfTruth.nameOfFirmTextLabel, statementOfTruth.nameOfFirmTextInput);
-      await performAction('inputText', statementOfTruth.positionOrOfficeHeldTextLabel, statementOfTruth.positionOrOfficeHeldTextInput);
+      await performAction('check', statementOfTruth.signThisStatementHiddenCheckbox);
+      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, statementOfTruth.fullNameHiddenTextInput);
+      await performAction('inputText', statementOfTruth.nameOfFirmHiddenTextLabel, statementOfTruth.nameOfFirmHiddenTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, statementOfTruth.positionOrOfficeHeldHiddenTextInput);
     }
     await performAction('clickButton', statementOfTruth.continueButton);
   }

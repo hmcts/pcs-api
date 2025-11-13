@@ -134,9 +134,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectUnderlesseeOrMortgageeEntitledToClaim | `performAction('selectUnderlesseeOrMortgageeEntitledToClaim','Yes')`                                                                                                                                       |
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
+| selectStatementOfTruth                      | `performAction('selectStatementOfTruth', {completedBy: statementOfTruth.completedByLabel, option :statementOfTruth.claimantRadioOption})`                                                                  |
 ### Validations
-| Validation                 | Example Usage                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| Validation          | Example Usage |
+|------------------|---------------|
 | text                       | `performValidation('text', 'testElement')`                                                                                           |
 | bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
 | formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
