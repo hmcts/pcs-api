@@ -2,6 +2,7 @@ import { chromium, FullConfig } from '@playwright/test';
 import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { user } from '@data/user-data';
+import { signInOrCreateAnAccount } from '@data/page-data';
 import { CookieUtils } from '@utils/cookie.utils';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -16,6 +17,59 @@ function getStorageStatePath(): string {
     fs.mkdirSync(SESSION_DIR, { recursive: true });
   }
   return path.join(SESSION_DIR, STORAGE_STATE_FILE);
+}
+
+/**
+ * Fallback handler for cookie banners if they appear during global setup
+ * Uses the same approach as the working handleCookieConsentAction
+ */
+async function handleCookieBannerIfPresent(page: any): Promise<void> {
+  try {
+    // Handle "Accept additional cookies" banner
+    const additionalCookiesBanner = page.locator('#cm_cookie_notification');
+    const acceptAdditionalBtn = additionalCookiesBanner.getByRole('button', {
+      name: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+    });
+    const successBanner = page.locator('#accept-all-cookies-success');
+    const hideBtn = successBanner.getByRole('button', {
+      name: signInOrCreateAnAccount.hideThisCookieMessageButton,
+    });
+
+    try {
+      await additionalCookiesBanner.waitFor({ state: 'attached', timeout: 5000 });
+      await acceptAdditionalBtn.click({ timeout: 5000 });
+      await additionalCookiesBanner.waitFor({ state: 'hidden', timeout: 5000 });
+
+      // Handle success banner if it appears
+      if (await successBanner.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await hideBtn.click({ timeout: 5000 });
+        await successBanner.waitFor({ state: 'hidden', timeout: 5000 });
+      }
+      console.log('Cookie banner: Accepted additional cookies');
+    } catch (err) {
+      // Banner not present, continue
+    }
+
+    // Handle "Accept analytics cookies" banner
+    const analyticsBanner = page.locator('xuilib-cookie-banner');
+    const acceptAnalyticsBtn = analyticsBanner.getByRole('button', {
+      name: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
+    });
+
+    try {
+      await analyticsBanner.waitFor({ state: 'attached', timeout: 5000 });
+      await acceptAnalyticsBtn.click({ timeout: 5000 });
+      await analyticsBanner.waitFor({ state: 'hidden', timeout: 5000 });
+      console.log('Cookie banner: Accepted analytics cookies');
+    } catch (err) {
+      // Banner not present, continue
+    }
+
+    await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
+  } catch (error) {
+    // Silently fail - cookie banner handling is a fallback
+    // If cookies were properly injected, banners shouldn't appear
+  }
 }
 
 async function globalSetupConfig(config: FullConfig): Promise<void> {
@@ -60,10 +114,21 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       ).catch(() => null);
     });
 
+    // Wait for page to be ready
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => {
+      return page.waitForLoadState('load', { timeout: 30000 });
+    });
+
+    // Handle cookie banners if they appear (before saving session)
+    await handleCookieBannerIfPresent(page);
+
+    // Get all cookies from the context after handling banners
+    const allCookies = await context.cookies();
+
     // Add all consent cookies directly to storage state (no UI interaction needed)
     // This prevents cookie banners from appearing in tests
     const cookieUtils = new CookieUtils();
-    await cookieUtils.addAllConsentCookies(storageStatePath, baseURL);
+    await cookieUtils.addAllConsentCookies(storageStatePath, baseURL, allCookies);
 
     console.log('Login successful and session saved!');
 

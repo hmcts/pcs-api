@@ -26,14 +26,39 @@ export class CookieUtils {
    * Adds all consent cookies directly to storage state file
    * This bypasses UI interaction and prevents cookie banners from appearing
    * Following tcoe-playwright-example pattern for analytics cookie
+   * @param sessionPath - Path to storage state file
+   * @param baseURL - Base URL for domain resolution
+   * @param contextCookies - Optional cookies from browser context to merge in
    */
-  public async addAllConsentCookies(sessionPath: string, baseURL?: string): Promise<void> {
+  public async addAllConsentCookies(
+    sessionPath: string,
+    baseURL?: string,
+    contextCookies?: Cookie[]
+  ): Promise<void> {
     try {
       const domain = baseURL
         ? this.resolveHostname(baseURL)
         : this.resolveHostname(process.env.MANAGE_CASE_BASE_URL || '');
       const state = JSON.parse(fs.readFileSync(sessionPath, 'utf-8'));
-      const cookies = Array.isArray(state?.cookies) ? state.cookies : [];
+      let cookies = Array.isArray(state?.cookies) ? state.cookies : [];
+
+      // Merge in cookies from context if provided (these are the actual cookies set by the app)
+      if (contextCookies && contextCookies.length > 0) {
+        // Add/update cookies from context, preserving existing ones
+        contextCookies.forEach(contextCookie => {
+          const existingIndex = cookies.findIndex(
+            (c: Cookie) => c.name === contextCookie.name && c.domain === contextCookie.domain
+          );
+          if (existingIndex >= 0) {
+            // Update existing cookie
+            cookies[existingIndex] = contextCookie;
+          } else {
+            // Add new cookie
+            cookies.push(contextCookie);
+          }
+        });
+        console.log(`Merged ${contextCookies.length} cookies from browser context`);
+      }
 
       // Get userId from existing cookies (required for analytics cookie name)
       const userId = cookies.find(

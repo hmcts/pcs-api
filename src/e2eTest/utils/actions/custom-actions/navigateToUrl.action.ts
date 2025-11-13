@@ -12,6 +12,11 @@ export class NavigateToUrlAction implements IAction {
         console.log('Navigation with domcontentloaded failed, retrying with load...');
         await page.goto(url, { waitUntil: 'load', timeout: LONG_TIMEOUT });
       }
+
+      // Wait for page to be ready
+      await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT }).catch(() => {
+        return page.waitForLoadState('load', { timeout: LONG_TIMEOUT });
+      });
     });
   }
 }
