@@ -30,8 +30,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
     @Mock
     private EnforcementOrderService enforcementOrderService;
 
-    private static final long CASE_REFERENCE = 1234L;
-
     @BeforeEach
     void setUp() {
         EnforcementOrderEvent enforcementOrderEvent =
@@ -76,6 +74,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(enforcementOrderService).createEnforcementOrder(CASE_REFERENCE, enforcementOrder);
+        verify(enforcementOrderService).createEnforcementOrder(TEST_CASE_REFERENCE, enforcementOrder);
     }
 }
