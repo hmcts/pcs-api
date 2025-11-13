@@ -6,10 +6,10 @@ import au.com.dius.pact.consumer.junit5.PactConsumerTestExt;
 import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -18,6 +18,7 @@ import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
 import java.io.IOException;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
 @ImportAutoConfiguration({
     FeignAutoConfiguration.class,
@@ -37,6 +39,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestPropertySource(properties = "rd-professional.api-url=http://localhost:6668")
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
 @PactTestFor(providerName = "referenceData_organisationalDetailsInternal", port = "6668")
+@RequiredArgsConstructor
+@TestConstructor(autowireMode = ALL)
 
 //Test is disabled until provider test is implemented - DTSRD-5190
 @Disabled
@@ -46,8 +50,7 @@ public class InternalOrgReferenceDataConsumerTest {
     private static final String AUTHORIZATION_TOKEN = "Bearer userToken";
     private static final String USER_ID = "4d318f91-5591-44e3-870b-ad5616f65627";
 
-    @Autowired
-    private RdProfessionalApi rdProfessionalApi;
+    private final RdProfessionalApi rdProfessionalApi;
 
     @Pact(provider = "referenceData_organisationalDetailsInternal", consumer = "pcs_api")
     public V4Pact getOrganisationById(PactDslWithProvider builder) throws IOException {
