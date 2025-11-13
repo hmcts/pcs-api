@@ -1,4 +1,4 @@
-import { chromium, FullConfig } from '@playwright/test';
+import { chromium, FullConfig, Page } from '@playwright/test';
 import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { user } from '@data/user-data';
@@ -15,6 +15,121 @@ function getStorageStatePath(): string {
     fs.mkdirSync(SESSION_DIR, { recursive: true });
   }
   return path.join(SESSION_DIR, STORAGE_STATE_FILE);
+}
+
+/**
+ * Handle pre-login cookie banner (on hmcts-access.service.gov.uk)
+ * Banner ID: #cm_cookie_notification
+ * Button: "Accept additional cookies" (id: #cookie-accept-submit)
+ */
+async function handlePreLoginCookieBanner(page: Page): Promise<void> {
+  try {
+    const cookieBanner = page.locator('#cm_cookie_notification');
+    const acceptButton = page.locator('#cookie-accept-submit');
+
+    // Wait for banner to appear (with short timeout as it may not always be present)
+    await cookieBanner.waitFor({ state: 'attached', timeout: 5000 }).catch(() => {
+      // Banner not present, skip
+      return;
+    });
+
+    // Check if banner is visible
+    if (await cookieBanner.isVisible()) {
+      console.log('Pre-login cookie banner detected, accepting cookies...');
+      await acceptButton.click({ timeout: 5000 });
+
+      // Wait for banner to be hidden
+      await cookieBanner.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
+        // Banner may have disappeared, continue
+      });
+
+      // Wait for any success banner and hide it if present
+      const successBanner = page.locator('#accept-all-cookies-success');
+      const hideButton = successBanner.getByRole('button', { name: 'Hide this cookie message' });
+
+      if (await successBanner.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await hideButton.click({ timeout: 2000 }).catch(() => {
+          // Hide button may not be present, continue
+        });
+        await successBanner.waitFor({ state: 'hidden', timeout: 2000 }).catch(() => {
+          // Success banner may have disappeared, continue
+        });
+      }
+
+      console.log('✓ Pre-login cookies accepted');
+    }
+  } catch (error) {
+    // Cookie banner handling is not critical, log and continue
+    console.warn('Pre-login cookie banner not found or failed to handle:', (error as Error).message);
+  }
+}
+
+/**
+ * Handle post-login cookie banner (on the service)
+ * Banner component: xuilib-cookie-banner
+ * Button: "Accept analytics cookies"
+ */
+async function handlePostLoginCookieBanner(page: Page): Promise<void> {
+  try {
+    // Wait for page to be fully interactive
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {
+      // Network idle may not happen, continue
+    });
+
+    // Try multiple selectors for the cookie banner (Angular component may render differently)
+    const cookieBannerSelectors = [
+      'xuilib-cookie-banner',
+      'xuilib-cookie-banner .govuk-cookie-banner',
+      '[class*="cookie-banner"]',
+      'govuk-cookie-banner'
+    ];
+
+    let cookieBanner = null;
+    let acceptButton = null;
+
+    // Try to find the banner with different selectors
+    for (const selector of cookieBannerSelectors) {
+      try {
+        const banner = page.locator(selector).first();
+        await banner.waitFor({ state: 'attached', timeout: 3000 }).catch(() => {});
+
+        if (await banner.isVisible({ timeout: 2000 }).catch(() => false)) {
+          cookieBanner = banner;
+          // Try to find accept button within the banner
+          acceptButton = banner.getByRole('button', { name: /Accept analytics cookies/i });
+
+          // If button not found, try alternative selectors
+          if (!(await acceptButton.isVisible({ timeout: 1000 }).catch(() => false))) {
+            acceptButton = banner.locator('button:has-text("Accept analytics cookies")');
+          }
+
+          if (await acceptButton.isVisible({ timeout: 1000 }).catch(() => false)) {
+            console.log(`Post-login cookie banner detected (selector: ${selector}), accepting analytics cookies...`);
+            break;
+          }
+        }
+      } catch {
+        // Try next selector
+      }
+    }
+
+    if (cookieBanner && acceptButton && await cookieBanner.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await acceptButton.click({ timeout: 5000 });
+
+      // Wait for banner to be hidden or removed
+      await cookieBanner.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {
+        // Try detached state as well
+        return cookieBanner.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
+      });
+
+      console.log('✓ Post-login analytics cookies accepted');
+    } else {
+      console.log('Post-login cookie banner not found or already dismissed');
+    }
+  } catch (error) {
+    // Cookie banner handling is not critical, log and continue
+    console.warn('Post-login cookie banner not found or failed to handle:', (error as Error).message);
+  }
 }
 
 async function globalSetupConfig(config: FullConfig): Promise<void> {
@@ -40,7 +155,10 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     console.log('Performing login and setting up session...');
 
     await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    
+
+    // Handle pre-login cookie banner (before login)
+    await handlePreLoginCookieBanner(page);
+
     const idamPage = new IdamPage(page);
     await idamPage.login({
       username: userEmail,
@@ -49,20 +167,25 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     });
 
     // Wait for successful navigation away from login
-    await page.waitForURL('**/cases', { timeout: 30000 }).catch(() => {
-      return page.waitForFunction(
-        () => !window.location.href.includes('/login') && !window.location.href.includes('/sign-in'),
-        { timeout: 30000 }
-      );
-    });
+    await page.waitForFunction(
+      () => !window.location.href.includes('/login') && !window.location.href.includes('/sign-in'),
+      { timeout: 30000 }
+    );
 
     // Wait for page to be fully loaded
-    await page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => {
-      return page.waitForLoadState('load', { timeout: 30000 });
-    });
+    await page.waitForLoadState('domcontentloaded', { timeout: 30000 });
 
-    // Save storage state again after navigation to ensure all cookies are captured
-    // IdamPage.login may save before all cookies are set
+    // Wait a bit more for Angular components to render (cookie banner is an Angular component)
+    await page.waitForTimeout(2000);
+
+    // Handle post-login cookie banner (after successful login)
+    await handlePostLoginCookieBanner(page);
+
+    // Wait a bit more after accepting cookies to ensure they're saved
+    await page.waitForTimeout(1000);
+
+    // Save storage state again after navigation and cookie acceptance to ensure all cookies are captured
+    // IdamPage.login may save before all cookies are set, and cookie acceptance adds additional cookies
     await page.context().storageState({ path: storageStatePath });
 
     if (!fs.existsSync(storageStatePath)) {
@@ -76,11 +199,14 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     );
 
     if (!hasSessionCookie) {
-      console.warn(`Warning: Storage state created but ${SESSION_COOKIE_NAME} cookie not found`);
+      console.error(`ERROR: Storage state created but ${SESSION_COOKIE_NAME} cookie not found!`);
       console.log('Cookies in storage state:', storageStateContent.cookies?.map((c: { name: string }) => c.name) || 'none');
+      console.log('Storage state path:', storageStatePath);
+      throw new Error(`Session cookie ${SESSION_COOKIE_NAME} not found in storage state. Login may have failed.`);
     } else {
       console.log(`✓ Storage state created with ${SESSION_COOKIE_NAME} cookie`);
       console.log(`✓ Total cookies saved: ${storageStateContent.cookies?.length || 0}`);
+      console.log(`✓ Storage state file: ${storageStatePath}`);
     }
 
     console.log('Login successful and session saved!');
