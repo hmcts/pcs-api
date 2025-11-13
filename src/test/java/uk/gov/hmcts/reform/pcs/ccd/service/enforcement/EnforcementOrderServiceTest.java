@@ -77,7 +77,7 @@ class EnforcementOrderServiceTest {
                 enforcementOrderService.loadEnforcementOrder(enforcementOrderId);
 
         // Then
-        assertThat(retrievedEnforcementOrderEntity.getSubmittedEnforcementOrder()).isEqualTo(enforcementOrder);
+        assertThat(retrievedEnforcementOrderEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
     }
 
     @Test

@@ -36,7 +36,7 @@ final class EnforcementDataUtil {
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setId(enfId);
         enforcementOrderEntity.setClaim(claimEntity);
-        enforcementOrderEntity.setSubmittedEnforcementOrder(enforcementOrder);
+        enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
         return enforcementOrderEntity;
     }
 

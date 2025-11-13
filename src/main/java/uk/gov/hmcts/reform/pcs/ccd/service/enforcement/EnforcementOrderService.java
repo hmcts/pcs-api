@@ -49,7 +49,7 @@ public class EnforcementOrderService {
 
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
-        enforcementOrderEntity.setSubmittedEnforcementOrder(enforcementOrder);
+        enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
         enforcementOrderRepository.save(enforcementOrderEntity);
         log.debug("Created Enforcement Order for case reference {}", caseReference);

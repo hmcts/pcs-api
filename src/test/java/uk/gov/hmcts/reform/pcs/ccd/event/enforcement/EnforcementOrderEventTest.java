@@ -65,7 +65,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
     }
 
     @Test
-    void shouldCreateSubmittedEnforcementDataInSubmitCallback() {
+    void shouldCreateEnforcementDataInSubmitCallback() {
         // Given
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
         PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
