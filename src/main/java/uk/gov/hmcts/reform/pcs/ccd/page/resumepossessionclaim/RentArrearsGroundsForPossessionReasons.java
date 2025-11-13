@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class RentArrearsGroundsForPossessionReasons implements CcdPageConfiguration {
 
@@ -16,6 +17,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                                + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND showRentArrearsGroundReasonPage=\"Yes\""
                                + " AND hasOtherAdditionalGrounds=\"Yes\""
+                               + " AND legislativeCountry=\"England\""
             )
             .label("rentArrearsGrounds-lineSeparator","---")
             .complex(PCSCase::getRentArrearsGroundsReasons)
@@ -219,6 +221,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 """, "rentArrearsDiscretionaryGroundsCONTAINS\"FALSE_STATEMENT_GROUND17\"")
             .mandatory(RentArrearsGroundsReasons::getTenancyByFalseStatementReason,
                 "rentArrearsDiscretionaryGroundsCONTAINS\"FALSE_STATEMENT_GROUND17\"")
-            .done();
+            .done()
+            .label("rentArrearsGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

@@ -61,8 +61,8 @@ export * from '@data/page-data/userIneligible.page.data';
 export * from '@data/page-data/provideMoreDetailsOfClaim.page.data';
 export * from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 export * from '@data/page-data/signInOrCreateAnAccount.page.data';
-export * from "@data/page-data/caseList.page.data";
-export * from "@data/page-data/caseSummary.page.data";
-export * from "@data/page-data/occupationContractOrLicenceDetailsWales.page.data";
-export * from "@data/page-data/prohibitedConductStandardContractWales.page.data";
-
+export * from '@data/page-data/caseList.page.data';
+export * from '@data/page-data/caseSummary.page.data';
+export * from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
+export * from '@data/page-data/prohibitedConductStandardContractWales.page.data';
+export * from '@data/page-data/antiSocialBehaviourWales.page.data';
