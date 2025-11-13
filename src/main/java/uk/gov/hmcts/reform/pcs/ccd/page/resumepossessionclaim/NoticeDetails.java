@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -112,7 +113,8 @@ public class NoticeDetails implements CcdPageConfiguration {
                 Any documents you upload now will be included in the pack of documents a judge will
                 receive before the hearing (the bundle)</p>
                 """)
-              .optional(PCSCase::getNoticeDocuments);
+              .optional(PCSCase::getNoticeDocuments)
+              .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
