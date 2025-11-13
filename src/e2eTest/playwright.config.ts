@@ -21,13 +21,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 3 : 0,
-  workers: 2,
+  workers: 1,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: {
     baseURL: process.env.MANAGE_CASE_BASE_URL || 'http://localhost:3000',
-    actionTimeout: 30 * 1000,
-    navigationTimeout: 30 * 1000,
+    actionTimeout: process.env.CI ? 60 * 1000 : 30 * 1000,
+    navigationTimeout: process.env.CI ? 60 * 1000 : 30 * 1000,
     ...(storageState ? { storageState } : {})
   },
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
