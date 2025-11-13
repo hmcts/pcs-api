@@ -584,7 +584,8 @@ public class PCSCase {
     private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
 
     @CCD(
-        label = "Do you want the court to make a judgment for the outstanding arrears?"
+        label = "Do you want the court to make a judgment for the outstanding arrears?",
+        searchable = false
     )
     private VerticalYesNo arrearsJudgmentWanted;
 
