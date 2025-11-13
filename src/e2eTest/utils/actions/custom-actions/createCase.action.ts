@@ -232,7 +232,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continue);
   }
 
-  private async defendantDetails(defendantVal: actionRecord) {
+  private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {

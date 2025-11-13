@@ -14,5 +14,6 @@ export const defendantDetails =
     yesRadioOption: 'Yes',
     noRadioOption: 'No',
     continueButton: 'Continue',
-    addNewButton: 'Add new'
+    addNewButton: 'Add new',
+    defendantPostcodeTextInput: 'M139',
   };
