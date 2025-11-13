@@ -15,16 +15,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class RentDetailsRoutingServiceTest {
 
     private RentDetailsRoutingService service;
-    private AssuredTenancyRoutingPolicy assuredTenancyPolicy;
-    private SecureFlexibleRoutingPolicy secureFlexiblePolicy;
 
     @BeforeEach
     void setUp() {
-        assuredTenancyPolicy = new AssuredTenancyRoutingPolicy();
-        secureFlexiblePolicy = new SecureFlexibleRoutingPolicy();
+        AssuredTenancyRoutingPolicy assuredTenancyPolicy = new AssuredTenancyRoutingPolicy();
+        SecureFlexibleRoutingPolicy secureFlexiblePolicy = new SecureFlexibleRoutingPolicy();
         List<RentDetailsRoutingPolicy> policies = Arrays.asList(
-            assuredTenancyPolicy,
-            secureFlexiblePolicy
+                assuredTenancyPolicy,
+                secureFlexiblePolicy
         );
         service = new RentDetailsRoutingService(policies);
     }
@@ -33,7 +31,7 @@ class RentDetailsRoutingServiceTest {
     void shouldDelegateToAssuredTenancyPolicy() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.NO)
+            .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsMandatoryGroundsOptions(null)
             .noRentArrearsDiscretionaryGroundsOptions(null)
             .build();
@@ -70,7 +68,7 @@ class RentDetailsRoutingServiceTest {
     void shouldHandleAssuredTenancyWithRentArrearsGrounds() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.NO)
+            .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsMandatoryGroundsOptions(
                 java.util.Set.of(
                     uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS

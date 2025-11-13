@@ -13,7 +13,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         pageBuilder
             .page("rentArrearsGroundsForPossessionReasons")
             .pageLabel("Reasons for possession")
-            .showCondition("groundsForPossession=\"Yes\""
+            .showCondition("claimDueToRentArrears=\"Yes\""
                                + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND showRentArrearsGroundReasonPage=\"Yes\""
                                + " AND hasOtherAdditionalGrounds=\"Yes\""
