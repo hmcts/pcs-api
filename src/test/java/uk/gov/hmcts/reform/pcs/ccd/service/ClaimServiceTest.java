@@ -58,7 +58,6 @@ class ClaimServiceTest {
         String expectedAdditionalReasons = "some additional reasons";
         String claimantCircumstancesDetails = UUID.randomUUID().toString();
         String asbDetails = "Some antisocial behaviour details";
-        String illegalPurposesDetails = "Some illegal purposes use details";
         String prohibitedConductDetails = "Some other prohibited conduct details"; 
 
         PCSCase pcsCase = mock(PCSCase.class);
@@ -81,13 +80,19 @@ class ClaimServiceTest {
 
         ASBQuestionsDetailsWales asbQuestionsDetailsWales = mock(ASBQuestionsDetailsWales.class);
         when(pcsCase.getAsbQuestionsWales()).thenReturn(asbQuestionsDetailsWales);
+        when(asbQuestionsDetailsWales.getAntisocialBehaviour()).thenReturn(VerticalYesNo.YES);
         when(asbQuestionsDetailsWales.getAntisocialBehaviourDetails()).thenReturn(asbDetails);
-        when(asbQuestionsDetailsWales.getIllegalPurposesUseDetails()).thenReturn(illegalPurposesDetails);
+        when(asbQuestionsDetailsWales.getIllegalPurposesUse()).thenReturn(VerticalYesNo.NO);
+        when(asbQuestionsDetailsWales.getIllegalPurposesUseDetails()).thenReturn(null);
+        when(asbQuestionsDetailsWales.getOtherProhibitedConduct()).thenReturn(VerticalYesNo.YES);
         when(asbQuestionsDetailsWales.getOtherProhibitedConductDetails()).thenReturn(prohibitedConductDetails);
 
         ASBQuestionsWales expectedASBQuestions = ASBQuestionsWales.builder()
+            .antisocialBehaviour(true)
             .antisocialBehaviourDetails(asbDetails)
-            .illegalPurposesUseDetails(illegalPurposesDetails)
+            .illegalPurposesUse(false)
+            .illegalPurposesUseDetails(null)
+            .otherProhibitedConduct(true)
             .otherProhibitedConductDetails(prohibitedConductDetails)
             .build();
 
