@@ -4,10 +4,11 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -22,6 +23,7 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 
+import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.payments.client.PaymentsApi;
@@ -41,9 +43,12 @@ import uk.gov.hmcts.reform.payments.response.PaymentServiceResponse;
 @EnableFeignClients(clients = PaymentsApi.class)
 @TestPropertySource(properties = "payments.api.url=http://localhost:8080")
 @ExtendWith({PactConsumerTestExt.class, SpringExtension.class})
-
 @PactTestFor(providerName = "payment_accounts", port = "8080")
+@RequiredArgsConstructor
+@TestConstructor(autowireMode = ALL)
 public class PaymentsServiceRequestConsumerTest {
+
+    private final PaymentsApi paymentsApi;
 
     private static final String SERVICE_AUTHORISATION = "Bearer serviceToken";
     private static final String AUTHORISATION = "Bearer userToken";
@@ -74,9 +79,6 @@ public class PaymentsServiceRequestConsumerTest {
             .build()
     };
 
-
-    @Autowired
-    private PaymentsApi paymentsApi;
 
     @Pact(provider = "payment_accounts", consumer = "pcs_api")
     public V4Pact createServiceRequestPact(PactBuilder builder) {
