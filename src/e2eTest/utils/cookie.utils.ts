@@ -42,7 +42,7 @@ export async function handlePostLoginCookieBanner(page: Page): Promise<void> {
 
     // Try multiple selectors for the cookie banner
     const selectors = ['xuilib-cookie-banner', 'xuilib-cookie-banner .govuk-cookie-banner', '[class*="cookie-banner"]', 'govuk-cookie-banner'];
-    
+
     let banner = null;
     let acceptButton = null;
 
@@ -65,7 +65,6 @@ export async function handlePostLoginCookieBanner(page: Page): Promise<void> {
           }
         }
       } catch {
-        continue;
       }
     }
 
