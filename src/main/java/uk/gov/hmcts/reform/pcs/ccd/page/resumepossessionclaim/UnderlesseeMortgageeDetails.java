@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgagee;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
 
@@ -30,6 +31,8 @@ public class UnderlesseeMortgageeDetails  implements CcdPageConfiguration {
                 ---
                 <h2 class="govuk-heading-m">Additional underlessee or mortgagee?</h2>
                 """)
-            .mandatory(UnderlesseeMortgagee::getAddAdditionalUnderlesseeOrMortgagee);
+            .mandatory(UnderlesseeMortgagee::getAddAdditionalUnderlesseeOrMortgagee)
+            .done()
+            .label("underlesseeMortgageeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

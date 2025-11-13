@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -29,7 +30,8 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
             .label("demotionOfTenancyOrderReason-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getDemotionOfTenancyReason)
-                .done();
+                .done()
+            .label("demotionOfTenancyOrderReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

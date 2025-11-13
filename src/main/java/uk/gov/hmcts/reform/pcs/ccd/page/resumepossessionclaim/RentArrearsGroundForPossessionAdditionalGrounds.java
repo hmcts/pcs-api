@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.HashSet;
@@ -56,7 +57,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .readonly(PCSCase::getRentArrearsDiscretionaryGrounds, NEVER_SHOW)
             .optional(PCSCase::getAssuredAdditionalMandatoryGrounds)
             .optional(PCSCase::getAssuredAdditionalDiscretionaryGrounds)
-            .done();
+            .label("groundForPossessionAdditionalGrounds-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
