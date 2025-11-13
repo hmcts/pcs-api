@@ -97,7 +97,7 @@ public class ClaimEntity {
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
-    private Set<EnforcementOrderEntity> enforcementDataEntities = new HashSet<>();
+    private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
