@@ -21,7 +21,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
-  PageContentValidation.finalizeTest();
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => {

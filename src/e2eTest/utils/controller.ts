@@ -21,8 +21,6 @@ function getExecutor(): { page: Page } {
 
 async function detectPageNavigation(): Promise<boolean> {
   const executor = getExecutor();
-
-  await executor.page.waitForTimeout(800);
   const currentUrl = executor.page.url();
 
   const hasNavigated = currentUrl !== previousUrl;

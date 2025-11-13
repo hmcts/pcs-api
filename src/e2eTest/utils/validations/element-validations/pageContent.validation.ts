@@ -101,62 +101,63 @@ export class PageContentValidation implements IValidation {
   async validateCurrentPage(page: Page): Promise<void> {
     const pageUrl = page.url();
     const pageResults: ValidationResult[] = [];
-    const pageData = await this.findPageDataByUrl(page);
+    const pageData = await this.getPageData(page);
 
     if (!pageData) return;
-
-    const failedElementsByType = new Map<string, string[]>();
 
     for (const [key, value] of Object.entries(pageData)) {
       if (key.includes('Input') || key.includes('Hidden')) continue;
       if (typeof value === 'string' && value.trim() !== '') {
-        const elementType = this.detectElementType(key);
-        const isVisible = await this.validateElement(page, value as string, elementType);
-
+        const elementType = this.getElementType(key);
+        const isVisible = await this.isElementVisible(page, value as string, elementType);
         pageResults.push({ element: key, expected: value as string, status: isVisible ? 'pass' : 'fail' });
-
-        if (!isVisible) {
-          const elements = failedElementsByType.get(elementType) || [];
-          failedElementsByType.set(elementType, [...elements, value as string]);
-        }
       }
     }
 
     PageContentValidation.validationResults.set(pageUrl, pageResults);
   }
 
-  private async findPageDataByUrl(page: Page): Promise<any> {
-    const cleanUrl = this.cleanUrlForLogging(page.url());
-    const urlSegment = this.extractFinalUrlSegment(page.url());
-    const fileName = await this.getFileNameFromMapping(urlSegment);
+  private async getPageData(page: Page): Promise<any> {
+    const urlSegment = this.getUrlSegment(page.url());
+    const fileName = await this.getFileName(urlSegment);
 
     if (!fileName) {
-      PageContentValidation.missingDataFiles.add(cleanUrl);
+      PageContentValidation.missingDataFiles.add(urlSegment);
       return null;
     }
 
-    const pageData = await this.findPageDataFile(fileName);
-    return pageData;
+    return this.loadPageDataFile(fileName);
   }
 
-  private cleanUrlForLogging(url: string): string {
+  private getUrlSegment(url: string): string {
     try {
       const urlObj = new URL(url);
-      const pathname = urlObj.pathname;
-      const segments = pathname.split('/').filter(Boolean);
-      return segments[segments.length - 1] || 'home';
+      const segments = urlObj.pathname.split('/').filter(Boolean);
+      let segment = segments[segments.length - 1] || 'home';
+      return /^\d+$/.test(segment) ? 'provideMoreDetailsOfClaim' : segment;
     } catch {
       const segments = url.split('/').filter(Boolean);
-      return segments[segments.length - 1] || 'home';
+      let segment = segments[segments.length - 1] || 'home';
+      return /^\d+$/.test(segment) ? 'provideMoreDetailsOfClaim' : segment;
     }
   }
 
-  private async getFileNameFromMapping(urlSegment: string): Promise<string | null> {
-    const mapping = await this.loadUrlMapping();
-    return mapping[urlSegment] || null;
+  private async getFileName(urlSegment: string): Promise<string | null> {
+    try {
+      const mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
+      if (!fs.existsSync(mappingPath)) return null;
+      const mappingContent = fs.readFileSync(mappingPath, 'utf8');
+      const match = mappingContent.match(/export default\s*({[\s\S]*?});/);
+      if (!match) return null;
+      const objectString = match[1].replace(/\s+/g, ' ').replace(/,\s*}/g, '}');
+      const mapping = eval(`(${objectString})`);
+      return mapping[urlSegment] || null;
+    } catch {
+      return null;
+    }
   }
 
-  private async findPageDataFile(fileName: string): Promise<any> {
+  private async loadPageDataFile(fileName: string): Promise<any> {
     const filePath = path.join(__dirname, '../../../data/page-data-figma', `${fileName}.page.data.ts`);
     if (!fs.existsSync(filePath)) return null;
     try {
@@ -168,26 +169,7 @@ export class PageContentValidation implements IValidation {
     }
   }
 
-  private extractFinalUrlSegment(url: string): string {
-    const cleanUrl = this.cleanUrlForLogging(url);
-    return cleanUrl;
-  }
-
-  private async loadUrlMapping(): Promise<Record<string, string>> {
-    try {
-      const mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
-      if (!fs.existsSync(mappingPath)) return {};
-      const mappingContent = fs.readFileSync(mappingPath, 'utf8');
-      const match = mappingContent.match(/export default\s*({[\s\S]*?});/);
-      if (!match) return {};
-      const objectString = match[1].replace(/\s+/g, ' ').replace(/,\s*}/g, '}');
-      return eval(`(${objectString})`);
-    } catch {
-      return {};
-    }
-  }
-
-  private async validateElement(page: Page, expectedValue: string, elementType: string): Promise<boolean> {
+  private async isElementVisible(page: Page, expectedValue: string, elementType: string): Promise<boolean> {
     const pattern = this.locatorPatterns[elementType as keyof typeof this.locatorPatterns];
     if (!pattern) return false;
     try {
@@ -198,20 +180,14 @@ export class PageContentValidation implements IValidation {
     }
   }
 
-  private detectElementType(key: string): string {
+  private getElementType(key: string): string {
     for (const type of ELEMENT_TYPES) {
       if (key.includes(type)) return type;
     }
     return 'Text';
   }
 
-  private async getPageNameFromUrl(url: string): Promise<string> {
-    const urlSegment = this.extractFinalUrlSegment(url);
-    const mapping = await this.loadUrlMapping();
-    return mapping[urlSegment] || urlSegment;
-  }
-
-  static finalizeTest(): void {
+  static finaliseTest(): void {
     PageContentValidation.testCounter++;
 
     if (this.validationExecuted && this.validationResults.size === 0 && this.missingDataFiles.size === 0) {
@@ -220,22 +196,12 @@ export class PageContentValidation implements IValidation {
 
     this.validationExecuted = true;
 
-    const allResults = Array.from(this.validationResults.entries());
-
-    const hasValidationResults = this.validationResults.size > 0;
-    const hasMissingFiles = this.missingDataFiles.size > 0;
-
-    if (!hasValidationResults && !hasMissingFiles) {
-      this.clearValidationResults();
-      return;
-    }
-
     const failedPages = new Map<string, Map<string, string[]>>();
     const passedPages = new Set<string>();
     const validatedPages = new Set<string>();
 
-    for (const [pageUrl, results] of allResults) {
-      const pageName = this.getPageNameFromUrlSync(pageUrl);
+    for (const [pageUrl, results] of Array.from(this.validationResults.entries())) {
+      const pageName = this.getPageName(pageUrl);
       validatedPages.add(pageName);
 
       const failedResults = results.filter(r => r.status === 'fail');
@@ -247,7 +213,7 @@ export class PageContentValidation implements IValidation {
 
       const pageFailuresByType = new Map<string, string[]>();
       for (const result of failedResults) {
-        const elementType = this.detectElementTypeFromKey(result.element);
+        const elementType = this.getElementType(result.element);
         const elements = pageFailuresByType.get(elementType) || [];
         pageFailuresByType.set(elementType, [...elements, result.expected]);
       }
@@ -265,23 +231,14 @@ export class PageContentValidation implements IValidation {
     console.log(`   Number of pages failed: ${failedCount}`);
     console.log(`   Missing data files: ${missingFilesCount}`);
 
-    if (passedCount > 0) {
-      console.log(`   Passed pages: ${Array.from(passedPages).join(', ') || 'None'}`);
-    }
-
-    if (failedCount > 0) {
-      console.log(`   Failed pages: ${Array.from(failedPages.keys()).join(', ') || 'None'}`);
-    }
-
-    if (missingFilesCount > 0) {
-      console.log(`   Page files not found: ${Array.from(this.missingDataFiles).join(', ') || 'None'}`);
-    }
+    if (passedCount > 0) console.log(`   Passed pages: ${Array.from(passedPages).join(', ') || 'None'}`);
+    if (failedCount > 0) console.log(`   Failed pages: ${Array.from(failedPages.keys()).join(', ') || 'None'}`);
+    if (missingFilesCount > 0) console.log(`   Page files not found: ${Array.from(this.missingDataFiles).join(', ') || 'None'}`);
 
     process.stdout.write('');
 
     if (failedPages.size > 0) {
       console.log(`\n❌ VALIDATION FAILED:\n`);
-
       for (const [pageName, pageFailures] of failedPages) {
         console.log(`   Page: ${pageName}`);
         let pageFailureCount = 0;
@@ -292,7 +249,6 @@ export class PageContentValidation implements IValidation {
         }
         console.log(`     Total missing on this page: ${pageFailureCount}\n`);
       }
-
       process.stdout.write('');
       throw new Error(`Page content validation failed: ${failedPages.size} pages have missing elements`);
     } else if (totalValidated > 0) {
@@ -306,25 +262,29 @@ export class PageContentValidation implements IValidation {
     this.clearValidationResults();
   }
 
-  private static getPageNameFromUrlSync(url: string): string {
+  private static getPageName(url: string): string {
     const segments = url.split('/').filter(Boolean);
-    const urlSegment = segments[segments.length - 1] || 'home';
+    let segment = segments[segments.length - 1] || 'home';
+
+    if (/^\d+$/.test(segment)) {
+      return 'provideMoreDetailsOfClaim';
+    }
 
     try {
       const mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
-      if (!fs.existsSync(mappingPath)) return urlSegment;
+      if (!fs.existsSync(mappingPath)) return segment;
       const mappingContent = fs.readFileSync(mappingPath, 'utf8');
       const match = mappingContent.match(/export default\s*({[\s\S]*?});/);
-      if (!match) return urlSegment;
+      if (!match) return segment;
       const objectString = match[1].replace(/\s+/g, ' ').replace(/,\s*}/g, '}');
       const mapping = eval(`(${objectString})`);
-      return mapping[urlSegment] || urlSegment;
+      return mapping[segment] || segment;
     } catch {
-      return urlSegment;
+      return segment;
     }
   }
 
-  private static detectElementTypeFromKey(key: string): string {
+  private static getElementType(key: string): string {
     for (const type of ELEMENT_TYPES) {
       if (key.includes(type)) return type;
     }

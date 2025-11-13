@@ -6,7 +6,6 @@ export const enterPropertyAddress = {
   findAddressButton: `Find address`,
   iCantEnterAUKPostcodeLink: `I can't enter a UK postcode`,
   previousButton: `Previous`,
-  submitButton: `Submit`,
   cancelLink: `Cancel`,
   selectAnAddressTextLabelHidden: `Select an address`,
   buildingAndStreetTextLabelHidden: `Building and Street`,

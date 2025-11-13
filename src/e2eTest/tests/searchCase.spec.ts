@@ -21,7 +21,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
-  PageContentValidation.finalizeTest();
+  PageContentValidation.finaliseTest();
 });
 
 //Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
