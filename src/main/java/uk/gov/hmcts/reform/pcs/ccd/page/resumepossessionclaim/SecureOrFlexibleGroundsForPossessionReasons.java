@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -37,6 +38,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     "typeOfTenancyLicence=\"SECURE_TENANCY\""
                             + " OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                             + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
+                            + " AND legislativeCountry=\"England\""
             )
             .label("possessionReasons-lineSeparator","---")
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
@@ -295,7 +297,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                            + "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
             .done()
                 .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
-                .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW);
+                .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW)
+                .label("secureOrFlexibleGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
     }
 

@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration {
 
@@ -19,9 +20,11 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
             .pageLabel(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel())
             .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                                + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                               + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
+                               + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\""
+                               + " AND legislativeCountry=\"England\"")
             .label("rentArrearsOrBreachOfTenancyGround-lineSeparator", "---")
-            .mandatory(PCSCase::getRentArrearsOrBreachOfTenancy);
+            .mandatory(PCSCase::getRentArrearsOrBreachOfTenancy)
+            .label("rentArrearsOrBreachOfTenancyGround-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

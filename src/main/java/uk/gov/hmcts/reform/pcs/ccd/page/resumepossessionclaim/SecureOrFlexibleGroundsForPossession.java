@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAl
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.List;
 import java.util.Set;
@@ -24,7 +25,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         pageBuilder
             .page("secureOrFlexibleGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\"")
+            .showCondition("(typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\")"
+                        + " AND legislativeCountry=\"England\"")
             .label("secureOrFlexibleGroundsForPossession-info", """
                ---
                <p class="govuk-body" tabindex="0">
@@ -36,7 +38,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
             .optional(PCSCase::getSecureOrFlexibleMandatoryGrounds)
             .optional(PCSCase::getSecureOrFlexibleMandatoryGroundsAlt)
-            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlt);
+            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlt)
+            .label("secureOrFlexibleGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -60,8 +63,10 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                 );
 
         // Control Rent Details page visibility based on Ground 1 selection
+        // Always reset visibility to NO here; the next page will enable it if needed
+        caseData.setShowRentDetailsPage(YesOrNo.NO);
         if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
-            // Ground 1 not selected - clear rent arrears data and hide rent details page
+            // Ground 1 not selected - clear rent arrears data
             caseData.setRentArrearsOrBreachOfTenancy(Set.of());
             caseData.setShowRentDetailsPage(YesOrNo.NO);
         } else {

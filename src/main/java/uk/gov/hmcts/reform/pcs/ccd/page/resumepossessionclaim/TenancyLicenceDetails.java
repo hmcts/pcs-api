@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
@@ -57,7 +58,8 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
                 </p>
                """)
             .optional(PCSCase::getTenancyLicenceDocuments)
-            .label("lineSeparator", "---");
+            .label("lineSeparator", "---")
+            .label("tenancyLicenceDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
