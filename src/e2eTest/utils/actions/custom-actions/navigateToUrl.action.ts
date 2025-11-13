@@ -17,6 +17,28 @@ export class NavigateToUrlAction implements IAction {
       await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT }).catch(() => {
         return page.waitForLoadState('load', { timeout: LONG_TIMEOUT });
       });
+
+      // Verify we're not on a login page - if we are, the session wasn't loaded properly
+      const currentUrl = page.url();
+      if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') || currentUrl.includes('idam-web-public')) {
+        throw new Error(
+          `Navigation resulted in login page instead of authenticated page. ` +
+          `Current URL: ${currentUrl}. ` +
+          `This indicates the storage state (session) was not loaded properly. ` +
+          `Check that global-setup ran successfully and created .auth/storage-state.json`
+        );
+      }
+
+      // Wait for authenticated page elements (case list or similar)
+      await page.waitForURL('**/cases**', { timeout: LONG_TIMEOUT }).catch(() => {
+        // If not on /cases, wait for any authenticated page indicator
+        return page.waitForFunction(
+          () => !window.location.href.includes('/login') && 
+                !window.location.href.includes('/sign-in') &&
+                !window.location.href.includes('idam-web-public'),
+          { timeout: LONG_TIMEOUT }
+        );
+      });
     });
   }
 }

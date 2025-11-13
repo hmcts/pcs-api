@@ -63,7 +63,24 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       return page.waitForLoadState('load', { timeout: 30000 });
     });
 
-    console.log('Login successful and session saved!');
+    // Verify storage state file was created and contains cookies
+    if (fs.existsSync(storageStatePath)) {
+      const stateContent = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
+      const cookieCount = Array.isArray(stateContent?.cookies) ? stateContent.cookies.length : 0;
+      console.log(`Login successful! Session saved to ${storageStatePath} with ${cookieCount} cookies.`);
+      
+      // Log session cookie if present
+      const sessionCookie = stateContent?.cookies?.find((c: any) => 
+        c.name === SESSION_COOKIE_NAME || c.name?.includes('Session')
+      );
+      if (sessionCookie) {
+        console.log(`Session cookie found: ${sessionCookie.name} (domain: ${sessionCookie.domain})`);
+      } else {
+        console.warn('Warning: No session cookie found in storage state!');
+      }
+    } else {
+      throw new Error(`Storage state file was not created at ${storageStatePath}`);
+    }
 
   } catch (error) {
     console.error('Failed to setup authentication:', error);
