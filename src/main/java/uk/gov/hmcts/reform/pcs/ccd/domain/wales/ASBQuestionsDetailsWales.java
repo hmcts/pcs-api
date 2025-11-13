@@ -51,7 +51,7 @@ public class ASBQuestionsDetailsWales {
     private VerticalYesNo otherProhibitedConduct;
 
     @CCD(
-        label = "Give details of other prohibited conduct",
+        label = "Give details of the other prohibited conduct",
         hint = "You can enter up to 500 characters",
         typeOverride = TextArea
     )
