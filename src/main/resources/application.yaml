@@ -142,14 +142,14 @@ doc_assembly:
 rd-professional:
   api-url: ${RD_PROFESSIONAL_API_URL:http://rd-professional-api-aat.service.core-compute-aat.internal}
 
-fees-register:
+fees:
   api:
     url: ${FEES_REGISTER_API_URL:http://localhost:8991}
-  fees:
+    service: possession claim
+    jurisdiction1: civil
+    jurisdiction2: county court
+  lookup:
     caseIssueFee:
-      service: possession claim
-      jurisdiction1: civil
-      jurisdiction2: county court
       channel: default
       event: issue
       applicantType: all
@@ -158,3 +158,11 @@ fees-register:
   request:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+
+payments:
+  api:
+    url: ${PAYMENT_API_URL:http://localhost:8083}
+    callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:8096/service-request-update}
+  params:
+    organisationUrn: Mortgage and Landlord Possession Claims
+    hmctsOrgId: AAA3

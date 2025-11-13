@@ -1,4 +1,4 @@
-import {IAction} from '../interfaces/action.interface';
+import {IAction} from '@utils/interfaces';
 import {ClickTabAction} from '@utils/actions/element-actions/clickTab.action';
 import {InputTextAction} from '@utils/actions/element-actions/inputText.action';
 import {CheckAction} from '@utils/actions/element-actions/check.action';
@@ -15,7 +15,7 @@ import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCoo
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 
 export class ActionRegistry {
-  private static actions: Map<string, IAction> = new Map([
+  private static actions: Map<string, IAction> = new Map<string, IAction>([
     ['clickButton', new ClickButtonAction()],
     ['clickButtonAndVerifyPageNavigation', new ClickButtonAction()],
     ['verifyPageAndClickButton', new ClickButtonAction()],
@@ -31,6 +31,7 @@ export class ActionRegistry {
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],
+    ['submitAddressCheckYourAnswers', new CreateCaseAction()],
     ['extractCaseIdFromAlert', new CreateCaseAction()],
     ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],

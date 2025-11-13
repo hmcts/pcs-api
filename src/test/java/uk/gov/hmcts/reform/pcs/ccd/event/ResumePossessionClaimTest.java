@@ -31,12 +31,18 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
@@ -45,6 +51,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -113,6 +123,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
     @Mock
+    private IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
+    @Mock
+    private RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
+    @Mock
+    private SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
+    @Mock
     private DefendantCircumstancesPage defendantCircumstancesPage;
     @Mock
     private SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
@@ -132,6 +148,18 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
+    @Mock
+    private GroundsForPossessionWales groundsForPossessionWales;
+    @Mock
+    private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    @Mock
+    private ReasonsForPosessionWales reasonsForPosessionWales;
+    @Mock
+    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    @Mock
+    private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    @Mock
+    private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -152,10 +180,17 @@ class ResumePossessionClaimTest extends BaseEventTest {
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
             secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
-            introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
+            introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
+            rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
+            defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
             statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
             claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
-            draftCaseDataService, occupationLicenceDetailsWalesPage, addressFormatter
+            draftCaseDataService, occupationLicenceDetailsWalesPage,
+            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPosessionWales,
+            addressFormatter,
+            rentArrearsGroundsForPossession,
+            rentArrearsGroundForPossessionAdditionalGrounds,
+            noRentArrearsGroundsForPossessionOptions
         );
 
         setEventUnderTest(underTest);
@@ -317,7 +352,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldCreateMainClaimInSubmitCallback() {
         // Given
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
@@ -335,6 +369,30 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(claimService).createMainClaimEntity(caseData, partyEntity);
+    }
+
+    @Test
+    void shouldScheduleFeeTaskInSubmitCallback() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+            .thenReturn(partyEntity);
+
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);
+
+        PCSCase caseData = PCSCase.builder()
+            .organisationName("Org Ltd")
+            .build();
+
+        // When
+        callSubmitHandler(caseData);
+
+        // Then
+        verify(schedulerClient).scheduleIfNotExists(any());
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {

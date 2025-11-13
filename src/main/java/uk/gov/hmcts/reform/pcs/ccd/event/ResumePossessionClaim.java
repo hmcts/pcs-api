@@ -25,6 +25,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
@@ -88,7 +90,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -103,6 +105,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
 @Component
@@ -127,6 +130,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MediationAndSettlement mediationAndSettlement;
     private final ClaimantCircumstancesPage claimantCircumstancesPage;
     private final IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
+    private final RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
+    private final SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
     private final DefendantCircumstancesPage defendantCircumstancesPage;
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
@@ -137,7 +143,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
+    private final GroundsForPossessionWales groundsForPossessionWales;
+    private final SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    private final ReasonsForPosessionWales reasonsForPosessionWales;
     private final AddressFormatter addressFormatter;
+    private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -166,19 +178,20 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(occupationLicenceDetailsWalesPage)
-            .add(new GroundsForPossessionWales())
-            .add(new SecureContractGroundsForPossessionWales())
-            .add(new ReasonsForPosessionWales())
+            .add(groundsForPossessionWales)
+            .add(secureContractGroundsForPossessionWales)
+            .add(reasonsForPosessionWales)
+            .add(new ASBQuestionsWales())
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
-            .add(new IntroductoryDemotedOrOtherGroundsForPossession())
+            .add(introductoryDemotedOrOtherGroundsForPossession)
             .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
-            .add(new RentArrearsGroundsForPossession())
-            .add(new RentArrearsGroundForPossessionAdditionalGrounds())
-            .add(new RentArrearsGroundsForPossessionReasons())
-            .add(new NoRentArrearsGroundsForPossessionOptions())
+            .add(rentArrearsGroundsForPossession)
+            .add(rentArrearsGroundForPossessionAdditionalGrounds)
+            .add(rentArrearsGroundsForPossessionReasons)
+            .add(noRentArrearsGroundsForPossessionOptions)
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
             .add(mediationAndSettlement)
@@ -199,7 +212,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SuspensionToBuyDemotionOfTenancyActs())
             .add(statementOfExpressTerms)
             .add(demotionOfTenancyOrderReason)
-            .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
+            .add(suspensionToBuyDemotionOfTenancyOrderReasons)
             .add(new ClaimingCosts())
             .add(additionalReasonsForPossession)
             .add(new UnderlesseeMortgageeEntitledToClaimRelief())
@@ -251,7 +264,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);
-        caseData.setFormattedClaimantContactAddress(addressFormatter.getFormattedAddress(caseData));
+        caseData.setFormattedClaimantContactAddress(addressFormatter
+            .formatAddressWithHtmlLineBreaks(caseData.getPropertyAddress()));
 
         return caseData;
     }
@@ -284,14 +298,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
-        String taskId = UUID.randomUUID().toString();
-
-        schedulerClient.scheduleIfNotExists(
-            FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR
-                .instance(taskId)
-                .data(CASE_ISSUED_FEE_TYPE)
-                .scheduledTo(Instant.now())
-        );
+        scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
 
         return SubmitResponse.defaultResponse();
     }
@@ -316,6 +323,24 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             contactEmail,
             contactAddress,
             pcsCase.getClaimantContactPhoneNumber()
+        );
+    }
+
+    private void scheduleCaseIssuedFeeTask(long caseReference, String responsibleParty) {
+        String taskId = UUID.randomUUID().toString();
+
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeType(CASE_ISSUED_FEE_TYPE)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(String.valueOf(caseReference))
+            .responsibleParty(responsibleParty)
+            .build();
+
+        schedulerClient.scheduleIfNotExists(
+            FEE_CASE_ISSUED_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(taskData)
+                .scheduledTo(Instant.now())
         );
     }
 }
