@@ -15,6 +15,7 @@ export class PageContentValidation implements IValidation {
   private static validationResults = new Map<string, ValidationResult[]>();
   private static validationExecuted = false;
   private static missingDataFiles = new Set<string>();
+  private static testCounter = 0;
 
   private readonly locatorPatterns = {
     Button: (page: Page, value: string) => page.locator(`
@@ -211,10 +212,23 @@ export class PageContentValidation implements IValidation {
   }
 
   static finalizeTest(): void {
-    if (this.validationExecuted) return;
+    PageContentValidation.testCounter++;
+
+    if (this.validationExecuted && this.validationResults.size === 0 && this.missingDataFiles.size === 0) {
+      return;
+    }
+
     this.validationExecuted = true;
 
     const allResults = Array.from(this.validationResults.entries());
+
+    const hasValidationResults = this.validationResults.size > 0;
+    const hasMissingFiles = this.missingDataFiles.size > 0;
+
+    if (!hasValidationResults && !hasMissingFiles) {
+      this.clearValidationResults();
+      return;
+    }
 
     const failedPages = new Map<string, Map<string, string[]>>();
     const passedPages = new Set<string>();
@@ -245,14 +259,25 @@ export class PageContentValidation implements IValidation {
     const failedCount = failedPages.size;
     const missingFilesCount = this.missingDataFiles.size;
 
-    console.log(`\n📊 PAGE CONTENT VALIDATION SUMMARY:`);
+    console.log(`\n📊 PAGE CONTENT VALIDATION SUMMARY (Test #${this.testCounter}):`);
     console.log(`   Total pages validated: ${totalValidated}`);
-    console.log(`   Passed pages: ${passedCount}`);
-    console.log(`   Failed pages: ${failedCount}`);
+    console.log(`   Number of pages passed: ${passedCount}`);
+    console.log(`   Number of pages failed: ${failedCount}`);
     console.log(`   Missing data files: ${missingFilesCount}`);
-    console.log(`   Passed pages: ${Array.from(passedPages).join(', ') || 'None'}`);
-    console.log(`   Failed pages: ${Array.from(failedPages.keys()).join(', ') || 'None'}`);
-    console.log(`   Page files not found: ${Array.from(this.missingDataFiles).join(', ') || 'None'}`);
+
+    if (passedCount > 0) {
+      console.log(`   Passed pages: ${Array.from(passedPages).join(', ') || 'None'}`);
+    }
+
+    if (failedCount > 0) {
+      console.log(`   Failed pages: ${Array.from(failedPages.keys()).join(', ') || 'None'}`);
+    }
+
+    if (missingFilesCount > 0) {
+      console.log(`   Page files not found: ${Array.from(this.missingDataFiles).join(', ') || 'None'}`);
+    }
+
+    process.stdout.write('');
 
     if (failedPages.size > 0) {
       console.log(`\n❌ VALIDATION FAILED:\n`);
@@ -268,10 +293,17 @@ export class PageContentValidation implements IValidation {
         console.log(`     Total missing on this page: ${pageFailureCount}\n`);
       }
 
+      process.stdout.write('');
       throw new Error(`Page content validation failed: ${failedPages.size} pages have missing elements`);
-    } else {
+    } else if (totalValidated > 0) {
       console.log(`\n✅ VALIDATION PASSED: All intended pages validated successfully!`);
+      process.stdout.write('');
+    } else if (missingFilesCount > 0) {
+      console.log(`\n⚠️  NO VALIDATION: Missing data files for all pages`);
+      process.stdout.write('');
     }
+
+    this.clearValidationResults();
   }
 
   private static getPageNameFromUrlSync(url: string): string {
