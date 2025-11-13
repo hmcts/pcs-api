@@ -31,7 +31,7 @@ public class EnforcementOrderEntity {
     private UUID id;
 
     @ManyToOne(fetch = LAZY)
-    @JoinColumn(name = "enf_case_id", nullable = false)
+    @JoinColumn(name = "claim_id", nullable = false)
     @JsonBackReference
     private ClaimEntity claim;
 
