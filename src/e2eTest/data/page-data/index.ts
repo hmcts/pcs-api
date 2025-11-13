@@ -65,4 +65,4 @@ export * from '@data/page-data/caseList.page.data';
 export * from '@data/page-data/caseSummary.page.data';
 export * from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 export * from '@data/page-data/prohibitedConductStandardContractWales.page.data';
-export * from '@data/page-data/antiSocialBehaviourWales.page.data';
+export * from '@data/page-data/asbQuestionsWales.page.data';

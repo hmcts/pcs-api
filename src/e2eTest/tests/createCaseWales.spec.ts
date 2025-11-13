@@ -41,7 +41,7 @@ import {
   occupationContractOrLicenceDetailsWales,
   prohibitedConductStandardContractWales,
   dailyRentAmount,
-  antiSocialBehaviourWales,
+  asbQuestionsWales,
   noticeDetails
 } from '@data/page-data';
 
@@ -313,8 +313,11 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
-    await performValidation('mainHeader', antiSocialBehaviourWales.mainHeader);
-    await performAction('clickButton', antiSocialBehaviourWales.continue);
+    await performAction('selectAbsQuestions', {
+      asb: asbQuestionsWales.yesRadioOption,
+      illegalPurposes: asbQuestionsWales.yesRadioOption,
+      prohibitedConduct: asbQuestionsWales.yesRadioOption
+    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
