@@ -36,6 +36,6 @@ public class EnforcementOrderEntity {
     private ClaimEntity claim;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "submitted_enf_order")
+    @Column(name = "enforcement_order")
     private EnforcementOrder submittedEnforcementOrder;
 }
