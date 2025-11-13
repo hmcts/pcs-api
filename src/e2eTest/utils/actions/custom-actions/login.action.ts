@@ -8,7 +8,7 @@ import * as fs from 'fs';
 // Session configuration
 const SESSION_DIR = path.join(process.cwd(), '.auth');
 const STORAGE_STATE_FILE = 'storage-state.json';
-const SESSION_COOKIE_NAME = process.env.SESSION_COOKIE_NAME || 'Idam.Session';
+const SESSION_COOKIE_NAME = 'Idam.Session';
 
 function getStorageStatePath(): string {
   if (!fs.existsSync(SESSION_DIR)) {
@@ -35,19 +35,15 @@ export class LoginAction implements IAction {
       throw new Error('Login failed: missing credentials');
     }
 
-    const storageStatePath = getStorageStatePath();
-    const currentUrl = page.url();
-    
     // Skip login if already authenticated with valid session
-    if (!currentUrl.includes('/login') && !currentUrl.includes('/sign-in')) {
-      try {
-        if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
-          console.log('Already authenticated with valid session, skipping login');
-          return;
-        }
-      } catch {
-        // Session check failed, proceed with login
+    const storageStatePath = getStorageStatePath();
+    try {
+      if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
+        console.log('Already authenticated with valid session, skipping login');
+        return;
       }
+    } catch {
+      // Session check failed, proceed with login
     }
 
     // Perform login using IdamPage from @hmcts/playwright-common
