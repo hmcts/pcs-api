@@ -12,9 +12,9 @@ export const LONG_TIMEOUT = 30000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
-// Use storage state if it exists (global-setup creates it)
+// Storage state path (global-setup creates it)
+// Always provide the path - Playwright will check if file exists when creating contexts
 const storageStatePath = path.join(process.cwd(), '.auth', 'storage-state.json');
-const storageState = fs.existsSync(storageStatePath) ? storageStatePath : undefined;
 
 export default defineConfig({
   testDir: 'tests/',
@@ -28,7 +28,7 @@ export default defineConfig({
     baseURL: process.env.MANAGE_CASE_BASE_URL || 'http://localhost:3000',
     actionTimeout: process.env.CI ? 60 * 1000 : 30 * 1000,
     navigationTimeout: process.env.CI ? 60 * 1000 : 30 * 1000,
-    ...(storageState ? { storageState } : {})
+    storageState: storageStatePath
   },
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
@@ -58,7 +58,7 @@ export default defineConfig({
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,
-        ...(storageState ? { storageState } : {}),
+        storageState: storageStatePath,
       },
     },
     ...(process.env.CI ? [
@@ -73,7 +73,7 @@ export default defineConfig({
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
           headless: !!process.env.CI,
-          ...(storageState ? { storageState } : {}),
+          storageState: storageStatePath,
         }
       }
     ] : [])

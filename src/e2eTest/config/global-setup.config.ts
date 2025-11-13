@@ -48,6 +48,7 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       sessionFile: storageStatePath,
     });
 
+    // Wait for successful navigation away from login
     await page.waitForURL('**/cases', { timeout: 30000 }).catch(() => {
       return page.waitForFunction(
         () => !window.location.href.includes('/login') && !window.location.href.includes('/sign-in'),
@@ -55,12 +56,31 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
       );
     });
 
+    // Wait for page to be fully loaded
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => {
       return page.waitForLoadState('load', { timeout: 30000 });
     });
 
+    // Save storage state again after navigation to ensure all cookies are captured
+    // IdamPage.login may save before all cookies are set
+    await page.context().storageState({ path: storageStatePath });
+
     if (!fs.existsSync(storageStatePath)) {
       throw new Error(`Storage state file was not created at ${storageStatePath}`);
+    }
+
+    // Verify storage state contains session cookie
+    const storageStateContent = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
+    const hasSessionCookie = storageStateContent.cookies?.some(
+      (cookie: { name: string }) => cookie.name === SESSION_COOKIE_NAME
+    );
+
+    if (!hasSessionCookie) {
+      console.warn(`Warning: Storage state created but ${SESSION_COOKIE_NAME} cookie not found`);
+      console.log('Cookies in storage state:', storageStateContent.cookies?.map((c: { name: string }) => c.name) || 'none');
+    } else {
+      console.log(`✓ Storage state created with ${SESSION_COOKIE_NAME} cookie`);
+      console.log(`✓ Total cookies saved: ${storageStateContent.cookies?.length || 0}`);
     }
 
     console.log('Login successful and session saved!');
