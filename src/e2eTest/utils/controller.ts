@@ -34,24 +34,22 @@ async function detectPageNavigation(): Promise<boolean> {
   return hasNavigated;
 }
 
-async function validatePageIfNavigated(): Promise<void> {
-  const hasNavigated = await detectPageNavigation();
-
-  if (hasNavigated) {
-    await performValidation('autoValidatePageContent');
+async function validatePageIfNavigated(action:string): Promise<void> {
+  if(action.includes('click')) {
+    const hasNavigated = await detectPageNavigation();
+    if (hasNavigated) {
+      await performValidation('autoValidatePageContent');
+    }
   }
 }
 
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
-
-  await validatePageIfNavigated();
-
+   await validatePageIfNavigated(action);
   const actionInstance = ActionRegistry.getAction(action);
   await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
-
-    await validatePageIfNavigated();
+    await validatePageIfNavigated(action);
   });
 }
 
