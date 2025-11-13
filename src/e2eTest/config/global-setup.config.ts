@@ -75,19 +75,66 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     }
 
     // Perform login
-    await page.waitForSelector('h1:has-text("Sign in or create an account")', { timeout: 10000 });
+    console.log('Waiting for login page to be ready...');
+    await page.waitForSelector('h1:has-text("Sign in or create an account")', { timeout: 30000 });
+    
+    console.log('Filling in email and password...');
     await page.getByLabel('Email address').fill(userEmail);
     await page.getByLabel('Password').fill(userPassword);
-    await page.getByRole('button', { name: 'Sign in' }).click();
+    
+    console.log('Clicking Sign in button...');
+    const signInButton = page.getByRole('button', { name: 'Sign in' });
+    await signInButton.waitFor({ state: 'visible', timeout: 10000 });
+    
+    // Wait for any spinners/loaders to be ready
+    await page.waitForTimeout(500);
+    
+    // Click the sign in button
+    await signInButton.click();
+    
+    // Wait for page to start loading (navigation initiated)
+    await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => null);
 
-    // Wait for navigation after login
-    await page.waitForURL('**/cases', { timeout: 30000 }).catch(async () => {
+    console.log('Waiting for navigation after login...');
+    // Wait for navigation after login - this is critical
+    try {
+      await page.waitForURL('**/cases**', { timeout: 60000 });
+      console.log(`Successfully navigated to: ${page.url()}`);
+    } catch (error) {
+      // Check for error messages on the page
+      const errorMessages = await page.locator('.error-summary, .govuk-error-message, [role="alert"]').allTextContents().catch(() => []);
+      if (errorMessages.length > 0) {
+        console.error('Error messages found on page:', errorMessages);
+        throw new Error(`Login failed with errors: ${errorMessages.join(', ')}`);
+      }
+
       // If URL doesn't match, wait for any navigation away from login
-      await page.waitForFunction(
-        () => !window.location.href.includes('/login') && !window.location.href.includes('/sign-in'),
-        { timeout: 30000 }
-      ).catch(() => page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => null));
-    });
+      console.log('Waiting for navigation away from login page...');
+      const navigated = await page.waitForFunction(
+        () => {
+          const href = window.location.href;
+          return !href.includes('/login') && 
+                 !href.includes('/sign-in') &&
+                 !href.includes('idam-web-public');
+        },
+        { timeout: 60000 }
+      ).catch(() => null);
+      
+      if (!navigated) {
+        const currentUrl = page.url();
+        const pageContent = await page.textContent('body').catch(() => null);
+        console.error(`Login failed - still on: ${currentUrl}`);
+        if (pageContent) {
+          console.error(`Page content preview: ${pageContent.substring(0, 200)}...`);
+        }
+        throw new Error(
+          `Login did not complete. Still on login page or redirected incorrectly. ` +
+          `Current URL: ${currentUrl}. ` +
+          `Check if credentials are correct and login flow is working.`
+        );
+      }
+      console.log(`Navigated to: ${page.url()}`);
+    }
 
     // Handle analytics cookies consent if present (non-blocking - continue even if it fails)
     try {
