@@ -20,7 +20,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.describe('[Eligibility Check - Create Case] @regression', async () => {
-  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales @PR', async () => {
+  test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
       addressIndex: addressDetails.addressIndex
@@ -64,7 +64,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Cross border England - Verify postcode not assigned to court - Can not use this service page', async () => {
+  test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
