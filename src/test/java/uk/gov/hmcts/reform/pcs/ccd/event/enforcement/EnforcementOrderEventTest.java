@@ -10,13 +10,11 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -30,14 +28,14 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
     @Mock
-    private EnforcementDataService enforcementDataService;
+    private EnforcementOrderService enforcementOrderService;
 
     private static final long CASE_REFERENCE = 1234L;
 
     @BeforeEach
     void setUp() {
         EnforcementOrderEvent enforcementOrderEvent =
-                new EnforcementOrderEvent(enforcementDataService, addressFormatter);
+                new EnforcementOrderEvent(enforcementOrderService, addressFormatter);
         setEventUnderTest(enforcementOrderEvent);
     }
 
@@ -74,13 +72,10 @@ class EnforcementOrderEventTest extends BaseEventTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
         PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
 
-        EnforcementDataEntity enforcementDataEntity = new EnforcementDataEntity();
-        enforcementDataEntity.setId(UUID.randomUUID());
-
         // When
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(enforcementDataService).createEnforcementData(CASE_REFERENCE, enforcementOrder);
+        verify(enforcementOrderService).createEnforcementOrder(CASE_REFERENCE, enforcementOrder);
     }
 }

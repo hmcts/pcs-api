@@ -7,15 +7,40 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementOrderEntity;
 
 import java.util.Set;
 import java.util.UUID;
 
 final class EnforcementDataUtil {
 
-    static EnforcementOrder buildSampleEnforcementData() {
+    static PcsCaseEntity buildPcsCaseEntity(UUID pcsId, UUID claimId) {
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        pcsCaseEntity.setId(pcsId);
+        pcsCaseEntity.setCaseReference(1234L);
+        pcsCaseEntity.setClaims(Set.of(buildClaimEntity(claimId, pcsCaseEntity)));
+        return pcsCaseEntity;
+    }
+
+    private static ClaimEntity buildClaimEntity(UUID claimId, PcsCaseEntity pcsCase) {
+        ClaimEntity claimEntity = new ClaimEntity();
+        claimEntity.setId(claimId);
+        claimEntity.setPcsCase(pcsCase);
+        return claimEntity;
+    }
+
+    static EnforcementOrderEntity buildEnforcementOrderEntity(UUID enfId, ClaimEntity claimEntity,
+            EnforcementOrder enforcementOrder) {
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+        enforcementOrderEntity.setId(enfId);
+        enforcementOrderEntity.setClaim(claimEntity);
+        enforcementOrderEntity.setSubmittedEnforcementOrder(enforcementOrder);
+        return enforcementOrderEntity;
+    }
+
+    static EnforcementOrder buildEnforcementOrder() {
         return EnforcementOrder.builder()
                 .selectEnforcementType(SelectEnforcementType.WARRANT)
                 .anyRiskToBailiff(YesNoNotSure.YES)
@@ -29,27 +54,5 @@ final class EnforcementDataUtil {
                         .enforcementVerbalOrWrittenThreatsDetails("Verbal")
                         .build())
                 .build();
-    }
-
-    static EnforcementDataEntity buildSampleEnforcementDataEntity(UUID enfId, UUID pcsId) {
-        EnforcementDataEntity enforcementDataEntity = new EnforcementDataEntity();
-        enforcementDataEntity.setId(enfId);
-        enforcementDataEntity.setPcsCase(buildPcsCaseEntity(pcsId));
-        enforcementDataEntity.setEnforcementData("{"
-                + "\"selectEnforcementType\":\"WARRANT\","
-                + "\"correctNameAndAddress\":\"YES\","
-                + "\"anyRiskToBailiff\":\"YES\","
-                + "\"enforcementRiskCategories\":[\"VERBAL_OR_WRITTEN_THREATS\",\"VIOLENT_OR_AGGRESSIVE\"],"
-                + "\"enforcementViolentDetails\":\"Violent\","
-                + "\"enforcementVerbalOrWrittenThreatsDetails\":\"Verbal\""
-                + "}");
-        return enforcementDataEntity;
-    }
-
-    static PcsCaseEntity buildPcsCaseEntity(UUID pcsId) {
-        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        pcsCaseEntity.setId(pcsId);
-        pcsCaseEntity.setCaseReference(1234L);
-        return pcsCaseEntity;
     }
 }

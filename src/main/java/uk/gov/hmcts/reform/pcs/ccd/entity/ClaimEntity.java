@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementOrderEntity;
 
 import java.util.HashSet;
 import java.util.List;
@@ -92,6 +93,11 @@ public class ClaimEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     private ProhibitedConductWales prohibitedConduct;
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private Set<EnforcementOrderEntity> enforcementDataEntities = new HashSet<>();
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
