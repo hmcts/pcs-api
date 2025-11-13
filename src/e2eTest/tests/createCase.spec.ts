@@ -32,7 +32,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
-  PageContentValidation.finalizeTest();
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Create Case - England] @Master @nightly', async () => {
