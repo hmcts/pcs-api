@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -74,12 +73,8 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
         CaseDetails<PCSCase, State> before) {
         
         // Always return an error to block progression
-        List<String> errors = new ArrayList<>();
-        errors.add(ERROR_MESSAGE);
-        
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(details.getData())
-            .errors(errors)
+            .errors(List.of(ERROR_MESSAGE))
             .build();
     }
 }
