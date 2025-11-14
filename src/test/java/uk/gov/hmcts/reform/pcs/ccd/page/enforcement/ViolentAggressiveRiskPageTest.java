@@ -68,7 +68,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
                                       RiskCategory.VIOLENT_OR_AGGRESSIVE.getText(),
-                                      RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);
+                                      "6,800");
 
         // Then
         assertThat(response.getErrors()).containsExactly(expectedError);
