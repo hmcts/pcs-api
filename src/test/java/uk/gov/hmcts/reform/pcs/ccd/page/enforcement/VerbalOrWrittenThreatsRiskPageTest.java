@@ -58,7 +58,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                                   .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
-                                  .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails
+                                  .riskDetails(EnforcementRiskDetails
                                                    .builder()
                                                    .enforcementVerbalOrWrittenThreatsDetails(longText)
                                                    .build())
