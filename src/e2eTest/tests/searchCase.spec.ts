@@ -25,7 +25,7 @@ test.afterEach(async () => {
 });
 
 //Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
-test.describe.skip('[Search Case] @PR @Master @nightly', () => {
+test.describe.skip('[Search Case] @regression', () => {
   test('Search for case via caselist', async ({}) => {
     await performAction('searchCaseFromCaseList', caseInfo.id);
     await performValidation(

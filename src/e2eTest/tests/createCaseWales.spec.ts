@@ -67,8 +67,8 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - Wales] @Master @nightly', async () => {
-  test('Wales - Secure contract - Rent arrears only', async () => {
+test.describe('[Create Case - Wales] @regression', async () => {
+  test('Wales - Secure contract - Rent arrears only @PR', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
