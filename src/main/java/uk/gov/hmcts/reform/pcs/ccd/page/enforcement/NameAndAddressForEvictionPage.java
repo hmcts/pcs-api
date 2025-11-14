@@ -57,12 +57,6 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                           </main>
                         </div>
                 """)
-            .label(
-                "nameAndAddressForEviction-confirmation",
-                """
-                ---
-                <h2 class="govuk-heading-m">Is this the correct name and address for the eviction?</h2>
-                """)
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getNameAndAddressForEviction)
             .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
