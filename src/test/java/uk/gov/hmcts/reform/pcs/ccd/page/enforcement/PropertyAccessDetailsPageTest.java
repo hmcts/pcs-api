@@ -87,7 +87,8 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
 
         // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
-                                             "Explain why it's difficult to access the property", "6,800");
+                                             "Explain why it's difficult to access the property",
+                                             "6,800");
 
         assertThat(response.getErrors()).containsExactly(expectedError);
     }

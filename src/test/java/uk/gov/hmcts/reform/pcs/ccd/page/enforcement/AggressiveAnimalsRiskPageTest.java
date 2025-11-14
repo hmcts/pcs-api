@@ -68,7 +68,8 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
 
         // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
-                                             RiskCategory.AGGRESSIVE_ANIMALS.getText(), "6,800");
+                                             RiskCategory.AGGRESSIVE_ANIMALS.getText(),
+                                             "6,800");
 
         assertThat(response.getErrors()).containsExactly(expectedError);
     }

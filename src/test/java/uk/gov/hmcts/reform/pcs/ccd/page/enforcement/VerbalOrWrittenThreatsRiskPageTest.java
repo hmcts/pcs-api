@@ -70,7 +70,8 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
 
         // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
-                                             RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(), "6,800");
+                                             RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),
+                                             "6,800");
 
         assertThat(response.getErrors()).containsExactly(expectedError);
     }
