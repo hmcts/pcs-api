@@ -714,20 +714,21 @@ export class CreateCaseAction implements IAction {
 
   private async selectStatementOfTruth(claimantDetails: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
-      question: claimantDetails.completedBy,
-      option: claimantDetails.option
+      question: statementOfTruth.completedByLabel,
+      option: claimantDetails.completedBy
     });
-    if(claimantDetails.option == statementOfTruth.claimantRadioOption){
-      await performAction('check', statementOfTruth.iBelieveTheFactsHiddenCheckbox);
-      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, statementOfTruth.fullNameHiddenTextInput);
-      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, statementOfTruth.positionOrOfficeHeldHiddenTextInput);
+    if(claimantDetails.completedBy == statementOfTruth.claimantRadioOption){
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
-    if(claimantDetails.option == statementOfTruth.claimantLegalRepresentativeRadioOption){
-      await performAction('check', statementOfTruth.signThisStatementHiddenCheckbox);
-      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, statementOfTruth.fullNameHiddenTextInput);
-      await performAction('inputText', statementOfTruth.nameOfFirmHiddenTextLabel, statementOfTruth.nameOfFirmHiddenTextInput);
-      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, statementOfTruth.positionOrOfficeHeldHiddenTextInput);
+    if(claimantDetails.completedBy == statementOfTruth.claimantLegalRepresentativeRadioOption){
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruth.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
     await performAction('clickButton', statementOfTruth.continueButton);
   }
