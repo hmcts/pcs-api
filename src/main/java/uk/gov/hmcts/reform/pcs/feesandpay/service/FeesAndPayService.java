@@ -32,6 +32,9 @@ public class FeesAndPayService {
     @Value("${payments.api.callback-url}")
     private String callbackUrl;
 
+    @Value("${payments.api.url}")
+    private String feeAndPayUrl;
+
     @Value("${payments.params.hmctsOrgId}")
     private String hmctsOrgId;
 
@@ -45,6 +48,9 @@ public class FeesAndPayService {
      */
     public FeeLookupResponseDto getFee(String feeTypeKey) {
         log.debug("Requesting fee of type: {}", feeTypeKey);
+        log.error("FEE AND PAY URL: {}", feeAndPayUrl);
+        log.error("FEE AND PAY CALLBACK URL: {}", callbackUrl);
+
         LookUpReferenceData ref = feesConfiguration.getLookup(feeTypeKey);
 
         if (ref == null) {
