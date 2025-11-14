@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -72,8 +73,9 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
         @DisplayName("Should accept valid selection with one defendant")
         void shouldAcceptValidSelectionWithOneDefendant() {
             // Given
+            String defendantCode = UUID.randomUUID().toString();
             DynamicStringListElement element1 = DynamicStringListElement.builder()
-                .code("0")
+                .code(defendantCode)
                 .label("John Doe")
                 .build();
             PCSCase caseData = PCSCase.builder()
@@ -94,7 +96,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
                 response.getData().getEnforcementOrder().getSelectedDefendants();
             assertThat(selected).isNotNull();
             assertThat(selected.getValue()).hasSize(1);
-            assertThat(selected.getValue().get(0).getCode()).isEqualTo("0");
+            assertThat(selected.getValue().get(0).getCode()).isEqualTo(defendantCode);
             assertThat(selected.getValue().get(0).getLabel()).isEqualTo("John Doe");
         }
 
@@ -102,12 +104,14 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
         @DisplayName("Should accept valid selection with multiple defendants")
         void shouldAcceptValidSelectionWithMultipleDefendants() {
             // Given
+            String defendantCode1 = UUID.randomUUID().toString();
+            String defendantCode2 = UUID.randomUUID().toString();
             DynamicStringListElement element1 = DynamicStringListElement.builder()
-                .code("0")
+                .code(defendantCode1)
                 .label("John Doe")
                 .build();
             DynamicStringListElement element2 = DynamicStringListElement.builder()
-                .code("1")
+                .code(defendantCode2)
                 .label("Jane Smith")
                 .build();
             PCSCase caseData = PCSCase.builder()
@@ -131,7 +135,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             assertThat(selected.getValue().stream()
                 .map(DynamicStringListElement::getCode)
                 .toList())
-                .containsExactlyInAnyOrder("0", "1");
+                .containsExactlyInAnyOrder(defendantCode1, defendantCode2);
         }
     }
 }

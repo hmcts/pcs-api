@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -117,13 +118,12 @@ public class DefendantService {
         }
         
         List<DynamicStringListElement> listItems = new ArrayList<>();
-        for (int i = 0; i < allDefendants.size(); i++) {
-            ListValue<DefendantDetails> listValue = allDefendants.get(i);
+        for (ListValue<DefendantDetails> listValue : allDefendants) {
             DefendantDetails defendantDetails = listValue.getValue();
             String defendantName = buildDefendantDisplayName(defendantDetails);
             
             listItems.add(DynamicStringListElement.builder()
-                .code(String.valueOf(i))
+                .code(UUID.randomUUID().toString())
                 .label(defendantName)
                 .build());
         }

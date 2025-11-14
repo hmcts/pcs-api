@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -441,7 +442,9 @@ class DefendantServiceTest {
 
             // Then
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getCode()).isEqualTo("0");
+            assertThat(result.get(0).getCode()).matches(Pattern.compile(
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                Pattern.CASE_INSENSITIVE));
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
         }
 
@@ -476,12 +479,18 @@ class DefendantServiceTest {
 
             // Then
             assertThat(result).hasSize(3);
-            assertThat(result.get(0).getCode()).isEqualTo("0");
+            Pattern uuidPattern = Pattern.compile(
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                Pattern.CASE_INSENSITIVE);
+            assertThat(result.get(0).getCode()).matches(uuidPattern);
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
-            assertThat(result.get(1).getCode()).isEqualTo("1");
+            assertThat(result.get(1).getCode()).matches(uuidPattern);
             assertThat(result.get(1).getLabel()).isEqualTo("Jane Smith");
-            assertThat(result.get(2).getCode()).isEqualTo("2");
+            assertThat(result.get(2).getCode()).matches(uuidPattern);
             assertThat(result.get(2).getLabel()).isEqualTo("Name not known");
+            // Ensure all codes are unique
+            assertThat(result.stream().map(DynamicStringListElement::getCode).distinct())
+                .hasSize(3);
         }
 
         @Test
@@ -529,16 +538,22 @@ class DefendantServiceTest {
 
             // Then
             assertThat(result).hasSize(5);
-            assertThat(result.get(0).getCode()).isEqualTo("0");
+            Pattern uuidPattern = Pattern.compile(
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                Pattern.CASE_INSENSITIVE);
+            assertThat(result.get(0).getCode()).matches(uuidPattern);
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
-            assertThat(result.get(1).getCode()).isEqualTo("1");
+            assertThat(result.get(1).getCode()).matches(uuidPattern);
             assertThat(result.get(1).getLabel()).isEqualTo("Jane");
-            assertThat(result.get(2).getCode()).isEqualTo("2");
+            assertThat(result.get(2).getCode()).matches(uuidPattern);
             assertThat(result.get(2).getLabel()).isEqualTo("Smith");
-            assertThat(result.get(3).getCode()).isEqualTo("3");
+            assertThat(result.get(3).getCode()).matches(uuidPattern);
             assertThat(result.get(3).getLabel()).isEqualTo("Unknown");
-            assertThat(result.get(4).getCode()).isEqualTo("4");
+            assertThat(result.get(4).getCode()).matches(uuidPattern);
             assertThat(result.get(4).getLabel()).isEqualTo("Name not known");
+            // Ensure all codes are unique
+            assertThat(result.stream().map(DynamicStringListElement::getCode).distinct())
+                .hasSize(5);
         }
 
         @Test
@@ -554,7 +569,9 @@ class DefendantServiceTest {
 
             // Then
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getCode()).isEqualTo("0");
+            assertThat(result.get(0).getCode()).matches(Pattern.compile(
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                Pattern.CASE_INSENSITIVE));
             assertThat(result.get(0).getLabel()).isEqualTo("Unknown");
         }
     }
