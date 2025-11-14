@@ -13,7 +13,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
-      ['selectAbsQuestions', () => this.selectAbsQuestions(fieldName as actionRecord)]
+      ['selectAsbQuestions', () => this.selectAsbQuestions(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -81,11 +81,11 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     await performAction('clickButton', claimantDetailsWales.continue);
   }
 
-  private async selectAbsQuestions(asbQuestions: actionRecord) {
+  private async selectAsbQuestions(asbQuestions: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {
       elementType: 'paragraph',
-      text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
     });
     await performAction('clickRadioButton', {
       question: asbQuestionsWales.isThereActualOrThreatenedAsbQuestion,

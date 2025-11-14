@@ -84,7 +84,7 @@ export class ActionRegistry {
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
-    ['selectAbsQuestions', new CreateCaseWalesAction()]
+    ['selectAsbQuestions', new CreateCaseWalesAction()]
   ]);
 
   static getAction(actionName: string): IAction {

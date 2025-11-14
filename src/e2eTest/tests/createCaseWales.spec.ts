@@ -42,7 +42,7 @@ import {
   prohibitedConductStandardContractWales,
   dailyRentAmount,
   asbQuestionsWales,
-  noticeDetails
+  noticeDetails,
   addressCheckYourAnswers
 } from '@data/page-data';
 
@@ -320,7 +320,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
-    await performAction('selectAbsQuestions', {
+    await performAction('selectAsbQuestions', {
       asb: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
       illegalPurposes: asbQuestionsWales.yesRadioOption, giveDetailsOfIllegal: asbQuestionsWales.giveDetailsOfIllegalHiddenTextInput,
       prohibitedConduct: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
