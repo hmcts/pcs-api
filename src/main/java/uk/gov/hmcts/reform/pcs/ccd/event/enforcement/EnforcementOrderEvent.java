@@ -109,7 +109,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         }
     }
 
-    private void populateDefendantSelectionList(PCSCase caseData) {
+    void populateDefendantSelectionList(PCSCase caseData) {
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
         var allDefendants = caseData.getAllDefendants();
         List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
