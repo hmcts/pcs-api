@@ -31,9 +31,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static uk.gov.hmcts.reform.pcs.ccd.util.CurrencyFormatter.formatAsCurrency;
 
 @Slf4j
 @Component
@@ -42,6 +44,10 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     // Business requirements to be agreed on for the conditions when this event can be triggered
 
     private final AddressFormatter addressFormatter;
+    private final FeesAndPayService feesAndPayService;
+    private static final String ENFORCEMENT_WARRANT_TYPE = "enforcementWarrantFee";
+    private static final String ENFORCEMENT_WRIT_TYPE = "enforcementWritFee";
+
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -83,6 +89,26 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
         if (caseData.getDefendants() != null && !caseData.getDefendants().isEmpty()) {
             caseData.setDefendant1(caseData.getDefendants().getFirst().getValue());
+        }
+
+        try {
+            caseData.getEnforcementOrder().setWarrantFeeAmount(formatAsCurrency(
+                feesAndPayService.getFee(ENFORCEMENT_WARRANT_TYPE).getFeeAmount()
+            ));
+        } catch (Exception e) {
+            // Fallback to default fee if API is unavailable (during config generation)
+            log.error("Error while getting warrant fee", e);
+            caseData.getEnforcementOrder().setWarrantFeeAmount(formatAsCurrency(null));
+        }
+
+        try {
+            caseData.getEnforcementOrder().setWritFeeAmount(formatAsCurrency(
+                feesAndPayService.getFee(ENFORCEMENT_WRIT_TYPE).getFeeAmount()
+            ));
+        } catch (Exception e) {
+            // Fallback to default fee if API is unavailable (during config generation)
+            log.error("Error while getting writ fee", e);
+            caseData.getEnforcementOrder().setWritFeeAmount(formatAsCurrency(null));
         }
         return caseData;
     }
