@@ -19,7 +19,7 @@ import java.util.Objects;
 @AllArgsConstructor
 public class DefendantService {
 
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     public List<Defendant> buildDefendantsList(PCSCase pcsCase) {
         Objects.requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
