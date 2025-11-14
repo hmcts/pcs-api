@@ -16,6 +16,8 @@ export class PageContentValidation implements IValidation {
   private static validationExecuted = false;
   private static missingDataFiles = new Set<string>();
   private static testCounter = 0;
+  private static pageToFileNameMap = new Map<string, string>();
+  private static pageToHeaderTextMap = new Map<string, string>(); // Track header text for logging
 
   private readonly locatorPatterns = {
     Button: (page: Page, value: string) => page.locator(`
@@ -108,12 +110,14 @@ export class PageContentValidation implements IValidation {
 
   private async getPageData(page: Page): Promise<any> {
     const urlSegment = this.getUrlSegment(page.url());
-    const fileName = await this.getFileName(urlSegment);
+    const fileName = await this.getFileName(urlSegment, page);
 
     if (!fileName) {
       PageContentValidation.missingDataFiles.add(urlSegment);
       return null;
     }
+
+    PageContentValidation.pageToFileNameMap.set(page.url(), fileName);
 
     return this.loadPageDataFile(fileName);
   }
@@ -122,16 +126,14 @@ export class PageContentValidation implements IValidation {
     try {
       const urlObj = new URL(url);
       const segments = urlObj.pathname.split('/').filter(Boolean);
-      let segment = segments[segments.length - 1] || 'home';
-      return /^\d+$/.test(segment) ? 'provideMoreDetailsOfClaim' : segment;
+      return segments[segments.length - 1] || 'home';
     } catch {
       const segments = url.split('/').filter(Boolean);
-      let segment = segments[segments.length - 1] || 'home';
-      return /^\d+$/.test(segment) ? 'provideMoreDetailsOfClaim' : segment;
+      return segments[segments.length - 1] || 'home';
     }
   }
 
-  private async getFileName(urlSegment: string): Promise<string | null> {
+  private async getFileName(urlSegment: string, page: Page): Promise<string | null> {
     try {
       const mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
       if (!fs.existsSync(mappingPath)) return null;
@@ -140,7 +142,42 @@ export class PageContentValidation implements IValidation {
       if (!match) return null;
       const objectString = match[1].replace(/\s+/g, ' ').replace(/,\s*}/g, '}');
       const mapping = eval(`(${objectString})`);
+
+      if (/^\d+$/.test(urlSegment)) {
+        const headerText = await this.getHeaderText(page);
+        if (headerText && mapping[headerText]) {
+          // Store header text for logging
+          PageContentValidation.pageToHeaderTextMap.set(page.url(), headerText);
+          return mapping[headerText];
+        }
+        return null;
+      }
+
       return mapping[urlSegment] || null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async getHeaderText(page: Page): Promise<string | null> {
+    try {
+      const h1Element = page.locator('h1').first();
+      if (await h1Element.isVisible({ timeout: 2000 })) {
+        const h1Text = await h1Element.textContent();
+        if (h1Text && h1Text.trim() !== '') {
+          return h1Text.trim();
+        }
+      }
+
+      const h2Element = page.locator('h2').first();
+      if (await h2Element.isVisible({ timeout: 2000 })) {
+        const h2Text = await h2Element.textContent();
+        if (h2Text && h2Text.trim() !== '') {
+          return h2Text.trim();
+        }
+      }
+
+      return null;
     } catch {
       return null;
     }
@@ -190,7 +227,7 @@ export class PageContentValidation implements IValidation {
     const validatedPages = new Set<string>();
 
     for (const [pageUrl, results] of Array.from(this.validationResults.entries())) {
-      const pageName = this.getPageName(pageUrl);
+      const pageName = this.getPageNameForLogging(pageUrl);
       validatedPages.add(pageName);
 
       const failedResults = results.filter(r => r.status === 'fail');
@@ -251,13 +288,14 @@ export class PageContentValidation implements IValidation {
     this.clearValidationResults();
   }
 
-  private static getPageName(url: string): string {
-    const segments = url.split('/').filter(Boolean);
-    let segment = segments[segments.length - 1] || 'home';
-
-    if (/^\d+$/.test(segment)) {
-      return 'provideMoreDetailsOfClaim';
+  private static getPageNameForLogging(url: string): string {
+    const headerText = this.pageToHeaderTextMap.get(url);
+    if (headerText) {
+      return headerText.replace(/\s+/g, '');
     }
+
+    const segments = url.split('/').filter(Boolean);
+    const segment = segments[segments.length - 1] || 'home';
 
     try {
       const mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
@@ -287,6 +325,8 @@ export class PageContentValidation implements IValidation {
   static clearValidationResults(): void {
     this.validationResults.clear();
     this.missingDataFiles.clear();
+    this.pageToFileNameMap.clear();
+    this.pageToHeaderTextMap.clear();
     this.validationExecuted = false;
   }
 }

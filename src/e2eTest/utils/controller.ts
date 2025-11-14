@@ -23,19 +23,19 @@ async function detectPageNavigation(): Promise<boolean> {
   const executor = getExecutor();
   const currentUrl = executor.page.url();
 
-  const hasNavigated = currentUrl !== previousUrl;
+  const pageNavigated = currentUrl !== previousUrl;
 
-  if (hasNavigated) {
+  if (pageNavigated) {
     previousUrl = currentUrl;
   }
 
-  return hasNavigated;
+  return pageNavigated;
 }
 
 async function validatePageIfNavigated(action:string): Promise<void> {
   if(action.includes('click')) {
-    const hasNavigated = await detectPageNavigation();
-    if (hasNavigated) {
+    const pageNavigated = await detectPageNavigation();
+    if (pageNavigated) {
       await performValidation('autoValidatePageContent');
     }
   }

@@ -1,5 +1,5 @@
 export default {
   'createPossessionClaimstartTheService': 'startTheService',
   'createPossessionClaimenterPropertyAddress': 'enterPropertyAddress',
-  'provideMoreDetailsOfClaim': 'provideMoreDetailsOfClaim'
+  'Provide more details about your claim': 'provideMoreDetailsOfClaim'
 };
