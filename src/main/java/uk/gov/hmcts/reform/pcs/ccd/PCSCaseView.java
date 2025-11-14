@@ -6,9 +6,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -20,8 +17,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
  */
@@ -43,9 +45,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
-    private final PcsCaseService pcsCaseService;
     private final DraftCaseDataService draftCaseDataService;
     private final CaseTitleService caseTitleService;
+    private final DefendantService defendantService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -103,7 +105,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
-            .defendants(pcsCaseService.mapToDefendantDetails(pcsCaseEntity.getDefendants()))
+            .allDefendants(wrapListItems(defendantService.mapToDefendantDetails(pcsCaseEntity.getDefendants())))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);

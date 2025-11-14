@@ -53,9 +53,9 @@ export class MakeClaimAction implements IAction {
         phoneNumber: contactPreferences.no,
       });
       await performAction('defendantDetails', {
-        name: defendantDetails.no,
-        correspondenceAddress: defendantDetails.no,
-        email: defendantDetails.no,
+        name: defendantDetails.noRadioOption,
+        correspondenceAddress: defendantDetails.noRadioOption,
+        email: defendantDetails.noRadioOption,
       });
       await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
       await performAction('selectTenancyOrLicenceDetails', {
