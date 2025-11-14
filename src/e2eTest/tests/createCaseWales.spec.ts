@@ -42,7 +42,8 @@ import {
   prohibitedConductStandardContractWales,
   dailyRentAmount,
   antiSocialBehaviourWales,
-  noticeDetails
+  noticeDetails,
+  addressCheckYourAnswers
 } from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
@@ -61,8 +62,8 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case - Wales] @Master @nightly', async () => {
-  test('Wales - Secure contract - Rent arrears only', async () => {
+test.describe('[Create Case - Wales] @regression', async () => {
+  test('Wales - Secure contract - Rent arrears only @PR', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -70,6 +71,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       country: addressDetails.walesCountryTextInput
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -86,11 +89,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -130,7 +132,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yes,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductStandardContractWales.no,
@@ -167,6 +172,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       country: addressDetails.walesCountryTextInput
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -183,11 +190,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
      await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -234,7 +240,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', prohibitedConductStandardContractWales.mainHeader);
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
@@ -281,6 +290,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       country: addressDetails.walesCountryTextInput
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -297,10 +308,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.no,
-      correspondenceAddress: defendantDetails.no,
-      email: defendantDetails.no,
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.noRadioOption,
+      correspondenceAddressOption: defendantDetails.noRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -341,7 +352,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductStandardContractWales.yes,
@@ -382,6 +396,8 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       country: addressDetails.walesCountryTextInput
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -398,11 +414,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -440,7 +455,10 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductStandardContractWales.no,

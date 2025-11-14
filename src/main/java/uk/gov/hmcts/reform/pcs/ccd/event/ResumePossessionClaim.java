@@ -22,8 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
@@ -53,7 +51,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroun
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
@@ -76,8 +73,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortg
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
@@ -126,6 +125,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MediationAndSettlement mediationAndSettlement;
     private final ClaimantCircumstancesPage claimantCircumstancesPage;
     private final IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
+    private final RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
+    private final SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
     private final DefendantCircumstancesPage defendantCircumstancesPage;
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
@@ -143,7 +145,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
-    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
@@ -185,7 +186,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new GroundsForPossession())
             .add(rentArrearsGroundsForPossession)
             .add(rentArrearsGroundForPossessionAdditionalGrounds)
-            .add(new RentArrearsGroundsForPossessionReasons())
+            .add(rentArrearsGroundsForPossessionReasons)
             .add(noRentArrearsGroundsForPossessionOptions)
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
@@ -207,7 +208,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SuspensionToBuyDemotionOfTenancyActs())
             .add(statementOfExpressTerms)
             .add(demotionOfTenancyOrderReason)
-            .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
+            .add(suspensionToBuyDemotionOfTenancyOrderReasons)
             .add(new ClaimingCosts())
             .add(additionalReasonsForPossession)
             .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())

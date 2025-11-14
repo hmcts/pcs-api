@@ -36,11 +36,13 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroun
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
@@ -121,6 +123,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
     @Mock
+    private IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
+    @Mock
+    private RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
+    @Mock
+    private SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
+    @Mock
     private DefendantCircumstancesPage defendantCircumstancesPage;
     @Mock
     private SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
@@ -154,8 +162,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     @Mock
     private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
-    @Mock
-    private IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -176,7 +182,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
             secureOrFlexibleGroundsForPossessionReasons, mediationAndSettlement, claimantCircumstancesPage,
-            introductoryDemotedOtherGroundsReasons, defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
+            introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
+            rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
+            defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
             statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
             claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
             draftCaseDataService, occupationLicenceDetailsWalesPage,
@@ -185,7 +193,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
             rentArrearsGroundsForPossession,
             rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions,
-            introductoryDemotedOrOtherGroundsForPossession,
             underlesseeOrMortgageePage
         );
 
