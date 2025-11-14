@@ -29,8 +29,7 @@ export class FormLabelValueValidation implements IValidation {
     ];
 
     for (const locator of locators) {
-      if (await locator.count() === 1) {
-        await expect(locator).toBeVisible();
+      if (await locator.count() === 1  && await locator.isVisible()) {
         return locator;
       }
     }

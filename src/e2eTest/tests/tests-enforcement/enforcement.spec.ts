@@ -203,18 +203,24 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     });
   });
 
-   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
-    await performAction('selectApplicationType', {
-      question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+  test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
+    annotation: {
+      type: 'issue',
+      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed ',
+    },
+  },
+    async () => {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+      await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+      await performAction('selectApplicationType', {
+        question: yourApplication.typeOfApplicationQuestion,
+        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+      });
+      await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+      await performAction('selectNameAndAddressForEviction', {
+        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+        option: nameAndAddressForEviction.noRadioOption,
+      });
+      await performValidation('mainHeader', youNeedPermission.mainHeader);
     });
-    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
-    await performAction('selectNameAndAddressForEviction', {
-      question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.noRadioOption,
-    });
-    await performValidation('mainHeader', youNeedPermission.mainHeader);
-  });
 });
