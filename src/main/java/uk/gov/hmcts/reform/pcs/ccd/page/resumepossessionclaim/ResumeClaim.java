@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @Slf4j
 @AllArgsConstructor
@@ -61,7 +62,7 @@ public class ResumeClaim implements CcdPageConfiguration {
         log.debug("Resuming claim - keep existing answers = " + caseData.getResumeClaimKeepAnswers());
 
         if (caseData.getResumeClaimKeepAnswers() == YesOrNo.YES) {
-            draftCaseDataService.getUnsubmittedCaseData(caseReference)
+            draftCaseDataService.getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
                     unsubmittedCaseData -> modelMapper.map(unsubmittedCaseData, caseData),
                     () -> {

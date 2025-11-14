@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -37,6 +38,8 @@ class SelectClaimantTypeTest extends BasePageTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
+
+    private final EventId eventId = EventId.resumePossessionClaim;
 
     @BeforeEach
     void setUp() {
@@ -80,7 +83,7 @@ class SelectClaimantTypeTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId);
         assertThat(caseData.getHasUnsubmittedCaseData()).isEqualTo(NO);
     }
 

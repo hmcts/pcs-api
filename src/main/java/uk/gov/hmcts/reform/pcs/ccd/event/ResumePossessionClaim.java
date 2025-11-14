@@ -79,7 +79,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeMortgag
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
@@ -164,7 +163,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
 
-        savingPageBuilderFactory.create(eventBuilder)
+        savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim)
             .add(resumeClaim)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
@@ -296,7 +295,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         pcsCaseService.save(pcsCaseEntity);
 
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
         scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
 
