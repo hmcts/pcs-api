@@ -22,6 +22,8 @@ export class PageContentValidation implements IValidation {
                     button:text-is("${value}"),
                     [value="${value}"],
                     :has-text("${value}") + button,
+                    [role="link"]:text("${value}"),
+                    a:text("${value}"),
                     :has-text("${value}") ~ button`),
     Link: (page: Page, value: string) => page.locator(`
                     a:text("${value}"),
@@ -59,38 +61,24 @@ export class PageContentValidation implements IValidation {
                     label >> text=${value} >> xpath=..//input[@type="radio"]`),
     SelectLabel: (page: Page, value: string) => page.locator(`
                     label:text("${value}") ~ select,
-                    .select:text("${value}") ~ select,
-                    .dropdown:text("${value}") ~ select,
-                    .form-label:text("${value}") ~ select,
-                    label >> text=${value} >> xpath=..//select`),
+                    .select:text("${value}") ~ select`),
     SelectOption: (page: Page, value: string) => page.locator(`
                     option:text("${value}"),
-                    select option:text("${value}"),
-                    [role="option"]:text("${value}"),
-                    option >> text=${value}`),
+                    select option:text("${value}")`),
     HintText: (page: Page, value: string) => page.locator(`
-                    .hint:text("${value}"),
-                    .form-hint:text("${value}"),
-                    .help-text:text("${value}"),
-                    .helper-text:text("${value}"),
-                    [role="tooltip"]:text("${value}"),
-                    [data-hint="${value}"]:text("${value}"),
-                    span.hint:text("${value}"),
-                    div.hint:text("${value}")`),
+                    .hint:text("${value}")`),
     TextLabel: (page: Page, value: string) => page.locator(`
                     label:has-text("${value}"),
                     .label:has-text("${value}")`),
     Paragraph: (page: Page, value: string) => page.locator(`
-                    p:text("${value}"),
-                    li:text("${value}"),
                     .paragraph:text("${value}"),
+                    p:text("${value}"),
+                    markdown:text("${value}"),
                     .content:text("${value}"),
                     .body:text("${value}"),
                     .text-content:text("${value}"),
                     .govuk-body:text("${value}"),
-                    .govuk-list:text("${value}"),
-                    [data-paragraph]:text("${value}"),
-                    [data-list-item]:text("${value}")`),
+                    .govuk-list:text("${value}")`),
     Text: (page: Page, value: string) => page.locator(`:text("${value}")`)
   };
 
