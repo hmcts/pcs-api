@@ -14,11 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseCreationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import java.math.BigDecimal;
-
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @Component
 @Slf4j
@@ -26,18 +29,18 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-
-
-    private static final String FEE = "Unable to retrieve";
+    private final CaseCreationService caseCreationService;
+    private final DraftCaseDataService draftCaseDataService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(createTestCase.name(), this::submit, this::start)
-                .initialState(State.TEST_CASE)
+                .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
+                .forStateTransition(AWAITING_FURTHER_CLAIM_DETAILS, AWAITING_SUBMISSION_TO_HMCTS)
                 .name("FOR QA - Test Case Creation")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .showSummary();
 
         new PageBuilder(eventBuilder)
             .add(new StartTheService());
@@ -45,10 +48,10 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-
-
-        return caseData;
+        PCSCase generatedTestPCSCase = caseCreationService.generateTestPCSCase();
+        long caseReference = System.currentTimeMillis();
+        draftCaseDataService.patchUnsubmittedCaseData(caseReference, generatedTestPCSCase);
+        return generatedTestPCSCase;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -58,13 +61,6 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
 
         return SubmitResponse.defaultResponse();
-    }
-
-    private String formatAsCurrency(BigDecimal amount) {
-        if (amount == null) {
-            return FEE;
-        }
-        return "£" + amount.stripTrailingZeros().toPlainString();
     }
 
 }

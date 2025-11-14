@@ -9,13 +9,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("TestCaseService - Instancio 1.0.4 based PCSCase Population")
-class TestCaseServiceTest {
+class TestCaseServiceCreation {
 
-    private TestCaseService underTest;
+    private CaseCreationService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new TestCaseService();
+        underTest = new CaseCreationService();
     }
 
     @Nested

@@ -9,10 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 /**
  * Service for generating fully populated test case instances using Instancio.
+ * TVR: Profile this to be under dev and preview environments only !!!
  */
 @Service
 @Slf4j
-public class TestCaseService {
+public class CaseCreationService {
 
     public PCSCase generateTestPCSCase() {
         try {
@@ -20,8 +21,8 @@ public class TestCaseService {
             if (pcsCase.getPropertyAddress() == null) {
                 pcsCase.setPropertyAddress(createDefaultAddress());
             }
+            pcsCase.setFeeAmount("123.45");
             return pcsCase;
-
         } catch (Exception e) {
             log.error("Failed to generate test PCSCase", e);
             throw new RuntimeException("Failed to generate test PCSCase", e);
