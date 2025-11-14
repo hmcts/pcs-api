@@ -1,32 +1,30 @@
-import { chromium, FullConfig } from '@playwright/test';
+import { chromium } from '@playwright/test';
 import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { user } from '@data/user-data';
 import { handlePostLoginCookieBanner } from '@utils/cookie.utils';
-import {LONG_TIMEOUT, SHORT_TIMEOUT, VERY_SHORT_TIMEOUT} from '../playwright.config';
+import {LONG_TIMEOUT, SHORT_TIMEOUT, getMasterStorageStatePath} from '../playwright.config';
 import * as path from 'path';
 import * as fs from 'fs';
 
 // Session configuration
-const SESSION_DIR = path.join(process.cwd(), '.auth');
-const STORAGE_STATE_FILE = 'storage-state.json';
 const SESSION_COOKIE_NAME = 'Idam.Session';
 
-function getStorageStatePath(): string {
-  if (!fs.existsSync(SESSION_DIR)) {
-    fs.mkdirSync(SESSION_DIR, { recursive: true });
-  }
-  return path.join(SESSION_DIR, STORAGE_STATE_FILE);
-}
 
-
-async function globalSetupConfig(config: FullConfig): Promise<void> {
+async function globalSetupConfig(): Promise<void> {
   const baseURL = process.env.MANAGE_CASE_BASE_URL;
   if (!baseURL) {
     throw new Error('MANAGE_CASE_BASE_URL environment variable is required');
   }
 
-  const storageStatePath = getStorageStatePath();
+  // Use master storage state path - this will be copied to worker-specific files
+  const storageStatePath = getMasterStorageStatePath();
+
+  // Ensure session directory exists
+  const sessionDir = path.dirname(storageStatePath);
+  if (!fs.existsSync(sessionDir)) {
+    fs.mkdirSync(sessionDir, { recursive: true });
+  }
   const browser = await chromium.launch({headless: !!process.env.CI});
   const page = await browser.newPage();
 
@@ -66,9 +64,12 @@ async function globalSetupConfig(config: FullConfig): Promise<void> {
     });
     await page.waitForTimeout(SHORT_TIMEOUT);
 
-    // Save storage state
+    // Save storage state to master file
+    // Worker-specific files will be created lazily by each worker process
+    // using their unique process.pid when they first access ensureWorkerStorageFile()
     await page.context().storageState({ path: storageStatePath });
     console.log('✓ Storage state saved successfully');
+    console.log('  Worker-specific files will be created on-demand by each worker process');
   } finally {
     await browser.close();
   }

@@ -2,20 +2,10 @@ import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
-import * as path from 'path';
-import * as fs from 'fs';
+import {ensureWorkerStorageFile} from "../../../playwright.config";
 
 // Session configuration
-const SESSION_DIR = path.join(process.cwd(), '.auth');
-const STORAGE_STATE_FILE = 'storage-state.json';
 const SESSION_COOKIE_NAME = 'Idam.Session';
-
-function getStorageStatePath(): string {
-  if (!fs.existsSync(SESSION_DIR)) {
-    fs.mkdirSync(SESSION_DIR, { recursive: true });
-  }
-  return path.join(SESSION_DIR, STORAGE_STATE_FILE);
-}
 
 export class LoginAction implements IAction {
   async execute(page: Page, action: string, userType: string | actionRecord, roles?: actionData): Promise<void> {
@@ -36,7 +26,10 @@ export class LoginAction implements IAction {
     }
 
     // Skip login if already authenticated with valid session
-    const storageStatePath = getStorageStatePath();
+    // Use per-worker storage path to prevent race conditions
+    // This ensures each worker has its own file, copied from master if needed
+    const storageStatePath = ensureWorkerStorageFile();
+
     try {
       if (SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
         console.log('Already authenticated with valid session, skipping login');

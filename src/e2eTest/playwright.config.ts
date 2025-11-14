@@ -1,5 +1,6 @@
 import * as process from 'node:process';
 import * as path from 'path';
+import * as fs from 'fs';
 
 import {defineConfig, devices} from '@playwright/test';
 
@@ -11,24 +12,75 @@ export const LONG_TIMEOUT = 30000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
-// Storage state path (global-setup creates it)
-// Always provide the path - Playwright will check if file exists when creating contexts
-const storageStatePath = path.join(process.cwd(), '.auth', 'storage-state.json');
+// Storage state path utilities
+// Use per-worker storage files to prevent race conditions with parallel execution
+const SESSION_DIR = path.join(process.cwd(), '.auth');
+const STORAGE_STATE_FILE = 'storage-state.json';
+
+/**
+ * Gets the storage state path for a specific worker.
+ * Uses process.pid to ensure each worker process gets a unique file.
+ * Each worker process has a unique PID, so this prevents race conditions.
+ * @param workerIndex Optional worker index (for testing/pre-creation scenarios)
+ */
+export function getStorageStatePath(workerIndex?: number): string {
+  const workerId = workerIndex !== undefined ? workerIndex : process.pid;
+  const fileName = workerIndex !== undefined
+    ? `storage-state-worker-${workerIndex}.json`
+    : `storage-state-${workerId}.json`;
+  return path.join(SESSION_DIR, fileName);
+}
+
+/**
+ * Copies master storage state to worker-specific file if worker file doesn't exist.
+ * This ensures workers start with a valid session from globalSetup.
+ */
+export function ensureWorkerStorageFile(): string {
+  const masterPath = getMasterStorageStatePath();
+  const workerPath = getStorageStatePath();
+
+  // If master file exists but worker file doesn't, copy it
+  if (fs.existsSync(masterPath) && !fs.existsSync(workerPath)) {
+    const sessionDir = path.dirname(workerPath);
+    if (!fs.existsSync(sessionDir)) {
+      fs.mkdirSync(sessionDir, { recursive: true });
+    }
+    fs.copyFileSync(masterPath, workerPath);
+  }
+
+  return workerPath;
+}
+
+/**
+ * Gets the master storage state path (created by globalSetup).
+ * This is the source file that workers can copy from if needed.
+ */
+export function getMasterStorageStatePath(): string {
+  return path.join(SESSION_DIR, STORAGE_STATE_FILE);
+}
+
+function getWorkers(): number {
+  const env = process.env.ENVIRONMENT;
+  return env === 'preview' ? 1 : env === 'aat' ? 4 : !env ? 2 : 4;
+}
 
 export default defineConfig({
   testDir: 'tests/',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 3 : 0,
-  // Reduced workers from 4 → 2 due to server/login contention issues
-  workers: 2,
+  // Per-worker storage files prevent race conditions, allowing safe parallel execution
+  workers: getWorkers(),
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: {
     baseURL: process.env.MANAGE_CASE_BASE_URL || 'http://localhost:3000',
     actionTimeout: process.env.CI ? 60 * 1000 : 30 * 1000,
     navigationTimeout: process.env.CI ? 60 * 1000 : 30 * 1000,
-    storageState: storageStatePath
+    // Each worker will use its own storage file based on process.pid
+    // This prevents race conditions when multiple workers write simultaneously
+    // Workers copy from master file on first use if their file doesn't exist
+    storageState: ensureWorkerStorageFile(),
   },
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
@@ -58,7 +110,7 @@ export default defineConfig({
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,
-        storageState: storageStatePath,
+        // Per-worker storage is handled in the root 'use' config above
       },
     },
     ...(process.env.CI ? [
@@ -73,7 +125,7 @@ export default defineConfig({
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
           headless: !!process.env.CI,
-          storageState: storageStatePath,
+          // Per-worker storage is handled in the root 'use' config above
         }
       }
     ] : [])
