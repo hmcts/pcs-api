@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -36,7 +37,8 @@ public class SelectClaimantType implements CcdPageConfiguration {
                         A claimant is the person or organisation who is making the possession claim.
                         """)
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true)
-            .mandatory(PCSCase::getClaimantType);
+            .mandatory(PCSCase::getClaimantType)
+            .label("selectClaimantType-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

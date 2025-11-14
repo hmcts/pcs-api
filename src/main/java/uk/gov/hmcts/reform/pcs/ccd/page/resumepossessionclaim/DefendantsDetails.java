@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 
 import java.util.List;
@@ -48,7 +49,9 @@ public class DefendantsDetails implements CcdPageConfiguration {
 
                 .readonly(DefendantDetails::getEmailSectionLabel)
                 .mandatory(DefendantDetails::getEmailKnown)
-                .mandatory(DefendantDetails::getEmail);
+                .mandatory(DefendantDetails::getEmail)
+            .done()
+            .label("defendantsDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
     }
 
