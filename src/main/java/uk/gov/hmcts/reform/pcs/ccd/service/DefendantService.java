@@ -87,7 +87,7 @@ public class DefendantService {
      * Builds a display name for a defendant from their details.
      * Handles cases where the name is not known.
      * 
-     * @param details Defendant details from the database
+     * @param details Defendant details
      * @return Display name for the defendant
      */
     public String buildDefendantDisplayName(DefendantDetails details) {
