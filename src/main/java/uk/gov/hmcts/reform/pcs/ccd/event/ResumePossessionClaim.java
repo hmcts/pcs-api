@@ -130,6 +130,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final MediationAndSettlement mediationAndSettlement;
     private final ClaimantCircumstancesPage claimantCircumstancesPage;
     private final IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
+    private final RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
+    private final SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
     private final DefendantCircumstancesPage defendantCircumstancesPage;
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
@@ -140,7 +143,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
+    private final GroundsForPossessionWales groundsForPossessionWales;
+    private final SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    private final ReasonsForPosessionWales reasonsForPosessionWales;
     private final AddressFormatter addressFormatter;
+    private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -169,20 +178,20 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
             .add(occupationLicenceDetailsWalesPage)
-            .add(new GroundsForPossessionWales())
-            .add(new SecureContractGroundsForPossessionWales())
-            .add(new ReasonsForPosessionWales())
+            .add(groundsForPossessionWales)
+            .add(secureContractGroundsForPossessionWales)
+            .add(reasonsForPosessionWales)
             .add(new ASBQuestionsWales())
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
-            .add(new IntroductoryDemotedOrOtherGroundsForPossession())
+            .add(introductoryDemotedOrOtherGroundsForPossession)
             .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
-            .add(new RentArrearsGroundsForPossession())
-            .add(new RentArrearsGroundForPossessionAdditionalGrounds())
-            .add(new RentArrearsGroundsForPossessionReasons())
-            .add(new NoRentArrearsGroundsForPossessionOptions())
+            .add(rentArrearsGroundsForPossession)
+            .add(rentArrearsGroundForPossessionAdditionalGrounds)
+            .add(rentArrearsGroundsForPossessionReasons)
+            .add(noRentArrearsGroundsForPossessionOptions)
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
             .add(mediationAndSettlement)
@@ -203,7 +212,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SuspensionToBuyDemotionOfTenancyActs())
             .add(statementOfExpressTerms)
             .add(demotionOfTenancyOrderReason)
-            .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
+            .add(suspensionToBuyDemotionOfTenancyOrderReasons)
             .add(new ClaimingCosts())
             .add(additionalReasonsForPossession)
             .add(new UnderlesseeMortgageeEntitledToClaimRelief())
@@ -255,7 +264,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);
-        caseData.setFormattedClaimantContactAddress(addressFormatter.getFormattedAddress(caseData));
+        caseData.setFormattedClaimantContactAddress(addressFormatter
+            .formatAddressWithHtmlLineBreaks(caseData.getPropertyAddress()));
 
         return caseData;
     }

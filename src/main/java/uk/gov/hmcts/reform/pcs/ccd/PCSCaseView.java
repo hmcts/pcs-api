@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -44,6 +45,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final ModelMapper modelMapper;
     private final PcsCaseService pcsCaseService;
     private final DraftCaseDataService draftCaseDataService;
+    private final CaseTitleService caseTitleService;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -123,10 +125,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private void setMarkdownFields(PCSCase pcsCase) {
-        pcsCase.setPageHeadingMarkdown("""
-                <p class="govuk-!-font-size-24
-                govuk-!-margin-top-0 govuk-!-margin-bottom-0">
-                Case number: ${[CASE_REFERENCE]}</p>""");
+        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""

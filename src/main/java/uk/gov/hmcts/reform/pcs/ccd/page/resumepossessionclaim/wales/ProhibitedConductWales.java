@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -42,7 +43,8 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
                 .mandatory(PeriodicContractTermsWales::getDetailsOfTerms, 
                     "periodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
             .done()
-            .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"");
+            .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"")
+            .label("prohibitedConductWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

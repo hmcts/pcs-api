@@ -1,6 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
+
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -19,20 +27,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
-
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 
 /**
@@ -45,8 +44,9 @@ public class PCSCase {
     // Field label constants - shared between domain annotations and validation
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
-    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL = 
+    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that's in place";
+    public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
     @CCD(
         searchable = false
@@ -134,12 +134,6 @@ public class PCSCase {
     )
     private Integer caseManagementLocation;
 
-    @CCD(
-        label = "Amount to pay",
-        hint = "£400"
-    )
-    private PaymentType paymentType;
-
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
 
@@ -225,6 +219,22 @@ public class PCSCase {
     )
     private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
 
+    @CCD(
+        label = "Mandatory grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
+    )
+    private Set<AssuredAdditionalMandatoryGrounds> assuredAdditionalMandatoryGrounds;
+
+    @CCD(
+        label = "Discretionary grounds",
+        hint = "Select all that apply",
+        typeOverride = MultiSelectList,
+        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
+    )
+    private Set<AssuredAdditionalDiscretionaryGrounds> assuredAdditionalDiscretionaryGrounds;
+
     @JsonUnwrapped
     private RentArrearsGroundsReasons rentArrearsGroundsReasons;
 
@@ -259,9 +269,7 @@ public class PCSCase {
     )
     private YesOrNo noticeServed;
 
-    private String pageHeadingMarkdown;
-
-    private String claimPaymentTabMarkdown;
+    private String caseTitleMarkdown;
 
     private LegislativeCountry legislativeCountry;
 
@@ -512,9 +520,9 @@ public class PCSCase {
     private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
 
     @CCD(
-            label = "Enter your grounds for possession",
+            label = OTHER_GROUND_DESCRIPTION_LABEL,
             hint = "You'll be able to explain your reasons for claiming possession"
-                    + " under these grounds on the next screen",
+                    + " under these grounds on the next screen. You can enter up to 500 characters",
             typeOverride = TextArea
     )
     private String otherGroundDescription;
@@ -577,9 +585,10 @@ public class PCSCase {
     private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
 
     @CCD(
-        label = "Do you want the court to make a judgment for the outstanding arrears?"
+        label = "Do you want the court to make a judgment for the outstanding arrears?",
+        searchable = false
     )
-    private YesOrNo arrearsJudgmentWanted;
+    private VerticalYesNo arrearsJudgmentWanted;
 
     @CCD(
         label = "Mandatory grounds",

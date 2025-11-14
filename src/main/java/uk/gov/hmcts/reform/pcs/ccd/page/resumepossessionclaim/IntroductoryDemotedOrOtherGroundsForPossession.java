@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -9,10 +11,21 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
+@AllArgsConstructor
+@Component
 public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
+    private final RentDetailsRoutingService rentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -44,12 +57,23 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                     "hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
             .mandatory(PCSCase::getOtherGroundDescription,
                        "introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\""
-                        + "AND hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"");
+                        + "AND hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
+            .label("introductoryDemotedOrOtherGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
+
+        List<String> validationErrors = new ArrayList<>();
+
+        if (caseData.getOtherGroundDescription() != null) {
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+                caseData.getOtherGroundDescription(),
+                PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ));
+        }
 
         boolean hasOtherDiscretionaryGrounds = caseData.getIntroductoryDemotedOrOtherGrounds() == null ? false
             : caseData.getIntroductoryDemotedOrOtherGrounds()
@@ -64,10 +88,11 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
 
-        boolean hasRentArrears = caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.YES
-            && caseData.getIntroductoryDemotedOrOtherGrounds()
-                .contains(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
-        caseData.setShowRentDetailsPage(YesOrNo.from(hasRentArrears));
+        caseData.setShowRentDetailsPage(rentDetailsRoutingService.shouldShowRentDetails(caseData));
+
+        if (!validationErrors.isEmpty()) {
+            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

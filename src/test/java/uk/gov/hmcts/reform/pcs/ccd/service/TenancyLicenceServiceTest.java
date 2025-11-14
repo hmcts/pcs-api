@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable;
@@ -162,10 +163,10 @@ class TenancyLicenceServiceTest {
 
         // Test arrearsJudgmentWanted field updates
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getArrearsJudgmentWanted()).thenReturn(YesOrNo.YES),
+                pcsCase -> when(pcsCase.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES),
                 expected -> assertThat(expected.getArrearsJudgmentWanted()).isTrue());
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getArrearsJudgmentWanted()).thenReturn(YesOrNo.NO),
+                pcsCase -> when(pcsCase.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.NO),
                 expected -> assertThat(expected.getArrearsJudgmentWanted()).isFalse());
     }
 
