@@ -1,12 +1,12 @@
 import Axios from 'axios';
 import {ServiceAuthUtils} from '@hmcts/playwright-common';
-import {actionData, actionRecord, IAction} from '../../interfaces/action.interface';
+import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement, tenancyLicenceDetails, resumeClaimOptions, rentDetails, accessTokenApiData, caseApiData, dailyRentAmount, reasonsForPossession, detailsOfRentArrears,
         claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
         claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
-        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim} from "@data/page-data";
+        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers} from "@data/page-data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -19,6 +19,7 @@ export class CreateCaseAction implements IAction {
       ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(page, fieldName)],
+      ['submitAddressCheckYourAnswers', () => this.submitAddressCheckYourAnswers()],
       ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim(page)],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
@@ -97,7 +98,11 @@ export class CreateCaseAction implements IAction {
       townCity: await page.getByLabel(addressDetails.townOrCityTextLabel).inputValue(),
       engOrWalPostcode: address.postcode
     };
-    await performAction('clickButton', addressDetails.submitButton);
+    await performAction('clickButton', addressDetails.continueButton);
+  }
+
+  private async submitAddressCheckYourAnswers() {
+    await performAction('clickButton', addressCheckYourAnswers.saveAndContinueButton);
   }
 
   private async extractCaseIdFromAlert(page: Page): Promise<void> {
@@ -180,7 +185,7 @@ export class CreateCaseAction implements IAction {
 
   private async selectBorderPostcode(option: actionData) {
     await performAction('clickRadioButton', option);
-    await performAction('clickButton', borderPostcode.submit);
+    await performAction('clickButton', borderPostcode.continueButton);
   }
 
   private async selectClaimantName(page: Page, caseData: actionData) {
@@ -662,7 +667,7 @@ export class CreateCaseAction implements IAction {
       townCity: await page.getByLabel(addressDetails.townOrCityTextLabel).inputValue(),
       engOrWalPostcode: address.postcode.toString(),
     };
-    await performAction('clickButton', addressDetails.submitButton);
+    await performAction('clickButton', addressDetails.continueButton);
   }
 
   private async provideMoreDetailsOfClaim(page: Page) {

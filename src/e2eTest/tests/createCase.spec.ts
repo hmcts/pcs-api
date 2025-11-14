@@ -1,10 +1,18 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails, claimantType, claimType,claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds, preActionProtocol, mediationAndSettlement,
-        noticeOfYourIntention, noticeDetails, rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
-        reasonsForPossession, moneyJudgment, claimantCircumstances, applications, completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances,
-        claimingCosts, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder, statementOfExpressTerms, wantToUploadDocuments,
-        home, uploadAdditionalDocs, underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth, reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount} from '@data/page-data';
+import {addressDetails, claimantType, claimType, claimantName, contactPreferences,
+  defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds,
+  preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
+  rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
+  reasonsForPossession, moneyJudgment, claimantCircumstances, applications,
+  completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers,
+  propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
+  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
+  alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
+  statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
+  underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
+  reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
+  addressCheckYourAnswers} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -22,12 +30,14 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case - England] @Master @nightly', async () => {
-  test('England - Assured tenancy with Rent arrears and other possession grounds', async () => {
+test.describe('[Create Case - England] @regression', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -149,6 +159,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -266,6 +278,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -369,6 +383,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -485,6 +501,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -584,6 +602,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -687,6 +707,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -787,6 +809,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -886,6 +910,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -1005,6 +1031,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -1112,6 +1140,8 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');

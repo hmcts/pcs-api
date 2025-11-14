@@ -132,8 +132,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | provideMoreDetailsOfClaim                   | `performAction('provideMoreDetailsOfClaim')`                                                                                                                                                               |
 | selectUnderlesseeOrMortgageeEntitledToClaim | `performAction('selectUnderlesseeOrMortgageeEntitledToClaim','Yes')`                                                                                                                                       |
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
+| addDefendantDetails                         | `performAction('addDefendantDetails', { nameOption: defendantDetails.no, correspondenceAddressOption: defendantDetails.no, addAdditionalDefendantsOption: defendantDetails.no})`                           |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
 | addDefendantDetails                         | `performAction('addDefendantDetails', { nameOption: defendantDetails.no, correspondenceAddressOption: defendantDetails.no, addAdditionalDefendantsOption: defendantDetails.no})`                           |
+| submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
