@@ -2,10 +2,7 @@ import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { Page } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
-import {ensureWorkerStorageFile} from "../../../playwright.config";
-
-// Session configuration
-const SESSION_COOKIE_NAME = 'Idam.Session';
+import {ensureWorkerStorageFile, SESSION_COOKIE_NAME} from "../../../playwright.config";
 
 export class LoginAction implements IAction {
   async execute(page: Page, action: string, userType: string | actionRecord, roles?: actionData): Promise<void> {
@@ -25,9 +22,6 @@ export class LoginAction implements IAction {
       throw new Error('Login failed: missing credentials');
     }
 
-    // Skip login if already authenticated with valid session
-    // Use per-worker storage path to prevent race conditions
-    // This ensures each worker has its own file, copied from master if needed
     const storageStatePath = ensureWorkerStorageFile();
 
     try {
