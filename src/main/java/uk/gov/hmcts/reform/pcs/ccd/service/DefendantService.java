@@ -107,18 +107,18 @@ public class DefendantService {
     /**
      * Builds a list of DynamicStringListElement from defendant details stored in the database.
      * 
-     * @param allDefendants List of defendants from the case data
+     * @param defendants List of defendants from the case data
      * @return List of DynamicStringListElement for the multi-select list
      */
     public List<DynamicStringListElement> buildDefendantListItems(
-        List<ListValue<DefendantDetails>> allDefendants) {
+        List<ListValue<DefendantDetails>> defendants) {
         
-        if (allDefendants == null || allDefendants.isEmpty()) {
+        if (defendants == null || defendants.isEmpty()) {
             return new ArrayList<>();
         }
         
         List<DynamicStringListElement> listItems = new ArrayList<>();
-        for (ListValue<DefendantDetails> listValue : allDefendants) {
+        for (ListValue<DefendantDetails> listValue : defendants) {
             DefendantDetails defendantDetails = listValue.getValue();
             String defendantName = buildDefendantDisplayName(defendantDetails);
             
