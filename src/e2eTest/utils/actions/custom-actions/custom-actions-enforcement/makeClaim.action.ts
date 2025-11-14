@@ -3,7 +3,7 @@ import { initializeExecutor } from '@utils/controller';
 import { performAction, performValidation } from '@utils/controller';
 import { actionData, actionRecord, IAction } from '@utils/interfaces/action.interface';
 import {
-  home, addressDetails, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
+  home, addressDetails, addressCheckYourAnswers, additionalReasonsForPossession, alternativesToPossession, applications, checkYourAnswers, claimantCircumstances, claimantName,
   claimantType, claimingCosts, claimType, completeYourClaim, contactPreferences, defendantCircumstances, defendantDetails,
   provideMoreDetailsOfClaim, groundsForPossession, languageUsed, mediationAndSettlement, noticeOfYourIntention, preActionProtocol, statementOfTruth, tenancyLicenceDetails, underlesseeOrMortgageeEntitledToClaim,
   wantToUploadDocuments
@@ -34,6 +34,8 @@ export class MakeClaimAction implements IAction {
         postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
         addressIndex: addressDetails.addressIndex
       });
+      await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+      await performAction('submitAddressCheckYourAnswers');
       await performValidation('bannerAlert', 'Case #.* has been created.');
       await performAction('extractCaseIdFromAlert');
       await performAction(

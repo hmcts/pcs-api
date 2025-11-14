@@ -9,8 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
 
 class PropertyAccessDetailsPageTest extends BasePageTest {
 
@@ -18,7 +20,8 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new PropertyAccessDetailsPage());
+        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
+        setPageUnderTest(new PropertyAccessDetailsPage(textAreaValidationService));
     }
 
     @Test
@@ -83,10 +86,10 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).containsExactly(
-                EnforcementValidationUtil.getCharacterLimitErrorMessage(
-                        "Explain why it's difficult to access the property",
-                        6800)
-        );
+        String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
+                                             "Explain why it's difficult to access the property",
+                                             "6,800");
+
+        assertThat(response.getErrors()).containsExactly(expectedError);
     }
 }

@@ -1,12 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim;
 
-
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
-
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class StatementOfTruth implements CcdPageConfiguration {
 
@@ -41,10 +39,7 @@ public class StatementOfTruth implements CcdPageConfiguration {
                     "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
                 .mandatory(StatementOfTruthDetails::getPositionLegalRep,
                     "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
-            .done();
-
+            .done()
+            .label("statementOfTruth-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
-
-
-
 }
