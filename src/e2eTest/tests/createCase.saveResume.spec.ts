@@ -1,11 +1,11 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails, groundsForPossession,
-        preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails, completeYourClaim,
-        dailyRentAmount, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications, user,
-        checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, statementOfTruth, home,
-        additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
-        wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount} from '@data/page-data/';
+import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails,
+  groundsForPossession, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails,
+  completeYourClaim, dailyRentAmount, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications,
+  user, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, statementOfTruth, home,
+  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
+  wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data/';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -29,12 +29,14 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case - With resume claim options] @Master @nightly', async () => {
+test.describe('[Create Case - With resume claim options]', async () => {
   test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -57,11 +59,10 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.defendantPostcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -116,7 +117,10 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yes,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -124,7 +128,9 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -152,6 +158,8 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
@@ -175,11 +183,10 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.defendantPostcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -228,7 +235,10 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yes,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -236,7 +246,9 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
