@@ -1,9 +1,9 @@
 /**
  * Auto Data Collector
- * 
+ *
  * Automatically collects journey data from actions by extracting questions
  * from page data, action parameters, or page elements.
- * 
+ *
  * Supports all data entry types:
  * - Radio buttons (single selection)
  * - Text inputs (free text, textareas)
@@ -15,9 +15,9 @@
  * - Address selection (formatted address)
  */
 
-import { Page, Locator } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { JourneyDataCollector } from './journey-data-collector';
-import { actionData, actionRecord } from '../interfaces';
+import { actionRecord } from '../interfaces';
 
 export class AutoDataCollector {
   private collector: JourneyDataCollector;
@@ -45,7 +45,7 @@ export class AutoDataCollector {
       answer = String(optionValue);
     }
     const question = await this.extractQuestion(page, actionName, questionText, pageData);
-    
+
     if (question && answer) {
       this.collector.setAnswer(question, answer);
     }
@@ -63,7 +63,7 @@ export class AutoDataCollector {
   ): Promise<void> {
     const label = typeof labelText === 'string' ? labelText : (String(labelText.text || labelText.label || ''));
     const question = await this.extractQuestion(page, actionName, label, pageData);
-    
+
     if (question && inputValue) {
       this.collector.setAnswer(question, String(inputValue));
     }
@@ -80,7 +80,7 @@ export class AutoDataCollector {
     pageData?: any
   ): Promise<void> {
     const question = await this.extractQuestion(page, actionName, labelText, pageData);
-    
+
     if (question && selectedValue !== undefined && selectedValue !== null) {
       this.collector.setAnswer(question, String(selectedValue));
     }
@@ -111,7 +111,7 @@ export class AutoDataCollector {
       } else if ('question' in checkedOptions && 'option' in checkedOptions) {
         question = String(checkedOptions.question || '');
         const optionValue = checkedOptions.option;
-        answers = Array.isArray(optionValue) 
+        answers = Array.isArray(optionValue)
           ? optionValue.map(opt => String(opt))
           : [String(optionValue)];
       }
@@ -141,7 +141,7 @@ export class AutoDataCollector {
     if (day && month && year) {
       const question = await this.extractQuestion(page, actionName, questionText || 'Date', pageData);
       const formattedDate = `${day}/${month}/${year}`;
-      
+
       if (question) {
         this.collector.setAnswer(question, formattedDate);
       }
@@ -163,7 +163,7 @@ export class AutoDataCollector {
     if (hour !== undefined && minute !== undefined && second !== undefined) {
       const question = await this.extractQuestion(page, actionName, questionText || 'Time', pageData);
       const formattedTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')}`;
-      
+
       if (question) {
         this.collector.setAnswer(question, formattedTime);
       }
@@ -182,7 +182,7 @@ export class AutoDataCollector {
   ): Promise<void> {
     const question = await this.extractQuestion(page, actionName, questionText || 'Uploaded documents', pageData);
     const files = Array.isArray(fileName) ? fileName : [fileName];
-    
+
     if (question && files.length > 0) {
       this.collector.setAnswer(question, files.join(', '));
     }
@@ -206,7 +206,7 @@ export class AutoDataCollector {
       // Try to find question text in page data
       const questionKey = this.findQuestionKeyInPageData(key, pageData);
       const question = questionKey || key;
-      
+
       if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
         this.collector.setAnswer(question, String(value));
       } else if (Array.isArray(value)) {
@@ -235,7 +235,7 @@ export class AutoDataCollector {
       if (address.postcode) parts.push(address.postcode);
       answer = parts.join(', ');
     }
-    
+
     this.collector.setAnswer(
       'What is the address of the property you\'re claiming possession of?',
       answer
@@ -264,7 +264,7 @@ export class AutoDataCollector {
 
     // Priority 3: Try to extract from page element (label, heading, etc.)
     if (page) {
-      return await this.extractQuestionFromPage(page, actionName).catch(() => undefined);
+      return await this.extractQuestionFromPage(page).catch(() => undefined);
     }
 
     return undefined;
@@ -443,7 +443,7 @@ export class AutoDataCollector {
    */
   private getNestedValue(obj: any, path: string): any {
     if (!obj) return undefined;
-    
+
     // Direct key
     if (obj[path] !== undefined) {
       return obj[path];
@@ -465,12 +465,12 @@ export class AutoDataCollector {
   /**
    * Extract question from page element (label, heading, etc.)
    */
-  private async extractQuestionFromPage(page: Page, actionName: string): Promise<string | undefined> {
+  private async extractQuestionFromPage(page: Page): Promise<string | undefined> {
     try {
       // Try to find label associated with the action
       const label = page.locator('label, .govuk-label, [class*="label"]').first();
       const isVisible = await label.isVisible({ timeout: 1000 }).catch(() => false);
-      
+
       if (isVisible) {
         const text = await label.textContent();
         if (text && text.trim()) {
@@ -481,7 +481,7 @@ export class AutoDataCollector {
       // Try heading
       const heading = page.locator('h1, h2, .govuk-heading-l, .govuk-heading-m').first();
       const headingVisible = await heading.isVisible({ timeout: 1000 }).catch(() => false);
-      
+
       if (headingVisible) {
         const text = await heading.textContent();
         if (text && text.trim()) {

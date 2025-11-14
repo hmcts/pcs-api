@@ -1,18 +1,10 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {addressDetails, claimantType, claimType, claimantName, contactPreferences,
-  defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds,
-  preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
-  rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
-  reasonsForPossession, moneyJudgment, claimantCircumstances, applications,
-  completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers,
-  propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
-  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
-  alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
-  statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
-  underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
-  reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
-  addressCheckYourAnswers} from '@data/page-data';
+import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails,
+  groundsForPossession, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, whatAreYourGroundsForPossession,
+  reasonsForPossession, claimantCircumstances, applications, completeYourClaim, user, checkYourAnswers, languageUsed,
+  defendantCircumstances, claimingCosts, additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession,
+  wantToUploadDocuments, home, statementOfTruth, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
 import {JourneyDataCollector} from '@utils/cya/journey-data-collector';
 
 test.beforeEach(async ({page}) => {
