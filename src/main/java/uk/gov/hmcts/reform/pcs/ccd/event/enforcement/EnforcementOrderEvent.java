@@ -47,7 +47,16 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private final FeesAndPayService feesAndPayService;
     private static final String ENFORCEMENT_WARRANT_TYPE = "enforcementWarrantFee";
     private static final String ENFORCEMENT_WRIT_TYPE = "enforcementWritFee";
-
+    private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
+    private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
+    private final ProtestorGroupRiskPage protestorGroupRiskPage;
+    private final PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
+    private final FirearmsPossessionRiskPage firearmsPossessionRiskPage;
+    private final CriminalAntisocialRiskPage criminalAntisocialRiskPage;
+    private final AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
+    private final PropertyAccessDetailsPage propertyAccessDetailsPage;
+    private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
+    private final AdditionalInformationPage additionalInformationPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -68,16 +77,16 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new LivingInThePropertyPage())
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
-                .add(new ViolentAggressiveRiskPage())
-                .add(new FirearmsPossessionRiskPage())
-                .add(new CriminalAntisocialRiskPage())
-                .add(new VerbalOrWrittenThreatsRiskPage())
-                .add(new ProtestorGroupRiskPage())
-                .add(new PoliceOrSocialServicesRiskPage())
-                .add(new AggressiveAnimalsRiskPage())
-                .add(new VulnerableAdultsChildrenPage())
-                .add(new PropertyAccessDetailsPage())
-                .add(new AdditionalInformationPage())
+                .add(violentAggressiveRiskPage)
+                .add(firearmsPossessionRiskPage)
+                .add(criminalAntisocialRiskPage)
+                .add(verbalOrWrittenThreatsRiskPage)
+                .add(protestorGroupRiskPage)
+                .add(policeOrSocialServicesRiskPage)
+                .add(aggressiveAnimalsRiskPage)
+                .add(vulnerableAdultsChildrenPage)
+                .add(propertyAccessDetailsPage)
+                .add(additionalInformationPage)
                 .add(new MoneyOwedPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }

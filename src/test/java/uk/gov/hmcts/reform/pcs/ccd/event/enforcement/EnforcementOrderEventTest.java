@@ -11,6 +11,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
@@ -30,10 +40,35 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private AddressFormatter addressFormatter;
     @Mock
     private FeesAndPayService feesAndPayService;
+    @Mock
+    private ViolentAggressiveRiskPage violentAggressiveRiskPage;
+    @Mock
+    private VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
+    @Mock
+    private ProtestorGroupRiskPage protestorGroupRiskPage;
+    @Mock
+    private PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
+    @Mock
+    private FirearmsPossessionRiskPage firearmsPossessionRiskPage;
+    @Mock
+    private CriminalAntisocialRiskPage criminalAntisocialRiskPage;
+    @Mock
+    private AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
+    @Mock
+    private PropertyAccessDetailsPage propertyAccessDetailsPage;
+    @Mock
+    private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
+    @Mock
+    private AdditionalInformationPage additionalInformationPage;
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new EnforcementOrderEvent(addressFormatter, feesAndPayService));
+        setEventUnderTest(new EnforcementOrderEvent(addressFormatter, feesAndPayService, violentAggressiveRiskPage,
+                                                    verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
+                                                    policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
+                                                    criminalAntisocialRiskPage, aggressiveAnimalsRiskPage,
+                                                    propertyAccessDetailsPage, vulnerableAdultsChildrenPage,
+                                                    additionalInformationPage));
     }
 
     @Test
