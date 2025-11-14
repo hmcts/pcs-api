@@ -79,7 +79,8 @@ export class PageContentValidation implements IValidation {
                     .text-content:text("${value}"),
                     .govuk-body:text("${value}"),
                     .govuk-list:text("${value}")`),
-    Text: (page: Page, value: string) => page.locator(`:text("${value}")`)
+    Text: (page: Page, value: string) => page.locator(`:text("${value}")`),
+    Tab: (page: Page, value: string) => page.getByRole('tab', { name: value }),
   };
 
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
