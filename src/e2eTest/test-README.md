@@ -7,6 +7,7 @@ A structured, maintainable test automation solution built on Playwright that:
 - Implements Pattern-matching
 - Separates test logic from implementation details
 - Provides ready-to-use components for UI interactions and validations
+- Includes automatic page content validation to verify UI elements match expected design specifications
 
 ### 1.1 Folder Structure
 
@@ -228,3 +229,24 @@ yarn test:chrome
 | "Validation not found" | Check registration                          |
 | Locator failures       | Verify fieldName matches UI text/attributes |
 | Timeout errors         | Add explicit waits in components            |
+
+## 9. Content Auto-Validation
+
+How It Works -
+Automatic: Triggers after click actions that cause page navigation
+
+Data-Driven: Uses page data files in data/page-data-figma/
+
+Smart Mapping: Automatically maps URLs to page data files, including numeric URLs using h1/h2 headers
+
+Comprehensive: Validates buttons, headers, links, paragraphs, and other UI elements
+
+Validation Summary -
+After each test, you'll see a detailed report:
+```
+📊 PAGE CONTENT VALIDATION SUMMARY (Test #1):
+Total pages validated: 3
+Pages passed: 2
+Pages failed: 1
+Missing elements: Submit button, Continue link
+```
