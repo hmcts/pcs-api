@@ -181,6 +181,18 @@ tasks.register('yarnInstall', Exec) {
   commandLine 'yarn', 'install'
 }
 
+tasks.register('runE2ePrTests', Exec) {
+  dependsOn yarnInstall
+  workingDir = file("${project.projectDir}/src/e2eTest")
+  commandLine 'yarn', 'test:pr'
+}
+
+tasks.register('runE2eRegressionTests', Exec) {
+  dependsOn yarnInstall
+  workingDir = file("${project.projectDir}/src/e2eTest")
+  commandLine 'yarn', 'test:regression'
+}
+
 tasks.register('runE2eChromeTests', Exec) {
   dependsOn yarnInstall
   workingDir = file("${project.projectDir}/src/e2eTest")
@@ -487,7 +499,7 @@ tasks.register('highLevelDataSetup', JavaExec) {
 }
 
 tasks.register('e2eTest'){
-  dependsOn('runE2eChromeTests')
+  dependsOn('runE2ePrTests')
 }
 
 // Ensure we cover Cftlib dev & test with our CI checks

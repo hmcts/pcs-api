@@ -20,6 +20,7 @@ public class TextAreaValidationService {
     public static final int MEDIUM_TEXT_LIMIT = 500;
     public static final int LONG_TEXT_LIMIT = 950;
     public static final int EXTRA_LONG_TEXT_LIMIT = 6400;
+    public static final int RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT = 6800;
 
     // Error message template for character limit validation
     public static final String CHARACTER_LIMIT_ERROR_TEMPLATE =
