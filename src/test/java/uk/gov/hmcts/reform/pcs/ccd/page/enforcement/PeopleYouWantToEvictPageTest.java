@@ -45,7 +45,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
 
             // Then
             assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().get(0))
+            assertThat(response.getErrors().getFirst())
                 .contains("Please select at least one person you want to evict");
         }
 
@@ -64,7 +64,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
 
             // Then
             assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().get(0))
+            assertThat(response.getErrors().getFirst())
                 .contains("Please select at least one person you want to evict");
         }
 
