@@ -11,7 +11,7 @@
  */
 
 import { Page, Locator } from '@playwright/test';
-import { LONG_TIMEOUT } from '../playwright.config';
+import { LONG_TIMEOUT } from '../../playwright.config';
 
 export interface CYAQuestionAnswer {
   question: string;
