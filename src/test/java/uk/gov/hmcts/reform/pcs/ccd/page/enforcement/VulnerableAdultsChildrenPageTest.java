@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.stream.Stream;
 
@@ -20,12 +21,11 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class VulnerableAdultsChildrenPageTest extends BasePageTest {
 
-    private VulnerableAdultsChildrenPage page;
 
     @BeforeEach
     void setUp() {
-        page = new VulnerableAdultsChildrenPage();
-        setPageUnderTest(page);
+        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
+        setPageUnderTest(new VulnerableAdultsChildrenPage(textAreaValidationService));
     }
 
     @ParameterizedTest
@@ -66,7 +66,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
     }
 
     private static Stream<Arguments> characterLimitScenarios() {
-        int limit = EnforcementRiskValidationUtils.getCharacterLimit();
+        int limit = TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
         return Stream.of(
                 // Exceeds limit - all categories
                 arguments(
@@ -177,7 +177,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 arguments(
                         YesNoNotSure.YES,
                         VulnerableCategory.VULNERABLE_ADULTS,
-                        "a".repeat(EnforcementRiskValidationUtils.getCharacterLimit())
+                        "a".repeat(TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT)
                 )
         );
     }
