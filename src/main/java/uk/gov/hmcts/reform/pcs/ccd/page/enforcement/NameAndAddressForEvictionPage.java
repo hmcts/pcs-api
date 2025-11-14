@@ -96,7 +96,6 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
-            .errors(java.util.List.of())
             .build();
     }
 
