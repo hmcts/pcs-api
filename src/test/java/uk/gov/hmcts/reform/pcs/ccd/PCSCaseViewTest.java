@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
@@ -285,4 +286,80 @@ class PCSCaseViewTest {
         return new CaseViewRequest<>(caseReference, state);
     }
 
+
+    @Test
+    void shouldHandleNullTenancyLicence() {
+        // Given
+        when(pcsCaseEntity.getTenancyLicence()).thenReturn(null);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getTenancyLicenceDocuments()).isNull();
+        assertThat(pcsCase.getNoticeDocuments()).isNull();
+        assertThat(pcsCase.getRentStatementDocuments()).isNull();
+    }
+
+    @ParameterizedTest
+    @MethodSource("tenancyLicenceDocumentScenarios")
+    void shouldMapTenancyLicenceDocuments(List<Document> supportingDocs,
+                                          List<Document> noticeDocs,
+                                          List<Document> rentStatementDocs,
+                                          int expectedSupportingCount,
+                                          int expectedNoticeCount,
+                                          int expectedRentStatementCount) {
+        // Given
+        uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence tenancyLicence =
+            mock(uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence.class);
+        when(pcsCaseEntity.getTenancyLicence()).thenReturn(tenancyLicence);
+
+        when(tenancyLicence.getSupportingDocuments()).thenReturn(supportingDocs);
+        when(tenancyLicence.getNoticeDocuments()).thenReturn(noticeDocs);
+        when(tenancyLicence.getRentStatementDocuments()).thenReturn(rentStatementDocs);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        if (expectedSupportingCount == 0) {
+            assertThat(pcsCase.getTenancyLicenceDocuments()).isNull();
+        } else {
+            assertThat(pcsCase.getTenancyLicenceDocuments()).hasSize(expectedSupportingCount);
+        }
+
+        if (expectedNoticeCount == 0) {
+            assertThat(pcsCase.getNoticeDocuments()).isNull();
+        } else {
+            assertThat(pcsCase.getNoticeDocuments()).hasSize(expectedNoticeCount);
+        }
+
+        if (expectedRentStatementCount == 0) {
+            assertThat(pcsCase.getRentStatementDocuments()).isNull();
+        } else {
+            assertThat(pcsCase.getRentStatementDocuments()).hasSize(expectedRentStatementCount);
+        }
+    }
+
+    private static Stream<Arguments> tenancyLicenceDocumentScenarios() {
+        Document doc1 = mock(Document.class);
+        Document doc2 = mock(Document.class);
+
+        return Stream.of(
+            // All documents present
+            arguments(List.of(doc1), List.of(doc1), List.of(doc1), 1, 1, 1),
+            // Only supporting documents
+            arguments(List.of(doc1), null, null, 1, 0, 0),
+            // Only notice documents
+            arguments(null, List.of(doc1), null, 0, 1, 0),
+            // Only rent statement documents
+            arguments(null, null, List.of(doc1), 0, 0, 1),
+            // Empty lists should not be mapped
+            arguments(List.of(), List.of(), List.of(), 0, 0, 0),
+            // Multiple documents
+            arguments(List.of(doc1, doc2), List.of(doc1, doc2), List.of(doc1, doc2), 2, 2, 2),
+            // Mixed scenario
+            arguments(List.of(doc1), List.of(), null, 1, 0, 0)
+        );
+    }
 }
