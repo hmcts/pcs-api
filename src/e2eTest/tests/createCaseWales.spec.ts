@@ -314,9 +314,9 @@ test.describe('[Create Case - Wales] @Master @nightly', async () => {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
     await performAction('selectAbsQuestions', {
-      asb: asbQuestionsWales.yesRadioOption,
-      illegalPurposes: asbQuestionsWales.yesRadioOption,
-      prohibitedConduct: asbQuestionsWales.yesRadioOption
+      asb: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
+      illegalPurposes: asbQuestionsWales.yesRadioOption, giveDetailsOfIllegal: asbQuestionsWales.giveDetailsOfIllegalHiddenTextInput,
+      prohibitedConduct: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
     });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);

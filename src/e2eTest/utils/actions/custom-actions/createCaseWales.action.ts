@@ -92,21 +92,21 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       option: asbQuestions.asb
     });
     if (asbQuestions.asb == asbQuestionsWales.yesRadioOption) {
-      await performAction('inputText', asbQuestionsWales.giveDetailsOfAsbHiddenTextLabel, asbQuestionsWales.giveDetailsOfAsbHiddenTextInput);
+      await performAction('inputText', asbQuestionsWales.giveDetailsOfAsbHiddenTextLabel, asbQuestions.giveDetailsOfAsb);
     }
     await performAction('clickRadioButton', {
       question: asbQuestionsWales.isThereActualIllegalPurposesQuestion,
       option: asbQuestions.illegalPurposes
     });
     if (asbQuestions.illegalPurposes === asbQuestionsWales.yesRadioOption) {
-      await performAction('inputText', asbQuestionsWales.giveDetailsOfIllegalHiddenTextLabel, asbQuestionsWales.giveDetailsOfIllegalHiddenTextInput);
+      await performAction('inputText', asbQuestionsWales.giveDetailsOfIllegalHiddenTextLabel, asbQuestions.giveDetailsOfIllegal);
     }
     await performAction('clickRadioButton', {
       question: asbQuestionsWales.hasThereBeenOtherProhibitedQuestion,
       option: asbQuestions.prohibitedConduct
     });
     if (asbQuestions.prohibitedConduct === asbQuestionsWales.yesRadioOption) {
-      await performAction('inputText', asbQuestionsWales.giveDetailsOfTheOtherHiddenTextLabel, asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput);
+      await performAction('inputText', asbQuestionsWales.giveDetailsOfTheOtherHiddenTextLabel, asbQuestions.giveDetailsOfTheOther);
     }
     await performAction('clickButton', asbQuestionsWales.continueButton);
   }
