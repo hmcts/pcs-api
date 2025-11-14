@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcement;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -95,36 +96,30 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         caseData.setFormattedPropertyAddress(addressFormatter
             .formatAddressWithHtmlLineBreaks(caseData.getPropertyAddress()));
         
-        // Handle defendant-related operations
+        initializeDefendantData(caseData);
+        populateDefendantSelectionList(caseData);
+        
+        return caseData;
+    }
+
+    private void initializeDefendantData(PCSCase caseData) {
         var allDefendants = caseData.getAllDefendants();
         if (!CollectionUtils.isEmpty(allDefendants)) {
             caseData.setDefendant1(allDefendants.getFirst().getValue());
         }
-        
-        // Populate defendant selection list from database
+    }
+
+    private void populateDefendantSelectionList(PCSCase caseData) {
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
-        DynamicMultiSelectStringList selectedDefendants = enforcementOrder.getSelectedDefendants();
+        var allDefendants = caseData.getAllDefendants();
+        List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
         
-        if (selectedDefendants == null
-            || selectedDefendants.getListItems() == null
-            || selectedDefendants.getListItems().isEmpty()) {
-            
-            List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
-            
-            // Preserve existing selections if any
-            List<DynamicStringListElement> value = selectedDefendants != null
-                && selectedDefendants.getValue() != null
-                ? selectedDefendants.getValue()
-                : new ArrayList<>();
-            
-            enforcementOrder.setSelectedDefendants(
-                DynamicMultiSelectStringList.builder()
-                    .value(value)  // Preserve existing selections or empty list
-                    .listItems(listItems)  // Populate from database
-                    .build()
-            );
-        }
-        return caseData;
+        enforcementOrder.setSelectedDefendants(
+            DynamicMultiSelectStringList.builder()
+                .value(new ArrayList<>())
+                .listItems(listItems)
+                .build()
+        );
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
