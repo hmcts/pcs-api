@@ -46,8 +46,8 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
         }
 
         @Test
-        @DisplayName("Should set navigation flags when evictEveryone is YES")
-        void shouldSetNavigationFlagsWhenEvictEveryoneIsYes() {
+        @DisplayName("Should set showPeopleYouWantToEvictPage to NO when evictEveryone is YES")
+        void shouldSetShowPeopleYouWantToEvictPageToNoWhenEvictEveryoneIsYes() {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
@@ -63,13 +63,12 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
-            assertThat(enforcementOrder.getShowLivingInThePropertyPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(enforcementOrder.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
         }
 
         @Test
-        @DisplayName("Should set navigation flags when evictEveryone is NO")
-        void shouldSetNavigationFlagsWhenEvictEveryoneIsNo() {
+        @DisplayName("Should set showPeopleYouWantToEvictPage to YES when evictEveryone is NO")
+        void shouldSetShowPeopleYouWantToEvictPageToYesWhenEvictEveryoneIsNo() {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
@@ -85,7 +84,6 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
-            assertThat(enforcementOrder.getShowLivingInThePropertyPage()).isEqualTo(VerticalYesNo.NO);
             assertThat(enforcementOrder.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.YES);
         }
     }

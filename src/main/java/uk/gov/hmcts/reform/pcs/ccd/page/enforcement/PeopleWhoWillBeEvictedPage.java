@@ -58,17 +58,13 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
                 .build();
         }
         
-        // Set flags to control navigation
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
-        
-        if (peopleToEvict.getEvictEveryone() == VerticalYesNo.YES) {
-            // Navigate to LivingInThePropertyPage
-            enforcementOrder.setShowLivingInThePropertyPage(VerticalYesNo.YES);
-            enforcementOrder.setShowPeopleYouWantToEvictPage(VerticalYesNo.NO);
-        } else if (peopleToEvict.getEvictEveryone() == VerticalYesNo.NO) {
+        if (peopleToEvict.getEvictEveryone() == VerticalYesNo.NO) {
             // Navigate to PeopleYouWantToEvictPage
-            enforcementOrder.setShowLivingInThePropertyPage(VerticalYesNo.NO);
             enforcementOrder.setShowPeopleYouWantToEvictPage(VerticalYesNo.YES);
+        } else if (peopleToEvict.getEvictEveryone() == VerticalYesNo.YES) {
+            // Skip PeopleYouWantToEvictPage, go directly to LivingInThePropertyPage
+            enforcementOrder.setShowPeopleYouWantToEvictPage(VerticalYesNo.NO);
         }
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
