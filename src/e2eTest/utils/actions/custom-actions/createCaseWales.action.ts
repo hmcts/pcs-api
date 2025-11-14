@@ -89,23 +89,23 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     });
     await performAction('clickRadioButton', {
       question: asbQuestionsWales.isThereActualOrThreatenedAsbQuestion,
-      option: asbQuestions.asb
+      option: asbQuestions.asbChoice
     });
-    if (asbQuestions.asb == asbQuestionsWales.yesRadioOption) {
+    if (asbQuestions.asbChoice == asbQuestionsWales.yesRadioOption) {
       await performAction('inputText', asbQuestionsWales.giveDetailsOfAsbHiddenTextLabel, asbQuestions.giveDetailsOfAsb);
     }
     await performAction('clickRadioButton', {
       question: asbQuestionsWales.isThereActualIllegalPurposesQuestion,
-      option: asbQuestions.illegalPurposes
+      option: asbQuestions.illegalPurposesChoice
     });
-    if (asbQuestions.illegalPurposes === asbQuestionsWales.yesRadioOption) {
+    if (asbQuestions.illegalPurposesChoice === asbQuestionsWales.yesRadioOption) {
       await performAction('inputText', asbQuestionsWales.giveDetailsOfIllegalHiddenTextLabel, asbQuestions.giveDetailsOfIllegal);
     }
     await performAction('clickRadioButton', {
       question: asbQuestionsWales.hasThereBeenOtherProhibitedQuestion,
-      option: asbQuestions.prohibitedConduct
+      option: asbQuestions.prohibitedConductChoice
     });
-    if (asbQuestions.prohibitedConduct === asbQuestionsWales.yesRadioOption) {
+    if (asbQuestions.prohibitedConductChoice === asbQuestionsWales.yesRadioOption) {
       await performAction('inputText', asbQuestionsWales.giveDetailsOfTheOtherHiddenTextLabel, asbQuestions.giveDetailsOfTheOther);
     }
     await performAction('clickButton', asbQuestionsWales.continueButton);
