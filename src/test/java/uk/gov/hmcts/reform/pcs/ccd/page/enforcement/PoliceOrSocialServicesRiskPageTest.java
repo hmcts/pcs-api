@@ -71,7 +71,7 @@ class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
         // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
                                              RiskCategory.AGENCY_VISITS.getText(),
-                                             RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);
+                                             "6,800");
 
         assertThat(response.getErrors()).containsExactly(expectedError);
 
