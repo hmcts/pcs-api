@@ -30,9 +30,11 @@ public class EnforcementOrder {
     private AdditionalInformation additionalInformation;
 
     @JsonUnwrapped
+    @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
     @JsonUnwrapped
+    @CCD
     private PeopleToEvict peopleToEvict;
 
     @CCD(
