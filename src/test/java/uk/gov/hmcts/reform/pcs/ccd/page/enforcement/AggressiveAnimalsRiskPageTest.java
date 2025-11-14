@@ -67,7 +67,6 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
                                              RiskCategory.AGGRESSIVE_ANIMALS.getText(),
                                              "6,800");
