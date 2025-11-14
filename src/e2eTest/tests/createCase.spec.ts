@@ -1,5 +1,6 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import {PageContentValidation} from '@utils/validations/element-validations/pageContent.validation';
 import {addressDetails, claimantType, claimType, claimantName, contactPreferences,
   defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds,
   preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
@@ -28,6 +29,10 @@ test.beforeEach(async ({page}) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Create Case - England] @regression', async () => {

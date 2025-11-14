@@ -1,5 +1,6 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
+import {PageContentValidation} from '@utils/validations/element-validations/pageContent.validation';
 import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
   claimantType, claimType, user, home, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
 
@@ -17,6 +18,10 @@ test.beforeEach(async ({page}) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Eligibility Check - Create Case] @regression', async () => {

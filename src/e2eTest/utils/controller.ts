@@ -1,13 +1,15 @@
-import {Page, test} from '@playwright/test';
-import {actionData, actionRecord, actionTuple} from './interfaces/action.interface';
-import {validationData, validationRecord, validationTuple} from './interfaces/validation.interface';
-import {ActionRegistry} from './registry/action.registry';
-import {ValidationRegistry} from './registry/validation.registry';
+import { Page, test } from '@playwright/test';
+import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
+import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
+import { ActionRegistry } from './registry/action.registry';
+import { ValidationRegistry } from './registry/validation.registry';
 
 let testExecutor: { page: Page };
+let previousUrl: string = '';
 
 export function initializeExecutor(page: Page): void {
   testExecutor = { page };
+  previousUrl = page.url();
 }
 
 function getExecutor(): { page: Page } {
@@ -17,9 +19,33 @@ function getExecutor(): { page: Page } {
   return testExecutor;
 }
 
+async function detectPageNavigation(): Promise<boolean> {
+  const executor = getExecutor();
+  const currentUrl = executor.page.url();
+
+  const pageNavigated = currentUrl !== previousUrl;
+
+  if (pageNavigated) {
+    previousUrl = currentUrl;
+  }
+
+  return pageNavigated;
+}
+
+async function validatePageIfNavigated(action:string): Promise<void> {
+  if(action.includes('click')) {
+    const pageNavigated = await detectPageNavigation();
+    if (pageNavigated) {
+      await performValidation('autoValidatePageContent');
+    }
+  }
+}
+
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
+  await validatePageIfNavigated(action);
   const actionInstance = ActionRegistry.getAction(action);
+
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;
 
@@ -32,18 +58,24 @@ export async function performAction(action: string, fieldName?: actionData | act
   }
 
   const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
+
   await test.step(stepText, async () => {
-  await actionInstance.execute(executor.page, action, fieldName, value);
+    await actionInstance.execute(executor.page, action, fieldName, value);
   });
+  await validatePageIfNavigated(action);
 }
 
-export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
+export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
   const executor = getExecutor();
-  const [fieldName, data] = typeof inputFieldName === 'string'
-    ? [inputFieldName, inputData]
-    : ['', inputFieldName];
+
+  const [fieldName, data] = inputFieldName === undefined
+      ? ['', undefined]
+      : typeof inputFieldName === 'string'
+          ? [inputFieldName, inputData]
+          : ['', inputFieldName];
+
   const validationInstance = ValidationRegistry.getValidation(validation);
-  await test.step(`Validated ${validation} - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
+  await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
 }
@@ -75,9 +107,9 @@ function readValuesFromInputObjects(obj: object): string {
     let valueString: string;
     if (Array.isArray(value)) {
       valueString = `[${value.map(item =>
-        typeof item === 'object'
-          ? `{ ${readValuesFromInputObjects(item)} }`
-          : String(item)
+          typeof item === 'object'
+              ? `{ ${readValuesFromInputObjects(item)} }`
+              : String(item)
       ).join(', ')}]`;
     } else if (typeof value === 'object' && value !== null) {
       valueString = `{ ${readValuesFromInputObjects(value)} }`;
