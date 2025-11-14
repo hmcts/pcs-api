@@ -28,7 +28,7 @@ class GroundsForPossessionTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsDiscretionaryGroundsOptions(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
             .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .build();
 
         caseDetails.setData(caseData);
@@ -49,7 +49,7 @@ class GroundsForPossessionTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsDiscretionaryGroundsOptions(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
             .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
-            .groundsForPossession(YesOrNo.NO)
+            .claimDueToRentArrears(YesOrNo.NO)
             .build();
 
         caseDetails.setData(caseData);

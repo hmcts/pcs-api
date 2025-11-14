@@ -29,7 +29,7 @@ public class AssuredTenancyRoutingPolicy implements RentDetailsRoutingPolicy {
 
     @Override
     public YesOrNo shouldShowRentDetails(PCSCase caseData) {
-        if (caseData.getGroundsForPossession() == YesOrNo.YES) {
+        if (caseData.getClaimDueToRentArrears() == YesOrNo.YES) {
             return checkRentArrearsGrounds(caseData);
         } else {
             return checkNoRentArrearsGrounds(caseData);
