@@ -40,7 +40,7 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 @RequiredArgsConstructor
 @TestConstructor(autowireMode = ALL)
 
-@Disabled("Temporarily disabled until  DTSPO-27978 is done")
+// @Disabled("Temporarily disabled until  DTSPO-27978 is done")
 public class ServiceAuthorisationConsumerTest {
 
     private static final String AUTHORISATION_TOKEN = "Bearer someAuthorisationToken";
