@@ -61,7 +61,7 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getShowLivingInThePropertyPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(enforcementOrder.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
@@ -83,7 +83,7 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getShowLivingInThePropertyPage()).isEqualTo(VerticalYesNo.NO);
             assertThat(enforcementOrder.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.YES);

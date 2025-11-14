@@ -73,7 +73,6 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
-            .errors(java.util.List.of())
             .build();
     }
 }

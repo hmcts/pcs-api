@@ -42,7 +42,7 @@ class NameAndAddressForEvictionPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getShowChangeNameAddressPage()).isEqualTo(VerticalYesNo.YES);
             assertThat(enforcementOrder.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
@@ -64,7 +64,7 @@ class NameAndAddressForEvictionPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getShowChangeNameAddressPage()).isEqualTo(VerticalYesNo.NO);
             assertThat(enforcementOrder.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.YES);

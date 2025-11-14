@@ -89,7 +89,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors()).isNullOrEmpty();
             DynamicMultiSelectStringList selected = 
                 response.getData().getEnforcementOrder().getSelectedDefendants();
             assertThat(selected).isNotNull();
@@ -123,7 +123,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrors()).isNullOrEmpty();
             DynamicMultiSelectStringList selected = 
                 response.getData().getEnforcementOrder().getSelectedDefendants();
             assertThat(selected).isNotNull();
