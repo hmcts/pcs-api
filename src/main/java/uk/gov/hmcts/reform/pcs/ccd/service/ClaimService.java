@@ -120,8 +120,14 @@ public class ClaimService {
         }
 
         return ASBQuestionsWales.builder()
+            .antisocialBehaviour(YesOrNoToBoolean.convert(
+                pcsCase.getAsbQuestionsWales().getAntisocialBehaviour()))
             .antisocialBehaviourDetails(pcsCase.getAsbQuestionsWales().getAntisocialBehaviourDetails())
+            .illegalPurposesUse(YesOrNoToBoolean.convert(
+                pcsCase.getAsbQuestionsWales().getIllegalPurposesUse()))
             .illegalPurposesUseDetails(pcsCase.getAsbQuestionsWales().getIllegalPurposesUseDetails())
+            .otherProhibitedConduct(YesOrNoToBoolean.convert(
+                pcsCase.getAsbQuestionsWales().getOtherProhibitedConduct()))
             .otherProhibitedConductDetails(pcsCase.getAsbQuestionsWales().getOtherProhibitedConductDetails())
             .build();
     }

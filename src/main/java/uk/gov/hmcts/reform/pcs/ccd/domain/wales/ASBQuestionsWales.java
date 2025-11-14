@@ -13,8 +13,11 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ASBQuestionsWales {
 
+    private Boolean antisocialBehaviour;
     private String antisocialBehaviourDetails;
+    private Boolean illegalPurposesUse;
     private String illegalPurposesUseDetails;
+    private Boolean otherProhibitedConduct;
     private String otherProhibitedConductDetails;
 
 }

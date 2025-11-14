@@ -135,6 +135,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
 | selectAbsQuestions                          | `performAction('selectAbsQuestions', {asb: asbQuestionsWales.yesRadioOption,illegalPurposes: asbQuestionsWales.yesRadioOption,prohibitedConduct: asbQuestionsWales.yesRadioOption})`                       |
+| submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
