@@ -50,7 +50,7 @@ export function getMasterStorageStatePath(): string {
 
 function getWorkers(): number {
   const env = process.env.ENVIRONMENT;
-  return env === 'preview' ? 1 : env === 'aat' ? 4 : !env ? 2 : 4;
+  return env === 'preview' ? 2 : env === 'aat' ? 4 : !env ? 2 : 4;
 }
 
 export default defineConfig({
