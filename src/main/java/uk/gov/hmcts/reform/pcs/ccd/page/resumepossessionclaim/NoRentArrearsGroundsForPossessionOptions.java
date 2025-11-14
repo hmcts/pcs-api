@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -13,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.List;
 import java.util.Set;
@@ -23,10 +21,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfiguration {
-
-    private final RentDetailsRoutingService rentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -37,7 +32,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                              + " AND legislativeCountry=\"England\""
             )
             .readonly(PCSCase::getShowNoRentArrearsGroundReasonPage, NEVER_SHOW)
-            .readonly(PCSCase::getShowRentDetailsPage, NEVER_SHOW)
+            .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)
             .label(
                 "NoRentArrearsGroundsForPossessionOptions-information", """
                     ---
@@ -74,9 +69,6 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
         caseData.setShowNoRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
-
-        YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
-        caseData.setShowRentDetailsPage(showRentDetails);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

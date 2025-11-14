@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
  * Policy interface for determining whether Rent Details page should be shown
  * based on tenancy type and selected grounds.
  */
-public interface RentDetailsRoutingPolicy {
+public interface RentSectionRoutingPolicy {
 
     /**
      * Determines if Rent Details page should be shown for the given case.
@@ -16,7 +16,7 @@ public interface RentDetailsRoutingPolicy {
      * @param caseData the case data containing tenancy type and selected grounds
      * @return YesOrNo.YES if rent details should be shown, YesOrNo.NO otherwise
      */
-    YesOrNo shouldShowRentDetails(PCSCase caseData);
+    YesOrNo shouldShowRentSection(PCSCase caseData);
 
     /**
      * Checks if this policy supports the given tenancy type.

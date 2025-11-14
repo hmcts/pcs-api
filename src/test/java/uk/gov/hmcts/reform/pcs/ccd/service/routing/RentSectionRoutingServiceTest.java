@@ -12,21 +12,21 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class RentDetailsRoutingServiceTest {
+class RentSectionRoutingServiceTest {
 
-    private RentDetailsRoutingService service;
-    private AssuredTenancyRoutingPolicy assuredTenancyPolicy;
-    private SecureFlexibleRoutingPolicy secureFlexiblePolicy;
+    private RentSectionRoutingService service;
+    private AssuredTenancyRentSectionRoutingPolicy assuredTenancyPolicy;
+    private SecureFlexibleRentSectionRoutingPolicy secureFlexiblePolicy;
 
     @BeforeEach
     void setUp() {
-        assuredTenancyPolicy = new AssuredTenancyRoutingPolicy();
-        secureFlexiblePolicy = new SecureFlexibleRoutingPolicy();
-        List<RentDetailsRoutingPolicy> policies = Arrays.asList(
+        assuredTenancyPolicy = new AssuredTenancyRentSectionRoutingPolicy();
+        secureFlexiblePolicy = new SecureFlexibleRentSectionRoutingPolicy();
+        List<RentSectionRoutingPolicy> policies = Arrays.asList(
             assuredTenancyPolicy,
             secureFlexiblePolicy
         );
-        service = new RentDetailsRoutingService(policies);
+        service = new RentSectionRoutingService(policies);
     }
 
     @Test
@@ -38,7 +38,7 @@ class RentDetailsRoutingServiceTest {
             .noRentArrearsDiscretionaryGroundsOptions(null)
             .build();
 
-        YesOrNo result = service.shouldShowRentDetails(caseData);
+        YesOrNo result = service.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -50,7 +50,7 @@ class RentDetailsRoutingServiceTest {
             .secureOrFlexibleDiscretionaryGrounds(null)
             .build();
 
-        YesOrNo result = service.shouldShowRentDetails(caseData);
+        YesOrNo result = service.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -61,7 +61,7 @@ class RentDetailsRoutingServiceTest {
             .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
             .build();
 
-        assertThatThrownBy(() -> service.shouldShowRentDetails(caseData))
+        assertThatThrownBy(() -> service.shouldShowRentSection(caseData))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No routing policy found for tenancy type: INTRODUCTORY_TENANCY");
     }
@@ -79,7 +79,7 @@ class RentDetailsRoutingServiceTest {
             .noRentArrearsDiscretionaryGroundsOptions(null)
             .build();
 
-        YesOrNo result = service.shouldShowRentDetails(caseData);
+        YesOrNo result = service.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.YES);
     }
@@ -101,7 +101,7 @@ class RentDetailsRoutingServiceTest {
             )
             .build();
 
-        YesOrNo result = service.shouldShowRentDetails(caseData);
+        YesOrNo result = service.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.YES);
     }

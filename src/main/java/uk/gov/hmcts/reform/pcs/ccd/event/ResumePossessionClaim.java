@@ -79,7 +79,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeMortgag
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
@@ -150,6 +149,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final CheckingNotice checkingNotice;
+    private final WalesCheckingNotice walesCheckingNotice;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
@@ -195,8 +196,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
             .add(mediationAndSettlement)
-            .add(new CheckingNotice())
-            .add(new WalesCheckingNotice())
+            .add(checkingNotice)
+            .add(walesCheckingNotice)
             .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())

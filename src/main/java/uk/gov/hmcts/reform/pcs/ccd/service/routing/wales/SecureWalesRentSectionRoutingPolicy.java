@@ -11,10 +11,10 @@ import java.util.Set;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.RENT_ARREARS;
 
 @Component
-public class SecureWalesRoutingPolicy implements WalesRentDetailsRoutingPolicy {
+public class SecureWalesRentSectionRoutingPolicy implements WalesRentSectionRoutingPolicy {
 
     @Override
-    public YesOrNo shouldShowRentDetails(PCSCase caseData) {
+    public YesOrNo shouldShowRentSection(PCSCase caseData) {
         Set<SecureContractDiscretionaryGroundsWales> discretionary =
             caseData.getSecureContractDiscretionaryGroundsWales();
         if (discretionary == null) {

@@ -55,6 +55,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemote
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -160,6 +162,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     @Mock
     private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    @Mock
+    private CheckingNotice checkingNotice;
+    @Mock
+    private WalesCheckingNotice walesCheckingNotice;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -190,7 +196,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
             addressFormatter,
             rentArrearsGroundsForPossession,
             rentArrearsGroundForPossessionAdditionalGrounds,
-            noRentArrearsGroundsForPossessionOptions
+            noRentArrearsGroundsForPossessionOptions,
+            checkingNotice,
+            walesCheckingNotice
         );
 
         setEventUnderTest(underTest);

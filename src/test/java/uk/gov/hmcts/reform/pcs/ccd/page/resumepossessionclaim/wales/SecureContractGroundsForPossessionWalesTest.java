@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -19,15 +18,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroun
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new SecureContractGroundsForPossessionWales(
-            new WalesRentDetailsRoutingService(List.of())
-        ));
+        setPageUnderTest(new SecureContractGroundsForPossessionWales());
     }
 
     @ParameterizedTest

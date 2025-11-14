@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -23,7 +24,7 @@ public class RentDetails implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .showCondition("showRentDetailsPage=\"Yes\"")
+                .showCondition("showRentSectionPage=\"Yes\"")
                 .label("rentDetails-content",
                         """
                         ---
@@ -40,16 +41,30 @@ public class RentDetails implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        if (caseData.getRentFrequency() != RentPaymentFrequency.OTHER) {
-            BigDecimal rentAmountInPence = new BigDecimal(caseData.getCurrentRent());
-            BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, caseData.getRentFrequency());
-            String dailyAmountString = dailyAmountInPence.toPlainString();
+        RentPaymentFrequency rentFrequency = caseData.getRentFrequency();
+        
+        // Only process if rentFrequency is set
+        if (rentFrequency != null) {
+            if (rentFrequency != RentPaymentFrequency.OTHER) {
+                // Only calculate if currentRent is also set
+                if (caseData.getCurrentRent() != null && !caseData.getCurrentRent().isEmpty()) {
+                    BigDecimal rentAmountInPence = new BigDecimal(caseData.getCurrentRent());
+                    BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, rentFrequency);
+                    String dailyAmountString = dailyAmountInPence.toPlainString();
 
-            // Set pence value for calculations/integrations
-            caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
+                    // Set pence value for calculations/integrations
+                    caseData.setCalculatedDailyRentChargeAmount(dailyAmountString);
 
-            // Set formatted value for display
-            caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
+                    // Set formatted value for display
+                    caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
+                }
+                
+                // Set flag to NO - DailyRentAmount should show first
+                caseData.setShowRentArrearsPage(YesOrNo.NO);
+            } else {
+                // Set flag to YES - RentArrears should show directly (skip DailyRentAmount)
+                caseData.setShowRentArrearsPage(YesOrNo.YES);
+            }
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -70,6 +85,9 @@ public class RentDetails implements CcdPageConfiguration {
             case MONTHLY:
                 divisor = 30.44;
                 break;
+            case OTHER:
+            default:
+                throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
         }
 
         return new BigDecimal(Math.round(rentAmountInPence.doubleValue() / divisor));

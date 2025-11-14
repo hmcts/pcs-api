@@ -42,25 +42,6 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
         assertThat(response.getData().getShowBreachOfTenancyTextarea()).isEqualTo(expectedShowBreachOfTenancyTextarea);
     }
 
-    @ParameterizedTest
-    @MethodSource("provideRentDetailsPageScenarios")
-    void shouldSetCorrectShowRentDetailsPageFlagForSecureFlexibleTenancy(
-        Set<RentArrearsOrBreachOfTenancy> rentArrearsOrBreach,
-        YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .rentArrearsOrBreachOfTenancy(rentArrearsOrBreach)
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        PCSCase updatedCaseData = response.getData();
-
-        // Then
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
-    }
-
     private static Stream<Arguments> midEventScenarios() {
         return Stream.of(
             arguments(
@@ -75,23 +56,6 @@ public class RentArrearsOrBreachOfTenancyGroundTest extends BasePageTest {
                 Set.of(),
                 YesOrNo.NO
             )
-        );
-    }
-
-    private static Stream<Arguments> provideRentDetailsPageScenarios() {
-        return Stream.of(
-            // AC03 & AC04: Rent Arrears selected - Should show Rent Details
-            arguments(Set.of(RentArrearsOrBreachOfTenancy.RENT_ARREARS), YesOrNo.YES),
-            
-            // AC05 & AC06: Breach of Tenancy only - Should NOT show Rent Details
-            arguments(Set.of(RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY), YesOrNo.NO),
-            
-            // Both selected - Should show Rent Details (rent arrears present)
-            arguments(Set.of(RentArrearsOrBreachOfTenancy.RENT_ARREARS, 
-                            RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY), YesOrNo.YES),
-            
-            // Neither selected - Should NOT show Rent Details
-            arguments(Set.of(), YesOrNo.NO)
         );
     }
 

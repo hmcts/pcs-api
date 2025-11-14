@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
@@ -28,13 +29,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
-class AssuredTenancyRoutingPolicyTest {
+class AssuredTenancyRentSectionRoutingPolicyTest {
 
-    private AssuredTenancyRoutingPolicy policy;
+    private AssuredTenancyRentSectionRoutingPolicy policy;
 
     @BeforeEach
     void setUp() {
-        policy = new AssuredTenancyRoutingPolicy();
+        policy = new AssuredTenancyRentSectionRoutingPolicy();
     }
 
     @Test
@@ -62,7 +63,7 @@ class AssuredTenancyRoutingPolicyTest {
             .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(expected);
     }
@@ -80,7 +81,7 @@ class AssuredTenancyRoutingPolicyTest {
             .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(expected);
     }
@@ -92,7 +93,7 @@ class AssuredTenancyRoutingPolicyTest {
             .groundsForPossession(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -106,7 +107,70 @@ class AssuredTenancyRoutingPolicyTest {
             .rentArrearsDiscretionaryGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
+
+        assertThat(result).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldShowRentDetailsWhenRentArrearsGroundsSetButCanonicalSetsNotPopulated() {
+        // This test verifies the fallback logic: when rentArrearsGrounds is set
+        // but rentArrearsMandatoryGrounds/rentArrearsDiscretionaryGrounds are null/empty
+        // (e.g., when CheckingNotice runs before RentArrearsGroundsForPossession.midEvent())
+        PCSCase caseData = PCSCase.builder()
+            .typeOfTenancyLicence(ASSURED_TENANCY)
+            .groundsForPossession(YesOrNo.YES)
+            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+            .rentArrearsMandatoryGrounds(null)
+            .rentArrearsDiscretionaryGrounds(null)
+            .build();
+
+        YesOrNo result = policy.shouldShowRentSection(caseData);
+
+        assertThat(result).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldShowRentDetailsWhenRentArrearsGround10SetButCanonicalSetsNotPopulated() {
+        PCSCase caseData = PCSCase.builder()
+            .typeOfTenancyLicence(ASSURED_TENANCY)
+            .groundsForPossession(YesOrNo.YES)
+            .rentArrearsGrounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
+            .rentArrearsMandatoryGrounds(Set.of())
+            .rentArrearsDiscretionaryGrounds(Set.of())
+            .build();
+
+        YesOrNo result = policy.shouldShowRentSection(caseData);
+
+        assertThat(result).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldShowRentDetailsWhenRentArrearsGround11SetButCanonicalSetsNotPopulated() {
+        PCSCase caseData = PCSCase.builder()
+            .typeOfTenancyLicence(ASSURED_TENANCY)
+            .groundsForPossession(YesOrNo.YES)
+            .rentArrearsGrounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
+            .rentArrearsMandatoryGrounds(Set.of())
+            .rentArrearsDiscretionaryGrounds(Set.of())
+            .build();
+
+        YesOrNo result = policy.shouldShowRentSection(caseData);
+
+        assertThat(result).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldReturnNoWhenRentArrearsGroundsEmptyAndCanonicalSetsNotPopulated() {
+        PCSCase caseData = PCSCase.builder()
+            .typeOfTenancyLicence(ASSURED_TENANCY)
+            .groundsForPossession(YesOrNo.YES)
+            .rentArrearsGrounds(Set.of())
+            .rentArrearsMandatoryGrounds(null)
+            .rentArrearsDiscretionaryGrounds(null)
+            .build();
+
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
