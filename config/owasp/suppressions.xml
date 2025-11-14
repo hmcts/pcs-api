@@ -17,12 +17,5 @@
     <notes>Pebble templates</notes>
     <cve>CVE-2025-1686</cve>
   </suppress>
-  <suppress>
-    <notes>
-      <![CDATA[file name: angus-activation-2.0.3.jar]]>
-    </notes>
-    <packageUrl regex="true">^pkg:maven/org\.eclipse\.angus/angus-activation@.*$</packageUrl>
-    <cve>CVE-2025-7962</cve>
-  </suppress>
   <!--End of false positives section -->
 </suppressions>
