@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -10,11 +12,15 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
+@Component
 public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -32,26 +38,22 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
-        PCSCase data = details.getData();
-        List<String> errors = new ArrayList<>();
+        PCSCase caseData = details.getData();
 
-        String txt = data.getEnforcementOrder() != null && data.getEnforcementOrder().getRiskDetails() != null
-            ? data.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails()
-            : null;
-        // Refactor validation logic to use TextAreaValidationService from PR #751 when merged
-        if (txt == null || txt.isBlank()) {
-            errors.add("Enter details");
-        } else if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
-            errors.add(EnforcementRiskValidationUtils
-                    .getCharacterLimitErrorMessage(RiskCategory.CRIMINAL_OR_ANTISOCIAL));
-        }
+        List<String> validationErrors = getValidationErrors(caseData);
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(data)
-            .errors(errors)
-            .build();
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 
+    private List<String> getValidationErrors(PCSCase caseData) {
+        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails();
+
+        return textAreaValidationService.validateSingleTextArea(
+            txt,
+            RiskCategory.CRIMINAL_OR_ANTISOCIAL.getText(),
+            TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
+        );
+    }
 }
 
 
