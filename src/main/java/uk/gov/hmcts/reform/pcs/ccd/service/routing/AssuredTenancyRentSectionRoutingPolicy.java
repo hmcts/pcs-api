@@ -26,10 +26,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENA
  * Shows Rent Details page when grounds 8, 10, or 11 are selected.
  */
 @Component
-public class AssuredTenancyRoutingPolicy implements RentDetailsRoutingPolicy {
+public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutingPolicy {
 
     @Override
-    public YesOrNo shouldShowRentDetails(PCSCase caseData) {
+    public YesOrNo shouldShowRentSection(PCSCase caseData) {
         if (caseData.getGroundsForPossession() == YesOrNo.YES) {
             return checkRentArrearsGrounds(caseData);
         } else {
@@ -61,7 +61,8 @@ public class AssuredTenancyRoutingPolicy implements RentDetailsRoutingPolicy {
             && (discretionaryGrounds == null || discretionaryGrounds.isEmpty())) {
             Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
             if (rentArrearsGrounds != null && !rentArrearsGrounds.isEmpty()) {
-                boolean hasRentArrearsGrounds = rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)
+                boolean hasRentArrearsGrounds =
+                    rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)
                     || rentArrearsGrounds.contains(RentArrearsGround.RENT_ARREARS_GROUND10)
                     || rentArrearsGrounds.contains(RentArrearsGround.PERSISTENT_DELAY_GROUND11);
                 return YesOrNo.from(hasRentArrearsGrounds);

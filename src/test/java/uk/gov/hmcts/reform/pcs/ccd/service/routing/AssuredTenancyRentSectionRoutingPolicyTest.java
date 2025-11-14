@@ -29,13 +29,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds
 import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
-class AssuredTenancyRoutingPolicyTest {
+class AssuredTenancyRentSectionRoutingPolicyTest {
 
-    private AssuredTenancyRoutingPolicy policy;
+    private AssuredTenancyRentSectionRoutingPolicy policy;
 
     @BeforeEach
     void setUp() {
-        policy = new AssuredTenancyRoutingPolicy();
+        policy = new AssuredTenancyRentSectionRoutingPolicy();
     }
 
     @Test
@@ -63,7 +63,7 @@ class AssuredTenancyRoutingPolicyTest {
             .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(expected);
     }
@@ -81,7 +81,7 @@ class AssuredTenancyRoutingPolicyTest {
             .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(expected);
     }
@@ -93,7 +93,7 @@ class AssuredTenancyRoutingPolicyTest {
             .groundsForPossession(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -107,7 +107,7 @@ class AssuredTenancyRoutingPolicyTest {
             .rentArrearsDiscretionaryGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -125,7 +125,7 @@ class AssuredTenancyRoutingPolicyTest {
             .rentArrearsDiscretionaryGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.YES);
     }
@@ -140,7 +140,7 @@ class AssuredTenancyRoutingPolicyTest {
             .rentArrearsDiscretionaryGrounds(Set.of())
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.YES);
     }
@@ -155,7 +155,7 @@ class AssuredTenancyRoutingPolicyTest {
             .rentArrearsDiscretionaryGrounds(Set.of())
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.YES);
     }
@@ -170,7 +170,7 @@ class AssuredTenancyRoutingPolicyTest {
             .rentArrearsDiscretionaryGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }

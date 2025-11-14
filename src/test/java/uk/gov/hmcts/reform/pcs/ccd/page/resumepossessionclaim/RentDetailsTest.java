@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -58,5 +59,34 @@ class RentDetailsTest extends BasePageTest {
 
         // Then
         assertThat(caseData.getDailyRentChargeAmount()).isEqualTo("1500");
+    }
+
+    @Test
+    void shouldSetShowRentArrearsPageToNoForWeeklyFrequency() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentFrequency(RentPaymentFrequency.WEEKLY)
+                .currentRent("7000")
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldSetShowRentArrearsPageToYesForOtherFrequency() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentFrequency(RentPaymentFrequency.OTHER)
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.YES);
     }
 }

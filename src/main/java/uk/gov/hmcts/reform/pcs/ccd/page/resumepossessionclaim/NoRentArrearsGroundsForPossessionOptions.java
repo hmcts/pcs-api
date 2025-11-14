@@ -32,7 +32,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                              + " AND legislativeCountry=\"England\""
             )
             .readonly(PCSCase::getShowNoRentArrearsGroundReasonPage, NEVER_SHOW)
-            .readonly(PCSCase::getShowRentDetailsPage, NEVER_SHOW)
+            .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)
             .label(
                 "NoRentArrearsGroundsForPossessionOptions-information", """
                     ---

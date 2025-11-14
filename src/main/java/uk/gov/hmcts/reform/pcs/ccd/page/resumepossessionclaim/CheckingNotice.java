@@ -9,13 +9,13 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentSectionRoutingService;
 
 @Component
 @RequiredArgsConstructor
 public class CheckingNotice implements CcdPageConfiguration {
 
-    private final RentDetailsRoutingService rentDetailsRoutingService;
+    private final RentSectionRoutingService rentSectionRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -53,7 +53,7 @@ public class CheckingNotice implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        caseData.setShowRentDetailsPage(rentDetailsRoutingService.shouldShowRentDetails(caseData));
+        caseData.setShowRentSectionPage(rentSectionRoutingService.shouldShowRentSection(caseData));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)

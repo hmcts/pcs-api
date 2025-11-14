@@ -10,13 +10,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentSectionRoutingService;
 
 @Component
 @RequiredArgsConstructor
 public class WalesCheckingNotice implements CcdPageConfiguration {
 
-    private final WalesRentDetailsRoutingService walesRentDetailsRoutingService;
+    private final WalesRentSectionRoutingService walesRentSectionRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -57,7 +57,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        caseData.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(caseData));
+        caseData.setShowRentSectionPage(walesRentSectionRoutingService.shouldShowRentSection(caseData));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
