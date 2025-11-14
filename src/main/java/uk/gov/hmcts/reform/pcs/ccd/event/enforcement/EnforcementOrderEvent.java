@@ -97,7 +97,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         
         // Handle defendant-related operations
         var allDefendants = caseData.getAllDefendants();
-        if (allDefendants != null && !allDefendants.isEmpty()) {
+        if (!CollectionUtils.isEmpty(allDefendants)) {
             caseData.setDefendant1(allDefendants.getFirst().getValue());
         }
         
