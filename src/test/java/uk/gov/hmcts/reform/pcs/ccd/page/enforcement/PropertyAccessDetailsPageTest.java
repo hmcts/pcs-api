@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 class PropertyAccessDetailsPageTest extends BasePageTest {
 
@@ -89,7 +88,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
                                              "Explain why it's difficult to access the property",
-                                             RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);
+                                             "6,800");
 
         assertThat(response.getErrors()).containsExactly(expectedError);
     }
