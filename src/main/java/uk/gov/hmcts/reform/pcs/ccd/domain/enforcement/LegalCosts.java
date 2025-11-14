@@ -11,10 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 public class LegalCosts {
 
     @CCD(
-            label = "Do you want to reclaim any legal costs?",
-            hint =  "For example, explain if there is a communal entrance to "
-                    + "the property and include the entry code. If the property has a car park or a designated "
-                    + "parking space, tell the bailiff where they can park their car"
+            label = "Do you want to reclaim any legal costs?"
     )
     private VerticalYesNo areLegalCostsToBeClaimed;
 
