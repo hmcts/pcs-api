@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
@@ -73,6 +74,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new PropertyAccessDetailsPage())
                 .add(new AdditionalInformationPage())
                 .add(new MoneyOwedPage())
+                .add(new LegalCostsPage())
                 .add(new CheckYourAnswersPlaceHolder());
     }
 
