@@ -19,7 +19,7 @@ async function globalSetupConfig(): Promise<void> {
   if (!fs.existsSync(sessionDir)) {
     fs.mkdirSync(sessionDir, { recursive: true });
   }
-  const browser = await chromium.launch({headless: !!process.env.CI});
+  const browser = await chromium.launch({ channel: 'chrome', headless: !!process.env.CI });
   const page = await browser.newPage();
 
   try {
