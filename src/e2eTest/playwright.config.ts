@@ -60,7 +60,7 @@ export function getMasterStorageStatePath(): string {
 }
 
 const getWorkers = () =>
-  !process.env.ENVIRONMENT ? 2 :
+  !process.env.ENVIRONMENT ? 1 :
     process.env.ENVIRONMENT === "preview" ? 2 :
       process.env.ENVIRONMENT === "aat" ? 4 :
         4;
