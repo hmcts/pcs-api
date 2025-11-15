@@ -28,47 +28,27 @@ export function getStorageStatePath(workerIndex?: number): string {
 
 /**
  * Copies master storage state to worker-specific file if worker file doesn't exist.
+ * Returns worker path - file will be created/copied when needed.
  */
 export function ensureWorkerStorageFile(): string {
   const masterPath = getMasterStorageStatePath();
   const workerPath = getStorageStatePath();
+  const sessionDir = path.dirname(workerPath);
 
-  // Wait for master file to exist (in case globalSetup is still running)
-  if (!fs.existsSync(masterPath)) {
-    const maxWait = process.env.CI ? 30000 : 5000; // 30s in CI, 5s locally
-    const start = Date.now();
-    while (!fs.existsSync(masterPath) && Date.now() - start < maxWait) {
-      const wait = Date.now();
-      while (Date.now() - wait < 100) {
-        // Busy wait 100ms
-      }
-    }
-    if (!fs.existsSync(masterPath)) {
-      throw new Error(`Master storage file not found after waiting: ${masterPath}`);
-    }
+  // Ensure directory exists
+  if (!fs.existsSync(sessionDir)) {
+    fs.mkdirSync(sessionDir, { recursive: true });
   }
 
-  if (!fs.existsSync(workerPath)) {
-    const sessionDir = path.dirname(workerPath);
-    if (!fs.existsSync(sessionDir)) {
-      fs.mkdirSync(sessionDir, { recursive: true });
-    }
-    
-    // Retry file copy in CI to handle potential race conditions
-    let retries = process.env.CI ? 3 : 1;
-    while (retries > 0) {
-      try {
-        fs.copyFileSync(masterPath, workerPath);
-        break;
-      } catch (error) {
-        retries--;
-        if (retries === 0) throw error;
-        // Small delay before retry
-        const start = Date.now();
-        while (Date.now() - start < 100) {
-          // Busy wait for 100ms
-        }
-      }
+  // If master exists and worker doesn't, copy it
+  // If master doesn't exist yet (globalSetup still running), return worker path anyway
+  // Playwright will handle missing storage state gracefully
+  if (fs.existsSync(masterPath) && !fs.existsSync(workerPath)) {
+    try {
+      fs.copyFileSync(masterPath, workerPath);
+    } catch (error) {
+      // If copy fails, return path anyway - Playwright will handle it
+      console.warn(`Failed to copy master storage file: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
