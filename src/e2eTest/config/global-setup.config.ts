@@ -3,7 +3,7 @@ import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { user } from '@data/user-data';
 import { handlePostLoginCookieBanner } from '@utils/cookie.utils';
-import {LONG_TIMEOUT, SHORT_TIMEOUT, getMasterStorageStatePath, SESSION_COOKIE_NAME} from '../playwright.config';
+import {LONG_TIMEOUT, SHORT_TIMEOUT, getStorageStatePath, SESSION_COOKIE_NAME} from '../playwright.config';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -14,11 +14,9 @@ async function globalSetupConfig(): Promise<void> {
     throw new Error('MANAGE_CASE_BASE_URL environment variable is required');
   }
 
-  const storageStatePath = getMasterStorageStatePath();
+  const storageStatePath = getStorageStatePath();
   const sessionDir = path.dirname(storageStatePath);
-  if (!fs.existsSync(sessionDir)) {
-    fs.mkdirSync(sessionDir, { recursive: true });
-  }
+  fs.mkdirSync(sessionDir, { recursive: true });
   const browser = await chromium.launch({ channel: 'chrome', headless: !!process.env.CI });
   const page = await browser.newPage();
 
@@ -30,9 +28,16 @@ async function globalSetupConfig(): Promise<void> {
       throw new Error('Login failed: missing credentials');
     }
 
-    if (fs.existsSync(storageStatePath) && SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
-      await browser.close();
-      return;
+    const sessionExists = fs.existsSync(storageStatePath);
+    const sessionValid = sessionExists && SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME);
+
+    if (sessionValid) {
+      await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });
+      const isLogin = await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+      if (!isLogin) {
+        await browser.close();
+        return;
+      }
     }
 
     await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });

@@ -11,7 +11,6 @@ import {ClickRadioButtonAction} from '@utils//actions/element-actions/clickRadio
 import {UploadFileAction} from '@utils/actions/element-actions/uploadFile.action';
 import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWales.action';
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
-import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 
 export class ActionRegistry {
@@ -54,7 +53,7 @@ export class ActionRegistry {
     ['selectOtherGrounds', new CreateCaseAction()],
     ['selectTenancyOrLicenceDetails', new CreateCaseAction()],
     ['enterReasonForPossession', new CreateCaseAction()],
-    ['reloginAndFindTheCase', new CreateCaseAction()],
+    ['findTheCase', new CreateCaseAction()],
     ['selectRentArrearsOrBreachOfTenancy', new CreateCaseAction()],
     ['provideRentDetails', new CreateCaseAction()],
     ['selectDailyRentAmount', new CreateCaseAction()],
