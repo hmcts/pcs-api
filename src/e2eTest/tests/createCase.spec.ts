@@ -5,13 +5,13 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
   preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
   rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
   reasonsForPossession, moneyJudgment, claimantCircumstances, applications,
-  completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers,
+  completeYourClaim, reasonsForRequestingASuspensionOrder, checkYourAnswers,
   propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
   additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
   alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
   statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
   underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
-  reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
+  reasonsForRequestingASuspensionAndDemotionOrder,
   addressCheckYourAnswers} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
@@ -23,7 +23,7 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case - England] @regression', async () => {
+test.describe('[Create Case - England] @regression @PR', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
