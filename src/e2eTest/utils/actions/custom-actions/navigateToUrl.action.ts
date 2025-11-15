@@ -1,9 +1,8 @@
 import { IAction } from '@utils/interfaces';
 import { Page, test } from '@playwright/test';
 import { LONG_TIMEOUT, SHORT_TIMEOUT } from '../../../playwright.config';
+import { LoginAction } from '@utils/actions/custom-actions/login.action';
 import { handlePostLoginCookieBanner } from '@utils/cookie.utils';
-import { performAction } from "@utils/controller";
-import { user } from "@data/page-data";
 
 export class NavigateToUrlAction implements IAction {
   async execute(page: Page, action: string, url: string): Promise<void> {
@@ -11,14 +10,15 @@ export class NavigateToUrlAction implements IAction {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });
 
       if (await this.isLoginPage(page)) {
-        await performAction('login',user.claimantSolicitor);
-        await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
+        await new LoginAction().execute(page, 'login', 'claimantSolicitor');
+        await page.waitForLoadState('networkidle', { timeout: LONG_TIMEOUT }).catch(() => {});
         await handlePostLoginCookieBanner(page).catch(() => {});
       }
     });
   }
 
   private async isLoginPage(page: Page): Promise<boolean> {
+    await page.waitForLoadState('domcontentloaded', { timeout: SHORT_TIMEOUT }).catch(() => {});
     const url = page.url().toLowerCase();
     if (url.includes('/login') || url.includes('/idam') || url.includes('/auth') || url.includes('/sign-in')) {
       return true;

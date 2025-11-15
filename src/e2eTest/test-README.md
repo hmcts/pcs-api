@@ -133,7 +133,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
 | submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
-| findTheCase                                 | `performAction('findTheCase')`                                                                                                                                                                             |
+| findTheCase                                 | `performAction('findTheCase', caseNumber)`                                                                                                                                                                 |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

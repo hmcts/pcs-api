@@ -38,7 +38,7 @@ test.describe('[Create Case - With resume claim options @PR]', async () => {
     await performAction('selectClaimantName', claimantName.yes);
     await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
     await performAction('clickButton',contactPreferences.cancel);
-    await performAction('findTheCase');
+    await performAction('findTheCase',caseNumber);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, true);
