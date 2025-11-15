@@ -50,9 +50,7 @@ async function globalSetupConfig(): Promise<void> {
     });
 
     await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
-    await page.waitForTimeout(SHORT_TIMEOUT);
     await handlePostLoginCookieBanner(page).catch(() => {});
-    await page.waitForTimeout(SHORT_TIMEOUT);
     await page.context().storageState({ path: storageStatePath });
   } finally {
     await browser.close();

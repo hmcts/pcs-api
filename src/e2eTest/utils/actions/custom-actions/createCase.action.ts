@@ -670,13 +670,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
   }
 
-  private async findTheCase(caseNumber: actionData) {
+  private async findTheCase(caseNo: actionData) {
     await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
     await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
-    await performAction('inputText', search.caseNumberLabel, caseNumber);
+    await performAction('inputText', search.caseNumberLabel, caseNo);
     await performAction('clickButton', search.apply);
-    await performAction('clickButton', caseNumber);
+    await performAction('clickButton', caseNo);
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {
