@@ -27,7 +27,6 @@ export class ActionRegistry {
     ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
-    ['handleCookieConsent', new handleCookieConsentAction()],
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],

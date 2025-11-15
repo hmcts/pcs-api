@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { IAction } from '../../interfaces/action.interface';
+import { IAction } from '@utils/interfaces';
 
 export class ClickTabAction implements IAction {
   async execute(page: Page, action: string, tabName: string): Promise<void> {

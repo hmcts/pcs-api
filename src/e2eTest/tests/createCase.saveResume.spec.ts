@@ -5,7 +5,7 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
   completeYourClaim, dailyRentAmount, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications,
   user, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, statementOfTruth, home,
   additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
-  wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data/';
+  wantToUploadDocuments, resumeClaim, resumeClaimOptions, addressCheckYourAnswers} from '@data/page-data/';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -16,14 +16,8 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
+  await performAction('login', 'claimantSolicitor');
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
@@ -190,7 +184,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeaderSecure);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],

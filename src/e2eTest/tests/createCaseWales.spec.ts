@@ -25,7 +25,6 @@ import {
   claimantCircumstances,
   applications,
   completeYourClaim,
-  user,
   checkYourAnswers,
   propertyDetails,
   languageUsed,
@@ -37,7 +36,6 @@ import {
   wantToUploadDocuments,
   whatAreYourGroundsForPossessionWales,
   addressDetails,
-  signInOrCreateAnAccount,
   occupationContractOrLicenceDetailsWales,
   prohibitedConductStandardContractWales,
   dailyRentAmount,
@@ -48,15 +46,8 @@ import {
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
+  // User is already authenticated via globalSetup
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');

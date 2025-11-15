@@ -627,8 +627,6 @@ export class CreateCaseAction implements IAction {
   }
 
   private async provideMoreDetailsOfClaim(page: Page) {
-    // Reloading to reset session/UI state before performing next step
-    await page.reload();
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);

@@ -5,26 +5,19 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
   preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
   rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
   reasonsForPossession, moneyJudgment, claimantCircumstances, applications,
-  completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers,
+  completeYourClaim, reasonsForRequestingASuspensionOrder, checkYourAnswers,
   propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
   additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
   alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
   statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
   underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
-  reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
+  reasonsForRequestingASuspensionAndDemotionOrder,
   addressCheckYourAnswers} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
+  // User is already authenticated via globalSetup
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
