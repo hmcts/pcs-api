@@ -30,14 +30,10 @@ async function globalSetupConfig(): Promise<void> {
       throw new Error('Login failed: missing credentials');
     }
 
-    // Check if valid session exists, skip login if found
     if (fs.existsSync(storageStatePath) && SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME)) {
-      console.log('✓ Using existing valid session');
       await browser.close();
       return;
     }
-
-    console.log('Performing login and setting up session...');
 
     await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });
 
@@ -48,18 +44,11 @@ async function globalSetupConfig(): Promise<void> {
       sessionFile: storageStatePath,
     });
 
-    // Wait for successful navigation away from login
     await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
-    await page.waitForTimeout(SHORT_TIMEOUT); // Wait for Angular components to render
-
-    // Handle post-login cookie banner - non-blocking
-    await handlePostLoginCookieBanner(page).catch(() => {
-      console.warn('Post-login cookie banner handling failed, continuing with session save...');
-    });
     await page.waitForTimeout(SHORT_TIMEOUT);
-
+    await handlePostLoginCookieBanner(page).catch(() => {});
+    await page.waitForTimeout(SHORT_TIMEOUT);
     await page.context().storageState({ path: storageStatePath });
-    console.log('✓ Storage state saved successfully');
   } finally {
     await browser.close();
   }

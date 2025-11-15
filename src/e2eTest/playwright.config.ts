@@ -12,8 +12,6 @@ export const LONG_TIMEOUT = 30000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
-// Storage state path utilities
-// Use per-worker storage files to prevent race conditions with parallel execution
 const SESSION_DIR = path.join(process.cwd(), '.auth');
 const STORAGE_STATE_FILE = 'storage-state.json';
 export const SESSION_COOKIE_NAME = 'Idam.Session';
@@ -26,29 +24,20 @@ export function getStorageStatePath(workerIndex?: number): string {
   return path.join(SESSION_DIR, fileName);
 }
 
-/**
- * Copies master storage state to worker-specific file if worker file doesn't exist.
- * Returns worker path - file will be created/copied when needed.
- */
 export function ensureWorkerStorageFile(): string {
   const masterPath = getMasterStorageStatePath();
   const workerPath = getStorageStatePath();
   const sessionDir = path.dirname(workerPath);
 
-  // Ensure directory exists
   if (!fs.existsSync(sessionDir)) {
     fs.mkdirSync(sessionDir, { recursive: true });
   }
 
-  // If master exists and worker doesn't, copy it
-  // If master doesn't exist yet (globalSetup still running), return worker path anyway
-  // Playwright will handle missing storage state gracefully
   if (fs.existsSync(masterPath) && !fs.existsSync(workerPath)) {
     try {
       fs.copyFileSync(masterPath, workerPath);
-    } catch (error) {
-      // If copy fails, return path anyway - Playwright will handle it
-      console.warn(`Failed to copy master storage file: ${error instanceof Error ? error.message : String(error)}`);
+    } catch {
+      // Playwright will handle missing storage state gracefully
     }
   }
 
@@ -59,18 +48,16 @@ export function getMasterStorageStatePath(): string {
   return path.join(SESSION_DIR, STORAGE_STATE_FILE);
 }
 
-const getWorkers = () =>
-  !process.env.ENVIRONMENT ? 1 :
-    process.env.ENVIRONMENT === "preview" ? 2 :
-      process.env.ENVIRONMENT === "aat" ? 4 :
-        4;
+const getWorkers = () => {
+  const env = process.env.ENVIRONMENT;
+  return !env ? 1 : env === 'preview' ? 2 : env === 'aat' ? 4 : 4;
+};
 
 export default defineConfig({
   testDir: 'tests/',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 3 : 0,
-  // Per-worker storage files prevent race conditions, allowing safe parallel execution
   workers: getWorkers(),
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
@@ -92,6 +79,8 @@ export default defineConfig({
         suiteTitle: false,
         environmentInfo: {
           os_version: process.version,
+          base_url: process.env.MANAGE_CASE_BASE_URL || 'http://localhost:3000',
+          logged_in_user: process.env.IDAM_PCS_USER_EMAIL || 'pcs-solicitor-automation@test.com',
         },
       },
     ],
@@ -99,6 +88,8 @@ export default defineConfig({
   projects: [
     {
       name: 'chrome',
+      testMatch: /.*\.spec\.ts$/,
+      testIgnore: /.*saveResume\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         channel: 'chrome',
@@ -110,9 +101,26 @@ export default defineConfig({
         headless: !!process.env.CI,
       },
     },
+    {
+      name: 'chrome-no-storage',
+      testMatch: /.*saveResume\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        screenshot: 'only-on-failure',
+        video: 'retain-on-failure',
+        trace: 'on-first-retry',
+        javaScriptEnabled: true,
+        viewport: DEFAULT_VIEWPORT,
+        headless: !!process.env.CI,
+        storageState: undefined,
+      },
+    },
     ...(process.env.CI ? [
       {
         name: 'firefox',
+        testMatch: /.*\.spec\.ts$/,
+        testIgnore: /.*saveResume\.spec\.ts$/,
         use: {
           ...devices["Desktop Firefox"],
           channel: 'firefox',
