@@ -40,6 +40,11 @@ export class LoginAction implements IAction {
       password: userPassword,
       sessionFile: storageStatePath,
     });
+
+    // Save updated storage state after login to refresh session
+    // This updates the worker-specific file to keep session fresh
+    await page.context().storageState({ path: storageStatePath });
+    console.log('✓ Session refreshed and saved to storage state');
   }
 
   private async createUserAndLogin(page: Page, userType: string, roles: string[]): Promise<void> {
