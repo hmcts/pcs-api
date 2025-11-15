@@ -59,14 +59,11 @@ export function getMasterStorageStatePath(): string {
   return path.join(SESSION_DIR, STORAGE_STATE_FILE);
 }
 
-function getWorkers(): number {
-  const env = process.env.ENVIRONMENT;
-  // Keep 2 workers for preview in CI, reduce for other environments
-  if (process.env.CI) {
-    return env === 'preview' ? 2 : env === 'aat' ? 2 : 1;
-  }
-  return env === 'preview' ? 2 : env === 'aat' ? 4 : !env ? 2 : 4;
-}
+const getWorkers = () =>
+  !process.env.ENVIRONMENT ? 1 :
+    process.env.ENVIRONMENT === "preview" ? 2 :
+      process.env.ENVIRONMENT === "aat" ? 4 :
+        4;
 
 export default defineConfig({
   testDir: 'tests/',
