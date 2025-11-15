@@ -33,12 +33,43 @@ export function ensureWorkerStorageFile(): string {
   const masterPath = getMasterStorageStatePath();
   const workerPath = getStorageStatePath();
 
-  if (fs.existsSync(masterPath) && !fs.existsSync(workerPath)) {
+  // Wait for master file to exist (in case globalSetup is still running)
+  if (!fs.existsSync(masterPath)) {
+    const maxWait = process.env.CI ? 30000 : 5000; // 30s in CI, 5s locally
+    const start = Date.now();
+    while (!fs.existsSync(masterPath) && Date.now() - start < maxWait) {
+      const wait = Date.now();
+      while (Date.now() - wait < 100) {
+        // Busy wait 100ms
+      }
+    }
+    if (!fs.existsSync(masterPath)) {
+      throw new Error(`Master storage file not found after waiting: ${masterPath}`);
+    }
+  }
+
+  if (!fs.existsSync(workerPath)) {
     const sessionDir = path.dirname(workerPath);
     if (!fs.existsSync(sessionDir)) {
       fs.mkdirSync(sessionDir, { recursive: true });
     }
-    fs.copyFileSync(masterPath, workerPath);
+    
+    // Retry file copy in CI to handle potential race conditions
+    let retries = process.env.CI ? 3 : 1;
+    while (retries > 0) {
+      try {
+        fs.copyFileSync(masterPath, workerPath);
+        break;
+      } catch (error) {
+        retries--;
+        if (retries === 0) throw error;
+        // Small delay before retry
+        const start = Date.now();
+        while (Date.now() - start < 100) {
+          // Busy wait for 100ms
+        }
+      }
+    }
   }
 
   return workerPath;
@@ -50,6 +81,10 @@ export function getMasterStorageStatePath(): string {
 
 function getWorkers(): number {
   const env = process.env.ENVIRONMENT;
+  // Keep 2 workers for preview in CI, reduce for other environments
+  if (process.env.CI) {
+    return env === 'preview' ? 2 : env === 'aat' ? 2 : 1;
+  }
   return env === 'preview' ? 2 : env === 'aat' ? 4 : !env ? 2 : 4;
 }
 
