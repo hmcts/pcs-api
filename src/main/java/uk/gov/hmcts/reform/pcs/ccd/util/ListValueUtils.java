@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 
 import java.util.List;
+import java.util.UUID;
 
 public class ListValueUtils {
 
@@ -12,7 +13,9 @@ public class ListValueUtils {
         }
 
         return items.stream()
-            .map(item -> ListValue.<T>builder().value(item).build())
+            .map(item -> ListValue.<T>builder()
+                .id(UUID.randomUUID().toString()).value(item)
+                .build())
             .toList();
     }
 
