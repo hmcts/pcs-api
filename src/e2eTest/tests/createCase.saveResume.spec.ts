@@ -24,8 +24,7 @@ test.beforeEach(async ({page}) => {
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
   });
-  await performAction('clickTab', home.createCaseTab);
-  await performAction('selectJurisdictionCaseTypeEvent');
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
   await performAction('housingPossessionClaim');
 });
 
