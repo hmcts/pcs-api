@@ -12,7 +12,7 @@ export const test = base.extend<AuthenticatedContextFixtures>({
   authenticatedContext: async ({ browser }, use) => {
     const context = await browser.newContext();
     let setupError: Error | null = null;
-    
+
     try {
       const { email: userEmail, password: userPassword } = user.claimantSolicitor;
       const baseUrl = process.env.MANAGE_CASE_BASE_URL;
@@ -25,6 +25,10 @@ export const test = base.extend<AuthenticatedContextFixtures>({
           initializeExecutor(page);
 
           await performAction('navigateToUrl', baseUrl);
+          await performAction('handleCookieConsent', {
+            accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+            hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+          });
           await performValidation('mainHeader', signInOrCreateAnAccount.mainHeader);
           await performAction('inputText', signInOrCreateAnAccount.emailAddressLabel, userEmail);
           await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
@@ -41,7 +45,7 @@ export const test = base.extend<AuthenticatedContextFixtures>({
       }
 
       await use(context);
-      
+
       if (setupError) {
         throw setupError;
       }
