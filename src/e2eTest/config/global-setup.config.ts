@@ -7,6 +7,8 @@ import {LONG_TIMEOUT, SHORT_TIMEOUT, getStorageStatePath, SESSION_COOKIE_NAME} f
 import * as path from 'path';
 import * as fs from 'fs';
 
+const isCI = !!process.env.CI;
+
 
 async function globalSetupConfig(): Promise<void> {
   const baseURL = process.env.MANAGE_CASE_BASE_URL;
@@ -49,23 +51,31 @@ async function globalSetupConfig(): Promise<void> {
       sessionFile: storageStatePath,
     });
 
-    // Wait for navigation to complete after login (critical for CI)
-    await page.waitForLoadState('networkidle', { timeout: LONG_TIMEOUT }).catch(() => {
-      // Fallback to domcontentloaded if networkidle times out
-      return page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
-    });
-    
-    // Verify login was successful - ensure we're not still on login page
-    await page.waitForTimeout(1000); // Wait for any redirects
-    const currentUrl = page.url().toLowerCase();
-    const isStillOnLoginPage = currentUrl.includes('/login') || 
-                               currentUrl.includes('/idam') || 
-                               currentUrl.includes('/auth') || 
-                               currentUrl.includes('/sign-in') ||
-                               await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
-    
-    if (isStillOnLoginPage) {
-      throw new Error('Login failed: Still on login page after authentication attempt');
+    // Wait for navigation to complete after login
+    // Use networkidle in CI (more reliable), domcontentloaded locally (faster)
+    if (isCI) {
+      await page.waitForLoadState('networkidle', { timeout: LONG_TIMEOUT }).catch(() => {
+        // Fallback to domcontentloaded if networkidle times out
+        return page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
+      });
+      
+      // Wait for redirects (important in CI)
+      await page.waitForTimeout(1000);
+      
+      // Verify login was successful - ensure we're not still on login page (CI only)
+      const currentUrl = page.url().toLowerCase();
+      const isStillOnLoginPage = currentUrl.includes('/login') || 
+                                 currentUrl.includes('/idam') || 
+                                 currentUrl.includes('/auth') || 
+                                 currentUrl.includes('/sign-in') ||
+                                 await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+      
+      if (isStillOnLoginPage) {
+        throw new Error('Login failed: Still on login page after authentication attempt');
+      }
+    } else {
+      // Local: faster - just wait for domcontentloaded
+      await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
     }
     
     await handlePostLoginCookieBanner(page).catch(() => {});
