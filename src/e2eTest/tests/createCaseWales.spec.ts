@@ -1,5 +1,5 @@
 import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import {
   claimType,
   claimantType,
@@ -7,50 +7,29 @@ import {
   claimantDetailsWales,
   contactPreferences,
   defendantDetails,
-  tenancyLicenceDetails,
-  groundsForPossession,
-  rentArrearsPossessionGrounds,
   preActionProtocol,
   mediationAndSettlement,
   noticeOfYourIntention,
   rentDetails,
-  provideMoreDetailsOfClaim,
-  resumeClaim,
-  resumeClaimOptions,
   detailsOfRentArrears,
-  whatAreYourGroundsForPossession,
-  rentArrearsOrBreachOfTenancy,
   reasonsForPossession,
   moneyJudgment,
   claimantCircumstances,
-  applications,
-  completeYourClaim,
-  checkYourAnswers,
-  propertyDetails,
-  languageUsed,
   defendantCircumstances,
   claimingCosts,
-  home,
-  additionalReasonsForPossession,
-  underlesseeOrMortgageeEntitledToClaim,
-  wantToUploadDocuments,
   whatAreYourGroundsForPossessionWales,
   addressDetails,
   occupationContractOrLicenceDetailsWales,
   prohibitedConductStandardContractWales,
   dailyRentAmount,
   antiSocialBehaviourWales,
-  noticeDetails,
   addressCheckYourAnswers
 } from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   // User is already authenticated via globalSetup
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
-  await performAction('clickTab', home.createCaseTab);
-  await performAction('selectJurisdictionCaseTypeEvent');
-  await performAction('housingPossessionClaim');
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
 });
 
 test.describe('[Create Case - Wales] @regression', async () => {

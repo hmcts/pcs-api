@@ -19,7 +19,7 @@ export function getStorageStatePath(): string {
 
 const getWorkers = () => {
   const env = process.env.ENVIRONMENT;
-  return !env || env === 'preview' ? 2 : 4;
+  return !env ? 1 : env === 'preview' ? 1 : env === 'aat' ? 4 : 4;
 };
 
 export default defineConfig({

@@ -9,7 +9,7 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
   propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
   additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
   alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
-  statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
+  statementOfExpressTerms, wantToUploadDocuments, uploadAdditionalDocs,
   underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
   reasonsForRequestingASuspensionAndDemotionOrder,
   addressCheckYourAnswers} from '@data/page-data';
@@ -17,10 +17,7 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   // User is already authenticated via globalSetup
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
-  await performAction('clickTab', home.createCaseTab);
-  await performAction('selectJurisdictionCaseTypeEvent');
-  await performAction('housingPossessionClaim');
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
 });
 
 test.describe('[Create Case - England] @regression', async () => {
