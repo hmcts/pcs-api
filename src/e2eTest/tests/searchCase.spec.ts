@@ -1,18 +1,17 @@
-import {test} from '@playwright/test';
+import {test} from '@fixtures/authenticated-context.fixture';
 import { initializeExecutor, performAction, performValidation } from '@utils/controller';
 import {caseInfo} from '@utils/actions/custom-actions';
-import {user} from '@data/user-data';
 import {signInOrCreateAnAccount} from '@data/page-data';
 import {caseApiData} from '@data/api-data';
 
-test.beforeEach(async ({page}) => {
-  initializeExecutor(page);
+test.beforeEach(async ({authenticatedPage}) => {
+  initializeExecutor(authenticatedPage);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton
   });
-  await performAction('login', user.claimantSolicitor);
+  // Login is now handled by the authenticatedPage fixture via API
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
   });

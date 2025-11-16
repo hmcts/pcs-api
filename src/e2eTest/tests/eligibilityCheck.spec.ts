@@ -1,16 +1,16 @@
-import {test} from '@playwright/test';
+import {test} from '@fixtures/authenticated-context.fixture';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
-  claimantType, claimType, user, home, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
+  claimantType, claimType, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
 
-test.beforeEach(async ({page}) => {
-  initializeExecutor(page);
+test.beforeEach(async ({authenticatedPage}) => {
+  initializeExecutor(authenticatedPage);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton
   });
-  await performAction('login', user.claimantSolicitor);
+  // Login is now handled by the authenticatedPage fixture via API
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
   });

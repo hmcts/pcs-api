@@ -1,27 +1,27 @@
-import {test} from '@playwright/test';
+import {test} from '@fixtures/authenticated-context.fixture';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
 import {addressDetails, claimantType, claimType, claimantName, contactPreferences,
   defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds,
   preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
   rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
   reasonsForPossession, moneyJudgment, claimantCircumstances, applications,
-  completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers,
+  completeYourClaim, reasonsForRequestingASuspensionOrder, checkYourAnswers,
   propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
   additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
   alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
-  statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
+  statementOfExpressTerms, wantToUploadDocuments, uploadAdditionalDocs,
   underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
   reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
   addressCheckYourAnswers} from '@data/page-data';
 
-test.beforeEach(async ({page}) => {
-  initializeExecutor(page);
+test.beforeEach(async ({authenticatedPage}) => {
+  initializeExecutor(authenticatedPage);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton
   });
-  await performAction('login', user.claimantSolicitor);
+  // Login is now handled by the authenticatedPage fixture via API
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
   });
