@@ -1,7 +1,23 @@
-import {test} from '@fixtures/authenticated-context.fixture';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
-  claimantType, claimType, addressCheckYourAnswers} from '@data/page-data';
+import { test } from '@fixtures/authenticated-context.fixture';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  borderPostcode,
+  canNotUseOnlineService,
+  claimantType,
+  claimType,
+  home,
+  propertyIneligible,
+  provideMoreDetailsOfClaim,
+  signInOrCreateAnAccount,
+  user,
+  userIneligible
+} from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
 
 test.beforeEach(async ({authenticatedPage}) => {
   initializeExecutor(authenticatedPage);

@@ -1,13 +1,37 @@
 import { test } from '@fixtures/authenticated-context.fixture';
-import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseNumber, caseNotFoundAfterFilter } from '@utils/actions/custom-actions';
-import { initializeExecutor } from '@utils/controller';
-import { caseList, caseSummary } from '@data/page-data';
 import {
-  nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
-  criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  accessToTheProperty, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
+  caseList,
+  caseSummary,
+  signInOrCreateAnAccount,
+  user
+} from '@data/page-data';
+import {
+  accessToTheProperty,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  criminalOrAntisocialBehaviour,
+  everyoneLivingAtTheProperty,
+  evictionCouldBeDelayed,
+  firearmPossession,
+  groupProtestsEviction,
+  nameAndAddressForEviction,
+  policeOrSocialServiceVisit,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  violentOrAggressiveBehaviour,
+  vulnerableAdultsAndChildren,
+  yourApplication
 } from '@data/page-data/page-data-enforcement';
+import {
+  caseNotFoundAfterFilter,
+  caseNumber
+} from '@utils/actions/custom-actions';
+import { initializeExecutor } from '@utils/controller';
+import {
+  initializeEnforcementExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller-enforcement';
 
 test.beforeEach(async ({ authenticatedPage }) => {
   initializeExecutor(authenticatedPage);

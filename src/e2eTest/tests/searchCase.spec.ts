@@ -1,7 +1,13 @@
-import {test} from '@fixtures/authenticated-context.fixture';
-import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import {caseInfo} from '@utils/actions/custom-actions';
-import {caseApiData} from '@data/api-data';
+import { test } from '@fixtures/authenticated-context.fixture';
+import { caseApiData } from '@data/api-data';
+import { signInOrCreateAnAccount } from '@data/page-data';
+import { user } from '@data/user-data';
+import { caseInfo } from '@utils/actions/custom-actions';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
 
 test.beforeEach(async ({authenticatedPage}) => {
   initializeExecutor(authenticatedPage);
