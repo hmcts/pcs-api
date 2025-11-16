@@ -18,6 +18,7 @@ test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   // User is already authenticated via globalSetup
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
+  await performAction('housingPossessionClaim');
 });
 
 test.describe('[Create Case - England] @regression', async () => {
