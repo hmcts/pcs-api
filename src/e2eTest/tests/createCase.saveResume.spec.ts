@@ -58,7 +58,7 @@ test.beforeEach(async ({authenticatedPage}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case - With resume claim options] @PR @regression', async () => {
+test.describe('[Create Case - With resume claim options] @regression', async () => {
   test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
