@@ -2,7 +2,7 @@ import { test } from '@fixtures/authenticated-context.fixture';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseNumber, caseNotFoundAfterFilter } from '@utils/actions/custom-actions';
 import { initializeExecutor } from '@utils/controller';
-import { caseList, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
+import { caseList, caseSummary } from '@data/page-data';
 import {
   nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
   criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
@@ -13,14 +13,6 @@ test.beforeEach(async ({ authenticatedPage }) => {
   initializeExecutor(authenticatedPage);
   initializeEnforcementExecutor(authenticatedPage);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
-  });
-  // Login is now handled by the authenticatedPage fixture via API
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
-  });
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('noCasesFoundAfterSearch');
   //Below three lines will be merged into a single action as part of improvement

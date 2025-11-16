@@ -1,11 +1,42 @@
 import {test} from '@fixtures/authenticated-context.fixture';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails,
-  groundsForPossession, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails,
-  completeYourClaim, dailyRentAmount, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications,
-  user, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, statementOfTruth,
-  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
-  wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data/';
+import {
+  addressDetails,
+  claimantType,
+  claimType,
+  claimantName,
+  contactPreferences,
+  defendantDetails,
+  tenancyLicenceDetails,
+  groundsForPossession,
+  preActionProtocol,
+  mediationAndSettlement,
+  noticeOfYourIntention,
+  noticeDetails,
+  rentDetails,
+  completeYourClaim,
+  dailyRentAmount,
+  whatAreYourGroundsForPossession,
+  moneyJudgment,
+  claimantCircumstances,
+  applications,
+  user,
+  checkYourAnswers,
+  propertyDetails,
+  languageUsed,
+  defendantCircumstances,
+  claimingCosts,
+  statementOfTruth,
+  additionalReasonsForPossession,
+  underlesseeOrMortgageeEntitledToClaim,
+  alternativesToPossession,
+  reasonsForPossession,
+  wantToUploadDocuments,
+  resumeClaim,
+  resumeClaimOptions,
+  addressCheckYourAnswers,
+  home
+} from '@data/page-data/';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -15,16 +46,9 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
 
 test.beforeEach(async ({authenticatedPage}) => {
   initializeExecutor(authenticatedPage);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  // Login is now handled by the authenticatedPage fixture via API
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
+  await performAction('clickTab', home.createCaseTab);
+  await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 

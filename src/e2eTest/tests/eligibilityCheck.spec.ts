@@ -1,19 +1,10 @@
 import {test} from '@fixtures/authenticated-context.fixture';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
 import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
-  claimantType, claimType, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
+  claimantType, claimType, addressCheckYourAnswers} from '@data/page-data';
 
 test.beforeEach(async ({authenticatedPage}) => {
   initializeExecutor(authenticatedPage);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  // Login is now handled by the authenticatedPage fixture via API
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
   await performAction('housingPossessionClaim');
 });
