@@ -11,30 +11,40 @@ type AuthenticatedContextFixtures = {
 export const test = base.extend<AuthenticatedContextFixtures>({
   authenticatedContext: async ({ browser }, use) => {
     const context = await browser.newContext();
+    let setupError: Error | null = null;
     
     try {
       const { email: userEmail, password: userPassword } = user.claimantSolicitor;
       const baseUrl = process.env.MANAGE_CASE_BASE_URL;
 
       if (!userEmail || !userPassword || !baseUrl) {
-        throw new Error('Missing required credentials or MANAGE_CASE_BASE_URL environment variable');
+        setupError = new Error('Missing required credentials or MANAGE_CASE_BASE_URL environment variable');
+      } else {
+        const page = await context.newPage();
+        try {
+          initializeExecutor(page);
+
+          await performAction('navigateToUrl', baseUrl);
+          await performValidation('mainHeader', signInOrCreateAnAccount.mainHeader);
+          await performAction('inputText', signInOrCreateAnAccount.emailAddressLabel, userEmail);
+          await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
+          await performAction('clickButton', signInOrCreateAnAccount.signInButton);
+          await page.waitForLoadState('networkidle').catch(() => {});
+          await performAction('handleCookieConsent', {
+            accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+          });
+        } catch (error) {
+          setupError = error instanceof Error ? error : new Error(String(error));
+        } finally {
+          await page.close();
+        }
       }
 
-      const page = await context.newPage();
-      initializeExecutor(page);
-
-      await performAction('navigateToUrl', baseUrl);
-      await performValidation('mainHeader', signInOrCreateAnAccount.mainHeader);
-      await performAction('inputText', signInOrCreateAnAccount.emailAddressLabel, userEmail);
-      await performAction('inputText', signInOrCreateAnAccount.passwordLabel, userPassword);
-      await performAction('clickButton', signInOrCreateAnAccount.signInButton);
-      await page.waitForLoadState('networkidle').catch(() => {});
-      await performAction('handleCookieConsent', {
-        accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-      });
-
-      await page.close();
       await use(context);
+      
+      if (setupError) {
+        throw setupError;
+      }
     } finally {
       await context.close();
     }
