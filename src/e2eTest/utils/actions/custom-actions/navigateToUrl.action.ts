@@ -6,94 +6,90 @@ import { handlePostLoginCookieBanner } from '@utils/cookie.utils';
 
 const isCI = !!process.env.CI;
 
+/**
+ * Checks if the current page is a login page by examining URL and form elements.
+ */
+async function isLoginPage(page: Page): Promise<boolean> {
+  await page.waitForLoadState('domcontentloaded', { timeout: SHORT_TIMEOUT }).catch(() => {});
+  
+  if (isCI) {
+    await page.waitForTimeout(1000);
+  }
+  
+  const url = page.url().toLowerCase();
+  if (url.includes('/login') || url.includes('/idam') || url.includes('/auth') || url.includes('/sign-in')) {
+    return true;
+  }
+  
+  const hasUsernameField = await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+  
+  if (isCI) {
+    const hasPasswordField = await page.locator('#password').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+    return hasUsernameField && hasPasswordField;
+  }
+  
+  return hasUsernameField;
+}
+
+/**
+ * Action to navigate to a specific URL with automatic login handling if needed.
+ * Includes retry logic for CI environments and environment-aware wait strategies.
+ */
 export class NavigateToUrlAction implements IAction {
   async execute(page: Page, action: string, url: string): Promise<void> {
     await test.step(`Navigate to Manage Case URL: ${url}`, async () => {
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });
 
-      if (await this.isLoginPage(page)) {
-        // Perform login with retry logic for CI environments
-        let loginAttempts = 0;
-        const maxLoginAttempts = isCI ? 3 : 1; // Only retry in CI
-        
-        while (loginAttempts < maxLoginAttempts) {
-          try {
-            await new LoginAction().execute(page, 'login', 'claimantSolicitor');
-            
-            // Wait for navigation to complete after login
-            // Use networkidle in CI, domcontentloaded locally (faster)
-            if (isCI) {
-              await page.waitForLoadState('networkidle', { timeout: LONG_TIMEOUT }).catch(() => {
-                // Fallback if networkidle times out
-                return page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
-              });
-              // Wait for redirects (important in CI)
-              await page.waitForTimeout(1000);
-            } else {
-              // Faster for local - just wait for domcontentloaded
-              await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
-            }
-            
-            // Verify login was successful (only in CI to avoid false positives locally)
-            if (isCI) {
-              const stillOnLoginPage = await this.isLoginPage(page);
-              
-              if (!stillOnLoginPage) {
-                // Login successful, break out of retry loop
-                break;
-              }
-              
-              loginAttempts++;
-              if (loginAttempts >= maxLoginAttempts) {
-                throw new Error(`Login failed after ${maxLoginAttempts} attempts. Still on login page.`);
-              }
-            } else {
-              // Local: assume success after first attempt
-              break;
-            }
-          } catch (error) {
-            loginAttempts++;
-            if (loginAttempts >= maxLoginAttempts) {
-              throw new Error(`Login failed after ${maxLoginAttempts} attempts: ${error}`);
-            }
-            // Wait before retry (only in CI)
-            if (isCI) {
-              await page.waitForTimeout(2000);
-            }
-          }
-        }
-        
+      if (await isLoginPage(page)) {
+        await this.performLoginWithRetry(page);
         await handlePostLoginCookieBanner(page).catch(() => {});
       }
     });
   }
 
-  private async isLoginPage(page: Page): Promise<boolean> {
-    // Wait for page to load
-    await page.waitForLoadState('domcontentloaded', { timeout: SHORT_TIMEOUT }).catch(() => {});
+  /**
+   * Performs login with retry logic (CI only) and environment-aware wait strategies.
+   */
+  private async performLoginWithRetry(page: Page): Promise<void> {
+    let loginAttempts = 0;
+    const maxLoginAttempts = isCI ? 3 : 1;
     
-    // Wait for redirects (only in CI - faster locally)
+    while (loginAttempts < maxLoginAttempts) {
+      try {
+        await new LoginAction().execute(page, 'login', 'claimantSolicitor');
+        await this.waitForLoginCompletion(page);
+        
+        if (!isCI || !(await isLoginPage(page))) {
+          return; // Login successful
+        }
+        
+        loginAttempts++;
+        if (loginAttempts >= maxLoginAttempts) {
+          throw new Error(`Login failed after ${maxLoginAttempts} attempts. Still on login page.`);
+        }
+      } catch (error) {
+        loginAttempts++;
+        if (loginAttempts >= maxLoginAttempts) {
+          throw new Error(`Login failed after ${maxLoginAttempts} attempts: ${error}`);
+        }
+        if (isCI) {
+          await page.waitForTimeout(2000);
+        }
+      }
+    }
+  }
+
+  /**
+   * Waits for login to complete using environment-appropriate strategy.
+   */
+  private async waitForLoginCompletion(page: Page): Promise<void> {
     if (isCI) {
+      await page.waitForLoadState('networkidle', { timeout: LONG_TIMEOUT }).catch(() => {
+        return page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
+      });
       await page.waitForTimeout(1000);
-    }
-    
-    const url = page.url().toLowerCase();
-    
-    // Check URL first (more reliable than DOM elements)
-    if (url.includes('/login') || url.includes('/idam') || url.includes('/auth') || url.includes('/sign-in')) {
-      return true;
-    }
-    
-    // Check for login form elements as secondary check
-    const hasUsernameField = await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
-    
-    // In CI, require both fields to reduce false positives
-    // Locally, just check username field for speed
-    if (isCI) {
-      const hasPasswordField = await page.locator('#password').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
-      return hasUsernameField && hasPasswordField;
     } else {
-      return hasUsernameField;
+      await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
     }
   }
 }

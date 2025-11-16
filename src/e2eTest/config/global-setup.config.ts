@@ -1,15 +1,44 @@
-import { chromium } from '@playwright/test';
+import { chromium, Page } from '@playwright/test';
 import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
 import { user } from '@data/user-data';
 import { handlePostLoginCookieBanner } from '@utils/cookie.utils';
-import {LONG_TIMEOUT, SHORT_TIMEOUT, getStorageStatePath, SESSION_COOKIE_NAME} from '../playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT, getStorageStatePath, SESSION_COOKIE_NAME } from '../playwright.config';
 import * as path from 'path';
 import * as fs from 'fs';
 
 const isCI = !!process.env.CI;
 
+/**
+ * Checks if the current page is a login page by examining URL and form elements.
+ */
+async function isLoginPage(page: Page): Promise<boolean> {
+  await page.waitForLoadState('domcontentloaded', { timeout: SHORT_TIMEOUT }).catch(() => {});
+  
+  if (isCI) {
+    await page.waitForTimeout(1000);
+  }
+  
+  const url = page.url().toLowerCase();
+  if (url.includes('/login') || url.includes('/idam') || url.includes('/auth') || url.includes('/sign-in')) {
+    return true;
+  }
+  
+  const hasUsernameField = await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+  
+  if (isCI) {
+    const hasPasswordField = await page.locator('#password').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+    return hasUsernameField && hasPasswordField;
+  }
+  
+  return hasUsernameField;
+}
 
+
+/**
+ * Global setup configuration for Playwright tests.
+ * Handles authentication and session storage for test execution.
+ */
 async function globalSetupConfig(): Promise<void> {
   const baseURL = process.env.MANAGE_CASE_BASE_URL;
   if (!baseURL) {
@@ -30,20 +59,20 @@ async function globalSetupConfig(): Promise<void> {
       throw new Error('Login failed: missing credentials');
     }
 
+    // Check if existing session is still valid
     const sessionExists = fs.existsSync(storageStatePath);
     const sessionValid = sessionExists && SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME);
 
     if (sessionValid) {
       await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });
-      const isLogin = await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
-      if (!isLogin) {
+      if (!(await isLoginPage(page))) {
         await browser.close();
-        return;
+        return; // Session is still valid, no need to re-authenticate
       }
     }
 
+    // Perform login
     await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });
-
     const idamPage = new IdamPage(page);
     await idamPage.login({
       username: userEmail,
@@ -52,43 +81,28 @@ async function globalSetupConfig(): Promise<void> {
     });
 
     // Wait for navigation to complete after login
-    // Use networkidle in CI (more reliable), domcontentloaded locally (faster)
     if (isCI) {
       await page.waitForLoadState('networkidle', { timeout: LONG_TIMEOUT }).catch(() => {
-        // Fallback to domcontentloaded if networkidle times out
         return page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
       });
-      
-      // Wait for redirects (important in CI)
       await page.waitForTimeout(1000);
       
-      // Verify login was successful - ensure we're not still on login page (CI only)
-      const currentUrl = page.url().toLowerCase();
-      const isStillOnLoginPage = currentUrl.includes('/login') || 
-                                 currentUrl.includes('/idam') || 
-                                 currentUrl.includes('/auth') || 
-                                 currentUrl.includes('/sign-in') ||
-                                 await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
-      
-      if (isStillOnLoginPage) {
+      // Verify login was successful (CI only)
+      if (await isLoginPage(page)) {
         throw new Error('Login failed: Still on login page after authentication attempt');
       }
     } else {
-      // Local: faster - just wait for domcontentloaded
       await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
     }
     
     await handlePostLoginCookieBanner(page).catch(() => {});
-    
-    // Save storage state
     await page.context().storageState({ path: storageStatePath });
     
-    // Verify storage state file was created (critical for CI)
+    // Verify storage state was created successfully
     if (!fs.existsSync(storageStatePath)) {
       throw new Error(`Storage state file was not created at ${storageStatePath}`);
     }
     
-    // Verify session cookie exists in storage state (critical for CI)
     const storageStateContent = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
     const hasSessionCookie = storageStateContent.cookies?.some(
       (cookie: any) => cookie.name === SESSION_COOKIE_NAME && cookie.value
@@ -102,6 +116,10 @@ async function globalSetupConfig(): Promise<void> {
   }
 }
 
+/**
+ * Generates an IDAM access token for API authentication.
+ * Reserved for future use when API-based case creation is implemented.
+ */
 export const getAccessToken = async (): Promise<void> => {
   process.env.IDAM_WEB_URL = accessTokenApiData.idamUrl;
   process.env.IDAM_TESTING_SUPPORT_URL = accessTokenApiData.idamTestingSupportUrl;
