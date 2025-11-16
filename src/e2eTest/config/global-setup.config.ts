@@ -49,9 +49,44 @@ async function globalSetupConfig(): Promise<void> {
       sessionFile: storageStatePath,
     });
 
-    await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
+    // Wait for navigation to complete after login (critical for CI)
+    await page.waitForLoadState('networkidle', { timeout: LONG_TIMEOUT }).catch(() => {
+      // Fallback to domcontentloaded if networkidle times out
+      return page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
+    });
+    
+    // Verify login was successful - ensure we're not still on login page
+    await page.waitForTimeout(1000); // Wait for any redirects
+    const currentUrl = page.url().toLowerCase();
+    const isStillOnLoginPage = currentUrl.includes('/login') || 
+                               currentUrl.includes('/idam') || 
+                               currentUrl.includes('/auth') || 
+                               currentUrl.includes('/sign-in') ||
+                               await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+    
+    if (isStillOnLoginPage) {
+      throw new Error('Login failed: Still on login page after authentication attempt');
+    }
+    
     await handlePostLoginCookieBanner(page).catch(() => {});
+    
+    // Save storage state
     await page.context().storageState({ path: storageStatePath });
+    
+    // Verify storage state file was created (critical for CI)
+    if (!fs.existsSync(storageStatePath)) {
+      throw new Error(`Storage state file was not created at ${storageStatePath}`);
+    }
+    
+    // Verify session cookie exists in storage state (critical for CI)
+    const storageStateContent = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
+    const hasSessionCookie = storageStateContent.cookies?.some(
+      (cookie: any) => cookie.name === SESSION_COOKIE_NAME && cookie.value
+    );
+    
+    if (!hasSessionCookie) {
+      throw new Error(`Session cookie ${SESSION_COOKIE_NAME} not found in storage state`);
+    }
   } finally {
     await browser.close();
   }
