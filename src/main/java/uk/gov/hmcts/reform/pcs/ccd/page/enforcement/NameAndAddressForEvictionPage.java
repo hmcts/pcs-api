@@ -1,8 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.NameAndAddressForEviction;
 
@@ -14,8 +18,8 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("nameAndAddressForEviction")
-            .pageLabel("The name and address for the eviction (placeholder)")
+            .page("nameAndAddressForEviction", this::midEvent)
+            .pageLabel("The name and address for the eviction")
             .readonly(PCSCase::getDefendant1, NEVER_SHOW)
             .label(
                 "nameAndAddressForEviction-defendants-check",
@@ -53,17 +57,40 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                           </main>
                         </div>
                 """)
-            .label(
-                "nameAndAddressForEviction-confirmation",
-                """
-                ---
-                <h2 class="govuk-heading-m">Is this the correct name and address for the eviction?</h2>
-                """)
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getNameAndAddressForEviction)
             .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
             .label("nameAndAddressForEviction-save-and-return", SAVE_AND_RETURN);
 
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
+        CaseDetails<PCSCase, State> details,
+        CaseDetails<PCSCase, State> before) {
+        
+        PCSCase caseData = details.getData();
+        
+        // Set navigation flags based on user selection
+        NameAndAddressForEviction nameAndAddress = 
+            caseData.getEnforcementOrder().getNameAndAddressForEviction();
+        
+        VerticalYesNo correctNameAndAddress = nameAndAddress.getCorrectNameAndAddress();
+        
+        EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
+        
+        if (correctNameAndAddress == VerticalYesNo.NO) {
+            // Navigate to ChangeNameAddressPage
+            enforcementOrder.setShowChangeNameAddressPage(VerticalYesNo.YES);
+            enforcementOrder.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.NO);
+        } else if (correctNameAndAddress == VerticalYesNo.YES) {
+            // Navigate to PeopleWhoWillBeEvictedPage
+            enforcementOrder.setShowChangeNameAddressPage(VerticalYesNo.NO);
+            enforcementOrder.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.YES);
+        }
+        
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
     }
 
 }

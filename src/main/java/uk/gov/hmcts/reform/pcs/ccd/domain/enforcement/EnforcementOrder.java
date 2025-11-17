@@ -5,8 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import java.util.Set;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
+
 /**
  * The main domain model representing an enforcement order.
  */
@@ -25,7 +30,18 @@ public class EnforcementOrder {
     private AdditionalInformation additionalInformation;
 
     @JsonUnwrapped
+    @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
+
+    @JsonUnwrapped
+    @CCD
+    private PeopleToEvict peopleToEvict;
+
+    @CCD(
+        label = "Who do you want to evict?",
+        typeOverride = DynamicMultiSelectList
+    )
+    private DynamicMultiSelectStringList selectedDefendants;
 
     @CCD(
         label = "Does anyone living at the property pose a risk to the bailiff?"
@@ -39,6 +55,26 @@ public class EnforcementOrder {
         typeParameterOverride = "RiskCategory"
     )
     private Set<RiskCategory> enforcementRiskCategories;
+
+    @CCD(
+        searchable = false
+    )
+    private VerticalYesNo showChangeNameAddressPage;
+
+    @CCD(
+        searchable = false
+    )
+    private VerticalYesNo showPeopleWhoWillBeEvictedPage;
+
+    @CCD(
+        searchable = false
+    )
+    private VerticalYesNo showPeopleYouWantToEvictPage;
+
+    @CCD(
+        searchable = false
+    )
+    private VerticalYesNo showLivingInThePropertyPage;
 
     @JsonUnwrapped
     @CCD(
