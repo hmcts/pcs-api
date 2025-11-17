@@ -21,8 +21,8 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.0.1.6134'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.5.3'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1925'
+  id 'hmcts.ccd.sdk' version '6.5.4'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.1927'
   id 'io.freefair.lombok' version '9.1.0'
   id 'au.com.dius.pact' version '4.6.18'
   /*
