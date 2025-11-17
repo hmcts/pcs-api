@@ -1,11 +1,44 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails,
-  groundsForPossession, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails,
-  completeYourClaim, dailyRentAmount, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications,
-  user, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, statementOfTruth, home,
-  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
-  wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data/';
+import {
+  addressDetails,
+  claimantType,
+  claimType,
+  claimantName,
+  contactPreferences,
+  defendantDetails,
+  tenancyLicenceDetails,
+  groundsForPossession,
+  preActionProtocol,
+  mediationAndSettlement,
+  noticeOfYourIntention,
+  noticeDetails,
+  rentDetails,
+  completeYourClaim,
+  dailyRentAmount,
+  whatAreYourGroundsForPossession,
+  moneyJudgment,
+  claimantCircumstances,
+  applications,
+  user,
+  checkYourAnswers,
+  propertyDetails,
+  languageUsed,
+  defendantCircumstances,
+  claimingCosts,
+  statementOfTruth,
+  home,
+  additionalReasonsForPossession,
+  underlesseeOrMortgageeEntitledToClaim,
+  alternativesToPossession,
+  reasonsForPossession,
+  wantToUploadDocuments,
+  resumeClaim,
+  resumeClaimOptions,
+  signInOrCreateAnAccount,
+  addressCheckYourAnswers,
+  detailsOfRentArrears
+} from '@data/page-data/';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -109,6 +142,13 @@ test.describe('[Create Case - With resume claim options]', async () => {
       calculateRentAmount: '£114.29',
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
