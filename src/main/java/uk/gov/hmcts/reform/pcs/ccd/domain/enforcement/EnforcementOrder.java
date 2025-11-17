@@ -51,7 +51,7 @@ public class EnforcementOrder {
     @CCD(
         label = "Is anyone living at the property vulnerable?"
     )
-    private YesNoNotSure vulnerablePeopleYesNo;
+    private YesNoNotSure vulnerablePeoplePresent;
     
     private VulnerableAdultsChildren vulnerableAdultsChildren;
     
