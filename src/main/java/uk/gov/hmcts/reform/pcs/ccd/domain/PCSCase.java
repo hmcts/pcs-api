@@ -369,8 +369,16 @@ public class PCSCase {
     @CCD
     private DefendantDetails defendant1;
 
-    @CCD
-    private List<ListValue<DefendantDetails>> defendants;
+    @CCD(label = "Do you need to add another defendant?")
+    private VerticalYesNo addAnotherDefendant;
+
+    @CCD(
+        label = "Add additional defendant",
+        hint = "Add an additional defendant to the case"
+    )
+    private List<ListValue<DefendantDetails>> additionalDefendants;
+
+    private List<ListValue<DefendantDetails>> allDefendants;
 
     // Notice Details fields
     @CCD(
