@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 
 /**
@@ -68,7 +69,8 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
                 """
             )
             .optional(OccupationLicenceDetailsWales::getLicenceDocuments)
-            .done();
+            .done()
+            .label("occupationLicenceDetailsWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
     }
 

@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class WalesCheckingNotice implements CcdPageConfiguration {
 
@@ -39,6 +40,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
             .complex(PCSCase::getWalesNoticeDetails)
             .mandatory(WalesNoticeDetails::getNoticeServed)
             .mandatory(WalesNoticeDetails::getTypeOfNoticeServed,"walesNoticeServed=\"Yes\"")
-            .done();
+            .done()
+            .label("walesCheckingNotice-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
