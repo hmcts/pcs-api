@@ -135,6 +135,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
 | submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
+| clickLinkAndVerifyNewTabTitle               | `performAction('clickLinkAndVerifyNewTabTitle',whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader)`                                                                             |
 ### Validations
 | Validation                 | Example Usage                                                                                                                      |
 |----------------------------|------------------------------------------------------------------------------------------------------------------------------------|
@@ -148,7 +149,6 @@ Playwright 1.30+ | TypeScript 4.9+
 | elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                           |
 | elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                        |
 | waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                   |
-| openLinkInNewTab           | `performValidation('openLinkInNewTab', whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader`              |
 ### Basic Test
 
 ```typescript
