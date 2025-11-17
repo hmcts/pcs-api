@@ -100,7 +100,12 @@ export class MakeClaimAction implements IAction {
         option: languageUsed.english,
       });
       await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-      await performAction('clickButton', statementOfTruth.continue);
+      await performAction('selectStatementOfTruth', {
+        completedBy: statementOfTruth.claimantRadioOption,
+        iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+        fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+        positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+      });
       await performAction('clickButton', checkYourAnswers.saveAndContinue);
       await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     }
