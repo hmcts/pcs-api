@@ -55,5 +55,7 @@ export const whatAreYourGroundsForPossession = {
       specialNeeds: 'Special needs accommodation (ground 15)',
       underOccupying: 'Under occupying after succession (ground 15A)'
     },
-  continue: 'Continue'
+  continue: 'Continue',
+  moreInfoLink: 'More information about possession grounds (opens in new tab)',
+  understandingThePossessionMainHeader: 'Understanding the possession action process: guidance for tenants (contract holders)',
 };

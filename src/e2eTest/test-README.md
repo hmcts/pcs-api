@@ -136,18 +136,19 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
 | submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
 ### Validations
-| Validation                 | Example Usage                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| text                       | `performValidation('text', 'testElement')`                                                                                           |
-| bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
-| formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
+| Validation                 | Example Usage                                                                                                                      |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| text                       | `performValidation('text', 'testElement')`                                                                                         |
+| bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                            |
+| formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                 |
 | errorMessage               | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
-| optionList                 | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
-| mainHeader                 | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
-| radioButtonChecked         | `performValidation('radioButtonChecked')`                                                                                            |
-| elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                             |
-| elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
-| waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
+| optionList                 | `performValidation('optionList', 'sectionName', {optionsData})`                                                                    |
+| mainHeader                 | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                       |
+| radioButtonChecked         | `performValidation('radioButtonChecked')`                                                                                          |
+| elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                           |
+| elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                        |
+| waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                   |
+| openLinkInNewTab           | `performValidation('openLinkInNewTab', whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader`              |
 ### Basic Test
 
 ```typescript
