@@ -42,7 +42,7 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                You should select these grounds here and any extra ground you'd like to add to your claim,
                if you need to.</p>
                <p class="govuk-body">
-                 <a href="https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>
+                 <a href="https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
                </p>
                """)
                 .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
