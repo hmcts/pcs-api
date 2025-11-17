@@ -64,11 +64,10 @@ test.describe('[Create Case - With resume claim options]', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.defendantPostcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -123,7 +122,10 @@ test.describe('[Create Case - With resume claim options]', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yes,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -186,11 +188,10 @@ test.describe('[Create Case - With resume claim options]', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.defendantPostcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
@@ -239,7 +240,10 @@ test.describe('[Create Case - With resume claim options]', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yes,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
