@@ -9,9 +9,7 @@ export const search =
     possessionsJurisdiction: 'Possessions',
     caseType:
       {
-        civilPossessions: process.env.CHANGE_ID
-          ? `Civil Possessions ${process.env.CHANGE_ID}`
-          : 'Civil Possessions'
+        civilPossessions: 'Civil Possessions'
       },
     apply: 'Apply'
   }
