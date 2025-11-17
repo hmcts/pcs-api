@@ -19,6 +19,7 @@ export const addressDetails = {
   englandBuildingAndStreetTextInput: '1 Second Avenue',
   englandTownOrCityTextInput: 'London',
   englandCountyTextInput: 'London',
+  englandCountryTextInput: 'United Kingdom',
   walesBuildingAndStreetTextInput: '2 Pentre Street',
   walesTownOrCityTextInput: 'Caerdydd',
   walesCountyTextInput: 'Cardiff',

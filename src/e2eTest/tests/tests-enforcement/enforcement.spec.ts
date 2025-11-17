@@ -52,7 +52,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.yes,
+      option: everyoneLivingAtTheProperty.yesRadioOption,
     });
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
@@ -131,10 +131,15 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
     });
+    await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
+    await performAction('selectPeopleWhoWillBeEvicted', {
+      question: peopleWillBeEvicted.evictEveryOneQuestion,
+      option: peopleWillBeEvicted.yesRadioOption,
+    })
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.no,
+      option: everyoneLivingAtTheProperty.noRadioOption,
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('selectVulnerablePeopleInTheProperty', {
@@ -171,10 +176,15 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
     });
+    await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
+    await performAction('selectPeopleWhoWillBeEvicted', {
+      question: peopleWillBeEvicted.evictEveryOneQuestion,
+      option: peopleWillBeEvicted.yesRadioOption,
+    })
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.notSure,
+      option: everyoneLivingAtTheProperty.notSureRadioOption,
     });
     await performValidation('mainHeader', evictionCouldBeDelayed.mainHeader);
     await performAction('clickButton', evictionCouldBeDelayed.continue);

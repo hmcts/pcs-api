@@ -63,7 +63,6 @@ export class EnforcementAction implements IAction {
       page.waitForEvent('popup'),
       await performAction('clickButton', youNeedPermission.askTheJudgeLink)
     ]);
-    //expect (await generalApplication.title()).toBe(youNeedPermission.title);
     await generalApplicationPage.waitForLoadState();
     await expect(generalApplicationPage).toHaveTitle(youNeedPermission.title);
     await performValidation('text', {
@@ -77,7 +76,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + enforcementTestCaseNumber });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${enforcementAddressInfo.buildingStreet}, ${enforcementAddressInfo.townCity}, ${enforcementAddressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: riskToBailiff.question, option: riskToBailiff.option });
-    await performAction('clickButton', everyoneLivingAtTheProperty.continue);
+    await performAction('clickButton', everyoneLivingAtTheProperty.continueButton);
   }
 
   private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord) {

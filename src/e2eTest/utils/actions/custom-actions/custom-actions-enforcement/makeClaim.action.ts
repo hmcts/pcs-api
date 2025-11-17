@@ -52,10 +52,10 @@ export class MakeClaimAction implements IAction {
         correspondenceAddress: contactPreferences.yes,
         phoneNumber: contactPreferences.no,
       });
-      await performAction('defendantDetails', {
-        name: defendantDetails.noRadioOption,
-        correspondenceAddress: defendantDetails.noRadioOption,
-        email: defendantDetails.noRadioOption,
+      await performAction('addDefendantDetails', {
+        nameOption: defendantDetails.noRadioOption,
+        correspondenceAddressOption: defendantDetails.noRadioOption,
+        addAdditionalDefendantsOption: defendantDetails.noRadioOption
       });
       await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
       await performAction('selectTenancyOrLicenceDetails', {
@@ -78,7 +78,10 @@ export class MakeClaimAction implements IAction {
         circumstanceOption: claimantCircumstances.no
       });
       await performValidation('mainHeader', defendantCircumstances.mainHeader);
-      await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+      await performAction('selectDefendantCircumstances', {
+        defendantCircumstance: defendantCircumstances.no,
+        additionalDefendants: false
+      });
       await performValidation('mainHeader', alternativesToPossession.mainHeader);
       await performAction('selectAlternativesToPossession');
       await performValidation('mainHeader', claimingCosts.mainHeader);
