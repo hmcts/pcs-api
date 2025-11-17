@@ -227,6 +227,13 @@ test.describe('[Create Case - England] @regression', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -438,6 +445,13 @@ test.describe('[Create Case - England] @regression', async () => {
       calculateRentAmount: '£114.29',
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
@@ -841,6 +855,13 @@ test.describe('[Create Case - England] @regression', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -954,6 +975,13 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.no);
@@ -1070,7 +1098,13 @@ test.describe('[Create Case - England] @regression', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
-    //Details of rent arrears page need to be added once HDPI-2661 bug is fixed
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);

@@ -63,7 +63,7 @@ test.beforeEach(async ({page}) => {
 });
 
 test.describe('[Create Case - With resume claim options]', async () => {
-  test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
+  test('England - Resume with saved options - Assured tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -191,7 +191,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     )
   });
 
-  test('England - Resume without saved options - Secure Tentency - No Rent Arrears', async () => {
+  test('England - Resume without saved options - Secure tenancy - No Rent Arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
