@@ -8,9 +8,7 @@ export const createCase =
     possessionsJurisdiction: 'Possessions',
     caseType:
       {
-        civilPossessions: process.env.CHANGE_ID
-          ? `Civil Possessions ${process.env.CHANGE_ID}`
-          : 'Civil Possessions'
+        civilPossessions: 'Civil Possessions'
       },
     makeAPossessionClaimEvent: 'Make a claim',
     start: 'Start'
