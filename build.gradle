@@ -184,7 +184,7 @@ tasks.register('yarnInstall', Exec) {
 tasks.register('runE2ePrTests', Exec) {
   dependsOn yarnInstall
   workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'test:chrome'
+  commandLine 'yarn', 'test:pr'
 }
 
 tasks.register('runE2eRegressionTests', Exec) {
