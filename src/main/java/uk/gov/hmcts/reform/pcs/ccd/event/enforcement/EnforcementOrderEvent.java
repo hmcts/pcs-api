@@ -93,8 +93,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         pcsCase.setFormattedPropertyAddress(addressFormatter
             .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
 
-        if (pcsCase.getDefendants() != null && !pcsCase.getDefendants().isEmpty()) {
-            pcsCase.setDefendant1(pcsCase.getDefendants().getFirst().getValue());
+        if (pcsCase.getAllDefendants() != null && !pcsCase.getAllDefendants().isEmpty()) {
+            pcsCase.setDefendant1(pcsCase.getAllDefendants().getFirst().getValue());
         }
         return pcsCase;
     }
