@@ -1,10 +1,13 @@
-import {test} from '@playwright/test';
-import { initializeExecutor, performAction, performValidation } from '@utils/controller';
-import {PageContentValidation} from '@utils/validations/element-validations/pageContent.validation';
-import {caseInfo} from '@utils/actions/custom-actions';
-import {user} from '@data/user-data';
-import {signInOrCreateAnAccount} from '@data/page-data';
-import {caseApiData} from '@data/api-data';
+import { test } from '@playwright/test';
+import { caseApiData } from '@data/api-data';
+import { signInOrCreateAnAccount } from '@data/page-data';
+import { user } from '@data/user-data';
+import { caseInfo } from '@utils/actions/custom-actions';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);

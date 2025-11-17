@@ -1,8 +1,23 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {PageContentValidation} from '@utils/validations/element-validations/pageContent.validation';
-import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
-  claimantType, claimType, user, home, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
+import { test } from '@playwright/test';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  borderPostcode,
+  canNotUseOnlineService,
+  claimantType,
+  claimType,
+  home,
+  propertyIneligible,
+  provideMoreDetailsOfClaim,
+  signInOrCreateAnAccount,
+  user,
+  userIneligible
+} from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
