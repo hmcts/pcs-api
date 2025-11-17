@@ -18,10 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseCreationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.TEST_CASE;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @Component
 @Slf4j
@@ -36,8 +34,8 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
-                .forStateTransition(AWAITING_FURTHER_CLAIM_DETAILS, AWAITING_SUBMISSION_TO_HMCTS)
+                .decentralisedEvent(createTestCase.name(), this::submit, this::start)
+                .initialState(TEST_CASE)
                 .name("FOR QA - Test Case Creation")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
@@ -48,10 +46,11 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase generatedTestPCSCase = caseCreationService.generateTestPCSCase();
+        PCSCase pcsCase = eventPayload.caseData();
+        caseCreationService.generateTestPCSCase(pcsCase);
         long caseReference = System.currentTimeMillis();
-        draftCaseDataService.patchUnsubmittedCaseData(caseReference, generatedTestPCSCase);
-        return generatedTestPCSCase;
+        draftCaseDataService.patchUnsubmittedCaseData(caseReference, pcsCase);
+        return pcsCase;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

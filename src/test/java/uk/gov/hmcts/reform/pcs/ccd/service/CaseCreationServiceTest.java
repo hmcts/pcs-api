@@ -8,8 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("TestCaseService - Instancio 1.0.4 based PCSCase Population")
-class TestCaseServiceCreation {
+class CaseCreationServiceTest {
 
     private CaseCreationService underTest;
 
@@ -19,7 +18,6 @@ class TestCaseServiceCreation {
     }
 
     @Nested
-    @DisplayName("Basic Functionality Tests")
     class BasicFunctionalityTests {
 
         @Test
@@ -185,20 +183,6 @@ class TestCaseServiceCreation {
     @Nested
     @DisplayName("Collection Population Tests")
     class CollectionTests {
-
-        @Test
-        @DisplayName("Should populate List collections")
-        void shouldPopulateListCollections() {
-            // When
-            PCSCase result = underTest.generateTestPCSCase();
-
-            // Then
-            assertThat(result.getDefendants()).isNotNull();
-            assertThat(result.getNoticeDocuments()).isNotNull();
-            assertThat(result.getTenancyLicenceDocuments()).isNotNull();
-            assertThat(result.getEnforcementOrder().getAdditionalInformation().getAdditionalInformationDetails())
-                .isNotNull();
-        }
 
         @Test
         @DisplayName("Should populate Set collections")

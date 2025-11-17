@@ -16,7 +16,8 @@ public class DefendantDetails {
 
     @CCD(label = """
                 ---
-                <h2>Defendant's name</h2>""", typeOverride = FieldType.Label)
+                <h2>Defendant's name</h2>""",
+        typeOverride = FieldType.Label)
     private String nameSectionLabel;
 
     @CCD(label = "Do you know the defendant's name?")
