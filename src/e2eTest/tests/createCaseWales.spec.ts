@@ -76,11 +76,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -120,7 +119,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yes,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductStandardContractWales.no,
@@ -175,11 +177,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
      await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -226,7 +227,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', prohibitedConductStandardContractWales.mainHeader);
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
@@ -291,10 +295,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
       correspondenceAddress: contactPreferences.yes,
       phoneNumber: contactPreferences.no
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.no,
-      correspondenceAddress: defendantDetails.no,
-      email: defendantDetails.no,
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.noRadioOption,
+      correspondenceAddressOption: defendantDetails.noRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -335,7 +339,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.no);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductStandardContractWales.yes,
@@ -394,11 +401,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
       correspondenceAddress: contactPreferences.no,
       phoneNumber: contactPreferences.yes
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.yes
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
@@ -436,7 +442,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.no,
+      additionalDefendants: false
+    });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductStandardContractWales.no,
