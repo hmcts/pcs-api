@@ -97,7 +97,8 @@ withPipeline(type, product, component) {
 }
 
 def setPreviewEnvVars() {
-  env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  //env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
   env.ENVIRONMENT= "preview"
 }
 

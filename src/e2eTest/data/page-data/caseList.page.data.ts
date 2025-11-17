@@ -8,9 +8,7 @@ export const caseList = {
   possessionsJurisdiction: 'Possessions',
   caseType:
   {
-    civilPossessions: process.env.CHANGE_ID
-      ? `Civil Possessions ${process.env.CHANGE_ID}`
-      : 'Civil Possessions'
+    civilPossessions: 'Civil Possessions'
   },
   stateLabel: 'State',
   stateAwaitingSubmission: 'Awaiting Submission to HMCTS',
