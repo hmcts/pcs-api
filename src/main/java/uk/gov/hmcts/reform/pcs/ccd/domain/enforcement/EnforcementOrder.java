@@ -71,11 +71,6 @@ public class EnforcementOrder {
     )
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
-    @CCD(
-        searchable = false
-    )
-    private VerticalYesNo showLivingInThePropertyPage;
-
     @JsonUnwrapped
     @CCD(
         label = "Risk details"
