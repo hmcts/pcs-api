@@ -35,7 +35,7 @@ export class ActionRegistry {
     ['extractCaseIdFromAlert', new CreateCaseAction()],
     ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
-    ['defendantDetails', new CreateCaseAction()],
+    ['addDefendantDetails', new CreateCaseAction()],
     ['selectRentArrearsPossessionGround', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
