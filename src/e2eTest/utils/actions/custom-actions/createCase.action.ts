@@ -25,7 +25,7 @@ export class CreateCaseAction implements IAction {
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
-      ['defendantDetails', () => this.defendantDetails(fieldName as actionRecord)],
+      ['addDefendantDetails', () => this.addDefendantDetails(fieldName as actionRecord)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -238,43 +238,81 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continue);
   }
 
-  private async defendantDetails(defendantVal: actionRecord) {
+  private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
-      question: defendantDetails.doYouKnowTheDefendantName,
-      option: defendantVal.name
+      question: defendantDetails.doYouKnowTheDefendantNameQuestion,
+      option: defendantData.nameOption,
     });
-    if (defendantVal.name === defendantDetails.yes) {
-      await performAction('inputText', defendantDetails.defendantFirstName, defendantDetails.firstNameInput);
-      await performAction('inputText', defendantDetails.defendantLastName, defendantDetails.lastNameInput);
+    if (defendantData.nameOption === defendantDetails.yesRadioOption) {
+      await performAction('inputText', defendantDetails.defendantFirstNameTextLabel, defendantData.firstName);
+      await performAction('inputText', defendantDetails.defendantLastNameTextLabel, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
-      question: defendantDetails.defendantCorrespondenceAddress,
-      option: defendantVal.correspondenceAddress
+      question: defendantDetails.defendantCorrespondenceAddressQuestion,
+      option: defendantData.correspondenceAddressOption,
     });
-    if (defendantVal.correspondenceAddress === defendantDetails.yes) {
+    if (defendantData.correspondenceAddressOption === defendantDetails.yesRadioOption) {
       await performAction('clickRadioButton', {
-        question: defendantDetails.isCorrespondenceAddressSame,
-        option: defendantVal.correspondenceAddressSame
+        question: defendantDetails.isCorrespondenceAddressSameQuestion,
+        option: defendantData.correspondenceAddressSameOption,
       });
-      if (defendantVal.correspondenceAddressSame === defendantDetails.no) {
+      if (defendantData.correspondenceAddressSameOption === defendantDetails.noRadioOption) {
         await performActions(
           'Find Address based on postcode',
-          ['inputText', addressDetails.enterUKPostcodeTextLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
+          ['inputText', addressDetails.enterUKPostcodeTextLabel, defendantData.address],
           ['clickButton', addressDetails.findAddressButton],
           ['select', addressDetails.addressSelectLabel, addressDetails.addressIndex]
         );
       }
     }
+    const numAdditionalDefendants = Number(defendantData.numberOfDefendants) || 0;
     await performAction('clickRadioButton', {
-      question: defendantDetails.defendantEmailAddress,
-      option: defendantVal.email
+      question: defendantDetails.additionalDefendantsQuestion,
+      option: defendantData.addAdditionalDefendantsOption,
     });
-    if (defendantVal.email === defendantDetails.yes) {
-      await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
+    if (defendantData.addAdditionalDefendantsOption === defendantDetails.yesRadioOption && numAdditionalDefendants > 0) {
+      for (let i = 0; i < numAdditionalDefendants; i++) {
+        await performAction('clickButton', defendantDetails.addNewButton);
+        const index = i + 1;
+        const nameQuestion = defendantDetails.doYouKnowTheDefendantNameQuestion;
+        const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        if (nameOption === defendantDetails.yesRadioOption) {
+          await performAction('inputText', {text: defendantDetails.defendantFirstNameTextLabel, index: index}, `${defendantData.firstName}${index}`);
+          await performAction('inputText', {text: defendantDetails.defendantLastNameTextLabel, index:index}, `${defendantData.lastName}${index}`
+          );
+        }
+        const addressQuestion = defendantDetails.defendantCorrespondenceAddressQuestion;
+        const correspondenceAddressOption =
+          defendantData[`correspondenceAddress${index}Option`] || defendantDetails.noRadioOption;
+        await performAction('clickRadioButton', {
+          question: addressQuestion,
+          option: correspondenceAddressOption,
+          index,
+        });
+        const correspondenceAddressSameOption =
+          defendantData[`correspondenceAddressSame${index}Option`] || defendantDetails.noRadioOption;
+        if (correspondenceAddressOption === defendantDetails.yesRadioOption) {
+          await performAction('clickRadioButton', {
+            question: defendantDetails.isCorrespondenceAddressSameQuestion,
+            option: correspondenceAddressSameOption,
+            index,
+          });
+        }
+      }
     }
-    await performAction('clickButton', defendantDetails.continue);
+    await performAction('clickButton', defendantDetails.continueButton);
   }
 
   private async selectRentArrearsPossessionGround(rentArrearsPossession: actionRecord) {
@@ -597,12 +635,18 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', languageUsed.continue);
   }
 
-  private async selectDefendantCircumstances(defendantDetails: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+  private async selectDefendantCircumstances(
+    defendantDetails: actionRecord
+  ) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' +caseNumber });
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', defendantDetails);
-    if(defendantDetails == defendantCircumstances.yes){
-      await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
+    await performAction('clickRadioButton', defendantDetails.defendantCircumstance);
+    if (defendantDetails.defendantCircumstance == defendantCircumstances.yes) {
+      if (defendantDetails.additionalDefendants == true) {
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralLabel, defendantCircumstances.defendantCircumstancesSampleData);
+      } else {
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularLabel, defendantCircumstances.defendantCircumstancesSampleData);
+      }
     }
     await performAction('clickButton', defendantCircumstances.continue);
   }
