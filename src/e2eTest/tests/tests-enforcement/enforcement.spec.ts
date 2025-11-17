@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseNumber, caseNotFoundAfterFilter } from '@utils/actions/custom-actions';
 import { initializeExecutor } from '@utils/controller';
-import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
+import { caseList, caseSummary } from '@data/page-data';
 import {
   nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
   criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
@@ -12,15 +12,8 @@ import {
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
-  });
+  // User is already authenticated via globalSetup
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('noCasesFoundAfterSearch');
   //Below three lines will be merged into a single action as part of improvement

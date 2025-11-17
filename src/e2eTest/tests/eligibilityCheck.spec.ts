@@ -1,21 +1,12 @@
 import {test} from '@playwright/test';
 import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
-  claimantType, claimType, user, home, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
+import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible,
+  claimantType, claimType, addressCheckYourAnswers} from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
-  await performAction('clickTab', home.createCaseTab);
-  await performAction('selectJurisdictionCaseTypeEvent');
+  // User is already authenticated via globalSetup
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
   await performAction('housingPossessionClaim');
 });
 

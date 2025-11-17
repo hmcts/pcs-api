@@ -1,12 +1,125 @@
-import { IdamUtils } from '@hmcts/playwright-common';
+import { chromium, Page } from '@playwright/test';
+import { IdamUtils, IdamPage, SessionUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData } from '@data/api-data/accessToken.api.data';
+import { user } from '@data/user-data';
+import { handlePostLoginCookieBanner } from '@utils/cookie.utils';
+import { LONG_TIMEOUT, SHORT_TIMEOUT, getStorageStatePath, SESSION_COOKIE_NAME } from '../playwright.config';
+import * as path from 'path';
+import * as fs from 'fs';
 
-async function globalSetupConfig(): Promise<void> {
-  //Access Token is not required as e2e Tests are using permanent users now, however token generation might be required
-  //once we start using APIs to create case.
-  //await getAccessToken();
+const isCI = !!process.env.CI;
+
+/**
+ * Checks if the current page is a login page by examining URL and form elements.
+ */
+async function isLoginPage(page: Page): Promise<boolean> {
+  await page.waitForLoadState('domcontentloaded', { timeout: SHORT_TIMEOUT }).catch(() => {});
+  
+  if (isCI) {
+    await page.waitForTimeout(1000);
+  }
+  
+  const url = page.url().toLowerCase();
+  if (url.includes('/login') || url.includes('/idam') || url.includes('/auth') || url.includes('/sign-in')) {
+    return true;
+  }
+  
+  const hasUsernameField = await page.locator('#username').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+  
+  if (isCI) {
+    const hasPasswordField = await page.locator('#password').isVisible({ timeout: SHORT_TIMEOUT }).catch(() => false);
+    return hasUsernameField && hasPasswordField;
+  }
+  
+  return hasUsernameField;
 }
 
+
+/**
+ * Global setup configuration for Playwright tests.
+ * Handles authentication and session storage for test execution.
+ */
+async function globalSetupConfig(): Promise<void> {
+  const baseURL = process.env.MANAGE_CASE_BASE_URL;
+  if (!baseURL) {
+    throw new Error('MANAGE_CASE_BASE_URL environment variable is required');
+  }
+
+  const storageStatePath = getStorageStatePath();
+  const sessionDir = path.dirname(storageStatePath);
+  fs.mkdirSync(sessionDir, { recursive: true });
+  const browser = await chromium.launch({ channel: 'chrome', headless: !!process.env.CI });
+  const page = await browser.newPage();
+
+  try {
+    const userEmail = user.claimantSolicitor.email;
+    const userPassword = user.claimantSolicitor.password;
+
+    if (!userEmail || !userPassword) {
+      throw new Error('Login failed: missing credentials');
+    }
+
+    // Check if existing session is still valid
+    const sessionExists = fs.existsSync(storageStatePath);
+    const sessionValid = sessionExists && SessionUtils.isSessionValid(storageStatePath, SESSION_COOKIE_NAME);
+
+    if (sessionValid) {
+      await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });
+      if (!(await isLoginPage(page))) {
+        await browser.close();
+        return; // Session is still valid, no need to re-authenticate
+      }
+    }
+
+    // Perform login
+    await page.goto(baseURL, { waitUntil: 'domcontentloaded', timeout: LONG_TIMEOUT });
+    const idamPage = new IdamPage(page);
+    await idamPage.login({
+      username: userEmail,
+      password: userPassword,
+      sessionFile: storageStatePath,
+    });
+
+    // Wait for navigation to complete after login
+    if (isCI) {
+      await page.waitForLoadState('networkidle', { timeout: LONG_TIMEOUT }).catch(() => {
+        return page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
+      });
+      await page.waitForTimeout(1000);
+      
+      // Verify login was successful (CI only)
+      if (await isLoginPage(page)) {
+        throw new Error('Login failed: Still on login page after authentication attempt');
+      }
+    } else {
+      await page.waitForLoadState('domcontentloaded', { timeout: LONG_TIMEOUT });
+    }
+    
+    await handlePostLoginCookieBanner(page).catch(() => {});
+    await page.context().storageState({ path: storageStatePath });
+    
+    // Verify storage state was created successfully
+    if (!fs.existsSync(storageStatePath)) {
+      throw new Error(`Storage state file was not created at ${storageStatePath}`);
+    }
+    
+    const storageStateContent = JSON.parse(fs.readFileSync(storageStatePath, 'utf-8'));
+    const hasSessionCookie = storageStateContent.cookies?.some(
+      (cookie: any) => cookie.name === SESSION_COOKIE_NAME && cookie.value
+    );
+    
+    if (!hasSessionCookie) {
+      throw new Error(`Session cookie ${SESSION_COOKIE_NAME} not found in storage state`);
+    }
+  } finally {
+    await browser.close();
+  }
+}
+
+/**
+ * Generates an IDAM access token for API authentication.
+ * Reserved for future use when API-based case creation is implemented.
+ */
 export const getAccessToken = async (): Promise<void> => {
   process.env.IDAM_WEB_URL = accessTokenApiData.idamUrl;
   process.env.IDAM_TESTING_SUPPORT_URL = accessTokenApiData.idamTestingSupportUrl;
@@ -17,4 +130,5 @@ export const getAccessToken = async (): Promise<void> => {
     scope: 'profile roles'
   });
 };
+
 export default globalSetupConfig;

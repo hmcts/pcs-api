@@ -20,11 +20,11 @@ export class CreateCaseAction implements IAction {
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(page, fieldName)],
       ['submitAddressCheckYourAnswers', () => this.submitAddressCheckYourAnswers()],
-      ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim(page)],
+      ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim()],
       ['selectResumeClaimOption', () => this.selectResumeClaimOption(fieldName)],
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
-      ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
+      ['findTheCase', () => this.findTheCase(fieldName)],
       ['defendantDetails', () => this.defendantDetails(fieldName as actionRecord)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
@@ -626,9 +626,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', addressDetails.continueButton);
   }
 
-  private async provideMoreDetailsOfClaim(page: Page) {
-    // Reloading to reset session/UI state before performing next step
-    await page.reload();
+  private async provideMoreDetailsOfClaim() {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
@@ -672,15 +670,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
   }
 
-  private async reloginAndFindTheCase(userInfo: actionData) {
-    await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-    await performAction('login', userInfo);
+  private async findTheCase(caseNo: actionData) {
     await performAction('clickButton', home.findCaseTab);
     await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
     await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
-    await performAction('inputText', search.caseNumberLabel, caseNumber);
+    await performAction('inputText', search.caseNumberLabel, caseNo);
     await performAction('clickButton', search.apply);
-    await performAction('clickButton', caseNumber);
+    await performAction('clickButton', caseNo);
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {

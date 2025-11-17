@@ -1,5 +1,4 @@
-import * as process from 'node:process';
-
+import * as path from 'path';
 import {defineConfig, devices} from '@playwright/test';
 
 const DEFAULT_VIEWPORT = {width: 1920, height: 1080};
@@ -10,19 +9,33 @@ export const LONG_TIMEOUT = 30000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
+const SESSION_DIR = path.join(process.cwd(), '.auth');
+const STORAGE_STATE_FILE = 'storage-state.json';
+export const SESSION_COOKIE_NAME = 'Idam.Session';
+
+export function getStorageStatePath(): string {
+  return path.join(SESSION_DIR, STORAGE_STATE_FILE);
+}
+
+const getWorkers = () => {
+  const env = process.env.ENVIRONMENT;
+  return !env ? 1 : env === 'preview' ? 1 : env === 'aat' ? 4 : 4;
+};
+
 export default defineConfig({
   testDir: 'tests/',
-  /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
-  // Reduced workers from 4 → 2 due to server/login contention issues
-  workers: 1,
+  workers: getWorkers(),
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
-  use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },
-  /* Report slow tests if they take longer than 5 mins */
+  use: {
+    baseURL: process.env.MANAGE_CASE_BASE_URL || 'http://localhost:3000',
+    actionTimeout: process.env.CI ? 60 * 1000 : 30 * 1000,
+    navigationTimeout: process.env.CI ? 60 * 1000 : 30 * 1000,
+    storageState: getStorageStatePath(),
+  },
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
   globalTeardown: require.resolve('./config/global-teardown.config'),
@@ -35,6 +48,8 @@ export default defineConfig({
         suiteTitle: false,
         environmentInfo: {
           os_version: process.version,
+          base_url: process.env.MANAGE_CASE_BASE_URL || 'http://localhost:3000',
+          logged_in_user: process.env.IDAM_PCS_USER_EMAIL || 'pcs-solicitor-automation@test.com',
         },
       },
     ],
