@@ -1,18 +1,56 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails, claimantType, claimType, claimantName, contactPreferences,
-  defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds,
-  preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
-  rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
-  reasonsForPossession, moneyJudgment, claimantCircumstances, applications,
-  completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers,
-  propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
-  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
-  alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
-  statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
-  underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
-  reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
-  addressCheckYourAnswers} from '@data/page-data';
+import { test } from '@playwright/test';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  additionalReasonsForPossession,
+  alternativesToPossession,
+  applications,
+  checkYourAnswers,
+  claimantCircumstances,
+  claimantName,
+  claimantType,
+  claimingCosts,
+  claimType,
+  completeYourClaim,
+  contactPreferences,
+  dailyRentAmount,
+  defendantCircumstances,
+  defendantDetails,
+  detailsOfRentArrears,
+  groundsForPossession,
+  home,
+  housingAct,
+  languageUsed,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeDetails,
+  noticeOfYourIntention,
+  preActionProtocol,
+  propertyDetails,
+  reasonsForPossession,
+  reasonsForRequestingADemotionOrder,
+  reasonsForRequestingASuspensionAndDemotionOrder,
+  reasonsForRequestingASuspensionOrder,
+  rentArrearsOrBreachOfTenancy,
+  rentArrearsPossessionGrounds,
+  rentDetails,
+  signInOrCreateAnAccount,
+  statementOfExpressTerms,
+  statementOfTruth,
+  tenancyLicenceDetails,
+  underlesseeOrMortgageeDetails,
+  underlesseeOrMortgageeEntitledToClaim,
+  uploadAdditionalDocs,
+  user,
+  wantToUploadDocuments,
+  whatAreYourGroundsForPossession
+} from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
