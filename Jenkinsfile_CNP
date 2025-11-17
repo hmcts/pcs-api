@@ -38,6 +38,7 @@ withPipeline(type, product, component) {
   env.IDAM_S2S_AUTH_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
   env.IDAM_API_URL = "https://idam-api.aat.platform.hmcts.net"
   env.PACT_BROKER_URL = "https://pact-broker.platform.hmcts.net"
+  env.TESTCONTAINERS_HUB_IMAGE_NAME_PREFIX = "hmctspublic.azurecr.io/imported/"
   loadVaultSecrets(secrets)
   enableDbMigration('pcs')
 
