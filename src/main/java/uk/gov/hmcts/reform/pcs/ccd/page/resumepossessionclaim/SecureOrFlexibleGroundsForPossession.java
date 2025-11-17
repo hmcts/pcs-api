@@ -35,7 +35,7 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                   these grounds here and any extra ground you'd like to add to your claim, if you need to.
                </p>
                <p class="govuk-body">
-                 <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>
+                 <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
                </p>
                """)
             .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
