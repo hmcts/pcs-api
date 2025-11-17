@@ -1,18 +1,56 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails, claimantType, claimType, claimantName, contactPreferences,
-  defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds,
-  preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
-  rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
-  reasonsForPossession, moneyJudgment, claimantCircumstances, applications,
-  completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers,
-  propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
-  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
-  alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
-  statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
-  underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
-  reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
-  addressCheckYourAnswers} from '@data/page-data';
+import { test } from '@playwright/test';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  additionalReasonsForPossession,
+  alternativesToPossession,
+  applications,
+  checkYourAnswers,
+  claimantCircumstances,
+  claimantName,
+  claimantType,
+  claimingCosts,
+  claimType,
+  completeYourClaim,
+  contactPreferences,
+  dailyRentAmount,
+  defendantCircumstances,
+  defendantDetails,
+  detailsOfRentArrears,
+  groundsForPossession,
+  home,
+  housingAct,
+  languageUsed,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeDetails,
+  noticeOfYourIntention,
+  preActionProtocol,
+  propertyDetails,
+  reasonsForPossession,
+  reasonsForRequestingADemotionOrder,
+  reasonsForRequestingASuspensionAndDemotionOrder,
+  reasonsForRequestingASuspensionOrder,
+  rentArrearsOrBreachOfTenancy,
+  rentArrearsPossessionGrounds,
+  rentDetails,
+  signInOrCreateAnAccount,
+  statementOfExpressTerms,
+  statementOfTruth,
+  tenancyLicenceDetails,
+  underlesseeOrMortgageeDetails,
+  underlesseeOrMortgageeEntitledToClaim,
+  uploadAdditionalDocs,
+  user,
+  wantToUploadDocuments,
+  whatAreYourGroundsForPossession
+} from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -115,7 +153,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: true
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -233,7 +271,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -332,7 +370,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -352,9 +390,13 @@ test.describe('[Create Case - England] @regression', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.yes,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.yes,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
+      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -449,7 +491,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -470,9 +512,9 @@ test.describe('[Create Case - England] @regression', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.yes,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.no,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.no
+      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -556,7 +598,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -650,7 +692,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -676,9 +718,9 @@ test.describe('[Create Case - England] @regression', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.no,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.no,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
+      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -758,7 +800,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -780,9 +822,9 @@ test.describe('[Create Case - England] @regression', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.no,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.yes,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.no
+      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
+      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -860,7 +902,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -881,9 +923,9 @@ test.describe('[Create Case - England] @regression', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option:underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.yes,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.yes,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
+      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -976,7 +1018,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -1002,9 +1044,9 @@ test.describe('[Create Case - England] @regression', async () => {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option:underlesseeOrMortgageeEntitledToClaim.yes});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameQuestion: underlesseeOrMortgageeDetails.doYouKnowTheName, nameOption: underlesseeOrMortgageeDetails.yes,
-      addressQuestion: underlesseeOrMortgageeDetails.doYouKnowTheAddress, addressOption: underlesseeOrMortgageeDetails.yes,
-      anotherUnderlesseeOrMortgageeQuestion: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgagee, anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yes
+      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
+      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
@@ -1094,7 +1136,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
@@ -1188,7 +1230,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
