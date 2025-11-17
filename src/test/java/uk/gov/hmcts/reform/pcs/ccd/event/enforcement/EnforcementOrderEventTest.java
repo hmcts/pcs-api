@@ -82,16 +82,15 @@ class EnforcementOrderEventTest extends BaseEventTest {
         // Given
         AddressUK propertyAddress = mock(AddressUK.class);
         String expectedFormattedPropertyAddress = "expected formatted property address";
+        when(addressFormatter.formatAddressWithHtmlLineBreaks(propertyAddress))
+            .thenReturn(expectedFormattedPropertyAddress);
 
         String firstName = "Test";
         String lastName = "Testing";
         DefendantDetails defendantDetails = DefendantDetails.builder().firstName(firstName).lastName(lastName).build();
         PCSCase caseData = PCSCase.builder()
-                .defendants(List.of(ListValue.<DefendantDetails>builder().value(defendantDetails).build()))
+            .allDefendants(List.of(ListValue.<DefendantDetails>builder().value(defendantDetails).build()))
             .propertyAddress(propertyAddress).build();
-
-        when(addressFormatter.formatAddressWithHtmlLineBreaks(propertyAddress))
-            .thenReturn(expectedFormattedPropertyAddress);
 
         // When
         PCSCase result = callStartHandler(caseData);
@@ -99,7 +98,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getFormattedPropertyAddress()).isEqualTo(expectedFormattedPropertyAddress);
-        assertThat(result.getDefendants()).hasSize(1);
+        assertThat(result.getAllDefendants()).hasSize(1);
         assertThat(result.getDefendant1().getFirstName()).isEqualTo(firstName);
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }

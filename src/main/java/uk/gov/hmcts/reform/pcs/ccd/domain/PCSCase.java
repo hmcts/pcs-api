@@ -368,8 +368,16 @@ public class PCSCase {
     @CCD
     private DefendantDetails defendant1;
 
-    @CCD
-    private List<ListValue<DefendantDetails>> defendants;
+    @CCD(label = "Do you need to add another defendant?")
+    private VerticalYesNo addAnotherDefendant;
+
+    @CCD(
+        label = "Add additional defendant",
+        hint = "Add an additional defendant to the case"
+    )
+    private List<ListValue<DefendantDetails>> additionalDefendants;
+
+    private List<ListValue<DefendantDetails>> allDefendants;
 
     // Notice Details fields
     @CCD(
@@ -732,10 +740,22 @@ public class PCSCase {
     private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 
     @JsonUnwrapped
-    private UnderlesseeMortgagee underlesseeMortgagee;
+    private EnforcementOrder enforcementOrder;
+
+    @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
+    private VerticalYesNo hasUnderlesseeOrMortgagee;
 
     @JsonUnwrapped
-    private EnforcementOrder enforcementOrder;
+    private UnderlesseeMortgageeDetails underlesseeOrMortgagee1;
+
+    @CCD(label = "Do you need to add another underlessee or mortgagee?")
+    private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
+
+    @CCD(
+        label = "Add underlessee or mortgagee",
+        hint = "Add an underlessee or mortgagee to the case"
+    )
+    private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
 
     @CCD(
         searchable = false,
