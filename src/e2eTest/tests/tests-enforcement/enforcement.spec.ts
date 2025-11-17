@@ -1,26 +1,42 @@
-import { test } from '@playwright/test';
-import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseNumber, caseNotFoundAfterFilter } from '@utils/actions/custom-actions';
-import { initializeExecutor } from '@utils/controller';
-import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
+import { test } from '@fixtures/authenticated-context.fixture';
 import {
-  nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
-  criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  accessToTheProperty, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
+  caseList,
+  caseSummary,
+  signInOrCreateAnAccount,
+  user
+} from '@data/page-data';
+import {
+  accessToTheProperty,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  criminalOrAntisocialBehaviour,
+  everyoneLivingAtTheProperty,
+  evictionCouldBeDelayed,
+  firearmPossession,
+  groupProtestsEviction,
+  nameAndAddressForEviction,
+  policeOrSocialServiceVisit,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  violentOrAggressiveBehaviour,
+  vulnerableAdultsAndChildren,
+  yourApplication
 } from '@data/page-data/page-data-enforcement';
+import {
+  caseNotFoundAfterFilter,
+  caseNumber
+} from '@utils/actions/custom-actions';
+import { initializeExecutor } from '@utils/controller';
+import {
+  initializeEnforcementExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller-enforcement';
 
-test.beforeEach(async ({ page }) => {
-  initializeExecutor(page);
-  initializeEnforcementExecutor(page);
+test.beforeEach(async ({ authenticatedPage }) => {
+  initializeExecutor(authenticatedPage);
+  initializeEnforcementExecutor(authenticatedPage);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
-  });
   await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
   await performAction('noCasesFoundAfterSearch');
   //Below three lines will be merged into a single action as part of improvement

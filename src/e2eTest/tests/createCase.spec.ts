@@ -1,36 +1,64 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails, claimantType, claimType, claimantName, contactPreferences,
-  defendantDetails, tenancyLicenceDetails, groundsForPossession, rentArrearsPossessionGrounds,
-  preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails,
-  rentDetails, detailsOfRentArrears, whatAreYourGroundsForPossession, rentArrearsOrBreachOfTenancy,
-  reasonsForPossession, moneyJudgment, claimantCircumstances, applications,
-  completeYourClaim, user, reasonsForRequestingASuspensionOrder, checkYourAnswers,
-  propertyDetails, languageUsed, defendantCircumstances, claimingCosts,
-  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim,
-  alternativesToPossession, housingAct, reasonsForRequestingADemotionOrder,
-  statementOfExpressTerms, wantToUploadDocuments, home, uploadAdditionalDocs,
-  underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
-  reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
-  addressCheckYourAnswers} from '@data/page-data';
+import { test } from '@fixtures/authenticated-context.fixture';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  additionalReasonsForPossession,
+  alternativesToPossession,
+  applications,
+  checkYourAnswers,
+  claimantCircumstances,
+  claimantName,
+  claimantType,
+  claimingCosts,
+  claimType,
+  completeYourClaim,
+  contactPreferences,
+  dailyRentAmount,
+  defendantCircumstances,
+  defendantDetails,
+  detailsOfRentArrears,
+  groundsForPossession,
+  home,
+  housingAct,
+  languageUsed,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeDetails,
+  noticeOfYourIntention,
+  preActionProtocol,
+  propertyDetails,
+  reasonsForPossession,
+  reasonsForRequestingADemotionOrder,
+  reasonsForRequestingASuspensionAndDemotionOrder,
+  reasonsForRequestingASuspensionOrder,
+  rentArrearsOrBreachOfTenancy,
+  rentArrearsPossessionGrounds,
+  rentDetails,
+  signInOrCreateAnAccount,
+  statementOfExpressTerms,
+  statementOfTruth,
+  tenancyLicenceDetails,
+  underlesseeOrMortgageeDetails,
+  underlesseeOrMortgageeEntitledToClaim,
+  uploadAdditionalDocs,
+  user,
+  wantToUploadDocuments,
+  whatAreYourGroundsForPossession
+} from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
 
-test.beforeEach(async ({page}) => {
-  initializeExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
-  await performAction('clickTab', home.createCaseTab);
-  await performAction('selectJurisdictionCaseTypeEvent');
+test.beforeEach(async ({authenticatedPage}) => {
+  initializeExecutor(authenticatedPage);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case - England] @regression', async () => {
+test.describe('[Create Case - England]  @regression', async () => {
   test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,

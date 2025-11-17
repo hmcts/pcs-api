@@ -1,21 +1,27 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
-  claimantType, claimType, user, home, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
+import { test } from '@fixtures/authenticated-context.fixture';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  borderPostcode,
+  canNotUseOnlineService,
+  claimantType,
+  claimType,
+  home,
+  propertyIneligible,
+  provideMoreDetailsOfClaim,
+  signInOrCreateAnAccount,
+  user,
+  userIneligible
+} from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
 
-test.beforeEach(async ({page}) => {
-  initializeExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
-  await performAction('clickTab', home.createCaseTab);
-  await performAction('selectJurisdictionCaseTypeEvent');
+test.beforeEach(async ({authenticatedPage}) => {
+  initializeExecutor(authenticatedPage);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
   await performAction('housingPossessionClaim');
 });
 

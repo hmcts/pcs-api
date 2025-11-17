@@ -15,7 +15,8 @@
     "paths": {
       "@utils/*": ["utils/*"],
       "@config/*": ["config/*"],
-      "@data/*": ["data/*"]
+      "@data/*": ["data/*"],
+      "@fixtures/*": ["fixtures/*"]
     }
   }
 }

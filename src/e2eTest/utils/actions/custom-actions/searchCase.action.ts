@@ -56,7 +56,7 @@ export class SearchCaseAction implements IAction {
       await performAction('clickButton', caseList.apply);
       await performAction('clickButton', selectCriteriaCaseNumber.caseNumber);
       //the below line will be moved to Utils in upcoming User story automation
-      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${searchCondition.caseNumber.replaceAll('-', '')}#Summary`);
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${searchCondition.caseNumber.replaceAll('-', '')}#Summary`);
       await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + searchCondition.caseNumber });
       enforcementTestCaseNumber = searchCondition.caseNumber;
       enforcementAddressInfo = addressInfo;
@@ -68,7 +68,7 @@ export class SearchCaseAction implements IAction {
       firstFromTheListCaseNumber = await page.locator('a[aria-label*="go to case with Case reference"]').first().innerText();
       await performAction('clickButton', firstFromTheListCaseNumber);
       //the below line will be moved to Utils in upcoming User story automation
-      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${firstFromTheListCaseNumber.replaceAll('-', '')}#Summary`);
+      await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${firstFromTheListCaseNumber.replaceAll('-', '')}#Summary`);
       await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + firstFromTheListCaseNumber });
       enforcementTestCaseNumber = firstFromTheListCaseNumber;
       //The below code is just a temporary fix, as the summary page is subject to change

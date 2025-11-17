@@ -1,64 +1,41 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import { test } from '@fixtures/authenticated-context.fixture';
 import {
-  claimType,
-  claimantType,
-  claimantName,
-  claimantDetailsWales,
-  contactPreferences,
-  defendantDetails,
-  tenancyLicenceDetails,
-  groundsForPossession,
-  rentArrearsPossessionGrounds,
-  preActionProtocol,
-  mediationAndSettlement,
-  noticeOfYourIntention,
-  rentDetails,
-  provideMoreDetailsOfClaim,
-  resumeClaim,
-  resumeClaimOptions,
-  detailsOfRentArrears,
-  whatAreYourGroundsForPossession,
-  rentArrearsOrBreachOfTenancy,
-  reasonsForPossession,
-  moneyJudgment,
-  claimantCircumstances,
-  applications,
-  completeYourClaim,
-  user,
-  checkYourAnswers,
-  propertyDetails,
-  languageUsed,
-  defendantCircumstances,
-  claimingCosts,
-  home,
-  additionalReasonsForPossession,
-  underlesseeOrMortgageeEntitledToClaim,
-  wantToUploadDocuments,
-  whatAreYourGroundsForPossessionWales,
+  addressCheckYourAnswers,
   addressDetails,
-  signInOrCreateAnAccount,
-  occupationContractOrLicenceDetailsWales,
-  prohibitedConductStandardContractWales,
-  dailyRentAmount,
   antiSocialBehaviourWales,
-  noticeDetails,
-  addressCheckYourAnswers
+  claimantCircumstances,
+  claimantDetailsWales,
+  claimantName,
+  claimantType,
+  claimingCosts,
+  claimType,
+  contactPreferences,
+  dailyRentAmount,
+  defendantCircumstances,
+  defendantDetails,
+  detailsOfRentArrears,
+  home,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeOfYourIntention,
+  occupationContractOrLicenceDetailsWales,
+  preActionProtocol,
+  prohibitedConductStandardContractWales,
+  rentDetails,
+  reasonsForPossession,
+  signInOrCreateAnAccount,
+  user,
+  whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
 
-test.beforeEach(async ({page}) => {
-  initializeExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
-  await performAction('clickTab', home.createCaseTab);
-  await performAction('selectJurisdictionCaseTypeEvent');
+test.beforeEach(async ({authenticatedPage}) => {
+  initializeExecutor(authenticatedPage);
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`);
   await performAction('housingPossessionClaim');
 });
 

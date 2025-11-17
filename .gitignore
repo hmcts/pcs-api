@@ -53,6 +53,6 @@ applicationinsights-agent-*.jar
 /pacts/
 /cftlib_log_file_IS_UNDEFINED
 /allure-results
-
+/e2e-output
 node_modules
 *.code-workspace

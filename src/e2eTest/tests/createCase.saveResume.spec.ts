@@ -1,11 +1,48 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails, claimantType, claimType, claimantName, contactPreferences, defendantDetails, tenancyLicenceDetails,
-  groundsForPossession, preActionProtocol, mediationAndSettlement, noticeOfYourIntention, noticeDetails, rentDetails,
-  completeYourClaim, dailyRentAmount, whatAreYourGroundsForPossession, moneyJudgment, claimantCircumstances, applications,
-  user, checkYourAnswers, propertyDetails, languageUsed, defendantCircumstances, claimingCosts, statementOfTruth, home,
-  additionalReasonsForPossession, underlesseeOrMortgageeEntitledToClaim, alternativesToPossession, reasonsForPossession,
-  wantToUploadDocuments, resumeClaim, resumeClaimOptions, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data/';
+import { test } from '@fixtures/authenticated-context.fixture';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  additionalReasonsForPossession,
+  alternativesToPossession,
+  applications,
+  checkYourAnswers,
+  claimantCircumstances,
+  claimantName,
+  claimantType,
+  claimingCosts,
+  claimType,
+  completeYourClaim,
+  contactPreferences,
+  dailyRentAmount,
+  defendantCircumstances,
+  defendantDetails,
+  groundsForPossession,
+  home,
+  languageUsed,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeDetails,
+  noticeOfYourIntention,
+  preActionProtocol,
+  propertyDetails,
+  reasonsForPossession,
+  rentDetails,
+  resumeClaim,
+  resumeClaimOptions,
+  signInOrCreateAnAccount,
+  statementOfTruth,
+  tenancyLicenceDetails,
+  underlesseeOrMortgageeEntitledToClaim,
+  user,
+  wantToUploadDocuments,
+  whatAreYourGroundsForPossession
+} from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -13,23 +50,15 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
 // Due to frequent issues with relogin and “Find Case” (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
 // However, it must be executed locally, and evidence of the passed results should be provided during PR review in case its failing in pipeline.
 
-test.beforeEach(async ({page}) => {
-  initializeExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
+test.beforeEach(async ({authenticatedPage}) => {
+  initializeExecutor(authenticatedPage);
+  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL + '/cases/case-filter');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Create Case - With resume claim options]', async () => {
+test.describe('[Create Case - With resume claim options] @regression', async () => {
   test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
@@ -190,7 +219,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeaderSecure);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],

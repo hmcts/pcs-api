@@ -8,5 +8,5 @@ export const signInOrCreateAnAccount = {
   rejectAdditionalCookiesButton: 'Reject additional cookies',
   acceptAnalyticsCookiesButton: 'Accept analytics cookies',
   rejectAnalyticsCookiesButton: 'Reject analytics cookies',
-  hideThisCookieMessageButton: 'Hide this cookie message'
+  hideThisCookieMessageButton: 'Hide this message'
 }
