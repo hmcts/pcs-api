@@ -65,13 +65,10 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         PCSCase caseData = details.getData();
 
-        log.warn("=== RentArrearsGroundForPossessionAdditionalGrounds midEvent START ===");
-
         // Rebuild canonical sets from rent arrears grounds selection
         Set<RentArrearsMandatoryGrounds> mergedMandatory = new HashSet<>();
         Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new HashSet<>();
         Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
-        log.warn("rentArrearsGrounds: {}", rentArrearsGrounds);
         
         if (rentArrearsGrounds != null) {
             if (rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {
@@ -91,7 +88,6 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 caseData.getAssuredAdditionalMandatoryGrounds(),
                 Set.of()
             );
-        log.warn("addMandatory: {}", addMandatory);
         
         for (AssuredAdditionalMandatoryGrounds add : addMandatory) {
             mergedMandatory.add(RentArrearsMandatoryGrounds.valueOf(add.name()));
@@ -102,7 +98,6 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 caseData.getAssuredAdditionalDiscretionaryGrounds(),
                 Set.of()
             );
-        log.warn("addDiscretionary: {}", addDiscretionary);
         
         for (AssuredAdditionalDiscretionaryGrounds add : addDiscretionary) {
             mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.valueOf(add.name()));
@@ -118,16 +113,11 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         boolean requireAdditionalSelection = hasRentArrearsGrounds;
         boolean hasAnyAdditional = hasAdditionalMandatory || hasAdditionalDiscretionary;
 
-        log.warn("requireAdditionalSelection: {}, hasAnyAdditional: {}", requireAdditionalSelection, hasAnyAdditional);
-
         if (requireAdditionalSelection && !hasAnyAdditional) {
-            log.warn("VALIDATION FAILED: Rent arrears selected earlier, but no additional grounds selected.");
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errors(List.of("Please select at least one ground"))
                 .build();
         }
-
-        log.warn("Validation passed (conditional additional requirement).");
 
         // Backward compatibility: if no rent arrears grounds or additional-only input present,
         // use existing canonical sets
@@ -164,8 +154,6 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
         caseData.setShowRentDetailsPage(showRentDetails);
 
-        log.warn("=== RentArrearsGroundForPossessionAdditionalGrounds midEvent END ===");
-        
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
