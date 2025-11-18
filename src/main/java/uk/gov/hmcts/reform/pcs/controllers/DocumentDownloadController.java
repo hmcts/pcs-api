@@ -1,11 +1,13 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -13,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.document.model.DownloadedDocumentResponse;
 import uk.gov.hmcts.reform.pcs.document.service.DocumentDownloadService;
-
-import jakarta.annotation.PostConstruct;
 
 @Slf4j
 @RestController
@@ -31,34 +31,31 @@ public class DocumentDownloadController {
     }
 
     @GetMapping("/downloadDocument/{documentId}")
-    public ResponseEntity<Resource> downloadDocumentById(
+    public void downloadDocumentById(
         @RequestHeader(HttpHeaders.AUTHORIZATION) String authorisation,
-        @PathVariable String documentId
+        @PathVariable String documentId,
+        HttpServletResponse response
     ) {
-        log.info("========================================");
-        log.info("DOWNLOAD REQUEST RECEIVED");
-        log.info("Document ID: {}", documentId);
-        log.info("Auth header present: {}", authorisation != null && !authorisation.isEmpty());
-        log.info("========================================");
-
         try {
-            DownloadedDocumentResponse documentResponse = documentDownloadService.downloadDocument(
-                authorisation,
-                documentId
-            );
+            DownloadedDocumentResponse document = documentDownloadService.downloadDocument(authorisation, documentId);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.valueOf(documentResponse.mimeType()));
-            headers.set("original-file-name", documentResponse.fileName());
+            // Set headers
+            response.setContentType(document.mimeType());
 
-            log.info("SUCCESS: Document downloaded - {}", documentResponse.fileName());
-            return ResponseEntity.ok()
-                .headers(headers)
-                .body(documentResponse.file());
+            String contentDisposition = "attachment; filename=\"" + document.fileName() + "\"; filename*=UTF-8''" +
+                java.net.URLEncoder.encode(document.fileName(), StandardCharsets.UTF_8) + "\"";
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+
+            // STREAMING: CDAM InputStream → HTTP response
+            try (InputStream in = document.file().getInputStream();
+                 OutputStream out = response.getOutputStream()) {
+                in.transferTo(out);
+                out.flush();
+            }
 
         } catch (Exception e) {
-            log.error("ERROR: Failed to download document {}", documentId, e);
-            throw e;
+            throw new RuntimeException("Failed to stream document " + documentId, e);
         }
     }
+
 }
