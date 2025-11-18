@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.controllers.DocumentDownloadController;
 import uk.gov.hmcts.reform.pcs.document.model.DownloadedDocumentResponse;
 import uk.gov.hmcts.reform.pcs.document.service.DocumentDownloadService;
 
-class DocumentDownloadControllerVoidTest {
+class DocumentDownloadControllerTest {
 
     private static final String DOCUMENT_ID = "12345678-1234-1234-1234-123456789abc";
     private static final String AUTHORIZATION = "Bearer token";
