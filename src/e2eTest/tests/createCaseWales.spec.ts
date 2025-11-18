@@ -2,7 +2,6 @@ import { test } from '@playwright/test';
 import {
   addressCheckYourAnswers,
   addressDetails,
-  antiSocialBehaviourWales,
   claimantCircumstances,
   claimantDetailsWales,
   claimantName,
@@ -24,6 +23,8 @@ import {
   rentDetails,
   reasonsForPossession,
   signInOrCreateAnAccount,
+  asbQuestionsWales,
+  noticeDetails,
   user,
   whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
@@ -32,6 +33,7 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -47,6 +49,10 @@ test.beforeEach(async ({page}) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Create Case - Wales] @regression', async () => {
@@ -110,6 +116,13 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.no);
@@ -311,8 +324,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
-    await performValidation('mainHeader', antiSocialBehaviourWales.mainHeader);
-    await performAction('clickButton', antiSocialBehaviourWales.continue);
+    await performAction('selectAsbQuestions', {
+      asbChoice: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
+      illegalPurposesChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfIllegal: asbQuestionsWales.giveDetailsOfIllegalHiddenTextInput,
+      prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
+    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
@@ -330,6 +346,13 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectDailyRentAmount', {
     calculateRentAmount: '£32.85',
     unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
