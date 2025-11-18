@@ -39,14 +39,24 @@ public class DocumentDownloadController {
         try {
             DownloadedDocumentResponse document = documentDownloadService.downloadDocument(authorisation, documentId);
 
-            // Set headers
+            log.info("Setting response headers for file: {}", document.fileName());
+
+            // Set content type
             response.setContentType(document.mimeType());
 
-            String contentDisposition = "attachment; filename=\""
-                + document.fileName() + "\"; filename*=UTF-8''"
-                + java.net.URLEncoder.encode(document.fileName(), StandardCharsets.UTF_8)
-                + "\"";
+            // Build Content-Disposition header with proper encoding
+            String encodedFilename = java.net.URLEncoder.encode(document.fileName(), StandardCharsets.UTF_8)
+                .replace("+", "%20"); // Replace + with %20 for better browser compatibility
+
+            String contentDisposition = String.format(
+                "attachment; filename=\"%s\"; filename*=UTF-8''%s",
+                sanitizeFilename(document.fileName()),
+                encodedFilename
+            );
+
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+
+            log.info("Content-Disposition header set to: {}", contentDisposition);
 
             // STREAMING: CDAM InputStream → HTTP response
             try (InputStream in = document.file().getInputStream();
@@ -55,9 +65,23 @@ public class DocumentDownloadController {
                 out.flush();
             }
 
+            log.info("Document streamed successfully: {}", document.fileName());
+
         } catch (Exception e) {
+            log.error("Failed to stream document {}: {}", documentId, e.getMessage(), e);
             throw new RuntimeException("Failed to stream document " + documentId, e);
         }
     }
 
+    /**
+     * Sanitize filename for use in Content-Disposition header.
+     * Removes or replaces characters that might cause issues.
+     */
+    private String sanitizeFilename(String filename) {
+        if (filename == null) {
+            return "document";
+        }
+        // Remove or replace problematic characters
+        return filename.replaceAll("[\\\\/:*?\"<>|]", "_");
+    }
 }
