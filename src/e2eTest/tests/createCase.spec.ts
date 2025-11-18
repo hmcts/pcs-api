@@ -51,6 +51,7 @@ import {
   wantToUploadDocuments,
   whatAreYourGroundsForPossession
 } from '@data/page-data';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -66,6 +67,10 @@ test.beforeEach(async ({page}) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Create Case - England] @regression', async () => {

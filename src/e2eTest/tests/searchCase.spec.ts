@@ -8,6 +8,7 @@ import { caseInfo } from '@utils/actions/custom-actions';
 import { user } from '@data/user-data';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { signInOrCreateAnAccount } from '@data/page-data';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
