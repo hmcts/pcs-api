@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
