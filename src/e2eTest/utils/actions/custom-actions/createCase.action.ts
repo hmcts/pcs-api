@@ -1,14 +1,17 @@
 import Axios from 'axios';
-import {ServiceAuthUtils} from '@hmcts/playwright-common';
 import {actionData, actionRecord, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement, tenancyLicenceDetails, resumeClaimOptions, rentDetails, accessTokenApiData, caseApiData, dailyRentAmount, reasonsForPossession, detailsOfRentArrears,
-        claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
-        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
-        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim} from "@data/page-data";
+import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement,
+        tenancyLicenceDetails, resumeClaimOptions, rentDetails, dailyRentAmount, reasonsForPossession, detailsOfRentArrears, claimantType, claimType,
+        groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy,
+        noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
+        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder,
+        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible, whatAreYourGroundsForPossessionWales,
+        underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim} from '@data/page-data';
+import {createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData} from '@data/api-data';
 
-export let caseInfo: { id: string; fid: string; state: string };
+export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -17,6 +20,7 @@ export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCase', () => this.createCaseAction(fieldName)],
+      ['submitCase', () => this.submitCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(page, fieldName)],
       ['provideMoreDetailsOfClaim', () => this.provideMoreDetailsOfClaim(page)],
@@ -679,26 +683,31 @@ export class CreateCaseAction implements IAction {
   }
 
   private async createCaseAction(caseData: actionData): Promise<void> {
-    process.env.S2S_URL = accessTokenApiData.s2sUrl;
-    process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({microservice: caseApiData.microservice});
-    process.env.IDAM_AUTH_TOKEN = (await Axios.create().post(accessTokenApiData.accessTokenApiEndPoint, accessTokenApiData.accessTokenApiPayload)).data.access_token;
-    const createCaseApi = Axios.create(caseApiData.createCaseApiInstance);
-    process.env.EVENT_TOKEN = (await createCaseApi.get(caseApiData.eventTokenApiEndPoint)).data.token;
-    const payloadData = typeof caseData === 'object' && 'data' in caseData ? caseData.data : caseData;
-    try {
-      const response = await createCaseApi.post(caseApiData.createCaseApiEndPoint,
-        {
-          data: payloadData,
-          event: {id: `${caseApiData.eventName}`},
-          event_token: process.env.EVENT_TOKEN,
-        }
-      );
-      caseInfo.id = response.data.id;
-      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-');
-      caseInfo.state = response.data.state;
-    }
-    catch (error) {
-      throw new Error('Case could not be created.');
-    }
+    const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseApiInstance());
+    process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+    const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+    const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
+      data: createCasePayloadData,
+      event: { id: createCaseApiData.createCaseEventName },
+      event_token: process.env.CREATE_EVENT_TOKEN,
+    });
+    process.env.CASE_NUMBER = createResponse.data.id;
+    caseInfo.id = createResponse.data.id;
+    caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+    caseInfo.state = createResponse.data.state;
+  }
+
+  private async submitCaseAction(caseData: actionData): Promise<void> {
+    const submitCaseApi = Axios.create(submitCaseEventTokenApiData.createCaseApiInstance());
+    process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
+    const submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+    const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
+      data: submitCasePayloadData,
+      event: { id: submitCaseApiData.submitCaseEventName },
+      event_token: process.env.SUBMIT_EVENT_TOKEN,
+    });
+    caseInfo.id = submitResponse.data.id;
+    caseInfo.fid = submitResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+    caseInfo.state = submitResponse.data.state;
   }
 }
