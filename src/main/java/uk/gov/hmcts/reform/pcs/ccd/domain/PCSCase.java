@@ -620,7 +620,10 @@ public class PCSCase {
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
-    private YesOrNo showRentDetailsPage;
+    private YesOrNo showRentSectionPage;
+
+    @CCD(searchable = false)
+    private YesOrNo showRentArrearsPage;
 
     @CCD(
         label = "Which language did you use to complete this service?",
