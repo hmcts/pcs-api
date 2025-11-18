@@ -6,5 +6,5 @@ export const anythingElseHelpWithEviction = {
   noRadioOption: 'No',
   tellUsAnythingElseTextLabel: 'Tell us anything else that could help with the eviction',
   tellUsAnythingElseTextInput: 'Test input Tell us anything else that could help with the eviction',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }

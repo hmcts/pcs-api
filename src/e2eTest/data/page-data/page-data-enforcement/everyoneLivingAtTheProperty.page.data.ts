@@ -5,5 +5,5 @@ export const everyoneLivingAtTheProperty = {
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
   notSureRadioOption:'I\'m not sure',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }
