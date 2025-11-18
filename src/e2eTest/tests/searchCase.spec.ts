@@ -34,7 +34,7 @@ test.describe('[Search Case] @PR @Master @nightly', () => {
   });
 
   test('Search for case via find case', async ({}) => {
-    await performAction('searchCaseFromFindCase', caseInfo.id);
+    await performAction('searchCaseFromFindCase', caseInfo.fid);
     await performValidation('text', {
       "text": 'Case number: '+caseInfo.fid,
       "elementType": "paragraph"

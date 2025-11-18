@@ -136,6 +136,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | searchCaseFromFindCase                      | `performAction('searchCaseFromFindCase', caseInfo.state)`                                                                                                                                                  |
 | submitCase                                  | `performAction('submitCase', { data: submitCaseApiData.submitCasePayload })`                                                                                                                               |
 | submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
+| filterCaseFromCaseList                      | `performAction('filterCaseFromCaseList', caseInfo.state)`                                                                                                                                                  |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|

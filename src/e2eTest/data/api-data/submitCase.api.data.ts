@@ -37,33 +37,15 @@ export const submitCaseApiData = {
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
       nameKnown: 'NO',
-      firstName: null,
-      lastName: null,
-      addressKnown: 'NO',
-      addressSameAsPossession: null,
-      emailKnown: 'NO',
-      email: null,
-      correspondenceAddress: {
-        AddressLine1: null,
-        AddressLine2: null,
-        AddressLine3: null,
-        PostTown: null,
-        County: null,
-        Country: null,
-        PostCode: null
-      }
+      addressKnown: 'NO'
     },
-    typeOfTenancyLicence: 'ASSURED_TENANCY',
+    addAnotherDefendant: 'NO',
+    typeOfTenancyLicence: 'DEMOTED_TENANCY',
     tenancyLicenceDate: null,
     tenancyLicenceDocuments: [],
-    groundsForPossession: 'No',
-    showNoRentArrearsGroundReasonPage: 'Yes',
-    showRentDetailsPage: 'No',
-    noRentArrearsMandatoryGroundsOptions: [],
-    noRentArrearsDiscretionaryGroundsOptions: [
-      'NUISANCE_OR_ILLEGAL_USE'
-    ],
-    nuisanceOrIllegalUseTextArea: 'test',
+    showIntroductoryDemotedOtherGroundReasonPage: 'Yes',
+    hasIntroductoryDemotedOtherGroundsForPossession: 'NO',
+    noGrounds: 'text no grounds',
     preActionProtocolCompleted: 'NO',
     mediationAttempted: 'NO',
     settlementAttempted: 'NO',
