@@ -5,5 +5,5 @@ export const nameAndAddressForEviction = {
   subHeader: 'Address',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }

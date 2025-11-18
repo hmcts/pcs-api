@@ -4,5 +4,5 @@ export const peopleWillBeEvicted = {
   evictEveryOneQuestion: 'Do you want to evict everyone at the property?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }
