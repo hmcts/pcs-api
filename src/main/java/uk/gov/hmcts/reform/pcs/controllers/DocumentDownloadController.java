@@ -42,8 +42,10 @@ public class DocumentDownloadController {
             // Set headers
             response.setContentType(document.mimeType());
 
-            String contentDisposition = "attachment; filename=\"" + document.fileName() + "\"; filename*=UTF-8''" +
-                java.net.URLEncoder.encode(document.fileName(), StandardCharsets.UTF_8) + "\"";
+            String contentDisposition = "attachment; filename=\""
+                + document.fileName() + "\"; filename*=UTF-8''"
+                + java.net.URLEncoder.encode(document.fileName(), StandardCharsets.UTF_8)
+                + "\"";
             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
 
             // STREAMING: CDAM InputStream → HTTP response
