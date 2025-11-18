@@ -8,13 +8,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CaseCreationServiceTest {
+class TestingSupportServiceTest {
 
-    private CaseCreationService underTest;
+    private TestingSupportService underTest;
+    private PCSCase testPCSCase;
 
     @BeforeEach
     void setUp() {
-        underTest = new CaseCreationService();
+        underTest = new TestingSupportService();
+        testPCSCase = PCSCase.builder().build();
     }
 
     @Nested
@@ -24,7 +26,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should successfully generate a PCSCase instance")
         void shouldGeneratePCSCaseInstance() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result).isNotNull();
@@ -34,7 +36,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate String fields")
         void shouldPopulateStringFields() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getFeeAmount()).isNotNull();
@@ -46,7 +48,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate Integer fields")
         void shouldPopulateIntegerFields() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getCaseManagementLocation()).isNotNull();
@@ -56,7 +58,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate YesOrNo enum fields")
         void shouldPopulateYesOrNoFields() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getHasUnsubmittedCaseData()).isNotNull();
@@ -68,7 +70,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate VerticalYesNo enum fields")
         void shouldPopulateVerticalYesNoFields() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getIsClaimantNameCorrect()).isNotNull();
@@ -80,7 +82,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate LocalDate fields")
         void shouldPopulateLocalDateFields() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getNoticePostedDate()).isNotNull();
@@ -91,7 +93,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate LocalDateTime fields")
         void shouldPopulateLocalDateTimeFields() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getNoticeHandedOverDateTime()).isNotNull();
@@ -102,7 +104,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate LegislativeCountry enum field")
         void shouldPopulateLegislativeCountryField() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getLegislativeCountry()).isNotNull();
@@ -117,7 +119,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate AddressUK with required fields")
         void shouldPopulateAddressUKObjects() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getPropertyAddress()).isNotNull();
@@ -130,7 +132,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate DefendantDetails complex object")
         void shouldPopulateDefendantDetails() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getDefendant1()).isNotNull();
@@ -141,7 +143,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate DefendantCircumstances complex object")
         void shouldPopulateDefendantCircumstances() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getDefendantCircumstances()).isNotNull();
@@ -152,7 +154,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate ClaimantCircumstances complex object")
         void shouldPopulateClaimantCircumstances() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getClaimantCircumstances()).isNotNull();
@@ -163,7 +165,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate WalesHousingAct complex object")
         void shouldPopulateWalesHousingAct() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getWalesHousingAct()).isNotNull();
@@ -173,7 +175,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate RentArrearsGroundsReasons complex object")
         void shouldPopulateRentArrearsGroundsReasons() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getRentArrearsGroundsReasons()).isNotNull();
@@ -188,7 +190,7 @@ class CaseCreationServiceTest {
         @DisplayName("Should populate Set collections")
         void shouldPopulateSetCollections() {
             // When
-            PCSCase result = underTest.generateTestPCSCase();
+            PCSCase result = underTest.generateTestPCSCase(testPCSCase);
 
             // Then
             assertThat(result.getRentArrearsGrounds()).isNotNull();

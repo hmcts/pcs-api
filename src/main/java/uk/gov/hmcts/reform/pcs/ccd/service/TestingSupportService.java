@@ -16,19 +16,21 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
+
 /**
  * Service for generating fully populated test case instances using Instancio.
  * TVR: Profile this to be under dev and preview environments only !!!
  */
 @Service
-public class CaseCreationService {
+public class TestingSupportService {
 
     private static final String DEFAULT_EMAIL = "test@example.com";
 
     private final Map<Class<?>, Map<Field, String>> labelFieldsWithLabelsByClass;
     private final Map<Class<?>, Set<Field>> emailFieldsByClass;
 
-    public CaseCreationService() {
+    public TestingSupportService() {
         this.labelFieldsWithLabelsByClass = identifyLabelFieldsWithLabels(PCSCase.class,
                                                                           new HashMap<>(), new HashSet<>());
         this.emailFieldsByClass = identifyEmailFields(PCSCase.class, new HashMap<>(), new HashSet<>());
@@ -43,16 +45,16 @@ public class CaseCreationService {
 
             pcsCase.setPropertyAddress(createDefaultAddress());
             pcsCase.setFeeAmount("123.45");
+            pcsCase.setLegislativeCountry(ENGLAND);
 
-            copyAllFieldsFromEvent(fromEvent, pcsCase);
-
+            copyAllFieldsToPCSCaseFromEvent(pcsCase, fromEvent);
             return fromEvent;
         } catch (Exception e) {
             throw new RuntimeException("Failed to generate test PCSCase", e);
         }
     }
 
-    private void copyAllFieldsFromEvent(PCSCase fromEvent, PCSCase pcsCase) {
+    private void copyAllFieldsToPCSCaseFromEvent(PCSCase pcsCase, PCSCase fromEvent) {
         if (fromEvent == null) {
             return;
         }
@@ -60,8 +62,10 @@ public class CaseCreationService {
         for (Field field : PCSCase.class.getDeclaredFields()) {
             try {
                 field.setAccessible(true);
-                Object value = field.get(fromEvent);
-                field.set(pcsCase, value);
+                Object value = field.get(pcsCase);
+                if (value != null) {
+                    field.set(fromEvent, value);
+                }
             } catch (IllegalAccessException e) {
                 // Ignore fields that can't be accessed
             }
