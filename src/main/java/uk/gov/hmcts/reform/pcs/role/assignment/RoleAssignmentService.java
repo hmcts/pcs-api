@@ -41,9 +41,9 @@ public class RoleAssignmentService {
 
         CaseUserDTO caseUserDTO = CaseUserDTO.builder()
             .caseId(caseReference)
-            .userId(userId.toString())
             .caseRole(caseRole)
             .organisationId(orgId)
+            .userId(userId.toString())
             .build();
 
         ArrayList<CaseUserDTO> caseUserList = new ArrayList<>();
