@@ -9,7 +9,6 @@ import {createCase, addressDetails, housingPossessionClaim, defendantDetails, cl
         uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible, whatAreYourGroundsForPossessionWales,
         underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers} from '@data/page-data';
 
-export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };

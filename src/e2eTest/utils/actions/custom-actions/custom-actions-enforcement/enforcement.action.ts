@@ -6,7 +6,7 @@ import {
   violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
   verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty
 } from '@data/page-data/page-data-enforcement';
-import { caseInfo } from '@utils/actions/custom-actions';
+import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
 
 export const addressInfo = {

@@ -4,7 +4,7 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
-import { caseInfo } from '@utils/actions/custom-actions';
+import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { user } from '@data/user-data';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { signInOrCreateAnAccount } from '@data/page-data';
