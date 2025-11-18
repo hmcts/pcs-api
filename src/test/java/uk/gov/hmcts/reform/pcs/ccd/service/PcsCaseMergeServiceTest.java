@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
@@ -21,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -47,6 +49,8 @@ class PcsCaseMergeServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private DefendantService defendantService;
+    @Mock
+    private UnderlesseeMortgageeService underlesseeMortgageService;
 
     private PcsCaseMergeService underTest;
 
@@ -55,7 +59,8 @@ class PcsCaseMergeServiceTest {
         underTest = new PcsCaseMergeService(securityContextService,
                                             modelMapper,
                                             tenancyLicenceService,
-                                            defendantService);
+                                            defendantService,
+                                            underlesseeMortgageService);
     }
 
     @Test
@@ -271,6 +276,26 @@ class PcsCaseMergeServiceTest {
 
         // Then
         verify(pcsCaseEntity).setClaimantType(ClaimantType.PRIVATE_LANDLORD);
+    }
+
+    @Test
+    void shouldUpdateUnderlesseesOrMortgageesWhenUnderlesseeOrMortgagee1NotNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        List<UnderlesseeMortgagee> expectedUnderlesseesOrMortgagees = List.of(mock(UnderlesseeMortgagee.class),
+                                                                              mock(UnderlesseeMortgagee.class));
+
+        when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(mock(UnderlesseeMortgageeDetails.class));
+        when(underlesseeMortgageService.buildUnderlesseeMortgageeList(pcsCase))
+            .thenReturn(expectedUnderlesseesOrMortgagees);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity).setUnderlesseesMortgagees(expectedUnderlesseesOrMortgagees);
     }
 
     @Test
