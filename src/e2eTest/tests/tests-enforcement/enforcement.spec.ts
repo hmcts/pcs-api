@@ -3,9 +3,27 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { initializeExecutor } from '@utils/controller';
 import { user, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
 import {
-  nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
-  criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  accessToTheProperty, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
+  caseList,
+  caseSummary,
+  signInOrCreateAnAccount,
+  user
+} from '@data/page-data';
+import {
+  accessToTheProperty,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  criminalOrAntisocialBehaviour,
+  everyoneLivingAtTheProperty,
+  evictionCouldBeDelayed,
+  firearmPossession,
+  groupProtestsEviction,
+  nameAndAddressForEviction,
+  policeOrSocialServiceVisit,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  violentOrAggressiveBehaviour,
+  vulnerableAdultsAndChildren,
+  yourApplication
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
@@ -26,8 +44,8 @@ test.beforeEach(async ({ page }) => {
   await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
 });
 
-test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
-  test('Apply for a Warrant of Possession - risk to Bailiff [Yes]', async () => {
+test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
+  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
     await performAction('selectApplicationType', {

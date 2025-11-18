@@ -20,7 +20,6 @@ test.beforeEach(async ({page}) => {
   });
 });
 
-//Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
 test.describe('[Search Case] @PR @Master @nightly', () => {
   test.skip('Search for case via case list', async ({}) => {
     await performAction('filterCaseFromCaseList', caseInfo.state);
