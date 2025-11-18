@@ -6,7 +6,6 @@ import { SelectAction } from '@utils/actions/element-actions/select.action';
 import { NavigateToUrlAction } from '@utils/actions/custom-actions/navigateToUrl.action';
 import { ClickButtonAction } from '@utils/actions/element-actions/clickButton.action';
 import { ClickRadioButtonAction } from '@utils/actions/element-actions/clickRadioButton.action';
-import { MakeClaimAction } from '@utils/actions/custom-actions/custom-actions-enforcement/makeClaim.action';
 import { LoginAction } from '@utils/actions/custom-actions/login.action';
 import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.action';
 import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -27,7 +26,6 @@ export class ActionEnforcementRegistry {
     ['handleCookieConsent', new handleCookieConsentAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
-    ['createNewCase', new MakeClaimAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
     ['selectEveryoneLivingAtTheProperty', new EnforcementAction()],

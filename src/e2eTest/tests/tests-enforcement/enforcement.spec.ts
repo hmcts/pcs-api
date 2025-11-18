@@ -1,9 +1,7 @@
 import { test } from '@playwright/test';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { initializeExecutor } from '@utils/controller';
-import { user, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
 import {
-  caseList,
   caseSummary,
   signInOrCreateAnAccount,
   user

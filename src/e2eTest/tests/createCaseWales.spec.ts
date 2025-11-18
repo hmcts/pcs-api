@@ -1,5 +1,10 @@
 import { test } from '@playwright/test';
 import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
+import {
   addressCheckYourAnswers,
   addressDetails,
   antiSocialBehaviourWales,
@@ -27,11 +32,6 @@ import {
   user,
   whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation
-} from '@utils/controller';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);

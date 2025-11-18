@@ -1,5 +1,11 @@
 import { test } from '@playwright/test';
 import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
+import {
   addressCheckYourAnswers,
   addressDetails,
   additionalReasonsForPossession,
@@ -37,12 +43,6 @@ import {
   wantToUploadDocuments,
   whatAreYourGroundsForPossession
 } from '@data/page-data';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation,
-  performValidations
-} from '@utils/controller';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
