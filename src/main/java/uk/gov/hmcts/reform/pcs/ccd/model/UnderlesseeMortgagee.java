@@ -7,26 +7,20 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
-
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Defendant {
+public class UnderlesseeMortgagee {
 
-    private Boolean nameKnown;
+    private Boolean underlesseeOrMortgageeNameKnown;
 
-    private String firstName;
+    private String underlesseeOrMortgageeName;
 
-    private String lastName;
+    private Boolean underlesseeOrMortgageeAddressKnown;
 
-    private Boolean addressKnown;
+    private AddressUK underlesseeOrMortgageeAddress;
 
-    private Boolean addressSameAsPossession;
-
-    private AddressUK correspondenceAddress;
-
-    private Boolean additionalDefendantsAdded; // Only used for auditing
-
+    private Boolean addAdditionalUnderlesseeOrMortgagee;
 }
