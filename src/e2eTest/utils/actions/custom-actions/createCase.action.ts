@@ -19,8 +19,8 @@ export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPost
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['createCase', () => this.createCaseAction(fieldName)],
-      ['submitCase', () => this.submitCaseAction(fieldName)],
+      ['createCaseAPI', () => this.createCaseAPIAction(fieldName)],
+      ['submitCaseAPI', () => this.submitCaseAPIAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(page, fieldName)],
       ['submitAddressCheckYourAnswers', () => this.submitAddressCheckYourAnswers()],
@@ -773,7 +773,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', caseNumber);
   }
 
-  private async createCaseAction(caseData: actionData): Promise<void> {
+  private async createCaseAPIAction(caseData: actionData): Promise<void> {
     const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseApiInstance());
     process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
     const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
@@ -788,7 +788,7 @@ export class CreateCaseAction implements IAction {
     caseInfo.state = createResponse.data.state;
   }
 
-  private async submitCaseAction(caseData: actionData): Promise<void> {
+  private async submitCaseAPIAction(caseData: actionData): Promise<void> {
     const submitCaseApi = Axios.create(submitCaseEventTokenApiData.createCaseApiInstance());
     process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
     const submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;

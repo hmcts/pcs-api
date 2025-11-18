@@ -40,8 +40,8 @@ export class ActionEnforcementRegistry {
     ['selectVulnerablePeopleInTheProperty', new EnforcementAction()],
     ['provideDetailsAnythingElseHelpWithEviction', new EnforcementAction()],
     ['accessToProperty', new EnforcementAction()],
-    ['createCase', new CreateCaseAction()],
-    ['submitCase', new CreateCaseAction()],
+    ['createCaseAPI', new CreateCaseAction()],
+    ['submitCaseAPI', new CreateCaseAction()],
   ]);
 
   static getAction(actionName: string): IAction {

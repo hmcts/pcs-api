@@ -11,8 +11,8 @@ import { signInOrCreateAnAccount } from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  await performAction('createCase', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCase', { data: submitCaseApiData.submitCasePayload });
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,

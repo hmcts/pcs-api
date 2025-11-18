@@ -28,8 +28,8 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  await performAction('createCase', {data: createCaseApiData.createCasePayload});
-  await performAction('submitCase', {data: submitCaseApiData.submitCasePayload});
+  await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
