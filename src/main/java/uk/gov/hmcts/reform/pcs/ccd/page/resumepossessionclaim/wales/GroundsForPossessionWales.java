@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -12,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +18,8 @@ import java.util.Set;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class GroundsForPossessionWales
     implements CcdPageConfiguration {
-
-    private final WalesRentDetailsRoutingService walesRentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -95,9 +90,6 @@ public class GroundsForPossessionWales
                 .errors(errors)
                 .build();
         }
-
-        // Rent details routing (from HEAD - using routing service)
-        data.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(data));
 
         // ASB/Reasons routing (from master)
         boolean hasRentArrears = hasDiscretionary 
