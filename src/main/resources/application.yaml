@@ -124,6 +124,10 @@ notify:
     task-delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60s}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
 
+role-assignment:
+  url: ${ROLE_ASSIGNMENT_URL:http://am-role-assignment-service-aat.service.core-compute-aat.internal/}
+  role-id: PCS-HA-USER
+
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
 
