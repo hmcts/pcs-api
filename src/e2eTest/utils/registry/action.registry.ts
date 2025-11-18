@@ -84,6 +84,7 @@ export class ActionRegistry {
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
+    ['selectStatementOfTruth', new CreateCaseAction()],
     ['selectAsbQuestions', new CreateCaseWalesAction()]
   ]);
 

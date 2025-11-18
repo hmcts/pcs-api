@@ -7,9 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 /**
  * Wales-specific policy interface for determining whether Rent Details should be shown.
  */
-public interface WalesRentDetailsRoutingPolicy {
+public interface WalesRentSectionRoutingPolicy {
 
-    YesOrNo shouldShowRentDetails(PCSCase caseData);
+    YesOrNo shouldShowRentSection(PCSCase caseData);
 
     /**
      * Checks if this policy supports the given occupation licence type.

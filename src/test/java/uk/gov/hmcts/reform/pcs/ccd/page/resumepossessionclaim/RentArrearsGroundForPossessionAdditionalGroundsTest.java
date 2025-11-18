@@ -2,14 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
@@ -20,39 +15,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
-
-    @Mock
-    private RentDetailsRoutingService rentDetailsRoutingService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentArrearsGroundForPossessionAdditionalGrounds(rentDetailsRoutingService));
-        // Default mock behavior: return YES when rent arrears grounds are present
-        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
-            .thenAnswer(invocation -> {
-                PCSCase caseData = invocation.getArgument(0);
-                Set<RentArrearsMandatoryGrounds> mandatory = caseData.getRentArrearsMandatoryGrounds();
-                Set<RentArrearsDiscretionaryGrounds> discretionary = caseData.getRentArrearsDiscretionaryGrounds();
-                boolean hasRentGrounds = (mandatory != null
-                    && mandatory.contains(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8))
-                    || (discretionary != null && (
-                        discretionary.contains(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10)
-                        || discretionary.contains(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11)
-                    ));
-                return YesOrNo.from(hasRentGrounds);
-            });
+        setPageUnderTest(new RentArrearsGroundForPossessionAdditionalGrounds());
     }
 
     @Test
@@ -365,25 +338,6 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
 
         // Then: should error because no additional grounds selected
         assertThat(response.getErrors()).containsExactly("Please select at least one ground");
-    }
-
-    @Test
-    void shouldCallRentDetailsRoutingService() {
-        // Given
-        YesOrNo expectedShowRentDetails = YesOrNo.YES;
-        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
-            .thenReturn(expectedShowRentDetails);
-        PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
-            .assuredAdditionalMandatoryGrounds(Set.of(AssuredAdditionalMandatoryGrounds.OWNER_OCCUPIER_GROUND1))
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getShowRentDetailsPage()).isEqualTo(expectedShowRentDetails);
     }
 
     @Test
