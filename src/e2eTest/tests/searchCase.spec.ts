@@ -8,6 +8,7 @@ import {
   performAction,
   performValidation
 } from '@utils/controller';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -21,6 +22,10 @@ test.beforeEach(async ({page}) => {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
   });
   await performAction('createCase', {data: caseApiData.createCasePayload});
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
 });
 
 //Skipping these tests until create case journey is fully developed because tests may fail each time when payload changes for create case API
