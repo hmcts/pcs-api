@@ -83,7 +83,8 @@ export class ActionRegistry {
     ['clickButtonAndWaitForElement', new ClickButtonAction()],
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
-    ['provideMoreDetailsOfClaim', new CreateCaseAction()]
+    ['provideMoreDetailsOfClaim', new CreateCaseAction()],
+    ['selectAsbQuestions', new CreateCaseWalesAction()]
   ]);
 
   static getAction(actionName: string): IAction {
