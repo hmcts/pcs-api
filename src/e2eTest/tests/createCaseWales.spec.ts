@@ -126,7 +126,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
@@ -234,7 +234,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', prohibitedConductStandardContractWales.mainHeader);
@@ -302,8 +302,8 @@ test.describe('[Create Case - Wales] @regression', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.noRadioOption,
-      correspondenceAddressOption: defendantDetails.noRadioOption,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
@@ -349,7 +349,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
@@ -452,7 +452,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
