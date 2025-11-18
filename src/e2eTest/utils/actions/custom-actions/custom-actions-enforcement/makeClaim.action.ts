@@ -52,7 +52,7 @@ export class MakeClaimAction implements IAction {
         correspondenceAddress: contactPreferences.yes,
         phoneNumber: contactPreferences.no,
       });
-      await performAction('defendantDetails', {
+      await performAction('addDefendantDetails', {
         name: defendantDetails.noRadioOption,
         correspondenceAddress: defendantDetails.noRadioOption,
         email: defendantDetails.noRadioOption,
