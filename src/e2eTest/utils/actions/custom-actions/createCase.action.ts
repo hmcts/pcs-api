@@ -6,8 +6,7 @@ import {performAction, performActions, performValidation} from '@utils/controlle
 import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement, tenancyLicenceDetails, resumeClaimOptions, rentDetails, accessTokenApiData, caseApiData, dailyRentAmount, reasonsForPossession, detailsOfRentArrears,
         claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
         claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
-        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, wantToUploadDocuments} from "@data/page-data";
-import {getAutoCollector} from '@utils/cya/auto-data-collector';
+        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from "@data/page-data";
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -29,7 +28,7 @@ export class CreateCaseAction implements IAction {
       ['extractCaseIdFromAlert', () => this.extractCaseIdFromAlert(page)],
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
-      ['defendantDetails', () => this.defendantDetails(fieldName as actionRecord)],
+      ['addDefendantDetails', () => this.addDefendantDetails(fieldName as actionRecord)],
       ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
@@ -67,7 +66,8 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
-      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
+      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -271,51 +271,81 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', contactPreferences.continue);
   }
 
-  private async defendantDetails(defendantVal: actionRecord) {
+  private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
-      question: defendantDetails.doYouKnowTheDefendantName,
-      option: defendantVal.name
+      question: defendantDetails.doYouKnowTheDefendantNameQuestion,
+      option: defendantData.nameOption,
     });
-    // Auto-collect defendant name
-    await getAutoCollector().collectRadioButtonAnswer(this.page, 'defendantDetails', {option: defendantVal.name}, 'Do you know the defendant\'s name?', defendantDetails);
-    if (defendantVal.name === defendantDetails.yes) {
-      await performAction('inputText', defendantDetails.defendantFirstName, defendantDetails.firstNameInput);
-      await getAutoCollector().collectTextInputAnswer(this.page, 'defendantDetails', 'Defendant\'s first name', defendantDetails.firstNameInput, defendantDetails);
-      await performAction('inputText', defendantDetails.defendantLastName, defendantDetails.lastNameInput);
-      await getAutoCollector().collectTextInputAnswer(this.page, 'defendantDetails', 'Defendant\'s last name', defendantDetails.lastNameInput, defendantDetails);
+    if (defendantData.nameOption === defendantDetails.yesRadioOption) {
+      await performAction('inputText', defendantDetails.defendantFirstNameTextLabel, defendantData.firstName);
+      await performAction('inputText', defendantDetails.defendantLastNameTextLabel, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
-      question: defendantDetails.defendantCorrespondenceAddress,
-      option: defendantVal.correspondenceAddress
+      question: defendantDetails.defendantCorrespondenceAddressQuestion,
+      option: defendantData.correspondenceAddressOption,
     });
-    await getAutoCollector().collectRadioButtonAnswer(this.page, 'defendantDetails', {option: defendantVal.correspondenceAddress}, 'Do you know the defendant\'s correspondence address?', defendantDetails);
-    if (defendantVal.correspondenceAddress === defendantDetails.yes) {
+    if (defendantData.correspondenceAddressOption === defendantDetails.yesRadioOption) {
       await performAction('clickRadioButton', {
-        question: defendantDetails.isCorrespondenceAddressSame,
-        option: defendantVal.correspondenceAddressSame
+        question: defendantDetails.isCorrespondenceAddressSameQuestion,
+        option: defendantData.correspondenceAddressSameOption,
       });
-      await getAutoCollector().collectRadioButtonAnswer(this.page, 'defendantDetails', {option: defendantVal.correspondenceAddressSame}, 'Is the defendant\'s correspondence address the same as the address of the property you\'re claiming possession of?', defendantDetails);
-      if (defendantVal.correspondenceAddressSame === defendantDetails.no) {
+      if (defendantData.correspondenceAddressSameOption === defendantDetails.noRadioOption) {
         await performActions(
           'Find Address based on postcode',
-          ['inputText', addressDetails.enterUKPostcodeTextLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
+          ['inputText', addressDetails.enterUKPostcodeTextLabel, defendantData.address],
           ['clickButton', addressDetails.findAddressButton],
           ['select', addressDetails.addressSelectLabel, addressDetails.addressIndex]
         );
       }
     }
+    const numAdditionalDefendants = Number(defendantData.numberOfDefendants) || 0;
     await performAction('clickRadioButton', {
-      question: defendantDetails.defendantEmailAddress,
-      option: defendantVal.email
+      question: defendantDetails.additionalDefendantsQuestion,
+      option: defendantData.addAdditionalDefendantsOption,
     });
-    await getAutoCollector().collectRadioButtonAnswer(this.page, 'defendantDetails', {option: defendantVal.email}, 'Do you know the defendant\'s email address?', defendantDetails);
-    if (defendantVal.email === defendantDetails.yes) {
-      await performAction('inputText', defendantDetails.enterEmailAddress, defendantDetails.emailIdInput);
-      await getAutoCollector().collectTextInputAnswer(this.page, 'defendantDetails', 'Enter email address', defendantDetails.emailIdInput, defendantDetails);
+    if (defendantData.addAdditionalDefendantsOption === defendantDetails.yesRadioOption && numAdditionalDefendants > 0) {
+      for (let i = 0; i < numAdditionalDefendants; i++) {
+        await performAction('clickButton', defendantDetails.addNewButton);
+        const index = i + 1;
+        const nameQuestion = defendantDetails.doYouKnowTheDefendantNameQuestion;
+        const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        if (nameOption === defendantDetails.yesRadioOption) {
+          await performAction('inputText', {text: defendantDetails.defendantFirstNameTextLabel, index: index}, `${defendantData.firstName}${index}`);
+          await performAction('inputText', {text: defendantDetails.defendantLastNameTextLabel, index:index}, `${defendantData.lastName}${index}`
+          );
+        }
+        const addressQuestion = defendantDetails.defendantCorrespondenceAddressQuestion;
+        const correspondenceAddressOption =
+          defendantData[`correspondenceAddress${index}Option`] || defendantDetails.noRadioOption;
+        await performAction('clickRadioButton', {
+          question: addressQuestion,
+          option: correspondenceAddressOption,
+          index,
+        });
+        const correspondenceAddressSameOption =
+          defendantData[`correspondenceAddressSame${index}Option`] || defendantDetails.noRadioOption;
+        if (correspondenceAddressOption === defendantDetails.yesRadioOption) {
+          await performAction('clickRadioButton', {
+            question: defendantDetails.isCorrespondenceAddressSameQuestion,
+            option: correspondenceAddressSameOption,
+            index,
+          });
+        }
+      }
     }
-    await performAction('clickButton', defendantDetails.continue);
+    await performAction('clickButton', defendantDetails.continueButton);
   }
 
   private async selectRentArrearsPossessionGround(rentArrearsPossession: actionRecord) {
@@ -755,18 +785,20 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', languageUsed.continue);
   }
 
-  private async selectDefendantCircumstances(defendantDetails: actionData) {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+  private async selectDefendantCircumstances(
+    defendantDetails: actionRecord
+  ) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', defendantDetails);
-    // Auto-collect defendant circumstances
-    await getAutoCollector().collectRadioButtonAnswer(this.page, 'selectDefendantCircumstances', defendantDetails as string, 'Is there any information you\'d like to provide about defendants\' circumstances?', defendantCircumstances);
-    if(defendantDetails == defendantCircumstances.yes){
-      await performAction('inputText', defendantCircumstances.defendantCircumstancesLabel, defendantCircumstances.defendantCircumstancesSampleData);
-      // Auto-collect conditional text input
-      await getAutoCollector().collectTextInputAnswer(this.page, 'selectDefendantCircumstances', 'Give details about the defendants\' circumstances', defendantCircumstances.defendantCircumstancesSampleData, defendantCircumstances);
+    await performAction('clickRadioButton', defendantDetails.defendantCircumstance);
+    if (defendantDetails.defendantCircumstance == defendantCircumstances.yesRadioOption) {
+      if (defendantDetails.additionalDefendants == true) {
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
+      } else {
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
+      }
     }
-    await performAction('clickButton', defendantCircumstances.continue);
+    await performAction('clickButton', defendantCircumstances.continueButton);
   }
 
   private async enterTestAddressManually(page: Page, address: actionRecord) {
@@ -822,31 +854,95 @@ export class CreateCaseAction implements IAction {
     });
     // Auto-collect underlessee data
     await getAutoCollector().collectRadioButtonAnswer(this.page, 'selectUnderlesseeOrMortgageeEntitledToClaim', underlesseeOrMortgageeEntitledToClaim, 'Is there an underlessee or mortgagee entitled to claim relief against forfeiture?', underlesseeOrMortgageeEntitledToClaim);
-    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
   }
 
   private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.nameQuestion,
+      question: underlesseeOrMortgageeDetails.doYouKnowTheNameQuestion,
       option: underlesseeOrMortgageeDetail.nameOption
     });
     // Auto-collect name question
     await getAutoCollector().collectRadioButtonAnswer(this.page, 'selectUnderlesseeOrMortgageeDetails', {option: underlesseeOrMortgageeDetail.nameOption}, underlesseeOrMortgageeDetail.nameQuestion as string, underlesseeOrMortgageeDetails);
+    if (underlesseeOrMortgageeDetail.nameOption === underlesseeOrMortgageeDetails.yesRadioOption) {
+      await performAction('inputText', underlesseeOrMortgageeDetails.doYouKnowTheNameTextLabel, underlesseeOrMortgageeDetail.name);
+    }
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.addressQuestion,
+      question: underlesseeOrMortgageeDetails.doYouKnowTheAddressQuestion,
       option: underlesseeOrMortgageeDetail.addressOption
     });
     // Auto-collect address question
     await getAutoCollector().collectRadioButtonAnswer(this.page, 'selectUnderlesseeOrMortgageeDetails', {option: underlesseeOrMortgageeDetail.addressOption}, underlesseeOrMortgageeDetail.addressQuestion as string, underlesseeOrMortgageeDetails);
+    if (underlesseeOrMortgageeDetail.addressOption === underlesseeOrMortgageeDetails.yesRadioOption) {
+        await performActions(
+          'Find Address based on postcode',
+          ['inputText', addressDetails.enterUKPostcodeTextLabel, underlesseeOrMortgageeDetail.address],
+          ['clickButton', addressDetails.findAddressButton],
+          ['select', addressDetails.addressSelectLabel, addressDetails.addressIndex]
+        );
+    }
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeQuestion,
+      question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgageeQuestion,
       option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
     });
-    // Auto-collect another underlessee question
-    await getAutoCollector().collectRadioButtonAnswer(this.page, 'selectUnderlesseeOrMortgageeDetails', {option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption}, underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeQuestion as string, underlesseeOrMortgageeDetails);
-    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
+    const additionalUnderlesseeMortgagee = Number(underlesseeOrMortgageeDetail.additionalUnderlesseeMortgagees) || 0;
+    if (underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption === underlesseeOrMortgageeDetails.yesRadioOption && additionalUnderlesseeMortgagee > 0) {
+      for (let i = 0; i < additionalUnderlesseeMortgagee; i++) {
+        await performAction('clickButton', underlesseeOrMortgageeDetails.addNewButton);
+        const index = i + 1;
+        const nameQuestion = underlesseeOrMortgageeDetails.doYouKnowTheNameQuestion;
+        const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeOrMortgageeDetails.noRadioOption;
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        if (nameOption === underlesseeOrMortgageeDetails.yesRadioOption) {
+          await performAction('inputText', {text: underlesseeOrMortgageeDetails.doYouKnowTheNameTextLabel, index: index}, `${underlesseeOrMortgageeDetail.name}${index}`);
+        }
+        const addressQuestion = underlesseeOrMortgageeDetails.doYouKnowTheAddressQuestion;
+        const correspondenceAddressOption =
+          underlesseeOrMortgageeDetail[`correspondenceAddress${index}Option`] || underlesseeOrMortgageeDetails.noRadioOption;
+        await performAction('clickRadioButton', {
+          question: addressQuestion,
+          option: correspondenceAddressOption,
+          index,
+        });
+      }
+    }
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
+    }
+
+
+  private async selectStatementOfTruth(claimantDetails: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: statementOfTruth.completedByLabel,
+      option: claimantDetails.completedBy
+    });
+    if(claimantDetails.completedBy == statementOfTruth.claimantRadioOption){
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    if(claimantDetails.completedBy == statementOfTruth.claimantLegalRepresentativeRadioOption){
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruth.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    await performAction('clickButton', statementOfTruth.continueButton);
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {

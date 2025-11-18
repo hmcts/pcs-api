@@ -10,6 +10,16 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
@@ -23,10 +33,35 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
     @Mock
     private final AddressFormatter addressFormatter = new AddressFormatter();
+    @Mock
+    private ViolentAggressiveRiskPage violentAggressiveRiskPage;
+    @Mock
+    private VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
+    @Mock
+    private ProtestorGroupRiskPage protestorGroupRiskPage;
+    @Mock
+    private PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
+    @Mock
+    private FirearmsPossessionRiskPage firearmsPossessionRiskPage;
+    @Mock
+    private CriminalAntisocialRiskPage criminalAntisocialRiskPage;
+    @Mock
+    private AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
+    @Mock
+    private PropertyAccessDetailsPage propertyAccessDetailsPage;
+    @Mock
+    private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
+    @Mock
+    private AdditionalInformationPage additionalInformationPage;
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new EnforcementOrderEvent(addressFormatter));
+        setEventUnderTest(new EnforcementOrderEvent(addressFormatter, violentAggressiveRiskPage,
+                                                    verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
+                                                    policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
+                                                    criminalAntisocialRiskPage, aggressiveAnimalsRiskPage,
+                                                    propertyAccessDetailsPage, vulnerableAdultsChildrenPage,
+                                                    additionalInformationPage));
     }
 
     @Test
@@ -34,16 +69,15 @@ class EnforcementOrderEventTest extends BaseEventTest {
         // Given
         AddressUK propertyAddress = mock(AddressUK.class);
         String expectedFormattedPropertyAddress = "expected formatted property address";
+        when(addressFormatter.formatAddressWithHtmlLineBreaks(propertyAddress))
+            .thenReturn(expectedFormattedPropertyAddress);
 
         String firstName = "Test";
         String lastName = "Testing";
         DefendantDetails defendantDetails = DefendantDetails.builder().firstName(firstName).lastName(lastName).build();
         PCSCase caseData = PCSCase.builder()
-                .defendants(List.of(ListValue.<DefendantDetails>builder().value(defendantDetails).build()))
+            .allDefendants(List.of(ListValue.<DefendantDetails>builder().value(defendantDetails).build()))
             .propertyAddress(propertyAddress).build();
-
-        when(addressFormatter.formatAddressWithHtmlLineBreaks(propertyAddress))
-            .thenReturn(expectedFormattedPropertyAddress);
 
         // When
         PCSCase result = callStartHandler(caseData);
@@ -51,7 +85,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getFormattedPropertyAddress()).isEqualTo(expectedFormattedPropertyAddress);
-        assertThat(result.getDefendants()).hasSize(1);
+        assertThat(result.getAllDefendants()).hasSize(1);
         assertThat(result.getDefendant1().getFirstName()).isEqualTo(firstName);
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }

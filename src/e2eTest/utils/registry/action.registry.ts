@@ -35,7 +35,7 @@ export class ActionRegistry {
     ['extractCaseIdFromAlert', new CreateCaseAction()],
     ['selectResumeClaimOption', new CreateCaseAction()],
     ['selectClaimantType', new CreateCaseAction()],
-    ['defendantDetails', new CreateCaseAction()],
+    ['addDefendantDetails', new CreateCaseAction()],
     ['selectRentArrearsPossessionGround', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
@@ -83,7 +83,9 @@ export class ActionRegistry {
     ['clickButtonAndWaitForElement', new ClickButtonAction()],
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
-    ['provideMoreDetailsOfClaim', new CreateCaseAction()]
+    ['provideMoreDetailsOfClaim', new CreateCaseAction()],
+    ['selectStatementOfTruth', new CreateCaseAction()],
+    ['selectAsbQuestions', new CreateCaseWalesAction()]
   ]);
 
   static getAction(actionName: string): IAction {

@@ -9,6 +9,7 @@ import {ErrorMessageValidation} from "@utils/validations/element-validations/err
 import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
 import {CYAValidation} from "@utils/validations/element-validations/cya-validation.validation";
 import {AddressCYAValidation} from "@utils/validations/element-validations/address-cya-validation.validation";
+import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -24,6 +25,7 @@ export class ValidationRegistry {
     ['waitUntilElementDisappears', new VisibilityValidation()],
     ['validateCYA', new CYAValidation()],
     ['validateAddressCYA', new AddressCYAValidation()]
+    ['autoValidatePageContent', new PageContentValidation()]
   ]);
 
   static getValidation(validationType: string): IValidation {

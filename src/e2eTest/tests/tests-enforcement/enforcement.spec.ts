@@ -1,13 +1,37 @@
 import { test } from '@playwright/test';
-import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseNumber, caseNotFoundAfterFilter } from '@utils/actions/custom-actions';
-import { initializeExecutor } from '@utils/controller';
-import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
 import {
-  nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
-  criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  accessToTheProperty, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
+  caseList,
+  caseSummary,
+  signInOrCreateAnAccount,
+  user
+} from '@data/page-data';
+import {
+  accessToTheProperty,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  criminalOrAntisocialBehaviour,
+  everyoneLivingAtTheProperty,
+  evictionCouldBeDelayed,
+  firearmPossession,
+  groupProtestsEviction,
+  nameAndAddressForEviction,
+  policeOrSocialServiceVisit,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  violentOrAggressiveBehaviour,
+  vulnerableAdultsAndChildren,
+  yourApplication
 } from '@data/page-data/page-data-enforcement';
+import {
+  caseNotFoundAfterFilter,
+  caseNumber
+} from '@utils/actions/custom-actions';
+import { initializeExecutor } from '@utils/controller';
+import {
+  initializeEnforcementExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller-enforcement';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -29,8 +53,8 @@ test.beforeEach(async ({ page }) => {
   await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
 });
 
-test.describe('[Enforcement - Warrant of Possession] @Master @nightly', async () => {
-  test('Apply for a Warrant of Possession - risk to Bailiff [Yes]', async () => {
+test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
+  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
     await performAction('selectApplicationType', {
