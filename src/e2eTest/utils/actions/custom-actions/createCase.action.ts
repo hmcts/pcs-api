@@ -638,17 +638,17 @@ export class CreateCaseAction implements IAction {
   private async selectDefendantCircumstances(
     defendantDetails: actionRecord
   ) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' +caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', defendantDetails.defendantCircumstance);
-    if (defendantDetails.defendantCircumstance == defendantCircumstances.yes) {
+    if (defendantDetails.defendantCircumstance == defendantCircumstances.yesRadioOption) {
       if (defendantDetails.additionalDefendants == true) {
-        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralLabel, defendantCircumstances.defendantCircumstancesSampleData);
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
       } else {
-        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularLabel, defendantCircumstances.defendantCircumstancesSampleData);
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
       }
     }
-    await performAction('clickButton', defendantCircumstances.continue);
+    await performAction('clickButton', defendantCircumstances.continueButton);
   }
 
   private async enterTestAddressManually(page: Page, address: actionRecord) {
@@ -696,26 +696,68 @@ export class CreateCaseAction implements IAction {
       question: underlesseeOrMortgageeEntitledToClaim.question,
       option: underlesseeOrMortgageeEntitledToClaim.option
     });
-    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
   }
 
   private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.nameQuestion,
+      question: underlesseeOrMortgageeDetails.doYouKnowTheNameQuestion,
       option: underlesseeOrMortgageeDetail.nameOption
     });
+    if (underlesseeOrMortgageeDetail.nameOption === underlesseeOrMortgageeDetails.yesRadioOption) {
+      await performAction('inputText', underlesseeOrMortgageeDetails.doYouKnowTheNameTextLabel, underlesseeOrMortgageeDetail.name);
+    }
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.addressQuestion,
+      question: underlesseeOrMortgageeDetails.doYouKnowTheAddressQuestion,
       option: underlesseeOrMortgageeDetail.addressOption
     });
+    if (underlesseeOrMortgageeDetail.addressOption === underlesseeOrMortgageeDetails.yesRadioOption) {
+        await performActions(
+          'Find Address based on postcode',
+          ['inputText', addressDetails.enterUKPostcodeTextLabel, underlesseeOrMortgageeDetail.address],
+          ['clickButton', addressDetails.findAddressButton],
+          ['select', addressDetails.addressSelectLabel, addressDetails.addressIndex]
+        );
+    }
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeQuestion,
+      question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgageeQuestion,
       option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
     });
-    await performAction('clickButton', underlesseeOrMortgageeDetails.continue);
-  }
+    const additionalUnderlesseeMortgagee = Number(underlesseeOrMortgageeDetail.additionalUnderlesseeMortgagees) || 0;
+    if (underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption === underlesseeOrMortgageeDetails.yesRadioOption && additionalUnderlesseeMortgagee > 0) {
+      for (let i = 0; i < additionalUnderlesseeMortgagee; i++) {
+        await performAction('clickButton', underlesseeOrMortgageeDetails.addNewButton);
+        const index = i + 1;
+        const nameQuestion = underlesseeOrMortgageeDetails.doYouKnowTheNameQuestion;
+        const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeOrMortgageeDetails.noRadioOption;
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        await performAction('clickRadioButton', {
+          question: nameQuestion,
+          option: nameOption,
+          index,
+        });
+        if (nameOption === underlesseeOrMortgageeDetails.yesRadioOption) {
+          await performAction('inputText', {text: underlesseeOrMortgageeDetails.doYouKnowTheNameTextLabel, index: index}, `${underlesseeOrMortgageeDetail.name}${index}`);
+        }
+        const addressQuestion = underlesseeOrMortgageeDetails.doYouKnowTheAddressQuestion;
+        const correspondenceAddressOption =
+          underlesseeOrMortgageeDetail[`correspondenceAddress${index}Option`] || underlesseeOrMortgageeDetails.noRadioOption;
+        await performAction('clickRadioButton', {
+          question: addressQuestion,
+          option: correspondenceAddressOption,
+          index,
+        });
+      }
+    }
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
+    }
+
 
   private async selectStatementOfTruth(claimantDetails: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
