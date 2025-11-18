@@ -13,9 +13,12 @@ import {addressDetails, claimantType, claimType, claimantName, contactPreference
   underlesseeOrMortgageeDetails, dailyRentAmount, statementOfTruth,
   reasonsForRequestingASuspensionAndDemotionOrder, signInOrCreateAnAccount,
   addressCheckYourAnswers} from '@data/page-data';
+import {JourneyDataCollector} from '@utils/cya/journey-data-collector';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
+  const collector = JourneyDataCollector.getInstance();
+  collector.reset('England - Simple Journey for CYA validation');
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
@@ -138,6 +141,7 @@ test.describe('[Create Case - England] @Master @nightly', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
     await performAction('clickButton', statementOfTruth.continue);
+    await performValidation('validateCYA', '');
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
