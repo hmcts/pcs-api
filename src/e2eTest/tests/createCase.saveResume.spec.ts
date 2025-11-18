@@ -43,6 +43,7 @@ import {
   performValidation,
   performValidations
 } from '@utils/controller';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -64,6 +65,10 @@ test.beforeEach(async ({page}) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Create Case - With resume claim options]', async () => {
