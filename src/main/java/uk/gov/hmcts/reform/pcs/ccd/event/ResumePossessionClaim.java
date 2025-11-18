@@ -145,6 +145,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
@@ -177,7 +178,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(groundsForPossessionWales)
             .add(secureContractGroundsForPossessionWales)
             .add(reasonsForPosessionWales)
-            .add(new ASBQuestionsWales())
+            .add(asbQuestionsWales)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
