@@ -41,7 +41,8 @@ import {
   underlesseeOrMortgageeEntitledToClaim,
   user,
   wantToUploadDocuments,
-  whatAreYourGroundsForPossession
+  whatAreYourGroundsForPossession,
+  detailsOfRentArrears
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
@@ -72,7 +73,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - With resume claim options]', async () => {
-  test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
+  test('England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -151,6 +152,13 @@ test.describe('[Create Case - With resume claim options]', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -195,7 +203,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     )
   });
 
-  test('England - Resume without saved options - Secure Tentency - No Rent Arrears', async () => {
+  test('England - Resume without saved options - Secure tenancy - No Rent Arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
