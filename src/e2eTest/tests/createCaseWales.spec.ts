@@ -2,7 +2,6 @@ import { test } from '@playwright/test';
 import {
   addressCheckYourAnswers,
   addressDetails,
-  antiSocialBehaviourWales,
   claimantCircumstances,
   claimantDetailsWales,
   claimantName,
@@ -24,12 +23,8 @@ import {
   rentDetails,
   reasonsForPossession,
   signInOrCreateAnAccount,
-  occupationContractOrLicenceDetailsWales,
-  prohibitedConductStandardContractWales,
-  dailyRentAmount,
   asbQuestionsWales,
   noticeDetails,
-  addressCheckYourAnswers,
   user,
   whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
