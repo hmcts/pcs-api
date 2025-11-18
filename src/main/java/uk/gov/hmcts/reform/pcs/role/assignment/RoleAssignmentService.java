@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.role.assignment.DTO.CaseUserDTO;
 import uk.gov.hmcts.reform.pcs.role.assignment.DTO.CaseUserListDTO;
@@ -22,17 +23,21 @@ public class RoleAssignmentService {
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
     private final AuthTokenGenerator authTokenGenerator;
+    private final IdamService idamService;
 
     @Value("${role-assignment.role-id}")
     private String caseRole;
 
 
     public void assignRole(String caseReference, PCSCase pcsCase) {
+        //Auth for request
+        String userAuthorisation = idamService.getSystemUserAuthorisation();
+        String s2sToken = authTokenGenerator.generate();
+
+        //Data for CaseUserDTO
         UUID userId = securityContextService.getCurrentUserId();
         //      String orgId = organisationDetailsService.getOrganisationIdentifier(userId.toString());
         String orgId = "E71FH4Q";
-
-        String s2sToken = authTokenGenerator.generate();
 
         CaseUserDTO caseUserDTO = CaseUserDTO.builder()
             .caseId(caseReference)
@@ -46,7 +51,7 @@ public class RoleAssignmentService {
 
         CaseUserListDTO caseUserListDTO = CaseUserListDTO.builder().caseUsers(caseUserList).build();
 
-        String response = roleAssignmentApi.assignRole(s2sToken, caseUserListDTO);
+        String response = roleAssignmentApi.assignRole(userAuthorisation, s2sToken, caseUserListDTO);
         log.error("Role assignment response {}", response);
     }
 }
