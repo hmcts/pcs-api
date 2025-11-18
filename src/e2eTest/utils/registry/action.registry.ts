@@ -86,6 +86,7 @@ export class ActionRegistry {
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
     ['clickLinkAndVerifyNewTabTitle', new clickLinkAndVerifyNewTabTitleAction()],
+    ['selectStatementOfTruth', new CreateCaseAction()],
     ['selectAsbQuestions', new CreateCaseWalesAction()]
   ]);
 

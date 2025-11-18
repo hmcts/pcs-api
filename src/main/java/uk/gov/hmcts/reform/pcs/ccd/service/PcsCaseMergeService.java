@@ -28,6 +28,7 @@ public class PcsCaseMergeService {
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
     private final DefendantService defendantService;
+    private final StatementOfTruthService statementOfTruthService;
     private final UnderlesseeMortgageeService underlesseeMortgageService;
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
@@ -66,7 +67,7 @@ public class PcsCaseMergeService {
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
-
+        pcsCaseEntity.setStatementOfTruth(statementOfTruthService.buildStatementOfTruth(pcsCase));
     }
 
     private void setPcqIdForCurrentUser(UUID pcqId, PcsCaseEntity pcsCaseEntity) {
