@@ -35,7 +35,7 @@ import {
   underlesseeOrMortgageeEntitledToClaim,
   user,
   wantToUploadDocuments,
-  whatAreYourGroundsForPossession
+  whatAreYourGroundsForPossession, detailsOfRentArrears
 } from '@data/page-data';
 import {
   initializeExecutor,
@@ -71,7 +71,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - With resume claim options]', async () => {
+test.describe('[Create Case - With resume claim options] @PR', async () => {
   test('England - Resume with saved options - Assured tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
