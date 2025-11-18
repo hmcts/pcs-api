@@ -51,6 +51,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -165,6 +167,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
     @Mock
+    private CheckingNotice checkingNotice;
+    @Mock
+    private WalesCheckingNotice walesCheckingNotice;
+    @Mock
     private ASBQuestionsWales asbQuestionsWales;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
@@ -197,6 +203,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             rentArrearsGroundsForPossession,
             rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions,
+            checkingNotice,
+            walesCheckingNotice,
             asbQuestionsWales,
             underlesseeOrMortgageePage
         );
