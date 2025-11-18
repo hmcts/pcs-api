@@ -3,7 +3,7 @@ import { IAction } from '../../interfaces/action.interface';
 
 export class clickLinkAndVerifyNewTabTitleAction implements IAction {
   async execute(page: Page, action: string, fieldName: string, header: string): Promise<void> {
-    const link = page.locator(`a:has-text("${fieldName}")`);
+    const link = page.locator(`a:text-is("${fieldName}")`);
     await link.waitFor({state: 'visible'});
     const originalPage = page;
     const [newPage] = await Promise.all([

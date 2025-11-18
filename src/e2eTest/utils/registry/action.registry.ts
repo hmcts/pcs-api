@@ -13,7 +13,7 @@ import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWal
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
-import {clickLinkAndVerifyNewTabTitleAction} from "@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action";
+import {clickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
