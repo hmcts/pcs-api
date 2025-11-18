@@ -12,15 +12,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-@Component
 @AllArgsConstructor
+@Component
 public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageConfiguration {
 
-    private final RentDetailsRoutingService rentDetailsRoutingService;
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -60,6 +63,16 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
+        List<String> validationErrors = new ArrayList<>();
+
+        if (caseData.getOtherGroundDescription() != null) {
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+                caseData.getOtherGroundDescription(),
+                PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ));
+        }
+
         boolean hasOtherDiscretionaryGrounds = caseData.getIntroductoryDemotedOrOtherGrounds() == null ? false
             : caseData.getIntroductoryDemotedOrOtherGrounds()
             .stream()
@@ -73,7 +86,9 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
 
-        caseData.setShowRentDetailsPage(rentDetailsRoutingService.shouldShowRentDetails(caseData));
+        if (!validationErrors.isEmpty()) {
+            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

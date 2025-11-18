@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -10,11 +12,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
+@Component
 public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -32,18 +38,20 @@ public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
-        PCSCase data = details.getData();
-        List<String> errors = new ArrayList<>();
-        String txt = data.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
-        // Refactor validation logic to use TextAreaValidationService from PR #751 when merged
-        if (txt.length() > EnforcementRiskValidationUtils.getCharacterLimit()) {
-            errors.add(EnforcementRiskValidationUtils
-                    .getCharacterLimitErrorMessage(RiskCategory.AGGRESSIVE_ANIMALS));
-        }
+        PCSCase caseData = details.getData();
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(data)
-                .errors(errors)
-                .build();
+        List<String> validationErrors = getValidationErrors(caseData);
+
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private List<String> getValidationErrors(PCSCase caseData) {
+        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
+
+        return textAreaValidationService.validateSingleTextArea(
+            txt,
+            RiskCategory.AGGRESSIVE_ANIMALS.getText(),
+            TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
+        );
     }
 }

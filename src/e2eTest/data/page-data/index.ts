@@ -1,5 +1,6 @@
 export * from '@data/page-data/createCase.page.data';
 export * from '@data/page-data/addressDetails.page.data';
+export * from '@data/page-data/addressCheckYourAnswers.page.data';
 export * from '@data/page-data/housingPossessionClaim.page.data';
 export * from '@data/page-data/defendantDetails.page.data';
 export * from '@data/page-data/claimantName.page.data';
@@ -65,4 +66,4 @@ export * from '@data/page-data/caseList.page.data';
 export * from '@data/page-data/caseSummary.page.data';
 export * from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 export * from '@data/page-data/prohibitedConductStandardContractWales.page.data';
-export * from '@data/page-data/antiSocialBehaviourWales.page.data';
+export * from '@data/page-data/asbQuestionsWales.page.data';

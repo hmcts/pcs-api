@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,77 +15,44 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
     @Mock
-    private RentDetailsRoutingService rentDetailsRoutingService;
+    private TextAreaValidationService textAreaValidationService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession(rentDetailsRoutingService));
-    }
+        // Configure TextAreaValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateSingleTextArea(any(), any(), anyInt());
+        lenient().doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errors(errors.isEmpty() ? null : errors)
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), any());
 
-    @ParameterizedTest
-    @MethodSource("provideRentDetailsPageScenarios")
-    @DisplayName("Should set rent details page flag based on grounds selection")
-    void shouldSetRentDetailsPageFlagForGroundsSelection(
-        TenancyLicenceType tenancyType,
-        Set<IntroductoryDemotedOrOtherGrounds> grounds,
-        YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-            .introductoryDemotedOrOtherGrounds(grounds)
-            .build();
-
-        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
-            .thenReturn(expectedShowRentDetailsPage);
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideNoGroundsForPossessionScenarios")
-    @DisplayName("Should set rent details page flag when no grounds for possession")
-    void shouldSetRentDetailsPageFlagWhenNoGroundsSelected(
-        TenancyLicenceType tenancyType,
-        YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
-            .introductoryDemotedOrOtherGrounds(null) // No grounds selected
-            .build();
-
-        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
-            .thenReturn(expectedShowRentDetailsPage);
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
+        setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession(
+            textAreaValidationService
+        ));
     }
 
     @Test
@@ -172,39 +140,6 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isNull();
     }
 
-    private static Stream<Arguments> provideRentDetailsPageScenarios() {
-        return Stream.of(
-            // Rent arrears selected → show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, rentArrearsOnly(), YesOrNo.YES),
-            arguments(TenancyLicenceType.DEMOTED_TENANCY, rentArrearsOnly(), YesOrNo.YES),
-            arguments(TenancyLicenceType.OTHER, rentArrearsOnly(), YesOrNo.YES),
-
-            // Other grounds (not rent arrears) → don't show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, antiSocialOnly(), YesOrNo.NO),
-            arguments(TenancyLicenceType.DEMOTED_TENANCY, breachOfTenancyOnly(), YesOrNo.NO),
-            arguments(TenancyLicenceType.OTHER, absoluteGroundsOnly(), YesOrNo.NO),
-
-            // Multiple grounds including rent arrears → show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, rentArrearsWithAntiSocial(), YesOrNo.YES),
-
-            // No grounds selected → don't show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, noGrounds(), YesOrNo.NO),
-
-            // Multiple grounds without rent arrears → don't show rent details
-            arguments(TenancyLicenceType.DEMOTED_TENANCY, antiSocialWithBreach(), YesOrNo.NO),
-            arguments(TenancyLicenceType.OTHER, absoluteGroundsWithAntiSocial(), YesOrNo.NO)
-        );
-    }
-
-    private static Stream<Arguments> provideNoGroundsForPossessionScenarios() {
-        return Stream.of(
-            // No grounds for possession → don't show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, YesOrNo.NO),
-            arguments(TenancyLicenceType.DEMOTED_TENANCY, YesOrNo.NO),
-            arguments(TenancyLicenceType.OTHER, YesOrNo.NO)
-        );
-    }
-
     private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {
         return Stream.of(
                 arguments(Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS)),
@@ -221,42 +156,6 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
                                 IntroductoryDemotedOrOtherGrounds.OTHER)));
     }
 
-    // Helper methods for common ground combinations
-    private static Set<IntroductoryDemotedOrOtherGrounds> rentArrearsOnly() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> antiSocialOnly() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> breachOfTenancyOnly() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> absoluteGroundsOnly() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> rentArrearsWithAntiSocial() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
-                      IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> antiSocialWithBreach() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
-                      IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> absoluteGroundsWithAntiSocial() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
-                      IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> noGrounds() {
-        return Set.of();
-    }
-
     private static Set<IntroductoryDemotedOrOtherGrounds> buildIntroductoryDemotedOrOtherGrounds() {
         return Set.of(
                 IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
@@ -264,5 +163,64 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
                 IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
                 IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY,
                 IntroductoryDemotedOrOtherGrounds.OTHER);
+    }
+
+    @Nested
+    @DisplayName("Validation Integration Tests")
+    class ValidationIntegrationTests {
+
+        @Test
+        @DisplayName("Should validate otherGroundDescription when provided")
+        void shouldValidateOtherGroundDescriptionWhenProvided() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .otherGroundDescription("Valid ground description")
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should handle null otherGroundDescription gracefully")
+        void shouldHandleNullOtherGroundDescriptionGracefully() {
+            // Given
+            PCSCase caseData = PCSCase.builder()
+                .otherGroundDescription(null)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getData()).isEqualTo(caseData);
+            assertThat(response.getErrors()).isNullOrEmpty();
+        }
+
+        @Test
+        @DisplayName("Should return validation errors when otherGroundDescription exceeds limit")
+        void shouldReturnValidationErrorsWhenOtherGroundDescriptionExceedsLimit() {
+            // Given
+            String longText = "a".repeat(501); // Exceeds MEDIUM_TEXT_LIMIT (500)
+            List<String> validationErrors = List.of("Error message");
+            
+            lenient().doReturn(validationErrors).when(textAreaValidationService)
+                .validateSingleTextArea(any(), any(), anyInt());
+            
+            PCSCase caseData = PCSCase.builder()
+                .otherGroundDescription(longText)
+                .build();
+
+            // When
+            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+            // Then
+            assertThat(response.getErrors()).isNotNull();
+            assertThat(response.getErrors()).isNotEmpty();
+        }
     }
 }

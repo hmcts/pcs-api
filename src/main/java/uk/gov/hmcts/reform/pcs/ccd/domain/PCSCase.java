@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
@@ -46,6 +47,7 @@ public class PCSCase {
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that's in place";
+    public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
     @CCD(
         searchable = false
@@ -367,8 +369,16 @@ public class PCSCase {
     @CCD
     private DefendantDetails defendant1;
 
-    @CCD
-    private List<ListValue<DefendantDetails>> defendants;
+    @CCD(label = "Do you need to add another defendant?")
+    private VerticalYesNo addAnotherDefendant;
+
+    @CCD(
+        label = "Add additional defendant",
+        hint = "Add an additional defendant to the case"
+    )
+    private List<ListValue<DefendantDetails>> additionalDefendants;
+
+    private List<ListValue<DefendantDetails>> allDefendants;
 
     // Notice Details fields
     @CCD(
@@ -519,9 +529,9 @@ public class PCSCase {
     private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
 
     @CCD(
-            label = "Enter your grounds for possession",
+            label = OTHER_GROUND_DESCRIPTION_LABEL,
             hint = "You'll be able to explain your reasons for claiming possession"
-                    + " under these grounds on the next screen",
+                    + " under these grounds on the next screen. You can enter up to 500 characters",
             typeOverride = TextArea
     )
     private String otherGroundDescription;
@@ -610,7 +620,10 @@ public class PCSCase {
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
-    private YesOrNo showRentDetailsPage;
+    private YesOrNo showRentSectionPage;
+
+    @CCD(searchable = false)
+    private YesOrNo showRentArrearsPage;
 
     @CCD(
         label = "Which language did you use to complete this service?",
@@ -731,10 +744,22 @@ public class PCSCase {
     private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 
     @JsonUnwrapped
-    private UnderlesseeMortgagee underlesseeMortgagee;
+    private EnforcementOrder enforcementOrder;
+
+    @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
+    private VerticalYesNo hasUnderlesseeOrMortgagee;
 
     @JsonUnwrapped
-    private EnforcementOrder enforcementOrder;
+    private UnderlesseeMortgageeDetails underlesseeOrMortgagee1;
+
+    @CCD(label = "Do you need to add another underlessee or mortgagee?")
+    private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
+
+    @CCD(
+        label = "Add underlessee or mortgagee",
+        hint = "Add an underlessee or mortgagee to the case"
+    )
+    private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
 
     @CCD(
         searchable = false,
@@ -747,5 +772,9 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo showASBQuestionsPageWales;
+
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private ASBQuestionsDetailsWales asbQuestionsWales;
 
 }

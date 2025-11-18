@@ -7,6 +7,7 @@ A structured, maintainable test automation solution built on Playwright that:
 - Implements Pattern-matching
 - Separates test logic from implementation details
 - Provides ready-to-use components for UI interactions and validations
+- Includes automatic page content validation to verify UI elements match expected design specifications
 
 ### 1.1 Folder Structure
 
@@ -86,7 +87,6 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectClaimType                             | `performAction('selectClaimType', claimType.no)`                                                                                                                                                           |
 | selectClaimantName                          | `performAction('selectClaimantName', claimantName.yes)`                                                                                                                                                    |
 | selectContactPreferences                    | `performAction('selectContactPreferences', {notifications: { answer: contactPreferences.yes }, correspondenceAddress: { answer: contactPreferences.yes }, phoneNumber: { answer: contactPreferences.no })` |
-| defendantDetails                            | `performAction('defendantDetails', {name: defendantDetails.no, correspondenceAddress: defendantDetails.no, email: defendantDetails.no, correspondenceAddressSame: defendantDetails.no })`                  |
 | selectMediationAndSettlement                | `performAction('selectMediationAndSettlement',{attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,settlementWithDefendantsOption: mediationAndSettlement.no}))`                            |
 | selectPreActionProtocol                     | `performAction('selectPreActionProtocol', preActionProtocol.yes)`                                                                                                                                          |
 | provideRentDetails                          | `performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:rentDetails.rentAmount})`                                                                                                   |
@@ -133,7 +133,10 @@ Playwright 1.30+ | TypeScript 4.9+
 | provideMoreDetailsOfClaim                   | `performAction('provideMoreDetailsOfClaim')`                                                                                                                                                               |
 | selectUnderlesseeOrMortgageeEntitledToClaim | `performAction('selectUnderlesseeOrMortgageeEntitledToClaim','Yes')`                                                                                                                                       |
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
+| addDefendantDetails                         | `performAction('addDefendantDetails', { nameOption: defendantDetails.no, correspondenceAddressOption: defendantDetails.no, addAdditionalDefendantsOption: defendantDetails.no})`                           |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
+| addDefendantDetails                         | `performAction('addDefendantDetails', { nameOption: defendantDetails.no, correspondenceAddressOption: defendantDetails.no, addAdditionalDefendantsOption: defendantDetails.no})`                           |
+| submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
@@ -147,6 +150,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                             |
 | elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
 | waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
+| autoValidatePageContent    | `performValidation('autoValidatePageContent')`                                                                                       |
 ### Basic Test
 
 ```typescript
@@ -226,3 +230,24 @@ yarn test:chrome
 | "Validation not found" | Check registration                          |
 | Locator failures       | Verify fieldName matches UI text/attributes |
 | Timeout errors         | Add explicit waits in components            |
+
+## 9. Content Auto-Validation
+
+How It Works -
+Automatic: Triggers after click actions that cause page navigation
+
+Data-Driven: Uses page data files in data/page-data-figma/
+
+Smart Mapping: Automatically maps URLs to page data files, including numeric URLs using h1/h2 headers
+
+Comprehensive: Validates buttons, headers, links, paragraphs, and other UI elements
+
+Validation Summary -
+After each test, you'll see a detailed report:
+```
+📊 PAGE CONTENT VALIDATION SUMMARY (Test #1):
+Total pages validated: 3
+Pages passed: 2
+Pages failed: 1
+Missing elements: Submit button, Continue link
+```

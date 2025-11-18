@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -10,11 +12,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
+@Component
 public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -39,7 +45,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             )
             .complex(PCSCase::getEnforcementOrder)
                 .mandatory(EnforcementOrder::getVulnerablePeopleYesNo)
-                .complex(EnforcementOrder::getVulnerableAdultsChildren, 
+                .complex(EnforcementOrder::getVulnerableAdultsChildren,
                         "vulnerablePeopleYesNo=\"YES\"")
                     .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
                     .mandatory(
@@ -56,22 +62,24 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
-        List<String> errors = new ArrayList<>();
-
-        // Only validate when user selected YES
-        if (data.getEnforcementOrder().getVulnerablePeopleYesNo() == YesNoNotSure.YES) {
-            String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
-            int limit = EnforcementRiskValidationUtils.getCharacterLimit();
-            if (txt.length() > limit) {
-                // TODO: Use TextAreaValidationService from PR #751 when merged
-                errors.add(EnforcementValidationUtil
-                        .getCharacterLimitErrorMessage("How are they vulnerable?", limit));
-            }
-        }
-
+        List<String> errors = getValidationErrors(data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
                 .errors(errors)
                 .build();
+    }
+
+    private List<String> getValidationErrors(PCSCase data) {
+        List<String> errors = new ArrayList<>();
+
+        if (data.getEnforcementOrder().getVulnerablePeopleYesNo() == YesNoNotSure.YES) {
+            String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
+            errors.addAll(textAreaValidationService.validateSingleTextArea(
+                txt,
+                "How are they vulnerable?",
+                TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
+            ));
+        }
+        return errors;
     }
 }

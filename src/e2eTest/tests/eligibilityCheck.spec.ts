@@ -1,7 +1,24 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
-        claimantType, claimType, user, home, signInOrCreateAnAccount } from '@data/page-data';
+import { test } from '@playwright/test';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  borderPostcode,
+  canNotUseOnlineService,
+  claimantType,
+  claimType,
+  home,
+  propertyIneligible,
+  provideMoreDetailsOfClaim,
+  signInOrCreateAnAccount,
+  user,
+  userIneligible
+} from '@data/page-data';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -19,7 +36,11 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => {
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
+});
+
+test.describe('[Eligibility Check - Create Case] @regression', async () => {
   test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
@@ -35,6 +56,8 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       "elementType": "inlineText"
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
@@ -52,7 +75,7 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       "text": borderPostcode.englandScotlandInlineContent,
       "elementType": "inlineText"
     });
-    await performValidation('text', {"text": borderPostcode.submit, "elementType": "button"})
+    await performValidation('text', {"text": borderPostcode.continueButton, "elementType": "button"})
     await performValidation('text', {"text": borderPostcode.cancel, "elementType": "button"})
   });
 
@@ -61,10 +84,12 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Cross border England - Verify postcode not assigned to court - Can not use this service page', async () => {
+  test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -78,6 +103,8 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
@@ -104,6 +131,8 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.mortgageLender);
@@ -122,6 +151,8 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.privateLandlord);
@@ -142,6 +173,8 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
@@ -163,6 +196,8 @@ test.describe('[Eligibility Check - Create Case] @Master @nightly', async () => 
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
