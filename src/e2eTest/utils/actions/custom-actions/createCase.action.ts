@@ -7,6 +7,7 @@ import {createCase, addressDetails, housingPossessionClaim, defendantDetails, cl
         claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
         claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
         whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from "@data/page-data";
+import {cyaData, formatDate, formatTime} from '@utils/data/cya-data';
 
 export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
@@ -99,6 +100,12 @@ export class CreateCaseAction implements IAction {
       townCity: await page.getByLabel(addressDetails.townOrCityTextLabel).inputValue(),
       engOrWalPostcode: address.postcode
     };
+    // Collect CYA data
+    cyaData.propertyAddress = {
+      buildingStreet: addressInfo.buildingStreet,
+      townCity: addressInfo.townCity,
+      postcode: addressInfo.engOrWalPostcode
+    };
     await performAction('clickButton', addressDetails.continueButton);
   }
 
@@ -125,6 +132,8 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', caseData);
+    // Collect CYA data
+    cyaData.claimantType = caseData as string;
     if(caseData === claimantType.england.registeredProviderForSocialHousing || caseData === claimantType.wales.communityLandlord){
       await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
     }
@@ -156,9 +165,15 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', possessionGrounds.groundsRadioInput);
+    // Collect CYA data
+    if (!cyaData.groundsForPossession) {
+      cyaData.groundsForPossession = {};
+    }
+    cyaData.groundsForPossession.hasGrounds = possessionGrounds.groundsRadioInput as string;
     if (possessionGrounds.groundsRadioInput == groundsForPossession.yes) {
       if (possessionGrounds.grounds) {
         await performAction('check', possessionGrounds.grounds);
+        cyaData.groundsForPossession.otherGrounds = possessionGrounds.grounds as string[];
         if ((possessionGrounds.grounds as Array<string>).includes(groundsForPossession.other)) {
           await performAction('inputText', groundsForPossession.enterGroundsForPossessionLabel, groundsForPossession.enterYourGroundsForPossessionInput);
         }
@@ -171,6 +186,8 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', caseData);
+    // Collect CYA data
+    cyaData.preActionProtocol = caseData as string;
     await performAction('clickButton', preActionProtocol.continue);
   }
 
@@ -181,6 +198,11 @@ export class CreateCaseAction implements IAction {
     if ( caseData.option === noticeOfYourIntention.yes && caseData.typeOfNotice) {
       await performAction('inputText', noticeOfYourIntention.typeOfNotice, noticeOfYourIntention.typeOfNoticeInput);
     }
+    // Collect CYA data
+    if (!cyaData.noticeDetails) {
+      cyaData.noticeDetails = {};
+    }
+    cyaData.noticeDetails.servedNotice = caseData.option as string;
     await performAction('clickButton', noticeOfYourIntention.continue);
   }
 
@@ -235,6 +257,12 @@ export class CreateCaseAction implements IAction {
         await performAction('inputText', contactPreferences.enterPhoneNumberLabel, contactPreferences.phoneNumberInput);
       }
     }
+    // Collect CYA data
+    cyaData.contactPreferences = {
+      emailNotifications: String(preferences.notifications),
+      correspondenceAddress: String(preferences.correspondenceAddress),
+      phoneNumber: prefData.phoneNumber ? String(prefData.phoneNumber) : undefined
+    };
     await performAction('clickButton', contactPreferences.continue);
   }
 
@@ -312,6 +340,15 @@ export class CreateCaseAction implements IAction {
         }
       }
     }
+    // Collect CYA data
+    cyaData.defendantDetails = {
+      name: defendantData.nameOption === defendantDetails.yesRadioOption ? `${defendantData.firstName} ${defendantData.lastName}` : undefined,
+      firstName: String(defendantData.firstName),
+      lastName: String(defendantData.lastName),
+      correspondenceAddress: defendantData.correspondenceAddressOption === defendantDetails.yesRadioOption
+        ? (defendantData.correspondenceAddressSameOption === defendantDetails.yesRadioOption ? 'Same as property address' : 'Different address')
+        : undefined
+    };
     await performAction('clickButton', defendantDetails.continueButton);
   }
 
@@ -320,6 +357,11 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('check', rentArrearsPossession.rentArrears);
     await performAction('clickRadioButton', rentArrearsPossession.otherGrounds);
+    // Collect CYA data
+    if (!cyaData.groundsForPossession) {
+      cyaData.groundsForPossession = {};
+    }
+    cyaData.groundsForPossession.rentArrearsGrounds = rentArrearsPossession.rentArrears as string[];
     await performAction('clickButton', rentArrearsPossessionGrounds.continue);
   }
 
@@ -343,6 +385,14 @@ export class CreateCaseAction implements IAction {
         await performAction('uploadFile', file);
       }
     }
+    // Collect CYA data
+    cyaData.tenancyLicenceDetails = {
+      type: tenancyData.tenancyOrLicenceType as string,
+      startDate: tenancyData.day && tenancyData.month && tenancyData.year
+        ? formatDate(tenancyData.day as string, tenancyData.month as string, tenancyData.year as string)
+        : undefined,
+      files: tenancyData.files as string[]
+    };
     await performAction('clickButton', tenancyLicenceDetails.continue);
   }
 
@@ -353,10 +403,15 @@ export class CreateCaseAction implements IAction {
       await performAction('clickButton', whatAreYourGroundsForPossession.continue);
       return;
     }
+    // Collect CYA data
+    if (!cyaData.groundsForPossession) {
+      cyaData.groundsForPossession = {};
+    }
     for (const key of Object.keys(possessionGrounds)) {
       switch (key) {
         case 'discretionary':
           await performAction('check', possessionGrounds.discretionary);
+          cyaData.groundsForPossession.discretionaryGrounds = possessionGrounds.discretionary as string[];
           if (
             (possessionGrounds.discretionary as Array<string>).includes(
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
@@ -367,6 +422,7 @@ export class CreateCaseAction implements IAction {
           break;
         case 'mandatory':
           await performAction('check', possessionGrounds.mandatory);
+          cyaData.groundsForPossession.mandatoryGrounds = possessionGrounds.mandatory as string[];
           break;
         case 'mandatoryAccommodation':
           await performAction('check', possessionGrounds.mandatoryAccommodation);
@@ -418,6 +474,17 @@ export class CreateCaseAction implements IAction {
     if (mediationSettlement.settlementWithDefendantsOption == mediationAndSettlement.yes) {
       await performAction('inputText', mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
     }
+    // Collect CYA data
+    cyaData.mediationAndSettlement = {
+      attemptedMediation: mediationSettlement.attemptedMediationWithDefendantsOption as string,
+      attemptedMediationDetails: mediationSettlement.attemptedMediationWithDefendantsOption == mediationAndSettlement.yes
+        ? mediationAndSettlement.attemptedMediationInputData
+        : undefined,
+      settlement: mediationSettlement.settlementWithDefendantsOption as string,
+      settlementDetails: mediationSettlement.settlementWithDefendantsOption == mediationAndSettlement.yes
+        ? mediationAndSettlement.settlementWithDefendantsInputData
+        : undefined
+    };
     await performAction('clickButton', mediationAndSettlement.continue);
   }
 
@@ -443,6 +510,19 @@ export class CreateCaseAction implements IAction {
     if (noticeData.files) {
       await performAction('uploadFile', noticeData.files);
     }
+    // Collect CYA data
+    if (!cyaData.noticeDetails) {
+      cyaData.noticeDetails = {};
+    }
+    cyaData.noticeDetails.howServed = noticeData.howDidYouServeNotice as string;
+    cyaData.noticeDetails.serviceDate = noticeData.day && noticeData.month && noticeData.year
+      ? formatDate(noticeData.day as string, noticeData.month as string, noticeData.year as string)
+      : undefined;
+    cyaData.noticeDetails.serviceTime = noticeData.hour && noticeData.minute
+      ? formatTime(noticeData.hour as string, noticeData.minute as string, noticeData.second as string)
+      : undefined;
+    cyaData.noticeDetails.explanation = noticeData.explanation as string;
+    cyaData.noticeDetails.files = noticeData.files ? [noticeData.files as string] : undefined;
     await performAction('clickButton', noticeDetails.continue);
   }
 
@@ -455,6 +535,12 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', rentDetails.rentFrequencyLabel, rentFrequency.inputFrequency);
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentFrequency.unpaidRentAmountPerDay);
     }
+    // Collect CYA data
+    cyaData.rentDetails = {
+      amount: rentFrequency.rentAmount as string,
+      frequency: rentFrequency.rentFrequencyOption as string,
+      unpaidRentAmountPerDay: rentFrequency.unpaidRentAmountPerDay as string
+    };
     await performAction('clickButton', rentDetails.continue);
   }
 
@@ -469,6 +555,12 @@ export class CreateCaseAction implements IAction {
     if(dailyRentAmountData.unpaidRentInteractiveOption == dailyRentAmount.no){
       await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, dailyRentAmountData.unpaidRentAmountPerDay);
     }
+    // Collect CYA data
+    if (!cyaData.rentDetails) {
+      cyaData.rentDetails = {};
+    }
+    cyaData.rentDetails.dailyAmount = dailyRentAmountData.calculateRentAmount as string;
+    cyaData.rentDetails.unpaidRentAmountPerDay = dailyRentAmountData.unpaidRentAmountPerDay as string;
     await performAction('clickButton', dailyRentAmount.continue);
   }
 
@@ -514,6 +606,8 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', option);
+    // Collect CYA data
+    cyaData.moneyJudgment = option as string;
     await performAction('clickButton', moneyJudgment.continue);
   }
 
@@ -521,6 +615,8 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', option);
+    // Collect CYA data
+    cyaData.claimingCosts = option as string;
     await performAction('clickButton', claimingCosts.continue);
   }
 
@@ -583,6 +679,8 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', option);
+    // Collect CYA data
+    cyaData.applications = option as string;
     await performAction('clickButton', applications.continue);
   }
 

@@ -137,6 +137,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
 | selectStatementOfTruth                      | `performAction('selectStatementOfTruth', {completedBy: statementOfTruth.completedByLabel, option :statementOfTruth.claimantRadioOption})`                                                                  |
 | submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
+| selectAsbQuestions | `performAction('selectAsbQuestions', ...)` |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
@@ -151,6 +152,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
 | waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
 | autoValidatePageContent    | `performValidation('autoValidatePageContent')`                                                                                       |
+| validateCheckYourAnswers | `performValidation('validateCheckYourAnswers', ...)` |
 ### Basic Test
 
 ```typescript
