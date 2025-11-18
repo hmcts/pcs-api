@@ -10,7 +10,7 @@ import { LoginAction } from '@utils/actions/custom-actions/login.action';
 import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.action';
 import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { handleCookieConsentAction } from '@utils/actions/custom-actions/handleCookieConsent.action';
-import { CreateCaseAction } from '@utils/actions/custom-actions';
+import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -40,8 +40,8 @@ export class ActionEnforcementRegistry {
     ['selectVulnerablePeopleInTheProperty', new EnforcementAction()],
     ['provideDetailsAnythingElseHelpWithEviction', new EnforcementAction()],
     ['accessToProperty', new EnforcementAction()],
-    ['createCaseAPI', new CreateCaseAction()],
-    ['submitCaseAPI', new CreateCaseAction()],
+    ['createCaseAPI', new CreateCaseAPIAction()],
+    ['submitCaseAPI', new CreateCaseAPIAction()],
   ]);
 
   static getAction(actionName: string): IAction {
