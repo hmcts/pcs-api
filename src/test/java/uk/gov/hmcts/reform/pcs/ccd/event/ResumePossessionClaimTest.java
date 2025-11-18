@@ -62,6 +62,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
+
 
 import java.util.List;
 import java.util.UUID;
@@ -168,6 +170,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private CheckingNotice checkingNotice;
     @Mock
     private WalesCheckingNotice walesCheckingNotice;
+    @Mock
+    private ASBQuestionsWales asbQuestionsWales;
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -201,6 +205,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             noRentArrearsGroundsForPossessionOptions,
             checkingNotice,
             walesCheckingNotice,
+            asbQuestionsWales,
             underlesseeOrMortgageePage
         );
 
