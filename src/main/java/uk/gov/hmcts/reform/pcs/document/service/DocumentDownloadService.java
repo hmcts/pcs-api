@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
+import uk.gov.hmcts.reform.ccd.document.am.model.Document;
 import uk.gov.hmcts.reform.pcs.document.model.DownloadedDocumentResponse;
 
 import java.util.UUID;
@@ -30,9 +31,13 @@ public class DocumentDownloadService {
 
             // Parse UUID
             UUID documentUuid = UUID.fromString(documentId);
-            log.info("Calling document management API...");
 
-            // Call the document API
+            // First, get document metadata to retrieve the original filename
+            String fileName = getOriginalFileName(authorisation, serviceAuth, documentUuid, documentId);
+
+            log.info("Calling document management API to download binary...");
+
+            // Call the document API for binary content
             ResponseEntity<Resource> response = caseDocumentClientApi.getDocumentBinary(
                 authorisation,
                 serviceAuth,
@@ -45,12 +50,7 @@ public class DocumentDownloadService {
                 ? response.getHeaders().getContentType().toString()
                 : "application/octet-stream";
 
-            String fileName = response.getHeaders().getFirst("original-file-name");
-            if (fileName == null || fileName.isEmpty()) {
-                fileName = documentId;
-            }
-
-            log.info("Document found: {}, Type: {}", fileName, mimeType);
+            log.info("Document downloaded successfully: {}, Type: {}", fileName, mimeType);
 
             return new DownloadedDocumentResponse(
                 response.getBody(),
@@ -64,6 +64,31 @@ public class DocumentDownloadService {
         } catch (Exception e) {
             log.error("Failed to download document: {}", documentId, e);
             throw e;
+        }
+    }
+
+    private String getOriginalFileName(String authorisation, String serviceAuth, UUID documentUuid, String documentId) {
+        try {
+            // Fetch document metadata from CDAM
+            log.info("Fetching document metadata from CDAM...");
+            Document documentMetadata = caseDocumentClientApi.getMetadataForDocument(
+                authorisation,
+                serviceAuth,
+                documentUuid
+            );
+
+            if (documentMetadata != null && documentMetadata.originalDocumentName != null
+                && !documentMetadata.originalDocumentName.isEmpty()) {
+                log.info("Original filename retrieved from metadata: {}", documentMetadata.originalDocumentName);
+                return documentMetadata.originalDocumentName;
+            }
+
+            log.warn("Document metadata does not contain original filename, using UUID as fallback");
+            return documentId;
+
+        } catch (Exception e) {
+            log.warn("Failed to fetch document metadata, will use UUID as fallback. Error: {}", e.getMessage());
+            return documentId;
         }
     }
 }

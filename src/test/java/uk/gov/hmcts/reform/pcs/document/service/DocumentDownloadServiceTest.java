@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.document.am.feign.CaseDocumentClientApi;
+import uk.gov.hmcts.reform.ccd.document.am.model.Document;
 import uk.gov.hmcts.reform.pcs.document.model.DownloadedDocumentResponse;
 
 import java.util.UUID;
@@ -20,6 +21,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +30,7 @@ class DocumentDownloadServiceTest {
     private static final String DOCUMENT_ID = "12345678-1234-1234-1234-123456789abc";
     private static final String AUTHORIZATION = "Bearer token";
     private static final String S2S_TOKEN = "s2s-token";
+    private static final String ORIGINAL_FILENAME = "test-document.pdf";
 
     @Mock
     private CaseDocumentClientApi caseDocumentClientApi;
@@ -44,15 +47,23 @@ class DocumentDownloadServiceTest {
     }
 
     @Test
-    void shouldDownloadDocumentSuccessfully() {
+    void shouldDownloadDocumentSuccessfullyWithMetadata() {
         // Given
-        Resource mockResource = mock(Resource.class);
-        String fileName = "test-document.pdf";
+        final Resource mockResource = mock(Resource.class);
         MediaType contentType = MediaType.APPLICATION_PDF;
 
+        // Mock metadata response with original filename
+        Document mockDocument = mock(Document.class);
+        mockDocument.originalDocumentName = ORIGINAL_FILENAME;
+        when(caseDocumentClientApi.getMetadataForDocument(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        )).thenReturn(mockDocument);
+
+        // Mock binary download response
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(contentType);
-        headers.set("original-file-name", fileName);
 
         ResponseEntity<Resource> apiResponse = ResponseEntity.ok()
             .headers(headers)
@@ -69,14 +80,36 @@ class DocumentDownloadServiceTest {
 
         // Then
         assertThat(response.file()).isEqualTo(mockResource);
-        assertThat(response.fileName()).isEqualTo(fileName);
+        assertThat(response.fileName()).isEqualTo(ORIGINAL_FILENAME);
         assertThat(response.mimeType()).isEqualTo(contentType.toString());
+
+        // Verify both API calls were made
+        verify(caseDocumentClientApi).getMetadataForDocument(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        );
+        verify(caseDocumentClientApi).getDocumentBinary(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        );
     }
 
     @Test
-    void shouldUseDocumentIdWhenFileNameHeaderMissing() {
+    void shouldUseDocumentIdWhenMetadataReturnsNullFilename() {
         // Given
-        Resource mockResource = mock(Resource.class);
+        final Resource mockResource = mock(Resource.class);
+
+        // Mock metadata with null filename
+        Document mockDocument = mock(Document.class);
+        mockDocument.originalDocumentName = null;
+        when(caseDocumentClientApi.getMetadataForDocument(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        )).thenReturn(mockDocument);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
 
@@ -98,11 +131,92 @@ class DocumentDownloadServiceTest {
     }
 
     @Test
+    void shouldUseDocumentIdWhenMetadataReturnsEmptyFilename() {
+        // Given
+        final Resource mockResource = mock(Resource.class);
+
+        // Mock metadata with empty filename
+        Document mockDocument = mock(Document.class);
+        mockDocument.originalDocumentName = "";
+        when(caseDocumentClientApi.getMetadataForDocument(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        )).thenReturn(mockDocument);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+
+        ResponseEntity<Resource> apiResponse = ResponseEntity.ok()
+            .headers(headers)
+            .body(mockResource);
+
+        when(caseDocumentClientApi.getDocumentBinary(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        )).thenReturn(apiResponse);
+
+        // When
+        DownloadedDocumentResponse response = underTest.downloadDocument(AUTHORIZATION, DOCUMENT_ID);
+
+        // Then
+        assertThat(response.fileName()).isEqualTo(DOCUMENT_ID);
+    }
+
+    @Test
+    void shouldUseDocumentIdWhenMetadataCallFails() {
+        // Given
+        Resource mockResource = mock(Resource.class);
+
+        // Mock metadata call to throw exception
+        when(caseDocumentClientApi.getMetadataForDocument(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        )).thenThrow(new RuntimeException("Metadata service unavailable"));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+
+        ResponseEntity<Resource> apiResponse = ResponseEntity.ok()
+            .headers(headers)
+            .body(mockResource);
+
+        when(caseDocumentClientApi.getDocumentBinary(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        )).thenReturn(apiResponse);
+
+        // When
+        DownloadedDocumentResponse response = underTest.downloadDocument(AUTHORIZATION, DOCUMENT_ID);
+
+        // Then
+        assertThat(response.fileName()).isEqualTo(DOCUMENT_ID);
+        // Verify binary download still proceeded despite metadata failure
+        verify(caseDocumentClientApi).getDocumentBinary(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        );
+    }
+
+    @Test
     void shouldUseDefaultMimeTypeWhenContentTypeHeaderMissing() {
         // Given
         Resource mockResource = mock(Resource.class);
+
+        Document mockDocument = mock(Document.class);
+        mockDocument.originalDocumentName = ORIGINAL_FILENAME;
+        when(caseDocumentClientApi.getMetadataForDocument(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        )).thenReturn(mockDocument);
+
         HttpHeaders headers = new HttpHeaders();
-        headers.set("original-file-name", "test.pdf");
+        // No content type set
 
         ResponseEntity<Resource> apiResponse = ResponseEntity.ok()
             .headers(headers)
@@ -136,9 +250,17 @@ class DocumentDownloadServiceTest {
     }
 
     @Test
-    void shouldPropagateExceptionFromApiCall() {
+    void shouldPropagateExceptionFromBinaryDownloadCall() {
         // Given
-        RuntimeException expectedException = new RuntimeException("API failure");
+        Document mockDocument = mock(Document.class);
+        mockDocument.originalDocumentName = ORIGINAL_FILENAME;
+        when(caseDocumentClientApi.getMetadataForDocument(
+            eq(AUTHORIZATION),
+            eq(S2S_TOKEN),
+            any(UUID.class)
+        )).thenReturn(mockDocument);
+
+        RuntimeException expectedException = new RuntimeException("Binary download failed");
         when(caseDocumentClientApi.getDocumentBinary(
             eq(AUTHORIZATION),
             eq(S2S_TOKEN),
