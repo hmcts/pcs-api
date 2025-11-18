@@ -51,6 +51,7 @@ import {
   performValidation,
   performValidations
 } from '@utils/controller';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
