@@ -57,7 +57,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                .riskDetails(EnforcementRiskDetails.builder()
                     .enforcementViolentDetails(longText)
                     .build())
                 .build())
