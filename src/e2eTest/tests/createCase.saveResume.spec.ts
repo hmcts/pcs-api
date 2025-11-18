@@ -67,6 +67,10 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
+});
+
 test.describe('[Create Case - With resume claim options]', async () => {
   test('England - Resume with saved options - Assured tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
