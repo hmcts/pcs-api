@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -40,6 +41,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
@@ -68,6 +70,9 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     @Mock
     private AdditionalInformationPage additionalInformationPage;
+
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
 
     @BeforeEach
     void setUp() {
@@ -120,6 +125,18 @@ class EnforcementOrderEventTest extends BaseEventTest {
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }
 
+    @Test
+    void shouldCreateEnforcementDataInSubmitCallback() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(enforcementOrderService).createEnforcementOrder(TEST_CASE_REFERENCE, enforcementOrder);
+    }
     @Nested
     @DisplayName("populateDefendantSelectionList tests")
     class PopulateDefendantSelectionListTests {
