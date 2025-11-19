@@ -44,9 +44,9 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
-                .mandatory(EnforcementOrder::getVulnerablePeopleYesNo)
+                .mandatory(EnforcementOrder::getVulnerablePeoplePresent)
                 .complex(EnforcementOrder::getVulnerableAdultsChildren,
-                        "vulnerablePeopleYesNo=\"YES\"")
+                        "vulnerablePeoplePresent=\"YES\"")
                     .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
                     .mandatory(
                         VulnerableAdultsChildren::getVulnerableReasonText,
@@ -72,7 +72,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
     private List<String> getValidationErrors(PCSCase data) {
         List<String> errors = new ArrayList<>();
 
-        if (data.getEnforcementOrder().getVulnerablePeopleYesNo() == YesNoNotSure.YES) {
+        if (data.getEnforcementOrder().getVulnerablePeoplePresent() == YesNoNotSure.YES) {
             String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,

@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AggressiveAnimalsRiskPage;
@@ -20,6 +21,17 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.VulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.List;
@@ -27,6 +39,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
@@ -54,14 +67,16 @@ class EnforcementOrderEventTest extends BaseEventTest {
     @Mock
     private AdditionalInformationPage additionalInformationPage;
 
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
+
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new EnforcementOrderEvent(addressFormatter, violentAggressiveRiskPage,
-                                                    verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
-                                                    policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
-                                                    criminalAntisocialRiskPage, aggressiveAnimalsRiskPage,
-                                                    propertyAccessDetailsPage, vulnerableAdultsChildrenPage,
-                                                    additionalInformationPage));
+        setEventUnderTest(new EnforcementOrderEvent(enforcementOrderService, addressFormatter,
+                                violentAggressiveRiskPage, verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
+                                policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
+                                criminalAntisocialRiskPage, aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
+                                vulnerableAdultsChildrenPage, additionalInformationPage));
     }
 
     @Test
@@ -90,4 +105,16 @@ class EnforcementOrderEventTest extends BaseEventTest {
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }
 
+    @Test
+    void shouldCreateEnforcementDataInSubmitCallback() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(enforcementOrderService).createEnforcementOrder(TEST_CASE_REFERENCE, enforcementOrder);
+    }
 }
