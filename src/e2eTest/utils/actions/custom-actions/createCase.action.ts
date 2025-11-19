@@ -1,14 +1,14 @@
-import Axios from 'axios';
-import {ServiceAuthUtils} from '@hmcts/playwright-common';
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement, tenancyLicenceDetails, resumeClaimOptions, rentDetails, accessTokenApiData, caseApiData, dailyRentAmount, reasonsForPossession, detailsOfRentArrears,
-        claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
-        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
-        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from "@data/page-data";
+import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement,
+        tenancyLicenceDetails, resumeClaimOptions, rentDetails, dailyRentAmount, reasonsForPossession, detailsOfRentArrears, claimantType, claimType,
+        groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy,
+        noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
+        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder,
+        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible, whatAreYourGroundsForPossessionWales,
+        underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from '@data/page-data';
 
-export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -16,7 +16,6 @@ export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPost
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(page, fieldName)],
       ['submitAddressCheckYourAnswers', () => this.submitAddressCheckYourAnswers()],
@@ -758,7 +757,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
     }
 
-
   private async selectStatementOfTruth(claimantDetails: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {
@@ -792,29 +790,5 @@ export class CreateCaseAction implements IAction {
     await performAction('inputText', search.caseNumberLabel, caseNumber);
     await performAction('clickButton', search.apply);
     await performAction('clickButton', caseNumber);
-  }
-
-  private async createCaseAction(caseData: actionData): Promise<void> {
-    process.env.S2S_URL = accessTokenApiData.s2sUrl;
-    process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({microservice: caseApiData.microservice});
-    process.env.IDAM_AUTH_TOKEN = (await Axios.create().post(accessTokenApiData.accessTokenApiEndPoint, accessTokenApiData.accessTokenApiPayload)).data.access_token;
-    const createCaseApi = Axios.create(caseApiData.createCaseApiInstance);
-    process.env.EVENT_TOKEN = (await createCaseApi.get(caseApiData.eventTokenApiEndPoint)).data.token;
-    const payloadData = typeof caseData === 'object' && 'data' in caseData ? caseData.data : caseData;
-    try {
-      const response = await createCaseApi.post(caseApiData.createCaseApiEndPoint,
-        {
-          data: payloadData,
-          event: {id: `${caseApiData.eventName}`},
-          event_token: process.env.EVENT_TOKEN,
-        }
-      );
-      caseInfo.id = response.data.id;
-      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-');
-      caseInfo.state = response.data.state;
-    }
-    catch (error) {
-      throw new Error('Case could not be created.');
-    }
   }
 }
