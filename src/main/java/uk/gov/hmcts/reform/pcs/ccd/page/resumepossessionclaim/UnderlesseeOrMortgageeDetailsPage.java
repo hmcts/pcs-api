@@ -32,12 +32,10 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
             .complex(PCSCase::getUnderlesseeOrMortgagee1)
                 .readonlyNoSummary(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameKnown)
-                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName,
-                           "underlesseeOrMortgageeNameKnown=\"YES\"")
+                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName)
                 .readonlyNoSummary(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressKnown)
-                    .complex(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddress,
-                             "underlesseeOrMortgageeAddressKnown=\"YES\"")
+                    .complex(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddress)
                         .mandatory(AddressUK::getAddressLine1)
                         .optional(AddressUK::getAddressLine2)
                         .optional(AddressUK::getAddressLine3)
@@ -56,12 +54,10 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
                        "addAdditionalUnderlesseeOrMortgagee=\"YES\"")
                 .readonlyNoSummary(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameKnown)
-                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName,
-                           "underlesseeOrMortgageeNameKnown=\"YES\"")
+                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName)
                 .readonlyNoSummary(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressKnown)
-                .complex(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddress,
-                         "underlesseeOrMortgageeAddressKnown=\"YES\"")
+                .complex(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddress)
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)
                 .optional(AddressUK::getAddressLine3)
