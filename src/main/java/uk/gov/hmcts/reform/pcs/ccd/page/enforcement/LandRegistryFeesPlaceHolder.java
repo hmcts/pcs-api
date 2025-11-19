@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class LandRegistryFeesPlaceHolder implements CcdPageConfiguration {
 
