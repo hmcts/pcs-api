@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
@@ -628,7 +629,10 @@ public class PCSCase {
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
-    private YesOrNo showRentDetailsPage;
+    private YesOrNo showRentSectionPage;
+
+    @CCD(searchable = false)
+    private YesOrNo showRentArrearsPage;
 
     @CCD(
         label = "Which language did you use to complete this service?",
@@ -749,10 +753,22 @@ public class PCSCase {
     private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 
     @JsonUnwrapped
-    private UnderlesseeMortgagee underlesseeMortgagee;
+    private EnforcementOrder enforcementOrder;
+
+    @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
+    private VerticalYesNo hasUnderlesseeOrMortgagee;
 
     @JsonUnwrapped
-    private EnforcementOrder enforcementOrder;
+    private UnderlesseeMortgageeDetails underlesseeOrMortgagee1;
+
+    @CCD(label = "Do you need to add another underlessee or mortgagee?")
+    private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
+
+    @CCD(
+        label = "Add underlessee or mortgagee",
+        hint = "Add an underlessee or mortgagee to the case"
+    )
+    private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
 
     @CCD(
         searchable = false,
@@ -760,10 +776,17 @@ public class PCSCase {
     )
     private WaysToPay waysToPay;
 
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
+
     @CCD(searchable = false)
     private YesOrNo showPreActionProtocolPageWales;
 
     @CCD(searchable = false)
     private YesOrNo showASBQuestionsPageWales;
+
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private ASBQuestionsDetailsWales asbQuestionsWales;
 
 }

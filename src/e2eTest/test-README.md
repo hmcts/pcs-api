@@ -7,6 +7,7 @@ A structured, maintainable test automation solution built on Playwright that:
 - Implements Pattern-matching
 - Separates test logic from implementation details
 - Provides ready-to-use components for UI interactions and validations
+- Includes automatic page content validation to verify UI elements match expected design specifications
 
 ### 1.1 Folder Structure
 
@@ -73,7 +74,6 @@ Playwright 1.30+ | TypeScript 4.9+
 | navigateToUrl                               | `performAction('navigateToUrl', 'testUrl')`                                                                                                                                                                |
 | clickTab                                    | `performAction('clickTab', 'tabName')`                                                                                                                                                                     |
 | select                                      | `performAction('select', 'dropdownName', 'option')`                                                                                                                                                        |
-| createCase                                  | `performAction('createCase', 'data: caseData')`                                                                                                                                                            |
 | clickButton                                 | `performAction('clickButton', 'buttonName)`                                                                                                                                                                |
 | clickRadioButton                            | `performAction('clickRadioButton', 'radioButtonName')`                                                                                                                                                     |
 | selectClaimantType                          | `performAction('selectClaimantType', {claimantType : pathToDataFile.claimantTypeOption})`                                                                                                                  |
@@ -108,7 +108,6 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectDefendantCircumstances                | `performAction('selectDefendantCircumstances', defendantCircumstances.yes)`                                                                                                                                |
 | selectApplications                          | `performAction('selectApplications', 'yes')`                                                                                                                                                               |
 | selectAdditionalReasonsForPossession        | `performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no)`                                                                                                                 |
-| searchCaseFromCaseList                      | `performAction('searchCaseFromCaseList', caseData.id)`                                                                                                                                                     |
 | selectClaimingCosts                         | `performAction('selectClaimingCosts', claimingCosts.yes)`                                                                                                                                                  |
 | uploadAdditionalDocs                        | `performAction('uploadAdditionalDocs', {documents:[{ type: 'Tenancy Agreement', fileName: 'tenancyAgreement.pdf', description: 'Signed agreement' }]})`                                                    |
 | wantToUploadDocuments                       | `performAction('wantToUploadDocuments', {question:'sample', option:'no'})`                                                                                                                                 |
@@ -134,7 +133,12 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectUnderlesseeOrMortgageeDetails         | `performAction('selectUnderlesseeOrMortgageeDetails', { nameOption: 'Yes', addressOption: 'Yes', anotherUnderlesseeOrMortgageeOption: 'Yes'})`                                                             |
 | addDefendantDetails                         | `performAction('addDefendantDetails', { nameOption: defendantDetails.no, correspondenceAddressOption: defendantDetails.no, addAdditionalDefendantsOption: defendantDetails.no})`                           |
 | selectProhibitedConductStandardContract     | `performAction('selectProhibitedConductStandardContract', prohibitedConductStandardContractWales.yes)`                                                                                                     |
+| selectStatementOfTruth                      | `performAction('selectStatementOfTruth', {completedBy: statementOfTruth.completedByLabel, option :statementOfTruth.claimantRadioOption})`                                                                  |
+| searchCaseFromFindCase                      | `performAction('searchCaseFromFindCase', caseInfo.state)`                                                                                                                                                  |
 | submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
+| filterCaseFromCaseList                      | `performAction('filterCaseFromCaseList', caseInfo.state)`                                                                                                                                                  |
+| createCaseAPI                               | `performAction('createCaseAPI', { data: createCaseApiData.createCasePayload })`                                                                                                                            |
+| submitCaseAPI                               | `performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload })`                                                                                                                            |
 ### Validations
 | Validation                 | Example Usage                                                                                                                        |
 |----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
@@ -148,6 +152,7 @@ Playwright 1.30+ | TypeScript 4.9+
 | elementToBeVisible         | `performValidation('elementToBeVisible', 'testElement')`                                                                             |
 | elementNotToBeVisible      | `performValidation('elementNotToBeVisible', 'testElement')`                                                                          |
 | waitUntilElementDisappears | `performValidation('waitUntilElementDisappears', 'testElement')`                                                                     |
+| autoValidatePageContent    | `performValidation('autoValidatePageContent')`                                                                                       |
 ### Basic Test
 
 ```typescript
@@ -227,3 +232,24 @@ yarn test:chrome
 | "Validation not found" | Check registration                          |
 | Locator failures       | Verify fieldName matches UI text/attributes |
 | Timeout errors         | Add explicit waits in components            |
+
+## 9. Content Auto-Validation
+
+How It Works -
+Automatic: Triggers after click actions that cause page navigation
+
+Data-Driven: Uses page data files in data/page-data-figma/
+
+Smart Mapping: Automatically maps URLs to page data files, including numeric URLs using h1/h2 headers
+
+Comprehensive: Validates buttons, headers, links, paragraphs, and other UI elements
+
+Validation Summary -
+After each test, you'll see a detailed report:
+```
+📊 PAGE CONTENT VALIDATION SUMMARY (Test #1):
+Total pages validated: 3
+Pages passed: 2
+Pages failed: 1
+Missing elements: Submit button, Continue link
+```
