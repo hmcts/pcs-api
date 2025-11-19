@@ -19,9 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
@@ -34,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
