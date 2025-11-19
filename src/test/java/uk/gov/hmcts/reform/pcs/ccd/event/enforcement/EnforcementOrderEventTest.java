@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -17,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -37,9 +40,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -70,10 +76,17 @@ class EnforcementOrderEventTest extends BaseEventTest {
     @Mock
     private AdditionalInformationPage additionalInformationPage;
     @Mock
+    private SavingPageBuilderFactory savingPageBuilderFactory;
+    @Mock
     private EnforcementOrderService enforcementOrderService;
 
+    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
+        SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
+        when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
+        when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(enforceTheOrder)))
+            .thenReturn(savingPageBuilder);
         setEventUnderTest(newEnforcementOrderEvent());
     }
 
