@@ -10,6 +10,7 @@ public class LandRegistryFeesPlaceHolder implements CcdPageConfiguration {
         pageBuilder
                 .page("landRegistryFeesPlaceHolder")
                 .pageLabel("Land Registry Fees (place holder)")
-                .label("landRegistryFeesPlaceHolder-content", "---");
+                .label("landRegistryFeesPlaceHolder-content", "---")
+                .label("legalCosts-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
