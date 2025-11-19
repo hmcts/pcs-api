@@ -145,6 +145,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final CheckingNotice checkingNotice;
+    private final WalesCheckingNotice walesCheckingNotice;
+    private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
 
     private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
@@ -177,7 +180,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(groundsForPossessionWales)
             .add(secureContractGroundsForPossessionWales)
             .add(reasonsForPosessionWales)
-            .add(new ASBQuestionsWales())
+            .add(asbQuestionsWales)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
@@ -191,8 +194,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
             .add(mediationAndSettlement)
-            .add(new CheckingNotice())
-            .add(new WalesCheckingNotice())
+            .add(checkingNotice)
+            .add(walesCheckingNotice)
             .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
@@ -220,6 +223,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new LanguageUsed())
             .add(new CompletingYourClaim())
             .add(new StatementOfTruth());
+
 
     }
 
