@@ -8,8 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -44,12 +42,6 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@NamedEntityGraph(
-    name = "PcsCaseEntity.parties",
-    attributeNodes = {
-        @NamedAttributeNode("parties")
-    }
-)
 public class PcsCaseEntity {
 
     @Id
@@ -113,5 +105,4 @@ public class PcsCaseEntity {
         parties.add(party);
         party.setPcsCase(this);
     }
-
 }
