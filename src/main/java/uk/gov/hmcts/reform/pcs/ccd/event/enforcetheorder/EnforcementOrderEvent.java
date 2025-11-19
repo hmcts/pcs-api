@@ -13,21 +13,12 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PoliceOrSocialServicesRiskPage;
@@ -38,6 +29,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.FirearmsPossessionRiskPa
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.LivingInThePropertyPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -76,28 +69,28 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private void configurePages(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
         PageBuilder pageBuilder = new PageBuilder(eventBuilder);
         pageBuilder
-                .add(new EnforcementApplicationPage())
-                .add(new NameAndAddressForEvictionPage())
-                .add(new LivingInThePropertyPage())
-                .add(new EvictionDelayWarningPage())
-                .add(new EvictionRisksPosedPage())
-                .add(violentAggressiveRiskPage)
-                .add(firearmsPossessionRiskPage)
-                .add(criminalAntisocialRiskPage)
-                .add(verbalOrWrittenThreatsRiskPage)
-                .add(protestorGroupRiskPage)
-                .add(policeOrSocialServicesRiskPage)
-                .add(aggressiveAnimalsRiskPage)
-                .add(vulnerableAdultsChildrenPage)
-                .add(propertyAccessDetailsPage)
-                .add(additionalInformationPage)
-                .add(new MoneyOwedPage());
+            .add(new EnforcementApplicationPage())
+            .add(new NameAndAddressForEvictionPage())
+            .add(new LivingInThePropertyPage())
+            .add(new EvictionDelayWarningPage())
+            .add(new EvictionRisksPosedPage())
+            .add(violentAggressiveRiskPage)
+            .add(firearmsPossessionRiskPage)
+            .add(criminalAntisocialRiskPage)
+            .add(verbalOrWrittenThreatsRiskPage)
+            .add(protestorGroupRiskPage)
+            .add(policeOrSocialServicesRiskPage)
+            .add(aggressiveAnimalsRiskPage)
+            .add(vulnerableAdultsChildrenPage)
+            .add(propertyAccessDetailsPage)
+            .add(additionalInformationPage)
+            .add(new MoneyOwedPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setFormattedPropertyAddress(addressFormatter
-            .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
+                                                .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
 
         if (pcsCase.getAllDefendants() != null && !pcsCase.getAllDefendants().isEmpty()) {
             pcsCase.setDefendant1(pcsCase.getAllDefendants().getFirst().getValue());
