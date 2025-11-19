@@ -1,4 +1,4 @@
-import { Page, expect, test } from '@playwright/test';
+import { Page, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
 import { cyaData } from '@utils/data/cya-data';
 
@@ -45,7 +45,7 @@ export class CheckYourAnswersValidation implements IValidation {
         const pageContent = await page.content();
         const hasCheckText = pageContent.toLowerCase().includes('check');
         const hasSaveContinue = pageContent.toLowerCase().includes('save and continue') || pageContent.toLowerCase().includes('save and continue');
-        
+
         throw new Error(
           `CYA page not found.\n` +
           `Current URL: ${currentUrl}\n` +
@@ -116,14 +116,14 @@ export class CheckYourAnswersValidation implements IValidation {
     for (let i = 0; i < labelCount; i++) {
       const label = caseViewerLabels.nth(i);
       const question = await label.textContent();
-      
+
       // Try to find the corresponding value
       const valueLocator = label.locator('xpath=../following-sibling::td[1]').or(
         label.locator('xpath=../../td[2]')
       ).or(
         page.locator(`.case-viewer-label:has-text("${question}")`).locator('xpath=../..').locator('.text-16 span')
       );
-      
+
       const answer = await valueLocator.first().textContent().catch(() => null);
 
       if (question && answer && question.trim() && answer.trim()) {
@@ -237,8 +237,8 @@ export class CheckYourAnswersValidation implements IValidation {
     if (cyaData.rentDetails) {
       if (cyaData.rentDetails.amount) {
         // Format amount to include currency symbol if needed
-        const formattedAmount = cyaData.rentDetails.amount.startsWith('£') 
-          ? cyaData.rentDetails.amount 
+        const formattedAmount = cyaData.rentDetails.amount.startsWith('£')
+          ? cyaData.rentDetails.amount
           : `£${parseFloat(cyaData.rentDetails.amount).toFixed(2)}`;
         await this.validateField(cyaPageData, 'How much is the rent?', formattedAmount, errors);
       }
@@ -294,7 +294,7 @@ export class CheckYourAnswersValidation implements IValidation {
 
     for (const [question, answer] of cyaPageData.entries()) {
       const normalizedQuestion = question.toLowerCase().trim();
-      
+
       // Check if any search pattern matches
       for (const pattern of searchPatterns) {
         if (normalizedQuestion.includes(pattern) || pattern.includes(normalizedQuestion)) {
@@ -304,7 +304,7 @@ export class CheckYourAnswersValidation implements IValidation {
           break;
         }
       }
-      
+
       if (found) break;
     }
 
@@ -337,11 +337,11 @@ export class CheckYourAnswersValidation implements IValidation {
       // Split and compare individual items
       const expectedItems = normalizedExpected.split(',').map(s => s.trim()).filter(s => s);
       const actualItems = normalizedActual.split(',').map(s => s.trim()).filter(s => s);
-      
-      const allFound = expectedItems.every(item => 
+
+      const allFound = expectedItems.every(item =>
         actualItems.some(actual => actual.includes(item) || item.includes(actual))
       );
-      
+
       if (!allFound) {
         errors.push(`Question "${matchedQuestion}" (searched as "${questionKey}"): Expected contains "${expectedValue}", but found "${actualValue}"`);
       }
@@ -358,7 +358,7 @@ export class CheckYourAnswersValidation implements IValidation {
    */
   private formatDateForCYA(dateStr: string): string {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+
     // Handle DD/MM/YYYY format
     const parts = dateStr.split('/');
     if (parts.length === 3) {
@@ -367,7 +367,7 @@ export class CheckYourAnswersValidation implements IValidation {
       const year = parts[2];
       return `${day} ${month} ${year}`;
     }
-    
+
     // If already in correct format or other format, return as is
     return dateStr;
   }
