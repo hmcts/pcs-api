@@ -620,7 +620,10 @@ public class PCSCase {
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
-    private YesOrNo showRentDetailsPage;
+    private YesOrNo showRentSectionPage;
+
+    @CCD(searchable = false)
+    private YesOrNo showRentArrearsPage;
 
     @CCD(
         label = "Which language did you use to complete this service?",
@@ -763,6 +766,9 @@ public class PCSCase {
         label = "Ways to pay"
     )
     private WaysToPay waysToPay;
+
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
 
     @CCD(searchable = false)
     private YesOrNo showPreActionProtocolPageWales;

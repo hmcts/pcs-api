@@ -27,13 +27,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 
-class IntroductoryDemotedOtherRoutingPolicyTest {
+class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
 
-    private IntroductoryDemotedOtherRoutingPolicy policy;
+    private IntroductoryDemotedOtherRentSectionRoutingPolicy policy;
 
     @BeforeEach
     void setUp() {
-        policy = new IntroductoryDemotedOtherRoutingPolicy();
+        policy = new IntroductoryDemotedOtherRentSectionRoutingPolicy();
     }
 
     @Test
@@ -71,7 +71,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(grounds)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(expected);
     }
@@ -84,7 +84,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -97,7 +97,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(Set.of(RENT_ARREARS))
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -110,7 +110,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(null)
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -123,7 +123,7 @@ class IntroductoryDemotedOtherRoutingPolicyTest {
             .introductoryDemotedOrOtherGrounds(Set.of())
             .build();
 
-        YesOrNo result = policy.shouldShowRentDetails(caseData);
+        YesOrNo result = policy.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
