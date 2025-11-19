@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.mapper.DefendantMapper;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -28,7 +27,9 @@ public class PcsCaseMergeService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
-    private final DefendantMapper defendantMapper;
+    private final DefendantService defendantService;
+    private final StatementOfTruthService statementOfTruthService;
+    private final UnderlesseeMortgageeService underlesseeMortgageService;
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
 
@@ -56,9 +57,17 @@ public class PcsCaseMergeService {
             pcsCaseEntity.setClaimantType(claimantType);
         }
 
+        if (pcsCase.getDefendant1() != null) {
+            pcsCaseEntity.setDefendants(defendantService.buildDefendantsList(pcsCase));
+        }
+
+        if (pcsCase.getUnderlesseeOrMortgagee1() != null) {
+            pcsCaseEntity.setUnderlesseesMortgagees(underlesseeMortgageService.buildUnderlesseeMortgageeList(pcsCase));
+        }
+
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
-        pcsCaseEntity.setDefendants(defendantMapper.mapFromDefendantDetails(pcsCase.getDefendants()));
+        pcsCaseEntity.setStatementOfTruth(statementOfTruthService.buildStatementOfTruth(pcsCase));
     }
 
     private void setPcqIdForCurrentUser(UUID pcqId, PcsCaseEntity pcsCaseEntity) {

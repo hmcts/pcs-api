@@ -10,8 +10,6 @@ export * from '@data/page-data/tenancyLicenceDetails.page.data';
 export * from '@data/page-data/resumeClaim.page.data'
 export * from '@data/page-data/resumeClaimOptions.page.data';
 export * from '@data/page-data/rentDetails.page.data';
-export * from '@data/api-data/accessToken.api.data';
-export * from '@data/api-data/case.api.data';
 export * from '@data/page-data/dailyRentAmount.page.data';
 export * from '@data/page-data/reasonsForPossession.page.data';
 export * from '@data/page-data/detailsOfRentArrears.page.data';
@@ -66,4 +64,4 @@ export * from '@data/page-data/caseList.page.data';
 export * from '@data/page-data/caseSummary.page.data';
 export * from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 export * from '@data/page-data/prohibitedConductStandardContractWales.page.data';
-export * from '@data/page-data/antiSocialBehaviourWales.page.data';
+export * from '@data/page-data/asbQuestionsWales.page.data';
