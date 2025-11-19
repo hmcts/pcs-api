@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementOrderEntity;
 
 import java.util.HashSet;
 import java.util.List;
@@ -97,6 +98,11 @@ public class ClaimEntity {
 
     @JdbcTypeCode(SqlTypes.JSON)
     private ASBQuestionsWales asbQuestions;
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
