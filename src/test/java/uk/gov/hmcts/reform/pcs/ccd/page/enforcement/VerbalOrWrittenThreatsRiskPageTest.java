@@ -58,7 +58,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                                   .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
-                                  .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails
+                                  .riskDetails(EnforcementRiskDetails
                                                    .builder()
                                                    .enforcementVerbalOrWrittenThreatsDetails(longText)
                                                    .build())
@@ -71,7 +71,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
                                              RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),
-                                             RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);
+                                             "6,800");
 
         assertThat(response.getErrors()).containsExactly(expectedError);
     }

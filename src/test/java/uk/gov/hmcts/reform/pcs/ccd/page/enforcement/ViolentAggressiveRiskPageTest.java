@@ -57,7 +57,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails.builder()
+                .riskDetails(EnforcementRiskDetails.builder()
                     .enforcementViolentDetails(longText)
                     .build())
                 .build())
@@ -68,7 +68,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
 
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
                                       RiskCategory.VIOLENT_OR_AGGRESSIVE.getText(),
-                                      RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT);
+                                      "6,800");
 
         // Then
         assertThat(response.getErrors()).containsExactly(expectedError);

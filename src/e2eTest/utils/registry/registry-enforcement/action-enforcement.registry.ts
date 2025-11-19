@@ -6,11 +6,11 @@ import { SelectAction } from '@utils/actions/element-actions/select.action';
 import { NavigateToUrlAction } from '@utils/actions/custom-actions/navigateToUrl.action';
 import { ClickButtonAction } from '@utils/actions/element-actions/clickButton.action';
 import { ClickRadioButtonAction } from '@utils/actions/element-actions/clickRadioButton.action';
-import { MakeClaimAction } from '@utils/actions/custom-actions/custom-actions-enforcement/makeClaim.action';
 import { LoginAction } from '@utils/actions/custom-actions/login.action';
 import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.action';
 import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { handleCookieConsentAction } from '@utils/actions/custom-actions/handleCookieConsent.action';
+import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -26,10 +26,6 @@ export class ActionEnforcementRegistry {
     ['handleCookieConsent', new handleCookieConsentAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
-    ['createNewCase', new MakeClaimAction()],
-    ['searchMyCaseFromFindCase', new SearchCaseAction()],
-    ['selectFirstCaseFromTheFilter', new SearchCaseAction()],
-    ['noCasesFoundAfterSearch', new SearchCaseAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
     ['selectEveryoneLivingAtTheProperty', new EnforcementAction()],
@@ -44,6 +40,8 @@ export class ActionEnforcementRegistry {
     ['selectVulnerablePeopleInTheProperty', new EnforcementAction()],
     ['provideDetailsAnythingElseHelpWithEviction', new EnforcementAction()],
     ['accessToProperty', new EnforcementAction()],
+    ['createCaseAPI', new CreateCaseAPIAction()],
+    ['submitCaseAPI', new CreateCaseAPIAction()],
   ]);
 
   static getAction(actionName: string): IAction {
