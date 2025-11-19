@@ -20,43 +20,46 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
         pageBuilder
             .page("nameAndAddressForEviction", this::midEvent)
             .pageLabel("The name and address for the eviction")
-            .readonly(PCSCase::getDefendant1, NEVER_SHOW)
+            .readonly(PCSCase::getAllDefendants, NEVER_SHOW)
+            .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW)
             .label(
                 "nameAndAddressForEviction-defendants-check",
                 """
-                    <hr />
-                    <h2 class="govuk-heading-m">Check the name and address for the eviction</h2>
-                    <div class="govuk-width-container">
-                          <main class="govuk-main-wrapper">
-                            <div class="govuk-grid-row">
-                              <div class="govuk-grid-column-one-third">
-                                <h3 class="govuk-body">Defendants</h3>
-                              </div>
-                              <div class="govuk-grid-column-one-third">
-                                <p class="govuk-body">${defendant1.firstName} ${defendant1.lastName}</p>
-                              </div>
+                        <hr />
+                        <h2 class="govuk-heading-m">Check the name and address for the eviction</h2>
+                        <div class="govuk-width-container">
+                              <main class="govuk-main-wrapper">
+                                <div class="govuk-grid-row">
+                                  <div class="govuk-grid-column-one-third">
+                                    <h3 class="govuk-body">Defendants</h3>
+                                  </div>
+                                  <div class="govuk-grid-column-one-third">
+                                    ${formattedDefendantNames}
+                                  </div>
+                                </div>
+                              </main>
                             </div>
-                          </main>
-                        </div>
-                """)
+                    """
+            )
             .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW)
             .label(
                 "nameAndAddressForEviction-address-check",
                 """
-                    <hr />
-                    <div class="govuk-width-container">
-                          <main class="govuk-main-wrapper">
-                            <div class="govuk-grid-row">
-                              <div class="govuk-grid-column-one-third">
-                                <h3 class="govuk-body">Address</h3>
-                              </div>
-                              <div class="govuk-grid-column-one-third">
-                                <p class="govuk-body">${formattedPropertyAddress}</p>
-                              </div>
+                        <hr />
+                        <div class="govuk-width-container">
+                              <main class="govuk-main-wrapper">
+                                <div class="govuk-grid-row">
+                                  <div class="govuk-grid-column-one-third">
+                                    <h3 class="govuk-body">Address</h3>
+                                  </div>
+                                  <div class="govuk-grid-column-one-third">
+                                    <p class="govuk-body">${formattedPropertyAddress}</p>
+                                  </div>
+                                </div>
+                              </main>
                             </div>
-                          </main>
-                        </div>
-                """)
+                    """
+            )
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getNameAndAddressForEviction)
             .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
@@ -67,17 +70,17 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
         CaseDetails<PCSCase, State> details,
         CaseDetails<PCSCase, State> before) {
-        
+
         PCSCase caseData = details.getData();
-        
+
         // Set navigation flags based on user selection
-        NameAndAddressForEviction nameAndAddress = 
+        NameAndAddressForEviction nameAndAddress =
             caseData.getEnforcementOrder().getNameAndAddressForEviction();
-        
+
         VerticalYesNo correctNameAndAddress = nameAndAddress.getCorrectNameAndAddress();
-        
+
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
-        
+
         if (correctNameAndAddress == VerticalYesNo.NO) {
             // Navigate to ChangeNameAddressPage
             enforcementOrder.setShowChangeNameAddressPage(VerticalYesNo.YES);
@@ -87,7 +90,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             enforcementOrder.setShowChangeNameAddressPage(VerticalYesNo.NO);
             enforcementOrder.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.YES);
         }
-        
+
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
