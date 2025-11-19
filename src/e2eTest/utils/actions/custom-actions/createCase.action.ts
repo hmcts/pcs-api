@@ -349,7 +349,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     if (!possessionGrounds) {
-      await performAction('clickButton', whatAreYourGroundsForPossession.continue);
+      await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
       return;
     }
     for (const key of Object.keys(possessionGrounds)) {
@@ -375,7 +375,7 @@ export class CreateCaseAction implements IAction {
           break;
       }
     }
-    await performAction('clickButton', whatAreYourGroundsForPossession.continue);
+    await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
   }
 
   private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
