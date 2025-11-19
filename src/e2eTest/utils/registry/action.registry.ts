@@ -13,6 +13,7 @@ import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWal
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
+import {clickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
 
 export class ActionRegistry {
@@ -87,6 +88,7 @@ export class ActionRegistry {
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
+    ['clickLinkAndVerifyNewTabTitle', new clickLinkAndVerifyNewTabTitleAction()],
     ['selectStatementOfTruth', new CreateCaseAction()],
     ['selectAsbQuestions', new CreateCaseWalesAction()]
   ]);

@@ -136,15 +136,16 @@ Playwright 1.30+ | TypeScript 4.9+
 | selectStatementOfTruth                      | `performAction('selectStatementOfTruth', {completedBy: statementOfTruth.completedByLabel, option :statementOfTruth.claimantRadioOption})`                                                                  |
 | searchCaseFromFindCase                      | `performAction('searchCaseFromFindCase', caseInfo.state)`                                                                                                                                                  |
 | submitAddressCheckYourAnswers               | `submitAddressCheckYourAnswers')`                                                                                                                                                                          |
+| clickLinkAndVerifyNewTabTitle               | `performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader)`                                                                            |
 | filterCaseFromCaseList                      | `performAction('filterCaseFromCaseList', caseInfo.state)`                                                                                                                                                  |
 | createCaseAPI                               | `performAction('createCaseAPI', { data: createCaseApiData.createCasePayload })`                                                                                                                            |
 | submitCaseAPI                               | `performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload })`                                                                                                                            |
 ### Validations
-| Validation                 | Example Usage                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| text                       | `performValidation('text', 'testElement')`                                                                                           |
-| bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                              |
-| formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                   |
+| Validation                 | Example Usage                                                                                                                      |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| text                       | `performValidation('text', 'testElement')`                                                                                         |
+| bannerAlert                | `performValidation('bannerAlert', {message: "Case has been created."})`                                                            |
+| formLabelValue             | `performValidation('formLabelValue',  "Applicant's forename", {value:'TestUser'})`                                                 |
 | errorMessage               | `performValidation('errorMessage', {header: claimantType.errorMessage.header,errorHasLink: claimantType.errorMessage.errorMessage})` |
 | optionList                 | `performValidation('optionList', 'sectionName', {optionsData})`                                                                      |
 | mainHeader                 | `performValidation('mainHeader', borderPostcode.mainHeader)`                                                                         |
