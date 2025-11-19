@@ -38,8 +38,8 @@ public class LegalCostsPage implements CcdPageConfiguration {
                 </p>
                 <p>
                     <ul>
-                        <li>ask your lawyer or legal representative how much you can reclaim, or</li>
-                        <li>
+                        <li class="govuk-list govuk-!-font-size-19">ask your lawyer or legal representative how much you can reclaim, or</li>
+                        <li class="govuk-list govuk-!-font-size-19">
                             <a href="https://www.justice.gov.uk/courts/procedure-rules/civil/rules/part45-fixed-costs/practice-direction-45-fixed-costs"
                                 target="_blank">
                                 check the Civil Procedure Rules (Justice.gov website, opens in a new tab)
