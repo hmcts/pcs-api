@@ -1,12 +1,12 @@
 import { Page, expect, Locator } from '@playwright/test';
-import { IValidation, validationRecord } from '../../interfaces/validation.interface';
+import { IValidation, validationData, validationRecord } from '../../interfaces/validation.interface';
 
 export class FormLabelValueValidation implements IValidation {
-  async validate(page: Page, validation: string, fieldName: string, data?: validationRecord): Promise<void> {
+  async validate(page: Page, validation: string, fieldName: string, data?: validationData): Promise<void> {
     const valueLocator = await this.findFieldValueLocator(page, fieldName);
-
-    if (data?.value !== undefined) {
-      await expect(valueLocator).toHaveText(String(data.value));
+    
+    if (data !== undefined) {
+      await expect(valueLocator).toHaveText(String(data));
     } else {
       const value = await valueLocator.textContent();
       if (!value?.trim()) {
@@ -23,12 +23,13 @@ export class FormLabelValueValidation implements IValidation {
 
       page.locator(`th#complex-panel-simple-field-label > span.text-16:has-text("${fieldName}")`)
         .locator('xpath=../..')
-        .locator('td span.text-16:not(:has(ccd-field-read-label))')
+        .locator('td span.text-16:not(:has(ccd-field-read-label))'),
+
+      page.locator(`//h3[text()="${fieldName}"]/ancestor::main[@class='govuk-main-wrapper']/descendant::p`)
     ];
 
     for (const locator of locators) {
-      if (await locator.count() === 1) {
-        await expect(locator).toBeVisible();
+      if (await locator.count() === 1  && await locator.isVisible()) {
         return locator;
       }
     }

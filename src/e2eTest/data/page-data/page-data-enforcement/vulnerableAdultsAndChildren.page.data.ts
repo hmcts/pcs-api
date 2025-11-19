@@ -11,5 +11,5 @@ export const vulnerableAdultsAndChildren = {
   vulnerableAdultsAndChildrenRadioOption: 'Vulnerable adults and children',
   howAreTheyVulnerableTextLabel: 'How are they vulnerable?',
   howAreTheyVulnerableTextInput: 'Test Input How are they vulnerable',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }

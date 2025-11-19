@@ -16,11 +16,13 @@ import {
   firearmPossession,
   groupProtestsEviction,
   nameAndAddressForEviction,
+  peopleWillBeEvicted,
   policeOrSocialServiceVisit,
   riskPosedByEveryoneAtProperty,
   verbalOrWrittenThreats,
   violentOrAggressiveBehaviour,
   vulnerableAdultsAndChildren,
+  youNeedPermission,
   yourApplication
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -53,12 +55,17 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes,
+      option: nameAndAddressForEviction.yesRadioOption,
     });
+    await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
+    await performAction('selectPeopleWhoWillBeEvicted', {
+      question: peopleWillBeEvicted.evictEveryOneQuestion,
+      option: peopleWillBeEvicted.yesRadioOption,
+    })
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.yes,
+      option: everyoneLivingAtTheProperty.yesRadioOption,
     });
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
@@ -116,11 +123,12 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
     });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.yes,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.yesRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
     });
   });
 
@@ -134,12 +142,17 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes,
+      option: nameAndAddressForEviction.yesRadioOption,
     });
+    await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
+    await performAction('selectPeopleWhoWillBeEvicted', {
+      question: peopleWillBeEvicted.evictEveryOneQuestion,
+      option: peopleWillBeEvicted.yesRadioOption,
+    })
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.no,
+      option: everyoneLivingAtTheProperty.noRadioOption,
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('selectVulnerablePeopleInTheProperty', {
@@ -154,12 +167,13 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performAction('accessToProperty', {
       question: accessToTheProperty.accessToThePropertyQuestion,
       option: accessToTheProperty.noRadioOption,
-  });
+    });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.no,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.noRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
     });
   });
 
@@ -173,12 +187,17 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes,
+      option: nameAndAddressForEviction.yesRadioOption,
     });
+    await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
+    await performAction('selectPeopleWhoWillBeEvicted', {
+      question: peopleWillBeEvicted.evictEveryOneQuestion,
+      option: peopleWillBeEvicted.yesRadioOption,
+    })
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.notSure,
+      option: everyoneLivingAtTheProperty.notSureRadioOption,
     });
     await performValidation('mainHeader', evictionCouldBeDelayed.mainHeader);
     await performAction('clickButton', evictionCouldBeDelayed.continue);
@@ -198,11 +217,33 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
     });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.yes,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.yesRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
     });
   });
+
+  test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
+    annotation: {
+      type: 'issue',
+      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed ',
+    },
+  },
+    async () => {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+      await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+      await performAction('selectApplicationType', {
+        question: yourApplication.typeOfApplicationQuestion,
+        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+      });
+      await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+      await performAction('selectNameAndAddressForEviction', {
+        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+        option: nameAndAddressForEviction.noRadioOption,
+      });
+      await performValidation('mainHeader', youNeedPermission.mainHeader);
+    });
 });
