@@ -498,8 +498,16 @@ tasks.register('highLevelDataSetup', JavaExec) {
   jvmArgs = ['--add-opens=java.base/java.lang.reflect=ALL-UNNAMED']
 }
 
-tasks.register('e2eTest'){
-  dependsOn('runE2ePrTests')
+tasks.register('e2eTest') {
+    def env = System.getenv('ENVIRONMENT') ?: 'preview'
+
+    if (env.toLowerCase() == 'preview') {
+        dependsOn('runE2ePrTests')
+    } else if (env.toLowerCase() == 'aat') {
+        dependsOn('runE2eChromeTests')
+    } else {
+        throw new GradleException("Unknown environment: $env")
+    }
 }
 
 // Ensure we cover Cftlib dev & test with our CI checks
