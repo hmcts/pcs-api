@@ -10,8 +10,6 @@ export * from '@data/page-data/tenancyLicenceDetails.page.data';
 export * from '@data/page-data/resumeClaim.page.data'
 export * from '@data/page-data/resumeClaimOptions.page.data';
 export * from '@data/page-data/rentDetails.page.data';
-export * from '@data/api-data/accessToken.api.data';
-export * from '@data/api-data/case.api.data';
 export * from '@data/page-data/dailyRentAmount.page.data';
 export * from '@data/page-data/reasonsForPossession.page.data';
 export * from '@data/page-data/detailsOfRentArrears.page.data';
