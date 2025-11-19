@@ -270,7 +270,8 @@ class EnforcementOrderEventTest extends BaseEventTest {
                                          protestorGroupRiskPage, policeOrSocialServicesRiskPage,
                                          firearmsPossessionRiskPage, criminalAntisocialRiskPage,
                                          aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
-                                         vulnerableAdultsChildrenPage, additionalInformationPage);
+                                         vulnerableAdultsChildrenPage, additionalInformationPage,
+                                         savingPageBuilderFactory);
     }
 
 }
