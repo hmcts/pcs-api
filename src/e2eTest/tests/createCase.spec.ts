@@ -107,7 +107,7 @@ test.describe('[Create Case - England] @regression', async () => {
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
       year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+      files: ['tenancyLicence.docx']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yes});
@@ -181,14 +181,7 @@ test.describe('[Create Case - England] @regression', async () => {
       option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.yes
-    });
-    await performAction('uploadAdditionalDocs', {
-      documents: [{
-        type: uploadAdditionalDocs.tenancyAgreementOption,
-        fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocs.shortDescriptionInput
-      }]
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
@@ -307,7 +300,14 @@ test.describe('[Create Case - England] @regression', async () => {
       option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.no
+      option: wantToUploadDocuments.yes
+    });
+    await performAction('uploadAdditionalDocs', {
+      documents: [{
+        type: uploadAdditionalDocs.tenancyAgreementOption,
+        fileName: 'tenancy.pdf',
+        description: uploadAdditionalDocs.shortDescriptionInput
+      }]
     });
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
