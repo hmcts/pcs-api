@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
@@ -43,6 +44,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
     // Business requirements to be agreed on for the conditions when this event can be triggered
 
+    private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
@@ -91,17 +93,22 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-        caseData.setFormattedPropertyAddress(addressFormatter
-            .formatAddressWithHtmlLineBreaks(caseData.getPropertyAddress()));
+        PCSCase pcsCase = eventPayload.caseData();
+        pcsCase.setFormattedPropertyAddress(addressFormatter
+            .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
 
-        if (caseData.getAllDefendants() != null && !caseData.getAllDefendants().isEmpty()) {
-            caseData.setDefendant1(caseData.getAllDefendants().getFirst().getValue());
+        if (pcsCase.getAllDefendants() != null && !pcsCase.getAllDefendants().isEmpty()) {
+            pcsCase.setDefendant1(pcsCase.getAllDefendants().getFirst().getValue());
         }
-        return caseData;
+        return pcsCase;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
+
+        // Delete unsubmitted data once HDPI-2637 implemented after enforcement order is created in same transaction
+        enforcementOrderService.createEnforcementOrder(caseReference, eventPayload.caseData().getEnforcementOrder());
+
         return SubmitResponse.defaultResponse();
     }
 }

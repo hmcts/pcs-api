@@ -1,5 +1,10 @@
 import { test } from '@playwright/test';
 import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
+import {
   addressCheckYourAnswers,
   addressDetails,
   claimantCircumstances,
@@ -28,11 +33,6 @@ import {
   user,
   whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation
-} from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
@@ -96,6 +96,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
       files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
     });
