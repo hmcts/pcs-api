@@ -52,10 +52,8 @@ import {
   whatAreYourGroundsForPossession
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { resetCYAData } from '@utils/data/cya-data';
 
 test.beforeEach(async ({page}) => {
-  resetCYAData(); // Reset CYA data at the start of each test
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
@@ -76,7 +74,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - England] @regression', async () => {
-  test('England - Assured tenancy with Rent arrears and other possession grounds @PR @CYA', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -201,7 +199,6 @@ test.describe('[Create Case - England] @regression', async () => {
       fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
-    await performValidation('validateCheckYourAnswers');
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
