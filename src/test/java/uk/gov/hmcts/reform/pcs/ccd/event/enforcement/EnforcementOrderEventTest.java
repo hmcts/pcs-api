@@ -10,7 +10,9 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
@@ -32,6 +34,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
 @ExtendWith(MockitoExtension.class)
@@ -61,6 +64,8 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private AdditionalInformationPage additionalInformationPage;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
@@ -69,12 +74,11 @@ class EnforcementOrderEventTest extends BaseEventTest {
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
         when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(enforceTheOrder)))
             .thenReturn(savingPageBuilder);
-        setEventUnderTest(new EnforcementOrderEvent(addressFormatter, violentAggressiveRiskPage,
-                                                    verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
-                                                    policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
-                                                    criminalAntisocialRiskPage, aggressiveAnimalsRiskPage,
-                                                    propertyAccessDetailsPage, vulnerableAdultsChildrenPage,
-                                                    additionalInformationPage, savingPageBuilderFactory));
+        setEventUnderTest(new EnforcementOrderEvent(enforcementOrderService, addressFormatter,
+                                violentAggressiveRiskPage, verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
+                                policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
+                                criminalAntisocialRiskPage, aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
+                                vulnerableAdultsChildrenPage, additionalInformationPage, savingPageBuilderFactory));
     }
 
     @Test
@@ -103,4 +107,16 @@ class EnforcementOrderEventTest extends BaseEventTest {
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }
 
+    @Test
+    void shouldCreateEnforcementDataInSubmitCallback() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(enforcementOrderService).createEnforcementOrder(TEST_CASE_REFERENCE, enforcementOrder);
+    }
 }

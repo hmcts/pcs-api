@@ -8,7 +8,6 @@ import {
   claimType,
   home,
   propertyIneligible,
-  provideMoreDetailsOfClaim,
   signInOrCreateAnAccount,
   user,
   userIneligible
