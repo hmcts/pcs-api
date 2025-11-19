@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 
@@ -42,7 +43,7 @@ public class TestingSupportService {
             setLabelFieldsInObject(pcsCase, new HashSet<>());
             setEmailFieldsInObject(pcsCase, new HashSet<>());
             sanitizeInvalidFields(pcsCase);
-
+            pcsCase.setUserPcqId(UUID.randomUUID().toString());
             pcsCase.setPropertyAddress(createDefaultAddress());
             pcsCase.setFeeAmount("123.45");
             pcsCase.setLegislativeCountry(ENGLAND);

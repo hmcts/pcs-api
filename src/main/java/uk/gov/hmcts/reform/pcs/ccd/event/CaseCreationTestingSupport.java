@@ -11,18 +11,19 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.createtestcase.SupportTestCaseCreationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
+import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -33,12 +34,10 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.DRAFT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
@@ -55,26 +54,41 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
     private final DraftCaseDataService draftCaseDataService;
     private final PartyService partyService;
     private final ClaimService claimService;
-    private final SavingPageBuilderFactory savingPageBuilderFactory;
+
+    private final EnterPropertyAddress enterPropertyAddress;
+    private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
+    private final PropertyNotEligible propertyNotEligible;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(createTestCase.name(), this::submit, this::start)
-                .initialState(DRAFT)
+                .initialState(AWAITING_FURTHER_CLAIM_DETAILS)
+                .showSummary()
                 .name("DA & QA - Test Case Creation")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
-                .showSummary();
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
-        savingPageBuilderFactory.create(eventBuilder).add(new SupportTestCaseCreationPage());
+        new PageBuilder(eventBuilder)
+            .add(new StartTheService())
+            .add(enterPropertyAddress)
+            .add(crossBorderPostcodeSelection)
+            .add(propertyNotEligible)
+            .add(new PostcodeNotAssignedToCourt());
 
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        PCSCase caseData = eventPayload.caseData();
+        caseData.setFeeAmount("123.45");
+        return caseData;
+    }
+
+    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+
         PCSCase pcsCase = eventPayload.caseData();
         testingSupportService.generateTestPCSCase(pcsCase);
-        long caseReference = System.currentTimeMillis();
+        long caseReference = eventPayload.caseReference();
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
         String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
@@ -86,25 +100,8 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
         pcsCase.setClaimantContactEmail(userEmail);
         pcsCaseService.createCase(caseReference, pcsCase.getPropertyAddress(), pcsCase.getLegislativeCountry());
         draftCaseDataService.patchUnsubmittedCaseData(caseReference, pcsCase);
-        return pcsCase;
-    }
-
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        long caseReference = eventPayload.caseReference();
-        PCSCase pcsCase = eventPayload.caseData();
-
-        List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
-        if (pcsCase.getDefendant1() != null) {
-            if (VerticalYesNo.YES == pcsCase.getDefendant1().getAddressSameAsPossession()) {
-                pcsCase.getDefendant1().setCorrespondenceAddress(pcsCase.getPropertyAddress());
-            }
-            defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
-            pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
-            pcsCase.setDefendants(defendantsList);
-        }
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
         pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
         PartyEntity claimantPartyEntity = createClaimantPartyEntity(pcsCase);
