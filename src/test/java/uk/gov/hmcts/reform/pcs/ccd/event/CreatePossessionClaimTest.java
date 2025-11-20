@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcod
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -21,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto.builder;
 
 @ExtendWith(MockitoExtension.class)
 class CreatePossessionClaimTest extends BaseEventTest {
@@ -67,7 +67,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void shouldSetFeeAmountOnStart() {
         PCSCase caseData = PCSCase.builder().build();
         when(feesAndPayService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(
-            builder()
+            FeeDetails.builder()
                 .feeAmount(new BigDecimal("404.00"))
                 .build()
         );
@@ -82,7 +82,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void shouldHandleFeeWithDecimalPlaces() {
         PCSCase caseData = PCSCase.builder().build();
         when(feesAndPayService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(
-            builder()
+            FeeDetails.builder()
                 .feeAmount(new BigDecimal("123.45"))
                 .build()
         );
@@ -97,7 +97,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void shouldHandleZeroFeeAmount() {
         PCSCase caseData = PCSCase.builder().build();
         when(feesAndPayService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(
-            builder()
+            FeeDetails.builder()
                 .feeAmount(BigDecimal.ZERO)
                 .build()
         );
@@ -112,7 +112,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void shouldHandleNullFeeAmount() {
         PCSCase caseData = PCSCase.builder().build();
         when(feesAndPayService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(
-            builder()
+            FeeDetails.builder()
                 .feeAmount(null)
                 .build()
         );

@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration.LookUpReferenceData;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 @Slf4j
@@ -40,10 +41,10 @@ public class FeesAndPayService {
      * The key must exist in {@link FeesConfiguration}; otherwise a {@link FeeNotFoundException} is thrown.
      *
      * @param feeTypeKey the logical fee type key (e.g., "caseIssued")
-     * @return a {@link FeeLookupResponseDto} representing the fee details
+     * @return a {@link FeeDetails} representing the fee details
      * @throws FeeNotFoundException if the fee type is not configured or the Fees Register call fails
      */
-    public FeeLookupResponseDto getFee(String feeTypeKey) {
+    public FeeDetails getFee(String feeTypeKey) {
         log.debug("Requesting fee of type: {}", feeTypeKey);
         LookUpReferenceData ref = feesConfiguration.getLookup(feeTypeKey);
 
@@ -53,12 +54,17 @@ public class FeesAndPayService {
         }
 
         try {
-            return feesClient.lookupFee(
+            FeeLookupResponseDto feeLookupResponse = feesClient.lookupFee(
                 ref.getChannel(),
                 ref.getEvent(),
                 ref.getAmountOrVolume(),
                 ref.getKeyword()
             );
+
+            log.debug("Successfully retrieved fee: type={}, code={}, amount={}",
+                      feeTypeKey, feeLookupResponse.getCode(), feeLookupResponse.getFeeAmount());
+
+            return FeeDetails.fromFeeLookupResponse(feeLookupResponse);
         } catch (FeignException e) {
             log.error("Failed to retrieve fee for type: {}", feeTypeKey, e);
             throw new FeeNotFoundException("Unable to retrieve fee: " + feeTypeKey, e);
@@ -76,7 +82,7 @@ public class FeesAndPayService {
      *
      * @param caseReference the business case reference sent to the Payments API
      * @param ccdCaseNumber the CCD case number sent to the Payments API
-     * @param fee the fee returned from the Fees API
+     * @param feeDetails the fee details
      * @param volume the quantity of the fee (e.g., number of items)
      * @param responsibleParty the party responsible for the payment
      * @return {@link PaymentServiceResponse} containing the service request reference
@@ -84,11 +90,11 @@ public class FeesAndPayService {
     public PaymentServiceResponse createServiceRequest(
         String caseReference,
         String ccdCaseNumber,
-        FeeLookupResponseDto fee,
+        FeeDetails feeDetails,
         int volume,
         String responsibleParty
     ) {
-        FeeDto feeDto = paymentRequestMapper.toFeeDto(fee, volume);
+        FeeDto feeDto = paymentRequestMapper.toFeeDto(feeDetails, volume);
 
         CasePaymentRequestDto casePaymentRequest =
             paymentRequestMapper.toCasePaymentRequest(responsibleParty);
