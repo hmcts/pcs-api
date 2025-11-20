@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
@@ -35,10 +36,11 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                   these grounds here and any extra ground you'd like to add to your claim, if you need to.
                </p>
                """)
-            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
-            .optional(PCSCase::getSecureOrFlexibleMandatoryGrounds)
-            .optional(PCSCase::getSecureOrFlexibleMandatoryGroundsAlt)
-            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlt)
+            .complex(PCSCase::getSecureOrFlexiblePossessionGrounds)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGrounds)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGroundsAlt)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGroundsAlt)
             .label("secureOrFlexibleGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -47,15 +49,16 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         PCSCase caseData = details.getData();
 
         Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds =
-                caseData.getSecureOrFlexibleDiscretionaryGrounds();
+                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleDiscretionaryGrounds();
 
         Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> discretionaryGroundsAlt =
-                caseData.getSecureOrFlexibleDiscretionaryGroundsAlt();
+                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleDiscretionaryGroundsAlt();
 
-        Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds = caseData.getSecureOrFlexibleMandatoryGrounds();
+        Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds = caseData.getSecureOrFlexiblePossessionGrounds()
+            .getSecureOrFlexibleMandatoryGrounds();
 
         Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> mandatoryGroundsAlt =
-                caseData.getSecureOrFlexibleMandatoryGroundsAlt();
+                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleMandatoryGroundsAlt();
 
         boolean hasOtherDiscretionaryGrounds = discretionaryGrounds
                 .stream()

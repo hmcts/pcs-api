@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
@@ -210,6 +211,8 @@ class PcsCaseMergeServiceTest {
         VerticalYesNo preActionProtocolCompleted = VerticalYesNo.YES;
 
         when(pcsCase.getPreActionProtocolCompleted()).thenReturn(preActionProtocolCompleted);
+        when(pcsCase.getSecureOrFlexiblePossessionGrounds())
+            .thenReturn(SecureOrFlexiblePossessionGrounds.builder().build());
 
         // When
         underTest.mergeCaseData(pcsCaseEntity, pcsCase);
@@ -317,10 +320,6 @@ class PcsCaseMergeServiceTest {
         when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(null);
         when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(null);
         when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
@@ -360,10 +359,6 @@ class PcsCaseMergeServiceTest {
         when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
         when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
         when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();

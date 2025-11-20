@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Set;
@@ -55,9 +56,12 @@ class SecureFlexibleRoutingPolicyTest {
         Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds,
         Set<RentArrearsOrBreachOfTenancy> rentArrearsOrBreach,
         YesOrNo expected) {
+
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(tenancyType)
-            .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds
+                    .builder().secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds).build())
             .rentArrearsOrBreachOfTenancy(rentArrearsOrBreach)
             .build();
 
@@ -70,7 +74,9 @@ class SecureFlexibleRoutingPolicyTest {
     void shouldReturnNoWhenGround1NotSelected() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(SECURE_TENANCY)
-            .secureOrFlexibleDiscretionaryGrounds(Set.of(NUISANCE_OR_IMMORAL_USE))
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds
+                    .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(NUISANCE_OR_IMMORAL_USE)).build())
             .build();
 
         YesOrNo result = policy.shouldShowRentDetails(caseData);
@@ -82,7 +88,9 @@ class SecureFlexibleRoutingPolicyTest {
     void shouldReturnNoWhenGround1SelectedButBreachOnly() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(SECURE_TENANCY)
-            .secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY))
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds
+                    .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY)).build())
             .rentArrearsOrBreachOfTenancy(Set.of(BREACH_OF_TENANCY))
             .build();
 
@@ -95,7 +103,7 @@ class SecureFlexibleRoutingPolicyTest {
     void shouldReturnNoWhenDiscretionaryGroundsIsNull() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(SECURE_TENANCY)
-            .secureOrFlexibleDiscretionaryGrounds(null)
+            .secureOrFlexiblePossessionGrounds(SecureOrFlexiblePossessionGrounds.builder().build())
             .build();
 
         YesOrNo result = policy.shouldShowRentDetails(caseData);
@@ -107,7 +115,9 @@ class SecureFlexibleRoutingPolicyTest {
     void shouldReturnNoWhenRentArrearsOrBreachIsNull() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(SECURE_TENANCY)
-            .secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY))
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds
+                    .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY)).build())
             .rentArrearsOrBreachOfTenancy(null)
             .build();
 
