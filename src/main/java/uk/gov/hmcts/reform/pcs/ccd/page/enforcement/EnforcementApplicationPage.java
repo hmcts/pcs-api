@@ -51,9 +51,9 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         if (defendants != null || !defendants.isEmpty()) {
             pcsCase.setAllDefendants(defendants);
             pcsCase.setFormattedDefendantNames(defendants.stream()
-                .map(defendant -> "<p class=\"govuk-body\">"
+                .map(defendant -> ""
                     + defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
-                    + "</p>")
+                    + "<br>")
                 .collect(Collectors.joining("\n")));
         }
     }
