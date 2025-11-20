@@ -114,6 +114,6 @@ async function performAccessibilityChecks(testInfo: TestInfo)
   const executor = getExecutor();
   console.log("accessibility is called>>>>>>>>>>>");
   const axeUtil = new AxeUtils(executor.page);
-  axeUtil.audit();
+  await axeUtil.audit();
   // axeUtil.generateReport(testInfo,"Accessibility Report");
 }
