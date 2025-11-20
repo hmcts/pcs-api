@@ -58,7 +58,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
         YesOrNo expected) {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsMandatoryGrounds(mandatoryGrounds)
             .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
             .build();
@@ -76,7 +76,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
         YesOrNo expected) {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.NO)
+            .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
             .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
             .build();
@@ -90,7 +90,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     void shouldReturnNoWhenGroundsForPossessionIsNull() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(ASSURED_TENANCY)
-            .groundsForPossession(null)
+            .claimDueToRentArrears(null)
             .build();
 
         YesOrNo result = policy.shouldShowRentSection(caseData);
@@ -102,7 +102,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     void shouldReturnNoWhenAllGroundsAreNull() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsMandatoryGrounds(null)
             .rentArrearsDiscretionaryGrounds(null)
             .build();
@@ -119,7 +119,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
         // (e.g., when CheckingNotice runs before RentArrearsGroundsForPossession.midEvent())
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
             .rentArrearsMandatoryGrounds(null)
             .rentArrearsDiscretionaryGrounds(null)
@@ -134,7 +134,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     void shouldShowRentDetailsWhenRentArrearsGround10SetButCanonicalSetsNotPopulated() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsGrounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
             .rentArrearsMandatoryGrounds(Set.of())
             .rentArrearsDiscretionaryGrounds(Set.of())
@@ -149,7 +149,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     void shouldShowRentDetailsWhenRentArrearsGround11SetButCanonicalSetsNotPopulated() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsGrounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
             .rentArrearsMandatoryGrounds(Set.of())
             .rentArrearsDiscretionaryGrounds(Set.of())
@@ -164,7 +164,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     void shouldReturnNoWhenRentArrearsGroundsEmptyAndCanonicalSetsNotPopulated() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsGrounds(Set.of())
             .rentArrearsMandatoryGrounds(null)
             .rentArrearsDiscretionaryGrounds(null)
