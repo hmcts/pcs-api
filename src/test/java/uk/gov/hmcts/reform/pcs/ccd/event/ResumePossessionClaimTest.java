@@ -178,7 +178,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @BeforeEach
     void setUp() {
         SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
-        when(savingPageBuilderFactory.create(any())).thenReturn(savingPageBuilder);
+        when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
