@@ -6,5 +6,5 @@ export const legalCosts = {
   noRadioOption: 'No',
   howMuchYouWantToReclaimTextLabel: 'How much do you want to reclaim?',
   howMuchYouWantToReclaimTextInput: '100',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }
