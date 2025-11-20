@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.role.assignment;
+package uk.gov.hmcts.reform.pcs.roleassignment;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import uk.gov.hmcts.reform.pcs.role.assignment.DTO.CaseUserDTO;
-import uk.gov.hmcts.reform.pcs.role.assignment.DTO.CaseUserListDTO;
+import uk.gov.hmcts.reform.pcs.roleassignment.dto.CaseUserDTO;
+import uk.gov.hmcts.reform.pcs.roleassignment.dto.CaseUserListDTO;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.role.assignment.DTO;
+package uk.gov.hmcts.reform.pcs.roleassignment.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
