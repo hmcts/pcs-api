@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import uk.gov.hmcts.reform.pcs.roleassignment.dto.CaseUserListDTO;
 
-@FeignClient(name = "role-assignment", url = "http://ccd-data-store-api-aat.service.core-compute-aat.internal")
+@FeignClient(name = "role-assignment", url = "${role-assignment.url}")
 public interface RoleAssignmentApi {
 
     @PostMapping(

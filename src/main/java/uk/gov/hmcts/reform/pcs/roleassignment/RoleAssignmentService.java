@@ -28,6 +28,9 @@ public class RoleAssignmentService {
     @Value("${role-assignment.role-id}")
     private String caseRole;
 
+    @Value("${role-assignment.url}")
+    private String ccdUrl;
+
 
     public void assignRole(String caseReference, PCSCase pcsCase) {
         //Auth for request
@@ -38,6 +41,8 @@ public class RoleAssignmentService {
         UUID userId = securityContextService.getCurrentUserId();
         //      String orgId = organisationDetailsService.getOrganisationIdentifier(userId.toString());
         String orgId = "E71FH4Q";
+
+        log.error("Using endpoint: {}", ccdUrl);
 
         CaseUserDTO caseUserDTO = CaseUserDTO.builder()
             .caseId(caseReference)
