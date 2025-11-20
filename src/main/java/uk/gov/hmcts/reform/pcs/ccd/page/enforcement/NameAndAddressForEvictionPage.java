@@ -20,7 +20,6 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
         pageBuilder
             .page("nameAndAddressForEviction", this::midEvent)
             .pageLabel("The name and address for the eviction")
-            .readonly(PCSCase::getAllDefendants, NEVER_SHOW)
             .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW)
             .label(
                 "nameAndAddressForEviction-defendants-check",
