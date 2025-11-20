@@ -1,0 +1,25 @@
+export const underlesseeOrMortgageeDetails =
+  {
+    title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+    mainHeader: `Underlessee or mortgagee details`,
+    doYouKnowTheNameQuestion: `Do you know the underlessee or mortgagee's name?`,
+    doYouKnowTheAddressQuestion: `Do you know the underlessee or mortgagee's correspondence address?`,
+    addAnotherUnderlesseeOrMortgageeQuestion: `Do you need to add another underlessee or mortgagee?`,
+    doYouKnowTheNameTextLabel: `What is their name?`,
+    underlesseeNameTextInput: `UnderlesseeMortgagee Name`,
+    continueButton: `Continue`,
+    yesRadioOption: `Yes`,
+    noRadioOption: `No`,
+    addNewButton: `Add new`,
+    underlesseePostcodeTextInput: `SL6`,
+    iCantEnterAUKPostcodeLink: `I can't enter a UK postcode`,
+    previousButton: `Previous`,
+    selectAnAddressTextLabelHidden: `Select an address`,
+    buildingAndStreetTextLabelHidden: `Building and Street`,
+    addressLine2TextLabelHidden: `Address line 2 (Optional)`,
+    addressLine3TextLabelHidden: `Address line 3 (Optional)`,
+    townOrCityTextLabelHidden: `Town or City`,
+    countyOptionalTextLabelHidden: `County (Optional)`,
+    countryOptionalTextLabelHidden: `Country (Optional)`,
+    postcodeTextLabelHidden: `Postcode`
+  };
