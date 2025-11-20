@@ -1,13 +1,17 @@
-import {Page, test} from '@playwright/test';
-import {actionData, actionRecord, actionTuple} from './interfaces/action.interface';
-import {validationData, validationRecord, validationTuple} from './interfaces/validation.interface';
-import {ActionRegistry} from './registry/action.registry';
-import {ValidationRegistry} from './registry/validation.registry';
+import { Page, test, TestInfo } from '@playwright/test';
+import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
+import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
+import { ActionRegistry } from './registry/action.registry';
+import { ValidationRegistry } from './registry/validation.registry';
+import { AxeUtils} from "@hmcts/playwright-common";
 
 let testExecutor: { page: Page };
+let previousUrl: string = '';
+let testInfo: any;
 
 export function initializeExecutor(page: Page): void {
   testExecutor = { page };
+  previousUrl = page.url();
 }
 
 function getExecutor(): { page: Page } {
@@ -17,33 +21,50 @@ function getExecutor(): { page: Page } {
   return testExecutor;
 }
 
-export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
+async function detectPageNavigation(): Promise<boolean> {
   const executor = getExecutor();
-  const actionInstance = ActionRegistry.getAction(action);
-  let displayFieldName = fieldName;
-  let displayValue = value ?? fieldName;
+  const currentUrl = executor.page.url();
 
-  if (typeof fieldName === 'string' && fieldName.toLowerCase() === 'password' && typeof value === 'string') {
-    displayValue = '*'.repeat(value.length);
-  } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
-    const obj = fieldName as Record<string, any>;
-    displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
-    displayFieldName = displayValue;
+  const hasNavigated = currentUrl !== previousUrl;
+
+  if (hasNavigated) {
+    previousUrl = currentUrl;
   }
 
-  const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
-  await test.step(stepText, async () => {
-  await actionInstance.execute(executor.page, action, fieldName, value);
+  return hasNavigated;
+}
+
+async function validatePageIfNavigated(action:string): Promise<void> {
+  if(action.includes('click')) {
+    const hasNavigated = await detectPageNavigation();
+    if (hasNavigated) {
+      // await performValidation('autoValidatePageContent');
+      await performAccessibilityChecks(testInfo);
+    }
+  }
+}
+
+export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
+  const executor = getExecutor();
+  await validatePageIfNavigated(action);
+  const actionInstance = ActionRegistry.getAction(action);
+  await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
+    await actionInstance.execute(executor.page, action, fieldName, value);
+    await validatePageIfNavigated(action);
   });
 }
 
-export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
+export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
   const executor = getExecutor();
-  const [fieldName, data] = typeof inputFieldName === 'string'
-    ? [inputFieldName, inputData]
-    : ['', inputFieldName];
+
+  const [fieldName, data] = inputFieldName === undefined
+    ? ['', undefined]
+    : typeof inputFieldName === 'string'
+      ? [inputFieldName, inputData]
+      : ['', inputFieldName];
+
   const validationInstance = ValidationRegistry.getValidation(validation);
-  await test.step(`Validated ${validation} - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
+  await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
 }
@@ -87,4 +108,12 @@ function readValuesFromInputObjects(obj: object): string {
     return `${key}: ${valueString}`;
   });
   return `${formattedPairs.join(', ')}`;
+}
+async function performAccessibilityChecks(testInfo: TestInfo)
+{
+  const executor = getExecutor();
+  console.log("accessibility is called>>>>>>>>>>>");
+  const axeUtil = new AxeUtils(executor.page);
+  axeUtil.audit();
+  // axeUtil.generateReport(testInfo,"Accessibility Report");
 }
