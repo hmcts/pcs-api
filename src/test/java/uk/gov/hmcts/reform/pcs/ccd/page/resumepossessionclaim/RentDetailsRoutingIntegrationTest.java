@@ -33,15 +33,13 @@ public class RentDetailsRoutingIntegrationTest {
         String scenarioDescription) {
 
         // Given
-        SecureOrFlexiblePossessionGrounds secureOrFlexibleGrounds = SecureOrFlexiblePossessionGrounds.builder()
-            .secureOrFlexibleDiscretionaryGrounds(secureFlexibleDiscretionary)
-            .build();
-
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(tenancyType)
             .noRentArrearsMandatoryGroundsOptions(noRentArrearsMandatory)
             .noRentArrearsDiscretionaryGroundsOptions(noRentArrearsDiscretionary)
-            .secureOrFlexiblePossessionGrounds(secureOrFlexibleGrounds)
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds
+                    .builder().secureOrFlexibleDiscretionaryGrounds(secureFlexibleDiscretionary).build())
             .rentArrearsOrBreachOfTenancy(rentArrearsOrBreach)
             .build();
 
