@@ -1,5 +1,11 @@
 import { test } from '@playwright/test';
 import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
+import {
   addressCheckYourAnswers,
   addressDetails,
   additionalReasonsForPossession,
@@ -45,12 +51,7 @@ import {
   wantToUploadDocuments,
   whatAreYourGroundsForPossession
 } from '@data/page-data';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation,
-  performValidations
-} from '@utils/controller';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -66,6 +67,10 @@ test.beforeEach(async ({page}) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Create Case - England] @regression', async () => {
@@ -111,6 +116,7 @@ test.describe('[Create Case - England] @regression', async () => {
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
     await performValidation('elementNotToBeVisible',[rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent]);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink,groundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds',{
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation],
@@ -143,6 +149,13 @@ test.describe('[Create Case - England] @regression', async () => {
       calculateRentAmount: '£114.29',
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
@@ -180,7 +193,12 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -262,6 +280,13 @@ test.describe('[Create Case - England] @regression', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -298,7 +323,13 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantLegalRepresentativeRadioOption,
+      signThisStatementCheckbox: statementOfTruth.signThisStatementHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      nameOfFirmTextInput: statementOfTruth.nameOfFirmHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -481,6 +512,13 @@ test.describe('[Create Case - England] @regression', async () => {
       calculateRentAmount: '£114.29',
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
@@ -893,6 +931,13 @@ test.describe('[Create Case - England] @regression', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -1009,6 +1054,13 @@ test.describe('[Create Case - England] @regression', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -1094,6 +1146,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.seriousRentArrears],
       discretionary :[whatAreYourGroundsForPossession.discretionary.persistentDelayInPayingRent]
@@ -1126,7 +1179,13 @@ test.describe('[Create Case - England] @regression', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
-    //Details of rent arrears page need to be added once HDPI-2661 bug is fixed
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);

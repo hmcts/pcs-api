@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
-    private final RentDetailsRoutingService rentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -87,8 +85,6 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
         } else {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
         }
-
-        caseData.setShowRentDetailsPage(rentDetailsRoutingService.shouldShowRentDetails(caseData));
 
         if (!validationErrors.isEmpty()) {
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);

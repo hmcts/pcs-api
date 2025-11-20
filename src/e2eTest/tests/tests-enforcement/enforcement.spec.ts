@@ -1,6 +1,7 @@
 import { test } from '@playwright/test';
+import { initializeExecutor } from '@utils/controller';
+import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import {
-  caseList,
   caseSummary,
   signInOrCreateAnAccount,
   user
@@ -22,21 +23,14 @@ import {
   vulnerableAdultsAndChildren,
   yourApplication
 } from '@data/page-data/page-data-enforcement';
-import {
-  caseNotFoundAfterFilter,
-  caseNumber
-} from '@utils/actions/custom-actions';
-import { initializeExecutor } from '@utils/controller';
-import {
-  initializeEnforcementExecutor,
-  performAction,
-  performValidation
-} from '@utils/controller-enforcement';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
@@ -45,12 +39,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
-  await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
-  await performAction('noCasesFoundAfterSearch');
-  //Below three lines will be merged into a single action as part of improvement
-  await performAction('selectFirstCaseFromTheFilter', caseNotFoundAfterFilter);
-  await performAction('createNewCase', caseNotFoundAfterFilter);
-  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
+  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {

@@ -8,8 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -25,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -43,12 +42,6 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@NamedEntityGraph(
-    name = "PcsCaseEntity.parties",
-    attributeNodes = {
-        @NamedAttributeNode("parties")
-    }
-)
 public class PcsCaseEntity {
 
     @Id
@@ -95,6 +88,10 @@ public class PcsCaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<PartyDocumentDto> partyDocuments;
 
+    @Column(name = "statement_of_truth")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private StatementOfTruth statementOfTruth;
+
     @Column(name = "underlessee_mortgagee_details")
     @JdbcTypeCode(SqlTypes.JSON)
     private List<UnderlesseeMortgagee> underlesseesMortgagees;
@@ -108,5 +105,4 @@ public class PcsCaseEntity {
         parties.add(party);
         party.setPcsCase(this);
     }
-
 }

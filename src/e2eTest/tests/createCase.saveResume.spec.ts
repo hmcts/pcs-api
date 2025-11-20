@@ -1,5 +1,11 @@
 import { test } from '@playwright/test';
 import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
+import {
   addressCheckYourAnswers,
   addressDetails,
   additionalReasonsForPossession,
@@ -35,14 +41,10 @@ import {
   underlesseeOrMortgageeEntitledToClaim,
   user,
   wantToUploadDocuments,
-  whatAreYourGroundsForPossession
+  whatAreYourGroundsForPossession,
+  detailsOfRentArrears
 } from '@data/page-data';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation,
-  performValidations
-} from '@utils/controller';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -66,8 +68,12 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
+});
+
 test.describe('[Create Case - With resume claim options]', async () => {
-  test('England - Resume with saved options - Assured Tentency - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
+  test('England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -146,6 +152,13 @@ test.describe('[Create Case - With resume claim options]', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.no,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -178,7 +191,12 @@ test.describe('[Create Case - With resume claim options]', async () => {
       option: languageUsed.english
     });
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
@@ -190,7 +208,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     )
   });
 
-  test('England - Resume without saved options - Secure Tentency - No Rent Arrears', async () => {
+  test('England - Resume without saved options - Secure tenancy - No Rent Arrears', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -295,8 +313,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.english
     });
-    await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
