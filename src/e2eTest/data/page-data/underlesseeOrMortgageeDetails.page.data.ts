@@ -11,6 +11,8 @@ export const underlesseeOrMortgageeDetails =
     yesRadioOption: 'Yes',
     noRadioOption: 'No',
     addNewButton: 'Add new',
+    removeButtonHidden: 'Remove',
+    addAnUnderlesseeOrMortgageeParagraph: 'Add an underlessee or mortgagee to the case',
     underlesseePostcodeTextInput: 'SL6',
     iCantEnterAUKPostcodeLink: 'I can\'t enter a UK postcode',
     previousButton: 'Previous',
