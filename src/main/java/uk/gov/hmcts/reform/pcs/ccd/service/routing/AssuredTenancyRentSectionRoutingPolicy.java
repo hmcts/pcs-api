@@ -30,7 +30,7 @@ public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutin
 
     @Override
     public YesOrNo shouldShowRentSection(PCSCase caseData) {
-        if (caseData.getGroundsForPossession() == YesOrNo.YES) {
+        if (caseData.getClaimDueToRentArrears() == YesOrNo.YES) {
             return checkRentArrearsGrounds(caseData);
         } else {
             return checkNoRentArrearsGrounds(caseData);

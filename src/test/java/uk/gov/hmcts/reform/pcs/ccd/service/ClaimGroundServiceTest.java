@@ -219,7 +219,7 @@ class ClaimGroundServiceTest {
 
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsMandatoryGrounds(mandatoryGrounds)
             .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
             .rentArrearsGroundsReasons(reasons)
@@ -252,7 +252,7 @@ class ClaimGroundServiceTest {
 
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.YES)
+            .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsGrounds(rentArrearsGrounds)
             .build();
 
@@ -260,14 +260,13 @@ class ClaimGroundServiceTest {
         List<ClaimGroundEntity> result = claimGroundService.getGroundsWithReason(caseData);
 
         // Then
-        assertThat(result).hasSize(rentArrearsGrounds.size());
-
-        Set<String> savedGrounds = result.stream()
-            .map(entity -> entity.getGroundId()).collect(Collectors.toSet());
-
-        assertThat(savedGrounds).contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8.name());
-        assertThat(savedGrounds).contains(RentArrearsGround.RENT_ARREARS_GROUND10.name());
-        assertThat(savedGrounds).contains(RentArrearsGround.PERSISTENT_DELAY_GROUND11.name());
+        assertThat(result)
+            .extracting(ClaimGroundEntity::getGroundId)
+            .containsExactlyInAnyOrder(
+                RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8.name(),
+                RentArrearsGround.RENT_ARREARS_GROUND10.name(),
+                RentArrearsGround.PERSISTENT_DELAY_GROUND11.name()
+            );
 
     }
 

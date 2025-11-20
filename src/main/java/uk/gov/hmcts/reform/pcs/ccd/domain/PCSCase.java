@@ -177,7 +177,7 @@ public class PCSCase {
         label = "Are you claiming possession because of rent arrears?",
         hint = "You'll be able to add additional grounds later if you select yes"
     )
-    private YesOrNo groundsForPossession;
+    private YesOrNo claimDueToRentArrears;
 
     // Rent arrears grounds checkboxes
     @CCD(
