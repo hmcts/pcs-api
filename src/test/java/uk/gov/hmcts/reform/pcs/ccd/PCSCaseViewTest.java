@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
@@ -38,12 +39,14 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class PCSCaseViewTest {
@@ -82,32 +85,34 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE)));
+        CaseViewRequest<State> request = request(CASE_REFERENCE, DEFAULT_STATE);
 
         // Then
-        assertThat(throwable)
+        assertThatThrownBy(() -> underTest.getCase(request))
                 .isInstanceOf(CaseNotFoundException.class)
                 .hasMessage("No case found with reference %s", CASE_REFERENCE);
     }
 
     @ParameterizedTest
     @MethodSource("unsubmittedDataFlagScenarios")
-    void shouldSetFlagForUnsubmittedData(boolean hasUnsubmittedData, YesOrNo expectedCaseDataValue) {
+    void shouldSetFlagForUnsubmittedData(boolean hasUnsubmittedData, YesOrNo expectedCaseDataValue,
+                                         State state, EventId eventId) {
         // Given
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(hasUnsubmittedData);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, eventId)).thenReturn(hasUnsubmittedData);
 
         // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_FURTHER_CLAIM_DETAILS));
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, state));
 
         // Then
         assertThat(pcsCase.getHasUnsubmittedCaseData()).isEqualTo(expectedCaseDataValue);
+        verify(draftCaseDataService).hasUnsubmittedCaseData(CASE_REFERENCE, eventId);
     }
 
     private static Stream<Arguments> unsubmittedDataFlagScenarios() {
         return Stream.of(
             // unsubmitted case data available, expected case data value
-            arguments(false, YesOrNo.NO),
-            arguments(true, YesOrNo.YES)
+            arguments(false, YesOrNo.NO, AWAITING_FURTHER_CLAIM_DETAILS, resumePossessionClaim),
+            arguments(true, YesOrNo.YES, AWAITING_FURTHER_CLAIM_DETAILS, resumePossessionClaim)
         );
     }
 
