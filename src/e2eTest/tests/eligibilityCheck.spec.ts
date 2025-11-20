@@ -39,7 +39,7 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Eligibility Check - Create Case] @PR', async () => {
+test.describe('[Eligibility Check - Create Case] @regression', async () => {
   test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
