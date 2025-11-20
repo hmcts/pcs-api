@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
@@ -214,8 +213,6 @@ class PcsCaseMergeServiceTest {
         VerticalYesNo preActionProtocolCompleted = VerticalYesNo.YES;
 
         when(pcsCase.getPreActionProtocolCompleted()).thenReturn(preActionProtocolCompleted);
-        when(pcsCase.getSecureOrFlexiblePossessionGrounds())
-            .thenReturn(SecureOrFlexiblePossessionGrounds.builder().build());
 
         // When
         underTest.mergeCaseData(pcsCaseEntity, pcsCase);
