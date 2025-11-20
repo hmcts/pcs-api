@@ -107,7 +107,7 @@ test.describe('[Create Case - England] @regression', async () => {
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
       year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.pdf']
+      files: ['tenancyLicence.docx']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yes});
