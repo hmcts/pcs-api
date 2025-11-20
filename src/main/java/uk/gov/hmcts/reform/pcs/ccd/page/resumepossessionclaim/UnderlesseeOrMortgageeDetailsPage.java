@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.UnderlesseeMortgageeValidator;
 
 import java.util.ArrayList;
@@ -52,7 +53,9 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
                 """)
             .mandatory(PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
             .mandatory(PCSCase::getAdditionalUnderlesseeOrMortgagee,
-                       "addAdditionalUnderlesseeOrMortgagee=\"YES\"");
+                       "addAdditionalUnderlesseeOrMortgagee=\"YES\"")
+            .label("underlesseeMortgagee-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
@@ -177,7 +178,7 @@ public class PCSCase {
         label = "Are you claiming possession because of rent arrears?",
         hint = "You'll be able to add additional grounds later if you select yes"
     )
-    private YesOrNo groundsForPossession;
+    private YesOrNo claimDueToRentArrears;
 
     // Rent arrears grounds checkboxes
     @CCD(
@@ -591,7 +592,10 @@ public class PCSCase {
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
-    private YesOrNo showRentDetailsPage;
+    private YesOrNo showRentSectionPage;
+
+    @CCD(searchable = false)
+    private YesOrNo showRentArrearsPage;
 
     @CCD(
         label = "Which language did you use to complete this service?",
@@ -735,10 +739,17 @@ public class PCSCase {
     )
     private WaysToPay waysToPay;
 
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
+
     @CCD(searchable = false)
     private YesOrNo showPreActionProtocolPageWales;
 
     @CCD(searchable = false)
     private YesOrNo showASBQuestionsPageWales;
+
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private ASBQuestionsDetailsWales asbQuestionsWales;
 
 }

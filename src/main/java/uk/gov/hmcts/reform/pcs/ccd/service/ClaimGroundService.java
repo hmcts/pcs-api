@@ -45,7 +45,7 @@ public class ClaimGroundService {
 
     private List<ClaimGroundEntity> getAssuredTenancyGroundsWithReason(PCSCase pcsCase) {
 
-        if (pcsCase.getGroundsForPossession() == YesOrNo.YES) {
+        if (pcsCase.getClaimDueToRentArrears() == YesOrNo.YES) {
             return assuredTenancyRentArrearsGroundsWithReason(pcsCase);
         } else {
             return assuredTenancyNoRentArrearsGroundsWithReason(pcsCase);

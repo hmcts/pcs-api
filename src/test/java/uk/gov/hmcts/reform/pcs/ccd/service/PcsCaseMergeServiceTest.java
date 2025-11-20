@@ -51,6 +51,8 @@ class PcsCaseMergeServiceTest {
     @Mock
     private DefendantService defendantService;
     @Mock
+    private StatementOfTruthService statementOfTruthService;
+    @Mock
     private UnderlesseeMortgageeService underlesseeMortgageService;
 
     private PcsCaseMergeService underTest;
@@ -61,6 +63,7 @@ class PcsCaseMergeServiceTest {
                                             modelMapper,
                                             tenancyLicenceService,
                                             defendantService,
+                                            statementOfTruthService,
                                             underlesseeMortgageService);
     }
 

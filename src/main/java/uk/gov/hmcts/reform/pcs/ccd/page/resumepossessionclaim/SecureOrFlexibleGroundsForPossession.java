@@ -35,6 +35,9 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                   If you have, you should have written the grounds you're making your claim under. You should select
                   these grounds here and any extra ground you'd like to add to your claim, if you need to.
                </p>
+               <p class="govuk-body">
+                 <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
+               </p>
                """)
             .complex(PCSCase::getSecureOrFlexiblePossessionGrounds)
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds)
@@ -65,17 +68,9 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                 .anyMatch(ground -> ground != RENT_ARREARS_OR_BREACH_OF_TENANCY
                 );
 
-        // Control Rent Details page visibility based on Ground 1 selection
-        // Always reset visibility to NO here; the next page will enable it if needed
-        caseData.setShowRentDetailsPage(YesOrNo.NO);
         if (!discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
             // Ground 1 not selected - clear rent arrears data
             caseData.setRentArrearsOrBreachOfTenancy(Set.of());
-            caseData.setShowRentDetailsPage(YesOrNo.NO);
-        } else {
-            // Ground 1 selected - rent details visibility will be determined by next page
-            // based on whether user chooses "Rent arrears" or "Breach of tenancy"
-            caseData.setShowRentDetailsPage(YesOrNo.NO);
         }
 
         if (hasOtherDiscretionaryGrounds

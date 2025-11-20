@@ -15,33 +15,32 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 
-class RentDetailsRoutingServiceTest {
+class RentSectionRoutingServiceTest {
 
-    private RentDetailsRoutingService service;
-    private AssuredTenancyRoutingPolicy assuredTenancyPolicy;
-    private SecureFlexibleRoutingPolicy secureFlexiblePolicy;
+    private RentSectionRoutingService service;
 
     @BeforeEach
     void setUp() {
-        assuredTenancyPolicy = new AssuredTenancyRoutingPolicy();
-        secureFlexiblePolicy = new SecureFlexibleRoutingPolicy();
-        List<RentDetailsRoutingPolicy> policies = Arrays.asList(
-            assuredTenancyPolicy,
-            secureFlexiblePolicy
+        AssuredTenancyRentSectionRoutingPolicy assuredTenancyPolicy = new AssuredTenancyRentSectionRoutingPolicy();
+        SecureFlexibleRentSectionRoutingPolicy secureFlexiblePolicy = new SecureFlexibleRentSectionRoutingPolicy();
+
+        List<RentSectionRoutingPolicy> policies = Arrays.asList(
+                assuredTenancyPolicy,
+                secureFlexiblePolicy
         );
-        service = new RentDetailsRoutingService(policies);
+        service = new RentSectionRoutingService(policies);
     }
 
     @Test
     void shouldDelegateToAssuredTenancyPolicy() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.NO)
+            .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsMandatoryGroundsOptions(null)
             .noRentArrearsDiscretionaryGroundsOptions(null)
             .build();
 
-        YesOrNo result = service.shouldShowRentDetails(caseData);
+        YesOrNo result = service.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -53,7 +52,7 @@ class RentDetailsRoutingServiceTest {
             .secureOrFlexiblePossessionGrounds(SecureOrFlexiblePossessionGrounds.builder().build())
             .build();
 
-        YesOrNo result = service.shouldShowRentDetails(caseData);
+        YesOrNo result = service.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.NO);
     }
@@ -64,7 +63,7 @@ class RentDetailsRoutingServiceTest {
             .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
             .build();
 
-        assertThatThrownBy(() -> service.shouldShowRentDetails(caseData))
+        assertThatThrownBy(() -> service.shouldShowRentSection(caseData))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No routing policy found for tenancy type: INTRODUCTORY_TENANCY");
     }
@@ -73,7 +72,7 @@ class RentDetailsRoutingServiceTest {
     void shouldHandleAssuredTenancyWithRentArrearsGrounds() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-            .groundsForPossession(YesOrNo.NO)
+            .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsMandatoryGroundsOptions(
                 java.util.Set.of(
                     uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS
@@ -82,7 +81,7 @@ class RentDetailsRoutingServiceTest {
             .noRentArrearsDiscretionaryGroundsOptions(null)
             .build();
 
-        YesOrNo result = service.shouldShowRentDetails(caseData);
+        YesOrNo result = service.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.YES);
     }
@@ -101,7 +100,7 @@ class RentDetailsRoutingServiceTest {
             )
             .build();
 
-        YesOrNo result = service.shouldShowRentDetails(caseData);
+        YesOrNo result = service.shouldShowRentSection(caseData);
 
         assertThat(result).isEqualTo(YesOrNo.YES);
     }
