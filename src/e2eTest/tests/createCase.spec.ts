@@ -360,7 +360,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeaderSecure);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary :[whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15]
@@ -1124,7 +1124,7 @@ test.describe('[Create Case - England] @regression', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeaderSecure);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
     await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.seriousRentArrears],
