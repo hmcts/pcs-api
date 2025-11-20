@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration.LookUpReferenceData;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.math.BigDecimal;
@@ -60,7 +61,7 @@ class FeesAndPayServiceTest {
     @Captor
     private ArgumentCaptor<CreateServiceRequestDTO> createServiceRequestCaptor;
 
-    private static final String FEE_TYPE = "caseIssueFee";
+    private static final String FEE_TYPE = FeeTypes.CASE_ISSUE_FEE;
 
     private LookUpReferenceData lookUpReferenceData;
     private FeeLookupResponseDto feeLookupResponseDto;
