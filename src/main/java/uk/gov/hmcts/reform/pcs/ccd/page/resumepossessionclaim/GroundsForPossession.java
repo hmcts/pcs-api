@@ -36,7 +36,7 @@ public class GroundsForPossession implements CcdPageConfiguration {
                     + "AND typeOfTenancyLicence!=\"OTHER\""
                     + " AND legislativeCountry=\"England\"")
             .label("groundsForPossession-lineSeparator", "---")
-            .mandatory(PCSCase::getGroundsForPossession)
+            .mandatory(PCSCase::getClaimDueToRentArrears)
             .label("groundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -45,7 +45,7 @@ public class GroundsForPossession implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         //resetting options
-        if (caseData.getGroundsForPossession() == YesOrNo.YES) {
+        if (caseData.getClaimDueToRentArrears() == YesOrNo.YES) {
             caseData.setNoRentArrearsMandatoryGroundsOptions(Set.of());
             caseData.setNoRentArrearsDiscretionaryGroundsOptions(Set.of());
         }
