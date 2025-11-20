@@ -73,5 +73,9 @@ def handleEnvironmentSetting() {
   env.DATA_STORE_URL_BASE = (params.ENVIRONMENT == 'preview')
     ? "https://ccd-data-store-api-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
     : "http://ccd-data-store-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
+    
+  env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
+    ? "pr"
+    : "chrome"
 }
 
