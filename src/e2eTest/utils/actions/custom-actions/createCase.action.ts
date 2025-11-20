@@ -12,7 +12,7 @@ import {createCase, addressDetails, housingPossessionClaim, defendantDetails, cl
 
 export let caseNumber: string;
 export let claimantsName: string;
-export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
+export let addressInfo: { buildingStreet: string; addressLine2: string; addressLine3: string, townCity: string; country: string; engOrWalPostcode: string };
 
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -96,13 +96,19 @@ export class CreateCaseAction implements IAction {
     );
     addressInfo = {
       buildingStreet: await page.getByLabel(addressDetails.buildingAndStreetTextLabel).inputValue(),
+      addressLine2: await page.getByLabel(addressDetails.addressLine2TextLabel).inputValue(),
+      addressLine3: await page.getByLabel(addressDetails.addressLine3TextLabel).inputValue(),
       townCity: await page.getByLabel(addressDetails.townOrCityTextLabel).inputValue(),
-      engOrWalPostcode: address.postcode
+      engOrWalPostcode: await page.getByLabel(addressDetails.postcodeTextLabel).inputValue(),
+      country: await page.getByLabel(addressDetails.countryTextLabel).inputValue(),
     };
     // Collect CYA data
     cyaData.propertyAddress = {
       buildingStreet: addressInfo.buildingStreet,
+      addressLine2: addressInfo.addressLine2,
+      addressLine3: addressInfo.addressLine3,
       townCity: addressInfo.townCity,
+      country: addressInfo.country,
       postcode: addressInfo.engOrWalPostcode
     };
     await performAction('clickButton', addressDetails.continueButton);
@@ -762,8 +768,11 @@ export class CreateCaseAction implements IAction {
     );
     addressInfo = {
       buildingStreet: await page.getByLabel(addressDetails.buildingAndStreetTextLabel).inputValue(),
+      addressLine2: await page.getByLabel(addressDetails.addressLine2TextLabel).inputValue(),
+      addressLine3: await page.getByLabel(addressDetails.addressLine3TextLabel).inputValue(),
       townCity: await page.getByLabel(addressDetails.townOrCityTextLabel).inputValue(),
-      engOrWalPostcode: address.postcode.toString(),
+      engOrWalPostcode: await page.getByLabel(addressDetails.postcodeTextLabel).inputValue(),
+      country: await page.getByLabel(addressDetails.countryTextLabel).inputValue(),
     };
     await performAction('clickButton', addressDetails.continueButton);
   }

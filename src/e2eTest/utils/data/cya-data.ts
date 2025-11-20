@@ -6,6 +6,8 @@ export interface CYAData {
   // Address Information
   propertyAddress?: {
     buildingStreet?: string;
+    addressLine2?: string;
+    addressLine3?: string;
     townCity?: string;
     postcode?: string;
     country?: string;
