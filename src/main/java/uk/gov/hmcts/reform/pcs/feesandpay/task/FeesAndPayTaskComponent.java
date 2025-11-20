@@ -59,6 +59,7 @@ public class FeesAndPayTaskComponent {
 
                 try {
                     FeeLookupResponseDto fee = feesAndPayService.getFee(taskData.getFeeType());
+                    log.error("YOUR FEE CODE IS " + fee.getCode());
                     log.debug("Successfully retrieved fee: type={}, code={}, amount={}",
                         taskData.getFeeType(), fee.getCode(), fee.getFeeAmount());
 
