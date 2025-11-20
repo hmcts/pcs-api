@@ -13,6 +13,26 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.MoneyOwedPage;
@@ -53,6 +73,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private final PropertyAccessDetailsPage propertyAccessDetailsPage;
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
+    private final SavingPageBuilderFactory savingPageBuilderFactory;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -67,7 +88,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     }
 
     private void configurePages(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
-        PageBuilder pageBuilder = new PageBuilder(eventBuilder);
+        PageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
         pageBuilder
             .add(new EnforcementApplicationPage())
             .add(new NameAndAddressForEvictionPage())
@@ -90,7 +111,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setFormattedPropertyAddress(addressFormatter
-                                                .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
+            .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
 
         if (pcsCase.getAllDefendants() != null && !pcsCase.getAllDefendants().isEmpty()) {
             pcsCase.setDefendant1(pcsCase.getAllDefendants().getFirst().getValue());

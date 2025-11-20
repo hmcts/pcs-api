@@ -37,7 +37,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .pageLabel("What are your additional grounds for possession?")
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
                            + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                           + " AND groundsForPossession=\"Yes\""
+                           + " AND claimDueToRentArrears=\"Yes\""
                            + " AND legislativeCountry=\"England\"")
             .readonly(PCSCase::getShowRentArrearsGroundReasonPage, NEVER_SHOW)
             .label("groundForPossessionAdditionalGrounds-info", """
@@ -67,7 +67,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         Set<RentArrearsMandatoryGrounds> mergedMandatory = new HashSet<>();
         Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new HashSet<>();
         Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
-        
+
         if (rentArrearsGrounds != null) {
             if (rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {
                 mergedMandatory.add(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
@@ -86,7 +86,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 caseData.getAssuredAdditionalMandatoryGrounds(),
                 Set.of()
             );
-        
+
         for (AssuredAdditionalMandatoryGrounds add : addMandatory) {
             mergedMandatory.add(RentArrearsMandatoryGrounds.valueOf(add.name()));
         }
@@ -96,7 +96,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 caseData.getAssuredAdditionalDiscretionaryGrounds(),
                 Set.of()
             );
-        
+
         for (AssuredAdditionalDiscretionaryGrounds add : addDiscretionary) {
             mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.valueOf(add.name()));
         }
