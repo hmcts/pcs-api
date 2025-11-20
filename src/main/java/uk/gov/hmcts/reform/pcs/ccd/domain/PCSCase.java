@@ -21,6 +21,7 @@ import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
@@ -59,29 +60,8 @@ public class PCSCase {
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
-    @CCD(
-        label = "Claimant Name",
-        access = {CitizenAccess.class}
-    )
-    @External
-    private String claimantName;
-
-    @CCD(
-        label = "Organisation Name"
-    )
-    @External
-    private String organisationName;
-
-    @CCD(
-        searchable = false,
-        access = {CitizenAccess.class}
-    )
-    private VerticalYesNo isClaimantNameCorrect;
-
-    @CCD(
-        access = {CitizenAccess.class}
-    )
-    private String overriddenClaimantName;
+    @JsonUnwrapped
+    private ClaimantInformationDetails claimantInformation;
 
     @CCD(
         label = "Property address",

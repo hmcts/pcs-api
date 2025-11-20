@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -94,6 +95,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -227,19 +229,21 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
-
         // Fetch organisation name from rd-professional API
         String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+        ClaimantInformationDetails claimantInfo = Optional.ofNullable(caseData.getClaimantInformation())
+            .orElse(ClaimantInformationDetails.builder().build());
+
         if (organisationName != null) {
-            caseData.setOrganisationName(organisationName);
+            claimantInfo.setOrganisationName(organisationName);
         } else {
             // Fallback to user details if organisation name cannot be retrieved
-            caseData.setOrganisationName(userEmail);
+            claimantInfo.setOrganisationName(userEmail);
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
         caseData.setClaimantContactEmail(userEmail);
-
+        caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {
             throw new IllegalStateException("Cannot resume claim without property address already set");
@@ -284,7 +288,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
 
-        scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
+        ClaimantInformationDetails claimantInfo = Optional.ofNullable(pcsCase.getClaimantInformation())
+            .orElse(ClaimantInformationDetails.builder().build());
+
+        scheduleCaseIssuedFeeTask(caseReference, claimantInfo.getOrganisationName());
 
         return SubmitResponse.defaultResponse();
     }
@@ -293,8 +300,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         UserInfo userDetails = securityContextService.getCurrentUserDetails();
         UUID userID = UUID.fromString(userDetails.getUid());
 
-        String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
-            ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
+        ClaimantInformationDetails claimantInfo = Optional.ofNullable(pcsCase.getClaimantInformation())
+            .orElse(ClaimantInformationDetails.builder().build());
+
+        String claimantName = isNotBlank(claimantInfo.getOverriddenClaimantName())
+            ? claimantInfo.getOverriddenClaimantName()
+            : claimantInfo.getClaimantName();
 
         AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
             ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();

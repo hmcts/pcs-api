@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -94,7 +93,8 @@ public class PcsCaseMergeService {
 
     private PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
         SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
-            .map(grounds -> modelMapper.map(grounds, SecureOrFlexibleReasonsForGrounds.class))
+            .map(grounds -> modelMapper
+                .map(grounds, SecureOrFlexibleReasonsForGrounds.class))
             .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
 
         return PossessionGrounds.builder()

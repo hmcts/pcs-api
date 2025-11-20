@@ -6,6 +6,8 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -24,9 +26,13 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .page("claimantInformation", this::midEvent)
             .pageLabel("Claimant name")
             .label("claimantInformation-separator", "---")
-            .readonlyWithLabel(PCSCase::getOrganisationName, "Your claimant name registered with My HMCTS is:")
-            .mandatoryWithLabel(PCSCase::getIsClaimantNameCorrect,"Is this the correct claimant name?")
-            .mandatory(PCSCase::getOverriddenClaimantName,
+            .complex(PCSCase::getClaimantInformation)
+            .readonlyWithLabel(
+                ClaimantInformationDetails::getOrganisationName,
+                "Your claimant name registered with My HMCTS is:")
+            .mandatoryWithLabel(ClaimantInformationDetails::getIsClaimantNameCorrect,
+                                "Is this the correct claimant name?")
+            .mandatory(ClaimantInformationDetails::getOverriddenClaimantName,
                     "isClaimantNameCorrect=\"NO\"",
                     null,
                     "What is the correct claimant name?",
@@ -48,9 +54,10 @@ public class ClaimantInformation implements CcdPageConfiguration {
 
     private void setClaimantNamePossessiveForm(CaseDetails<PCSCase, State> details) {
         PCSCase caseData = details.getData();
-        String claimantNamePossessiveForm = StringUtils.isNotEmpty(caseData.getOverriddenClaimantName())
-            ? caseData.getOverriddenClaimantName()
-            : caseData.getClaimantName();
+        String claimantNamePossessiveForm =
+            StringUtils.isNotEmpty(caseData.getClaimantInformation().getOverriddenClaimantName())
+            ? caseData.getClaimantInformation().getOverriddenClaimantName()
+            : caseData.getClaimantInformation().getClaimantName();
         caseData.getClaimantCircumstances().setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
     }
 

@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformationDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -25,7 +26,9 @@ class ClaimantInformationTest extends BasePageTest {
     void shouldHandleNullClaimantName() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .claimantName(null)
+            .claimantInformation(
+                ClaimantInformationDetails.builder().build()
+            )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
             .build();
 
@@ -44,9 +47,15 @@ class ClaimantInformationTest extends BasePageTest {
                                                           String overriddenOrganisationName,
                                                           String expectedDisplayedName) {
         // Given
-        PCSCase caseData = PCSCase.builder().claimantName(claimantName)
-            .overriddenClaimantName(overriddenOrganisationName)
-            .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
+        PCSCase caseData = PCSCase.builder()
+            .claimantInformation(
+                ClaimantInformationDetails.builder()
+                    .claimantName(claimantName)
+                    .overriddenClaimantName(overriddenOrganisationName)
+                    .build()
+            )
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
+            .build();
 
         // When
         callMidEventHandler(caseData);
@@ -64,9 +73,15 @@ class ClaimantInformationTest extends BasePageTest {
                                            String overriddenOrganisationName,
                                            String expectedDisplayedClaimantName) {
         // Given
-        PCSCase caseData = PCSCase.builder().claimantName(claimantName)
-            .overriddenClaimantName(overriddenOrganisationName)
-            .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
+        PCSCase caseData = PCSCase.builder()
+            .claimantInformation(
+                ClaimantInformationDetails.builder()
+                    .claimantName(claimantName)
+                    .overriddenClaimantName(overriddenOrganisationName)
+                    .build()
+            )
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
+            .build();
 
         // When
         callMidEventHandler(caseData);
