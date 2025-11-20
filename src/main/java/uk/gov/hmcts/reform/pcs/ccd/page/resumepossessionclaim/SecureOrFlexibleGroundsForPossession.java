@@ -44,6 +44,7 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGrounds)
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGroundsAlt)
             .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGroundsAlt)
+            .done()
             .label("secureOrFlexibleGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
