@@ -51,8 +51,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
     @Mock
     private final AddressFormatter addressFormatter = new AddressFormatter();
     @Mock
-    private DefendantService defendantService;
-    @Mock
     private ViolentAggressiveRiskPage violentAggressiveRiskPage;
     @Mock
     private VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
@@ -102,16 +100,10 @@ class EnforcementOrderEventTest extends BaseEventTest {
         String firstName = "Test";
         String lastName = "Testing";
         DefendantDetails defendantDetails = DefendantDetails.builder().firstName(firstName).lastName(lastName).build();
-        List<ListValue<DefendantDetails>> allDefendants = List.of(
-            ListValue.<DefendantDetails>builder().value(defendantDetails).build()
-        );
-        when(defendantService.buildDefendantListItems(allDefendants)).thenReturn(new ArrayList<>());
 
         PCSCase caseData = PCSCase.builder()
-            .allDefendants(allDefendants)
-            .propertyAddress(propertyAddress)
-            .enforcementOrder(EnforcementOrder.builder().build())
-            .build();
+            .allDefendants(List.of(ListValue.<DefendantDetails>builder().value(defendantDetails).build()))
+            .propertyAddress(propertyAddress).build();
 
         // When
         PCSCase result = callStartHandler(caseData);

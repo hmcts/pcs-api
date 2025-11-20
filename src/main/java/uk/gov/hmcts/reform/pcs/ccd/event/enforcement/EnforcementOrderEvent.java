@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcement;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -48,7 +47,6 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
-    private final DefendantService defendantService;
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
     private final ProtestorGroupRiskPage protestorGroupRiskPage;
@@ -77,9 +75,6 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         pageBuilder
                 .add(new EnforcementApplicationPage())
                 .add(new NameAndAddressForEvictionPage())
-                .add(new ChangeNameAddressPage())
-                .add(new PeopleWhoWillBeEvictedPage())
-                .add(new PeopleYouWantToEvictPage())
                 .add(new LivingInThePropertyPage())
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
@@ -108,26 +103,6 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
             pcsCase.setDefendant1(pcsCase.getAllDefendants().getFirst().getValue());
         }
         return pcsCase;
-    }
-
-    private void initializeDefendantData(PCSCase caseData) {
-        var allDefendants = caseData.getAllDefendants();
-        if (!CollectionUtils.isEmpty(allDefendants)) {
-            caseData.setDefendant1(allDefendants.getFirst().getValue());
-        }
-    }
-
-    void populateDefendantSelectionList(PCSCase caseData) {
-        EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
-        var allDefendants = caseData.getAllDefendants();
-        List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
-        
-        enforcementOrder.setSelectedDefendants(
-            DynamicMultiSelectStringList.builder()
-                .value(new ArrayList<>())
-                .listItems(listItems)
-                .build()
-        );
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
