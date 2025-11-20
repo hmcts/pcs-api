@@ -6,11 +6,11 @@ import {
   violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
   verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty,
   peopleWillBeEvicted,
-  youNeedPermission
+  youNeedPermission,
+  legalCosts
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
-
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
   townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
@@ -36,6 +36,7 @@ export class EnforcementAction implements IAction {
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
+      ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -53,7 +54,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performValidation('formLabelValue', nameAndAddressForEviction.subHeader, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
-    await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
+    await performAction('clickRadioButton', nameAndAddress.option);
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
   }
 
@@ -176,5 +177,15 @@ export class EnforcementAction implements IAction {
       await performAction('inputText', accessToProperty.label, accessToProperty.input);
     };
     await performAction('clickButton', accessToTheProperty.continueButton);
+  }
+
+  private async provideLegalCosts(legalCost: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: legalCost.question, option: legalCost.option });
+    if (legalCost.option === accessToTheProperty.yesRadioOption) {
+      await performAction('inputText', legalCost.label, legalCost.input);
+    };
+    await performAction('clickButton', legalCosts.continueButton);
   }
 }
