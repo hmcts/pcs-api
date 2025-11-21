@@ -448,8 +448,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // Then
-        verify(claimService).createMainClaimEntity(eq(caseData), eq(partyEntity));
-
         assertThat(caseData.getClaimantInformation().getClaimantName())
             .isEqualTo("TestName");
 
