@@ -36,7 +36,7 @@ class LegalCostsPageTest extends BasePageTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"100.50", "100.123", "100"})
+    @ValueSource(strings = {"100.50", "100.123", "100", "212.987"})
     void shouldReturnEmptyListWhenAmountOfLegalCostsIsValid(String amount) {
         // Given
         when(legalCosts.getAreLegalCostsToBeClaimed()).thenReturn(VerticalYesNo.YES);
