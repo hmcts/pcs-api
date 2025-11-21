@@ -74,7 +74,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - England] @PR', async () => {
-  test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
