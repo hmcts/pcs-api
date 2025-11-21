@@ -1,6 +1,6 @@
 export const submitCaseEventTokenApiData = {
   createCaseApiInstance: () => ({
-    baseURL: `https://ccd-data-store-api-pcs-api-pr-${process.env.CHANGE_ID}.preview.platform.hmcts.net`,
+    baseURL: process.env.DATA_STORE_URL_BASE,
     headers: {
       Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
       ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}`,

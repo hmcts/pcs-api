@@ -14,13 +14,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
@@ -32,12 +39,27 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
     @Mock
     private Clock ukClock;
 
+    @Mock
+    private TextAreaValidationService textAreaValidationService;
+
     @BeforeEach
     void setUp() {
         lenient().when(ukClock.instant()).thenReturn(FIXED_CURRENT_DATE.atTime(10, 20).atZone(UK_ZONE_ID).toInstant());
         lenient().when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
-        setPageUnderTest(new OccupationLicenceDetailsWalesPage(ukClock));
+        // Configure TextAreaValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateSingleTextArea(any(), any(), anyInt());
+        doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errors(errors.isEmpty() ? null : errors)
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
+
+        setPageUnderTest(new OccupationLicenceDetailsWalesPage(ukClock, textAreaValidationService));
     }
 
     @Test
