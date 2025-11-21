@@ -1,6 +1,6 @@
 export const createCaseEventTokenApiData = {
   createCaseApiInstance: () => ({
-    baseURL: `https://ccd-data-store-api-pcs-api-pr-${process.env.CHANGE_ID}.preview.platform.hmcts.net`,
+    baseURL: process.env.DATA_STORE_URL_BASE,
     headers: {
       Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
       ServiceAuthorization: `Bearer ${process.env.SERVICE_AUTH_TOKEN}`,
@@ -9,5 +9,5 @@ export const createCaseEventTokenApiData = {
       'Accept': '*/*',
     }
   }),
-  createCaseEventTokenApiEndPoint: `/case-types/PCS-${process.env.CHANGE_ID}/event-triggers/createPossessionClaim`,
+  createCaseEventTokenApiEndPoint: `/case-types/PCS${process.env.CHANGE_ID ? '-' + process.env.CHANGE_ID : ''}/event-triggers/createPossessionClaim`,
 }
