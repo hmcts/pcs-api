@@ -43,7 +43,7 @@ test.beforeEach(async ({ page }) => {
   await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
 });
 
-test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
+test.describe('[Enforcements - Warrant of Possession] @regression', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
