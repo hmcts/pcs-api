@@ -5,6 +5,8 @@ import { CollectedQAPair } from '@utils/data/cya-types';
  * Base validation logic shared between Address and Final CYA validations
  */
 export abstract class CYAValidationBase {
+  private static validationInProgress = false;
+  
   /**
    * Common validation logic for both Address and Final CYA
    */
@@ -13,6 +15,14 @@ export abstract class CYAValidationBase {
     qaPairs: CollectedQAPair[],
     errorPrefix: string
   ): Promise<void> {
+    // Prevent duplicate execution
+    if (CYAValidationBase.validationInProgress) {
+      console.log(`⚠️  Validation already in progress, skipping duplicate call`);
+      return;
+    }
+    
+    CYAValidationBase.validationInProgress = true;
+    try {
     // Wait for page to load with timeout
     await Promise.race([
       page.waitForLoadState('networkidle'),
@@ -55,6 +65,7 @@ export abstract class CYAValidationBase {
       }
 
       console.log(`\n🔎 [${i + 1}/${qaPairs.length}] Validating:`);
+      console.log(`   Step: "${qaPair.step || 'N/A'}"`);
       console.log(`   Collected Question: "${qaPair.question}"`);
       console.log(`   Collected Answer:   "${qaPair.answer}"`);
 
@@ -72,6 +83,7 @@ export abstract class CYAValidationBase {
         const similarQuestions = allPageQuestions
           .map(q => ({
             question: q.question,
+            answer: q.answer,
             similarity: this.calculateSimilarity(q.question.toLowerCase(), qaPair.question.toLowerCase())
           }))
           .filter(q => q.similarity > 0.3)
@@ -81,7 +93,7 @@ export abstract class CYAValidationBase {
         if (similarQuestions.length > 0) {
           console.log(`   💡 Similar questions found on page:`);
           similarQuestions.forEach(sq => {
-            console.log(`      - "${sq.question}" (similarity: ${(sq.similarity * 100).toFixed(0)}%)`);
+            console.log(`      - "${sq.question}" → "${sq.answer}" (similarity: ${(sq.similarity * 100).toFixed(0)}%)`);
           });
         } else {
           console.log(`   ⚠️  No similar questions found. This question might not appear on CYA page.`);
@@ -93,14 +105,20 @@ export abstract class CYAValidationBase {
 
       console.log(`   ✅ Question FOUND on CYA page: "${found.question}"`);
       console.log(`   📄 Page Answer: "${found.answer}"`);
+      console.log(`   🔍 Comparing: Collected "${qaPair.answer}" vs Page "${found.answer}"`);
 
       const collected = qaPair.answer.trim().toLowerCase();
       const pageAnswer = found.answer.trim().toLowerCase();
 
       if (collected !== pageAnswer && !pageAnswer.includes(collected) && !collected.includes(pageAnswer)) {
         console.log(`   ❌ MISMATCH DETECTED`);
-        console.log(`      Expected: "${qaPair.answer}"`);
-        console.log(`      Found:    "${found.answer}"`);
+        console.log(`      Expected (from collected data): "${qaPair.answer}"`);
+        console.log(`      Found (on CYA page):            "${found.answer}"`);
+        console.log(`      Step where collected:           "${qaPair.step || 'N/A'}"`);
+        console.log(`      ⚠️  NOTE: This mismatch could indicate:`);
+        console.log(`         - Question matching found wrong question on page`);
+        console.log(`         - Value wasn't saved correctly (validation failed, mandatory field missing, etc.)`);
+        console.log(`         - Page is showing different value than what was selected`);
         errors.push(`Mismatch for "${found.question}": Expected "${qaPair.answer}", Found "${found.answer}"`);
       } else {
         console.log(`   ✅ MATCH - Answers match!`);
@@ -118,6 +136,9 @@ export abstract class CYAValidationBase {
       console.log(`   All ${qaPairs.length} Q&A pairs matched successfully!`);
       console.log(`${'='.repeat(80)}\n`);
     }
+    } finally {
+      CYAValidationBase.validationInProgress = false;
+    }
   }
 
   /**
@@ -130,8 +151,8 @@ export abstract class CYAValidationBase {
   }>;
 
   /**
-   * Match question text (case-insensitive, partial match)
-   * Improved to handle similar questions like "Address Line 2" vs "Address Line 3"
+   * Match question text - STRICT matching to avoid false positives
+   * Only matches if questions are exact or very close (handles minor punctuation/whitespace differences)
    */
   protected match(pageQuestion: string, collectedQuestion: string): boolean {
     const p = pageQuestion.toLowerCase().trim();
@@ -140,36 +161,75 @@ export abstract class CYAValidationBase {
     // Exact match
     if (p === c) return true;
     
+    // Remove common punctuation and normalize whitespace
+    const pClean = p.replace(/[.,!?;:()'"]/g, '').replace(/\s+/g, ' ').trim();
+    const cClean = c.replace(/[.,!?;:()'"]/g, '').replace(/\s+/g, ' ').trim();
+    
+    // Exact match after cleaning
+    if (pClean === cClean) return true;
+    
     // For questions with numbers (like "Address Line 2" vs "Address Line 3"), require exact number match
-    const pHasNumber = /\d+/.test(p);
-    const cHasNumber = /\d+/.test(c);
+    const pHasNumber = /\d+/.test(pClean);
+    const cHasNumber = /\d+/.test(cClean);
     if (pHasNumber || cHasNumber) {
       // Extract numbers and compare
-      const pNumber = p.match(/\d+/)?.[0];
-      const cNumber = c.match(/\d+/)?.[0];
+      const pNumber = pClean.match(/\d+/)?.[0];
+      const cNumber = cClean.match(/\d+/)?.[0];
       if (pNumber && cNumber && pNumber !== cNumber) {
         return false; // Different numbers, don't match
       }
-      // If numbers match, continue with other checks
     }
     
-    // One contains the other (but only if no number mismatch)
-    if (p.includes(c) || c.includes(p)) return true;
+    // Split into words (filter out very short words like "a", "an", "the", "is", "are", etc.)
+    const stopWords = new Set(['a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'about', 'any', 'you', 'your', 'there', 'this', 'that', 'these', 'those']);
+    const pWords = pClean.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+    const cWords = cClean.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
     
-    // Remove common punctuation and compare
-    const pClean = p.replace(/[.,!?;:()]/g, '').replace(/\s+/g, ' ');
-    const cClean = c.replace(/[.,!?;:()]/g, '').replace(/\s+/g, ' ');
-    if (pClean === cClean || pClean.includes(cClean) || cClean.includes(pClean)) return true;
+    // If one question is significantly longer/shorter, require very high overlap
+    const lengthDiff = Math.abs(pClean.length - cClean.length);
+    const avgLength = (pClean.length + cClean.length) / 2;
+    const lengthRatio = lengthDiff / avgLength;
     
-    // Check if key words match (at least 3 words in common, but all important words must match)
-    const pWords = pClean.split(/\s+/).filter(w => w.length > 2);
-    const cWords = cClean.split(/\s+/).filter(w => w.length > 2);
+    // If questions differ significantly in length (>25% difference), require exact word match
+    if (lengthRatio > 0.25) {
+      // Require that all significant words from the shorter question appear in the longer one
+      const shorterWords = pWords.length < cWords.length ? pWords : cWords;
+      const longerWords = pWords.length >= cWords.length ? pWords : cWords;
+      const allWordsMatch = shorterWords.every(w => longerWords.includes(w));
+      if (!allWordsMatch) return false;
+      
+      // Also require that word count is similar (within 2 words)
+      if (Math.abs(pWords.length - cWords.length) > 2) return false;
+    }
+    
+    // Calculate word overlap
     const commonWords = pWords.filter(w => cWords.includes(w));
-    const allImportantWordsMatch = pWords.length === cWords.length && commonWords.length === pWords.length;
-    if (allImportantWordsMatch) return true;
+    const uniqueWords = new Set([...pWords, ...cWords]);
+    const overlapRatio = commonWords.length / uniqueWords.size;
     
-    // Fallback: at least 3 words in common
-    if (commonWords.length >= Math.min(3, Math.min(pWords.length, cWords.length))) return true;
+    // Require high overlap (at least 85%) AND most words must match
+    const minWords = Math.min(pWords.length, cWords.length);
+    const wordMatchRatio = minWords > 0 ? commonWords.length / minWords : 0;
+    
+    // Only match if:
+    // 1. At least 85% word overlap, AND
+    // 2. At least 80% of words from shorter question match, AND
+    // 3. Word count is similar (within 3 words)
+    if (overlapRatio >= 0.85 && wordMatchRatio >= 0.80 && Math.abs(pWords.length - cWords.length) <= 3) {
+      return true;
+    }
+    
+    // Very strict fallback: one question must contain the other (after removing stop words)
+    // This handles cases like "Property address" matching "Property address" in a longer sentence
+    const pSignificant = pWords.join(' ');
+    const cSignificant = cWords.join(' ');
+    if (pSignificant === cSignificant) return true;
+    if (pSignificant.includes(cSignificant) || cSignificant.includes(pSignificant)) {
+      // But only if the length difference is small (within 20%)
+      const sigLengthDiff = Math.abs(pSignificant.length - cSignificant.length);
+      const sigAvgLength = (pSignificant.length + cSignificant.length) / 2;
+      if (sigLengthDiff / sigAvgLength <= 0.2) return true;
+    }
     
     return false;
   }

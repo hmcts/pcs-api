@@ -202,7 +202,6 @@ test.describe('[Create Case - With resume claim options]', async () => {
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
-    await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',

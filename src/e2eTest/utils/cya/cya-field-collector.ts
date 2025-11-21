@@ -48,8 +48,7 @@ export async function collectCYAAddressData(actionName: string, question: string
   cyaAddressData.collectedQAPairs.push({
     step: actionName,
     question: questionTrimmed,
-    answer: answerTrimmed,
-    timestamp: new Date().toISOString()
+    answer: answerTrimmed
   });
 
   console.log(`🏠 [Address CYA] Collected Q&A Pair:`, {
@@ -95,8 +94,7 @@ export async function collectCYAData(actionName: string, question: string | numb
   cyaData.collectedQAPairs.push({
     step: actionName,
     question: questionTrimmed,
-    answer: answerTrimmed,
-    timestamp: new Date().toISOString()
+    answer: answerTrimmed
   });
 
   console.log(`📝 [Final CYA] Collected Q&A Pair:`, {
