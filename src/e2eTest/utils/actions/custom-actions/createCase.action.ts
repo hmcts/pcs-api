@@ -63,7 +63,7 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
-      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)]
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(page, fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -754,7 +754,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
     }
 
-  private async selectStatementOfTruth(claimantDetails: actionRecord) {
+  private async selectStatementOfTruth(page: Page, claimantDetails: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -776,6 +776,10 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
     await performAction('clickButton', statementOfTruth.continueButton);
+    await page.screenshot({
+      path: 'screenshots/example-${Date.now()}.png',
+      fullPage: true
+    });
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
