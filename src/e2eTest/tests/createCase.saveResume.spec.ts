@@ -246,7 +246,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.gfpMainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],

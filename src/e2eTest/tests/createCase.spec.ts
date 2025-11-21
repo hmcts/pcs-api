@@ -248,7 +248,7 @@ test.describe('[Create Case - England] @regression', async () => {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.additionalGroundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet]
     });
@@ -371,7 +371,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.gfpMainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary :[whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15]
@@ -1015,7 +1015,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy
     });
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.gfpMainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
@@ -1145,7 +1145,7 @@ test.describe('[Create Case - England] @regression', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.gfpMainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.seriousRentArrears],
