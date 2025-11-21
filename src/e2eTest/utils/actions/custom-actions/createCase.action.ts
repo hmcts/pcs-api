@@ -921,7 +921,7 @@ export class CreateCaseAction implements IAction {
     }
     await performAction('clickButton', statementOfTruth.continueButton);
     await page.waitForTimeout(3000);
-    const buffer = await page.screenshot({
+    await page.screenshot({
       path: `screenshots/example-${Date.now()}.png`,
       fullPage: true
     });
