@@ -34,7 +34,8 @@ test.beforeEach(async ({ page }) => {
   initializeEnforcementExecutor(page);
   await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
   await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
+  await performAction('navigateToUrl'
+    , `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
