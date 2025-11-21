@@ -22,9 +22,10 @@ class ClaimantInformationTest extends BasePageTest {
     }
 
     @Test
-    void shouldHandleNullClaimantName() {
+    void shouldHandleNullOrganisationNameAndNullClaimantName() {
         // Given
         PCSCase caseData = PCSCase.builder()
+            .organisationName(null)
             .claimantName(null)
             .claimantCircumstances(ClaimantCircumstances.builder().build())
             .build();
@@ -36,15 +37,49 @@ class ClaimantInformationTest extends BasePageTest {
         assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm()).isNull();
     }
 
+    @Test
+    void shouldFallbackToClaimantNameWhenOrganisationNameIsNull() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .organisationName(null)
+            .claimantName("Claimant Name")
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
+            .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
+            .isEqualTo("Claimant Name's");
+    }
+
+    @Test
+    void shouldFallbackToClaimantNameWhenOrganisationNameIsEmpty() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .organisationName("")
+            .claimantName("Claimant Name")
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
+            .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
+            .isEqualTo("Claimant Name's");
+    }
+
     @ParameterizedTest
     @MethodSource("claimantNamesEndingWithSTestData")
-    @DisplayName("Should append apostrophe to claimant names ending with 's' or 'S': {0}")
-    void shouldAppendApostropheToClaimantNamesEndingWithS(@SuppressWarnings("unused") String testDescription,
-                                                          String claimantName,
+    @DisplayName("Should append apostrophe to organisation names ending with 's' or 'S': {0}")
+    void shouldAppendApostropheToOrganisationNamesEndingWithS(@SuppressWarnings("unused") String testDescription,
+                                                          String organisationName,
                                                           String overriddenOrganisationName,
                                                           String expectedDisplayedName) {
         // Given
-        PCSCase caseData = PCSCase.builder().claimantName(claimantName)
+        PCSCase caseData = PCSCase.builder().organisationName(organisationName)
             .overriddenClaimantName(overriddenOrganisationName)
             .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
 
@@ -59,12 +94,12 @@ class ClaimantInformationTest extends BasePageTest {
     @ParameterizedTest
     @MethodSource("claimantNameTestData")
     @DisplayName("{0}")
-    void shouldHandleDisplayedClaimantName(@SuppressWarnings("unused") String testDescription,
-                                           String claimantName,
+    void shouldHandleDisplayedOrganisationName(@SuppressWarnings("unused") String testDescription,
+                                           String organisationName,
                                            String overriddenOrganisationName,
                                            String expectedDisplayedClaimantName) {
         // Given
-        PCSCase caseData = PCSCase.builder().claimantName(claimantName)
+        PCSCase caseData = PCSCase.builder().organisationName(organisationName)
             .overriddenClaimantName(overriddenOrganisationName)
             .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
 
@@ -78,39 +113,39 @@ class ClaimantInformationTest extends BasePageTest {
 
     private static Stream<Arguments> claimantNameTestData() {
         return Stream.of(
-            testData("should set displayed claimant name from overridden claimant name",
-                     "Claimant Name", "Overridden Claimant Name"),
-            testData("should set displayed claimant name from claimant name when no override",
-                     "Claimant Name", null),
+            testData("should set displayed organisation name from overridden claimant name",
+                     "Organisation Name", "Overridden Organisation Name"),
+            testData("should set displayed organisation name from organisation name when no override",
+                     "Organisation Name", null),
             testData("should handle name with leading and trailing spaces",
-                     " Claimant Name ", null),
+                     " Organisation Name ", null),
             testData("should handle empty overridden claimant name",
-                     "Claimant Name", "")
+                     "Organisation Name", "")
         );
     }
 
     private static Stream<Arguments> claimantNamesEndingWithSTestData() {
         return Stream.of(
-            testCase("should handle claimant name with special characters",
+            testCase("should handle organisation name with special characters",
                      "O'Brien & Associates", null),
             testCase("should handle single character S", "S", null),
-            testCase("should handle uppercase S", "CLAIMANT NAMES", null),
-            testCase("should set displayed claimant name from claimant name ends with S",
-                     "Claimant Names", null),
-            testCase("should set displayed claimant name from overridden claimant name ends with S",
-                     "Claimant Name", "Overridden Claimant Names")
+            testCase("should handle uppercase S", "ORGANISATION NAMES", null),
+            testCase("should set displayed organisation name from organisation name ends with S",
+                     "Organisation Names", null),
+            testCase("should set displayed organisation name from overridden claimant name ends with S",
+                     "Organisation Name", "Overridden Organisation Names")
         );
     }
 
-    private static Arguments testCase(String description, String claimantName, String overriddenName) {
-        String nameToUse = overriddenName != null ? overriddenName : claimantName;
-        return Arguments.of(description, claimantName, overriddenName, nameToUse + "'");
+    private static Arguments testCase(String description, String organisationName, String overriddenName) {
+        String nameToUse = overriddenName != null ? overriddenName : organisationName;
+        return Arguments.of(description, organisationName, overriddenName, nameToUse + "'");
     }
 
-    private static Arguments testData(String description, String claimantName, String overriddenName) {
-        String nameToUse = (overriddenName != null && !overriddenName.isEmpty()) ? overriddenName : claimantName;
+    private static Arguments testData(String description, String organisationName, String overriddenName) {
+        String nameToUse = (overriddenName != null && !overriddenName.isEmpty()) ? overriddenName : organisationName;
         String expectedResult = nameToUse == null ? null : nameToUse + "'s";
-        return Arguments.of(description, claimantName, overriddenName, expectedResult);
+        return Arguments.of(description, organisationName, overriddenName, expectedResult);
     }
 
 }
