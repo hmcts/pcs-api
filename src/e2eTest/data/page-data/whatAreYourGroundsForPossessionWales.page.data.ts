@@ -28,5 +28,7 @@ export const whatAreYourGroundsForPossessionWales = {
       jointContractHolders: 'Joint contract-holders (ground H)',
       otherEstateManagementReasons: 'Other estate management reasons (ground I)',
     },
-  continue: 'Continue'
+  continue: 'Continue',
+  moreInfoLink: 'More information about possession grounds (opens in new tab)',
+  understandingThePossessionMainHeader: 'Understanding the possession action process: guidance for tenants (contract holders)'
 };
