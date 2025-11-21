@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.mapper;
 
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.payments.client.models.CasePaymentRequestDto;
 import uk.gov.hmcts.reform.payments.client.models.FeeDto;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 
 @Component
 public class PaymentRequestMapper {
@@ -13,19 +13,19 @@ public class PaymentRequestMapper {
     /**
      * Maps a Fees API response into a Payments API FeeDto, adding the requested volume.
      *
-     * @param fee the fee returned by the Fees API
+     * @param feeDetails the fee details
      * @param volume the quantity to apply
      * @return a FeeDto suitable for Payments API requests
      */
-    public FeeDto toFeeDto(FeeLookupResponseDto fee, int volume) {
-        if (fee == null) {
-            throw new IllegalArgumentException("fee must not be null");
+    public FeeDto toFeeDto(FeeDetails feeDetails, int volume) {
+        if (feeDetails == null) {
+            throw new IllegalArgumentException("fee details must not be null");
         }
 
         return FeeDto.builder()
-            .code(fee.getCode())
-            .calculatedAmount(fee.getFeeAmount())
-            .version(String.valueOf(fee.getVersion()))
+            .code(feeDetails.getCode())
+            .calculatedAmount(feeDetails.getFeeAmount())
+            .version(String.valueOf(feeDetails.getVersion()))
             .volume(volume)
             .build();
     }
