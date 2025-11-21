@@ -112,8 +112,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+      year: tenancyLicenceDetails.year
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
@@ -282,7 +281,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'
+      day: '16', month: '07', year: '1985'
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
