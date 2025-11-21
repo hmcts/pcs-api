@@ -126,7 +126,7 @@ notify:
 
 role-assignment:
   url: ${DATA_STORE_URL_BASE}
-  role-id: PCS-HA-USER
+  role-id: CLAIMANT
 
 core_case_data:
     api:
