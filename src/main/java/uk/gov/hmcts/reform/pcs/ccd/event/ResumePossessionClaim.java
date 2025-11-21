@@ -320,7 +320,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         );
     }
 
-    private ClaimantInformation getClaimantInfo(PCSCase caseData){
+    private ClaimantInformation getClaimantInfo(PCSCase caseData) {
         return Optional.ofNullable(caseData.getClaimantInformation())
             .orElse(ClaimantInformation.builder().build());
     }

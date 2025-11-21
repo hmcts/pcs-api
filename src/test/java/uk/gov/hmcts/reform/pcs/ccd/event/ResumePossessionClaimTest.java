@@ -424,15 +424,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldGetClaimantInformation() {
 
-        PCSCase caseData = PCSCase.builder()
-            .claimantInformation(
-                ClaimantInformation.builder()
-                    .claimantName("TestName")
-                    .organisationName("Org Ltd")
-                    .build()
-            )
-            .build();
-
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
@@ -443,6 +434,15 @@ class ResumePossessionClaimTest extends BaseEventTest {
         ClaimEntity claimEntity = ClaimEntity.builder().build();
         when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class)))
             .thenReturn(claimEntity);
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .claimantName("TestName")
+                    .organisationName("Org Ltd")
+                    .build()
+            )
+            .build();
 
         // When
         callSubmitHandler(caseData);
