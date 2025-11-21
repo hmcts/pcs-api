@@ -122,11 +122,15 @@ notify:
   check-status:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
     task-delay-seconds: ${NOTIFY_CHECK_STATUS_DELAY_SECONDS:60s}
-    backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+    backoff-delay-seconds: ${NOTIFY_CHEC K_STATUS_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
   url: ${DATA_STORE_URL_BASE}
   role-id: PCS-HA-USER
+
+core_case_data:
+    api:
+        url: https://ccd-data-store-api-pcs-api-pr-980.preview.platform.hmcts.net
 
 testing-support:
   enabled: ${ENABLE_TESTING_SUPPORT:true}
