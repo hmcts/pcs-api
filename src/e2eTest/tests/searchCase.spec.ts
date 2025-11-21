@@ -8,7 +8,6 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { user } from '@data/user-data';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { signInOrCreateAnAccount } from '@data/page-data';
-import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -25,7 +24,7 @@ test.beforeEach(async ({page}) => {
   });
 });
 
-test.describe('[Search Case] @PR @Master @nightly', () => {
+test.describe('[Search Case] @regression', () => {
   test.skip('Search for case via case list', async ({}) => {
     await performAction('filterCaseFromCaseList', caseInfo.state);
     await performValidation('text', {
@@ -34,7 +33,7 @@ test.describe('[Search Case] @PR @Master @nightly', () => {
     });
   });
 
-  test('Search for case via find case', async ({}) => {
+  test('Search for case via find case @PR' , async ({}) => {
     await performAction('searchCaseFromFindCase', caseInfo.fid);
     await performValidation('text', {
       "text": 'Case number: '+caseInfo.fid,
