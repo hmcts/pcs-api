@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
@@ -54,6 +55,12 @@ public class RoleAssignmentService {
                 .caseAssignmentUserRolesWithOrganisation(userList)
                 .build();
 
-        caseAssignmentApi.addCaseUserRoles(userAuthorisation, s2sToken, caseAssignmentUserRolesRequest);
+        CaseAssignmentUserRolesResponse respone =
+            caseAssignmentApi.addCaseUserRoles(userAuthorisation, s2sToken, caseAssignmentUserRolesRequest);
+
+        log.error("Add Case User Roles Response: ");
+        log.error(respone.getStatusMessage());
+        log.error(respone.toString());
+
     }
 }
