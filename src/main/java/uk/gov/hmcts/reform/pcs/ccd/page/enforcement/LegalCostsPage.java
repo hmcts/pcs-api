@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,7 +102,7 @@ public class LegalCostsPage implements CcdPageConfiguration {
             return false;
         }
         try {
-            BigDecimal amount = new BigDecimal(amountOfLegalCosts).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal amount = new BigDecimal(amountOfLegalCosts);
             return amount.compareTo(BigDecimal.ZERO) > 0;
         } catch (NumberFormatException e) {
             return false;
