@@ -43,7 +43,7 @@ public class RoleAssignmentService {
                 .organisationId(orgId)
                 .caseDataId(caseReference)
                 .userId(userId.toString())
-                .caseRole(caseRole)
+                .caseRole("[" + caseRole + "]")
                 .build();
 
         ArrayList<CaseAssignmentUserRoleWithOrganisation> userList = new ArrayList<>();
