@@ -1,5 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {Page} from '@playwright/test';
+import {Page, test} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement,
         tenancyLicenceDetails, resumeClaimOptions, rentDetails, dailyRentAmount, reasonsForPossession, detailsOfRentArrears, claimantType, claimType,
@@ -8,6 +8,7 @@ import {createCase, addressDetails, housingPossessionClaim, defendantDetails, cl
         claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder,
         uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible, whatAreYourGroundsForPossessionWales,
         underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from '@data/page-data';
+import {allure} from "allure-playwright";
 
 export let caseNumber: string;
 export let claimantsName: string;
@@ -63,7 +64,7 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
-      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)]
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(page, fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -754,7 +755,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
     }
 
-  private async selectStatementOfTruth(claimantDetails: actionRecord) {
+  private async selectStatementOfTruth(page: Page, claimantDetails: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -776,6 +777,15 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
     await performAction('clickButton', statementOfTruth.continueButton);
+    const buffer = await page.screenshot({
+      path: `screenshots/example-${Date.now()}.png`,
+      fullPage: true
+    });
+
+    await test.info().attach(`Screenshot-${Date.now()}`, {
+      body: buffer,
+      contentType: 'image/png'
+    });
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
