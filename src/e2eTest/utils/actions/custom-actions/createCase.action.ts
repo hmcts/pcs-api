@@ -405,10 +405,7 @@ export class CreateCaseAction implements IAction {
         ['inputText', tenancyLicenceDetails.yearLabel, tenancyData.year]);
     }
     if (tenancyData.files) {
-      for (const file of tenancyData.files as Array<string>) {
-        await performAction('clickButton', tenancyLicenceDetails.addNew);
-        await performAction('uploadFile', file);
-      }
+        await performAction('uploadFile', tenancyData.files);
     }
     // Collect CYA data
     await collectCYAData('selectTenancyOrLicenceDetails', 'What type of tenancy or licence is in place?', tenancyData.tenancyOrLicenceType);
