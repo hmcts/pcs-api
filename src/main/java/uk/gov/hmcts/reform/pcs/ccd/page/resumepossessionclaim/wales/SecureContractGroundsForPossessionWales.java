@@ -15,16 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroun
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 @Component
 public class SecureContractGroundsForPossessionWales implements CcdPageConfiguration {
-
-    private final WalesRentDetailsRoutingService walesRentDetailsRoutingService;
-
-    public SecureContractGroundsForPossessionWales(WalesRentDetailsRoutingService walesRentDetailsRoutingService) {
-        this.walesRentDetailsRoutingService = walesRentDetailsRoutingService;
-    }
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -37,18 +30,13 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                 )
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
                ---
-               <p class="govuk-body" tabindex="0">
-                  You may have already given the defendants notice of your intention to begin possession proceedings.
-                  If you have, you should have written the grounds you're making your claim under. You should select
-                  these grounds here and any extra ground you'd like to add to your claim, if you need to.
+               <p>You may have already given the defendants notice of your intention to begin possession
+               proceedings. If you have, you should have written the grounds you're making your claim under.
+               You should select these grounds here and any extra ground you'd like to add to your claim,
+               if you need to.</p>
+               <p class="govuk-body">
+                 <a href="https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
                </p>
-
-               <p class="govuk-body" tabindex="0">
-                  <a class="govuk-link govuk-!-margin-bottom-3" href="#"  rel="noreferrer noopener" 
-                  target="_blank" aria-label="More information about possession grounds (opens in new tab)">
-                        More information about possession grounds (opens in new tab)</a>.
-                </p>
-
                """)
                 .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
                 .optional(PCSCase::getSecureContractEstateManagementGroundsWales,
@@ -81,9 +69,6 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                     .errors(List.of("Please select at least one ground"))
                     .build();
         }
-
-        // Rent details routing (from HEAD - using routing service)
-        caseData.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(caseData));
 
         // ASB/Reasons routing (from master - conditional logic)
         boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();

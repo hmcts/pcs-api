@@ -87,6 +87,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
@@ -147,9 +148,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final CheckingNotice checkingNotice;
+    private final WalesCheckingNotice walesCheckingNotice;
+    private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
-
-    private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -162,7 +164,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
 
-        savingPageBuilderFactory.create(eventBuilder)
+        savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim)
             .add(resumeClaim)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
@@ -179,7 +181,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(groundsForPossessionWales)
             .add(secureContractGroundsForPossessionWales)
             .add(reasonsForPosessionWales)
-            .add(new ASBQuestionsWales())
+            .add(asbQuestionsWales)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
             .add(secureOrFlexibleGroundsForPossessionReasons)
@@ -193,8 +195,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
             .add(mediationAndSettlement)
-            .add(new CheckingNotice())
-            .add(new WalesCheckingNotice())
+            .add(checkingNotice)
+            .add(walesCheckingNotice)
             .add(noticeDetails)
             .add(new RentDetails())
             .add(new DailyRentAmount())
@@ -222,6 +224,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new LanguageUsed())
             .add(new CompletingYourClaim())
             .add(new StatementOfTruth());
+
 
     }
 
@@ -286,7 +289,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         pcsCaseService.save(pcsCaseEntity);
 
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
         ClaimantInformationDetails claimantInfo = Optional.ofNullable(pcsCase.getClaimantInformation())
             .orElse(ClaimantInformationDetails.builder().build());
@@ -327,7 +330,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String taskId = UUID.randomUUID().toString();
 
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeType(CASE_ISSUED_FEE_TYPE)
+            .feeType(FeeTypes.CASE_ISSUE_FEE)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(caseReference))
             .responsibleParty(responsibleParty)

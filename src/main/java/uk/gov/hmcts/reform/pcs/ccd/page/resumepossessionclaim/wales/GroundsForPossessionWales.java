@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -12,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +18,8 @@ import java.util.Set;
 
 @Component
 @Slf4j
-@RequiredArgsConstructor
 public class GroundsForPossessionWales
     implements CcdPageConfiguration {
-
-    private final WalesRentDetailsRoutingService walesRentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -37,16 +32,13 @@ public class GroundsForPossessionWales
                 "groundsForPossessionWales-info",
                 """
                   ---
-                  <p class="govuk-body" tabindex="0">
-                  You may have already given the defendants notice of your intention to begin possession proceedings.
-                  If you have, you should have written the grounds you’re making your claim under. You should select
-                  these grounds here and select any extra grounds you’d like to add to your claim, if you need to.
-                </p>
-                   <p class="govuk-body" tabindex="0">
-                      <a class="govuk-link govuk-!-margin-bottom-3" href="https://www.gov.uk/"  rel="noreferrer noopener"\s
-                       target="_blank" aria-label="More information about possession grounds (opens in new tab)">
-                       More information about possession grounds (opens in new tab)</a>.
-                   </p>
+                  <p>You may have already given the defendants notice of your intention to begin possession
+                  proceedings. If you have, you should have written the grounds you're making your claim under.
+                  You should select these grounds here and select any extra grounds you'd like to add to your claim,
+                  if you need to.</p>
+                  <p class="govuk-body">
+                    <a href="https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
+                  </p>
                 """
             )
             .optional(PCSCase::getDiscretionaryGroundsWales)
@@ -95,9 +87,6 @@ public class GroundsForPossessionWales
                 .errors(errors)
                 .build();
         }
-
-        // Rent details routing (from HEAD - using routing service)
-        data.setShowRentDetailsPage(walesRentDetailsRoutingService.shouldShowRentDetails(data));
 
         // ASB/Reasons routing (from master)
         boolean hasRentArrears = hasDiscretionary 
