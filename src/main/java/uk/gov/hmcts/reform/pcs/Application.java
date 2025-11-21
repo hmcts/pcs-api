@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.api.IdamTokenApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
-import uk.gov.hmcts.reform.pcs.roleassignment.RoleAssignmentApi;
 
 @SpringBootApplication(
     scanBasePackages = {
@@ -28,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.roleassignment.RoleAssignmentApi;
         IdamApi.class,
         IdamTokenApi.class,
         RdProfessionalApi.class,
-        RoleAssignmentApi.class
     }
 )
 @EnableJms
