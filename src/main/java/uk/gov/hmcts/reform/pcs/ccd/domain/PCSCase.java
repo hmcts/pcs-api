@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
@@ -190,7 +191,7 @@ public class PCSCase {
         label = "Are you claiming possession because of rent arrears?",
         hint = "You'll be able to add additional grounds later if you select yes"
     )
-    private YesOrNo groundsForPossession;
+    private YesOrNo claimDueToRentArrears;
 
     // Rent arrears grounds checkboxes
     @CCD(
@@ -382,8 +383,16 @@ public class PCSCase {
     @CCD
     private DefendantDetails defendant1;
 
-    @CCD
-    private List<ListValue<DefendantDetails>> defendants;
+    @CCD(label = "Do you need to add another defendant?")
+    private VerticalYesNo addAnotherDefendant;
+
+    @CCD(
+        label = "Add additional defendant",
+        hint = "Add an additional defendant to the case"
+    )
+    private List<ListValue<DefendantDetails>> additionalDefendants;
+
+    private List<ListValue<DefendantDetails>> allDefendants;
 
     // Notice Details fields
     @CCD(
@@ -625,7 +634,10 @@ public class PCSCase {
 
     private YesOrNo showNoRentArrearsGroundReasonPage;
 
-    private YesOrNo showRentDetailsPage;
+    private YesOrNo showRentSectionPage;
+
+    @CCD(searchable = false)
+    private YesOrNo showRentArrearsPage;
 
     @CCD(
         label = "Which language did you use to complete this service?",
@@ -746,10 +758,22 @@ public class PCSCase {
     private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 
     @JsonUnwrapped
-    private UnderlesseeMortgagee underlesseeMortgagee;
+    private EnforcementOrder enforcementOrder;
+
+    @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
+    private VerticalYesNo hasUnderlesseeOrMortgagee;
 
     @JsonUnwrapped
-    private EnforcementOrder enforcementOrder;
+    private UnderlesseeMortgageeDetails underlesseeOrMortgagee1;
+
+    @CCD(label = "Do you need to add another underlessee or mortgagee?")
+    private VerticalYesNo addAdditionalUnderlesseeOrMortgagee;
+
+    @CCD(
+        label = "Add underlessee or mortgagee",
+        hint = "Add an underlessee or mortgagee to the case"
+    )
+    private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
 
     @CCD(
         searchable = false,
@@ -757,10 +781,17 @@ public class PCSCase {
     )
     private WaysToPay waysToPay;
 
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
+
     @CCD(searchable = false)
     private YesOrNo showPreActionProtocolPageWales;
 
     @CCD(searchable = false)
     private YesOrNo showASBQuestionsPageWales;
+
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private ASBQuestionsDetailsWales asbQuestionsWales;
 
 }
