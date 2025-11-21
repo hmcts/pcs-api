@@ -28,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         IdamApi.class,
         IdamTokenApi.class,
         RdProfessionalApi.class,
-        CaseAssignmentApi.class
     }
 )
 @EnableJms
