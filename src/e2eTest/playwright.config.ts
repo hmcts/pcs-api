@@ -9,6 +9,7 @@ export const MEDIUM_TIMEOUT = 10000;
 export const LONG_TIMEOUT = 30000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
+const env = process.env.ENVIRONMENT?.toLowerCase() || 'preview';
 
 export default defineConfig({
   testDir: 'tests/',
@@ -17,8 +18,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
-  // Reduced workers from 4 → 2 due to server/login contention issues
-  workers: 1,
+  workers: env === 'preview' ? 1 : 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },
