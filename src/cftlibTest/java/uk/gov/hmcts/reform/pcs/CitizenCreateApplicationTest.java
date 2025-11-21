@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -61,7 +61,7 @@ class CitizenCreateApplicationTest extends CftlibTest {
 
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
-                ClaimantInformationDetails.builder()
+                ClaimantInformation.builder()
                     .claimantName("Wrong Name")
                     .isClaimantNameCorrect(VerticalYesNo.NO)
                     .overriddenClaimantName("New Name")

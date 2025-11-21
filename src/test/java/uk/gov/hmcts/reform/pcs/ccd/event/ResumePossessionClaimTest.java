@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -344,7 +344,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .propertyAddress(propertyAddress)
             .legislativeCountry(WALES)
             .claimantInformation(
-                ClaimantInformationDetails.builder()
+                ClaimantInformation.builder()
                     .claimantName(claimantName)
 
                     .build()
@@ -408,7 +408,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
-                ClaimantInformationDetails.builder()
+                ClaimantInformation.builder()
                     .organisationName("Org Ltd")
                     .build()
             )
@@ -419,6 +419,42 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         verify(schedulerClient).scheduleIfNotExists(any());
+    }
+
+    @Test
+    void shouldGetClaimantInformation() {
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .claimantName("TestName")
+                    .organisationName("Org Ltd")
+                    .build()
+            )
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PartyEntity partyEntity = mock(PartyEntity.class);
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+            .thenReturn(partyEntity);
+
+        ClaimEntity claimEntity = ClaimEntity.builder().build();
+        when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class)))
+            .thenReturn(claimEntity);
+
+        // When
+        callSubmitHandler(caseData);
+
+        // Then
+        verify(claimService).createMainClaimEntity(eq(caseData), eq(partyEntity));
+
+        assertThat(caseData.getClaimantInformation().getClaimantName())
+            .isEqualTo("TestName");
+
+        assertThat(caseData.getClaimantInformation().getOrganisationName())
+            .isEqualTo("Org Ltd");
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {

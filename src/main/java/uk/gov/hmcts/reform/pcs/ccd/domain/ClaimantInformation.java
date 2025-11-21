@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClaimantInformationDetails {
+public class ClaimantInformation {
 
     @CCD(
         label = "Claimant Name",

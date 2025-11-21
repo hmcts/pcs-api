@@ -7,7 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformationDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -19,7 +19,7 @@ class ClaimantInformationTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ClaimantInformation());
+        setPageUnderTest(new ClaimantInformationPage());
     }
 
     @Test
@@ -27,7 +27,7 @@ class ClaimantInformationTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
-                ClaimantInformationDetails.builder().build()
+                ClaimantInformation.builder().build()
             )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
             .build();
@@ -49,7 +49,7 @@ class ClaimantInformationTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
-                ClaimantInformationDetails.builder()
+                ClaimantInformation.builder()
                     .claimantName(claimantName)
                     .overriddenClaimantName(overriddenOrganisationName)
                     .build()
@@ -75,7 +75,7 @@ class ClaimantInformationTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
-                ClaimantInformationDetails.builder()
+                ClaimantInformation.builder()
                     .claimantName(claimantName)
                     .overriddenClaimantName(overriddenOrganisationName)
                     .build()

@@ -6,14 +6,13 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformationDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 @Slf4j
-public class ClaimantInformation implements CcdPageConfiguration {
+public class ClaimantInformationPage implements CcdPageConfiguration {
 
     private static final String UPDATED_CLAIMANT_NAME_HINT = """
         Changing your claimant name here only updates it for this claim.
@@ -28,16 +27,18 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .label("claimantInformation-separator", "---")
             .complex(PCSCase::getClaimantInformation)
             .readonlyWithLabel(
-                ClaimantInformationDetails::getOrganisationName,
+                ClaimantInformation::getOrganisationName,
                 "Your claimant name registered with My HMCTS is:")
-            .mandatoryWithLabel(ClaimantInformationDetails::getIsClaimantNameCorrect,
-                                "Is this the correct claimant name?")
-            .mandatory(ClaimantInformationDetails::getOverriddenClaimantName,
-                    "isClaimantNameCorrect=\"NO\"",
-                    null,
-                    "What is the correct claimant name?",
-                    UPDATED_CLAIMANT_NAME_HINT,
-                    false)
+            .mandatoryWithLabel(
+                ClaimantInformation::getIsClaimantNameCorrect,
+                "Is this the correct claimant name?")
+            .mandatory(
+                ClaimantInformation::getOverriddenClaimantName,
+                "isClaimantNameCorrect=\"NO\"",
+                null,
+                "What is the correct claimant name?",
+                UPDATED_CLAIMANT_NAME_HINT,
+                false)
             .label("claimantInformation-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
     }
