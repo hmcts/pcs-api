@@ -36,8 +36,17 @@ export const submitCaseApiData = {
     isCorrectClaimantContactAddress: 'YES',
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
-      nameKnown: 'NO',
-      addressKnown: 'NO'
+      nameKnown: 'YES',
+      addressKnown: 'YES',
+      addressSameAsPossession: 'NO',
+      firstName: 'John',
+      lastName: 'Doe',
+      correspondenceAddress: {
+        AddressLine1: '9 Second Avenue',
+        Country: 'United Kingdom',
+        PostCode: 'W3 7RX',
+        PostTown: 'London'
+      },
     },
     addAnotherDefendant: 'NO',
     typeOfTenancyLicence: 'DEMOTED_TENANCY',
