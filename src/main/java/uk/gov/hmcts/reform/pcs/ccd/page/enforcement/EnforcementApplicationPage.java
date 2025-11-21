@@ -20,9 +20,10 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body govuk-!-font-weight-bold"> If you choose a warrant of possession</p>
                             <p class="govuk-body govuk-!-margin-bottom-1"> If you apply for a warrant:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li> It costs ${warrantFeeAmount} to apply </li>
-                              <li> It's free to hire a County Court bailiff </li>
-                              <li> you may have to wait longer for the eviction (this depends on the court you apply to)
+                              <li class="govuk-!-font-size-19"> It costs ${warrantFeeAmount} to apply </li>
+                              <li class="govuk-!-font-size-19"> It's free to hire a County Court bailiff </li>
+                              <li class="govuk-!-font-size-19"> you may have to wait longer for the eviction
+                              (this depends on the court you apply to)
                                </li>
                             </ul>
                             <p class="govuk-body govuk-!-font-weight-bold"> If you ask the judge for a writ of
@@ -30,32 +31,37 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body govuk-!-margin-bottom-1"> It's usually faster to evict someone using a
                             writ, but:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li> It's more difficult to prove that you need a writ </li>
-                              <li> It's an extra step in the legal process </li>
+                              <li class="govuk-!-font-size-19"> It's more difficult to prove that you need a writ </li>
+                              <li class="govuk-!-font-size-19"> It's an extra step in the legal process </li>
                             </ul>
                             <p class="govuk-body govuk-!-margin-bottom-1"> You'll need to:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li> ask the judge for a writ (you’ll need additional evidence for this and the judge
-                              could still refuse your request)</li>
-                              <li> hire a private High Court Enforcement Officer (bailiff) to carry out the eviction
-                              </li>
+                              <li class="govuk-!-font-size-19"> ask the judge for a writ (you’ll need additional
+                              evidence for this and the judge could still refuse your request)</li>
+                              <li class="govuk-!-font-size-19"> hire a private High Court Enforcement Officer (bailiff)
+                              to carry out the eviction</li>
                             </ul>
                             <p class="govuk-body govuk-!-margin-bottom-1"> If you apply for a writ:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li> It costs ${writFeeAmount} to apply</li>
-                              <li> <a href="https://www.hceoa.org.uk/choosing-a-hceo" rel="noreferrer noopener"
+                              <li class="govuk-!-font-size-19"> It costs ${writFeeAmount} to apply</li>
+                              <li class="govuk-!-font-size-19"> <a href="https://www.hceoa.org.uk/choosing-a-hceo"
+                              rel="noreferrer noopener"
                               target="_blank" class="govuk-link"> You can get a quote from a bailiff to find out how
                               much it will cost</a> (they usually charge by the hour)</li>
-                              <li> It’s usually faster (6 to 12 weeks, depending on the court you apply to)</li>
+                              <li class="govuk-!-font-size-19"> It’s usually faster (6 to 12 weeks, depending on the
+                              court you apply to)</li>
                             </ul>
                             <p class="govuk-body govuk-!-font-weight-bold"> The additional evidence you’ll need to
                             apply for a writ</p>
                             <p class="govuk-body govuk-!-margin-bottom-1"> You’ll need to show that either:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li> there is a backlog in the County Court bailiff service</li>
-                              <li> the defendant (the person or people living at the property) has damaged your
+                              <li class="govuk-!-font-size-19"> there is a backlog in the County Court bailiff service
+                              </li>
+                              <li class="govuk-!-font-size-19"> the defendant (the person or people living at the
+                              property) has damaged your
                               property</li>
-                              <li> you are suffering financially due to lost income</li>
+                              <li class="govuk-!-font-size-19 govuk-!-padding-bottom-1"> you are suffering financially
+                              due to lost income</li>
                             </ul>
                             <p class="govuk-body"> If you do not have this evidence the judge could deny your request.
                             If they deny it, you’ll need to start again (re-apply for the writ or the warrant with new

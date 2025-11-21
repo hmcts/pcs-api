@@ -45,8 +45,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
     private final AddressFormatter addressFormatter;
     private final FeesAndPayService feesAndPayService;
-    private static final String ENFORCEMENT_WARRANT_TYPE = "enforcementWarrantFee";
-    private static final String ENFORCEMENT_WRIT_TYPE = "enforcementWritFee";
+    private static final String ENFORCEMENT_WARRANT_FEE = "FEE0380";
+    private static final String ENFORCEMENT_WRIT_FEE = "FEE0397";
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
     private final ProtestorGroupRiskPage protestorGroupRiskPage;
@@ -102,7 +102,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
         try {
             caseData.getEnforcementOrder().setWarrantFeeAmount(formatAsCurrency(
-                feesAndPayService.getFee(ENFORCEMENT_WARRANT_TYPE).getFeeAmount()
+                feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE).getFeeAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
@@ -112,7 +112,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
         try {
             caseData.getEnforcementOrder().setWritFeeAmount(formatAsCurrency(
-                feesAndPayService.getFee(ENFORCEMENT_WRIT_TYPE).getFeeAmount()
+                feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE).getFeeAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
