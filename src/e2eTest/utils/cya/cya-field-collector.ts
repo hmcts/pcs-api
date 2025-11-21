@@ -31,12 +31,31 @@ export async function collectCYAAddressData(actionName: string, question: string
     answerStr = String(answer);
   }
 
+  const questionTrimmed = question.trim();
+  const answerTrimmed = answerStr.trim();
+
   if (!cyaAddressData.collectedQAPairs) cyaAddressData.collectedQAPairs = [];
+  
+  // Check for duplicates to prevent duplicate logging and data collection
+  const isDuplicate = cyaAddressData.collectedQAPairs.some(
+    pair => pair.question === questionTrimmed && pair.answer === answerTrimmed && pair.step === actionName
+  );
+
+  if (isDuplicate) {
+    return; // Skip if already collected
+  }
+
   cyaAddressData.collectedQAPairs.push({
     step: actionName,
-    question: question.trim(),
-    answer: answerStr.trim(),
+    question: questionTrimmed,
+    answer: answerTrimmed,
     timestamp: new Date().toISOString()
+  });
+
+  console.log(`🏠 [Address CYA] Collected Q&A Pair:`, {
+    step: actionName,
+    question: questionTrimmed,
+    answer: answerTrimmed
   });
 }
 
@@ -47,7 +66,7 @@ export async function collectCYAAddressData(actionName: string, question: string
  * @param question - Question text as it appears on CYA (from spec, page.data, or hardcoded)
  * @param answer - Answer value (string, number, array, etc. - will be converted to string)
  */
-export async function collectCYAData(actionName: string, question: string, answer: any): Promise<void> {
+export async function collectCYAData(actionName: string, question: string | number | boolean | object | string[] | object[], answer: any): Promise<void> {
   if (!question || answer === undefined || answer === null) {
     return;
   }
@@ -59,12 +78,31 @@ export async function collectCYAData(actionName: string, question: string, answe
     answerStr = String(answer);
   }
 
+  const questionTrimmed = typeof question === 'string' ? question.trim() : String(question);
+  const answerTrimmed = typeof answerStr === 'string' ? answerStr.trim() : String(answerStr);
+
   if (!cyaData.collectedQAPairs) cyaData.collectedQAPairs = [];
+  
+  // Check for duplicates to prevent duplicate logging and data collection
+  const isDuplicate = cyaData.collectedQAPairs.some(
+    pair => pair.question === questionTrimmed && pair.answer === answerTrimmed && pair.step === actionName
+  );
+
+  if (isDuplicate) {
+    return; // Skip if already collected
+  }
+
   cyaData.collectedQAPairs.push({
     step: actionName,
-    question: question.trim(),
-    answer: answerStr.trim(),
+    question: questionTrimmed,
+    answer: answerTrimmed,
     timestamp: new Date().toISOString()
+  });
+
+  console.log(`📝 [Final CYA] Collected Q&A Pair:`, {
+    step: actionName,
+    question: questionTrimmed,
+    answer: answerTrimmed
   });
 }
 

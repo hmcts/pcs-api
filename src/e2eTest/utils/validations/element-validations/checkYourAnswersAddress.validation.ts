@@ -12,16 +12,16 @@ export class CheckYourAnswersAddressValidation extends CYAValidationBase impleme
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
     await this.validateQAPairs(page, cyaAddressData.collectedQAPairs || [], 'Address CYA');
   }
-
   /**
    * Find question on Address CYA page
+   * Handles both simple questions and complex field sub-questions (like Building and Street within Property address)
    */
   protected async findQuestionOnPage(page: Page, questionText: string): Promise<{
     found: boolean;
     question: string;
     answer: string;
   }> {
-    // Address CYA uses table.form-table and table.complex-panel-table
+    // First, try to find as a simple question in the main table
     const tables = page.locator('table.form-table, table.complex-panel-table');
     const tableCount = await tables.count();
 
@@ -33,21 +33,74 @@ export class CheckYourAnswersAddressValidation extends CYAValidationBase impleme
       for (let j = 0; j < rowCount; j++) {
         const row = rows.nth(j);
         const questionCell = row.locator('th').first();
-        // Get the answer cell - select the content cell, not the "Change" cell
-        // The structure is: <th>Question</th> <td class="form-cell">Answer</td> <td class="change">Change</td>
         const answerCell = row.locator('td.form-cell, td.case-field-content').first();
 
         const question = await questionCell.textContent({ timeout: 1000 }).catch(() => null);
         if (!question) continue;
 
-        // Check if question matches
-        if (this.match(question, questionText)) {
-          const answer = await this.extractAnswerFromCell(answerCell);
-          return {
-            found: true,
-            question: question.trim(),
-            answer: answer || ''
-          };
+        // Check if this is a complex field (Property address)
+        const complexField = answerCell.locator('ccd-read-complex-field-table table.complex-panel-table');
+        const hasComplexField = await complexField.count() > 0;
+
+        if (hasComplexField && this.match(question, 'Property address')) {
+          // This is the Property address complex field - look for the sub-question within it
+          const complexRows = complexField.locator('tr.complex-panel-simple-field');
+          const complexRowCount = await complexRows.count();
+
+          for (let k = 0; k < complexRowCount; k++) {
+            const complexRow = complexRows.nth(k);
+            const complexQuestionCell = complexRow.locator('th');
+            const complexAnswerCell = complexRow.locator('td');
+
+            const complexQuestion = await complexQuestionCell.textContent({ timeout: 500 }).catch(() => null);
+            if (!complexQuestion) continue;
+
+            const complexQuestionTrimmed = complexQuestion.trim();
+            const questionTextTrimmed = questionText.trim();
+
+            // Use exact match first for better precision (especially for "Address Line 2" vs "Address Line 3")
+            const exactMatch = complexQuestionTrimmed.toLowerCase() === questionTextTrimmed.toLowerCase();
+
+            // For questions with numbers, require exact match to avoid confusion
+            const hasNumber = /\d+/.test(complexQuestionTrimmed) || /\d+/.test(questionTextTrimmed);
+            if (hasNumber && !exactMatch) {
+              continue; // Skip if numbers don't match exactly
+            }
+
+            // Only use fuzzy match if no numbers involved
+            const fuzzyMatch = !hasNumber && !exactMatch && this.match(complexQuestionTrimmed, questionTextTrimmed);
+
+            if (exactMatch || fuzzyMatch) {
+              // Extract answer from the complex field sub-row using formLabelValue pattern
+              const valueLocator = complexRow.locator(`th#complex-panel-simple-field-label > span.text-16:has-text("${complexQuestionTrimmed}")`)
+                .locator('xpath=../..')
+                .locator('td span.text-16:not(:has(ccd-field-read-label))');
+
+              let answer = await valueLocator.textContent({ timeout: 500 }).catch(() => null);
+              if (!answer || !answer.trim()) {
+                // Fallback: get text directly from the td
+                answer = await complexAnswerCell.textContent({ timeout: 500 }).catch(() => null);
+              }
+
+              if (answer && answer.trim()) {
+                return {
+                  found: true,
+                  question: complexQuestionTrimmed,
+                  answer: answer.trim()
+                };
+              }
+            }
+          }
+        } else if (!hasComplexField) {
+          // Simple question - check if it matches
+          if (this.match(question, questionText)) {
+            const answer = await this.extractAnswerFromCell(answerCell);
+            return {
+              found: true,
+              question: question.trim(),
+              answer: answer || ''
+            };
+          }
         }
       }
     }
@@ -60,59 +113,32 @@ export class CheckYourAnswersAddressValidation extends CYAValidationBase impleme
    * Uses the same logic as formLabelValue validation for reliability
    */
   private async extractAnswerFromCell(cell: any): Promise<string | null> {
-    // For complex fields (like address), use formLabelValue locator strategy
-    // This matches the approach used in createCase.saveResume.spec.ts
+    // For complex fields (like address), extract individual field values
+    // This matches the structure on Address CYA where each field is a separate row
     const complexField = cell.locator('ccd-read-complex-field-table table.complex-panel-table');
     const complexCount = await complexField.count();
     if (complexCount > 0) {
-      const addressParts: { [key: string]: string } = {};
-      
-      // Use the same locator strategy as formLabelValue validation
-      // Match the labels used in createCase.saveResume.spec.ts (propertyDetails)
-      const addressFields = [
-        { label: propertyDetails.buildingAndStreetLabel, key: 'building' },
-        { label: propertyDetails.townOrCityLabel, key: 'town' },
-        { label: propertyDetails.postcodeZipcodeLabel, key: 'postcode' },
-        { label: 'Postcode', key: 'postcode' } // Fallback if Postcode/Zipcode doesn't match
-      ];
-
-      for (const field of addressFields) {
-        // Skip if we already have this part (e.g., postcode might match both labels)
-        if (addressParts[field.key]) continue;
-        
-        // Try the complex panel locator (same as formLabelValue)
-        const valueLocator = cell.locator(`th#complex-panel-simple-field-label > span.text-16:has-text("${field.label}")`)
-          .locator('xpath=../..')
-          .locator('td span.text-16:not(:has(ccd-field-read-label))');
-        
-        const count = await valueLocator.count().catch(() => 0);
-        if (count > 0) {
-          const value = await valueLocator.textContent({ timeout: 500 }).catch(() => null);
-          if (value && value.trim()) {
-            addressParts[field.key] = value.trim();
-          }
-        }
-      }
-
-      // Build address string in the format: "Building, Town, Postcode"
-      const parts: string[] = [];
-      if (addressParts.building) parts.push(addressParts.building);
-      if (addressParts.town) parts.push(addressParts.town);
-      if (addressParts.postcode) parts.push(addressParts.postcode);
-      
-      if (parts.length > 0) {
-        return parts.join(', ');
-      }
+      // When question is a specific field label (e.g., "Building and Street"),
+      // extract just that field's value from the complex structure
+      // This will be handled by the question matching in findQuestionOnPage
+      // For now, return null to let it fall through to simple field extraction
     }
 
     // For simple text fields, use formLabelValue locator strategy
+    // This works for both simple fields and individual fields within complex structures
     const textField = cell.locator('ccd-read-text-field span.text-16').first();
     let answer = await textField.textContent({ timeout: 1000 }).catch(() => null);
-    
+
     // If still no answer, try other text field locators
     if (!answer || !answer.trim()) {
       const altTextField = cell.locator('ccd-field-read span.text-16').first();
       answer = await altTextField.textContent({ timeout: 1000 }).catch(() => null);
+    }
+
+    // For complex field sub-fields, try the formLabelValue locator pattern
+    if (!answer || !answer.trim()) {
+      // Try extracting from complex panel structure using the question text
+      // This will be handled in findQuestionOnPage when it matches the question
     }
 
     return answer && answer.trim() ? answer.trim() : null;
