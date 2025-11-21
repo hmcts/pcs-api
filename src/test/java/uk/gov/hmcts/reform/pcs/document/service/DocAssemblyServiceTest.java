@@ -120,7 +120,7 @@ class DocAssemblyServiceTest {
 
             DocAssemblyRequest capturedRequest = requestCaptor.getValue();
             assertThat(capturedRequest.getFormPayload()).isInstanceOf(JsonNodeFormPayload.class);
-            
+
             JsonNodeFormPayload wrapper = (JsonNodeFormPayload) capturedRequest.getFormPayload();
             assertThat(wrapper.getData()).isEqualTo(formPayload);
         }
