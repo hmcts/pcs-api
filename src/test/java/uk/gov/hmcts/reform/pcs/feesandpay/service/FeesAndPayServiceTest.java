@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration.LookUpReferenceData;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.mapper.PaymentRequestMapper;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
@@ -34,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -92,7 +94,7 @@ class FeesAndPayServiceTest {
     }
 
     @Test
-    void shouldSuccessfullyGetFee() {
+    void shouldSuccessfullyGetFeeDetails() {
         when(feesConfiguration.getLookup(FEE_TYPE)).thenReturn(lookUpReferenceData);
         when(feesClient.lookupFee(
             "default",
@@ -101,13 +103,13 @@ class FeesAndPayServiceTest {
             "PossessionCC"
         )).thenReturn(feeLookupResponseDto);
 
-        FeeLookupResponseDto result = feesAndPayService.getFee(FEE_TYPE);
+        FeeDetails feeDetails = feesAndPayService.getFee(FEE_TYPE);
 
-        assertThat(result).isNotNull();
-        assertThat(result.getCode()).isEqualTo("FEE0412");
-        assertThat(result.getDescription()).isEqualTo("Recovery of Land - County Court");
-        assertThat(result.getVersion()).isEqualTo(4);
-        assertThat(result.getFeeAmount()).isEqualTo(BigDecimal.valueOf(404.00));
+        assertThat(feeDetails).isNotNull();
+        assertThat(feeDetails.getCode()).isEqualTo("FEE0412");
+        assertThat(feeDetails.getDescription()).isEqualTo("Recovery of Land - County Court");
+        assertThat(feeDetails.getVersion()).isEqualTo(4);
+        assertThat(feeDetails.getFeeAmount()).isEqualTo(BigDecimal.valueOf(404.00));
 
         verify(feesClient)
             .lookupFee("default", "issue", new BigDecimal("1"), "PossessionCC");
@@ -189,7 +191,8 @@ class FeesAndPayServiceTest {
             .serviceRequestReference("SR-123")
             .build();
 
-        when(paymentRequestMapper.toFeeDto(feeLookupResponseDto, volume)).thenReturn(mappedFee);
+        FeeDetails feeDetails = mock(FeeDetails.class);
+        when(paymentRequestMapper.toFeeDto(feeDetails, volume)).thenReturn(mappedFee);
         when(paymentRequestMapper.toCasePaymentRequest(responsibleParty))
             .thenReturn(casePaymentRequestDto);
         when(idamService.getSystemUserAuthorisation()).thenReturn(systemToken);
@@ -199,7 +202,7 @@ class FeesAndPayServiceTest {
         PaymentServiceResponse result = feesAndPayService.createServiceRequest(
             caseReference,
             ccdCaseNumber,
-            feeLookupResponseDto,
+            feeDetails,
             volume,
             responsibleParty
         );
