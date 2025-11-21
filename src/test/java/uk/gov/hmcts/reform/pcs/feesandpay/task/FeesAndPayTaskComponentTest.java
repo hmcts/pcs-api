@@ -16,8 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
@@ -106,8 +106,8 @@ class FeesAndPayTaskComponentTest {
             .build();
     }
 
-    private FeeLookupResponseDto buildFee(String code, String description, Integer version, BigDecimal amount) {
-        return FeeLookupResponseDto.builder()
+    private FeeDetails buildFee(String code, String description, Integer version, BigDecimal amount) {
+        return FeeDetails.builder()
             .code(code)
             .description(description)
             .version(version)
@@ -146,7 +146,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto expectedFee = buildFee(
+            FeeDetails expectedFee = buildFee(
                 TestFeeCode.RECOVERY_OF_LAND.getCode(),
                 TestFeeCode.RECOVERY_OF_LAND.getDescription(),
                 4,
@@ -176,7 +176,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(FeeTypes.HEARING_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 HEARING_FEE.getCode(),
                 HEARING_FEE.getDescription(),
                 1,
@@ -206,7 +206,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 TestFeeCode.HIGH_VALUE_FEE.getCode(),
                 TestFeeCode.HIGH_VALUE_FEE.getDescription(),
                 1,
@@ -336,7 +336,7 @@ class FeesAndPayTaskComponentTest {
                 FeesAndPayTaskData data = buildTaskData(feeTypes[i]);
                 when(taskInstance.getData()).thenReturn(data);
 
-                FeeLookupResponseDto fee = buildFee(
+                FeeDetails fee = buildFee(
                     feeCodes[i].getCode(),
                     feeCodes[i].getDescription(),
                     1,
@@ -405,7 +405,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(specialFeeType);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 SPECIAL_CHAR_FEE.getCode(),
                 SPECIAL_CHAR_FEE.getDescription(),
                 2,
@@ -491,7 +491,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto expectedFee = buildFee(
+            FeeDetails expectedFee = buildFee(
                 TestFeeCode.RECOVERY_OF_LAND.getCode(),
                 TestFeeCode.RECOVERY_OF_LAND.getDescription(),
                 4,
@@ -549,7 +549,7 @@ class FeesAndPayTaskComponentTest {
                 FeesAndPayTaskData data = buildTaskData(feeTypes[i]);
                 when(taskInstance.getData()).thenReturn(data);
 
-                FeeLookupResponseDto fee = buildFee(
+                FeeDetails fee = buildFee(
                     feeCodes[i].getCode(),
                     feeCodes[i].getDescription(),
                     1,
@@ -585,7 +585,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 GENERIC_TEST_FEE.getCode(),
                 null,
                 1,
@@ -615,7 +615,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 GENERIC_TEST_FEE.getCode(),
                 GENERIC_TEST_FEE.getDescription(),
                 null,
@@ -646,7 +646,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 GENERIC_TEST_FEE.getCode(),
                 longDescription,
                 1,
@@ -676,7 +676,7 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 GENERIC_TEST_FEE.getCode(),
                 GENERIC_TEST_FEE.getDescription(),
                 1,
