@@ -24,7 +24,7 @@ public class RoleAssignmentService {
     private final OrganisationDetailsService organisationDetailsService;
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamService idamService;
-    private final CaseAssignmentApi caseAssignmentApi;
+    private CaseAssignmentApi caseAssignmentApi;
 
     @Value("${role-assignment.role-id}")
     private String caseRole;
