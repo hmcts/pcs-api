@@ -30,7 +30,7 @@ export class CreateCaseAction implements IAction {
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
-      ['selectContactPreferences', () => this.selectContactPreferences(page, fieldName as actionRecord)],
+      ['selectContactPreferences', () => this.selectContactPreferences(fieldName as actionRecord)],
       ['selectRentArrearsPossessionGround', () => this.selectRentArrearsPossessionGround(fieldName as actionRecord)],
       ['selectGroundsForPossession', () => this.selectGroundsForPossession(fieldName as actionRecord)],
       ['selectPreActionProtocol', () => this.selectPreActionProtocol(fieldName)],
@@ -242,7 +242,7 @@ export class CreateCaseAction implements IAction {
     claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
   }
 
-  private async selectContactPreferences(page: Page, prefData: actionRecord) {
+  private async selectContactPreferences(prefData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {

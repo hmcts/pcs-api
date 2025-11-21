@@ -35,7 +35,7 @@ export async function collectCYAAddressData(actionName: string, question: string
   const answerTrimmed = answerStr.trim();
 
   if (!cyaAddressData.collectedQAPairs) cyaAddressData.collectedQAPairs = [];
-  
+
   // Check for duplicates to prevent duplicate logging and data collection
   const isDuplicate = cyaAddressData.collectedQAPairs.some(
     pair => pair.question === questionTrimmed && pair.answer === answerTrimmed && pair.step === actionName
@@ -78,10 +78,10 @@ export async function collectCYAData(actionName: string, question: string | numb
   }
 
   const questionTrimmed = typeof question === 'string' ? question.trim() : String(question);
-  const answerTrimmed = typeof answerStr === 'string' ? answerStr.trim() : String(answerStr);
+  const answerTrimmed = answerStr.trim();
 
   if (!cyaData.collectedQAPairs) cyaData.collectedQAPairs = [];
-  
+
   // Check for duplicates to prevent duplicate logging and data collection
   const isDuplicate = cyaData.collectedQAPairs.some(
     pair => pair.question === questionTrimmed && pair.answer === answerTrimmed && pair.step === actionName
