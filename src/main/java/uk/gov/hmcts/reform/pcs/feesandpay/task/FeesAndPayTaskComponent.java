@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
@@ -58,14 +58,12 @@ public class FeesAndPayTaskComponent {
                 log.debug("Executing fee lookup task for fee type: {}", taskData.getFeeType());
 
                 try {
-                    FeeLookupResponseDto fee = feesAndPayService.getFee(taskData.getFeeType());
-                    log.debug("Successfully retrieved fee: type={}, code={}, amount={}",
-                        taskData.getFeeType(), fee.getCode(), fee.getFeeAmount());
+                    FeeDetails feeDetails = feesAndPayService.getFee(taskData.getFeeType());
 
                     feesAndPayService.createServiceRequest(
                         taskData.getCaseReference(),
                         taskData.getCcdCaseNumber(),
-                        fee,
+                        feeDetails,
                         taskData.getVolume(),
                         taskData.getResponsibleParty()
                     );
