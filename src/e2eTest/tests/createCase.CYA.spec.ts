@@ -10,33 +10,26 @@ import {
   claimantName,
   claimantType,
   claimingCosts,
-  claimType,
   completeYourClaim,
   contactPreferences,
-  dailyRentAmount,
   defendantCircumstances,
   defendantDetails,
-  detailsOfRentArrears,
   groundsForPossession,
   home,
   languageUsed,
   mediationAndSettlement,
-  moneyJudgment,
   noticeDetails,
   noticeOfYourIntention,
   preActionProtocol,
   propertyDetails,
-  rentArrearsPossessionGrounds,
-  rentDetails,
   signInOrCreateAnAccount,
   statementOfTruth,
   tenancyLicenceDetails,
   underlesseeOrMortgageeEntitledToClaim,
-  uploadAdditionalDocs,
   user,
   wantToUploadDocuments,
   whatAreYourGroundsForPossession,
-  borderPostcode
+  borderPostcode, claimType
 } from '@data/page-data';
 import {
   initializeExecutor,
@@ -46,9 +39,11 @@ import {
 } from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { resetCYAData } from '@utils/data/cya-data';
+import { resetCYAAddressData } from '@utils/data/cya-address-data';
 
 test.beforeEach(async ({page}) => {
-  resetCYAData(); // Reset CYA data at the start of each test
+  resetCYAData(); // Reset Final CYA data at the start of each test
+  resetCYAAddressData(); // Reset Address CYA data at the start of each test
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
@@ -75,7 +70,8 @@ test.describe('[Create Case - England Simple Journey for CYA Validation] @regres
       addressIndex: addressDetails.addressIndex
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
-    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader);
+    await performValidation('validateCheckYourAnswersAddress'); // Validate Address CYA page
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -90,101 +86,46 @@ test.describe('[Create Case - England Simple Journey for CYA Validation] @regres
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
-      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.defendantPostcodeTextInput,
-      addAdditionalDefendantsOption: defendantDetails.yesRadioOption, numberOfDefendants: 2,
-      name1Option: defendantDetails.yesRadioOption,
-      correspondenceAddress1Option: defendantDetails.yesRadioOption, correspondenceAddressSame1Option: defendantDetails.yesRadioOption,
-      name2Option: defendantDetails.noRadioOption,
-      correspondenceAddress2Option: defendantDetails.yesRadioOption, correspondenceAddressSame2Option: defendantDetails.yesRadioOption});
+      nameOption: defendantDetails.noRadioOption,
+      correspondenceAddressOption: defendantDetails.noRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption});
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
-    await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
-    });
+    await performAction('selectTenancyOrLicenceDetails', {tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yes});
-    await performAction('selectRentArrearsPossessionGround', {
-      rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-      otherGrounds: rentArrearsPossessionGrounds.yes
-    });
-    await performValidation('elementNotToBeVisible',[rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent]);
-    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink,groundsForPossession.mainHeader);
-    await performAction('selectYourPossessionGrounds',{
-      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation],
-    });
-    await performAction('enterReasonForPossession',
-      [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
-        whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation])
+    await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.no});
+    await performAction('selectYourPossessionGrounds',{mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet]});
+    await performAction('enterReasonForPossession', [whatAreYourGroundsForPossession.mandatory.holidayLet]);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.no,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
-    await performAction('provideDetailsOfRentArrears', {
-      files: ['rentArrears.pdf'],
-      rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
-    });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectNoticeDetails', {howDidYouServeNotice: noticeDetails.byFirstClassPost});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
-    await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
-    });
+    await performAction('selectClaimantCircumstances', {circumstanceOption: claimantCircumstances.no});
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yesRadioOption,
-      additionalDefendants: true
-    });
+    await performAction('selectDefendantCircumstances', {defendantCircumstance: defendantCircumstances.yesRadioOption});
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
       option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.yes
-    });
-    await performAction('uploadAdditionalDocs', {
-      documents: [{
-        type: uploadAdditionalDocs.tenancyAgreementOption,
-        fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocs.shortDescriptionInput
-      }]
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
