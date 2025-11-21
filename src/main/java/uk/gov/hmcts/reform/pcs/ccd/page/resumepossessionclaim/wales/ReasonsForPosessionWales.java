@@ -234,6 +234,164 @@ public class ReasonsForPosessionWales implements CcdPageConfiguration {
             .mandatory(GroundsReasonsWales::getOtherEstateManagementReasonsReason,
                 "estateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
 
+            // ---------- Secure Contract - Mandatory grounds ----------
+            .label("wales-secure-failureToGiveUpPossessionSection170-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Failure to give up possession on date specified in contract-holder's notice (section 170)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractMandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170\"")
+            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason,
+                "secureContractMandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170\"")
+
+            .label("wales-secure-landlordNoticeSection186-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Landlord's notice in connection with end of fixed term given (section 186)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractMandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_186\"")
+            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection186Reason,
+                "secureContractMandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_186\"")
+
+            .label("wales-secure-failureToGiveUpPossessionSection191-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Failure to give up possession on date specified in contract-holder's break 
+                    clause notice (section 191)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractMandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191\"")
+            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason,
+                "secureContractMandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191\"")
+
+            .label("wales-secure-landlordNoticeSection199-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Notice given under a landlord's break clause (section 199)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractMandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_199\"")
+            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection199Reason,
+                "secureContractMandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_199\"")
+
+            // ---------- Secure Contract - Discretionary grounds ----------
+            .label("wales-secure-otherBreachOfContract-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Other breach of contract (section 157)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractDiscretionaryGroundsWalesCONTAINS\"OTHER_BREACH_OF_CONTRACT\"")
+            .mandatory(GroundsReasonsWales::getSecureOtherBreachOfContractReason,
+                "secureContractDiscretionaryGroundsWalesCONTAINS\"OTHER_BREACH_OF_CONTRACT\"")
+
+            // ---------- Secure Contract - Estate Management grounds ----------
+            .label("wales-secure-buildingWorks-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Building works (ground A)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"BUILDING_WORKS\"")
+            .mandatory(GroundsReasonsWales::getSecureBuildingWorksReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"BUILDING_WORKS\"")
+
+            .label("wales-secure-redevelopmentSchemes-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Redevelopment schemes (ground B)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"REDEVELOPMENT_SCHEMES\"")
+            .mandatory(GroundsReasonsWales::getSecureRedevelopmentSchemesReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"REDEVELOPMENT_SCHEMES\"")
+
+            .label("wales-secure-charities-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Charities (ground C)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"CHARITIES\"")
+            .mandatory(GroundsReasonsWales::getSecureCharitiesReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"CHARITIES\"")
+
+            .label("wales-secure-disabledSuitableDwelling-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Dwelling suitable for disabled people (ground D)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"DISABLED_SUITABLE_DWELLING\"")
+            .mandatory(GroundsReasonsWales::getSecureDisabledSuitableDwellingReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"DISABLED_SUITABLE_DWELLING\"")
+
+            .label("wales-secure-housingAssociationsAndTrusts-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Housing associations and housing trusts: people difficult to house (ground E)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"HOUSING_ASSOCIATIONS_AND_TRUSTS\"")
+            .mandatory(GroundsReasonsWales::getSecureHousingAssociationsAndTrustsReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"HOUSING_ASSOCIATIONS_AND_TRUSTS\"")
+
+            .label("wales-secure-specialNeedsDwellings-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Groups of dwellings for people with special needs (ground F)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"SPECIAL_NEEDS_DWELLINGS\"")
+            .mandatory(GroundsReasonsWales::getSecureSpecialNeedsDwellingsReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"SPECIAL_NEEDS_DWELLINGS\"")
+
+            .label("wales-secure-reserveSuccessors-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Reserve successors (ground G)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"RESERVE_SUCCESSORS\"")
+            .mandatory(GroundsReasonsWales::getSecureReserveSuccessorsReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"RESERVE_SUCCESSORS\"")
+
+            .label("wales-secure-jointContractHolders-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Joint contract-holders (ground H)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"JOINT_CONTRACT_HOLDERS\"")
+            .mandatory(GroundsReasonsWales::getSecureJointContractHoldersReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"JOINT_CONTRACT_HOLDERS\"")
+
+            .label("wales-secure-otherEstateManagementReasons-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Other estate management reasons (ground I)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContractEstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
+            .mandatory(GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason,
+                "secureContractEstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")    
+
             .done()
             .label("reasonsForPosessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
