@@ -52,10 +52,14 @@ public class EnforcementOrder {
         label = "Is anyone living at the property vulnerable?"
     )
     private YesNoNotSure vulnerablePeoplePresent;
-    
+
     private VulnerableAdultsChildren vulnerableAdultsChildren;
-    
+
     @JsonUnwrapped
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private LandRegistryFees landRegistryFees;
 }
