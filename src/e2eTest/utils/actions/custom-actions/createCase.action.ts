@@ -480,7 +480,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', claimantCircumstance.circumstanceOption);
     if (claimantCircumstance.circumstanceOption == claimantCircumstances.yes) {
       await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimantCircumstance.claimantInput);
-      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimantCircumstance.claimantInput);
     }
     await performAction('clickButton', claimantCircumstances.continue);
   }
