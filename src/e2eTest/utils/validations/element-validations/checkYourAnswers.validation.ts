@@ -3,50 +3,92 @@ import { IValidation } from '@utils/interfaces';
 import { cyaData } from '@utils/data/cya-data';
 import { CYAValidationBase } from './cya-validation-base';
 
-/**
- * Validation class for Final Check Your Answers (CYA) page
- * Validates that all questions and answers displayed on the Final CYA page match the data collected during the journey
- */
 export class CheckYourAnswersValidation extends CYAValidationBase implements IValidation {
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
     await this.validateQAPairs(page, cyaData.collectedQAPairs || [], 'Final CYA');
   }
 
-  /**
-   * Find question on Final CYA page
-   */
   protected async findQuestionOnPage(page: Page, questionText: string): Promise<{
     found: boolean;
     question: string;
     answer: string;
   }> {
-    // Final CYA uses table.form-table and table.complex-panel-table
-    const tables = page.locator('table.form-table, table.complex-panel-table');
-    const tableCount = await tables.count();
+    // First, search in main table rows
+    const mainTables = page.locator('table.form-table');
+    const mainTableCount = await mainTables.count();
 
-    for (let i = 0; i < tableCount; i++) {
-      const table = tables.nth(i);
+    for (let i = 0; i < mainTableCount; i++) {
+      const table = mainTables.nth(i);
       const rows = table.locator('tr');
       const rowCount = await rows.count();
 
       for (let j = 0; j < rowCount; j++) {
         const row = rows.nth(j);
-        const questionCell = row.locator('th').first();
-        // Get the answer cell - select the content cell, not the "Change" cell
-        // The structure is: <th>Question</th> <td class="form-cell">Answer</td> <td class="change">Change</td>
-        const answerCell = row.locator('td.form-cell, td.case-field-content').first();
+        const question = await row.locator('th').first().textContent({ timeout: 1000 }).catch(() => null);
+        if (question && question.trim()) {
+          if (this.match(question, questionText)) {
+            const answerCell = row.locator('td.form-cell, td.case-field-content').first();
+            
+            // Try direct extraction from td using formLabelValue-like pattern
+            const directValue = answerCell.locator('span.text-16:not(:has(ccd-field-read-label)):not(:has(a))').first();
+            const directValueCount = await directValue.count();
+            if (directValueCount > 0) {
+              const value = await directValue.textContent({ timeout: 1000 }).catch(() => null);
+              if (value && value.trim()) {
+                return { found: true, question: question.trim(), answer: value.trim() };
+              }
+            }
+            
+            // Fallback to comprehensive cell extraction
+            const answer = await this.extractAnswerFromCell(answerCell);
+            return { found: true, question: question.trim(), answer: answer || '' };
+          }
+        }
 
-        const question = await questionCell.textContent({ timeout: 1000 }).catch(() => null);
-        if (!question) continue;
+        // Also search within nested complex field tables in this row (even if th is empty)
+        const complexFieldTable = row.locator('ccd-read-complex-field-table table.complex-panel-table');
+        const complexTableCount = await complexFieldTable.count();
+        
+        for (let k = 0; k < complexTableCount; k++) {
+          const complexTable = complexFieldTable.nth(k);
+          const complexRows = complexTable.locator('tr.complex-panel-simple-field');
+          const complexRowCount = await complexRows.count();
 
-        // Check if question matches
-        if (this.match(question, questionText)) {
-          const answer = await this.extractAnswerFromCell(answerCell);
-          return {
-            found: true,
-            question: question.trim(),
-            answer: answer || ''
-          };
+          for (let l = 0; l < complexRowCount; l++) {
+            const complexRow = complexRows.nth(l);
+            const complexQuestionCell = complexRow.locator('th#complex-panel-simple-field-label');
+            const complexQuestion = await complexQuestionCell.textContent({ timeout: 1000 }).catch(() => null);
+            
+            if (complexQuestion && complexQuestion.trim() && this.match(complexQuestion, questionText)) {
+              // Extract answer from complex field row
+              const complexAnswerCell = complexRow.locator('td');
+              const complexAnswer = await this.extractAnswerFromComplexField(complexAnswerCell);
+              return { found: true, question: complexQuestion.trim(), answer: complexAnswer || '' };
+            }
+          }
+        }
+      }
+    }
+
+    // Also search ALL complex field tables on the page (in case they're not in main table rows)
+    const allComplexTables = page.locator('ccd-read-complex-field-table table.complex-panel-table');
+    const allComplexTableCount = await allComplexTables.count();
+    
+    for (let i = 0; i < allComplexTableCount; i++) {
+      const complexTable = allComplexTables.nth(i);
+      const complexRows = complexTable.locator('tr.complex-panel-simple-field');
+      const complexRowCount = await complexRows.count();
+
+      for (let j = 0; j < complexRowCount; j++) {
+        const complexRow = complexRows.nth(j);
+        const complexQuestionCell = complexRow.locator('th#complex-panel-simple-field-label');
+        const complexQuestion = await complexQuestionCell.textContent({ timeout: 1000 }).catch(() => null);
+        
+        if (complexQuestion && complexQuestion.trim() && this.match(complexQuestion, questionText)) {
+          // Extract answer from complex field row
+          const complexAnswerCell = complexRow.locator('td');
+          const complexAnswer = await this.extractAnswerFromComplexField(complexAnswerCell);
+          return { found: true, question: complexQuestion.trim(), answer: complexAnswer || '' };
         }
       }
     }
@@ -54,17 +96,112 @@ export class CheckYourAnswersValidation extends CYAValidationBase implements IVa
     return { found: false, question: questionText, answer: '' };
   }
 
-  /**
-   * Extract answer from cell (handles various field types)
-   * Excludes "Change" links and extracts from proper field components
-   */
+  private async extractAnswerFromComplexField(cell: any): Promise<string | null> {
+    // For complex field cells, extract from nested structure:
+    // td > span.text-16 > ccd-field-read > ccd-read-fixed-radio-list-field > span.text-16
+    
+    // Strategy 1: Direct path to radio field answer
+    const radioAnswer = cell.locator('span.text-16 ccd-read-fixed-radio-list-field span.text-16').first();
+    const radioCount = await radioAnswer.count();
+    if (radioCount > 0) {
+      const value = await radioAnswer.textContent({ timeout: 1000 }).catch(() => null);
+      if (value && value.trim()) return value.trim();
+    }
+
+    // Strategy 2: Text field answer
+    const textAnswer = cell.locator('span.text-16 ccd-read-text-field span.text-16').first();
+    const textCount = await textAnswer.count();
+    if (textCount > 0) {
+      const value = await textAnswer.textContent({ timeout: 1000 }).catch(() => null);
+      if (value && value.trim()) return value.trim();
+    }
+
+    // Strategy 3: Multi-select field answer
+    const multiSelectAnswer = cell.locator('span.text-16 ccd-read-multi-select-list-field').first();
+    const multiCount = await multiSelectAnswer.count();
+    if (multiCount > 0) {
+      const value = await multiSelectAnswer.textContent({ timeout: 1000 }).catch(() => null);
+      if (value && value.trim()) return value.trim();
+    }
+
+    // Strategy 4: Get text from nested span.text-16 within ccd-field-read
+    const nestedText16 = cell.locator('span.text-16 ccd-field-read span.text-16').first();
+    const nestedCount = await nestedText16.count();
+    if (nestedCount > 0) {
+      const text = await nestedText16.textContent({ timeout: 1000 }).catch(() => null);
+      if (text && text.trim()) return text.trim();
+    }
+
+    // Strategy 5: Get text from any span.text-16 in the cell (deepest nested one)
+    const allText16 = cell.locator('span.text-16');
+    const allText16Count = await allText16.count();
+    // Get the last one (usually the answer, not the wrapper)
+    if (allText16Count > 1) {
+      const lastSpan = allText16.nth(allText16Count - 1);
+      const text = await lastSpan.textContent({ timeout: 1000 }).catch(() => null);
+      if (text && text.trim() && !text.includes('Change')) return text.trim();
+    } else if (allText16Count === 1) {
+      const text = await allText16.first().textContent({ timeout: 1000 }).catch(() => null);
+      if (text && text.trim() && !text.includes('Change')) return text.trim();
+    }
+
+    return null;
+  }
+
   private async extractAnswerFromCell(cell: any): Promise<string | null> {
-    // For radio/checkbox fields - extract first (most common)
+    // Strategy 1: Use formLabelValue pattern - td span.text-16 (most reliable for CYA pages)
+    const text16Span = cell.locator('td span.text-16:not(:has(ccd-field-read-label)):not(:has(a)), span.text-16:not(:has(ccd-field-read-label)):not(:has(a))').first();
+    const text16Count = await text16Span.count();
+    if (text16Count > 0) {
+      const text16Value = await text16Span.textContent({ timeout: 1000 }).catch(() => null);
+      if (text16Value && text16Value.trim()) return text16Value.trim();
+    }
+    
+    // Strategy 1b: Try all span.text-16 elements and get the first non-empty one
+    const allText16 = cell.locator('span.text-16');
+    const allText16Count = await allText16.count();
+    for (let i = 0; i < allText16Count; i++) {
+      const span = allText16.nth(i);
+      const hasLink = await span.locator('a').count() > 0;
+      if (!hasLink) {
+        const text = await span.textContent({ timeout: 500 }).catch(() => null);
+        if (text && text.trim() && !text.includes('Change')) {
+          return text.trim();
+        }
+      }
+    }
+
+    // Strategy 2: For radio/checkbox fields - try multiple extraction strategies
     const radioField = cell.locator('ccd-read-fixed-radio-list-field, ccd-read-multi-select-list-field');
     const radioCount = await radioField.count();
     if (radioCount > 0) {
-      const radioText = await radioField.textContent({ timeout: 500 }).catch(() => null);
+      // Get text content from the field component
+      let radioText = await radioField.textContent({ timeout: 1000 }).catch(() => null);
       if (radioText && radioText.trim()) return radioText.trim();
+      
+      // Find selected radio button label
+      const selectedRadio = radioField.locator('input[type="radio"]:checked + label, input[type="checkbox"]:checked + label');
+      const selectedCount = await selectedRadio.count();
+      if (selectedCount > 0) {
+        radioText = await selectedRadio.first().textContent({ timeout: 1000 }).catch(() => null);
+        if (radioText && radioText.trim()) return radioText.trim();
+      }
+      
+      // Find any label within the radio field
+      const label = radioField.locator('label').first();
+      const labelCount = await label.count();
+      if (labelCount > 0) {
+        radioText = await label.textContent({ timeout: 1000 }).catch(() => null);
+        if (radioText && radioText.trim()) return radioText.trim();
+      }
+      
+      // Get inner text from span elements within radio field
+      const span = radioField.locator('span.text-16, span').first();
+      const spanCount = await span.count();
+      if (spanCount > 0) {
+        radioText = await span.textContent({ timeout: 1000 }).catch(() => null);
+        if (radioText && radioText.trim()) return radioText.trim();
+      }
     }
 
     // For text fields
@@ -135,19 +272,75 @@ export class CheckYourAnswersValidation extends CYAValidationBase implements IVa
       if (emailValue && emailValue.trim()) return emailValue.trim();
     }
 
-    // Last resort: get text from span.text-16 (common pattern) but exclude links
-    const textSpan = cell.locator('span.text-16:not(:has(a))').first();
-    let answer = await textSpan.textContent({ timeout: 1000 }).catch(() => null);
-    
-    // If still no answer, try getting all text but exclude "Change" and links
-    if (!answer || !answer.trim()) {
-      // Get text but exclude any links (like "Change")
-      const allText = await cell.locator('*:not(a):not(button)').allTextContents().catch(() => []);
-      if (allText.length > 0) {
-        answer = allText.join(' ').replace(/Change/gi, '').replace(/\s+/g, ' ').trim();
+    // Strategy 3: Try all span.text-16 elements (excluding those with links)
+    const allText16SpansNoLinks = cell.locator('span.text-16:not(:has(a))');
+    const allText16SpansCount = await allText16SpansNoLinks.count();
+    if (allText16SpansCount > 0) {
+      const allTexts: string[] = [];
+      for (let i = 0; i < allText16SpansCount; i++) {
+        const spanText = await allText16SpansNoLinks.nth(i).textContent({ timeout: 500 }).catch(() => null);
+        if (spanText && spanText.trim() && !spanText.includes('Change')) {
+          allTexts.push(spanText.trim());
+        }
+      }
+      if (allTexts.length > 0) {
+        return allTexts.join(' ').trim();
       }
     }
+    
+    // Strategy 4: Get all text but exclude "Change" and links
+    const allText = await cell.locator('*:not(a):not(button)').allTextContents().catch(() => []);
+    if (allText.length > 0) {
+      const combined = allText.join(' ').replace(/Change/gi, '').replace(/\s+/g, ' ').trim();
+      if (combined) return combined;
+    }
+    
+    // Strategy 5: Get all visible text nodes (most aggressive approach)
+    // This gets ALL text content including from nested elements
+    const allVisibleText = await cell.evaluate((el: HTMLElement) => {
+      // Get all text nodes, excluding script and style tags
+      const walker = document.createTreeWalker(
+        el,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode: (node: Node) => {
+            const parent = node.parentElement;
+            if (!parent) return NodeFilter.FILTER_REJECT;
+            // Skip if parent is a link or button
+            if (parent.tagName === 'A' || parent.tagName === 'BUTTON') {
+              return NodeFilter.FILTER_REJECT;
+            }
+            // Skip if parent contains a link
+            if (parent.querySelector('a')) {
+              return NodeFilter.FILTER_REJECT;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        }
+      );
+      
+      const texts: string[] = [];
+      let node: Node | null;
+      while ((node = walker.nextNode()) !== null) {
+        const text = node.textContent?.trim();
+        if (text && !text.toLowerCase().includes('change')) {
+          texts.push(text);
+        }
+      }
+      return texts.join(' ').trim();
+    }).catch(() => null);
+    
+    if (allVisibleText && allVisibleText.trim()) {
+      return allVisibleText.trim();
+    }
+    
+    // Strategy 6: Final fallback - get direct text content from cell
+    const cellText = await cell.textContent({ timeout: 1000 }).catch(() => null);
+    if (cellText) {
+      const cleaned = cellText.replace(/Change/gi, '').replace(/\s+/g, ' ').trim();
+      if (cleaned) return cleaned;
+    }
 
-    return answer && answer.trim() ? answer.trim() : null;
+    return null;
   }
 }

@@ -23,7 +23,6 @@ export abstract class CYAValidationBase {
     
     CYAValidationBase.validationInProgress = true;
     try {
-    // Wait for page to load with timeout
     await Promise.race([
       page.waitForLoadState('networkidle'),
       page.waitForSelector('table.form-table, table.complex-panel-table', { timeout: 10000 })
@@ -35,25 +34,14 @@ export abstract class CYAValidationBase {
     }
 
     console.log(`\n${'='.repeat(80)}`);
-    console.log(`🔍 [${errorPrefix}] Starting Validation`);
-    console.log(`📊 Total Q&A Pairs Collected: ${qaPairs.length}`);
+    console.log(`🔍 [${errorPrefix}] Starting Validation - ${qaPairs.length} Q&A pairs`);
     console.log(`${'='.repeat(80)}\n`);
 
-    // Log all questions found on the CYA page (for debugging)
     const allPageQuestions = await this.getAllQuestionsOnPage(page);
-    console.log(`📄 Questions Found on CYA Page (${allPageQuestions.length} total):`);
-    allPageQuestions.forEach((q, index) => {
-      console.log(`  ${index + 1}. "${q.question}" → "${q.answer}"`);
-    });
-    console.log('');
-
-    // Log all collected data
-    console.log(`📋 Collected Data During Journey:`);
-    qaPairs.forEach((qaPair, index) => {
-      console.log(`  ${index + 1}. [${qaPair.step || 'N/A'}]`);
-      console.log(`     Question: "${qaPair.question}"`);
-      console.log(`     Answer:   "${qaPair.answer}"`);
-    });
+    console.log(`📄 Questions on CYA Page (${allPageQuestions.length}):`);
+    allPageQuestions.forEach((q, i) => console.log(`  ${i + 1}. "${q.question}" → "${q.answer.substring(0, 50)}"`));
+    console.log(`📋 Collected Data (${qaPairs.length}):`);
+    qaPairs.forEach((qa, i) => console.log(`  ${i + 1}. [${qa.step || 'N/A'}] "${qa.question}" → "${qa.answer}"`));
     console.log('');
 
     const errors: string[] = [];
@@ -64,27 +52,26 @@ export abstract class CYAValidationBase {
         continue;
       }
 
-      console.log(`\n🔎 [${i + 1}/${qaPairs.length}] Validating:`);
-      console.log(`   Step: "${qaPair.step || 'N/A'}"`);
-      console.log(`   Collected Question: "${qaPair.question}"`);
-      console.log(`   Collected Answer:   "${qaPair.answer}"`);
+      console.log(`\n🔎 [${i + 1}/${qaPairs.length}] "${qaPair.question}" → "${qaPair.answer}"`);
 
       const found = await Promise.race([
         this.findQuestionOnPage(page, qaPair.question),
         new Promise<{found: boolean; question: string; answer: string}>(resolve => 
           setTimeout(() => resolve({ found: false, question: qaPair.question || '', answer: '' }), 5000)
         )
-      ]);
+      ]) as {found: boolean; question: string; answer: string};
 
       if (!found.found) {
         console.log(`   ❌ Question NOT FOUND on CYA page`);
         
-        // Find similar questions on the page
+        // Find similar questions on the page (case-sensitive)
         const similarQuestions = allPageQuestions
           .map(q => ({
             question: q.question,
             answer: q.answer,
-            similarity: this.calculateSimilarity(q.question.toLowerCase(), qaPair.question.toLowerCase())
+            similarity: qaPair.question
+              ? this.calculateSimilarity(q.question, qaPair.question)
+              : 0
           }))
           .filter(q => q.similarity > 0.3)
           .sort((a, b) => b.similarity - a.similarity)
@@ -103,37 +90,41 @@ export abstract class CYAValidationBase {
         continue;
       }
 
-      console.log(`   ✅ Question FOUND on CYA page: "${found.question}"`);
-      console.log(`   📄 Page Answer: "${found.answer}"`);
-      console.log(`   🔍 Comparing: Collected "${qaPair.answer}" vs Page "${found.answer}"`);
+      console.log(`   ✅ Found: "${found.question}" → "${found.answer}"`);
 
-      const collected = qaPair.answer.trim().toLowerCase();
-      const pageAnswer = found.answer.trim().toLowerCase();
+      // Case-sensitive exact match
+      const collected = qaPair.answer.trim();
+      const pageAnswer = found.answer.trim();
 
-      if (collected !== pageAnswer && !pageAnswer.includes(collected) && !collected.includes(pageAnswer)) {
-        console.log(`   ❌ MISMATCH DETECTED`);
-        console.log(`      Expected (from collected data): "${qaPair.answer}"`);
-        console.log(`      Found (on CYA page):            "${found.answer}"`);
-        console.log(`      Step where collected:           "${qaPair.step || 'N/A'}"`);
-        console.log(`      ⚠️  NOTE: This mismatch could indicate:`);
-        console.log(`         - Question matching found wrong question on page`);
-        console.log(`         - Value wasn't saved correctly (validation failed, mandatory field missing, etc.)`);
-        console.log(`         - Page is showing different value than what was selected`);
+      if (collected !== pageAnswer) {
+        console.log(`   ❌ MISMATCH: Expected "${qaPair.answer}", Found "${found.answer}"`);
         errors.push(`Mismatch for "${found.question}": Expected "${qaPair.answer}", Found "${found.answer}"`);
       } else {
-        console.log(`   ✅ MATCH - Answers match!`);
+        console.log(`   ✅ MATCH`);
       }
+    }
+
+    // Check for questions on CYA page that weren't collected during journey
+    const collectedQuestionTexts = new Set(qaPairs.map(qa => qa.question?.trim().toLowerCase()).filter(Boolean));
+    const uncollectedQuestions = allPageQuestions.filter(
+      pageQ => !collectedQuestionTexts.has(pageQ.question.trim().toLowerCase())
+    );
+
+    if (uncollectedQuestions.length > 0) {
+      console.log(`\n⚠️  Questions on CYA page NOT collected during journey (${uncollectedQuestions.length}):`);
+      uncollectedQuestions.forEach((q, i) => {
+        console.log(`  ${i + 1}. "${q.question}" → "${q.answer.substring(0, 50)}"`);
+        errors.push(`Question on CYA page not collected: "${q.question}"`);
+      });
     }
 
     console.log(`\n${'='.repeat(80)}`);
     if (errors.length > 0) {
-      console.log(`❌ [${errorPrefix}] Validation FAILED`);
-      console.log(`   Errors: ${errors.length}`);
+      console.log(`❌ [${errorPrefix}] FAILED - ${errors.length} error(s)`);
       console.log(`${'='.repeat(80)}\n`);
       throw new Error(`${errorPrefix} validation failed:\n${errors.join('\n')}`);
     } else {
-      console.log(`✅ [${errorPrefix}] Validation PASSED`);
-      console.log(`   All ${qaPairs.length} Q&A pairs matched successfully!`);
+      console.log(`✅ [${errorPrefix}] PASSED - All ${qaPairs.length} pairs matched`);
       console.log(`${'='.repeat(80)}\n`);
     }
     } finally {
@@ -151,84 +142,73 @@ export abstract class CYAValidationBase {
   }>;
 
   /**
-   * Match question text - STRICT matching to avoid false positives
-   * Only matches if questions are exact or very close (handles minor punctuation/whitespace differences)
+   * Match question text - Case-sensitive exact match with minor whitespace/punctuation tolerance
    */
   protected match(pageQuestion: string, collectedQuestion: string): boolean {
-    const p = pageQuestion.toLowerCase().trim();
-    const c = collectedQuestion.toLowerCase().trim();
+    const p = pageQuestion.trim();
+    const c = collectedQuestion.trim();
     
-    // Exact match
+    // Case-sensitive exact match
     if (p === c) return true;
     
-    // Remove common punctuation and normalize whitespace
+    // Remove common punctuation and normalize whitespace (case-sensitive)
     const pClean = p.replace(/[.,!?;:()'"]/g, '').replace(/\s+/g, ' ').trim();
     const cClean = c.replace(/[.,!?;:()'"]/g, '').replace(/\s+/g, ' ').trim();
     
-    // Exact match after cleaning
+    // Case-sensitive exact match after cleaning
     if (pClean === cClean) return true;
     
     // For questions with numbers (like "Address Line 2" vs "Address Line 3"), require exact number match
     const pHasNumber = /\d+/.test(pClean);
     const cHasNumber = /\d+/.test(cClean);
     if (pHasNumber || cHasNumber) {
-      // Extract numbers and compare
       const pNumber = pClean.match(/\d+/)?.[0];
       const cNumber = cClean.match(/\d+/)?.[0];
       if (pNumber && cNumber && pNumber !== cNumber) {
-        return false; // Different numbers, don't match
+        return false;
       }
     }
     
-    // Split into words (filter out very short words like "a", "an", "the", "is", "are", etc.)
+    // Very strict word-based matching (only for minor punctuation/whitespace differences)
+    // Require 95%+ similarity to prevent false matches between different questions
     const stopWords = new Set(['a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'about', 'any', 'you', 'your', 'there', 'this', 'that', 'these', 'those']);
-    const pWords = pClean.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
-    const cWords = cClean.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w));
+    const pWords = pClean.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w.toLowerCase()));
+    const cWords = cClean.split(/\s+/).filter(w => w.length > 2 && !stopWords.has(w.toLowerCase()));
     
-    // If one question is significantly longer/shorter, require very high overlap
+    // Require very similar length (within 10%)
     const lengthDiff = Math.abs(pClean.length - cClean.length);
     const avgLength = (pClean.length + cClean.length) / 2;
-    const lengthRatio = lengthDiff / avgLength;
-    
-    // If questions differ significantly in length (>25% difference), require exact word match
-    if (lengthRatio > 0.25) {
-      // Require that all significant words from the shorter question appear in the longer one
-      const shorterWords = pWords.length < cWords.length ? pWords : cWords;
-      const longerWords = pWords.length >= cWords.length ? pWords : cWords;
-      const allWordsMatch = shorterWords.every(w => longerWords.includes(w));
-      if (!allWordsMatch) return false;
-      
-      // Also require that word count is similar (within 2 words)
-      if (Math.abs(pWords.length - cWords.length) > 2) return false;
+    if (avgLength > 0 && lengthDiff / avgLength > 0.1) {
+      return false; // Too different in length
     }
     
-    // Calculate word overlap
+    // Require word count difference <= 1
+    if (Math.abs(pWords.length - cWords.length) > 1) {
+      return false;
+    }
+    
+    // Require 95%+ word overlap (very strict)
     const commonWords = pWords.filter(w => cWords.includes(w));
     const uniqueWords = new Set([...pWords, ...cWords]);
-    const overlapRatio = commonWords.length / uniqueWords.size;
+    if (uniqueWords.size === 0) return false;
     
-    // Require high overlap (at least 85%) AND most words must match
+    const overlapRatio = commonWords.length / uniqueWords.size;
     const minWords = Math.min(pWords.length, cWords.length);
     const wordMatchRatio = minWords > 0 ? commonWords.length / minWords : 0;
     
-    // Only match if:
-    // 1. At least 85% word overlap, AND
-    // 2. At least 80% of words from shorter question match, AND
-    // 3. Word count is similar (within 3 words)
-    if (overlapRatio >= 0.85 && wordMatchRatio >= 0.80 && Math.abs(pWords.length - cWords.length) <= 3) {
+    // Require 95% overlap AND 95% of shorter question words match
+    if (overlapRatio >= 0.95 && wordMatchRatio >= 0.95) {
       return true;
     }
     
-    // Very strict fallback: one question must contain the other (after removing stop words)
-    // This handles cases like "Property address" matching "Property address" in a longer sentence
+    // Only allow substring match if length difference is <= 5% (very strict)
     const pSignificant = pWords.join(' ');
     const cSignificant = cWords.join(' ');
     if (pSignificant === cSignificant) return true;
     if (pSignificant.includes(cSignificant) || cSignificant.includes(pSignificant)) {
-      // But only if the length difference is small (within 20%)
       const sigLengthDiff = Math.abs(pSignificant.length - cSignificant.length);
       const sigAvgLength = (pSignificant.length + cSignificant.length) / 2;
-      if (sigLengthDiff / sigAvgLength <= 0.2) return true;
+      if (sigAvgLength > 0 && sigLengthDiff / sigAvgLength <= 0.05) return true;
     }
     
     return false;
@@ -320,18 +300,14 @@ export abstract class CYAValidationBase {
   }
 
   /**
-   * Calculate similarity between two strings (0-1 scale)
+   * Calculate similarity between two strings (0-1 scale) for debugging
    */
   protected calculateSimilarity(str1: string, str2: string): number {
     const words1 = str1.split(/\s+/).filter(w => w.length > 2);
     const words2 = str2.split(/\s+/).filter(w => w.length > 2);
-    
     if (words1.length === 0 || words2.length === 0) return 0;
-    
     const commonWords = words1.filter(w => words2.includes(w));
-    const totalWords = new Set([...words1, ...words2]).size;
-    
-    return commonWords.length / totalWords;
+    return commonWords.length / new Set([...words1, ...words2]).size;
   }
 }
 

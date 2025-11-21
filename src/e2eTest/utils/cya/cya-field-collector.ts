@@ -1,106 +1,56 @@
 /**
- * CYA Field Collector - Simple approach
- *
+ * CYA Field Collector
  * Collect CYA data directly in actions by passing action name, question and answer.
- * Question can come from spec, page.data, or be hardcoded.
- *
- * Usage:
- *   await collectCYAAddressData('selectAddress', 'Property address', addressString);
- *   await collectCYAData('selectClaimantType', 'Who is the claimant in this case?', caseData);
  */
 
-import { cyaAddressData } from '@utils/data/cya-address-data';
-import { cyaData } from '@utils/data/cya-data';
+import { cyaAddressData, CYAAddressData } from '@utils/data/cya-address-data';
+import { cyaData, CYAData } from '@utils/data/cya-data';
 
-/**
- * Collect CYA data for Address CYA (first 2 pages: address and country)
- *
- * @param actionName - Name of the action collecting this data (e.g., 'selectAddress')
- * @param question - Question text as it appears on CYA (from spec, page.data, or hardcoded)
- * @param answer - Answer value (string, number, array, etc. - will be converted to string)
- */
-export async function collectCYAAddressData(actionName: string, question: string, answer: any): Promise<void> {
-  if (!question || answer === undefined || answer === null) {
-    return;
-  }
-
-  let answerStr: string;
+function normalizeAnswer(answer: any): string {
   if (Array.isArray(answer)) {
-    answerStr = answer.join(', ');
-  } else {
-    answerStr = String(answer);
+    return answer.join(', ');
   }
-
-  const questionTrimmed = question.trim();
-  const answerTrimmed = answerStr.trim();
-
-  if (!cyaAddressData.collectedQAPairs) cyaAddressData.collectedQAPairs = [];
-
-  // Check for duplicates to prevent duplicate logging and data collection
-  const isDuplicate = cyaAddressData.collectedQAPairs.some(
-    pair => pair.question === questionTrimmed && pair.answer === answerTrimmed && pair.step === actionName
-  );
-
-  if (isDuplicate) {
-    return; // Skip if already collected
-  }
-
-  cyaAddressData.collectedQAPairs.push({
-    step: actionName,
-    question: questionTrimmed,
-    answer: answerTrimmed
-  });
-
-  console.log(`🏠 [Address CYA] Collected Q&A Pair:`, {
-    step: actionName,
-    question: questionTrimmed,
-    answer: answerTrimmed
-  });
+  return String(answer);
 }
 
-/**
- * Collect CYA data for Final CYA (all pages after address pages - 35+ pages)
- *
- * @param actionName - Name of the action collecting this data (e.g., 'selectClaimantType')
- * @param question - Question text as it appears on CYA (from spec, page.data, or hardcoded)
- * @param answer - Answer value (string, number, array, etc. - will be converted to string)
- */
-export async function collectCYAData(actionName: string, question: string | number | boolean | object | string[] | object[], answer: any): Promise<void> {
-  if (!question || answer === undefined || answer === null) {
-    return;
+function collectData(
+  dataStore: CYAData | CYAAddressData,
+  actionName: string,
+  question: string,
+  answer: string,
+  logPrefix: string
+): void {
+  if (!dataStore.collectedQAPairs) {
+    dataStore.collectedQAPairs = [];
   }
 
-  let answerStr: string;
-  if (Array.isArray(answer)) {
-    answerStr = answer.join(', ');
-  } else {
-    answerStr = String(answer);
-  }
-
-  const questionTrimmed = typeof question === 'string' ? question.trim() : String(question);
-  const answerTrimmed = answerStr.trim();
-
-  if (!cyaData.collectedQAPairs) cyaData.collectedQAPairs = [];
-
-  // Check for duplicates to prevent duplicate logging and data collection
-  const isDuplicate = cyaData.collectedQAPairs.some(
-    pair => pair.question === questionTrimmed && pair.answer === answerTrimmed && pair.step === actionName
+  // Prevent duplicate: same question AND answer AND step
+  // Allows same Q&A from different pages/actions (step indicates which page)
+  const isDuplicate = dataStore.collectedQAPairs.some(
+    pair => pair.question === question && pair.answer === answer && pair.step === actionName
   );
 
   if (isDuplicate) {
-    return; // Skip if already collected
+    return;
   }
 
-  cyaData.collectedQAPairs.push({
-    step: actionName,
-    question: questionTrimmed,
-    answer: answerTrimmed
-  });
+  dataStore.collectedQAPairs.push({ step: actionName, question, answer });
+  console.log(`${logPrefix} Collected Q&A Pair:`, { step: actionName, question, answer });
+}
 
-  console.log(`📝 [Final CYA] Collected Q&A Pair:`, {
-    step: actionName,
-    question: questionTrimmed,
-    answer: answerTrimmed
-  });
+export async function collectCYAAddressData(actionName: string, question: string, answer: any): Promise<void> {
+  if (!question || answer === undefined || answer === null) return;
+
+  const questionTrimmed = question.trim();
+  const answerTrimmed = normalizeAnswer(answer).trim();
+  collectData(cyaAddressData, actionName, questionTrimmed, answerTrimmed, '🏠 [Address CYA]');
+}
+
+export async function collectCYAData(actionName: string, question: string | number | boolean | object | string[] | object[], answer: any): Promise<void> {
+  if (!question || answer === undefined || answer === null) return;
+
+  const questionTrimmed = typeof question === 'string' ? question.trim() : String(question);
+  const answerTrimmed = normalizeAnswer(answer).trim();
+  collectData(cyaData, actionName, questionTrimmed, answerTrimmed, '📝 [Final CYA]');
 }
 
