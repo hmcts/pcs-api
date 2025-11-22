@@ -68,6 +68,20 @@ public class PCSCase {
     private String claimantName;
 
     @CCD(
+        searchable = false,
+        access = {CitizenAccess.class}
+    )
+    @External
+    private String applicantForename;
+
+    @CCD(
+        searchable = false,
+        access = {CitizenAccess.class}
+    )
+    @External
+    private String applicantSurname;
+
+    @CCD(
         label = "Organisation Name"
     )
     @External

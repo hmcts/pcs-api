@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -93,6 +94,24 @@ class AddressFormatterTest {
             arguments("123 Main Street", null, "SW1A 1AA", "123 Main Street<br>SW1A 1AA"),
             arguments("123 Main Street", "London", null, "123 Main Street<br>London")
         );
+    }
+
+    @Test
+    void shouldReturnEmptyStringWhenAddressIsNullForCommas() {
+        // When
+        String result = underTest.formatAddressWithCommas(null);
+
+        // Then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEmptyStringWhenAddressIsNullForHtmlLineBreaks() {
+        // When
+        String result = underTest.formatAddressWithHtmlLineBreaks(null);
+
+        // Then
+        assertThat(result).isEmpty();
     }
 
 }
