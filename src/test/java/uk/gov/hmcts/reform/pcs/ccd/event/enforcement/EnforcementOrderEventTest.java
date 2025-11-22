@@ -26,22 +26,29 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPa
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
 
+    private static final String ENFORCEMENT_WARRANT_FEE = "FEE0380";
+    public static final String ENFORCEMENT_WRIT_FEE = "FEE0397";
     @Mock
-    private final AddressFormatter addressFormatter = new AddressFormatter();
+    private AddressFormatter addressFormatter;
+    @Mock
+    private FeesAndPayService feesAndPayService;
     @Mock
     private ViolentAggressiveRiskPage violentAggressiveRiskPage;
     @Mock
@@ -74,7 +81,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
         when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(enforceTheOrder)))
             .thenReturn(savingPageBuilder);
-        setEventUnderTest(new EnforcementOrderEvent(enforcementOrderService, addressFormatter,
+        setEventUnderTest(new EnforcementOrderEvent(enforcementOrderService, addressFormatter, feesAndPayService,
                                 violentAggressiveRiskPage, verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
                                 policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
                                 criminalAntisocialRiskPage, aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
@@ -91,10 +98,13 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         String firstName = "Test";
         String lastName = "Testing";
+
         DefendantDetails defendantDetails = DefendantDetails.builder().firstName(firstName).lastName(lastName).build();
         PCSCase caseData = PCSCase.builder()
             .allDefendants(List.of(ListValue.<DefendantDetails>builder().value(defendantDetails).build()))
-            .propertyAddress(propertyAddress).build();
+            .propertyAddress(propertyAddress)
+            .enforcementOrder(EnforcementOrder.builder().build())
+            .build();
 
         // When
         PCSCase result = callStartHandler(caseData);
@@ -118,5 +128,101 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         verify(enforcementOrderService).createEnforcementOrder(TEST_CASE_REFERENCE, enforcementOrder);
+    }
+
+    @Test
+    void shouldSetWarrantFeeAmountOnStart() {
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build()).build();
+        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
+            FeeDetails
+                .builder()
+                .feeAmount(new BigDecimal("404.00"))
+                .build()
+        );
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo("£404");
+        verify(feesAndPayService).getFee(ENFORCEMENT_WARRANT_FEE);
+    }
+
+    @Test
+    void shouldSetWritFeeAmountOnStart() {
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build()).build();
+        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
+            FeeDetails
+                .builder()
+                .feeAmount(new BigDecimal("100.00"))
+                .build()
+        );
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo("£100");
+        verify(feesAndPayService).getFee(ENFORCEMENT_WRIT_FEE);
+    }
+
+    @Test
+    void shouldHandleNullWarrantFeeAmount() {
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build()).build();
+        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
+            FeeDetails
+                .builder()
+                .feeAmount(null)
+                .build()
+        );
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo("Unable to retrieve");
+        verify(feesAndPayService).getFee(ENFORCEMENT_WARRANT_FEE);
+    }
+
+    @Test
+    void shouldHandleNullWritFeeAmount() {
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build()).build();
+        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
+            FeeDetails
+                .builder()
+                .feeAmount(null)
+                .build()
+        );
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo("Unable to retrieve");
+        verify(feesAndPayService).getFee(ENFORCEMENT_WRIT_FEE);
+    }
+
+    @Test
+    void shouldSetDefaultWarrantFeeWhenFeeServiceFails() {
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build()).build();
+
+        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE))
+            .thenThrow(new RuntimeException("Fee not found"));
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo("Unable to retrieve");
+        verify(feesAndPayService).getFee(ENFORCEMENT_WARRANT_FEE);
+    }
+
+    @Test
+    void shouldSetDefaultWritFeeWhenFeeServiceFails() {
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build()).build();
+
+        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE))
+            .thenThrow(new RuntimeException("Fee not found"));
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo("Unable to retrieve");
+        verify(feesAndPayService).getFee(ENFORCEMENT_WRIT_FEE);
     }
 }
