@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
 
@@ -17,8 +18,10 @@ public class Defendant {
 
     private Boolean nameKnown;
 
+    @CCD
     private String firstName;
 
+    @CCD
     private String lastName;
 
     private Boolean addressKnown;

@@ -63,7 +63,10 @@ class DraftCaseJsonMergerTest {
                             "applicationWithClaim",
                             "claimantType",
                             "noRentArrearsReasonForGrounds.holidayLetTextArea",
-                            "waysToPay")
+                            "waysToPay",
+                            "enforcementOrder.showChangeNameAddressPage",
+                            "enforcementOrder.showPeopleWhoWillBeEvictedPage",
+                            "enforcementOrder.showPeopleYouWantToEvictPage")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getOtherGroundDescription()).isEqualTo("some other ground description");
