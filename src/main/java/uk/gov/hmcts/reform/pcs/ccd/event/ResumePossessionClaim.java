@@ -90,6 +90,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.roleassignment.RoleAssignmentService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -150,6 +151,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final WalesCheckingNotice walesCheckingNotice;
     private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
+    private final RoleAssignmentService roleAssignmentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -288,6 +290,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
         scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
+
+        roleAssignmentService.assignRole(String.valueOf(caseReference), pcsCase);
 
         return SubmitResponse.defaultResponse();
     }
