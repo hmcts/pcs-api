@@ -9,14 +9,12 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Component
 public class TenancyLicenceDetails implements CcdPageConfiguration {
@@ -24,7 +22,7 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
     private final Clock ukClock;
     private final TextAreaValidationService textAreaValidationService;
 
-    public TenancyLicenceDetails(@Qualifier("ukClock") Clock ukClock, 
+    public TenancyLicenceDetails(@Qualifier("ukClock") Clock ukClock,
                                 TextAreaValidationService textAreaValidationService) {
         this.ukClock = ukClock;
         this.textAreaValidationService = textAreaValidationService;
@@ -81,18 +79,9 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
             PCSCase.DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
         );
-        
+
         if (!validationErrors.isEmpty()) {
             return textAreaValidationService.createValidationResponse(caseData, validationErrors);
-        }
-
-        if (caseData.getTypeOfTenancyLicence() != TenancyLicenceType.SECURE_TENANCY
-            && caseData.getTypeOfTenancyLicence() != TenancyLicenceType.FLEXIBLE_TENANCY)  {
-            caseData.setSecureOrFlexibleDiscretionaryGrounds(Set.of());
-            caseData.setSecureOrFlexibleMandatoryGrounds(Set.of());
-            caseData.setSecureOrFlexibleDiscretionaryGroundsAlt(Set.of());
-            caseData.setSecureOrFlexibleMandatoryGroundsAlt(Set.of());
-            caseData.setRentArrearsOrBreachOfTenancy(Set.of());
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

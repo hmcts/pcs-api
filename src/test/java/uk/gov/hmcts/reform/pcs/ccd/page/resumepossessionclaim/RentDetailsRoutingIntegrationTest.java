@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Set;
@@ -36,7 +37,9 @@ public class RentDetailsRoutingIntegrationTest {
             .typeOfTenancyLicence(tenancyType)
             .noRentArrearsMandatoryGroundsOptions(noRentArrearsMandatory)
             .noRentArrearsDiscretionaryGroundsOptions(noRentArrearsDiscretionary)
-            .secureOrFlexibleDiscretionaryGrounds(secureFlexibleDiscretionary)
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds
+                    .builder().secureOrFlexibleDiscretionaryGrounds(secureFlexibleDiscretionary).build())
             .rentArrearsOrBreachOfTenancy(rentArrearsOrBreach)
             .build();
 
@@ -142,7 +145,6 @@ public class RentDetailsRoutingIntegrationTest {
                      .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
                      .noRentArrearsMandatoryGroundsOptions(Set.of())
                      .noRentArrearsDiscretionaryGroundsOptions(Set.of())
-                     .secureOrFlexibleDiscretionaryGrounds(Set.of())
                      .rentArrearsOrBreachOfTenancy(Set.of())
                      .build(),
                      YesOrNo.NO, "Edge Case: All empty sets"),
@@ -165,26 +167,28 @@ public class RentDetailsRoutingIntegrationTest {
     private YesOrNo simulateRoutingLogic(PCSCase caseData) {
         // For Assured Tenancy - check if grounds 8, 10, or 11 are selected
         if (TenancyLicenceType.ASSURED_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
-            boolean hasRentRelatedGrounds = 
-                (caseData.getNoRentArrearsMandatoryGroundsOptions() != null 
+            boolean hasRentRelatedGrounds =
+                (caseData.getNoRentArrearsMandatoryGroundsOptions() != null
                  && caseData.getNoRentArrearsMandatoryGroundsOptions()
                      .contains(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
-                || (caseData.getNoRentArrearsDiscretionaryGroundsOptions() != null 
+                || (caseData.getNoRentArrearsDiscretionaryGroundsOptions() != null
                     && (caseData.getNoRentArrearsDiscretionaryGroundsOptions()
                         .contains(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS)
                         || caseData.getNoRentArrearsDiscretionaryGroundsOptions()
                             .contains(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY)));
             return YesOrNo.from(hasRentRelatedGrounds);
         }
-        
+
         // For Secure/Flexible Tenancy - check if Ground 1 is selected and Rent Arrears is chosen
         if (TenancyLicenceType.SECURE_TENANCY.equals(caseData.getTypeOfTenancyLicence())
             || TenancyLicenceType.FLEXIBLE_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
-            
-            boolean hasGround1 = caseData.getSecureOrFlexibleDiscretionaryGrounds() != null
-                                && caseData.getSecureOrFlexibleDiscretionaryGrounds()
+
+            boolean hasGround1 = caseData.getSecureOrFlexiblePossessionGrounds()
+                .getSecureOrFlexibleDiscretionaryGrounds() != null
+                                && caseData.getSecureOrFlexiblePossessionGrounds()
+                .getSecureOrFlexibleDiscretionaryGrounds()
                                     .contains(RENT_ARREARS_OR_BREACH_OF_TENANCY);
-            
+
             if (hasGround1) {
                 boolean hasRentArrears = caseData.getRentArrearsOrBreachOfTenancy() != null
                                         && caseData.getRentArrearsOrBreachOfTenancy()
@@ -192,7 +196,7 @@ public class RentDetailsRoutingIntegrationTest {
                 return YesOrNo.from(hasRentArrears);
             }
         }
-        
+
         return YesOrNo.NO;
     }
 }

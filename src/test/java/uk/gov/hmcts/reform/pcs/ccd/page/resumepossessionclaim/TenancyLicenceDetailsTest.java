@@ -65,12 +65,6 @@ class TenancyLicenceDetailsTest extends BasePageTest {
             assertThat(response.getErrors()).isNull();
             assertThat(response.getData().getTenancyLicenceDate())
                 .isEqualTo(date);
-
-            assertThat(caseData.getSecureOrFlexibleDiscretionaryGrounds()).isEmpty();
-            assertThat(caseData.getSecureOrFlexibleDiscretionaryGroundsAlt()).isEmpty();
-            assertThat(caseData.getSecureOrFlexibleMandatoryGrounds()).isEmpty();
-            assertThat(caseData.getSecureOrFlexibleMandatoryGroundsAlt()).isEmpty();
-            assertThat(caseData.getRentArrearsOrBreachOfTenancy()).isEmpty();
         }
 
     }

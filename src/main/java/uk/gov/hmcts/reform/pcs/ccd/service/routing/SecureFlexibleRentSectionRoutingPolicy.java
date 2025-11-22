@@ -25,7 +25,7 @@ public class SecureFlexibleRentSectionRoutingPolicy implements RentSectionRoutin
     @Override
     public YesOrNo shouldShowRentSection(PCSCase caseData) {
         Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds =
-            caseData.getSecureOrFlexibleDiscretionaryGrounds();
+            caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleDiscretionaryGrounds();
 
         if (discretionaryGrounds == null || !discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
             return YesOrNo.NO;
