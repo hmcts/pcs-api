@@ -202,7 +202,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build()).build();
 
-       // When
+        // When
         when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
             FeeDetails
                 .builder()
