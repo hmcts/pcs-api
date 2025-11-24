@@ -33,11 +33,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.CurrencyFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.ccd.util.CurrencyFormatter.formatAsCurrency;
 
 @Slf4j
 @Component
@@ -61,6 +61,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
+    private final CurrencyFormatter currencyFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -104,26 +105,34 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
             pcsCase.setDefendant1(pcsCase.getAllDefendants().getFirst().getValue());
         }
 
+        applyWarrantFeeAmount(pcsCase);
+        applyWritFeeAmount(pcsCase);
+
+        return pcsCase;
+    }
+
+    private void applyWarrantFeeAmount(PCSCase pcsCase) {
         try {
-            pcsCase.getEnforcementOrder().setWarrantFeeAmount(formatAsCurrency(
+            pcsCase.getEnforcementOrder().setWarrantFeeAmount(currencyFormatter.formatAsCurrency(
                 feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE).getFeeAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
             log.error("Error while getting warrant fee", e);
-            pcsCase.getEnforcementOrder().setWarrantFeeAmount(formatAsCurrency(null));
+            pcsCase.getEnforcementOrder().setWarrantFeeAmount(currencyFormatter.formatAsCurrency(null));
         }
+    }
 
+    private void applyWritFeeAmount(PCSCase pcsCase) {
         try {
-            pcsCase.getEnforcementOrder().setWritFeeAmount(formatAsCurrency(
+            pcsCase.getEnforcementOrder().setWritFeeAmount(currencyFormatter.formatAsCurrency(
                 feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE).getFeeAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
             log.error("Error while getting writ fee", e);
-            pcsCase.getEnforcementOrder().setWritFeeAmount(formatAsCurrency(null));
+            pcsCase.getEnforcementOrder().setWritFeeAmount(currencyFormatter.formatAsCurrency(null));
         }
-        return pcsCase;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
