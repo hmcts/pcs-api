@@ -10,16 +10,25 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @AllArgsConstructor
 @Component
 public class ReasonsForPosessionWales implements CcdPageConfiguration {
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -400,6 +409,13 @@ public class ReasonsForPosessionWales implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
+        List<String> validationErrors = new ArrayList<>();
+
+        GroundsReasonsWales walesGrounds = caseData.getGroundsReasonsWales();
+        if (walesGrounds != null) {
+            validationErrors.addAll(validateWalesGrounds(walesGrounds));
+        }
+
         boolean hasASB = hasASBSelected(caseData);
         if (hasASB) {
             caseData.setShowASBQuestionsPageWales(YesOrNo.YES);
@@ -407,9 +423,7 @@ public class ReasonsForPosessionWales implements CcdPageConfiguration {
             caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
         }
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .build();
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 
     private boolean hasASBSelected(PCSCase caseData) {
@@ -422,5 +436,215 @@ public class ReasonsForPosessionWales implements CcdPageConfiguration {
                 && secureDiscretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
 
         return hasASBStandard || hasASBSecure;
+    }
+
+    private List<String> validateWalesGrounds(GroundsReasonsWales grounds) {
+        List<TextAreaValidationService.FieldValidation> allValidations = new ArrayList<>();
+        allValidations.addAll(List.of(buildStandardMandatoryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildStandardDiscretionaryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildEstateManagementGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildSecureMandatoryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildSecureDiscretionaryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildSecureEstateManagementGroundValidations(grounds)));
+
+        return textAreaValidationService.validateMultipleTextAreas(
+            allValidations.toArray(new TextAreaValidationService.FieldValidation[0])
+        );
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildStandardMandatoryGroundValidations(
+            GroundsReasonsWales grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getFailToGiveUpS170Reason(),
+                MandatoryGroundWales.FAIL_TO_GIVE_UP_S170.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getLandlordNoticePeriodicS178Reason(),
+                MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSeriousArrearsPeriodicS181Reason(),
+                MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getLandlordNoticeFtEndS186Reason(),
+                MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSeriousArrearsFixedTermS187Reason(),
+                MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getFailToGiveUpBreakNoticeS191Reason(),
+                MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getLandlordBreakClauseS199Reason(),
+                MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getConvertedFixedTermSch1225B2Reason(),
+                MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildStandardDiscretionaryGroundValidations(
+            GroundsReasonsWales grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getOtherBreachSection157Reason(),
+                DiscretionaryGroundWales.OTHER_BREACH_SECTION_157.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildEstateManagementGroundValidations(
+            GroundsReasonsWales grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getBuildingWorksReason(),
+                EstateManagementGroundsWales.BUILDING_WORKS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getRedevelopmentSchemesReason(),
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getCharitiesReason(),
+                EstateManagementGroundsWales.CHARITIES.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getDisabledSuitableDwellingReason(),
+                EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getHousingAssociationsAndTrustsReason(),
+                EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSpecialNeedsDwellingsReason(),
+                EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getReserveSuccessorsReason(),
+                EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getJointContractHoldersReason(),
+                EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getOtherEstateManagementReasonsReason(),
+                EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildSecureMandatoryGroundValidations(
+            GroundsReasonsWales grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureFailureToGiveUpPossessionSection170Reason(),
+                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureLandlordNoticeSection186Reason(),
+                SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureFailureToGiveUpPossessionSection191Reason(),
+                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureLandlordNoticeSection199Reason(),
+                SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_199.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildSecureDiscretionaryGroundValidations(
+            GroundsReasonsWales grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureOtherBreachOfContractReason(),
+                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildSecureEstateManagementGroundValidations(
+            GroundsReasonsWales grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureBuildingWorksReason(),
+                EstateManagementGroundsWales.BUILDING_WORKS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureRedevelopmentSchemesReason(),
+                EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureCharitiesReason(),
+                EstateManagementGroundsWales.CHARITIES.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureDisabledSuitableDwellingReason(),
+                EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureHousingAssociationsAndTrustsReason(),
+                EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureSpecialNeedsDwellingsReason(),
+                EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureReserveSuccessorsReason(),
+                EstateManagementGroundsWales.RESERVE_SUCCESSORS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureJointContractHoldersReason(),
+                EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSecureOtherEstateManagementReasonsReason(),
+                EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
     }
 }

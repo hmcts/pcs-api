@@ -1,12 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -14,15 +19,35 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.doAnswer;
 
+@ExtendWith(MockitoExtension.class)
 class ReasonsForPosessionWalesTest extends BasePageTest {
+
+    @Mock
+    private TextAreaValidationService textAreaValidationService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ReasonsForPosessionWales());
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateMultipleTextAreas(any(), any());
+        doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errors(errors.isEmpty() ? null : errors)
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
+        
+        setPageUnderTest(new ReasonsForPosessionWales(textAreaValidationService));
     }
 
     @ParameterizedTest
