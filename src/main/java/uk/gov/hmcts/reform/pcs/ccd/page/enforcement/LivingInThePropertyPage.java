@@ -17,7 +17,8 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
             .label("livingInTheProperty-content", "---")
             .label(
                 "livingInTheProperty-information-text", """
-                    <p class="govuk-body govuk-!-font-weight-bold"> The bailiff needs to know if anyone at the property poses a risk.</p>
+                    <p class="govuk-body govuk-!-font-weight-bold"> The bailiff needs to know if anyone at the property
+                    poses a risk.</p>
                     <p class="govuk-body govuk-!-margin-bottom-1"> For example if they:</p>
                       <ul class="govuk-list govuk-list--bullet">
                        <li class="govuk-!-font-size-19"> are violent or aggressive</li>
