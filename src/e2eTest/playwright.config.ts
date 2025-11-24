@@ -46,7 +46,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         channel: 'chrome',
         screenshot: 'only-on-failure',
-        video: 'on',
+        video: 'retain-on-failure' as const,
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,

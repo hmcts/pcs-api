@@ -38,8 +38,7 @@ import {
   performValidations
 } from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { resetCYAData } from '@utils/data/cya-data';
-import { resetCYAAddressData } from '@utils/data/cya-address-data';
+import { resetCYAData, resetCYAAddressData } from '@utils/cya/cya-field-collector';
 
 test.beforeEach(async ({page}) => {
   resetCYAData(); // Reset Final CYA data at the start of each test
@@ -71,7 +70,7 @@ test.describe('[Create Case - England Simple Journey for CYA Validation] @regres
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader);
-    await performValidation('validateCheckYourAnswersAddress'); // Validate Address CYA page
+    await performValidation('validateCheckYourAnswersAddress');
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');

@@ -45,8 +45,7 @@ import {
   detailsOfRentArrears
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { resetCYAData } from '@utils/data/cya-data';
-import { resetCYAAddressData } from '@utils/data/cya-address-data';
+import { resetCYAData, resetCYAAddressData } from '@utils/cya/cya-field-collector';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.

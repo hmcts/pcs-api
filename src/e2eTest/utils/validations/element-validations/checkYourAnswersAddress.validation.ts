@@ -1,153 +1,162 @@
-import { Page } from '@playwright/test';
+import { Page, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
-import { cyaAddressData } from '@utils/data/cya-address-data';
+import { cyaAddressData } from '@utils/cya/cya-field-collector';
+import { extractSimpleQAFromPage, isAddressField } from '@utils/cya/cya-validation-utils';
 
 export class CheckYourAnswersAddressValidation implements IValidation {
-  private static validationInProgress = false;
-
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
-    if (CheckYourAnswersAddressValidation.validationInProgress) {
-      console.log(`⚠️  Validation already in progress, skipping duplicate call`);
-      return;
-    }
-
-    CheckYourAnswersAddressValidation.validationInProgress = true;
-    try {
-      await Promise.race([
-        page.waitForLoadState('networkidle'),
-        page.waitForSelector('table.form-table', { timeout: 10000 })
-      ]).catch(() => {});
-      await page.waitForTimeout(300);
-
       const collectedQA = cyaAddressData.collectedQAPairs || [];
       if (collectedQA.length === 0) {
         throw new Error('Address CYA: No CYA data collected. Make sure to collect Q&A pairs during the journey.');
       }
 
-      console.log(`\n${'='.repeat(80)}`);
-      console.log(`🔍 [Address CYA] Starting Validation - ${collectedQA.length} collected Q&A pairs`);
-      console.log(`${'='.repeat(80)}\n`);
+    const pageQA = await test.step('Extract Q&A pairs from Address CYA page', async () => {
+      return await this.extractAllQAFromPage(page);
+    });
+    
+    // Debug logging
+    console.log('🏠 [Address CYA] Collected Q&A pairs:', collectedQA.map(q => `${q.question}: ${q.answer}`));
+    console.log('🏠 [Address CYA] Page Q&A pairs:', pageQA.map(q => `${q.question}: ${q.answer}`));
 
-      const pageQA = await this.extractAllQAFromPage(page);
-      console.log(`📄 Questions on CYA Page: ${pageQA.length}`);
-      console.log(`📋 Collected Q&A Pairs: ${collectedQA.length}\n`);
+    // Categorize errors for better reporting
+    const missingInCollected: Array<{question: string; answer: string}> = [];
+    const missingOnPage: Array<{question: string; answer: string}> = [];
+    const answerMismatches: Array<{question: string; expected: string; found: string}> = [];
 
-      const errors: string[] = [];
+    // Separate address fields from other questions
+    const addressFields = collectedQA.filter(q => q.question && isAddressField(q.question!));
+    const otherQuestions = collectedQA.filter(q => q.question && !isAddressField(q.question!));
 
-      // Check 1: All collected Q&A pairs appear on CYA page
-      for (const collected of collectedQA) {
+    // For address fields, match by exact question and answer
+    for (const addressField of addressFields) {
+      if (!addressField.question || !addressField.answer) continue;
+      
+      const collectedQuestion = addressField.question.trim();
+      const collectedAnswer = addressField.answer.trim();
+      
+      // Find exact question match (case-sensitive for question, exact for answer)
+      const found = pageQA.find(p => 
+        p.question.trim() === collectedQuestion &&
+        p.answer.trim() === collectedAnswer
+      );
+      
+      if (!found) {
+        // Check if question exists but answer is different
+        const questionFound = pageQA.find(p => p.question.trim() === collectedQuestion);
+        
+        if (questionFound) {
+          // Question found but answer doesn't match
+          answerMismatches.push({
+            question: questionFound.question,
+            expected: collectedAnswer,
+            found: typeof questionFound.answer === 'string' ? questionFound.answer.trim() : String(questionFound.answer).trim()
+          });
+        } else {
+          // Question not found at all
+          console.log(`🏠 [Address CYA] Address field not found: "${collectedQuestion}" = "${collectedAnswer}"`);
+          missingOnPage.push({
+            question: collectedQuestion,
+            answer: collectedAnswer
+          });
+        }
+      }
+    }
+
+    // For non-address questions, exact match only
+    await test.step(`Validate ${otherQuestions.length} non-address questions against CYA page`, async () => {
+      for (const collected of otherQuestions) {
         if (!collected.question || !collected.answer) continue;
 
-        const found = pageQA.find(page => this.match(page.question, collected.question!));
+        const collectedQuestion = collected.question.trim();
+        const collectedAnswer = collected.answer.trim();
+        
+        // Exact match: question (case-sensitive) and answer (exact)
+        const found = pageQA.find(p => 
+          p.question.trim() === collectedQuestion &&
+          p.answer.trim() === collectedAnswer
+        );
+        
         if (!found) {
-          errors.push(`Question not found: "${collected.question}"`);
-          continue;
-        }
-
-        if (found.answer.trim() !== collected.answer.trim()) {
-          errors.push(`Mismatch for "${found.question}": Expected "${collected.answer}", Found "${found.answer}"`);
+          // Check if question exists but answer is different
+          const questionFound = pageQA.find(p => p.question.trim() === collectedQuestion);
+          
+          if (questionFound) {
+            // Question found but answer doesn't match
+            answerMismatches.push({
+              question: questionFound.question,
+              expected: collectedAnswer,
+              found: typeof questionFound.answer === 'string' ? questionFound.answer.trim() : String(questionFound.answer).trim()
+            });
+          } else {
+            // Question not found at all
+            console.log(`🏠 [Address CYA] Question not found: "${collectedQuestion}"`);
+            missingOnPage.push({
+              question: collectedQuestion,
+              answer: collectedAnswer
+            });
+          }
         }
       }
+    });
 
-      // Check 2: All questions on CYA page were collected
-      for (const page of pageQA) {
-        const wasCollected = collectedQA.some(collected => {
-          if (!collected.question) return false;
-          return this.match(page.question, collected.question);
-        });
-
+    // Validate all questions on CYA page were collected (case-sensitive exact match)
+    await test.step('Check for questions on Address CYA page that were not collected', async () => {
+      for (const pageItem of pageQA) {
+        const pageQuestion = pageItem.question.trim();
+        const wasCollected = collectedQA.some(c => 
+          c.question && c.question.trim() === pageQuestion
+        );
         if (!wasCollected) {
-          errors.push(`Question on CYA page not collected: "${page.question}"`);
+          missingInCollected.push({
+            question: pageQuestion,
+            answer: typeof pageItem.answer === 'string' ? pageItem.answer.trim() : String(pageItem.answer).trim()
+          });
         }
       }
+    });
 
-      console.log(`${'='.repeat(80)}`);
-      if (errors.length > 0) {
-        console.log(`❌ [Address CYA] FAILED - ${errors.length} error(s)`);
-        errors.forEach((err, i) => console.log(`  ${i + 1}. ${err}`));
-        console.log(`${'='.repeat(80)}\n`);
-        throw new Error(`Address CYA validation failed:\n${errors.join('\n')}`);
-      } else {
-        console.log(`✅ [Address CYA] PASSED - All ${collectedQA.length} pairs matched`);
-        console.log(`${'='.repeat(80)}\n`);
+    // Build comprehensive error message for Allure reports
+    if (missingOnPage.length > 0 || missingInCollected.length > 0 || answerMismatches.length > 0) {
+      const errorParts: string[] = [];
+      
+      if (missingOnPage.length > 0) {
+        errorParts.push(`\n❌ QUESTIONS COLLECTED BUT MISSING ON ADDRESS CYA PAGE (${missingOnPage.length}):`);
+        missingOnPage.forEach((item, index) => {
+          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
+          errorParts.push(`     Expected Answer: "${item.answer}"`);
+        });
       }
-    } finally {
-      CheckYourAnswersAddressValidation.validationInProgress = false;
+      
+      if (missingInCollected.length > 0) {
+        errorParts.push(`\n⚠️  QUESTIONS ON ADDRESS CYA PAGE BUT NOT COLLECTED (${missingInCollected.length}):`);
+        missingInCollected.forEach((item, index) => {
+          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
+          errorParts.push(`     Answer on Page: "${item.answer}"`);
+        });
+      }
+      
+      if (answerMismatches.length > 0) {
+        errorParts.push(`\n🔴 ANSWER MISMATCHES (${answerMismatches.length}):`);
+        answerMismatches.forEach((item, index) => {
+          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
+          errorParts.push(`     Expected: "${item.expected}"`);
+          errorParts.push(`     Found: "${item.found}"`);
+        });
+      }
+      
+      const errorMessage = `Address CYA validation failed:${errorParts.join('\n')}`;
+      throw new Error(errorMessage);
     }
   }
 
   /**
    * Extract all Q&A pairs from Address CYA page
-   * Simple structure: Address fields in nested table + sometimes a simple question
+   * Simple structure: address fields in nested complex-panel-table + optional country question
    */
   private async extractAllQAFromPage(page: Page): Promise<Array<{question: string; answer: string}>> {
-    const qaPairs: Array<{question: string; answer: string}> = [];
-
-    // Find the Property address nested table
-    const complexTable = page.locator('table.complex-panel-table').first();
-    const complexRowCount = await complexTable.locator('tr.complex-panel-simple-field').count();
-
-    for (let i = 0; i < complexRowCount; i++) {
-      const row = complexTable.locator('tr.complex-panel-simple-field').nth(i);
-      const questionCell = row.locator('th#complex-panel-simple-field-label');
-      const answerCell = row.locator('td');
-
-      const question = await questionCell.textContent({ timeout: 500 }).catch(() => null);
-      if (!question || !question.trim()) continue;
-
-      // Simple extraction: get text from span.text-16 in the answer cell
-      const answer = await answerCell.locator('span.text-16').first().textContent({ timeout: 500 }).catch(() => null);
-
-      qaPairs.push({
-        question: question.trim(),
-        answer: (answer || '').trim()
-      });
-    }
-
-    // Also check for simple questions outside the nested table (e.g., "Is the property located in England or Wales?")
-    const mainTable = page.locator('table.form-table').first();
-    const mainRows = mainTable.locator('tr');
-    const mainRowCount = await mainRows.count();
-
-    for (let i = 0; i < mainRowCount; i++) {
-      const row = mainRows.nth(i);
-      const questionCell = row.locator('th').first();
-      const answerCell = row.locator('td.form-cell, td.case-field-content').first();
-
-      const question = await questionCell.textContent({ timeout: 500 }).catch(() => null);
-      if (!question || !question.trim()) continue;
-
-      // Skip if this row contains a nested table (already handled above)
-      const hasNestedTable = await answerCell.locator('table.complex-panel-table').count() > 0;
-      if (hasNestedTable) continue;
-
-      const answer = await answerCell.locator('span.text-16').first().textContent({ timeout: 500 }).catch(() => null);
-
-      qaPairs.push({
-        question: question.trim(),
-        answer: (answer || '').trim()
-      });
-    }
-
-    return qaPairs;
+    return await test.step('Extract all Q&A pairs from Address CYA page', async () => {
+      return await extractSimpleQAFromPage(page);
+    });
   }
 
-  /**
-   * Simple match for address fields - exact match or case-insensitive
-   */
-  private match(pageQuestion: string, collectedQuestion: string): boolean {
-    const p = pageQuestion.trim();
-    const c = collectedQuestion.trim();
-
-    if (p === c) return true;
-
-    // Case-insensitive match
-    if (p.toLowerCase() === c.toLowerCase()) return true;
-
-    // Handle minor punctuation/whitespace differences
-    const pClean = p.replace(/[.,!?;:()'"]/g, '').replace(/\s+/g, ' ').trim();
-    const cClean = c.replace(/[.,!?;:()'"]/g, '').replace(/\s+/g, ' ').trim();
-
-    return pClean.toLowerCase() === cClean.toLowerCase();
-  }
 }
