@@ -113,5 +113,6 @@ async function performAccessibilityChecks(testInfo: TestInfo)
 {
   const executor = getExecutor();
   const axeUtil = new AxeUtils(executor.page);
+  console.log("<<<<Accessibility Code Snippet>>>>>");
   await axeUtil.audit();
 }
