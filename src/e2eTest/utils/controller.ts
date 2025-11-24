@@ -112,8 +112,6 @@ function readValuesFromInputObjects(obj: object): string {
 async function performAccessibilityChecks(testInfo: TestInfo)
 {
   const executor = getExecutor();
-  console.log("accessibility is called>>>>>>>>>>>");
   const axeUtil = new AxeUtils(executor.page);
   await axeUtil.audit();
-  // axeUtil.generateReport(testInfo,"Accessibility Report");
 }
