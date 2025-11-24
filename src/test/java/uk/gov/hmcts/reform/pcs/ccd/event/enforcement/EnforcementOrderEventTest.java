@@ -28,7 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.CurrencyFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -51,7 +51,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
     @Mock
     private CurrencyFormatter currencyFormatter;
     @Mock
-    private FeesAndPayService feesAndPayService;
+    private FeeService feesService;
     @Mock
     private ViolentAggressiveRiskPage violentAggressiveRiskPage;
     @Mock
@@ -84,12 +84,13 @@ class EnforcementOrderEventTest extends BaseEventTest {
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
         when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(enforceTheOrder)))
             .thenReturn(savingPageBuilder);
-        setEventUnderTest(new EnforcementOrderEvent(enforcementOrderService, addressFormatter, feesAndPayService,
-                                violentAggressiveRiskPage, verbalOrWrittenThreatsRiskPage, protestorGroupRiskPage,
-                                policeOrSocialServicesRiskPage, firearmsPossessionRiskPage,
-                                criminalAntisocialRiskPage, aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
-                                vulnerableAdultsChildrenPage, additionalInformationPage, savingPageBuilderFactory,
-                                                    currencyFormatter));
+        setEventUnderTest(new EnforcementOrderEvent(enforcementOrderService, addressFormatter, feesService,
+                                                    violentAggressiveRiskPage, verbalOrWrittenThreatsRiskPage,
+                                                    protestorGroupRiskPage, policeOrSocialServicesRiskPage,
+                                                    firearmsPossessionRiskPage, criminalAntisocialRiskPage,
+                                                    aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
+                                                    vulnerableAdultsChildrenPage, additionalInformationPage,
+                                                    savingPageBuilderFactory, currencyFormatter));
     }
 
     @Test
@@ -141,12 +142,12 @@ class EnforcementOrderEventTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build()).build();
 
         // When
-        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
+        when(feesService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(new BigDecimal("100.00"))
                 .build());
-        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
+        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(new BigDecimal("404.00"))
@@ -162,7 +163,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo("£404");
-        verify(feesAndPayService).getFee(ENFORCEMENT_WARRANT_FEE);
+        verify(feesService).getFee(ENFORCEMENT_WARRANT_FEE);
     }
 
     @Test
@@ -173,11 +174,11 @@ class EnforcementOrderEventTest extends BaseEventTest {
             .build();
 
         // When
-        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE))
+        when(feesService.getFee(ENFORCEMENT_WRIT_FEE))
             .thenReturn(FeeDetails.builder()
                             .feeAmount(new BigDecimal("100.00"))
                             .build());
-        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE))
+        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE))
             .thenReturn(FeeDetails.builder()
                             .feeAmount(new BigDecimal("120.00"))
                             .build());
@@ -192,7 +193,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo("£100");
-        verify(feesAndPayService).getFee(ENFORCEMENT_WRIT_FEE);
+        verify(feesService).getFee(ENFORCEMENT_WRIT_FEE);
     }
 
 
@@ -203,13 +204,13 @@ class EnforcementOrderEventTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build()).build();
 
         // When
-        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
+        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(null)
                 .build()
         );
-        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
+        when(feesService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(null)
@@ -221,7 +222,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo("Unable to retrieve");
-        verify(feesAndPayService).getFee(ENFORCEMENT_WARRANT_FEE);
+        verify(feesService).getFee(ENFORCEMENT_WARRANT_FEE);
     }
 
     @Test
@@ -231,13 +232,13 @@ class EnforcementOrderEventTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build()).build();
 
         // When
-        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
+        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(null)
                 .build()
         );
-        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
+        when(feesService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(null)
@@ -249,7 +250,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo("Unable to retrieve");
-        verify(feesAndPayService).getFee(ENFORCEMENT_WRIT_FEE);
+        verify(feesService).getFee(ENFORCEMENT_WRIT_FEE);
     }
 
     @Test
@@ -259,9 +260,9 @@ class EnforcementOrderEventTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build()).build();
 
         // When
-        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE))
+        when(feesService.getFee(ENFORCEMENT_WRIT_FEE))
             .thenThrow(new RuntimeException("Fee not found"));
-        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE))
+        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE))
             .thenThrow(new RuntimeException("Fee not found"));
         when(currencyFormatter.formatAsCurrency(null)).thenReturn("Unable to retrieve");
 
@@ -269,7 +270,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo("Unable to retrieve");
-        verify(feesAndPayService).getFee(ENFORCEMENT_WARRANT_FEE);
+        verify(feesService).getFee(ENFORCEMENT_WARRANT_FEE);
     }
 
     @Test
@@ -279,9 +280,9 @@ class EnforcementOrderEventTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build()).build();
 
         // When
-        when(feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE))
+        when(feesService.getFee(ENFORCEMENT_WRIT_FEE))
             .thenThrow(new RuntimeException("Fee not found"));
-        when(feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE))
+        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE))
             .thenThrow(new RuntimeException("Fee not found"));
         when(currencyFormatter.formatAsCurrency(null)).thenReturn("Unable to retrieve");
 
@@ -289,6 +290,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo("Unable to retrieve");
-        verify(feesAndPayService).getFee(ENFORCEMENT_WRIT_FEE);
+        verify(feesService).getFee(ENFORCEMENT_WRIT_FEE);
     }
 }

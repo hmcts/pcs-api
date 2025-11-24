@@ -21,7 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.CurrencyFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
@@ -32,7 +32,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-    private final FeesAndPayService feesAndPayService;
+    private final FeeService feeService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
@@ -63,7 +63,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         try {
             caseData.setFeeAmount(currencyFormatter.formatAsCurrency(
-                feesAndPayService.getFee(FeeTypes.CASE_ISSUE_FEE).getFeeAmount()
+                feeService.getFee(FeeTypes.CASE_ISSUE_FEE).getFeeAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)

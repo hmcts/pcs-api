@@ -34,7 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.CurrencyFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -49,7 +49,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
-    private final FeesAndPayService feesAndPayService;
+    private final FeeService feeService;
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
     private final ProtestorGroupRiskPage protestorGroupRiskPage;
@@ -114,7 +114,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private void applyWarrantFeeAmount(PCSCase pcsCase) {
         try {
             pcsCase.getEnforcementOrder().setWarrantFeeAmount(currencyFormatter.formatAsCurrency(
-                feesAndPayService.getFee(ENFORCEMENT_WARRANT_FEE).getFeeAmount()
+                feeService.getFee(ENFORCEMENT_WARRANT_FEE).getFeeAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
@@ -126,7 +126,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private void applyWritFeeAmount(PCSCase pcsCase) {
         try {
             pcsCase.getEnforcementOrder().setWritFeeAmount(currencyFormatter.formatAsCurrency(
-                feesAndPayService.getFee(ENFORCEMENT_WRIT_FEE).getFeeAmount()
+                feeService.getFee(ENFORCEMENT_WRIT_FEE).getFeeAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
