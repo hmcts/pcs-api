@@ -23,17 +23,21 @@ import {
   violentOrAggressiveBehaviour,
   vulnerableAdultsAndChildren,
   youNeedPermission,
-  yourApplication,
+  yourApplication
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
   await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
-  await performAction('navigateToUrl'
-    , `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
+  await performAction('getDefendantDetails', { 
+    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown, 
+    additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
+  });
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
@@ -48,7 +52,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+    await performAction('clickButton', caseSummary.go);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -57,6 +61,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown, 
     });
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {
@@ -135,7 +140,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+    await performAction('clickButton', caseSummary.go);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -144,12 +149,16 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
     });
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {
       question: peopleWillBeEvicted.evictEveryOneQuestion,
-      option: peopleWillBeEvicted.yesRadioOption,
-    })
+      option: peopleWillBeEvicted.noRadioOption,
+    });
+    await performAction('selectPeopleYouWantToEvict', {
+      defendants: defendantDetails,
+    });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
@@ -180,7 +189,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+    await performAction('clickButton', caseSummary.go);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -189,6 +198,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
     });
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {
@@ -235,7 +245,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
   },
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-      await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+      await performAction('clickButton', caseSummary.go);
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -244,6 +254,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
       });
       await performValidation('mainHeader', youNeedPermission.mainHeader);
     });

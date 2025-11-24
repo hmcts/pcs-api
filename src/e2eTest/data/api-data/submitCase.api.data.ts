@@ -38,23 +38,17 @@ export const submitCaseApiData = {
     defendant1: {
       nameKnown: 'YES',
       addressKnown: 'YES',
-      addressSameAsPossession: 'NO',
+      addressSameAsPossession: 'YES',
       firstName: 'John',
       lastName: 'Doe',
-      correspondenceAddress: {
-        AddressLine1: '9 Second Avenue',
-        Country: 'United Kingdom',
-        PostCode: 'W3 7RX',
-        PostTown: 'London'
-      },
     },
-    addAnotherDefendant: 'NO',
+    addAnotherDefendant: 'YES',
     additionalDefendants: [
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'tes1',
-          lastName: 'test2',
+          firstName: 'Peter',
+          lastName: 'Parker',
           addressKnown: 'YES',
           addressSameAsPossession: 'YES'
         },
@@ -63,42 +57,42 @@ export const submitCaseApiData = {
       {
         value: {
           nameKnown: 'YES',
-          firstName: 'tes2',
-          lastName: 'tet2',
+          firstName: 'Jen',
+          lastName: 'Parker',
           addressKnown: 'YES',
           addressSameAsPossession: 'YES'
         },
-        'id': null
-      },
-    ],  
-  typeOfTenancyLicence: 'DEMOTED_TENANCY',
-  tenancyLicenceDate: null,
-  tenancyLicenceDocuments: [],
-  showIntroductoryDemotedOtherGroundReasonPage: 'Yes',
-  hasIntroductoryDemotedOtherGroundsForPossession: 'NO',
-  noGrounds: 'text no grounds',
-  preActionProtocolCompleted: 'NO',
-  mediationAttempted: 'NO',
-  settlementAttempted: 'NO',
-  noticeServed: 'No',
-  claimantNamePossessiveForm: null,
-  claimantCircumstancesSelect: 'NO',
-  hasDefendantCircumstancesInfo: 'NO',
-  showSuspensionOfRightToBuyHousingActsPage: 'No',
-  showDemotionOfTenancyHousingActsPage: 'No',
-  suspensionToBuyDemotionOfTenancyPages: 'No',
-  alternativesToPossession: [],
-  claimingCostsWanted: 'NO',
-  additionalReasonsForPossession: {
-    hasReasons: 'NO',
-    reasons: null
+        id: null
+      },      
+    ],
+    typeOfTenancyLicence: 'DEMOTED_TENANCY',
+    tenancyLicenceDate: null,
+    tenancyLicenceDocuments: [],
+    showIntroductoryDemotedOtherGroundReasonPage: 'Yes',
+    hasIntroductoryDemotedOtherGroundsForPossession: 'NO',
+    noGrounds: 'text no grounds',
+    preActionProtocolCompleted: 'NO',
+    mediationAttempted: 'NO',
+    settlementAttempted: 'NO',
+    noticeServed: 'No',
+    claimantNamePossessiveForm: null,
+    claimantCircumstancesSelect: 'NO',
+    hasDefendantCircumstancesInfo: 'NO',
+    showSuspensionOfRightToBuyHousingActsPage: 'No',
+    showDemotionOfTenancyHousingActsPage: 'No',
+    suspensionToBuyDemotionOfTenancyPages: 'No',
+    alternativesToPossession: [],
+    claimingCostsWanted: 'NO',
+    additionalReasonsForPossession: {
+      hasReasons: 'NO',
+      reasons: null
+    },
+    hasUnderlesseeOrMortgagee: 'NO',
+    wantToUploadDocuments: 'NO',
+    applicationWithClaim: 'NO',
+    languageUsed: 'ENGLISH',
+    completionNextStep: 'SUBMIT_AND_PAY_NOW'
   },
-  hasUnderlesseeOrMortgagee: 'NO',
-  wantToUploadDocuments: 'NO',
-  applicationWithClaim: 'NO',
-  languageUsed: 'ENGLISH',
-  completionNextStep: 'SUBMIT_AND_PAY_NOW'
-},
   submitCaseApiEndPoint: () =>
     `/cases/${process.env.CASE_NUMBER}/events`,
 }
