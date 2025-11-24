@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.time.Duration;
 
@@ -24,16 +25,19 @@ public class FeesAndPayTaskComponent {
     public static final TaskDescriptor<FeesAndPayTaskData> FEE_CASE_ISSUED_TASK_DESCRIPTOR =
         TaskDescriptor.of(FEES_AND_PAY_CASE_ISSUED_TASK_NAME, FeesAndPayTaskData.class);
 
-    private final FeesAndPayService feesAndPayService;
+    private final FeeService feeService;
+    private final PaymentService paymentService;
     private final int maxRetriesFeesAndPay;
     private final Duration feesAndPayBackoffDelay;
 
     public FeesAndPayTaskComponent(
-        FeesAndPayService feesAndPayService,
+        FeeService feeService,
+        PaymentService paymentService,
         @Value("${fees.request.max-retries}") int maxRetriesFeesAndPay,
         @Value("${fees.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay
     ) {
-        this.feesAndPayService = feesAndPayService;
+        this.feeService = feeService;
+        this.paymentService = paymentService;
         this.maxRetriesFeesAndPay = maxRetriesFeesAndPay;
         this.feesAndPayBackoffDelay = feesAndPayBackoffDelay;
     }
@@ -58,9 +62,9 @@ public class FeesAndPayTaskComponent {
                 log.debug("Executing fee lookup task for fee type: {}", taskData.getFeeType());
 
                 try {
-                    FeeDetails feeDetails = feesAndPayService.getFee(taskData.getFeeType());
+                    FeeDetails feeDetails = feeService.getFee(taskData.getFeeType());
 
-                    feesAndPayService.createServiceRequest(
+                    paymentService.createServiceRequest(
                         taskData.getCaseReference(),
                         taskData.getCcdCaseNumber(),
                         feeDetails,
