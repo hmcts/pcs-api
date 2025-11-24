@@ -48,7 +48,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     }
 
     private void setFormattedDefendantNames(List<ListValue<DefendantDetails>> defendants, PCSCase pcsCase) {
-        if (defendants != null || !defendants.isEmpty()) {
+        if (defendants != null && !defendants.isEmpty()) {
             pcsCase.setAllDefendants(defendants);
             pcsCase.setFormattedDefendantNames(defendants.stream()
                 .map(defendant -> ""
