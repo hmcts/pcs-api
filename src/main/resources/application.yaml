@@ -139,6 +139,11 @@ doc_assembly:
   s2s-authorised:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
 
+logging:
+  level:
+    uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage: DEBUG
+    uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement: DEBUG
+
 rd-professional:
   api-url: ${RD_PROFESSIONAL_API_URL:http://rd-professional-api-aat.service.core-compute-aat.internal}
 

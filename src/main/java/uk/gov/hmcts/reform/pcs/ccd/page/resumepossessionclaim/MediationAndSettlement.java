@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -18,6 +19,7 @@ import java.util.List;
  * Allows claimants to indicate whether they're willing to try mediation or settlement
  * with optional additional information fields that appear conditionally.
  */
+@Slf4j
 @AllArgsConstructor
 @Component
 public class MediationAndSettlement implements CcdPageConfiguration {
@@ -59,6 +61,17 @@ public class MediationAndSettlement implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
+        
+        log.debug("MediationAndSettlement midEvent - claimantCircumstances is null: {}", 
+            caseData.getClaimantCircumstances() == null);
+        
+        String claimantNamePossessiveForm = caseData.getClaimantCircumstances() != null
+            ? caseData.getClaimantCircumstances().getClaimantNamePossessiveForm()
+            : null;
+        log.debug("MediationAndSettlement midEvent - claimantNamePossessiveForm: {}", claimantNamePossessiveForm);
+        
+        log.debug("MediationAndSettlement midEvent - overriddenClaimantName: {}", caseData.getOverriddenClaimantName());
+        log.debug("MediationAndSettlement midEvent - claimantName: {}", caseData.getClaimantName());
         
         // Validate text area fields for character limit - ultra simple approach
         List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(

@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligib
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
@@ -170,7 +170,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(new ClaimantInformation())
+            .add(new ClaimantInformationPage())
             .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
@@ -232,7 +232,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
 
         // Fetch organisation name from rd-professional API
-        String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+//        String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+                String organisationName = "Organisation Name";
+
         if (organisationName != null) {
             caseData.setOrganisationName(organisationName);
         } else {
