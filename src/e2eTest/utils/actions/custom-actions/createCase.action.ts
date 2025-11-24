@@ -449,7 +449,7 @@ export class CreateCaseAction implements IAction {
         case 'mandatoryAccommodation':
           await performAction('check', possessionGrounds.mandatoryAccommodation);
           const mandatoryAccommodationArray = possessionGrounds.mandatoryAccommodation as string[];
-          await collectCYAData('selectYourPossessionGrounds', 'Discretionary grounds', mandatoryAccommodationArray.join(', '));
+          await collectCYAData('selectYourPossessionGrounds', 'Mandatory grounds', mandatoryAccommodationArray.join(', '));
           break;
         case 'discretionaryAccommodation':
           await performAction('check', possessionGrounds.discretionaryAccommodation);
@@ -606,6 +606,7 @@ export class CreateCaseAction implements IAction {
     if (claimOption == claimantCircumstances.yes) {
       //await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
       await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimantCircumstance.claimantInput);
+      await collectCYAData('selectClaimantCircumstances', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimantCircumstance.claimantInput);
     }
     await performAction('clickButton', claimantCircumstances.continue);
   }
@@ -796,7 +797,7 @@ export class CreateCaseAction implements IAction {
       addressLine2: await page.getByLabel(addressDetails.addressLine2TextLabel).inputValue(),
       addressLine3: await page.getByLabel(addressDetails.addressLine3TextLabel).inputValue(),
       townCity: await page.getByLabel(addressDetails.townOrCityTextLabel).inputValue(),
-      engOrWalPostcode: await page.getByLabel(addressDetails.postcodeTextLabel).inputValue(),
+      engOrWalPostcode: await page.getByLabel(addressDetails.postcodeTextLabel, { exact: true }).inputValue(),
       country: await page.getByLabel(addressDetails.countryTextLabel).inputValue(),
     };
     await performAction('clickButton', addressDetails.continueButton);

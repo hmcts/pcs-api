@@ -198,7 +198,7 @@ test.describe('[Create Case - England] @regression', async () => {
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel],
     )
   });
@@ -325,7 +325,7 @@ test.describe('[Create Case - England] @regression', async () => {
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel],
     )
   });
@@ -431,7 +431,7 @@ test.describe('[Create Case - England] @regression', async () => {
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel]
     )
   });
@@ -551,7 +551,7 @@ test.describe('[Create Case - England] @regression', async () => {
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel]
     )
   });
@@ -647,7 +647,7 @@ test.describe('[Create Case - England] @regression', async () => {
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel]
     )
   });
@@ -752,7 +752,7 @@ test.describe('[Create Case - England] @regression', async () => {
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel]
     )
   });
@@ -855,7 +855,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
+      ['formLabelValue', propertyDetails.postcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
@@ -963,7 +963,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
+      ['formLabelValue', propertyDetails.postcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
@@ -1091,7 +1091,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
+      ['formLabelValue', propertyDetails.postcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
@@ -1206,7 +1206,7 @@ test.describe('[Create Case - England] @regression', async () => {
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel]
     )
   });
@@ -1300,7 +1300,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidations('address information entered',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
       ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
+      ['formLabelValue', propertyDetails.postcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 });
