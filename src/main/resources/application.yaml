@@ -125,7 +125,7 @@ notify:
     backoff-delay-seconds: ${NOTIFY_CHEC K_STATUS_BACKOFF_DELAY_SECONDS:3600s}
 
 role-assignment:
-  url: ${DATA_STORE_URL_BASE}
+  url: https://aac-manage-case-assignment-pr-637.preview.platform.hmcts.net
   role-id: CLAIMANT
 
 core_case_data:
