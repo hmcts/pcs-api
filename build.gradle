@@ -325,7 +325,7 @@ dependencies {
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '6.1.9'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
-  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.4'
+  implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
