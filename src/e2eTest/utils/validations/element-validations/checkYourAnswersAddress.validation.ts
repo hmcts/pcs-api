@@ -1,7 +1,6 @@
 import { Page } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
 import { cyaAddressData } from '@utils/data/cya-address-data';
-import { CollectedQAPair } from '@utils/data/cya-types';
 
 export class CheckYourAnswersAddressValidation implements IValidation {
   private static validationInProgress = false;
