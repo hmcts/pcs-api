@@ -74,7 +74,8 @@ class CaseDefinitionIT {
                 List.of(
                     "enforcementApplication",
                     "evictionDelayWarning",
-                    "checkYourAnswersPlaceHolder"
+                    "checkYourAnswersPlaceHolder",
+                    "changeNameAddress"
                 )
 
             )

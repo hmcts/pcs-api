@@ -14,36 +14,36 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ChangeNameAddressPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ChangeNameAddressPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleWhoWillBeEvictedPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleYouWantToEvictPage;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleWhoWillBeEvictedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleYouWantToEvictPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
@@ -105,14 +105,14 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
-        caseData.setFormattedPropertyAddress(addressFormatter
-            .formatAddressWithHtmlLineBreaks(caseData.getPropertyAddress()));
-        
-        initializeDefendantData(caseData);
-        populateDefendantSelectionList(caseData);
-        
-        return caseData;
+        PCSCase pcsCase = eventPayload.caseData();
+        pcsCase.setFormattedPropertyAddress(addressFormatter
+            .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
+
+        initializeDefendantData(pcsCase);
+        populateDefendantSelectionList(pcsCase);
+
+        return pcsCase;
     }
 
     private void initializeDefendantData(PCSCase caseData) {
@@ -126,7 +126,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
         var allDefendants = caseData.getAllDefendants();
         List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
-        
+
         enforcementOrder.setSelectedDefendants(
             DynamicMultiSelectStringList.builder()
                 .value(new ArrayList<>())

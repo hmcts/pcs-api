@@ -17,11 +17,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
@@ -39,8 +40,14 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
 
@@ -76,20 +83,11 @@ class EnforcementOrderEventTest extends BaseEventTest {
     @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new EnforcementOrderEvent(
-            addressFormatter,
-            defendantService,
-            violentAggressiveRiskPage,
-            verbalOrWrittenThreatsRiskPage,
-            protestorGroupRiskPage,
-            policeOrSocialServicesRiskPage,
-            firearmsPossessionRiskPage,
-            criminalAntisocialRiskPage,
-            aggressiveAnimalsRiskPage,
-            propertyAccessDetailsPage,
-            vulnerableAdultsChildrenPage,
-            additionalInformationPage
-        ));
+        SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
+        when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
+        when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(enforceTheOrder)))
+            .thenReturn(savingPageBuilder);
+        setEventUnderTest(newEnforcementOrderEvent());
     }
 
     @Test
@@ -125,6 +123,19 @@ class EnforcementOrderEventTest extends BaseEventTest {
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }
 
+    @Test
+    void shouldCreateEnforcementDataInSubmitCallback() {
+        // Given
+        EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+        PCSCase pcsCase = PCSCase.builder().enforcementOrder(enforcementOrder).build();
+
+        // When
+        callSubmitHandler(pcsCase);
+
+        // Then
+        verify(enforcementOrderService).createEnforcementOrder(TEST_CASE_REFERENCE, enforcementOrder);
+    }
+
     @Nested
     @DisplayName("populateDefendantSelectionList tests")
     class PopulateDefendantSelectionListTests {
@@ -155,21 +166,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
                 .allDefendants(allDefendants)
                 .enforcementOrder(enforcementOrder)
                 .build();
-
-            EnforcementOrderEvent event = new EnforcementOrderEvent(
-                addressFormatter,
-                defendantService,
-                violentAggressiveRiskPage,
-                verbalOrWrittenThreatsRiskPage,
-                protestorGroupRiskPage,
-                policeOrSocialServicesRiskPage,
-                firearmsPossessionRiskPage,
-                criminalAntisocialRiskPage,
-                aggressiveAnimalsRiskPage,
-                propertyAccessDetailsPage,
-                vulnerableAdultsChildrenPage,
-                additionalInformationPage
-            );
+            EnforcementOrderEvent event = newEnforcementOrderEvent();
 
             // When
             event.populateDefendantSelectionList(caseData);
@@ -198,20 +195,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
                 .enforcementOrder(enforcementOrder)
                 .build();
 
-            EnforcementOrderEvent event = new EnforcementOrderEvent(
-                addressFormatter,
-                defendantService,
-                violentAggressiveRiskPage,
-                verbalOrWrittenThreatsRiskPage,
-                protestorGroupRiskPage,
-                policeOrSocialServicesRiskPage,
-                firearmsPossessionRiskPage,
-                criminalAntisocialRiskPage,
-                aggressiveAnimalsRiskPage,
-                propertyAccessDetailsPage,
-                vulnerableAdultsChildrenPage,
-                additionalInformationPage
-            );
+            EnforcementOrderEvent event = newEnforcementOrderEvent();
 
             // When
             event.populateDefendantSelectionList(caseData);
@@ -265,20 +249,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
                 .enforcementOrder(enforcementOrder)
                 .build();
 
-            EnforcementOrderEvent event = new EnforcementOrderEvent(
-                addressFormatter,
-                defendantService,
-                violentAggressiveRiskPage,
-                verbalOrWrittenThreatsRiskPage,
-                protestorGroupRiskPage,
-                policeOrSocialServicesRiskPage,
-                firearmsPossessionRiskPage,
-                criminalAntisocialRiskPage,
-                aggressiveAnimalsRiskPage,
-                propertyAccessDetailsPage,
-                vulnerableAdultsChildrenPage,
-                additionalInformationPage
-            );
+            EnforcementOrderEvent event = newEnforcementOrderEvent();
 
             // When
             event.populateDefendantSelectionList(caseData);
@@ -291,6 +262,16 @@ class EnforcementOrderEventTest extends BaseEventTest {
             assertThat(selectedDefendants.getListItems()).hasSize(2);
             assertThat(selectedDefendants.getListItems()).isEqualTo(expectedListItems);
         }
+    }
+
+    private EnforcementOrderEvent newEnforcementOrderEvent() {
+        return new EnforcementOrderEvent(enforcementOrderService, addressFormatter, defendantService,
+                                         violentAggressiveRiskPage, verbalOrWrittenThreatsRiskPage,
+                                         protestorGroupRiskPage, policeOrSocialServicesRiskPage,
+                                         firearmsPossessionRiskPage, criminalAntisocialRiskPage,
+                                         aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
+                                         vulnerableAdultsChildrenPage, additionalInformationPage,
+                                         savingPageBuilderFactory);
     }
 
 }
