@@ -25,21 +25,10 @@ public class ClaimantInformation {
     private String claimantName;
 
     @CCD(
-        label = "Organisation Name"
+        label = "Your claimant name registered with My HMCTS is:"
     )
     @External
     private String organisationName;
-
-    @CCD(
-        label = """
-            ---
-            <p class="govuk-body" tabindex="0">
-                Your claimant name registered with My HMCTS is:
-            </p>
-            """,
-        typeOverride = FieldType.Label
-    )
-    private String organisationNameLabel;
 
     @CCD(
         label = "Is this the correct claimant name?",
