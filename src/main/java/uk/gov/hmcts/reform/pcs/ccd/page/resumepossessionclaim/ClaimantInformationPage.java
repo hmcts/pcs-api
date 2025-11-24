@@ -39,6 +39,7 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
                 "What is the correct claimant name?",
                 UPDATED_CLAIMANT_NAME_HINT,
                 false)
+            .done()
             .label("claimantInformation-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
     }
