@@ -11,5 +11,17 @@ export const underlesseeOrMortgageeDetails =
     yesRadioOption: 'Yes',
     noRadioOption: 'No',
     addNewButton: 'Add new',
-    underlesseePostcodeTextInput: 'SL6'
+    removeButtonHidden: 'Remove',
+    addAnUnderlesseeOrMortgageeParagraph: 'Add an underlessee or mortgagee to the case',
+    underlesseePostcodeTextInput: 'SL6',
+    iCantEnterAUKPostcodeLink: 'I can\'t enter a UK postcode',
+    previousButton: 'Previous',
+    selectAnAddressTextLabelHidden: 'Select an address',
+    buildingAndStreetTextLabelHidden: 'Building and Street',
+    addressLine2TextLabelHidden: 'Address line 2 (Optional)',
+    addressLine3TextLabelHidden: 'Address line 3 (Optional)',
+    townOrCityTextLabelHidden: 'Town or City',
+    countyOptionalTextLabelHidden: 'County (Optional)',
+    countryOptionalTextLabelHidden: 'Country (Optional)',
+    postcodeTextLabelHidden: 'Postcode'
   };
