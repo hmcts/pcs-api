@@ -291,7 +291,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
 
-        assignCaseAccessService.assignRole(String.valueOf(caseReference), pcsCase);
+        // assignCaseAccessService.assignRole(String.valueOf(caseReference), pcsCase);
 
         return SubmitResponse.defaultResponse();
     }
