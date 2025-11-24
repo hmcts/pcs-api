@@ -26,19 +26,13 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             .pageLabel("Claimant name")
             .label("claimantInformation-separator", "---")
             .complex(PCSCase::getClaimantInformation)
-            .readonlyWithLabel(
-                ClaimantInformation::getOrganisationName,
-                "Your claimant name registered with My HMCTS is:")
-            .mandatoryWithLabel(
-                ClaimantInformation::getIsClaimantNameCorrect,
-                "Is this the correct claimant name?")
+            .readonly(ClaimantInformation::getOrganisationNameLabel)
+            .readonly(ClaimantInformation::getOrganisationName)
+            .mandatory(ClaimantInformation::getIsClaimantNameCorrect)
             .mandatory(
                 ClaimantInformation::getOverriddenClaimantName,
-                "isClaimantNameCorrect=\"NO\"",
-                null,
-                "What is the correct claimant name?",
-                UPDATED_CLAIMANT_NAME_HINT,
-                false)
+                "isClaimantNameCorrect=\"NO\""
+            )
             .done()
             .label("claimantInformation-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
