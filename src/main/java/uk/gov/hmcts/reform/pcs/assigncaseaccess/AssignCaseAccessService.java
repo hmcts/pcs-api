@@ -1,11 +1,10 @@
-package uk.gov.hmcts.reform.pcs.roleassignment;
+package uk.gov.hmcts.reform.pcs.assigncaseaccess;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
@@ -20,12 +19,12 @@ import java.util.UUID;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class RoleAssignmentService {
+public class AssignCaseAccessService {
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamService idamService;
-    private final CaseAssignmentApi caseAssignmentApi;
+    private final AssignCaseAccessApi caseAssignmentApi;
 
     @Value("${role-assignment.role-id}")
     private String caseRole;
@@ -56,7 +55,7 @@ public class RoleAssignmentService {
                 .build();
 
         CaseAssignmentUserRolesResponse respone =
-            caseAssignmentApi.addCaseUserRoles(userAuthorisation, s2sToken, caseAssignmentUserRolesRequest);
+            caseAssignmentApi.assignRole(userAuthorisation, s2sToken, caseAssignmentUserRolesRequest);
 
         log.error("Add Case User Roles Response: ");
         log.error(respone.getStatusMessage());
