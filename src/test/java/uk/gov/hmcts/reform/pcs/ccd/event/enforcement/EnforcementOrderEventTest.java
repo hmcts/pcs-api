@@ -10,6 +10,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
@@ -37,10 +38,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
 
@@ -68,7 +66,12 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     @Mock
     private AdditionalInformationPage additionalInformationPage;
+    @Mock
+    private SavingPageBuilderFactory savingPageBuilderFactory;
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
 
+    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
         setEventUnderTest(new EnforcementOrderEvent(

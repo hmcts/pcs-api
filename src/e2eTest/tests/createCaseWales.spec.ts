@@ -1,50 +1,39 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
+import { test } from '@playwright/test';
 import {
-  claimType,
-  claimantType,
-  claimantName,
-  claimantDetailsWales,
-  contactPreferences,
-  defendantDetails,
-  tenancyLicenceDetails,
-  groundsForPossession,
-  rentArrearsPossessionGrounds,
-  preActionProtocol,
-  mediationAndSettlement,
-  noticeOfYourIntention,
-  rentDetails,
-  provideMoreDetailsOfClaim,
-  resumeClaim,
-  resumeClaimOptions,
-  detailsOfRentArrears,
-  whatAreYourGroundsForPossession,
-  rentArrearsOrBreachOfTenancy,
-  reasonsForPossession,
-  moneyJudgment,
-  claimantCircumstances,
-  applications,
-  completeYourClaim,
-  user,
-  checkYourAnswers,
-  propertyDetails,
-  languageUsed,
-  defendantCircumstances,
-  claimingCosts,
-  home,
-  additionalReasonsForPossession,
-  underlesseeOrMortgageeEntitledToClaim,
-  wantToUploadDocuments,
-  whatAreYourGroundsForPossessionWales,
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
+import {
+  addressCheckYourAnswers,
   addressDetails,
-  signInOrCreateAnAccount,
-  occupationContractOrLicenceDetailsWales,
-  prohibitedConductStandardContractWales,
+  claimantCircumstances,
+  claimantDetailsWales,
+  claimantName,
+  claimantType,
+  claimingCosts,
+  claimType,
+  contactPreferences,
   dailyRentAmount,
-  antiSocialBehaviourWales,
+  defendantCircumstances,
+  defendantDetails,
+  detailsOfRentArrears,
+  home,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeOfYourIntention,
+  occupationContractOrLicenceDetailsWales,
+  preActionProtocol,
+  prohibitedConductStandardContractWales,
+  rentDetails,
+  reasonsForPossession,
+  signInOrCreateAnAccount,
+  asbQuestionsWales,
   noticeDetails,
-  addressCheckYourAnswers
+  user,
+  whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -60,6 +49,10 @@ test.beforeEach(async ({page}) => {
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+});
+
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
 });
 
 test.describe('[Create Case - Wales] @regression', async () => {
@@ -103,6 +96,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
       files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
     });
@@ -117,12 +111,18 @@ test.describe('[Create Case - Wales] @regression', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no
     });
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.no);
@@ -133,7 +133,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.yes,
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
@@ -241,7 +241,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performValidation('mainHeader', prohibitedConductStandardContractWales.mainHeader);
@@ -309,8 +309,8 @@ test.describe('[Create Case - Wales] @regression', async () => {
       phoneNumber: contactPreferences.no
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.noRadioOption,
-      correspondenceAddressOption: defendantDetails.noRadioOption,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
@@ -324,8 +324,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
-    await performValidation('mainHeader', antiSocialBehaviourWales.mainHeader);
-    await performAction('clickButton', antiSocialBehaviourWales.continue);
+    await performAction('selectAsbQuestions', {
+      asbChoice: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
+      illegalPurposesChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfIllegal: asbQuestionsWales.giveDetailsOfIllegalHiddenTextInput,
+      prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
+    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
@@ -344,6 +347,13 @@ test.describe('[Create Case - Wales] @regression', async () => {
     calculateRentAmount: '£32.85',
     unpaidRentInteractiveOption: dailyRentAmount.yes
     });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -353,7 +363,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
@@ -421,8 +431,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.other,
-      files: 'occupationContract.pdf'
+      occupationContractType: occupationContractOrLicenceDetailsWales.other
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -456,7 +465,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
-      defendantCircumstance: defendantCircumstances.no,
+      defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {

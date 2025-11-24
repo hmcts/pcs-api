@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 
 @Builder
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EnforcementOrder {
 
     @CCD(
@@ -80,7 +82,7 @@ public class EnforcementOrder {
     @CCD(
         label = "Is anyone living at the property vulnerable?"
     )
-    private YesNoNotSure vulnerablePeopleYesNo;
+    private YesNoNotSure vulnerablePeoplePresent;
     
     private VulnerableAdultsChildren vulnerableAdultsChildren;
     
