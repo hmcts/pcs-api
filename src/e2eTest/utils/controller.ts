@@ -40,7 +40,7 @@ async function validatePageIfNavigated(action:string): Promise<void> {
     const pageNavigated = await detectPageNavigation();
     if (pageNavigated) {
       await performValidation('autoValidatePageContent');
-      await performValidation(testInfo);
+      await performAccessibilityChecks(testInfo);
     }
   }
 }
