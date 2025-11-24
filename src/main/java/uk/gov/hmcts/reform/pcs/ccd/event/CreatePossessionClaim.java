@@ -19,7 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
 
@@ -32,12 +33,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-    private final FeesAndPayService feesAndPayService;
+    private final FeeService feeService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
 
-    private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
     private static final String FEE = "Unable to retrieve";
 
     @Override
@@ -64,7 +64,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         try {
             caseData.setFeeAmount(formatAsCurrency(
-                feesAndPayService.getFee(CASE_ISSUED_FEE_TYPE).getFeeAmount()
+                feeService.getFee(FeeTypes.CASE_ISSUE_FEE).getFeeAmount()
             ));
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)

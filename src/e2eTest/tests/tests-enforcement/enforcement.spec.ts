@@ -1,18 +1,37 @@
 import { test } from '@playwright/test';
-import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import { caseNumber, caseNotFoundAfterFilter } from '@utils/actions/custom-actions';
 import { initializeExecutor } from '@utils/controller';
-import { caseList, user, caseSummary, signInOrCreateAnAccount } from '@data/page-data';
+import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import {
-  nameAndAddressForEviction, violentOrAggressiveBehaviour, firearmPossession, yourApplication, animalsAtTheProperty,
-  criminalOrAntisocialBehaviour, evictionCouldBeDelayed, vulnerableAdultsAndChildren, policeOrSocialServiceVisit,
-  accessToTheProperty, riskPosedByEveryoneAtProperty, everyoneLivingAtTheProperty, verbalOrWrittenThreats, groupProtestsEviction, anythingElseHelpWithEviction
+  caseSummary,
+  signInOrCreateAnAccount,
+  user
+} from '@data/page-data';
+import {
+  accessToTheProperty,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  criminalOrAntisocialBehaviour,
+  everyoneLivingAtTheProperty,
+  evictionCouldBeDelayed,
+  firearmPossession,
+  groupProtestsEviction,
+  nameAndAddressForEviction,
+  policeOrSocialServiceVisit,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  violentOrAggressiveBehaviour,
+  vulnerableAdultsAndChildren,
+  yourApplication
 } from '@data/page-data/page-data-enforcement';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
+  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
+  await performAction('navigateToUrl'
+    , `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
@@ -21,12 +40,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
-  await performAction('filterCaseFromCaseList', caseList.stateAwaitingSubmission);
-  await performAction('noCasesFoundAfterSearch');
-  //Below three lines will be merged into a single action as part of improvement
-  await performAction('selectFirstCaseFromTheFilter', caseNotFoundAfterFilter);
-  await performAction('createNewCase', caseNotFoundAfterFilter);
-  await performAction('searchMyCaseFromFindCase', { caseNumber: caseNumber, criteria: caseNotFoundAfterFilter });
+  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {

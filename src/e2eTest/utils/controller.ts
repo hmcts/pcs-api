@@ -73,10 +73,10 @@ export async function performValidation(validation: string, inputFieldName?: val
   const executor = getExecutor();
 
   const [fieldName, data] = inputFieldName === undefined
-    ? ['', undefined]
-    : typeof inputFieldName === 'string'
-      ? [inputFieldName, inputData]
-      : ['', inputFieldName];
+      ? ['', undefined]
+      : typeof inputFieldName === 'string'
+          ? [inputFieldName, inputData]
+          : ['', inputFieldName];
 
   const validationInstance = ValidationRegistry.getValidation(validation);
   await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
@@ -111,9 +111,9 @@ function readValuesFromInputObjects(obj: object): string {
     let valueString: string;
     if (Array.isArray(value)) {
       valueString = `[${value.map(item =>
-        typeof item === 'object'
-          ? `{ ${readValuesFromInputObjects(item)} }`
-          : String(item)
+          typeof item === 'object'
+              ? `{ ${readValuesFromInputObjects(item)} }`
+              : String(item)
       ).join(', ')}]`;
     } else if (typeof value === 'object' && value !== null) {
       valueString = `{ ${readValuesFromInputObjects(value)} }`;

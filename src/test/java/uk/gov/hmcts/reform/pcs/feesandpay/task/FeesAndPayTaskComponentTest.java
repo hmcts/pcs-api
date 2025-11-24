@@ -16,10 +16,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -47,7 +49,10 @@ class FeesAndPayTaskComponentTest {
     private FeesAndPayTaskComponent feesAndPayTaskComponent;
 
     @Mock
-    private FeesAndPayService feesAndPayService;
+    private FeeService feeService;
+
+    @Mock
+    private PaymentService paymentService;
 
     @Mock
     private TaskInstance<FeesAndPayTaskData> taskInstance;
@@ -61,8 +66,6 @@ class FeesAndPayTaskComponentTest {
     private final Duration feesAndPayBackoffDelay = Duration.ofMinutes(5);
 
     private static final String TASK_ID = "fee-task-123";
-    private static final String CASE_ISSUE_FEE_TYPE = "caseIssueFee";
-    private static final String HEARING_FEE_TYPE = "hearingFee";
 
     @Getter
     public enum TestFeeCode {
@@ -88,7 +91,8 @@ class FeesAndPayTaskComponentTest {
     void setUp() {
         int maxRetriesFeesAndPay = 5;
         feesAndPayTaskComponent = new FeesAndPayTaskComponent(
-            feesAndPayService,
+            feeService,
+            paymentService,
             maxRetriesFeesAndPay,
             feesAndPayBackoffDelay
         );
@@ -107,8 +111,8 @@ class FeesAndPayTaskComponentTest {
             .build();
     }
 
-    private FeeLookupResponseDto buildFee(String code, String description, Integer version, BigDecimal amount) {
-        return FeeLookupResponseDto.builder()
+    private FeeDetails buildFee(String code, String description, Integer version, BigDecimal amount) {
+        return FeeDetails.builder()
             .code(code)
             .description(description)
             .version(version)
@@ -144,24 +148,24 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should retrieve case issue fee and create service request successfully")
         void shouldRetrieveCaseIssueFeeSuccessfully() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto expectedFee = buildFee(
+            FeeDetails expectedFee = buildFee(
                 TestFeeCode.RECOVERY_OF_LAND.getCode(),
                 TestFeeCode.RECOVERY_OF_LAND.getDescription(),
                 4,
                 new BigDecimal("404.00")
             );
 
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(expectedFee);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(expectedFee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 expectedFee,
@@ -174,24 +178,24 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should retrieve hearing fee and create service request successfully")
         void shouldRetrieveHearingFeeSuccessfully() {
-            FeesAndPayTaskData data = buildTaskData(HEARING_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.HEARING_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 HEARING_FEE.getCode(),
                 HEARING_FEE.getDescription(),
                 1,
                 new BigDecimal("100.00")
             );
 
-            when(feesAndPayService.getFee(HEARING_FEE_TYPE)).thenReturn(fee);
+            when(feeService.getFee(FeeTypes.HEARING_FEE)).thenReturn(fee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(HEARING_FEE_TYPE);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(FeeTypes.HEARING_FEE);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 fee,
@@ -204,24 +208,24 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should handle large fee amounts and create service request")
         void shouldHandleLargeFeeAmount() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 TestFeeCode.HIGH_VALUE_FEE.getCode(),
                 TestFeeCode.HIGH_VALUE_FEE.getDescription(),
                 1,
                 new BigDecimal("10000.00")
             );
 
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(fee);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 fee,
@@ -244,7 +248,7 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeeNotFoundException exception = new FeeNotFoundException("Fee not found for feeType: " + invalidFeeType);
-            when(feesAndPayService.getFee(invalidFeeType)).thenThrow(exception);
+            when(feeService.getFee(invalidFeeType)).thenThrow(exception);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -252,19 +256,19 @@ class FeesAndPayTaskComponentTest {
                 .isInstanceOf(FeeNotFoundException.class)
                 .hasMessage("Fee not found for feeType: " + invalidFeeType);
 
-            verify(feesAndPayService).getFee(invalidFeeType);
-            verify(feesAndPayService, never())
+            verify(feeService).getFee(invalidFeeType);
+            verify(paymentService, never())
                 .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
         }
 
         @Test
         @DisplayName("Should rethrow exception when API call fails")
         void shouldThrowFeeNotFoundExceptionWhenApiCallFails() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeNotFoundException exception = new FeeNotFoundException("Unable to retrieve fee: " + CASE_ISSUE_FEE_TYPE);
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenThrow(exception);
+            FeeNotFoundException exception = new FeeNotFoundException("Unable to retrieve fee");
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenThrow(exception);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -272,19 +276,19 @@ class FeesAndPayTaskComponentTest {
                 .isInstanceOf(FeeNotFoundException.class)
                 .hasMessageContaining("Unable to retrieve fee");
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService, never())
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService, never())
                 .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
         }
 
         @Test
         @DisplayName("Should propagate RuntimeException")
         void shouldPropagateRuntimeException() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
             RuntimeException exception = new RuntimeException("Unexpected error");
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenThrow(exception);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenThrow(exception);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -292,19 +296,19 @@ class FeesAndPayTaskComponentTest {
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Unexpected error");
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService, never())
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService, never())
                 .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
         }
 
         @Test
         @DisplayName("Should propagate IllegalArgumentException")
         void shouldPropagateIllegalArgumentException() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
             IllegalArgumentException exception = new IllegalArgumentException("Invalid fee type");
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenThrow(exception);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenThrow(exception);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -312,8 +316,8 @@ class FeesAndPayTaskComponentTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Invalid fee type");
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService, never())
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService, never())
                 .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
         }
     }
@@ -337,21 +341,21 @@ class FeesAndPayTaskComponentTest {
                 FeesAndPayTaskData data = buildTaskData(feeTypes[i]);
                 when(taskInstance.getData()).thenReturn(data);
 
-                FeeLookupResponseDto fee = buildFee(
+                FeeDetails fee = buildFee(
                     feeCodes[i].getCode(),
                     feeCodes[i].getDescription(),
                     1,
                     new BigDecimal("100.00")
                 );
 
-                when(feesAndPayService.getFee(feeTypes[i])).thenReturn(fee);
+                when(feeService.getFee(feeTypes[i])).thenReturn(fee);
 
                 CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
                 CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-                verify(feesAndPayService).getFee(feeTypes[i]);
-                verify(feesAndPayService).createServiceRequest(
+                verify(feeService).getFee(feeTypes[i]);
+                verify(paymentService).createServiceRequest(
                     data.getCaseReference(),
                     data.getCcdCaseNumber(),
                     fee,
@@ -367,7 +371,7 @@ class FeesAndPayTaskComponentTest {
         void shouldHandleNullFeeType() {
             FeesAndPayTaskData data = buildTaskData(null);
             when(taskInstance.getData()).thenReturn(data);
-            when(feesAndPayService.getFee(null))
+            when(feeService.getFee(null))
                 .thenThrow(new FeeNotFoundException("Fee type cannot be null"));
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
@@ -376,8 +380,8 @@ class FeesAndPayTaskComponentTest {
                 .isInstanceOf(FeeNotFoundException.class)
                 .hasMessageContaining("cannot be null");
 
-            verify(feesAndPayService).getFee(null);
-            verify(feesAndPayService, never())
+            verify(feeService).getFee(null);
+            verify(paymentService, never())
                 .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
         }
 
@@ -386,7 +390,7 @@ class FeesAndPayTaskComponentTest {
         void shouldHandleEmptyFeeType() {
             FeesAndPayTaskData data = buildTaskData("");
             when(taskInstance.getData()).thenReturn(data);
-            when(feesAndPayService.getFee(""))
+            when(feeService.getFee(""))
                 .thenThrow(new FeeNotFoundException("Fee not found for feeType: "));
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
@@ -394,8 +398,8 @@ class FeesAndPayTaskComponentTest {
             assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
                 .isInstanceOf(FeeNotFoundException.class);
 
-            verify(feesAndPayService).getFee("");
-            verify(feesAndPayService, never())
+            verify(feeService).getFee("");
+            verify(paymentService, never())
                 .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
         }
 
@@ -406,21 +410,21 @@ class FeesAndPayTaskComponentTest {
             FeesAndPayTaskData data = buildTaskData(specialFeeType);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 SPECIAL_CHAR_FEE.getCode(),
                 SPECIAL_CHAR_FEE.getDescription(),
                 2,
                 new BigDecimal("200.00")
             );
 
-            when(feesAndPayService.getFee(specialFeeType)).thenReturn(fee);
+            when(feeService.getFee(specialFeeType)).thenReturn(fee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(specialFeeType);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(specialFeeType);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 fee,
@@ -446,7 +450,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should use correct configuration values")
         void shouldUseCorrectConfigurationValues() {
             FeesAndPayTaskComponent component = new FeesAndPayTaskComponent(
-                feesAndPayService,
+                feeService,
+                paymentService,
                 10,
                 Duration.ofMinutes(10)
             );
@@ -459,7 +464,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should create component with minimum retry configuration")
         void shouldCreateComponentWithMinimumRetryConfiguration() {
             FeesAndPayTaskComponent component = new FeesAndPayTaskComponent(
-                feesAndPayService,
+                feeService,
+                paymentService,
                 1,
                 Duration.ofSeconds(30)
             );
@@ -472,7 +478,8 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should create component with maximum retry configuration")
         void shouldCreateComponentWithMaximumRetryConfiguration() {
             FeesAndPayTaskComponent component = new FeesAndPayTaskComponent(
-                feesAndPayService,
+                feeService,
+                paymentService,
                 100,
                 Duration.ofHours(1)
             );
@@ -489,24 +496,24 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should handle complete successful flow")
         void shouldHandleCompleteSuccessfulFlow() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto expectedFee = buildFee(
+            FeeDetails expectedFee = buildFee(
                 TestFeeCode.RECOVERY_OF_LAND.getCode(),
                 TestFeeCode.RECOVERY_OF_LAND.getDescription(),
                 4,
                 new BigDecimal("404.00")
             );
 
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(expectedFee);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(expectedFee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 expectedFee,
@@ -519,11 +526,11 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should handle complete error flow with exception")
         void shouldHandleCompleteErrorFlowWithException() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
             FeeNotFoundException exception = new FeeNotFoundException("Fee not found");
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenThrow(exception);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenThrow(exception);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
@@ -531,15 +538,15 @@ class FeesAndPayTaskComponentTest {
                 .isInstanceOf(FeeNotFoundException.class)
                 .hasMessage("Fee not found");
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService, never())
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService, never())
                 .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
         }
 
         @Test
         @DisplayName("Should handle flow with multiple different fee types sequentially")
         void shouldHandleFlowWithMultipleDifferentFeeTypesSequentially() {
-            String[] feeTypes = {CASE_ISSUE_FEE_TYPE, HEARING_FEE_TYPE, "appealFee"};
+            String[] feeTypes = {FeeTypes.CASE_ISSUE_FEE, FeeTypes.HEARING_FEE, "appealFee"};
             TestFeeCode[] feeCodes = {
                 GENERIC_TEST_FEE,
                 HEARING_FEE,
@@ -550,21 +557,21 @@ class FeesAndPayTaskComponentTest {
                 FeesAndPayTaskData data = buildTaskData(feeTypes[i]);
                 when(taskInstance.getData()).thenReturn(data);
 
-                FeeLookupResponseDto fee = buildFee(
+                FeeDetails fee = buildFee(
                     feeCodes[i].getCode(),
                     feeCodes[i].getDescription(),
                     1,
                     new BigDecimal("150.00")
                 );
 
-                when(feesAndPayService.getFee(feeTypes[i])).thenReturn(fee);
+                when(feeService.getFee(feeTypes[i])).thenReturn(fee);
 
                 CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
                 CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-                verify(feesAndPayService).getFee(feeTypes[i]);
-                verify(feesAndPayService).createServiceRequest(
+                verify(feeService).getFee(feeTypes[i]);
+                verify(paymentService).createServiceRequest(
                     data.getCaseReference(),
                     data.getCcdCaseNumber(),
                     fee,
@@ -583,24 +590,24 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should handle fee with null description")
         void shouldHandleFeeWithNullDescription() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 GENERIC_TEST_FEE.getCode(),
                 null,
                 1,
                 new BigDecimal("100.00")
             );
 
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(fee);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 fee,
@@ -613,24 +620,24 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should handle fee with null version")
         void shouldHandleFeeWithNullVersion() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 GENERIC_TEST_FEE.getCode(),
                 GENERIC_TEST_FEE.getDescription(),
                 null,
                 new BigDecimal("100.00")
             );
 
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(fee);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 fee,
@@ -644,24 +651,24 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should handle fee with very long description")
         void shouldHandleFeeWithVeryLongDescription() {
             String longDescription = "A".repeat(1000);
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 GENERIC_TEST_FEE.getCode(),
                 longDescription,
                 1,
                 new BigDecimal("100.00")
             );
 
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(fee);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 fee,
@@ -674,24 +681,24 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should handle fee with decimal precision")
         void shouldHandleFeeWithDecimalPrecision() {
-            FeesAndPayTaskData data = buildTaskData(CASE_ISSUE_FEE_TYPE);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeLookupResponseDto fee = buildFee(
+            FeeDetails fee = buildFee(
                 GENERIC_TEST_FEE.getCode(),
                 GENERIC_TEST_FEE.getDescription(),
                 1,
                 new BigDecimal("123.456789")
             );
 
-            when(feesAndPayService.getFee(CASE_ISSUE_FEE_TYPE)).thenReturn(fee);
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feesAndPayService).getFee(CASE_ISSUE_FEE_TYPE);
-            verify(feesAndPayService).createServiceRequest(
+            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+            verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
                 fee,
