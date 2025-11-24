@@ -41,10 +41,6 @@ export function resetCYAAddressData(): void {
   cyaAddressData = {};
 }
 
-function normalizeAnswer(answer: any): string {
-  return Array.isArray(answer) ? answer.join(', ') : String(answer);
-}
-
 function collectData(
   dataStore: CYAData | CYAAddressData,
   actionName: string,
@@ -67,12 +63,14 @@ function collectData(
 
 export function collectCYAAddressData(actionName: string, question: string, answer: any): void {
   if (!question || answer === undefined || answer === null) return;
-  collectData(cyaAddressData, actionName, question.trim(), normalizeAnswer(answer).trim());
+  const normalizedAnswer = Array.isArray(answer) ? answer.join(', ') : String(answer);
+  collectData(cyaAddressData, actionName, question.trim(), normalizedAnswer.trim());
 }
 
 export function collectCYAData(actionName: string, question: string | number | boolean | object | string[] | object[], answer: any): void {
   if (!question || answer === undefined || answer === null) return;
   const questionStr = typeof question === 'string' ? question.trim() : String(question);
-  collectData(cyaData, actionName, questionStr, normalizeAnswer(answer).trim());
+  const normalizedAnswer = Array.isArray(answer) ? answer.join(', ') : String(answer);
+  collectData(cyaData, actionName, questionStr, normalizedAnswer.trim());
 }
 

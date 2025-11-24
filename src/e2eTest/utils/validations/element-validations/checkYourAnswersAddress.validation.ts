@@ -1,7 +1,7 @@
-import { Page, test } from '@playwright/test';
+import { Page, Locator, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
 import { cyaAddressData } from '@utils/cya/cya-field-collector';
-import { extractSimpleQAFromPage, isAddressField } from '@utils/cya/cya-validation-utils';
+import { isAddressField } from '@utils/cya/cya-validation-utils';
 
 export class CheckYourAnswersAddressValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
@@ -13,10 +13,6 @@ export class CheckYourAnswersAddressValidation implements IValidation {
     const pageQA = await test.step('Extract Q&A pairs from Address CYA page', async () => {
       return await this.extractAllQAFromPage(page);
     });
-    
-    // Debug logging
-    console.log('🏠 [Address CYA] Collected Q&A pairs:', collectedQA.map(q => `${q.question}: ${q.answer}`));
-    console.log('🏠 [Address CYA] Page Q&A pairs:', pageQA.map(q => `${q.question}: ${q.answer}`));
 
     // Categorize errors for better reporting
     const missingInCollected: Array<{question: string; answer: string}> = [];
@@ -53,7 +49,6 @@ export class CheckYourAnswersAddressValidation implements IValidation {
           });
         } else {
           // Question not found at all
-          console.log(`🏠 [Address CYA] Address field not found: "${collectedQuestion}" = "${collectedAnswer}"`);
           missingOnPage.push({
             question: collectedQuestion,
             answer: collectedAnswer
@@ -89,7 +84,6 @@ export class CheckYourAnswersAddressValidation implements IValidation {
             });
           } else {
             // Question not found at all
-            console.log(`🏠 [Address CYA] Question not found: "${collectedQuestion}"`);
             missingOnPage.push({
               question: collectedQuestion,
               answer: collectedAnswer
@@ -155,8 +149,79 @@ export class CheckYourAnswersAddressValidation implements IValidation {
    */
   private async extractAllQAFromPage(page: Page): Promise<Array<{question: string; answer: string}>> {
     return await test.step('Extract all Q&A pairs from Address CYA page', async () => {
-      return await extractSimpleQAFromPage(page);
+      const qaList: Array<{question: string; answer: string}> = [];
+      
+      // Get all rows from the main form table
+      const rows = page.locator('table.form-table tbody tr, table.form-table tr');
+      const rowCount = await rows.count();
+      
+      for (let i = 0; i < rowCount; i++) {
+        const row = rows.nth(i);
+        const rowQAs = await this.extractCcdQuestionsAndAnswers(page, row);
+        qaList.push(...rowQAs);
+      }
+      
+      return qaList;
     });
+  }
+
+  /**
+   * Simplified extraction logic for Address CYA page
+   * Checks if row contains nested complex table, otherwise extracts from simple row
+   */
+  private async extractCcdQuestionsAndAnswers(page: Page, rowLocator: Locator): Promise<Array<{question: string; answer: string}>> {
+    const qaList: Array<{question: string; answer: string}> = [];
+
+    // Check if row contains a nested complex table
+    const complexRows = rowLocator.locator('table.complex-panel-table tbody tr');
+
+    if (await complexRows.count() > 0) {
+      // Handle nested table rows
+      const count = await complexRows.count();
+      for (let i = 0; i < count; i++) {
+        const row = complexRows.nth(i);
+
+        const question = (await row.locator('th span.text-16').textContent().catch(() => null))?.trim() || '';
+        let answer = (await row.locator('td span.text-16').last().textContent().catch(() => null))?.trim() || '';
+        
+        // Filter out "Change" link text
+        answer = answer.replace(/\s*Change\s*/gi, '').trim();
+        if (answer.match(/^Change$/i)) {
+          answer = '';
+        }
+
+        if (question && answer) {
+          qaList.push({ question, answer });
+        }
+      }
+    } else {
+      // Simple row (question in first column, answer in second)
+      const question = (await rowLocator.locator('th span.text-16').textContent().catch(() => null))?.trim() || '';
+      
+      // Get answer - try multiple approaches to avoid "Change" link
+      let answer = '';
+      
+      // Try 1: Get all text from td and remove "Change" link text
+      const tdText = (await rowLocator.locator('td').textContent().catch(() => null))?.trim() || '';
+      answer = tdText.replace(/\s*Change\s*/gi, '').trim();
+      
+      // Try 2: If that didn't work or only got "Change", try first span (not last, as last might be Change link)
+      if (!answer || answer === 'Change' || answer.match(/^Change$/i)) {
+        answer = (await rowLocator.locator('td span.text-16').first().textContent().catch(() => null))?.trim() || '';
+        answer = answer.replace(/\s*Change\s*/gi, '').trim();
+      }
+      
+      // Final check: don't use "Change" as answer
+      if (answer.match(/^Change$/i)) {
+        answer = '';
+      }
+
+      if (question && answer) {
+        qaList.push({ question, answer });
+      }
+    }
+
+    return qaList;
   }
 
 }
