@@ -77,7 +77,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestions
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -141,7 +141,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     private final GroundsForPossessionWales groundsForPossessionWales;
     private final SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
-    private final ReasonsForPosessionWales reasonsForPosessionWales;
+    private final ReasonsForPossessionWales reasonsForPossessionWales;
     private final AddressFormatter addressFormatter;
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
@@ -178,7 +178,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(occupationLicenceDetailsWalesPage)
             .add(groundsForPossessionWales)
             .add(secureContractGroundsForPossessionWales)
-            .add(reasonsForPosessionWales)
+            .add(reasonsForPossessionWales)
             .add(asbQuestionsWales)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
