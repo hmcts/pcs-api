@@ -22,12 +22,12 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("reasonsForPosessionWales", this::midEvent)
+                .page("reasonsForPossessionWales", this::midEvent)
                 .pageLabel("Reasons for possession (Wales - placeholder)")
-                .label("reasonsForPosessionWales-separator", "---")
+                .label("reasonsForPossessionWales-separator", "---")
                 .showCondition("legislativeCountry=\"Wales\" AND showReasonsForGroundsPageWales=\"Yes\"")
                 .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW)
-                .label("reasonsForPosessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .label("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -35,11 +35,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         boolean hasASB = hasASBSelected(caseData);
-        if (hasASB) {
-            caseData.setShowASBQuestionsPageWales(YesOrNo.YES);
-        } else {
-            caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
-        }
+        caseData.setShowASBQuestionsPageWales(YesOrNo.from(hasASB));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
