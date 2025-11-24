@@ -72,7 +72,6 @@ class CaseDefinitionIT {
             arguments(
                 EventId.enforceTheOrder,
                 List.of(
-                    "enforcementApplication",
                     "evictionDelayWarning",
                     "checkYourAnswersPlaceHolder"
                 )
