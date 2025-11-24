@@ -64,7 +64,7 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
-      ['selectStatementOfTruth', () => this.selectStatementOfTruth(page, fieldName as actionRecord)]
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -225,7 +225,7 @@ export class CreateCaseAction implements IAction {
   private async selectBorderPostcode(option: actionData) {
     await performAction('clickRadioButton', option);
     // Collect CYA data (Address CYA - this question appears on Address CYA page)
-    await collectCYAAddressData('selectBorderPostcode', borderPostcode.isThePropertyLocatedInEnglandOrWalesQuestion, option);
+    await collectCYAAddressData('selectBorderPostcode', borderPostcode.englandWalesInlineContent, option);
     await performAction('clickButton', borderPostcode.continueButton);
   }
 
@@ -893,7 +893,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
     }
 
-  private async selectStatementOfTruth(page: Page, claimantDetails: actionRecord) {
+  private async selectStatementOfTruth(claimantDetails: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {
       elementType: 'paragraph',
@@ -919,11 +919,6 @@ export class CreateCaseAction implements IAction {
       await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
     await performAction('clickButton', statementOfTruth.continueButton);
-    await page.waitForTimeout(3000);
-    await page.screenshot({
-      path: `screenshots/example-${Date.now()}.png`,
-      fullPage: true
-    });
   }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
