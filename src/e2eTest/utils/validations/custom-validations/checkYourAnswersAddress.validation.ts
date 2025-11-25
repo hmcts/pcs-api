@@ -117,14 +117,8 @@ export class CheckYourAnswersAddressValidation implements IValidation {
     }
   }
 
-  /**
-   * Extract all Q&A pairs from Address CYA page
-   * Uses the proven extractSimpleQAFromPage utility function
-   */
   private async extractAllQAFromPage(page: Page): Promise<Array<{question: string; answer: string}>> {
-    return await test.step('Extract all Q&A pairs from Address CYA page', async () => {
-      return await extractSimpleQAFromPage(page);
-    });
+    return await extractSimpleQAFromPage(page);
   }
 
 }

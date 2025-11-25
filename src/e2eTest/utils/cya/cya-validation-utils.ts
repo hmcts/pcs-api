@@ -10,7 +10,8 @@ export interface QAPair {
   answer: string;
 }
 
-export type CaseData = Record<string, string>;
+// Internal type for extraction (not exported)
+type CaseData = Record<string, string>;
 
 /**
  * Normalize whitespace (replace multiple spaces with single space)
@@ -28,7 +29,7 @@ export async function extractCCDTable(
   tableLocator: string
 ): Promise<Array<QAPair>> {
   const locator = page.locator(tableLocator).first();
-  
+
   const caseData = await locator.evaluate((mainTable: HTMLTableElement) => {
     // Helper: Clean text logic
     const cleanText = (text: string | null): string => {
@@ -49,7 +50,7 @@ export async function extractCCDTable(
       const key = cleanText(keyEl.innerText);
       if (!key) return null; // Skip empty rows
 
-      let value = '';
+      let value;
 
       // Check if the Answer Cell contains an inner table (like Multi-select or Fixed-list)
       // BUT exclude Complex Fields (which are handled by the main loop)
@@ -67,11 +68,8 @@ export async function extractCCDTable(
 
       // Clean "Change" links
       value = value.replace(/\s*Change\s*/gi, '').trim();
-      if (value.match(/^Change$/i)) {
-        value = '';
-      }
 
-      return value ? { [key]: value } : null;
+      return value && !value.match(/^Change$/i) ? { [key]: value } : null;
     };
 
     /**
@@ -79,7 +77,7 @@ export async function extractCCDTable(
      */
     const scrapeTable = (table: HTMLTableElement): CaseData => {
       let results: CaseData = {};
-      
+
       // Use :scope to ensure we only get the direct children rows of THIS table
       // This prevents the loop from accidentally grabbing rows from nested tables.
       const rows = Array.from(table.querySelectorAll(':scope > tbody > tr')) as HTMLTableRowElement[];
@@ -96,7 +94,7 @@ export async function extractCCDTable(
           // Recurse: Go deeper
           const nestedData = scrapeTable(complexFieldTable);
           Object.assign(results, nestedData);
-        } 
+        }
         // 2. Otherwise, treat as Simple Row (Key -> Value)
         else {
           const simpleData = extractSimpleRow(row);
@@ -114,10 +112,10 @@ export async function extractCCDTable(
     return {};
   });
 
-  // Convert CaseData (Record) to Array<QAPair> format for compatibility
+  // Convert CaseData (Record) to Array<QAPair> format
   return Object.entries(caseData)
     .map(([question, answer]) => ({ question, answer }))
-    .filter(item => item.answer && !item.answer.match(/^Change$/i));
+    .filter(item => item.answer); // "Change" already filtered in extractSimpleRow
 }
 
 /**
@@ -129,9 +127,8 @@ export function isAddressField(question: string): boolean {
 }
 
 /**
- * Simple extraction for Address CYA page
- * Reuses extractCCDTable with the main form table selector
+ * Extract Q&A pairs from Address CYA page
+ * Alias for extractCCDTable with standard form table selector
  */
-export async function extractSimpleQAFromPage(page: Page): Promise<Array<QAPair>> {
-  return await extractCCDTable(page, 'table.form-table');
-}
+export const extractSimpleQAFromPage = (page: Page): Promise<Array<QAPair>> =>
+  extractCCDTable(page, 'table.form-table');

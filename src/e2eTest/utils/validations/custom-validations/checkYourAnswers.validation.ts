@@ -86,16 +86,8 @@ export class CheckYourAnswersValidation implements IValidation {
     }
   }
 
-  /**
-   * Extract all Q&A pairs from table.form-table
-   * Uses extractCCDTable which handles all extraction logic including fallbacks
-   */
   private async extractAllQAFromPage(page: Page): Promise<Array<{question: string; answer: string}>> {
-    return await test.step('Extract all Q&A pairs from CYA page', async () => {
-      // Extract from main form table - extractCCDTable handles all extraction logic
-      // Results are already flattened and cleaned by extractCCDTable
-      return await extractCCDTable(page, 'table.form-table');
-    });
+    return await extractCCDTable(page, 'table.form-table');
   }
 
 }

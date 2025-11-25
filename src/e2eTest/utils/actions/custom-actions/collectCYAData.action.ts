@@ -55,11 +55,9 @@ function collectData(
   }
 
   // Prevent duplicate: same question AND answer AND step
-  const isDuplicate = dataStore.collectedQAPairs.some(
+  if (!dataStore.collectedQAPairs.some(
     pair => pair.question === question && pair.answer === answer && pair.step === actionName
-  );
-
-  if (!isDuplicate) {
+  )) {
     dataStore.collectedQAPairs.push({ step: actionName, question, answer });
   }
 }
