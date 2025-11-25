@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Component
 public class FeeFormatter {
@@ -21,6 +20,6 @@ public class FeeFormatter {
     }
 
     private boolean hasZeroPence(BigDecimal amount) {
-        return amount.setScale(0, RoundingMode.UP).compareTo(amount) == 0;
+        return amount.stripTrailingZeros().scale() <= 0;
     }
 }
