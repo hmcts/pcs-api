@@ -7,7 +7,8 @@ import {
   verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty,
   peopleWillBeEvicted,
   youNeedPermission,
-  legalCosts
+  legalCosts,
+  landRegistryFees
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
@@ -37,6 +38,7 @@ export class EnforcementAction implements IAction {
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
+      ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -187,5 +189,15 @@ export class EnforcementAction implements IAction {
       await performAction('inputText', legalCost.label, legalCost.input);
     };
     await performAction('clickButton', legalCosts.continueButton);
+  }
+
+  private async provideLandRegistryFees(langRegistry: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: langRegistry.question, option: langRegistry.option });
+    if (langRegistry.option === accessToTheProperty.yesRadioOption) {
+      await performAction('inputText', langRegistry.label, langRegistry.input);
+    };
+    await performAction('clickButton', landRegistryFees.continueButton);
   }
 }

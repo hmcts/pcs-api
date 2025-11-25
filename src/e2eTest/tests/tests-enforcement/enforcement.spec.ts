@@ -25,7 +25,8 @@ import {
   youNeedPermission,
   yourApplication,
   moneyOwed,
-  legalCosts
+  legalCosts,
+  landRegistryFees
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
@@ -137,6 +138,13 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       label: legalCosts.howMuchYouWantToReclaimTextLabel,
       input: legalCosts.howMuchYouWantToReclaimTextInput
     });
+    await performValidation('mainHeader', landRegistryFees.mainHeader);
+    await performAction('provideLandRegistryFees', {
+      question: landRegistryFees.landRegistryFeeQuestion,
+      option: landRegistryFees.yesRadioOption,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -185,6 +193,13 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       option: legalCosts.noRadioOption,
       label: legalCosts.howMuchYouWantToReclaimTextLabel,
       input: legalCosts.howMuchYouWantToReclaimTextInput
+    });
+    await performValidation('mainHeader', landRegistryFees.mainHeader);
+    await performAction('provideLandRegistryFees', {
+      question: landRegistryFees.landRegistryFeeQuestion,
+      option: landRegistryFees.noRadioOption,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
   });
 
@@ -238,6 +253,13 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       option: legalCosts.yesRadioOption,
       label: legalCosts.howMuchYouWantToReclaimTextLabel,
       input: legalCosts.howMuchYouWantToReclaimTextInput
+    });
+    await performValidation('mainHeader', landRegistryFees.mainHeader);
+    await performAction('provideLandRegistryFees', {
+      question: landRegistryFees.landRegistryFeeQuestion,
+      option: landRegistryFees.yesRadioOption,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
   });
 });
