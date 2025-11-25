@@ -135,16 +135,14 @@ test.describe('[Create Case - England Simple Journey for CYA Validation] @regres
       fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
-
     await performValidation('validateCheckYourAnswers');
-
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel],
     )
   });

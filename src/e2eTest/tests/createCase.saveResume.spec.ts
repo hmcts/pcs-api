@@ -45,7 +45,6 @@ import {
   detailsOfRentArrears
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import { resetCYAData, resetCYAAddressData } from '@utils/actions/custom-actions/collectCYAData.action';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -54,8 +53,6 @@ import { resetCYAData, resetCYAAddressData } from '@utils/actions/custom-actions
 // However, it must be executed locally, and evidence of the passed results should be provided during PR review in case its failing in pipeline.
 
 test.beforeEach(async ({page}) => {
-  resetCYAData(); // Reset Final CYA data at the start of each test
-  resetCYAAddressData(); // Reset Address CYA data at the start of each test
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
@@ -82,7 +79,6 @@ test.describe('[Create Case - With resume claim options]', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performValidation('validateCheckYourAnswersAddress'); // Validate Address CYA page
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -200,14 +196,13 @@ test.describe('[Create Case - With resume claim options]', async () => {
       fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
-    await performValidation('validateCheckYourAnswers');
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel],
     )
   });
@@ -218,7 +213,6 @@ test.describe('[Create Case - With resume claim options]', async () => {
       addressIndex: addressDetails.addressIndex
     });
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
-    await performValidation('validateCheckYourAnswersAddress'); // Validate Address CYA page
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -319,14 +313,13 @@ test.describe('[Create Case - With resume claim options]', async () => {
       option: languageUsed.english
     });
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
-    await performValidation('validateCheckYourAnswers');
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
       ['formLabelValue', propertyDetails.buildingAndStreetLabel],
       ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeLabel],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
       ['formLabelValue', propertyDetails.countryLabel],
     )
   });

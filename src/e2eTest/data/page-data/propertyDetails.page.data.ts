@@ -4,6 +4,7 @@ export const propertyDetails = {
   addressLine2Label: 'Address Line 2',
   addressLine3Label: 'Address Line 3',
   townOrCityLabel: 'Town or City',
+  postcodeZipcodeLabel: 'Postcode/Zipcode',
   postcodeLabel: 'Postcode',
   countryLabel: 'Country'
 };

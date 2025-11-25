@@ -3,13 +3,6 @@
  * Contains common validation logic used by both Address and Final CYA validations
  */
 
-export interface ValidationError {
-  question: string;
-  answer?: string;
-  expected?: string;
-  found?: string;
-}
-
 export interface ValidationResults {
   missingInCollected: Array<{question: string; answer: string}>;
   missingOnPage: Array<{question: string; answer: string}>;

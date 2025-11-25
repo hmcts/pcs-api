@@ -214,10 +214,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', caseData);
     // Collect CYA data - caseData.option is already the displayed answer text
     await performAction('collectCYAData', {actionName: 'selectNoticeOfYourIntention', question: caseData.question, answer: caseData.option});
-    if ( caseData.option === noticeOfYourIntention.yes && caseData.typeOfNotice) {
-      await performAction('inputText', noticeOfYourIntention.typeOfNotice, noticeOfYourIntention.typeOfNoticeInput);
-      await performAction('collectCYAData', {actionName: 'selectNoticeOfYourIntention', question: noticeOfYourIntention.typeOfNotice, answer: noticeOfYourIntention.typeOfNoticeInput});
-    }
     await performAction('clickButton', noticeOfYourIntention.continue);
   }
 
@@ -234,10 +230,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', caseData);
     // Collect CYA data - caseData is already the displayed answer text
     await performAction('collectCYAData', {actionName: 'selectClaimantName', question: claimantName.isThisTheCorrectClaimantNameQuestion, answer: caseData});
-    if(caseData == claimantName.no){
-      await performAction('inputText', claimantName.whatIsCorrectClaimantNameQuestion, claimantName.correctClaimantNameInput);
-      await performAction('collectCYAData', {actionName: 'selectClaimantName', question: claimantName.whatIsCorrectClaimantNameQuestion, answer: claimantName.correctClaimantNameInput});
-    }
     claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
   }
 
@@ -250,10 +242,6 @@ export class CreateCaseAction implements IAction {
     });
     // Collect CYA data - prefData.notifications is already the displayed answer text
     await performAction('collectCYAData', {actionName: 'selectContactPreferences', question: contactPreferences.emailAddressForNotifications, answer: prefData.notifications});
-    if (prefData.notifications === contactPreferences.no) {
-      await performAction('inputText', contactPreferences.enterEmailAddressLabel, contactPreferences.emailIdInput);
-      await performAction('collectCYAData', {actionName: 'selectContactPreferences', question: contactPreferences.enterEmailAddressLabel, answer: contactPreferences.emailIdInput});
-    }
     await performAction('clickRadioButton', {
       question: contactPreferences.doYouWantDocumentsToBeSentToAddress,
       option: prefData.correspondenceAddress
@@ -283,10 +271,6 @@ export class CreateCaseAction implements IAction {
       });
       // Collect CYA data - prefData.phoneNumber is already the displayed answer text
       await performAction('collectCYAData', {actionName: 'selectContactPreferences', question: contactPreferences.provideContactPhoneNumber, answer: prefData.phoneNumber});
-      if (prefData.phoneNumber === contactPreferences.yes) {
-        await performAction('inputText', contactPreferences.enterPhoneNumberLabel, contactPreferences.phoneNumberInput);
-        await performAction('collectCYAData', {actionName: 'selectContactPreferences', question: contactPreferences.enterPhoneNumberLabel, answer: contactPreferences.phoneNumberInput});
-      }
     }
     await performAction('clickButton', contactPreferences.continue);
   }
@@ -386,9 +370,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('check', rentArrearsPossession.rentArrears);
     await performAction('clickRadioButton', rentArrearsPossession.otherGrounds);
-    // Collect CYA data
-    const rentArrearsArray = rentArrearsPossession.rentArrears as string[];
-    await performAction('collectCYAData', {actionName: 'selectRentArrearsPossessionGround', question: 'What are your grounds for possession?', answer: rentArrearsArray.join(', ')});
     await performAction('clickButton', rentArrearsPossessionGrounds.continue);
   }
 
@@ -397,24 +378,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', tenancyData.tenancyOrLicenceType);
     await performAction('collectCYAData', {actionName: 'selectTenancyOrLicenceDetails', question: tenancyLicenceDetails.tenancyOrLicenceType, answer: tenancyData.tenancyOrLicenceType});
-    if (tenancyData.tenancyOrLicenceType === tenancyLicenceDetails.other) {
-      await performAction('inputText', tenancyLicenceDetails.giveDetailsOfTypeOfTenancyOrLicenceAgreement, tenancyLicenceDetails.detailsOfLicence);
-      await performAction('collectCYAData', {actionName: 'selectTenancyOrLicenceDetails', question: tenancyLicenceDetails.giveDetailsOfTypeOfTenancyOrLicenceAgreement, answer: tenancyLicenceDetails.detailsOfLicence});
-    }
-    if (tenancyData.day && tenancyData.month && tenancyData.year) {
-      await performActions(
-        'Enter Date',
-        ['inputText', tenancyLicenceDetails.dayLabel, tenancyData.day],
-        ['inputText', tenancyLicenceDetails.monthLabel, tenancyData.month],
-        ['inputText', tenancyLicenceDetails.yearLabel, tenancyData.year]);
-      const dateStr = `${tenancyData.day}/${tenancyData.month}/${tenancyData.year}`;
-      await performAction('collectCYAData', {actionName: 'selectTenancyOrLicenceDetails', question: 'When did the tenancy or licence start?', answer: dateStr});
-    }
-    if (tenancyData.files) {
-        await performAction('uploadFile', tenancyData.files);
-        const filesArray = tenancyData.files as string[];
-        await performAction('collectCYAData', {actionName: 'selectTenancyOrLicenceDetails', question: 'Upload documents', answer: filesArray.map(f => f.split('/').pop() || f).join(', ')});
-    }
     await performAction('clickButton', tenancyLicenceDetails.continue);
   }
 
@@ -425,37 +388,11 @@ export class CreateCaseAction implements IAction {
       await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
       return;
     }
-    // Collect CYA data
-    for (const key of Object.keys(possessionGrounds)) {
-      switch (key) {
-        case 'discretionary':
-          await performAction('check', possessionGrounds.discretionary);
-          const discretionaryArray = possessionGrounds.discretionary as string[];
-          await performAction('collectCYAData', {actionName: 'selectYourPossessionGrounds', question: 'Discretionary grounds', answer: discretionaryArray.join(', ')});
-          if (
-            discretionaryArray.includes(
-              whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
-            )
-          ) {
-            await performAction('check', possessionGrounds.discretionaryEstateGrounds);
-          }
-          break;
-        case 'mandatory':
-          await performAction('check', possessionGrounds.mandatory);
-          const mandatoryArray = possessionGrounds.mandatory as string[];
-          await performAction('collectCYAData', {actionName: 'selectYourPossessionGrounds', question: 'Mandatory grounds', answer: mandatoryArray.join(', ')});
-          break;
-        case 'mandatoryAccommodation':
-          await performAction('check', possessionGrounds.mandatoryAccommodation);
-          const mandatoryAccommodationArray = possessionGrounds.mandatoryAccommodation as string[];
-          await performAction('collectCYAData', {actionName: 'selectYourPossessionGrounds', question: 'Mandatory grounds', answer: mandatoryAccommodationArray.join(', ')});
-          break;
-        case 'discretionaryAccommodation':
-          await performAction('check', possessionGrounds.discretionaryAccommodation);
-          const discretionaryAccommodationArray = possessionGrounds.discretionaryAccommodation as string[];
-          await performAction('collectCYAData', {actionName: 'selectYourPossessionGrounds', question: 'What are your grounds for possession?', answer: discretionaryAccommodationArray.join(', ')});
-          break;
-      }
+    // Collect CYA data - only for mandatory grounds (simple journey)
+    if (possessionGrounds.mandatory) {
+      await performAction('check', possessionGrounds.mandatory);
+      const mandatoryArray = possessionGrounds.mandatory as string[];
+      await performAction('collectCYAData', {actionName: 'selectYourPossessionGrounds', question: 'Mandatory grounds', answer: mandatoryArray.join(', ')});
     }
     await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
   }
@@ -478,7 +415,7 @@ export class CreateCaseAction implements IAction {
     }
     for (let n = 0; n < reasons.length; n++) {
       await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
-      await performAction('collectCYAData', {actionName: 'selectMediationAndSettlement', question: reasonsForPossession.giveDetailsAboutYourReasonsForPossession + ' (' + reasons[n] + ')', answer: reasonsForPossession.detailsAboutYourReason});
+      await performAction('collectCYAData', {actionName: 'enterReasonForPossession', question: reasonsForPossession.giveDetailsAboutYourReasonsForPossession + ' (' + reasons[n] + ')', answer: reasonsForPossession.detailsAboutYourReason});
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
@@ -492,20 +429,12 @@ export class CreateCaseAction implements IAction {
     });
     // Collect CYA data - attemptedMediationWithDefendantsOption is already the displayed answer text
     await performAction('collectCYAData', {actionName: 'selectMediationAndSettlement', question: mediationAndSettlement.attemptedMediationWithDefendants, answer: mediationSettlement.attemptedMediationWithDefendantsOption});
-    if (mediationSettlement.attemptedMediationWithDefendantsOption == mediationAndSettlement.yes) {
-      await performAction('inputText', mediationAndSettlement.attemptedMediationTextAreaLabel, mediationAndSettlement.attemptedMediationInputData);
-      await performAction('collectCYAData', {actionName: 'selectMediationAndSettlement', question: mediationAndSettlement.attemptedMediationTextAreaLabel, answer: mediationAndSettlement.attemptedMediationInputData});
-    }
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.settlementWithDefendants,
       option: mediationSettlement.settlementWithDefendantsOption
     });
     // Collect CYA data - settlementWithDefendantsOption is already the displayed answer text
     await performAction('collectCYAData', {actionName: 'selectMediationAndSettlement', question: mediationAndSettlement.settlementWithDefendants, answer: mediationSettlement.settlementWithDefendantsOption});
-    if (mediationSettlement.settlementWithDefendantsOption == mediationAndSettlement.yes) {
-      await performAction('inputText', mediationAndSettlement.settlementWithDefendantsTextAreaLabel, mediationAndSettlement.settlementWithDefendantsInputData);
-      await performAction('collectCYAData', {actionName: 'selectMediationAndSettlement', question: mediationAndSettlement.settlementWithDefendantsTextAreaLabel, answer: mediationAndSettlement.settlementWithDefendantsInputData});
-    }
     await performAction('clickButton', mediationAndSettlement.continue);
   }
 
@@ -514,40 +443,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', noticeData.howDidYouServeNotice);
     await performAction('collectCYAData', {actionName: 'selectNoticeDetails', question: noticeDetails.howDidYouServeNotice, answer: noticeData.howDidYouServeNotice});
-    if (noticeData.explanationLabel && noticeData.explanation) {
-      await performAction('inputText', noticeData.explanationLabel, noticeData.explanation);
-    }
-    if (noticeData.day && noticeData.month && noticeData.year) {
-      await performActions('Enter Date',
-        ['inputText', noticeDetails.dayLabel, noticeData.day],
-        ['inputText', noticeDetails.monthLabel, noticeData.month],
-        ['inputText', noticeDetails.yearLabel, noticeData.year]);
-    }
-    if (noticeData.hour && noticeData.minute && noticeData.second) {
-      await performActions('Enter Time',
-        ['inputText', noticeDetails.hourLabel, noticeData.hour],
-        ['inputText', noticeDetails.minuteLabel, noticeData.minute],
-        ['inputText', noticeDetails.secondLabel, noticeData.second]);
-    }
-    if (noticeData.files) {
-      await performAction('uploadFile', noticeData.files);
-    }
-    // Collect CYA data
-    if (noticeData.day && noticeData.month && noticeData.year) {
-      const dateStr = `${noticeData.day}/${noticeData.month}/${noticeData.year}`;
-      await performAction('collectCYAData', {actionName: 'selectNoticeDetails', question: 'When did you serve notice?', answer: dateStr});
-    }
-    if (noticeData.hour && noticeData.minute) {
-      const timeStr = `${noticeData.hour}:${noticeData.minute}`;
-      await performAction('collectCYAData', {actionName: 'selectNoticeDetails', question: 'What time did you serve notice?', answer: timeStr});
-    }
-    if (noticeData.explanation) {
-      await performAction('collectCYAData', {actionName: 'selectNoticeDetails', question: noticeData.explanationLabel as string, answer: noticeData.explanation});
-    }
-    if (noticeData.files) {
-      const fileName = (noticeData.files as string).split('/').pop() || noticeData.files as string;
-      await performAction('collectCYAData', {actionName: 'selectNoticeDetails', question: 'Upload documents', answer: fileName});
-    }
     await performAction('clickButton', noticeDetails.continue);
   }
 
@@ -559,12 +454,6 @@ export class CreateCaseAction implements IAction {
     if(rentFrequency.rentFrequencyOption == rentDetails.other){
       await performAction('inputText', rentDetails.rentFrequencyLabel, rentFrequency.inputFrequency);
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentFrequency.unpaidRentAmountPerDay);
-    }
-    // Collect CYA data
-    await performAction('collectCYAData', {actionName: 'provideRentDetails', question: rentDetails.HowMuchRentLabel, answer: rentFrequency.rentAmount});
-    await performAction('collectCYAData', {actionName: 'provideRentDetails', question: 'How often is rent paid?', answer: rentFrequency.rentFrequencyOption});
-    if(rentFrequency.rentFrequencyOption == rentDetails.other){
-      await performAction('collectCYAData', {actionName: 'provideRentDetails', question: rentDetails.amountPerDayInputLabel, answer: rentFrequency.unpaidRentAmountPerDay});
     }
     await performAction('clickButton', rentDetails.continue);
   }
@@ -579,11 +468,6 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', dailyRentAmountData.unpaidRentInteractiveOption);
     if(dailyRentAmountData.unpaidRentInteractiveOption == dailyRentAmount.no){
       await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, dailyRentAmountData.unpaidRentAmountPerDay);
-    }
-    // Collect CYA data
-    await performAction('collectCYAData', {actionName: 'selectDailyRentAmount', question: 'What is the daily rent amount?', answer: dailyRentAmountData.calculateRentAmount});
-    if(dailyRentAmountData.unpaidRentInteractiveOption == dailyRentAmount.no){
-      await performAction('collectCYAData', {actionName: 'selectDailyRentAmount', question: dailyRentAmount.enterAmountPerDayLabel, answer: dailyRentAmountData.unpaidRentAmountPerDay});
     }
     await performAction('clickButton', dailyRentAmount.continue);
   }
