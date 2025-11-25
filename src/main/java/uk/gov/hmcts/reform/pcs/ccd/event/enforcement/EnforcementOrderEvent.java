@@ -22,6 +22,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPlaceHolder;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
@@ -94,6 +96,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(propertyAccessDetailsPage)
                 .add(additionalInformationPage)
                 .add(new MoneyOwedPage())
+                .add(new LegalCostsPage())
+                .add(new LandRegistryFeesPlaceHolder())
                 .add(new CheckYourAnswersPlaceHolder());
     }
 

@@ -60,6 +60,10 @@ public class EnforcementOrder {
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
 
+    @JsonUnwrapped
+    @CCD
+    private LegalCosts legalCosts;
+
     @CCD(
         searchable = false
     )
