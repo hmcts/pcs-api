@@ -8,8 +8,8 @@ import {MainHeaderValidation} from "@utils/validations/element-validations/pageH
 import {ErrorMessageValidation} from "@utils/validations/element-validations/error-message.validation";
 import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
 import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
-import {CheckYourAnswersValidation} from "@utils/validations/element-validations/checkYourAnswers.validation";
-import {CheckYourAnswersAddressValidation} from "@utils/validations/element-validations/checkYourAnswersAddress.validation";
+import {CheckYourAnswersValidation} from "@utils/validations/custom-validations/checkYourAnswers.validation";
+import {CheckYourAnswersAddressValidation} from "@utils/validations/custom-validations/checkYourAnswersAddress.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
