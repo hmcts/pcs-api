@@ -21,7 +21,7 @@ public class FeeFormatter {
     }
 
     private boolean hasZeroPence(BigDecimal amount) {
-        return amount.setScale(0, RoundingMode.UP).compareTo(amount) == 0;
+        return amount.stripTrailingZeros().scale() <= 0;
     }
 
 }
