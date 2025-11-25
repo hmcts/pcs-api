@@ -26,16 +26,24 @@ export function resetCYAAddressData(): void {
 }
 
 export class CollectCYADataAction implements IAction {
-  async execute(_page: Page, action: string, data?: actionRecord, _data?: actionData): Promise<void> {
+  async execute(_page: Page, action: string, fieldName?: actionData | actionRecord, _data?: actionData): Promise<void> {
+    const data = fieldName as actionRecord;
     if (!data?.question || data.answer == null) return;
 
     const dataStore = action === 'collectCYAAddressData' ? cyaAddressData : cyaData;
     const question = typeof data.question === 'string' ? data.question.trim() : String(data.question);
-    const answer = Array.isArray(data.answer) ? data.answer.join(', ') : String(data.answer);
-    const actionName = data.actionName as string;
+    const answer = (Array.isArray(data.answer) ? data.answer.join(', ') : String(data.answer)).trim();
+    const actionName = (data.actionName as string) || action;
 
-    if (!dataStore.collectedQAPairs) { dataStore.collectedQAPairs = []; }
+    if (!dataStore.collectedQAPairs) {
+      dataStore.collectedQAPairs = [];
+    }
 
-    dataStore.collectedQAPairs.push({ step: actionName, question, answer });
+    const isDuplicate = dataStore.collectedQAPairs.some(
+      pair => pair.question === question && pair.answer === answer && pair.step === actionName
+    );
+    if (!isDuplicate) {
+      dataStore.collectedQAPairs.push({ step: actionName, question, answer });
+    }
   }
 }
