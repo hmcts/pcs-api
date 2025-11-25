@@ -27,7 +27,7 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                 """
                         <hr />
                         <table class="govuk-table">
-                          <caption class="govuk-table__caption govuk-table__caption--s">
+                          <caption class="govuk-table__caption govuk-table__caption--s govuk-!-padding-bottom-2">
                           Check the name and address for the eviction</caption>
                           <tbody class="govuk-table__body">
                             <tr class="govuk-table__row">
