@@ -1,9 +1,4 @@
-/**
- * Shared validation helpers for CYA (Check Your Answers) validation
- * Contains common validation logic used by both Address and Final CYA validations
- */
-
-import { QAPair, normalizeWhitespace } from './cya-validation-utils';
+import { QAPair, normalizeWhitespace } from './cya-extraction-utils';
 import { CollectedQAPair } from '@utils/actions/custom-actions/collectCYAData.action';
 
 export interface ValidationResults {
@@ -12,10 +7,6 @@ export interface ValidationResults {
   answerMismatches: Array<{question: string; expected: string; found: string}>;
 }
 
-/**
- * Shared validation logic for comparing collected Q&A pairs with page Q&A pairs
- * Returns validation results that can be used to build error messages
- */
 export function validateCYAData(
   collectedQA: CollectedQAPair[],
   pageQA: QAPair[],
@@ -25,7 +16,7 @@ export function validateCYAData(
   const missingOnPage: Array<{question: string; answer: string}> = [];
   const answerMismatches: Array<{question: string; expected: string; found: string}> = [];
 
-  const normalizeQuestion = (q: string): string => 
+  const normalizeQuestion = (q: string): string =>
     useWhitespaceNormalization ? normalizeWhitespace(q) : q.trim();
 
   for (const collected of collectedQA) {
@@ -41,7 +32,7 @@ export function validateCYAData(
     });
 
     if (!found) {
-      const questionFound = pageQA.find(p => 
+      const questionFound = pageQA.find(p =>
         normalizeQuestion(p.question) === collectedQuestion
       );
 
@@ -63,7 +54,7 @@ export function validateCYAData(
       if (!c.question) return false;
       return normalizeQuestion(c.question) === pageQuestion;
     });
-    
+
     if (!wasCollected) {
       missingInCollected.push({
         question: pageItem.question.trim(),
@@ -76,8 +67,8 @@ export function validateCYAData(
 }
 
 export function hasValidationErrors(results: ValidationResults): boolean {
-  return results.missingOnPage.length > 0 || 
-         results.missingInCollected.length > 0 || 
+  return results.missingOnPage.length > 0 ||
+         results.missingInCollected.length > 0 ||
          results.answerMismatches.length > 0;
 }
 
@@ -87,7 +78,7 @@ export function buildCYAErrorMessage(
 ): string {
   const { missingOnPage, missingInCollected, answerMismatches } = results;
   const errorParts: string[] = [];
-  
+
   if (missingOnPage.length > 0) {
     errorParts.push(`\n❌ QUESTIONS COLLECTED BUT MISSING ON ${pageType.toUpperCase()} CYA PAGE (${missingOnPage.length}):`);
     missingOnPage.forEach((item, index) => {
@@ -95,7 +86,7 @@ export function buildCYAErrorMessage(
       errorParts.push(`     Expected Answer: "${item.answer}"`);
     });
   }
-  
+
   if (missingInCollected.length > 0) {
     errorParts.push(`\n⚠️  QUESTIONS ON ${pageType.toUpperCase()} CYA PAGE BUT NOT COLLECTED (${missingInCollected.length}):`);
     missingInCollected.forEach((item, index) => {
@@ -103,7 +94,7 @@ export function buildCYAErrorMessage(
       errorParts.push(`     Answer on Page: "${item.answer}"`);
     });
   }
-  
+
   if (answerMismatches.length > 0) {
     errorParts.push(`\n🔴 ANSWER MISMATCHES (${answerMismatches.length}):`);
     answerMismatches.forEach((item, index) => {
@@ -112,7 +103,7 @@ export function buildCYAErrorMessage(
       errorParts.push(`     Found: "${item.found}"`);
     });
   }
-  
+
   return `${pageType} CYA validation failed:${errorParts.join('\n')}`;
 }
 

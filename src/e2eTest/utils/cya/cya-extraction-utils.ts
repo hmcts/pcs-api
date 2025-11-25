@@ -1,7 +1,3 @@
-/**
- * Shared utilities for CYA (Check Your Answers) validation
- * Contains common extraction and matching logic used by both Address and Final CYA validations
- */
 
 import {Page} from '@playwright/test';
 
@@ -10,20 +6,12 @@ export interface QAPair {
   answer: string;
 }
 
-// Internal type for extraction (not exported)
 type CaseData = Record<string, string>;
 
-/**
- * Normalize whitespace (replace multiple spaces with single space)
- */
 export function normalizeWhitespace(text: string): string {
   return text.trim().replace(/\s+/g, ' ');
 }
 
-/**
- * Extract Q&A pairs from a table using modular, recursive approach
- * Uses Playwright Locator.evaluate() for better type safety
- */
 export async function extractCCDTable(
   page: Page,
   tableLocator: string
@@ -31,7 +19,6 @@ export async function extractCCDTable(
   const locator = page.locator(tableLocator).first();
 
   const caseData = await locator.evaluate((mainTable: HTMLTableElement) => {
-    // Helper: Clean text logic
     const cleanText = (text: string | null): string => {
       return text ? text.replace(/\s+/g, ' ').trim() : '';
     };
@@ -46,7 +33,7 @@ export async function extractCCDTable(
 
       const innerTable = valueEl.querySelector('table');
       const isComplexField = valueEl.querySelector('ccd-read-complex-field-table');
-      
+
       let value = innerTable && !isComplexField
         ? Array.from(innerTable.querySelectorAll('td'))
             .map(cell => cleanText(cell.innerText))
@@ -79,7 +66,6 @@ export async function extractCCDTable(
     return scrapeTable(mainTable);
   }).catch(() => ({}));
 
-  // Convert CaseData (Record) to Array<QAPair> format
   return Object.entries(caseData)
     .map(([question, answer]) => ({ question, answer }));
 }

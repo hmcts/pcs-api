@@ -1,8 +1,8 @@
 import { Page, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
 import { cyaAddressData } from '@utils/actions/custom-actions/collectCYAData.action';
-import { extractSimpleQAFromPage } from '@utils/cya/cya-validation-utils';
-import { buildCYAErrorMessage, hasValidationErrors, validateCYAData } from '@utils/cya/cya-validation-helpers';
+import { extractSimpleQAFromPage } from '@utils/cya/cya-extraction-utils';
+import { buildCYAErrorMessage, hasValidationErrors, validateCYAData } from '@utils/cya/cya-validation-util';
 
 export class CheckYourAnswersAddressValidation implements IValidation {
   async validate(page: Page, _validation: string, _fieldName?: string, _data?: any): Promise<void> {
