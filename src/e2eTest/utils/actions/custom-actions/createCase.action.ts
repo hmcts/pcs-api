@@ -1,13 +1,55 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement,
-        tenancyLicenceDetails, resumeClaimOptions, rentDetails, dailyRentAmount, reasonsForPossession, detailsOfRentArrears, claimantType, claimType,
-        groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy,
-        noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
-        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder,
-        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible, whatAreYourGroundsForPossessionWales,
-        underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from '@data/page-data';
+import {
+  createCase,
+  addressDetails,
+  housingPossessionClaim,
+  defendantDetails,
+  claimantName,
+  contactPreferences,
+  mediationAndSettlement,
+  tenancyLicenceDetails,
+  resumeClaimOptions,
+  rentDetails,
+  dailyRentAmount,
+  reasonsForPossession,
+  detailsOfRentArrears,
+  claimantType,
+  claimType,
+  groundsForPossession,
+  preActionProtocol,
+  noticeOfYourIntention,
+  borderPostcode,
+  rentArrearsPossessionGrounds,
+  rentArrearsOrBreachOfTenancy,
+  noticeDetails,
+  moneyJudgment,
+  whatAreYourGroundsForPossession,
+  languageUsed,
+  defendantCircumstances,
+  applications,
+  claimantCircumstances,
+  claimingCosts,
+  alternativesToPossession,
+  reasonsForRequestingADemotionOrder,
+  statementOfExpressTerms,
+  reasonsForRequestingASuspensionOrder,
+  uploadAdditionalDocs,
+  additionalReasonsForPossession,
+  completeYourClaim,
+  home,
+  search,
+  userIneligible,
+  whatAreYourGroundsForPossessionWales,
+  underlesseeOrMortgageeDetails,
+  reasonsForRequestingASuspensionAndDemotionOrder,
+  provideMoreDetailsOfClaim,
+  addressCheckYourAnswers,
+  statementOfTruth
+} from '@data/page-data';
+import {claimSaved} from "@data/page-data/claimSaved.page.data";
+import {payClaimFee} from "@data/page-data/payClaimFee.page.data";
 
 export let caseNumber: string;
 export let claimantsName: string;
@@ -63,7 +105,9 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
-      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)]
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
+      ['claimSaved', () => this.claimSaved(fieldName as actionRecord)],
+      ['payClaimFee', () => this.payClaimFee(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -629,6 +673,16 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: languageDetails.question, option: languageDetails.option});
     await performAction('clickButton', languageUsed.continue);
+  }
+
+  private async claimSaved(claimSavedDetails: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickButton', claimSaved.closeAndReturnButton);
+  }
+
+  private async payClaimFee(payClaimDetails: actionData) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performAction('clickButton', payClaimFee.closeAndReturnButton);
   }
 
   private async selectDefendantCircumstances(
