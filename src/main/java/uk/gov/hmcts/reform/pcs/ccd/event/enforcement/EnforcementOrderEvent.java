@@ -36,12 +36,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes.ENFORCEMENT_WARRANT_FEE;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes.ENFORCEMENT_WRIT_FEE;
 
 @Slf4j
 @Component
@@ -120,7 +119,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         try {
 
             String formatted = feeFormatter.formatFee(
-                feeService.getFee(ENFORCEMENT_WARRANT_FEE).getFeeAmount()
+                feeService.getFee(FeeType.ENFORCEMENT_WARRANT_FEE.getCode()).getFeeAmount()
             );
 
             pcsCase.getEnforcementOrder().setWarrantFeeAmount(
@@ -136,7 +135,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private void applyWritFeeAmount(PCSCase pcsCase) {
         try {
             String formatted = feeFormatter.formatFee(
-                feeService.getFee(ENFORCEMENT_WRIT_FEE).getFeeAmount()
+                feeService.getFee(FeeType.ENFORCEMENT_WRIT_FEE.getCode()).getFeeAmount()
             );
 
             pcsCase.getEnforcementOrder().setWritFeeAmount(

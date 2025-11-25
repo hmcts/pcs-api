@@ -40,8 +40,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes.ENFORCEMENT_WARRANT_FEE;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes.ENFORCEMENT_WRIT_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.ENFORCEMENT_WARRANT_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.ENFORCEMENT_WRIT_FEE;
+
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderEventTest extends BaseEventTest {
@@ -49,7 +50,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
     @Mock
     private AddressFormatter addressFormatter;
     @Mock
-    private FeeService feesService;
+    private FeeService feeService;
     @Mock
     private ViolentAggressiveRiskPage violentAggressiveRiskPage;
     @Mock
@@ -83,7 +84,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
         when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(enforceTheOrder)))
             .thenReturn(savingPageBuilder);
-        setEventUnderTest(new EnforcementOrderEvent(enforcementOrderService, addressFormatter, feesService,
+        setEventUnderTest(new EnforcementOrderEvent(enforcementOrderService, addressFormatter, feeService,
                                                     violentAggressiveRiskPage, verbalOrWrittenThreatsRiskPage,
                                                     protestorGroupRiskPage, policeOrSocialServicesRiskPage,
                                                     firearmsPossessionRiskPage, criminalAntisocialRiskPage,
@@ -142,7 +143,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build()).build();
         String expectedFormattedWarrantFee = "£404";
 
-        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
+        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE.getCode())).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(new BigDecimal("404.00"))
@@ -154,7 +155,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedWarrantFee);
-        verify(feesService).getFee(ENFORCEMENT_WARRANT_FEE);
+        verify(feeService).getFee(ENFORCEMENT_WARRANT_FEE.getCode());
     }
 
     @Test
@@ -166,7 +167,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         String expectedFormattedWritFee = "£100";
 
-        when(feesService.getFee(ENFORCEMENT_WRIT_FEE))
+        when(feeService.getFee(ENFORCEMENT_WRIT_FEE.getCode()))
             .thenReturn(FeeDetails.builder()
                             .feeAmount(new BigDecimal("100.00"))
                             .build());
@@ -176,7 +177,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo(expectedFormattedWritFee);
-        verify(feesService).getFee(ENFORCEMENT_WRIT_FEE);
+        verify(feeService).getFee(ENFORCEMENT_WRIT_FEE.getCode());
     }
 
 
@@ -186,7 +187,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build()).build();
 
-        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
+        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE.getCode())).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(null)
@@ -198,7 +199,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo("Unable to retrieve");
-        verify(feesService).getFee(ENFORCEMENT_WARRANT_FEE);
+        verify(feeService).getFee(ENFORCEMENT_WARRANT_FEE.getCode());
     }
 
     @Test
@@ -208,7 +209,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build()).build();
         String expectedFeesMessage = "Unable to retrieve";
 
-        when(feesService.getFee(ENFORCEMENT_WRIT_FEE)).thenReturn(
+        when(feeService.getFee(ENFORCEMENT_WRIT_FEE.getCode())).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(null)
@@ -220,7 +221,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         // Then
         assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo(expectedFeesMessage);
-        verify(feesService).getFee(ENFORCEMENT_WRIT_FEE);
+        verify(feeService).getFee(ENFORCEMENT_WRIT_FEE.getCode());
     }
 
     @Test
@@ -229,14 +230,14 @@ class EnforcementOrderEventTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
         String expectedFeesMessage = "Unable to retrieve";
 
-        when(feesService.getFee(ENFORCEMENT_WARRANT_FEE)).thenThrow(new RuntimeException("Fee not found"));
+        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE.getCode())).thenThrow(new RuntimeException("Fee not found"));
 
         // When
         PCSCase result = callStartHandler(caseData);
 
         // Then
         assertThat(result.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFeesMessage);
-        verify(feesService).getFee(ENFORCEMENT_WARRANT_FEE);
+        verify(feeService).getFee(ENFORCEMENT_WARRANT_FEE.getCode());
     }
 
     @Test
@@ -245,13 +246,13 @@ class EnforcementOrderEventTest extends BaseEventTest {
         PCSCase caseData = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
         String expectedFeesMessage = "Unable to retrieve";
 
-        when(feesService.getFee(ENFORCEMENT_WRIT_FEE)).thenThrow(new RuntimeException("Fee not found"));
+        when(feeService.getFee(ENFORCEMENT_WRIT_FEE.getCode())).thenThrow(new RuntimeException("Fee not found"));
 
         // When
         PCSCase result = callStartHandler(caseData);
 
         // Then
         assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo(expectedFeesMessage);
-        verify(feesService).getFee(ENFORCEMENT_WRIT_FEE);
+        verify(feeService).getFee(ENFORCEMENT_WRIT_FEE.getCode());
     }
 }

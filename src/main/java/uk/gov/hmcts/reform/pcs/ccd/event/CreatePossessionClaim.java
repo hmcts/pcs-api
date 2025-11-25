@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligibl
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
@@ -65,7 +65,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         try {
             String formatted = feeFormatter.formatFee(
-                feeService.getFee(FeeTypes.CASE_ISSUE_FEE).getFeeAmount()
+                feeService.getFee(FeeType.CASE_ISSUE_FEE.getCode()).getFeeAmount()
             );
 
             caseData.setFeeAmount(

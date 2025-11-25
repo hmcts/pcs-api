@@ -86,7 +86,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
@@ -319,7 +319,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String taskId = UUID.randomUUID().toString();
 
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeType(FeeTypes.CASE_ISSUE_FEE)
+            .feeType(FeeType.CASE_ISSUE_FEE.getCode())
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(caseReference))
             .responsibleParty(responsibleParty)
