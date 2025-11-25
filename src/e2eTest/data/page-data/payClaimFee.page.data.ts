@@ -4,5 +4,4 @@ export const payClaimFee = {
   closeAndReturnButton: 'Close and return to case details',
   pay404ClaimFee: 'Pay £404 claim fee',
   payClaimFeeLink: 'Pay the claim fee'
-
 }
