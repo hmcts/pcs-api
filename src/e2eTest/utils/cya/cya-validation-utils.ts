@@ -36,11 +36,6 @@ export async function extractCCDTable(
       return text ? text.replace(/\s+/g, ' ').trim() : '';
     };
 
-    /**
-     * Strategy: Extract a Simple Row
-     * - Key: The <th> text
-     * - Value: The <td> text OR, if the <td> contains a list table, the combined text of that table.
-     */
     const extractSimpleRow = (row: HTMLTableRowElement): CaseData | null => {
       const keyEl = row.querySelector('th');
       const valueEl = row.querySelector('td');
@@ -63,9 +58,6 @@ export async function extractCCDTable(
       return value ? { [key]: value } : null;
     };
 
-    /**
-     * Strategy: Recursive Table Scraper
-     */
     const scrapeTable = (table: HTMLTableElement): CaseData => {
       const results: CaseData = {};
       const rows = Array.from(table.querySelectorAll(':scope > tbody > tr')) as HTMLTableRowElement[];
@@ -78,19 +70,14 @@ export async function extractCCDTable(
           Object.assign(results, scrapeTable(complexFieldTable));
         } else {
           const simpleData = extractSimpleRow(row);
-          if (simpleData) {
-            Object.assign(results, simpleData);
-          }
+          if (simpleData) Object.assign(results, simpleData);
         }
       }
       return results;
     };
 
     return scrapeTable(mainTable);
-  }).catch(async () => {
-    // Simplified fallback: return empty object if evaluate fails
-    return {};
-  });
+  }).catch(() => ({}));
 
   // Convert CaseData (Record) to Array<QAPair> format
   return Object.entries(caseData)

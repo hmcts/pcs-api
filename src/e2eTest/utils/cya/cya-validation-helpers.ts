@@ -25,18 +25,15 @@ export function validateCYAData(
   const missingOnPage: Array<{question: string; answer: string}> = [];
   const answerMismatches: Array<{question: string; expected: string; found: string}> = [];
 
-  // Helper to normalize question if needed
   const normalizeQuestion = (q: string): string => 
     useWhitespaceNormalization ? normalizeWhitespace(q) : q.trim();
 
-  // Validate all collected answers appear on CYA page
   for (const collected of collectedQA) {
     if (!collected.question || !collected.answer) continue;
 
     const collectedQuestion = normalizeQuestion(collected.question);
     const collectedAnswer = collected.answer.trim();
 
-    // Find exact match
     const found = pageQA.find(p => {
       const pageQuestion = normalizeQuestion(p.question);
       const pageAnswer = p.answer.trim();
@@ -44,7 +41,6 @@ export function validateCYAData(
     });
 
     if (!found) {
-      // Check if question exists but answer is different
       const questionFound = pageQA.find(p => 
         normalizeQuestion(p.question) === collectedQuestion
       );
@@ -56,15 +52,11 @@ export function validateCYAData(
           found: questionFound.answer.trim()
         });
       } else {
-        missingOnPage.push({
-          question: collectedQuestion,
-          answer: collectedAnswer
-        });
+        missingOnPage.push({ question: collectedQuestion, answer: collectedAnswer });
       }
     }
   }
 
-  // Validate all questions on CYA page were collected
   for (const pageItem of pageQA) {
     const pageQuestion = normalizeQuestion(pageItem.question);
     const wasCollected = collectedQA.some(c => {
@@ -83,9 +75,12 @@ export function validateCYAData(
   return { missingOnPage, missingInCollected, answerMismatches };
 }
 
-/**
- * Build comprehensive error message for Allure reports
- */
+export function hasValidationErrors(results: ValidationResults): boolean {
+  return results.missingOnPage.length > 0 || 
+         results.missingInCollected.length > 0 || 
+         results.answerMismatches.length > 0;
+}
+
 export function buildCYAErrorMessage(
   results: ValidationResults,
   pageType: 'Final' | 'Address'

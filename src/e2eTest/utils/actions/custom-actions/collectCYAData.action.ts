@@ -36,9 +36,10 @@ function collectData(
     dataStore.collectedQAPairs = [];
   }
 
-  if (!dataStore.collectedQAPairs.some(
+  const isDuplicate = dataStore.collectedQAPairs.some(
     pair => pair.question === question && pair.answer === answer && pair.step === actionName
-  )) {
+  );
+  if (!isDuplicate) {
     dataStore.collectedQAPairs.push({ step: actionName, question, answer });
   }
 }
@@ -58,17 +59,16 @@ export function collectCYAData(actionName: string, question: string | number | b
 
 export class CollectCYADataAction implements IAction {
   async execute(_page: Page, action: string, fieldName?: actionData | actionRecord, _data?: actionData): Promise<void> {
-    const actionsMap = new Map<string, () => Promise<void>>([
-      ['collectCYAData', () => this.collectCYAData(fieldName as actionRecord)],
-      ['collectCYAAddressData', () => this.collectCYAAddressData(fieldName as actionRecord)],
-    ]);
+    const actionsMap: Record<string, () => Promise<void>> = {
+      collectCYAData: () => this.collectCYAData(fieldName as actionRecord),
+      collectCYAAddressData: () => this.collectCYAAddressData(fieldName as actionRecord),
+    };
 
-    const actionHandler = actionsMap.get(action);
-    if (actionHandler) {
-      await actionHandler();
-    } else {
+    const actionHandler = actionsMap[action];
+    if (!actionHandler) {
       throw new Error(`Unknown action: ${action}`);
     }
+    await actionHandler();
   }
 
   private async collectCYAData(data: actionRecord): Promise<void> {

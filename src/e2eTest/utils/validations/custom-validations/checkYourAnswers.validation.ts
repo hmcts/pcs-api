@@ -2,7 +2,7 @@ import { Page, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
 import { cyaData } from '@utils/actions/custom-actions/collectCYAData.action';
 import { extractCCDTable } from '@utils/cya/cya-validation-utils';
-import { buildCYAErrorMessage, validateCYAData } from '@utils/cya/cya-validation-helpers';
+import { buildCYAErrorMessage, hasValidationErrors, validateCYAData } from '@utils/cya/cya-validation-helpers';
 
 export class CheckYourAnswersValidation implements IValidation {
   async validate(page: Page, _validation: string, _fieldName?: string, _data?: any): Promise<void> {
@@ -19,7 +19,7 @@ export class CheckYourAnswersValidation implements IValidation {
       return validateCYAData(collectedQA, pageQA, true);
     });
 
-    if (results.missingOnPage.length > 0 || results.missingInCollected.length > 0 || results.answerMismatches.length > 0) {
+    if (hasValidationErrors(results)) {
       throw new Error(buildCYAErrorMessage(results, 'Final'));
     }
   }
