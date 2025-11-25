@@ -43,15 +43,14 @@ public class FeesAndPayTaskComponent {
     }
 
     /**
-     * Creates a scheduled task for fetching fees from the Fees Register API.
-     * and retrieves the corresponding fee information. On successful completion, the task
+     * Creates a scheduled task for creating a payment service request. On successful completion, the task
      * removes itself from the scheduler. On failure, the task will be retried with
      * exponential backoff.
      *
      * @return CustomTask configured with retry logic and exponential backoff on failure
      */
     @Bean
-    public CustomTask<FeesAndPayTaskData> feesAndPayCaseIssuedTask() {
+    public CustomTask<FeesAndPayTaskData> feePaymentTask() {
         return Tasks.custom(FEE_CASE_ISSUED_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetriesFeesAndPay,
@@ -59,11 +58,11 @@ public class FeesAndPayTaskComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 FeesAndPayTaskData taskData = taskInstance.getData();
-                log.debug("Executing fee lookup task for fee type: {}", taskData.getFeeType());
+                log.debug("Executing fee service request for fee type: {}", taskData.getFeeType());
+
+                FeeDetails feeDetails = taskData.getFeeDetails();
 
                 try {
-                    FeeDetails feeDetails = feeService.getFee(taskData.getFeeType());
-
                     paymentService.createServiceRequest(
                         taskData.getCaseReference(),
                         taskData.getCcdCaseNumber(),
@@ -75,7 +74,7 @@ public class FeesAndPayTaskComponent {
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {
-                    log.error("Failed to retrieve fee for type: {}. Attempt {}/{}",
+                    log.error("Failed to create fee service request for type: {}. Attempt {}/{}",
                                 taskData.getFeeType(),
                                 executionContext.getExecution().consecutiveFailures + 1,
                                 maxRetriesFeesAndPay,
