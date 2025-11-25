@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.util.CurrencyFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
@@ -31,12 +31,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 @AllArgsConstructor
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
+    private static final String FEE = "Unable to retrieve";
+
     private final PcsCaseService pcsCaseService;
     private final FeeService feeService;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
-    private final CurrencyFormatter currencyFormatter;
+    private final FeeFormatter feeFormatter;
 
 
     @Override
@@ -62,15 +64,18 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         PCSCase caseData = eventPayload.caseData();
 
         try {
-            caseData.setFeeAmount(currencyFormatter.formatAsCurrency(
+            String formatted = feeFormatter.formatFee(
                 feeService.getFee(FeeTypes.CASE_ISSUE_FEE).getFeeAmount()
-            ));
+            );
+
+            caseData.setFeeAmount(
+                formatted != null ? formatted : FEE
+            );
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
             log.error("Error while getting fee", e);
-            caseData.setFeeAmount(currencyFormatter.formatAsCurrency(null));
+            caseData.setFeeAmount(FEE);
         }
-
         return caseData;
     }
 

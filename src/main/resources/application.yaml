@@ -156,13 +156,13 @@ fees:
       applicantType: all
       amountOrVolume: 1
       keyword: PossessionCC
-    FEE0380:
+    enforcementWarrantFee:
       channel: default
       event: issue
       applicantType: all
       amountOrVolume: 1
       keyword: PossessionCC
-    FEE0397:
+    enforcementWritFee:
       channel: default
       event: issue
       applicantType: all

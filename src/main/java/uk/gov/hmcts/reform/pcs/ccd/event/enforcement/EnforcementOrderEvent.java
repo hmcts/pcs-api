@@ -33,19 +33,20 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.util.CurrencyFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes.ENFORCEMENT_WARRANT_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes.ENFORCEMENT_WRIT_FEE;
 
 @Slf4j
 @Component
 @AllArgsConstructor
 public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole> {
     // Business requirements to be agreed on for the conditions when this event can be triggered
-    private static final String ENFORCEMENT_WARRANT_FEE = "FEE0380";
-    private static final String ENFORCEMENT_WRIT_FEE = "FEE0397";
+    private static final String FEE = "Unable to retrieve";
 
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
@@ -61,7 +62,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
-    private final CurrencyFormatter currencyFormatter;
+    private final FeeFormatter feeFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -113,25 +114,34 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
     private void applyWarrantFeeAmount(PCSCase pcsCase) {
         try {
-            pcsCase.getEnforcementOrder().setWarrantFeeAmount(currencyFormatter.formatAsCurrency(
+
+            String formatted = feeFormatter.formatFee(
                 feeService.getFee(ENFORCEMENT_WARRANT_FEE).getFeeAmount()
-            ));
+            );
+
+            pcsCase.getEnforcementOrder().setWarrantFeeAmount(
+                formatted != null ? formatted : FEE
+            );
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
             log.error("Error while getting warrant fee", e);
-            pcsCase.getEnforcementOrder().setWarrantFeeAmount(currencyFormatter.formatAsCurrency(null));
+            pcsCase.getEnforcementOrder().setWarrantFeeAmount(FEE);
         }
     }
 
     private void applyWritFeeAmount(PCSCase pcsCase) {
         try {
-            pcsCase.getEnforcementOrder().setWritFeeAmount(currencyFormatter.formatAsCurrency(
+            String formatted = feeFormatter.formatFee(
                 feeService.getFee(ENFORCEMENT_WRIT_FEE).getFeeAmount()
-            ));
+            );
+
+            pcsCase.getEnforcementOrder().setWritFeeAmount(
+                formatted != null ? formatted : FEE
+            );
         } catch (Exception e) {
             // Fallback to default fee if API is unavailable (during config generation)
             log.error("Error while getting writ fee", e);
-            pcsCase.getEnforcementOrder().setWritFeeAmount(currencyFormatter.formatAsCurrency(null));
+            pcsCase.getEnforcementOrder().setWritFeeAmount(FEE);
         }
     }
 

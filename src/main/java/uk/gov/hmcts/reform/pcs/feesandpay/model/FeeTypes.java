@@ -4,5 +4,7 @@ public interface FeeTypes {
 
     String CASE_ISSUE_FEE = "caseIssueFee";
     String HEARING_FEE = "hearingFee";
+    String ENFORCEMENT_WARRANT_FEE = "enforcementWarrantFee";
+    String ENFORCEMENT_WRIT_FEE = "enforcementWritFee";
 
 }
