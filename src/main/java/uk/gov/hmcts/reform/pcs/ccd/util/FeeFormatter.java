@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Component
 public class FeeFormatter {
