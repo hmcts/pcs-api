@@ -119,14 +119,6 @@ export async function extractCCDTable(
 }
 
 /**
- * Check if a question is an address field
- */
-export function isAddressField(question: string): boolean {
-  const addressFields = ['building', 'street', 'address line', 'town', 'city', 'postcode', 'country'];
-  return addressFields.some(field => question.toLowerCase().includes(field));
-}
-
-/**
  * Extract Q&A pairs from Address CYA page
  * Alias for extractCCDTable with standard form table selector
  */
