@@ -64,7 +64,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
     }
 
     private boolean isValidLegalCostsAmount(String amountOfLegalCosts) {
-        if (amountOfLegalCosts == null || amountOfLegalCosts.trim().isEmpty()) {
+        if (amountOfLegalCosts == null || amountOfLegalCosts.isBlank()) {
             return false;
         }
         try {
