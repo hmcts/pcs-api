@@ -106,8 +106,8 @@ export class CreateCaseAction implements IAction {
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
-      ['claimSaved', () => this.claimSaved(fieldName as actionRecord)],
-      ['payClaimFee', () => this.payClaimFee(fieldName as actionRecord)]
+      ['claimSaved', () => this.claimSaved()],
+      ['payClaimFee', () => this.payClaimFee()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -675,13 +675,14 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', languageUsed.continue);
   }
 
-  private async claimSaved(claimSavedDetails: actionData) {
+  private async claimSaved() {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickButton', claimSaved.closeAndReturnButton);
   }
 
-  private async payClaimFee(payClaimDetails: actionData) {
+  private async payClaimFee() {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('mainHeader', payClaimFee.pay404ClaimFee);
     await performAction('clickButton', payClaimFee.closeAndReturnButton);
   }
 
