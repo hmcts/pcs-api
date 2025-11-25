@@ -92,38 +92,9 @@ export class CheckYourAnswersValidation implements IValidation {
    */
   private async extractAllQAFromPage(page: Page): Promise<Array<{question: string; answer: string}>> {
     return await test.step('Extract all Q&A pairs from CYA page', async () => {
-      const qaPairs: Array<{question: string; answer: string}> = [];
-
       // Extract from main form table - extractCCDTable handles all extraction logic
-      const results = await extractCCDTable(page, 'table.form-table');
-
-      // Flatten results: handle both simple answers and nested Q&A pairs
-      for (const item of results) {
-        if (Array.isArray(item.answer)) {
-          // Flatten nested answers
-          for (const nested of item.answer) {
-            if (nested.question && nested.answer) {
-              qaPairs.push({ question: nested.question, answer: nested.answer });
-            }
-          }
-        } else if (item.question && item.answer) {
-          // Filter out "Change" links but keep the actual answer
-          let cleanAnswer = String(item.answer).replace(/\s*Change\s*/gi, '').trim();
-          // If answer is empty after removing Change, try to get it from the original answer
-          if (!cleanAnswer || cleanAnswer.match(/^Change$/i)) {
-            // Answer might have been filtered incorrectly, use original if it's not just "Change"
-            const originalAnswer = String(item.answer).trim();
-            if (originalAnswer && !originalAnswer.match(/^Change$/i)) {
-              cleanAnswer = originalAnswer;
-            }
-          }
-          if (cleanAnswer && !cleanAnswer.match(/^Change$/i)) {
-            qaPairs.push({ question: item.question, answer: cleanAnswer });
-          }
-        }
-      }
-
-      return qaPairs;
+      // Results are already flattened and cleaned by extractCCDTable
+      return await extractCCDTable(page, 'table.form-table');
     });
   }
 
