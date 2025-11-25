@@ -16,7 +16,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class OrganisationNameServiceTest {
+class OrganisationServiceTest {
 
     private static final UUID USER_ID = UUID.fromString("dc3f786d-4ad4-4b5d-a79f-6e35a6520ace");
     private static final String ORGANISATION_NAME = "Possession Claims Solicitor Org";
@@ -27,11 +27,11 @@ class OrganisationNameServiceTest {
     @Mock
     private OrganisationDetailsService organisationDetailsService;
 
-    private OrganisationNameService organisationNameService;
+    private OrganisationService organisationService;
 
     @BeforeEach
     void setUp() {
-        organisationNameService = new OrganisationNameService(
+        organisationService = new OrganisationService(
             securityContextService,
             organisationDetailsService
         );
@@ -46,7 +46,7 @@ class OrganisationNameServiceTest {
             .thenReturn(ORGANISATION_NAME);
 
         // When
-        String result = organisationNameService.getOrganisationNameForCurrentUser();
+        String result = organisationService.getOrganisationNameForCurrentUser();
 
         // Then
         assertThat(result).isEqualTo(ORGANISATION_NAME);
@@ -61,7 +61,7 @@ class OrganisationNameServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(null);
 
         // When
-        String result = organisationNameService.getOrganisationNameForCurrentUser();
+        String result = organisationService.getOrganisationNameForCurrentUser();
 
         // Then
         assertThat(result).isNull();
@@ -77,7 +77,7 @@ class OrganisationNameServiceTest {
             .thenReturn(null);
 
         // When
-        String result = organisationNameService.getOrganisationNameForCurrentUser();
+        String result = organisationService.getOrganisationNameForCurrentUser();
 
         // Then
         assertThat(result).isNull();
@@ -92,7 +92,7 @@ class OrganisationNameServiceTest {
             .thenReturn("");
 
         // When
-        String result = organisationNameService.getOrganisationNameForCurrentUser();
+        String result = organisationService.getOrganisationNameForCurrentUser();
 
         // Then
         assertThat(result).isEmpty();
@@ -107,7 +107,7 @@ class OrganisationNameServiceTest {
             .thenThrow(new RuntimeException("Service unavailable"));
 
         // When
-        String result = organisationNameService.getOrganisationNameForCurrentUser();
+        String result = organisationService.getOrganisationNameForCurrentUser();
 
         // Then
         assertThat(result).isNull();
@@ -121,7 +121,7 @@ class OrganisationNameServiceTest {
             .thenThrow(new RuntimeException("Security context error"));
 
         // When
-        String result = organisationNameService.getOrganisationNameForCurrentUser();
+        String result = organisationService.getOrganisationNameForCurrentUser();
 
         // Then
         assertThat(result).isNull();

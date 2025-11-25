@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
@@ -46,13 +47,13 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDem
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -60,10 +61,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
-
 
 import java.util.List;
 import java.util.UUID;
@@ -141,7 +140,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     @Mock
-    private OrganisationNameService organisationNameService;
+    private OrganisationService organisationService;
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
@@ -195,7 +194,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason,
-            statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
+            statementOfExpressTerms, demotionOfTenancyOrderReason, organisationService,
             claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
             draftCaseDataService, occupationLicenceDetailsWalesPage,
             groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPosessionWales,
@@ -249,7 +248,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         // Given
         String expectedUserEmail = "user@test.com";
         when(userDetails.getSub()).thenReturn(expectedUserEmail);
-        when(organisationNameService.getOrganisationNameForCurrentUser()).thenReturn(null);
+        when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
 
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("10 High Street")

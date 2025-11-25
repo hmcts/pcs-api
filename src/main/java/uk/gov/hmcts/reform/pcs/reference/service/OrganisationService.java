@@ -3,17 +3,18 @@ package uk.gov.hmcts.reform.pcs.reference.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
 
 /**
- * Service to populate organisation name from rd-professional API.
+ * Service to populate organisation info from rd-professional API.
  */
 @Service
 @Slf4j
 @AllArgsConstructor
-public class OrganisationNameService {
+public class OrganisationService {
 
     private final SecurityContextService securityContextService;
     private final OrganisationDetailsService organisationDetailsService;
@@ -46,6 +47,23 @@ public class OrganisationNameService {
             log.error("Error retrieving organisation name from rd-professional API. Error: {}",
                 ex.getMessage(), ex);
             // Return null instead of throwing to allow graceful degradation
+            return null;
+        }
+    }
+
+    public AddressUK getOrganisationAddressForCurrentUser() {
+
+        try {
+            UUID userId = securityContextService.getCurrentUserId();
+            AddressUK organisationAddress = organisationDetailsService.getOrganisationAddress(userId.toString());
+            if (organisationAddress == null) {
+                log.warn("Organisation Address is null for user ID: {}", userId);
+                return null;
+            }
+            return organisationAddress;
+        } catch (Exception ex) {
+            log.error("Error retrieving organisation Address from rd-professional API. Error: {}",
+                      ex.getMessage(), ex);
             return null;
         }
     }
