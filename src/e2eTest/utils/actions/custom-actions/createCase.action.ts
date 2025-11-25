@@ -6,7 +6,7 @@ import {createCase, addressDetails, housingPossessionClaim, defendantDetails, cl
         groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy,
         noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
         claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder,
-        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, userIneligible, whatAreYourGroundsForPossessionWales,
+        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, userIneligible,
         underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth,
         propertyDetails} from '@data/page-data';
 
@@ -102,8 +102,6 @@ export class CreateCaseAction implements IAction {
       engOrWalPostcode: await page.getByLabel(addressDetails.postcodeTextLabel, { exact: true }).inputValue(),
       country: await page.getByLabel(addressDetails.countryTextLabel).inputValue(),
     };
-    // Collect CYA data (Address CYA) - collect each address field separately
-    // Each field appears as a separate Q&A on the Address CYA page
     if (addressInfo.buildingStreet) {
       await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.buildingAndStreetLabel, answer: addressInfo.buildingStreet});
     }

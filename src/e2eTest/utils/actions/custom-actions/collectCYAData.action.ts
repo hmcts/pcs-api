@@ -7,13 +7,12 @@ export interface CollectedQAPair {
   answer?: string;
 }
 
-export interface CYAData {
+export interface CYADataStore {
   collectedQAPairs?: CollectedQAPair[];
 }
 
-export interface CYAAddressData {
-  collectedQAPairs?: CollectedQAPair[];
-}
+export type CYAData = CYADataStore;
+export type CYAAddressData = CYADataStore;
 
 export let cyaData: CYAData = {};
 export let cyaAddressData: CYAAddressData = {};
@@ -26,58 +25,17 @@ export function resetCYAAddressData(): void {
   cyaAddressData = {};
 }
 
-function collectData(
-  dataStore: CYAData | CYAAddressData,
-  actionName: string,
-  question: string,
-  answer: string
-): void {
-  if (!dataStore.collectedQAPairs) {
-    dataStore.collectedQAPairs = [];
-  }
-
-  const isDuplicate = dataStore.collectedQAPairs.some(
-    pair => pair.question === question && pair.answer === answer && pair.step === actionName
-  );
-  if (!isDuplicate) {
-    dataStore.collectedQAPairs.push({ step: actionName, question, answer });
-  }
-}
-
-export function collectCYAAddressData(actionName: string, question: string, answer: any): void {
-  if (!question || answer === undefined || answer === null) return;
-  const normalizedAnswer = Array.isArray(answer) ? answer.join(', ') : String(answer);
-  collectData(cyaAddressData, actionName, question.trim(), normalizedAnswer.trim());
-}
-
-export function collectCYAData(actionName: string, question: string | number | boolean | object | string[] | object[], answer: any): void {
-  if (!question || answer === undefined || answer === null) return;
-  const questionStr = typeof question === 'string' ? question.trim() : String(question);
-  const normalizedAnswer = Array.isArray(answer) ? answer.join(', ') : String(answer);
-  collectData(cyaData, actionName, questionStr, normalizedAnswer.trim());
-}
-
 export class CollectCYADataAction implements IAction {
-  async execute(_page: Page, action: string, fieldName?: actionData | actionRecord, _data?: actionData): Promise<void> {
-    const actionsMap: Record<string, () => Promise<void>> = {
-      collectCYAData: () => this.collectCYAData(fieldName as actionRecord),
-      collectCYAAddressData: () => this.collectCYAAddressData(fieldName as actionRecord),
-    };
-
-    const actionHandler = actionsMap[action];
-    if (!actionHandler) {
-      throw new Error(`Unknown action: ${action}`);
-    }
-    await actionHandler();
-  }
-
-  private async collectCYAData(data: actionRecord): Promise<void> {
+  async execute(_page: Page, action: string, data?: actionRecord, _data?: actionData): Promise<void> {
     if (!data?.question || data.answer == null) return;
-    collectCYAData((data.actionName as string) || 'collectCYAData', data.question, data.answer);
-  }
 
-  private async collectCYAAddressData(data: actionRecord): Promise<void> {
-    if (!data?.question || data.answer == null) return;
-    collectCYAAddressData((data.actionName as string) || 'collectCYAAddressData', String(data.question), String(data.answer));
+    const dataStore = action === 'collectCYAAddressData' ? cyaAddressData : cyaData;
+    const question = typeof data.question === 'string' ? data.question.trim() : String(data.question);
+    const answer = Array.isArray(data.answer) ? data.answer.join(', ') : String(data.answer);
+    const actionName = data.actionName as string;
+
+    if (!dataStore.collectedQAPairs) { dataStore.collectedQAPairs = []; }
+
+    dataStore.collectedQAPairs.push({ step: actionName, question, answer });
   }
 }
