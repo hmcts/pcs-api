@@ -15,6 +15,7 @@ import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCoo
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 import {clickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
+import {CollectCYADataAction} from '@utils/actions/custom-actions/collectCYAData.action';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -90,7 +91,9 @@ export class ActionRegistry {
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
     ['clickLinkAndVerifyNewTabTitle', new clickLinkAndVerifyNewTabTitleAction()],
     ['selectStatementOfTruth', new CreateCaseAction()],
-    ['selectAsbQuestions', new CreateCaseWalesAction()]
+    ['selectAsbQuestions', new CreateCaseWalesAction()],
+    ['collectCYAData', new CollectCYADataAction()],
+    ['collectCYAAddressData', new CollectCYADataAction()]
   ]);
 
   static getAction(actionName: string): IAction {

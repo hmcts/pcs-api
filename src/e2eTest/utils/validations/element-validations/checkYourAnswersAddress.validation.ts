@@ -2,6 +2,7 @@ import { Page, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
 import { cyaAddressData } from '@utils/cya/cya-field-collector';
 import { extractSimpleQAFromPage, isAddressField } from '@utils/cya/cya-validation-utils';
+import { buildCYAErrorMessage, ValidationResults } from '@utils/cya/cya-validation-helpers';
 
 export class CheckYourAnswersAddressValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
@@ -26,26 +27,26 @@ export class CheckYourAnswersAddressValidation implements IValidation {
     // For address fields, match by exact question and answer
     for (const addressField of addressFields) {
       if (!addressField.question || !addressField.answer) continue;
-      
+
       const collectedQuestion = addressField.question.trim();
       const collectedAnswer = addressField.answer.trim();
-      
+
       // Find exact question match (case-sensitive for question, exact for answer)
-      const found = pageQA.find(p => 
+      const found = pageQA.find(p =>
         p.question.trim() === collectedQuestion &&
         p.answer.trim() === collectedAnswer
       );
-      
+
       if (!found) {
         // Check if question exists but answer is different
         const questionFound = pageQA.find(p => p.question.trim() === collectedQuestion);
-        
+
         if (questionFound) {
           // Question found but answer doesn't match
           answerMismatches.push({
             question: questionFound.question,
             expected: collectedAnswer,
-            found: typeof questionFound.answer === 'string' ? questionFound.answer.trim() : String(questionFound.answer).trim()
+            found: questionFound.answer.trim()
           });
         } else {
           // Question not found at all
@@ -64,23 +65,23 @@ export class CheckYourAnswersAddressValidation implements IValidation {
 
         const collectedQuestion = collected.question.trim();
         const collectedAnswer = collected.answer.trim();
-        
+
         // Exact match: question (case-sensitive) and answer (exact)
-        const found = pageQA.find(p => 
+        const found = pageQA.find(p =>
           p.question.trim() === collectedQuestion &&
           p.answer.trim() === collectedAnswer
         );
-        
+
         if (!found) {
           // Check if question exists but answer is different
           const questionFound = pageQA.find(p => p.question.trim() === collectedQuestion);
-          
+
           if (questionFound) {
             // Question found but answer doesn't match
             answerMismatches.push({
               question: questionFound.question,
               expected: collectedAnswer,
-              found: typeof questionFound.answer === 'string' ? questionFound.answer.trim() : String(questionFound.answer).trim()
+              found: questionFound.answer.trim()
             });
           } else {
             // Question not found at all
@@ -97,13 +98,13 @@ export class CheckYourAnswersAddressValidation implements IValidation {
     await test.step('Check for questions on Address CYA page that were not collected', async () => {
       for (const pageItem of pageQA) {
         const pageQuestion = pageItem.question.trim();
-        const wasCollected = collectedQA.some(c => 
+        const wasCollected = collectedQA.some(c =>
           c.question && c.question.trim() === pageQuestion
         );
         if (!wasCollected) {
           missingInCollected.push({
             question: pageQuestion,
-            answer: typeof pageItem.answer === 'string' ? pageItem.answer.trim() : String(pageItem.answer).trim()
+            answer: pageItem.answer.trim()
           });
         }
       }
@@ -111,35 +112,8 @@ export class CheckYourAnswersAddressValidation implements IValidation {
 
     // Build comprehensive error message for Allure reports
     if (missingOnPage.length > 0 || missingInCollected.length > 0 || answerMismatches.length > 0) {
-      const errorParts: string[] = [];
-      
-      if (missingOnPage.length > 0) {
-        errorParts.push(`\n❌ QUESTIONS COLLECTED BUT MISSING ON ADDRESS CYA PAGE (${missingOnPage.length}):`);
-        missingOnPage.forEach((item, index) => {
-          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
-          errorParts.push(`     Expected Answer: "${item.answer}"`);
-        });
-      }
-      
-      if (missingInCollected.length > 0) {
-        errorParts.push(`\n⚠️  QUESTIONS ON ADDRESS CYA PAGE BUT NOT COLLECTED (${missingInCollected.length}):`);
-        missingInCollected.forEach((item, index) => {
-          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
-          errorParts.push(`     Answer on Page: "${item.answer}"`);
-        });
-      }
-      
-      if (answerMismatches.length > 0) {
-        errorParts.push(`\n🔴 ANSWER MISMATCHES (${answerMismatches.length}):`);
-        answerMismatches.forEach((item, index) => {
-          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
-          errorParts.push(`     Expected: "${item.expected}"`);
-          errorParts.push(`     Found: "${item.found}"`);
-        });
-      }
-      
-      const errorMessage = `Address CYA validation failed:${errorParts.join('\n')}`;
-      throw new Error(errorMessage);
+      const results: ValidationResults = { missingOnPage, missingInCollected, answerMismatches };
+      throw new Error(buildCYAErrorMessage(results, 'Address'));
     }
   }
 

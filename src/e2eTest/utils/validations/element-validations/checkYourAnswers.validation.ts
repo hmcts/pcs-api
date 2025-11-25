@@ -2,6 +2,7 @@ import { Page, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
 import { cyaData } from '@utils/cya/cya-field-collector';
 import { extractCCDTable, normalizeWhitespace } from '@utils/cya/cya-validation-utils';
+import { buildCYAErrorMessage, ValidationResults } from '@utils/cya/cya-validation-helpers';
 
 export class CheckYourAnswersValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
@@ -13,7 +14,7 @@ export class CheckYourAnswersValidation implements IValidation {
     const pageQA = await test.step('Extract Q&A pairs from CYA page', async () => {
       return await this.extractAllQAFromPage(page);
     });
-    
+
     // Categorize errors for better reporting
     const missingInCollected: Array<{question: string; answer: string}> = [];
     const missingOnPage: Array<{question: string; answer: string}> = [];
@@ -26,27 +27,27 @@ export class CheckYourAnswersValidation implements IValidation {
 
         const collectedQuestion = normalizeWhitespace(collected.question || '');
         const collectedAnswer = (collected.answer || '').trim();
-        
+
         // Exact match: question (case-sensitive, whitespace-normalized) and answer (exact)
         const found = pageQA.find(p => {
           const pageQuestion = normalizeWhitespace(p.question);
-          const pageAnswer = typeof p.answer === 'string' ? p.answer.trim() : String(p.answer).trim();
+          const pageAnswer = p.answer.trim();
           return pageQuestion === collectedQuestion && pageAnswer === collectedAnswer;
         });
-        
+
         if (!found) {
           // Check if question exists but answer is different (with whitespace normalization)
           const questionFound = pageQA.find(p => {
             const pageQuestion = normalizeWhitespace(p.question);
             return pageQuestion === collectedQuestion;
           });
-          
+
           if (questionFound) {
             // Question found but answer doesn't match exactly
             answerMismatches.push({
               question: questionFound.question,
               expected: collectedAnswer,
-              found: typeof questionFound.answer === 'string' ? questionFound.answer.trim() : String(questionFound.answer).trim()
+              found: questionFound.answer.trim()
             });
           } else {
             // Question not found at all
@@ -72,7 +73,7 @@ export class CheckYourAnswersValidation implements IValidation {
           // Question on page but not collected during journey
           missingInCollected.push({
             question: pageItem.question.trim(),
-            answer: typeof pageItem.answer === 'string' ? pageItem.answer.trim() : String(pageItem.answer).trim()
+            answer: pageItem.answer.trim()
           });
         }
       }
@@ -80,35 +81,8 @@ export class CheckYourAnswersValidation implements IValidation {
 
     // Build comprehensive error message for Allure reports
     if (missingOnPage.length > 0 || missingInCollected.length > 0 || answerMismatches.length > 0) {
-      const errorParts: string[] = [];
-      
-      if (missingOnPage.length > 0) {
-        errorParts.push(`\n❌ QUESTIONS COLLECTED BUT MISSING ON CYA PAGE (${missingOnPage.length}):`);
-        missingOnPage.forEach((item, index) => {
-          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
-          errorParts.push(`     Expected Answer: "${item.answer}"`);
-        });
-      }
-      
-      if (missingInCollected.length > 0) {
-        errorParts.push(`\n⚠️  QUESTIONS ON CYA PAGE BUT NOT COLLECTED (${missingInCollected.length}):`);
-        missingInCollected.forEach((item, index) => {
-          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
-          errorParts.push(`     Answer on Page: "${item.answer}"`);
-        });
-      }
-      
-      if (answerMismatches.length > 0) {
-        errorParts.push(`\n🔴 ANSWER MISMATCHES (${answerMismatches.length}):`);
-        answerMismatches.forEach((item, index) => {
-          errorParts.push(`  ${index + 1}. Question: "${item.question}"`);
-          errorParts.push(`     Expected: "${item.expected}"`);
-          errorParts.push(`     Found: "${item.found}"`);
-        });
-      }
-      
-      const errorMessage = `Final CYA validation failed:${errorParts.join('\n')}`;
-      throw new Error(errorMessage);
+      const results: ValidationResults = { missingOnPage, missingInCollected, answerMismatches };
+      throw new Error(buildCYAErrorMessage(results, 'Final'));
     }
   }
 
@@ -119,10 +93,10 @@ export class CheckYourAnswersValidation implements IValidation {
   private async extractAllQAFromPage(page: Page): Promise<Array<{question: string; answer: string}>> {
     return await test.step('Extract all Q&A pairs from CYA page', async () => {
       const qaPairs: Array<{question: string; answer: string}> = [];
-      
+
       // Extract from main form table - extractCCDTable handles all extraction logic
       const results = await extractCCDTable(page, 'table.form-table');
-    
+
       // Flatten results: handle both simple answers and nested Q&A pairs
       for (const item of results) {
         if (Array.isArray(item.answer)) {
