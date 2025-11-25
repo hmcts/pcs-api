@@ -162,6 +162,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', caseData);
     // Collect CYA data - caseData is already the displayed answer text
+    await performAction('collectCYAData', {actionName: 'selectClaimType', question: claimType.isThisAClaimAgainstTrespassersQuestion, answer: caseData});
     if(caseData === claimType.no){
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continue, claimantName.mainHeader);
     }
