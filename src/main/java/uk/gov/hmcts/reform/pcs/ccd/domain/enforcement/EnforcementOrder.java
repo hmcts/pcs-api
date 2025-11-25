@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +14,7 @@ import java.util.Set;
 
 @Builder
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class EnforcementOrder {
 
     @CCD(
@@ -49,11 +51,15 @@ public class EnforcementOrder {
     @CCD(
         label = "Is anyone living at the property vulnerable?"
     )
-    private YesNoNotSure vulnerablePeopleYesNo;
+    private YesNoNotSure vulnerablePeoplePresent;
     
     private VulnerableAdultsChildren vulnerableAdultsChildren;
     
     @JsonUnwrapped
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private LegalCosts legalCosts;
 }

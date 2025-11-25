@@ -8,7 +8,6 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { user } from '@data/user-data';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { signInOrCreateAnAccount } from '@data/page-data';
-import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -24,9 +23,9 @@ test.beforeEach(async ({page}) => {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
   });
 });
-
-test.describe('[Search Case] @PR @Master @nightly', () => {
-  test.skip('Search for case via case list', async ({}) => {
+//Skipping these tests as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
+test.describe.skip('[Search Case] @regression', () => {
+  test('Search for case via case list', async ({}) => {
     await performAction('filterCaseFromCaseList', caseInfo.state);
     await performValidation('text', {
       "text": 'Case number: '+caseInfo.fid,
@@ -34,7 +33,7 @@ test.describe('[Search Case] @PR @Master @nightly', () => {
     });
   });
 
-  test('Search for case via find case', async ({}) => {
+  test('Search for case via find case @PR' , async ({}) => {
     await performAction('searchCaseFromFindCase', caseInfo.fid);
     await performValidation('text', {
       "text": 'Case number: '+caseInfo.fid,
