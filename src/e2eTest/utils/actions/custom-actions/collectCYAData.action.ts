@@ -1,45 +1,27 @@
-/**
- * CYA Field Collector Action
- * Collect CYA data directly in actions by passing action name, question and answer.
- * Consolidated file containing all CYA data structures, types, collection functions, and action implementation.
- */
-
 import { Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 
-/**
- * Shared types for CYA data structures
- */
 export interface CollectedQAPair {
   step?: string;
   question?: string;
   answer?: string;
 }
 
-/**
- * Data structure to store collected Q&A pairs for Final CYA validation
- */
 export interface CYAData {
   collectedQAPairs?: CollectedQAPair[];
 }
 
-/**
- * Data structure to store collected Q&A pairs for Address CYA validation
- */
 export interface CYAAddressData {
   collectedQAPairs?: CollectedQAPair[];
 }
 
-// Global instances to store CYA data during test execution
 export let cyaData: CYAData = {};
 export let cyaAddressData: CYAAddressData = {};
 
-// Function to reset Final CYA data (useful for test cleanup)
 export function resetCYAData(): void {
   cyaData = {};
 }
 
-// Function to reset Address CYA data (useful for test cleanup)
 export function resetCYAAddressData(): void {
   cyaAddressData = {};
 }
@@ -54,7 +36,6 @@ function collectData(
     dataStore.collectedQAPairs = [];
   }
 
-  // Prevent duplicate: same question AND answer AND step
   if (!dataStore.collectedQAPairs.some(
     pair => pair.question === question && pair.answer === answer && pair.step === actionName
   )) {
@@ -91,18 +72,12 @@ export class CollectCYADataAction implements IAction {
   }
 
   private async collectCYAData(data: actionRecord): Promise<void> {
-    if (!data || !data.question || data.answer === undefined || data.answer === null) {
-      return;
-    }
-    const actionName = (data.actionName as string) || 'collectCYAData';
-    collectCYAData(actionName, data.question, data.answer);
+    if (!data?.question || data.answer == null) return;
+    collectCYAData((data.actionName as string) || 'collectCYAData', data.question, data.answer);
   }
 
   private async collectCYAAddressData(data: actionRecord): Promise<void> {
-    if (!data || !data.question || data.answer === undefined || data.answer === null) {
-      return;
-    }
-    const actionName = (data.actionName as string) || 'collectCYAAddressData';
-    collectCYAAddressData(actionName, String(data.question), String(data.answer));
+    if (!data?.question || data.answer == null) return;
+    collectCYAAddressData((data.actionName as string) || 'collectCYAAddressData', String(data.question), String(data.answer));
   }
 }

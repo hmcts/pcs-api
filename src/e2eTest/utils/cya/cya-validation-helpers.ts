@@ -3,8 +3,8 @@
  * Contains common validation logic used by both Address and Final CYA validations
  */
 
-import { CollectedQAPair, QAPair } from './cya-validation-utils';
-import { normalizeWhitespace } from './cya-validation-utils';
+import { QAPair, normalizeWhitespace } from './cya-validation-utils';
+import { CollectedQAPair } from '@utils/actions/custom-actions/collectCYAData.action';
 
 export interface ValidationResults {
   missingInCollected: Array<{question: string; answer: string}>;

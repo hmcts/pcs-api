@@ -43,60 +43,40 @@ export async function extractCCDTable(
      */
     const extractSimpleRow = (row: HTMLTableRowElement): CaseData | null => {
       const keyEl = row.querySelector('th');
-      const valueEl = row.querySelector('td'); // This gets the first td (the answer cell)
-
+      const valueEl = row.querySelector('td');
       if (!keyEl || !valueEl) return null;
 
       const key = cleanText(keyEl.innerText);
-      if (!key) return null; // Skip empty rows
+      if (!key) return null;
 
-      let value;
-
-      // Check if the Answer Cell contains an inner table (like Multi-select or Fixed-list)
-      // BUT exclude Complex Fields (which are handled by the main loop)
       const innerTable = valueEl.querySelector('table');
       const isComplexField = valueEl.querySelector('ccd-read-complex-field-table');
+      
+      let value = innerTable && !isComplexField
+        ? Array.from(innerTable.querySelectorAll('td'))
+            .map(cell => cleanText(cell.innerText))
+            .filter(Boolean)
+            .join(', ')
+        : cleanText(valueEl.innerText);
 
-      if (innerTable && !isComplexField) {
-        // It's a list of values (e.g., Mandatory Grounds). Extract all cell texts.
-        const cells = Array.from(innerTable.querySelectorAll('td'));
-        value = cells.map(cell => cleanText(cell.innerText)).filter(Boolean).join(', ');
-      } else {
-        // Standard text extraction
-        value = cleanText(valueEl.innerText);
-      }
-
-      // Clean "Change" links
       value = value.replace(/\s*Change\s*/gi, '').trim();
-
-      return value && !value.match(/^Change$/i) ? { [key]: value } : null;
+      return value ? { [key]: value } : null;
     };
 
     /**
      * Strategy: Recursive Table Scraper
      */
     const scrapeTable = (table: HTMLTableElement): CaseData => {
-      let results: CaseData = {};
-
-      // Use :scope to ensure we only get the direct children rows of THIS table
-      // This prevents the loop from accidentally grabbing rows from nested tables.
+      const results: CaseData = {};
       const rows = Array.from(table.querySelectorAll(':scope > tbody > tr')) as HTMLTableRowElement[];
 
       for (const row of rows) {
-        // Skip hidden rows
         if (row.hidden || row.style.display === 'none') continue;
 
-        // 1. Check for Nested Complex Field (Questions inside Questions)
-        // Handle both direct child and descendant selectors for flexibility
         const complexFieldTable = row.querySelector('ccd-read-complex-field-table > div > table, ccd-read-complex-field-table div table') as HTMLTableElement;
-
         if (complexFieldTable) {
-          // Recurse: Go deeper
-          const nestedData = scrapeTable(complexFieldTable);
-          Object.assign(results, nestedData);
-        }
-        // 2. Otherwise, treat as Simple Row (Key -> Value)
-        else {
+          Object.assign(results, scrapeTable(complexFieldTable));
+        } else {
           const simpleData = extractSimpleRow(row);
           if (simpleData) {
             Object.assign(results, simpleData);
@@ -114,13 +94,8 @@ export async function extractCCDTable(
 
   // Convert CaseData (Record) to Array<QAPair> format
   return Object.entries(caseData)
-    .map(([question, answer]) => ({ question, answer }))
-    .filter(item => item.answer); // "Change" already filtered in extractSimpleRow
+    .map(([question, answer]) => ({ question, answer }));
 }
 
-/**
- * Extract Q&A pairs from Address CYA page
- * Alias for extractCCDTable with standard form table selector
- */
 export const extractSimpleQAFromPage = (page: Page): Promise<Array<QAPair>> =>
   extractCCDTable(page, 'table.form-table');

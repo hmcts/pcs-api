@@ -5,26 +5,22 @@ import { extractSimpleQAFromPage } from '@utils/cya/cya-validation-utils';
 import { buildCYAErrorMessage, validateCYAData } from '@utils/cya/cya-validation-helpers';
 
 export class CheckYourAnswersAddressValidation implements IValidation {
-  async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
+  async validate(page: Page, _validation: string, _fieldName?: string, _data?: any): Promise<void> {
     const collectedQA = cyaAddressData.collectedQAPairs || [];
     if (collectedQA.length === 0) {
       throw new Error('Address CYA: No CYA data collected. Make sure to collect Q&A pairs during the journey.');
     }
 
     const pageQA = await test.step('Extract Q&A pairs from Address CYA page', async () => {
-      return await this.extractAllQAFromPage(page);
+      return await extractSimpleQAFromPage(page);
     });
 
     const results = await test.step(`Validate ${collectedQA.length} collected Q&A pairs against Address CYA page`, async () => {
-      return validateCYAData(collectedQA, pageQA, false); // No whitespace normalization for Address CYA
+      return validateCYAData(collectedQA, pageQA, false);
     });
 
     if (results.missingOnPage.length > 0 || results.missingInCollected.length > 0 || results.answerMismatches.length > 0) {
       throw new Error(buildCYAErrorMessage(results, 'Address'));
     }
-  }
-
-  private async extractAllQAFromPage(page: Page): Promise<Array<{question: string; answer: string}>> {
-    return await extractSimpleQAFromPage(page);
   }
 }
