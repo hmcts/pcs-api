@@ -63,7 +63,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - England Simple Journey for CYA Validation] @regression', async () => {
-  test('England - England Simple Journey for CYA Validation @PR @CYA', async () => {
+  test('England - England Simple Journey for CYA Validation @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesCrossBorderPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
