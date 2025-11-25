@@ -1,6 +1,6 @@
 import { Page, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
-import { cyaData } from '@utils/cya/cya-field-collector';
+import { cyaData } from '@utils/actions/custom-actions/collectCYAData.action';
 import { extractCCDTable, normalizeWhitespace } from '@utils/cya/cya-validation-utils';
 import { buildCYAErrorMessage, ValidationResults } from '@utils/cya/cya-validation-helpers';
 

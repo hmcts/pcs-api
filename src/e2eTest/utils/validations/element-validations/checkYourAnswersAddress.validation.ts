@@ -1,6 +1,6 @@
 import { Page, test } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
-import { cyaAddressData } from '@utils/cya/cya-field-collector';
+import { cyaAddressData } from '@utils/actions/custom-actions/collectCYAData.action';
 import { extractSimpleQAFromPage, isAddressField } from '@utils/cya/cya-validation-utils';
 import { buildCYAErrorMessage, ValidationResults } from '@utils/cya/cya-validation-helpers';
 
