@@ -135,22 +135,23 @@ The e2e tests use playwright, and are located in the /src/e2eTest directory.
 
 The following environment variables are needed to run the tests:
 
-- CHANGE_ID (same as PR number - Required only pointing to Preview env)
-- MANAGE_CASE_BASE_URL
 - PCS_API_IDAM_SECRET
-- IDAM_SYSTEM_USERNAME
-- IDAM_SYSTEM_USER_PASSWORD
 - IDAM_PCS_USER_PASSWORD
+- DATA_STORE_URL_BASE
+- MANAGE_CASE_BASE_URL
+- CHANGE_ID (same as PR number - Required only pointing to Preview env)
 
 The e2e suite can be run with the following command:
 
+To run the critical tests/PR tagged tests, use:
 ```bash
-yarn test:chrome
-```
+yarn test:pr
+````
 There are also several custom test scripts available:
 
-- `yarn test:changed` - runs only changed spec files
+- `yarn test:regression` - runs regression tagged tests
 - `yarn test:chrome` - runs the full E2E suite in Chrome
+- `yarn test:firefox` - runs the full E2E suite in Firefox
 
 To open generated Allure report
 
