@@ -1,7 +1,7 @@
 export const whatAreYourGroundsForPossession = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'What are your additional grounds for possession?',
-  mainHeaderSecure: 'What are your grounds for possession?',
+  additionalGroundsForPossessionMainHeader: 'What are your additional grounds for possession?',
+  groundsForPossessionMainHeader: 'What are your grounds for possession?',
   mandatory:
     {
       antiSocialBehaviour: 'Antisocial behaviour',
@@ -55,5 +55,6 @@ export const whatAreYourGroundsForPossession = {
       specialNeeds: 'Special needs accommodation (ground 15)',
       underOccupying: 'Under occupying after succession (ground 15A)'
     },
-  continue: 'Continue'
+  continueButton: 'Continue',
+  moreInfoLink: 'More information about possession grounds (opens in new tab)'
 };

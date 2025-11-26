@@ -96,6 +96,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
       files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
     });
@@ -110,7 +111,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no
     });
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
@@ -431,8 +431,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.other,
-      files: 'occupationContract.pdf'
+      occupationContractType: occupationContractOrLicenceDetailsWales.other
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {

@@ -16,12 +16,16 @@ import {
   firearmPossession,
   groupProtestsEviction,
   nameAndAddressForEviction,
+  peopleWillBeEvicted,
   policeOrSocialServiceVisit,
   riskPosedByEveryoneAtProperty,
   verbalOrWrittenThreats,
   violentOrAggressiveBehaviour,
   vulnerableAdultsAndChildren,
-  yourApplication
+  youNeedPermission,
+  yourApplication,
+  moneyOwed,
+  legalCosts
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
@@ -30,7 +34,8 @@ test.beforeEach(async ({ page }) => {
   initializeEnforcementExecutor(page);
   await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
   await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
+  await performAction('navigateToUrl'
+    , `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
@@ -45,7 +50,7 @@ test.beforeEach(async ({ page }) => {
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButtonAndVerifyPageNavigation', caseSummary.go, yourApplication.mainHeader);
+    await performAction('clickButton', caseSummary.go);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -53,12 +58,12 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes,
+      option: nameAndAddressForEviction.yesRadioOption,
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.yes,
+      option: everyoneLivingAtTheProperty.yesRadioOption,
     });
     await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
     await performAction('selectRiskPosedByEveryoneAtProperty', {
@@ -116,11 +121,21 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
     });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.yes,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.yesRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
+    });
+    await performValidation('mainHeader', moneyOwed.mainHeader);
+    await performAction('clickButton', moneyOwed.continueButton);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.yesRadioOption,
+      label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      input: legalCosts.howMuchYouWantToReclaimTextInput
     });
   });
 
@@ -134,12 +149,12 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes,
+      option: nameAndAddressForEviction.yesRadioOption,
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.no,
+      option: everyoneLivingAtTheProperty.noRadioOption,
     });
     await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
     await performAction('selectVulnerablePeopleInTheProperty', {
@@ -154,12 +169,22 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performAction('accessToProperty', {
       question: accessToTheProperty.accessToThePropertyQuestion,
       option: accessToTheProperty.noRadioOption,
-  });
+    });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.no,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.noRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
+    });
+    await performValidation('mainHeader', moneyOwed.mainHeader);
+    await performAction('clickButton', moneyOwed.continueButton);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.noRadioOption,
+      label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      input: legalCosts.howMuchYouWantToReclaimTextInput
     });
   });
 
@@ -173,12 +198,12 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yes,
+      option: nameAndAddressForEviction.yesRadioOption,
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.notSure,
+      option: everyoneLivingAtTheProperty.notSureRadioOption,
     });
     await performValidation('mainHeader', evictionCouldBeDelayed.mainHeader);
     await performAction('clickButton', evictionCouldBeDelayed.continue);
@@ -198,11 +223,21 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
     });
+    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
     await performAction('provideDetailsAnythingElseHelpWithEviction', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.yes,
-      label: anythingElseHelpWithEviction.tellUsAnythingElse,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseInput
+      option: anythingElseHelpWithEviction.yesRadioOption,
+      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
+    });
+    await performValidation('mainHeader', moneyOwed.mainHeader);
+    await performAction('clickButton', moneyOwed.continueButton);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.yesRadioOption,
+      label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      input: legalCosts.howMuchYouWantToReclaimTextInput
     });
   });
 });
