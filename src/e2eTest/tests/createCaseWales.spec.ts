@@ -103,7 +103,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
     });
-    // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -216,7 +215,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       illegalPurposesChoice: asbQuestionsWales.noRadioOption,
       prohibitedConductChoice: asbQuestionsWales.noRadioOption
     });
-    // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -227,7 +225,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no
     });
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {
       rentAmount: '850',
@@ -352,7 +349,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no,
     });
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performAction('selectDailyRentAmount', {
@@ -387,7 +383,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       option2: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
     await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
@@ -472,11 +467,9 @@ test.describe('[Create Case - Wales] @regression', async () => {
       option: noticeOfYourIntention.yes,
       typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
     });
-    //selectNoticeDetails has been commented out and will be modified as part of https://tools.hmcts.net/jira/browse/HDPI-2515 + https://tools.hmcts.net/jira/browse/HDPI-2516
     await performAction('selectNoticeDetails', {
      howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.no,
@@ -492,7 +485,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
