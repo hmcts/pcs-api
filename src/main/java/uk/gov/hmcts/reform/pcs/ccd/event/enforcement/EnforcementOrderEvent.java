@@ -46,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
