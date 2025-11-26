@@ -218,11 +218,12 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', caseData);
+    await performAction('collectCYAData', {actionName: 'selectClaimantName', question: claimantName.isThisTheCorrectClaimantNameQuestion, answer: caseData});
     if(caseData == claimantName.no){
-      await performAction('inputText', claimantName.isThisTheCorrectClaimantNameQuestion, claimantName.correctClaimantNameInput);
+      await performAction('inputText', claimantName.whatIsCorrectClaimantNameQuestion, claimantName.correctClaimantNameInput);
+      await performAction('collectCYAData', {actionName: 'selectClaimantName', question: claimantName.whatIsCorrectClaimantNameQuestion, answer: claimantName.correctClaimantNameInput});
     }
     claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
-    await performAction('collectCYAData', {actionName: 'selectClaimantName', question: claimantName.isThisTheCorrectClaimantNameQuestion, answer: caseData});
   }
 
   private async selectContactPreferences(preferences: actionRecord) {

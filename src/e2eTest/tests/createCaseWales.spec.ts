@@ -29,11 +29,11 @@ import {
   reasonsForPossession,
   signInOrCreateAnAccount,
   asbQuestionsWales,
-  noticeDetails,
   user,
   whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { resetCYAData, resetCYAAddressData } from '@utils/actions/custom-actions/collectCYAData.action';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -52,6 +52,8 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
+  resetCYAData();
+  resetCYAAddressData();
   PageContentValidation.finaliseTest();
 });
 

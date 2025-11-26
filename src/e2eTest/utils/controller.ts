@@ -1,13 +1,16 @@
 import { Page, test } from '@playwright/test';
-import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
-import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ActionRegistry } from './registry/action.registry';
-import { ValidationRegistry } from './registry/validation.registry';
+import { actionData, actionRecord, actionTuple } from '@utils/interfaces';
+import { validationData, validationRecord, validationTuple } from '@utils/interfaces';
+import { ActionRegistry } from '@utils/registry';
+import { ValidationRegistry } from '@utils/registry';
+import { resetCYAData, resetCYAAddressData } from '@utils/actions/custom-actions';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
 
 export function initializeExecutor(page: Page): void {
+  resetCYAData();
+  resetCYAAddressData();
   testExecutor = { page };
   previousUrl = page.url();
 }

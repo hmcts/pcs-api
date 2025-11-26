@@ -42,8 +42,6 @@ import { PageContentValidation } from '@utils/validations/element-validations/pa
 import { resetCYAData, resetCYAAddressData } from '@utils/actions/custom-actions/collectCYAData.action';
 
 test.beforeEach(async ({page}) => {
-  resetCYAData();
-  resetCYAAddressData();
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('handleCookieConsent', {
@@ -60,6 +58,8 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
+  resetCYAData();
+  resetCYAAddressData();
   PageContentValidation.finaliseTest();
 });
 

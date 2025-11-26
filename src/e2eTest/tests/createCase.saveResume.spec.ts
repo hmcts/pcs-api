@@ -45,11 +45,12 @@ import {
   detailsOfRentArrears
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { resetCYAData, resetCYAAddressData } from '@utils/actions/custom-actions/collectCYAData.action';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
 // When a new page is added/flow changes, basic conditions in this test should be updated accordingly to continue the journey.
-// Due to frequent issues with relogin and “Find Case” (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
+// Due to frequent issues with relogin and "Find Case" (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
 // However, it must be executed locally, and evidence of the passed results should be provided during PR review in case its failing in pipeline.
 
 test.beforeEach(async ({page}) => {
@@ -69,6 +70,8 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
+  resetCYAData();
+  resetCYAAddressData();
   PageContentValidation.finaliseTest();
 });
 
