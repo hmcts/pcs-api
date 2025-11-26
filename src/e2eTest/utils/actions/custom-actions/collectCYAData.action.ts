@@ -1,24 +1,15 @@
 import { Page } from '@playwright/test';
 import { IAction, actionData, actionRecord } from '@utils/interfaces';
 
-export interface CollectedQAPair {
-  step?: string;
-  question?: string;
-  answer?: string;
-}
+export interface CollectedQAPair { step?: string;question: string;answer: string;}
 
-export interface CYADataStore {
-  collectedQAPairs: CollectedQAPair[];
-}
+export interface CYADataStore { collectedQAPairs: CollectedQAPair[]; }
 
 export let cyaData: CYADataStore = { collectedQAPairs: [] };
 export let cyaAddressData: CYADataStore = { collectedQAPairs: [] };
 
 export function resetCYAData(): void {
   cyaData = { collectedQAPairs: [] };
-}
-
-export function resetCYAAddressData(): void {
   cyaAddressData = { collectedQAPairs: [] };
 }
 
@@ -28,8 +19,8 @@ export class CollectCYADataAction implements IAction {
     if (!data?.question || data.answer == null) return;
 
     const dataStore = action === 'collectCYAAddressData' ? cyaAddressData : cyaData;
-    const questionStr = String(data.question);
-    const question = questionStr === ' ' ? ' ' : questionStr.trim();
+
+    const question = String(data.question) === ' ' ? ' ' : String(data.question).trim();
     const answer = (Array.isArray(data.answer) ? data.answer.join(', ') : String(data.answer)).trim();
     const actionName = (data.actionName as string) || action;
 

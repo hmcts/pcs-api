@@ -29,6 +29,7 @@ import {
   reasonsForPossession,
   signInOrCreateAnAccount,
   asbQuestionsWales,
+  noticeDetails,
   user,
   whatAreYourGroundsForPossessionWales
 } from '@data/page-data';

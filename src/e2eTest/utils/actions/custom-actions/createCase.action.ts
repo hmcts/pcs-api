@@ -279,7 +279,6 @@ export class CreateCaseAction implements IAction {
     if (defendantData.nameOption === defendantDetails.yesRadioOption) {
       await performAction('inputText', defendantDetails.defendantFirstNameTextLabel, defendantData.firstName);
       await performAction('inputText', defendantDetails.defendantLastNameTextLabel, defendantData.lastName);
-      await performAction('collectCYAData', {actionName: 'addDefendantDetails', question: 'Defendant\'s name', answer: `${defendantData.firstName} ${defendantData.lastName}`});
     }
     await performAction('clickRadioButton', {
       question: defendantDetails.defendantCorrespondenceAddressQuestion,
