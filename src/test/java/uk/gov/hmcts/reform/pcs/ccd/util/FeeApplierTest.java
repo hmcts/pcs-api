@@ -67,7 +67,7 @@ class FeeApplierTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeTypes feeType = FeeTypes.ENFORCEMENT_WARRANT_FEE;
-        final String expectedFormattedFee = "Unable to retrieve";
+        final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
 
         when(feeService.getFee(feeType.getCode())).thenThrow(new RuntimeException("Fee service error"));
         BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
@@ -88,7 +88,7 @@ class FeeApplierTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeTypes feeType = FeeTypes.ENFORCEMENT_WARRANT_FEE;
-        final String expectedFormattedFee = "Unable to retrieve";
+        final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
 
         when(feeService.getFee(ENFORCEMENT_WARRANT_FEE.getCode())).thenReturn(null);
         BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
@@ -101,5 +101,4 @@ class FeeApplierTest extends BaseEventTest {
         verify(feeService).getFee(feeType.getCode());
         assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
     }
-
 }
