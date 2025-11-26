@@ -47,8 +47,8 @@ public class UnderlesseeMortgageeValidator {
 
     private List<String> validateUnderlesseeOrMortgageeAddress(UnderlesseeMortgageeDetails underlesseeOrMortgagee,
                                                                String sectionHint) {
-        if (underlesseeOrMortgagee.getUnderlesseeOrMortgageeAddressKnown() == VerticalYesNo.YES) {
-            AddressUK correspondenceAddress = underlesseeOrMortgagee.getUnderlesseeOrMortgageeAddress();
+        if (underlesseeOrMortgagee.getAddressKnown() == VerticalYesNo.YES) {
+            AddressUK correspondenceAddress = underlesseeOrMortgagee.getAddress();
 
             if (correspondenceAddress != null) {
                 return addressValidator.validateAddressFields(correspondenceAddress, sectionHint);
