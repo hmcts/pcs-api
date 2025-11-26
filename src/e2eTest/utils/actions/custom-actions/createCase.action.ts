@@ -103,8 +103,10 @@ export class CreateCaseAction implements IAction {
     const addressLine3 = await page.getByLabel(addressDetails.addressLine3TextLabel).inputValue().catch(() => '');
     const country = await page.getByLabel(addressDetails.countryTextLabel).inputValue().catch(() => '');
 
-    if (addressInfo.buildingStreet) {
+    if (addressInfo.buildingStreet && addressInfo.townCity && addressInfo.engOrWalPostcode) {
       await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.buildingAndStreetLabel, answer: addressInfo.buildingStreet});
+      await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.townOrCityLabel, answer: addressInfo.townCity});
+      await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.postcodeLabel, answer: addressInfo.engOrWalPostcode});
     }
     if (addressLine2) {
       await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.addressLine2Label, answer: addressLine2});
@@ -112,14 +114,8 @@ export class CreateCaseAction implements IAction {
     if (addressLine3) {
       await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.addressLine3Label, answer: addressLine3});
     }
-    if (addressInfo.townCity) {
-      await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.townOrCityLabel, answer: addressInfo.townCity});
-    }
     if (country) {
       await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.countryLabel, answer: country});
-    }
-    if (addressInfo.engOrWalPostcode) {
-      await performAction('collectCYAAddressData', {actionName: 'selectAddress', question: propertyDetails.postcodeLabel, answer: addressInfo.engOrWalPostcode});
     }
     await performAction('clickButton', addressDetails.continueButton);
   }
@@ -829,7 +825,7 @@ export class CreateCaseAction implements IAction {
       await performAction('check', claimantDetails.iBelieveCheckbox);
       await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
       await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      await performAction('collectCYAData', {actionName: 'selectStatementOfTruth', question: '', answer: claimantDetails.iBelieveCheckbox});
+      await performAction('collectCYAData', {actionName: 'selectStatementOfTruth', question: ' ', answer: statementOfTruth.iBelieveTheFactsHiddenCheckbox});
       await performAction('collectCYAData', {actionName: 'selectStatementOfTruth', question: statementOfTruth.fullNameHiddenTextLabel, answer: claimantDetails.fullNameTextInput});
       await performAction('collectCYAData', {actionName: 'selectStatementOfTruth', question: statementOfTruth.positionOrOfficeHeldHiddenTextLabel, answer: claimantDetails.positionOrOfficeTextInput});
     }

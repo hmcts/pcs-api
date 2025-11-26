@@ -70,7 +70,7 @@ test.describe('[Create Case - England Simple Journey for CYA Validation] @regres
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader);
-    await performValidation('validateCheckYourAnswersAddress');
+    await performValidation('validateCheckYourAnswersAddress', {logQA: 'Yes'});
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
@@ -135,7 +135,7 @@ test.describe('[Create Case - England Simple Journey for CYA Validation] @regres
       fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
-    await performValidation('validateCheckYourAnswers');
+    await performValidation('validateCheckYourAnswers', {logQA: 'Yes'});
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(

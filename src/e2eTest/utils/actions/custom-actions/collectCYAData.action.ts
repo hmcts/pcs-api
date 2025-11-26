@@ -31,7 +31,10 @@ export class CollectCYADataAction implements IAction {
     if (!data?.question || data.answer == null) return;
 
     const dataStore = action === 'collectCYAAddressData' ? cyaAddressData : cyaData;
-    const question = typeof data.question === 'string' ? data.question.trim() : String(data.question);
+    // Preserve space if question is a single space (for checkboxes), otherwise trim
+    const question = typeof data.question === 'string' 
+      ? (data.question === ' ' ? ' ' : data.question.trim()) 
+      : String(data.question);
     const answer = (Array.isArray(data.answer) ? data.answer.join(', ') : String(data.answer)).trim();
     const actionName = (data.actionName as string) || action;
 

@@ -29,8 +29,7 @@ export async function extractCCDTable(
       if (!keyEl || !valueEl) return null;
 
       const key = cleanText(keyEl.innerText);
-      if (!key) return null;
-
+      
       const innerTable = valueEl.querySelector('table');
       const isComplexField = valueEl.querySelector('ccd-read-complex-field-table');
 
@@ -42,10 +41,17 @@ export async function extractCCDTable(
         : cleanText(valueEl.innerText);
 
       value = value.replace(/\s*Change\s*/gi, '').trim();
-      return value ? { [key]: value } : null;
+      
+      // If no value, skip this row
+      if (!value) return null;
+      
+      // If key is empty/whitespace but value exists, use space as key (for checkboxes)
+      const finalKey = key || ' ';
+      
+      return { [finalKey]: value };
     };
 
-    const scrapeTable = (table: HTMLTableElement): CaseData => {
+    const extractTableData = (table: HTMLTableElement): CaseData => {
       const results: CaseData = {};
       const rows = Array.from(table.querySelectorAll(':scope > tbody > tr')) as HTMLTableRowElement[];
 
@@ -54,7 +60,7 @@ export async function extractCCDTable(
 
         const complexFieldTable = row.querySelector('ccd-read-complex-field-table > div > table, ccd-read-complex-field-table div table') as HTMLTableElement;
         if (complexFieldTable) {
-          Object.assign(results, scrapeTable(complexFieldTable));
+          Object.assign(results, extractTableData(complexFieldTable));
         } else {
           const simpleData = extractSimpleRow(row);
           if (simpleData) Object.assign(results, simpleData);
@@ -63,7 +69,7 @@ export async function extractCCDTable(
       return results;
     };
 
-    return scrapeTable(mainTable);
+    return extractTableData(mainTable);
   }).catch(() => ({}));
 
   return Object.entries(caseData)
