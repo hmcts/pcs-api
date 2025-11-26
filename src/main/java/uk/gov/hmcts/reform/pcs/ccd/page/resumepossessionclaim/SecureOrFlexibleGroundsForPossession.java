@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
@@ -38,10 +39,12 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                  <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
                </p>
                """)
-            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGrounds)
-            .optional(PCSCase::getSecureOrFlexibleMandatoryGrounds)
-            .optional(PCSCase::getSecureOrFlexibleMandatoryGroundsAlt)
-            .optional(PCSCase::getSecureOrFlexibleDiscretionaryGroundsAlt)
+            .complex(PCSCase::getSecureOrFlexiblePossessionGrounds)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGrounds)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGroundsAlt)
+            .optional(SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGroundsAlt)
+            .done()
             .label("secureOrFlexibleGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -50,15 +53,16 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         PCSCase caseData = details.getData();
 
         Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds =
-                caseData.getSecureOrFlexibleDiscretionaryGrounds();
+                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleDiscretionaryGrounds();
 
         Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> discretionaryGroundsAlt =
-                caseData.getSecureOrFlexibleDiscretionaryGroundsAlt();
+                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleDiscretionaryGroundsAlt();
 
-        Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds = caseData.getSecureOrFlexibleMandatoryGrounds();
+        Set<SecureOrFlexibleMandatoryGrounds> mandatoryGrounds = caseData.getSecureOrFlexiblePossessionGrounds()
+            .getSecureOrFlexibleMandatoryGrounds();
 
         Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> mandatoryGroundsAlt =
-                caseData.getSecureOrFlexibleMandatoryGroundsAlt();
+                caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleMandatoryGroundsAlt();
 
         boolean hasOtherDiscretionaryGrounds = discretionaryGrounds
                 .stream()

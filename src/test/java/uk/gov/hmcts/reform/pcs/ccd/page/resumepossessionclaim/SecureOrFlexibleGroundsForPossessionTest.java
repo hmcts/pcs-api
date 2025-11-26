@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -38,12 +39,15 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
             boolean expectError,
             YesOrNo expectedShowReasonsPage) {
 
+        SecureOrFlexiblePossessionGrounds secureOrFlexibleGrounds = SecureOrFlexiblePossessionGrounds.builder()
+            .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
+            .secureOrFlexibleDiscretionaryGroundsAlt(discretionaryGroundsAlt)
+            .secureOrFlexibleMandatoryGrounds(mandatoryGrounds)
+            .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
+            .build();
         // Given
         PCSCase caseData = PCSCase.builder()
-                .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
-                .secureOrFlexibleDiscretionaryGroundsAlt(discretionaryGroundsAlt)
-                .secureOrFlexibleMandatoryGrounds(mandatoryGrounds)
-                .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
+                .secureOrFlexiblePossessionGrounds(secureOrFlexibleGrounds)
                 .build();
 
         // When
