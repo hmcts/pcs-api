@@ -8,25 +8,22 @@ export interface CollectedQAPair {
 }
 
 export interface CYADataStore {
-  collectedQAPairs?: CollectedQAPair[];
+  collectedQAPairs: CollectedQAPair[];
 }
 
-export type CYAData = CYADataStore;
-export type CYAAddressData = CYADataStore;
-
-export let cyaData: CYAData = {};
-export let cyaAddressData: CYAAddressData = {};
+export let cyaData: CYADataStore = { collectedQAPairs: [] };
+export let cyaAddressData: CYADataStore = { collectedQAPairs: [] };
 
 export function resetCYAData(): void {
-  cyaData = {};
+  cyaData = { collectedQAPairs: [] };
 }
 
 export function resetCYAAddressData(): void {
-  cyaAddressData = {};
+  cyaAddressData = { collectedQAPairs: [] };
 }
 
 export class CollectCYADataAction implements IAction {
-  async execute(_page: Page, action: string, fieldName?: actionData | actionRecord, _data?: actionData): Promise<void> {
+  async execute(_page: Page, action: string, fieldName?: actionData | actionRecord, _value?: actionData | actionRecord): Promise<void> {
     const data = fieldName as actionRecord;
     if (!data?.question || data.answer == null) return;
 
@@ -46,7 +43,7 @@ export class CollectCYADataAction implements IAction {
     if (isDuplicate) {
       throw new Error(
         `Duplicate Q&A pair detected in action "${actionName}": Question="${question}", Answer="${answer}". ` +
-        `- the same question should not be collected twice under the same action name.`
+        `The same question should not be collected twice under the same action name.`
       );
     }
     dataStore.collectedQAPairs.push({ step: actionName, question, answer });

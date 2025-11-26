@@ -6,7 +6,7 @@ import { buildCYAErrorMessage, hasValidationErrors, validateCYAData } from '@uti
 
 export class CheckYourAnswersAddressValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName?: string, data?: validationData): Promise<void> {
-    const collectedQA = cyaAddressData.collectedQAPairs || [];
+    const collectedQA = cyaAddressData.collectedQAPairs;
     if (collectedQA.length === 0) {
       throw new Error('Address CYA: No CYA data collected. Make sure to collect Q&A pairs during the journey.');
     }
