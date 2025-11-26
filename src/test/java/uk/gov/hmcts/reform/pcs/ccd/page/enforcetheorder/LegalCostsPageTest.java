@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,8 +7,8 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage.VALID_AMOUNT_ERROR_MESSAGE;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.LegalCostsPage.VALID_AMOUNT_ERROR_MESSAGE;
 
 class LegalCostsPageTest extends BasePageTest {
 

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.enforcement;
+package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,25 +14,24 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPlaceHolder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AdditionalInformationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.AggressiveAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.CriminalAntisocialRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EvictionDelayWarningPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EvictionRisksPosedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.LandRegistryFeesPlaceHolder;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.LegalCostsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.LivingInThePropertyPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.MoneyOwedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PoliceOrSocialServicesRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PropertyAccessDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ProtestorGroupRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.VerbalOrWrittenThreatsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ViolentAggressiveRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -90,8 +89,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(additionalInformationPage)
                 .add(new MoneyOwedPage())
                 .add(new LegalCostsPage())
-                .add(new LandRegistryFeesPlaceHolder())
-                .add(new CheckYourAnswersPlaceHolder());
+                .add(new LandRegistryFeesPlaceHolder());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

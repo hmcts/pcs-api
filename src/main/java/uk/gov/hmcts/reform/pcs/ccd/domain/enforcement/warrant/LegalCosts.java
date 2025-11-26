@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant;
 
 import lombok.Builder;
 import lombok.Data;
