@@ -33,7 +33,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
-class ReasonsForPosessionWalesTest extends BasePageTest {
+class ReasonsForPossessionWalesTest extends BasePageTest {
 
     @Mock
     private TextAreaValidationService textAreaValidationService;
@@ -51,7 +51,7 @@ class ReasonsForPosessionWalesTest extends BasePageTest {
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
         
-        setPageUnderTest(new ReasonsForPosessionWales(textAreaValidationService));
+        setPageUnderTest(new ReasonsForPossessionWales(textAreaValidationService));
     }
 
     @ParameterizedTest

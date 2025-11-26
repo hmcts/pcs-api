@@ -26,18 +26,18 @@ import java.util.List;
 
 @AllArgsConstructor
 @Component
-public class ReasonsForPosessionWales implements CcdPageConfiguration {
+public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("reasonsForPosessionWales", this::midEvent)
+            .page("reasonsForPossessionWales", this::midEvent)
             .pageLabel("Reasons for possession")
             .showCondition("legislativeCountry=\"Wales\" AND showReasonsForGroundsPageWales=\"Yes\"")
             .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW)
-            .label("reasonsForPosessionWales-separator", "---")
+            .label("reasonsForPossessionWales-separator", "---")
             .complex(PCSCase::getGroundsReasonsWales)
 
             // ---------- Standard/Other Contract - Mandatory grounds ----------
@@ -402,7 +402,7 @@ public class ReasonsForPosessionWales implements CcdPageConfiguration {
                 "secureContractEstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")    
 
             .done()
-            .label("reasonsForPosessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
