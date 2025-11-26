@@ -1,5 +1,5 @@
 
-import { Page, test, TestInfo } from '@playwright/test';
+import { Page, test } from '@playwright/test';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
 import { ActionRegistry } from './registry/action.registry';
@@ -8,7 +8,6 @@ import { AxeUtils} from "@hmcts/playwright-common";
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
-let testInfo : any;
 
 export function initializeExecutor(page: Page): void {
   testExecutor = { page };
@@ -40,7 +39,15 @@ async function validatePageIfNavigated(action:string): Promise<void> {
     const pageNavigated = await detectPageNavigation();
     if (pageNavigated) {
       await performValidation('autoValidatePageContent');
-      await performAccessibilityChecks(testInfo);
+    }
+  }
+}
+
+async function verifyAccessbilityIfNavigated(action:string): Promise<void> {
+  if(action.includes('click')) {
+    const pageNavigated = await detectPageNavigation();
+    if (pageNavigated) {
+      await performAccessibilityChecks();
     }
   }
 }
@@ -48,6 +55,7 @@ async function validatePageIfNavigated(action:string): Promise<void> {
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   await validatePageIfNavigated(action);
+  await verifyAccessbilityIfNavigated(action);
   const actionInstance = ActionRegistry.getAction(action);
 
   let displayFieldName = fieldName;
@@ -67,6 +75,7 @@ export async function performAction(action: string, fieldName?: actionData | act
     await actionInstance.execute(executor.page, action, fieldName, value);
   });
   await validatePageIfNavigated(action);
+  await verifyAccessbilityIfNavigated(action);
 }
 
 export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
@@ -124,11 +133,8 @@ function readValuesFromInputObjects(obj: object): string {
   });
   return `${formattedPairs.join(', ')}`;
 }
-async function performAccessibilityChecks(testInfo: TestInfo)
+async function performAccessibilityChecks()
 {
-  const executor = getExecutor();
-  console.log("<<<<<<<code accessibility is called>>>>>>>>>>>");
-  const axeUtil = new AxeUtils(executor.page);
-  axeUtil.audit();
-
+  const axeUtil = new AxeUtils(getExecutor().page);
+  await axeUtil.audit();
 }
