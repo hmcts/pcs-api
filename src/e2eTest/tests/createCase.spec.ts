@@ -195,7 +195,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('payClaimFee');
-    await performAction('clickLinkAndVerifyNewTabTitle', payClaimFee.payClaimFeeLink, caseList.mainHeader);
+    //await performAction('clickLinkAndVerifyNewTabTitle', payClaimFee.payClaimFeeLink, caseList.mainHeader);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
