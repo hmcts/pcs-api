@@ -9,6 +9,7 @@ import {createCase, addressDetails, housingPossessionClaim, defendantDetails, cl
         uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, userIneligible, whatAreYourGroundsForPossessionWales,
         underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth,
         propertyDetails} from '@data/page-data';
+import {resetCYAData} from "@utils/actions/custom-actions/collectCYAData.action";
 
 export let caseNumber: string;
 export let claimantsName: string;
@@ -136,6 +137,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', caseData);
+    if( caseData == 'No' ) {  resetCYAData(); }
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantType.mainHeader);
   }
 
