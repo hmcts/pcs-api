@@ -78,7 +78,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -140,7 +140,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
     private final GroundsForPossessionWales groundsForPossessionWales;
-    private final SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    private final SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     private final ReasonsForPosessionWales reasonsForPosessionWales;
     private final AddressFormatter addressFormatter;
     private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;

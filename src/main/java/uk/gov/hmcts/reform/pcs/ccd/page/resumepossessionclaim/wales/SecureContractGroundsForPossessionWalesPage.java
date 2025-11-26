@@ -12,12 +12,13 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 @Component
-public class SecureContractGroundsForPossessionWales implements CcdPageConfiguration {
+public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -38,29 +39,34 @@ public class SecureContractGroundsForPossessionWales implements CcdPageConfigura
                  <a href="https://www.gov.wales/understanding-possession-action-process-guidance-tenants-contract-holders-html" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
                </p>
                """)
-                .optional(PCSCase::getSecureContractDiscretionaryGroundsWales)
-                .optional(PCSCase::getSecureContractEstateManagementGroundsWales,
+            .complex(PCSCase::getSecureContractGroundsForPossessionWales)
+                .optional(SecureContractGroundsForPossessionWales::getSecureContractDiscretionaryGroundsWales)
+                .optional(SecureContractGroundsForPossessionWales::getSecureContractEstateManagementGroundsWales,
                         "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
-                .optional(PCSCase::getSecureContractMandatoryGroundsWales)
+                .optional(SecureContractGroundsForPossessionWales::getSecureContractMandatoryGroundsWales)
                 .label("secureOrFlexibleGroundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
             CaseDetails<PCSCase, State> detailsBefore) {
-                
+
         PCSCase caseData = details.getData();
 
-        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = 
-                                                caseData.getSecureContractDiscretionaryGroundsWales();
+        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds =
+            caseData.getSecureContractGroundsForPossessionWales().getSecureContractDiscretionaryGroundsWales();
 
-        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = caseData.getSecureContractMandatoryGroundsWales();
+        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = caseData
+            .getSecureContractGroundsForPossessionWales().getSecureContractMandatoryGroundsWales();
 
-        Set<EstateManagementGroundsWales> estateManagement = caseData.getSecureContractEstateManagementGroundsWales();
+        Set<EstateManagementGroundsWales> estateManagement = caseData
+            .getSecureContractGroundsForPossessionWales().getSecureContractEstateManagementGroundsWales();
 
         if (discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
                 && estateManagement.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(List.of("Please select at least one ground in 'Estate management grounds (section 160)'."))
+                    .errors(
+                        List.of("Please select at least one ground in 'Estate management grounds (section 160)'.")
+                    )
                     .build();
         }
 
