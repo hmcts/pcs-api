@@ -6,5 +6,5 @@ export const accessToTheProperty = {
   noRadioOption: 'No',
   whyItsDifficultToAccessToThePropertyTextLabel: 'Explain why it\'s difficult to access the property',
   whyItsDifficultToAccessToThePropertyTextInput: 'Test input Tell us anything else that could help with the eviction',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }
