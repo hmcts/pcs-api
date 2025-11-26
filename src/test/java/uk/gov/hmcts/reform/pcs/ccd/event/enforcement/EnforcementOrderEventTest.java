@@ -4,7 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -33,8 +34,11 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -136,19 +140,19 @@ class EnforcementOrderEventTest extends BaseEventTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = FeeTypes.class, names = {"ENFORCEMENT_WRIT_FEE", "ENFORCEMENT_WARRANT_FEE"})
-    void shouldSetFeeAmountOnStart(FeeTypes fee) {
+    @MethodSource("enforcementFeeScenarios")
+    void shouldSetFeeAmountOnStart(FeeTypes fee, Function<EnforcementOrder, String> feeGetter) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
 
-        String expectedFormattedWritFee = "£100";
+        String expectedFormattedFee = "£" + (1 + (int)(Math.random() * 1000));
 
         doAnswer(invocation -> {
             PCSCase pcs = invocation.getArgument(0);
             BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
-            setter.accept(pcs, expectedFormattedWritFee);
+            setter.accept(pcs, expectedFormattedFee);
             return null;
         }).when(feeApplier).applyFeeAmount(
             any(PCSCase.class),
@@ -160,13 +164,13 @@ class EnforcementOrderEventTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo(expectedFormattedWritFee);
+        assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFormattedFee);
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
     }
 
     @ParameterizedTest
-    @EnumSource(value = FeeTypes.class, names = {"ENFORCEMENT_WRIT_FEE", "ENFORCEMENT_WARRANT_FEE"})
-    void shouldSetDefaultFeeWhenFeeServiceFails(FeeTypes fee) {
+    @MethodSource("enforcementFeeScenarios")
+    void shouldSetDefaultFeeWhenFeeServiceFails(FeeTypes fee, Function<EnforcementOrder, String> feeGetter) {
         // Given
         PCSCase caseData = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
         String expectedFeesMessage = FeeApplier.UNABLE_TO_RETRIEVE;
@@ -184,11 +188,27 @@ class EnforcementOrderEventTest extends BaseEventTest {
             eq(caseData),
             any(FeeTypes.class),
             any());
+
         // When
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        assertThat(result.getEnforcementOrder().getWritFeeAmount()).isEqualTo(expectedFeesMessage);
+        assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFeesMessage);
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
+    }
+
+    private static Stream<Arguments> enforcementFeeScenarios() {
+        return Stream.of(
+            argumentSet(
+                "Writ fee",
+                FeeTypes.ENFORCEMENT_WRIT_FEE,
+                (Function<EnforcementOrder, String>) EnforcementOrder::getWritFeeAmount
+            ),
+            argumentSet(
+                "Warrant fee",
+                FeeTypes.ENFORCEMENT_WARRANT_FEE,
+                (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount
+            )
+        );
     }
 }
