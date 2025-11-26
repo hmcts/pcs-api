@@ -15,6 +15,7 @@ export class CheckYourAnswersAddressValidation implements IValidation {
       return await extractCCDTable(page, 'table.form-table');
     });
 
+    //For allure report logging
     if (data !== undefined) {
       await test.step('Attach Q&A data to Allure report', async () => {
         const collectedQAText = this.formatQAData(collectedQA);

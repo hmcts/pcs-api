@@ -29,7 +29,8 @@ import {
   user,
   wantToUploadDocuments,
   whatAreYourGroundsForPossession,
-  borderPostcode, claimType
+  borderPostcode,
+  claimType
 } from '@data/page-data';
 import {
   initializeExecutor,
