@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -136,8 +136,8 @@ class EnforcementOrderEventTest extends BaseEventTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = FeeType.class, names = {"ENFORCEMENT_WRIT_FEE", "ENFORCEMENT_WARRANT_FEE"})
-    void shouldSetFeeAmountOnStart(FeeType fee) {
+    @EnumSource(value = FeeTypes.class, names = {"ENFORCEMENT_WRIT_FEE", "ENFORCEMENT_WARRANT_FEE"})
+    void shouldSetFeeAmountOnStart(FeeTypes fee) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
@@ -152,7 +152,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
             return null;
         }).when(feeApplier).applyFeeAmount(
             any(PCSCase.class),
-            any(FeeType.class),
+            any(FeeTypes.class),
             any()
         );
 
@@ -165,8 +165,8 @@ class EnforcementOrderEventTest extends BaseEventTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = FeeType.class, names = {"ENFORCEMENT_WRIT_FEE", "ENFORCEMENT_WARRANT_FEE"})
-    void shouldSetDefaultFeeWhenFeeServiceFails(FeeType fee) {
+    @EnumSource(value = FeeTypes.class, names = {"ENFORCEMENT_WRIT_FEE", "ENFORCEMENT_WARRANT_FEE"})
+    void shouldSetDefaultFeeWhenFeeServiceFails(FeeTypes fee) {
         // Given
         PCSCase caseData = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
         String expectedFeesMessage = FeeApplier.UNABLE_TO_RETRIEVE;
@@ -182,7 +182,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
             return null;
         }).when(feeApplier).applyFeeAmount(
             eq(caseData),
-            any(FeeType.class),
+            any(FeeTypes.class),
             any());
         // When
         PCSCase result = callStartHandler(caseData);

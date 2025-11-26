@@ -15,7 +15,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration.LookUpReferenceData;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -38,7 +38,7 @@ class RealFeeServiceTest {
 
     private RealFeeService underTest;
 
-    private static final String FEE_TYPE = FeeType.CASE_ISSUE_FEE.getCode();
+    private static final String FEE_TYPE = FeeTypes.CASE_ISSUE_FEE.getCode();
 
     private LookUpReferenceData lookUpReferenceData;
     private FeeLookupResponseDto feeLookupResponseDto;

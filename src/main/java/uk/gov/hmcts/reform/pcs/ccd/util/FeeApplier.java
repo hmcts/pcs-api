@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
@@ -22,7 +22,7 @@ public class FeeApplier {
 
     public void applyFeeAmount(
         PCSCase pcsCase,
-        FeeType feeType,
+        FeeTypes feeType,
         BiConsumer<PCSCase, String> setter
     ) {
         try {

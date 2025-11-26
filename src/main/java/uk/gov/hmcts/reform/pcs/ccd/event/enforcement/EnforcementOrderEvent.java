@@ -36,7 +36,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
@@ -114,7 +114,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private void applyWarrantFeeAmount(PCSCase pcsCase) {
         feeApplier.applyFeeAmount(
             pcsCase,
-            FeeType.ENFORCEMENT_WARRANT_FEE,
+            FeeTypes.ENFORCEMENT_WARRANT_FEE,
             (caseData, fee) -> caseData.getEnforcementOrder().setWarrantFeeAmount(fee)
         );
     }
@@ -122,7 +122,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private void applyWritFeeAmount(PCSCase pcsCase) {
         feeApplier.applyFeeAmount(
             pcsCase,
-            FeeType.ENFORCEMENT_WRIT_FEE,
+            FeeTypes.ENFORCEMENT_WRIT_FEE,
             (caseData, fee) -> caseData.getEnforcementOrder().setWritFeeAmount(fee)
         );
     }
