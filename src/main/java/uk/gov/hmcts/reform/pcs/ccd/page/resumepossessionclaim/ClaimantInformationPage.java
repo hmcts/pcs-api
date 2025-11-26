@@ -26,7 +26,7 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             .pageLabel("Claimant name")
             .label("claimantInformation-separator", "---")
             .complex(PCSCase::getClaimantInformation)
-            .readonly(ClaimantInformation::getOrganisationName)
+            .readonlyNoSummary(ClaimantInformation::getOrganisationName)
             .mandatory(ClaimantInformation::getIsClaimantNameCorrect)
             .mandatory(
                 ClaimantInformation::getOverriddenClaimantName,
