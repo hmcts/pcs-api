@@ -89,4 +89,8 @@ public class EnforcementOrder {
     @JsonUnwrapped
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private LegalCosts legalCosts;
 }
