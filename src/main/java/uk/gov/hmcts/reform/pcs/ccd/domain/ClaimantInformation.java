@@ -9,8 +9,6 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
-
 @Builder
 @Data
 @NoArgsConstructor
