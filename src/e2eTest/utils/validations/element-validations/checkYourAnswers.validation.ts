@@ -58,6 +58,13 @@ export class CheckYourAnswersValidation implements IValidation {
           body: pageCYAQAText,
           contentType: 'text/plain'
         });
+
+        // Attach full page screenshot of CYA page
+        const screenshot = await page.screenshot({ fullPage: true });
+        await test.info().attach(`${stepDescription} Screenshot`, {
+          body: screenshot,
+          contentType: 'image/png'
+        });
       });
     }
 
