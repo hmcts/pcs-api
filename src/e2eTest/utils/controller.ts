@@ -39,14 +39,6 @@ async function validatePageIfNavigated(action:string): Promise<void> {
     const pageNavigated = await detectPageNavigation();
     if (pageNavigated) {
       await performValidation('autoValidatePageContent');
-    }
-  }
-}
-
-async function verifyAccessbilityIfNavigated(action:string): Promise<void> {
-  if(action.includes('click')) {
-    const pageNavigated = await detectPageNavigation();
-    if (pageNavigated) {
       await performAccessibilityChecks();
     }
   }
@@ -55,7 +47,6 @@ async function verifyAccessbilityIfNavigated(action:string): Promise<void> {
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   await validatePageIfNavigated(action);
-  await verifyAccessbilityIfNavigated(action);
   const actionInstance = ActionRegistry.getAction(action);
 
   let displayFieldName = fieldName;
@@ -75,7 +66,6 @@ export async function performAction(action: string, fieldName?: actionData | act
     await actionInstance.execute(executor.page, action, fieldName, value);
   });
   await validatePageIfNavigated(action);
-  await verifyAccessbilityIfNavigated(action);
 }
 
 export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
