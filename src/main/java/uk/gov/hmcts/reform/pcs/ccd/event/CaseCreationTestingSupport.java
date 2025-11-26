@@ -99,7 +99,7 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
         }
         pcsCase.setClaimantContactEmail(userEmail);
         pcsCaseService.createCase(caseReference, pcsCase.getPropertyAddress(), pcsCase.getLegislativeCountry());
-        draftCaseDataService.patchUnsubmittedCaseData(caseReference, pcsCase);
+        draftCaseDataService.patchUnsubmittedCaseData(caseReference, pcsCase, EventId.resumePossessionClaim);
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
@@ -112,7 +112,7 @@ public class CaseCreationTestingSupport implements CCDConfig<PCSCase, State, Use
 
         pcsCaseService.save(pcsCaseEntity);
 
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.resumePossessionClaim);
 
         scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
 
