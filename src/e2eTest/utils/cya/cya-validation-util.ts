@@ -27,18 +27,18 @@ export function validateCYAData(
       .map(c => [normalize(c.question!), c.answer!.trim()])
   );
 
-  const pageMap = new Map(
+  const pageCYAMap = new Map(
     pageCYAQA.map(p => [normalize(p.question), p.answer.trim()])
   );
 
-  // Check: Collected but missing / mismatched on page
+  // Check: Collected but missing / mismatched on CYA page
   for (const [q, expectedAnswer] of collectedMap.entries()) {
-    if (!pageMap.has(q)) {
+    if (!pageCYAMap.has(q)) {
       missingOnCYAPage.push({ question: q, answer: expectedAnswer });
       continue;
     }
 
-    const foundAnswer = pageMap.get(q)!;
+    const foundAnswer = pageCYAMap.get(q)!;
     if (expectedAnswer !== foundAnswer) {
       answerMismatches.push({
         question: q,
@@ -48,8 +48,8 @@ export function validateCYAData(
     }
   }
 
-  // Check: On page but not collected
-  for (const [q, answer] of pageMap.entries()) {
+  // Check: On CYA page but not collected
+  for (const [q, answer] of pageCYAMap.entries()) {
     if (!collectedMap.has(q)) {
       missingInCollected.push({ question: q, answer });
     }
