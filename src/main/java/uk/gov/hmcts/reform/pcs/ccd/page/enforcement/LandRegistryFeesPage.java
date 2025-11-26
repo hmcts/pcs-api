@@ -18,10 +18,11 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
                 .label("landRegistryFeesPage-content", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getLandRegistryFees)
-                .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
-                .mandatory(
-                    LandRegistryFees::getAmountOfLandRegistryFees,
-                    "haveLandRegistryFeesBeenPaid=\"YES\"")
+                    .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
+                    .mandatory(
+                        LandRegistryFees::getAmountOfLandRegistryFees,
+                        "haveLandRegistryFeesBeenPaid=\"YES\"")
+                    .done()
                 .done()
                 .label("landRegistryFeesPage-save-and-return", SAVE_AND_RETURN);
     }
