@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
 @AllArgsConstructor
 public class FeeApplier {
 
-    private static final String FEE = "Unable to retrieve";
+    public static final String UNABLE_TO_RETRIEVE = "Unable to retrieve";
 
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
@@ -29,10 +29,10 @@ public class FeeApplier {
             BigDecimal feeAmount = feeService.getFee(feeType.getCode()).getFeeAmount();
             String formatted = feeFormatter.formatFee(feeAmount);
 
-            setter.accept(pcsCase, formatted != null ? formatted : FEE);
+            setter.accept(pcsCase, formatted != null ? formatted : UNABLE_TO_RETRIEVE);
         } catch (Exception e) {
             log.error("Error while getting {} fee", feeType.name(), e);
-            setter.accept(pcsCase, FEE);
+            setter.accept(pcsCase, UNABLE_TO_RETRIEVE);
         }
     }
 }

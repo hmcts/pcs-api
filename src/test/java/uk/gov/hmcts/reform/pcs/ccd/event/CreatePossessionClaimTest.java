@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -65,10 +67,10 @@ class CreatePossessionClaimTest extends BaseEventTest {
         verify(pcsCaseService).createCase(TEST_CASE_REFERENCE, propertyAddress, legislativeCountry);
     }
 
-    @Test
-    void shouldSetFeeAmountOnStart() {
+    @ParameterizedTest
+    @ValueSource(strings = {"£0", "£123.45", "£123"})
+    void shouldHandleWithVariousFormattedValues(String expectedFormattedFee) {
         PCSCase caseData = PCSCase.builder().build();
-        String expectedFormattedFee = "£404";
 
         doAnswer(invocation -> {
             PCSCase pcs = invocation.getArgument(0);
@@ -86,58 +88,13 @@ class CreatePossessionClaimTest extends BaseEventTest {
         assertThat(result.getFeeAmount()).isEqualTo(expectedFormattedFee);
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
 
-    }
-
-    @Test
-    void shouldHandleFeeWithDecimalPlaces() {
-        PCSCase caseData = PCSCase.builder().build();
-        String expectedFormattedFee = "£123.45";
-
-        doAnswer(invocation -> {
-            PCSCase pcs = invocation.getArgument(0);
-            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
-            setter.accept(pcs, expectedFormattedFee);
-            return null;
-        }).when(feeApplier).applyFeeAmount(
-            eq(caseData),
-            eq(FeeType.CASE_ISSUE_FEE),
-            any()
-        );
-
-        PCSCase result = callStartHandler(caseData);
-
-        assertThat(result.getFeeAmount()).isEqualTo(expectedFormattedFee);
-        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
-
-    }
-
-    @Test
-    void shouldHandleZeroFeeAmount() {
-        PCSCase caseData = PCSCase.builder().build();
-        String expectedFormattedFee = "£0";
-
-        doAnswer(invocation -> {
-            PCSCase pcs = invocation.getArgument(0);
-            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
-            setter.accept(pcs, expectedFormattedFee);
-            return null;
-        }).when(feeApplier).applyFeeAmount(
-            eq(caseData),
-            eq(FeeType.CASE_ISSUE_FEE),
-            any()
-        );
-
-        PCSCase result = callStartHandler(caseData);
-
-        assertThat(result.getFeeAmount()).isEqualTo(expectedFormattedFee);
-        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
     }
 
 
     @Test
     void shouldSetDefaultFeeWhenFeeServiceThrowsRuntimeException() {
         PCSCase caseData = PCSCase.builder().build();
-        String expectedFeesMessage = "Unable to retrieve";
+        String expectedFeesMessage = FeeApplier.UNABLE_TO_RETRIEVE;
 
         doAnswer(invocation -> {
             PCSCase pcs = invocation.getArgument(0);
@@ -155,7 +112,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
 
         PCSCase result = callStartHandler(caseData);
 
-        assertThat(result.getFeeAmount()).isEqualTo("Unable to retrieve");
+        assertThat(result.getFeeAmount()).isEqualTo(expectedFeesMessage);
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
     }
 

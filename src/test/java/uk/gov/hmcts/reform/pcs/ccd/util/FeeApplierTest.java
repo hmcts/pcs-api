@@ -1,9 +1,10 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
@@ -21,17 +22,16 @@ import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.ENFORCEMENT_WARRANT_FEE;
 
 @ExtendWith(MockitoExtension.class)
-public class FeeAppliedTest extends BaseEventTest {
+class FeeApplierTest extends BaseEventTest {
 
+    @InjectMocks
     private FeeApplier underTest;
 
     @Mock
     private FeeService feeService;
 
-    @BeforeEach
-    void setUp() {
-        underTest = new FeeApplier(feeService, new FeeFormatter());
-    }
+    @Spy
+    private FeeFormatter feeFormatter;
 
     @Test
     void shouldSetFormattedFeeWhenFeeServiceReturnsFee() {
