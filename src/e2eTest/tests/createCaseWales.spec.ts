@@ -2,7 +2,7 @@ import { test } from '@playwright/test';
 import {
   initializeExecutor,
   performAction,
-  performValidation
+  performValidation, performValidations
 } from '@utils/controller';
 import {
   addressCheckYourAnswers,
@@ -31,7 +31,10 @@ import {
   asbQuestionsWales,
   noticeDetails,
   user,
-  whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeEntitledToClaim
+  whatAreYourGroundsForPossessionWales,
+  underlesseeOrMortgageeEntitledToClaim,
+  additionalReasonsForPossession,
+  wantToUploadDocuments, applications, languageUsed, completeYourClaim, checkYourAnswers, propertyDetails
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
@@ -159,11 +162,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
@@ -208,6 +211,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession]
     });
     await performAction('clickButton', reasonsForPossession.continue);
+    await performAction('selectAsbQuestions', {
+      asbChoice: asbQuestionsWales.noRadioOption,
+      illegalPurposesChoice: asbQuestionsWales.noRadioOption,
+      prohibitedConductChoice: asbQuestionsWales.noRadioOption
+    });
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
@@ -279,11 +287,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('Wales - Standard contract - Rent arrears + ASB', async () => {
@@ -326,7 +334,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
     await performAction('selectAsbQuestions', {
       asbChoice: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
@@ -397,11 +405,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('Wales - Other - No Rent arrears,  ASB + other options', async () => {
@@ -446,6 +454,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
     });
     await performAction('clickButton', reasonsForPossession.continue);
+    await performAction('selectAsbQuestions', {
+      asbChoice: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
+      illegalPurposesChoice: asbQuestionsWales.noRadioOption,
+      prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
+    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -497,10 +510,10 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 });
