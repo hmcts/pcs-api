@@ -6,7 +6,7 @@ import {createCase, addressDetails, housingPossessionClaim, defendantDetails, cl
         groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy,
         noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
         claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder,
-        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible, whatAreYourGroundsForPossessionWales,
+        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, userIneligible, whatAreYourGroundsForPossessionWales,
         underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from '@data/page-data';
 
 export let caseNumber: string;
@@ -777,11 +777,8 @@ export class CreateCaseAction implements IAction {
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
-    await performAction('clickButton', home.findCaseTab);
-    await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
-    await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
-    await performAction('inputText', search.caseNumberLabel, caseNumber);
-    await performAction('clickButton', search.apply);
-    await performAction('clickButton', caseNumber);
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS${process.env.CHANGE_ID ? `-${process.env.CHANGE_ID}` : ''}/${caseNumber.replace(/-/g, '')}#Next%20steps`);
+    //Skipping Find Case search as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
+    //await performAction('searchCaseFromFindCase', caseNumber);
   }
 }
