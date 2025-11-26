@@ -31,10 +31,8 @@ export class CollectCYADataAction implements IAction {
     if (!data?.question || data.answer == null) return;
 
     const dataStore = action === 'collectCYAAddressData' ? cyaAddressData : cyaData;
-    // Preserve space if question is a single space (for checkboxes), otherwise trim
-    const question = typeof data.question === 'string' 
-      ? (data.question === ' ' ? ' ' : data.question.trim()) 
-      : String(data.question);
+    const questionStr = String(data.question);
+    const question = questionStr === ' ' ? ' ' : questionStr.trim();
     const answer = (Array.isArray(data.answer) ? data.answer.join(', ') : String(data.answer)).trim();
     const actionName = (data.actionName as string) || action;
 
@@ -45,8 +43,12 @@ export class CollectCYADataAction implements IAction {
     const isDuplicate = dataStore.collectedQAPairs.some(
       pair => pair.question === question && pair.answer === answer && pair.step === actionName
     );
-    if (!isDuplicate) {
-      dataStore.collectedQAPairs.push({ step: actionName, question, answer });
+    if (isDuplicate) {
+      throw new Error(
+        `Duplicate Q&A pair detected in action "${actionName}": Question="${question}", Answer="${answer}". ` +
+        `- the same question should not be collected twice under the same action name.`
+      );
     }
+    dataStore.collectedQAPairs.push({ step: actionName, question, answer });
   }
 }

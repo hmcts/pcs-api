@@ -1,7 +1,7 @@
 import { Page, test } from '@playwright/test';
 import {IValidation, validationData} from '@utils/interfaces';
 import { cyaAddressData } from '@utils/actions/custom-actions/collectCYAData.action';
-import { extractSimpleQAFromPage } from '@utils/cya/cya-extraction-utils';
+import {extractCCDTable} from '@utils/cya/cya-extraction-utils';
 import { buildCYAErrorMessage, hasValidationErrors, validateCYAData } from '@utils/cya/cya-validation-util';
 
 export class CheckYourAnswersAddressValidation implements IValidation {
@@ -12,7 +12,7 @@ export class CheckYourAnswersAddressValidation implements IValidation {
     }
 
     const pageCYAQA = await test.step('Extract Q&A pairs from Address CYA page', async () => {
-      return await extractSimpleQAFromPage(page);
+      return await extractCCDTable(page, 'table.form-table');
     });
 
     if (data !== undefined) {

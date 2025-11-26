@@ -29,7 +29,7 @@ export async function extractCCDTable(
       if (!keyEl || !valueEl) return null;
 
       const key = cleanText(keyEl.innerText);
-      
+
       const innerTable = valueEl.querySelector('table');
       const isComplexField = valueEl.querySelector('ccd-read-complex-field-table');
 
@@ -41,13 +41,11 @@ export async function extractCCDTable(
         : cleanText(valueEl.innerText);
 
       value = value.replace(/\s*Change\s*/gi, '').trim();
-      
-      // If no value, skip this row
+
       if (!value) return null;
-      
-      // If key is empty/whitespace but value exists, use space as key (for checkboxes)
+
       const finalKey = key || ' ';
-      
+
       return { [finalKey]: value };
     };
 
@@ -75,6 +73,3 @@ export async function extractCCDTable(
   return Object.entries(caseData)
     .map(([question, answer]) => ({ question, answer }));
 }
-
-export const extractSimpleQAFromPage = (page: Page): Promise<Array<QAPair>> =>
-  extractCCDTable(page, 'table.form-table');
