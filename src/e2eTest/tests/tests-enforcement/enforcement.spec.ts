@@ -203,8 +203,11 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {
       question: peopleWillBeEvicted.evictEveryOneQuestion,
-      option: peopleWillBeEvicted.yesRadioOption,
-    })
+      option: peopleWillBeEvicted.noRadioOption,
+    });
+    await performAction('selectPeopleYouWantToEvict', {
+      defendants: defendantDetails[0],
+    });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
       question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
