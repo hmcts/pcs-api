@@ -108,8 +108,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
 
-        // Delete unsubmitted data once HDPI-2637 implemented after enforcement order is created in same transaction
-        enforcementOrderService.createEnforcementOrder(caseReference, eventPayload.caseData().getEnforcementOrder());
+        enforcementOrderService.saveSubmittedDataAndDeleteDraftData(caseReference,
+                eventPayload.caseData().getEnforcementOrder());
 
         return SubmitResponse.defaultResponse();
     }
