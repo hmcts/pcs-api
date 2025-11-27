@@ -17,16 +17,17 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
             .label("livingInTheProperty-content", "---")
             .label(
                 "livingInTheProperty-information-text", """
-                    <p>The bailiff needs to know if anyone at the property poses a risk.</p>
-                    <p>For example if they:</p>
-                      <ul>
-                       <li>are violent or aggressive</li>
-                       <li>possess a firearm or other weapon</li>
-                       <li>have a history of criminal or antisocial behaviour</li>
-                       <li>have made verbal or written threats towards you</li>
-                       <li>are a member of a group that protests evictions</li>
-                       <li>have had visits from the police or social services</li>
-                       <li>own an aggressive dog or other animal</li>
+                    <p class="govuk-body govuk-!-font-weight-bold"> The bailiff needs to know if anyone at the property
+                    poses a risk.</p>
+                    <p class="govuk-body govuk-!-margin-bottom-1"> For example if they:</p>
+                      <ul class="govuk-list govuk-list--bullet">
+                       <li class="govuk-!-font-size-19"> are violent or aggressive</li>
+                       <li class="govuk-!-font-size-19"> possess a firearm or other weapon</li>
+                       <li class="govuk-!-font-size-19"> have a history of criminal or antisocial behaviour</li>
+                       <li class="govuk-!-font-size-19"> have made verbal or written threats towards you</li>
+                       <li class="govuk-!-font-size-19"> are a member of a group that protests evictions</li>
+                       <li class="govuk-!-font-size-19"> have had visits from the police or social services</li>
+                       <li class="govuk-!-font-size-19"> own an aggressive dog or other animal</li>
                      </ul>
                     """
             )
