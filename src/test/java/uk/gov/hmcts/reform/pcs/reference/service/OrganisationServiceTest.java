@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -125,5 +126,43 @@ class OrganisationServiceTest {
 
         // Then
         assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when organisation Address is empty")
+    void shouldReturnNullWhenOrganisationAddressIsEmpty() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationAddress(USER_ID.toString()))
+            .thenReturn(null);
+
+        // When
+        AddressUK result = organisationService.getOrganisationAddressForCurrentUser();
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should successfully retrieve organisation Address for current user")
+    void shouldSuccessfullyRetrieveOrganisationAddressForCurrentUser() {
+        // Given
+        AddressUK orgAddress =  AddressUK.builder()
+            .addressLine1("27 Feather street")
+            .postTown("London")
+            .postCode("B8 7FH")
+            .build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationAddress(USER_ID.toString()))
+            .thenReturn(orgAddress);
+
+        // When
+        AddressUK result = organisationService.getOrganisationAddressForCurrentUser();
+
+        // Then
+        assertThat(result).isEqualTo(orgAddress);
+        verify(securityContextService).getCurrentUserId();
+        verify(organisationDetailsService).getOrganisationAddress(USER_ID.toString());
     }
 }
