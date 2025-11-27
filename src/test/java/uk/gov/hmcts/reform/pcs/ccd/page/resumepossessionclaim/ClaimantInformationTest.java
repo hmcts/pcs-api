@@ -104,12 +104,12 @@ class ClaimantInformationTest extends BasePageTest {
 
     private static Arguments testCase(String description, String claimantName, String overriddenName) {
         String nameToUse = overriddenName != null ? overriddenName : claimantName;
-        return Arguments.of(description, claimantName, overriddenName, nameToUse + "'");
+        return Arguments.of(description, claimantName, overriddenName, nameToUse + "’");
     }
 
     private static Arguments testData(String description, String claimantName, String overriddenName) {
         String nameToUse = (overriddenName != null && !overriddenName.isEmpty()) ? overriddenName : claimantName;
-        String expectedResult = nameToUse == null ? null : nameToUse + "'s";
+        String expectedResult = nameToUse == null ? null : nameToUse + "’s";
         return Arguments.of(description, claimantName, overriddenName, expectedResult);
     }
 
