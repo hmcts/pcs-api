@@ -9,7 +9,7 @@ export const startTheService = {
   subHeader: `What you’ll need`,
   beforeYouStartParagraph: `Before you start, make sure you have the following information:`,
   detailsOfTenanacyParagraph: `details of the tenancy, contract, licence or mortgage agreement`,
-  theDefendantsDetailsParagraph: `the defendants' details (the people you’re making the claim against)`,
+  theDefendantsDetailsParagraph: `the defendants’ details (the people you’re making the claim against)`,
   yourReasonForMakingPossesionClaimParagraph: `your reasons for making a possession claim`,
   copiesOfgAnyReleventDocumentsParagraph: `copies of any relevant documents. You can either upload documents now or closer to the hearing date. Any documents you upload now will be included in the pack of documents that a judge will receive before the hearing (the bundle)`,
   onceYouHaveFinishedAnsweringParagraph: `Once you’ve finished answering the questions, you can either:`,
