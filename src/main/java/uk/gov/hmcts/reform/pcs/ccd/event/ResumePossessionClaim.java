@@ -366,7 +366,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-4 govuk-!-padding-bottom-4">
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
             <span class="govuk-panel__title govuk-!-font-size-36">Pay %s claim fee</span>
             </div>
 
@@ -382,7 +382,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private static String getClaimSavedMarkdown() {
         return """
             ---
-            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-4 govuk-!-padding-bottom-4">
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
               <span class="govuk-panel__title govuk-!-font-size-36">Claim saved</span>
             </div>
 
