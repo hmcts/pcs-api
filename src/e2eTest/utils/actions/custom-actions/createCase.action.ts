@@ -145,7 +145,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', caseData);
-    await performAction('collectCYAData', {actionName: 'selectClaimantType', question: claimantType.whoIsTheClaimantQuestion, answer: caseData});
+    //XXXawait performAction('collectCYAData', {actionName: 'selectClaimantType', question: claimantType.whoIsTheClaimantQuestion, answer: caseData});
     if(caseData === claimantType.england.registeredProviderForSocialHousing || caseData === claimantType.wales.communityLandlord){
       await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
     }
@@ -158,7 +158,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', caseData);
-    await performAction('collectCYAData', {actionName: 'selectClaimType', question: claimType.isThisAClaimAgainstTrespassersQuestion, answer: caseData});
+    await performAction('collectCYAData', {actionName: 'selectClaimType', question: claimType.isThisAClaimAgainstTrespassersQuestion, answer: caseData});//XXXX
     if(caseData === claimType.no){
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continue, claimantName.mainHeader);
     }
@@ -240,7 +240,7 @@ export class CreateCaseAction implements IAction {
       question: contactPreferences.emailAddressForNotifications,
       option: preferences.notifications
     });
-    await performAction('collectCYAData', {actionName: 'selectContactPreferences', question: contactPreferences.emailAddressForNotifications, answer: preferences.notifications});
+    await performAction('collectCYAData', {actionName: 'selectContactPreferences', question: contactPreferences.emailAddressForNotifications, answer: contactPreferences.no});//XXX
     if (preferences.notifications === contactPreferences.no) {
       await performAction('inputText', contactPreferences.enterEmailAddressLabel, contactPreferences.emailIdInput);
     }
