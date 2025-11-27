@@ -12,8 +12,8 @@ public class LandRegistryFees {
 
     @CCD(
         label = "Have you paid any Land Registry fees?",
-        hint = "For example, if you paid the Land Registry a fee to view the property boundary.  If you have paid "
-            + "the Land Registry fee, but you do not want the defendant to repay it, you can choose 'No'."
+        hint = "For example, if you paid a Land Registry a fee to view the property boundary.  If you have paid "
+            + "the Land Registry fee, but you do not want the defendant to repay it, you can choose 'No'"
     )
     private VerticalYesNo haveLandRegistryFeesBeenPaid;
 

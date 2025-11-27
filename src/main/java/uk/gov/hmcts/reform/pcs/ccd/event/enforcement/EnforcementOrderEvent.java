@@ -91,8 +91,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(additionalInformationPage)
                 .add(new MoneyOwedPage())
                 .add(new LegalCostsPage())
-                .add(new RepaymentsPage())
-                .add(new LandRegistryFeesPage());
+                .add(new LandRegistryFeesPage())
+                .add(new RepaymentsPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
