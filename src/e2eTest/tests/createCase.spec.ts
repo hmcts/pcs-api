@@ -52,7 +52,6 @@ import {
   whatAreYourGroundsForPossession
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-import {payClaimFee} from "@data/page-data/payClaimFee.page.data";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);

@@ -38,8 +38,6 @@ import {
   uploadAdditionalDocs,
   additionalReasonsForPossession,
   completeYourClaim,
-  home,
-  search,
   userIneligible,
   whatAreYourGroundsForPossessionWales,
   underlesseeOrMortgageeDetails,
