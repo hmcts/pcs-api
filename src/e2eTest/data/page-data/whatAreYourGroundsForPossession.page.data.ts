@@ -43,7 +43,7 @@ export const whatAreYourGroundsForPossession = {
   mandatoryWithAccommodation:
     {
       overcrowding: 'Overcrowding (ground 9)',
-      landlordsWorks: 'Landlord\'s works (ground 10)',
+      landlordsWorks: 'Landlord’s works (ground 10)',
       propertySoldForRedevelopment: 'Property sold for redevelopment (ground 10A)',
       charitableLandlords: 'Charitable landlords (ground 11)'
     },
