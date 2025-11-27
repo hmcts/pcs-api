@@ -176,7 +176,7 @@ public class PCSCase {
 
     @CCD(
         label = "Are you claiming possession because of rent arrears?",
-        hint = "you’ll be able to add additional grounds later if you select yes"
+        hint = "You’ll be able to add additional grounds later if you select yes"
     )
     private YesOrNo claimDueToRentArrears;
 
@@ -531,7 +531,7 @@ public class PCSCase {
 
     @CCD(
             label = OTHER_GROUND_DESCRIPTION_LABEL,
-            hint = "you’ll be able to explain your reasons for claiming possession"
+            hint = "You’ll be able to explain your reasons for claiming possession"
                     + " under these grounds on the next screen. You can enter up to 500 characters",
             typeOverride = TextArea
     )
