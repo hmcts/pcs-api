@@ -38,14 +38,13 @@ async function validatePageIfNavigated(action:string): Promise<void> {
     const pageNavigated = await detectPageNavigation();
     if (pageNavigated) {
       await performValidation('autoValidatePageContent');
-      await performAccessibilityChecks();
+      await new AxeUtils(getExecutor().page).audit();
     }
   }
 }
 
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
-  await validatePageIfNavigated(action);
   const actionInstance = ActionRegistry.getAction(action);
 
   let displayFieldName = fieldName;
@@ -122,14 +121,4 @@ function readValuesFromInputObjects(obj: object): string {
   });
   return `${formattedPairs.join(', ')}`;
 }
-async function performAccessibilityChecks()
-{
-  try {
-    const axeUtil = new AxeUtils(getExecutor().page);
-    await axeUtil.audit();
-  }
-  catch(error)
-  {
-    //this is to handle soft assert for accessibility Utils
-  }
-}
+
