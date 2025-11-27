@@ -44,7 +44,7 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                 .optional(SecureContractGroundsForPossessionWales::getSecureContractEstateManagementGroundsWales,
                         "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
                 .optional(SecureContractGroundsForPossessionWales::getSecureContractMandatoryGroundsWales)
-            .done()
+                .done()
                 .label("secureOrFlexibleGroundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
