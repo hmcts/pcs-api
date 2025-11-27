@@ -31,7 +31,7 @@ public class StartTheService implements CcdPageConfiguration {
                        + "<ul>"
                        + "<li class=\"govuk-list govuk-!-font-size-19\">details of the tenancy, contract, "
                        + "licence or mortgage agreement</li>"
-                       + "<li class=\"govuk-list govuk-!-font-size-19\">the defendants' details (the people "
+                       + "<li class=\"govuk-list govuk-!-font-size-19\">the defendants’ details (the people "
                        + "you’re making the claim against)</li>"
                        + "<li class=\"govuk-list govuk-!-font-size-19\">your reasons for making a possession "
                        + "claim</li>"

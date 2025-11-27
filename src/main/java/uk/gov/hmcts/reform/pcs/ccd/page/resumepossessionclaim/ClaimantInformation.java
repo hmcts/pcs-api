@@ -58,7 +58,7 @@ public class ClaimantInformation implements CcdPageConfiguration {
         if (value == null) {
             return null;
         }
-        return value.endsWith("s") || value.endsWith("S") ? value + "'" : value + "'s";
+        return value.endsWith("s") || value.endsWith("S") ? value + "’" : value + "’s";
     }
 
 }

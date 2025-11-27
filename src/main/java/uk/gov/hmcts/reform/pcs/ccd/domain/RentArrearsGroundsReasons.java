@@ -24,7 +24,7 @@ public class RentArrearsGroundsReasons {
     private String ownerOccupierReason;
 
     @CCD(
-        label = "Give details about your reasons for claiming possession (Repossession by the landlord's"
+        label = "Give details about your reasons for claiming possession (Repossession by the landlord’s"
             + " mortgage lender (ground 2))",
         hint = "you’ll be able to upload documents to support or further explain your reasons later on. "
             + "You can enter up to 500 characters",

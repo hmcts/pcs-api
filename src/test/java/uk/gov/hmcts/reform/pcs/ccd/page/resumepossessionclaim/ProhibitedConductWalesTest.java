@@ -233,7 +233,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
 
         doAnswer(invocation -> {
             List<String> errors = invocation.getArgument(3);
-            errors.add("In '" + invocation.getArgument(1) + "', you have entered more than the maximum number of "
+            errors.add("In ‘" + invocation.getArgument(1) + "’, you have entered more than the maximum number of "
                 + invocation.getArgument(2) + " characters");
             return null;
         }).when(textAreaValidationService).validateTextArea(any(), any(), anyInt(), any());
@@ -245,11 +245,11 @@ class ProhibitedConductWalesTest extends BasePageTest {
         assertThat(response.getErrors()).isNotEmpty();
         assertThat(response.getErrors()).hasSize(2);
         assertThat(response.getErrors()).contains(
-            "In 'Why are you making this claim?', you have entered more than the maximum number of "
+            "In ‘Why are you making this claim?’, you have entered more than the maximum number of "
                 + "250 characters"
         );
         assertThat(response.getErrors()).contains(
-            "In 'Give details of the terms you’ve agreed', you have entered more than the maximum number of "
+            "In ‘Give details of the terms you’ve agreed’, you have entered more than the maximum number of "
                 + "250 characters"
         );
     }
@@ -304,7 +304,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
 
         doAnswer(invocation -> {
             List<String> errors = invocation.getArgument(3);
-            errors.add("In '" + invocation.getArgument(1) + "', you have entered more than the maximum number of "
+            errors.add("In ‘" + invocation.getArgument(1) + "’, you have entered more than the maximum number of "
                 + invocation.getArgument(2) + " characters");
             return null;
         }).when(textAreaValidationService).validateTextArea(any(), any(), anyInt(), any());
@@ -316,11 +316,11 @@ class ProhibitedConductWalesTest extends BasePageTest {
         assertThat(response.getErrors()).isNotEmpty();
         assertThat(response.getErrors()).hasSize(1); // Only one error for "Why are you making this claim?"
         assertThat(response.getErrors()).contains(
-            "In 'Why are you making this claim?', you have entered more than the maximum number of "
+            "In ‘Why are you making this claim?’, you have entered more than the maximum number of "
                 + "250 characters"
         );
         assertThat(response.getErrors()).doesNotContain(
-            "In 'Give details of the terms you’ve agreed', you have entered more than the maximum number of "
+            "In ‘Give details of the terms you’ve agreed’, you have entered more than the maximum number of "
                 + "250 characters"
         );
     }

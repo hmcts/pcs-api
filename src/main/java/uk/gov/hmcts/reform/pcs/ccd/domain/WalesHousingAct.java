@@ -42,25 +42,25 @@ public class WalesHousingAct {
     private YesNoNotApplicable licensedAgentAppointed;
 
     @CCD(
-        label = "Agent's first name",
+        label = "Agent’s first name",
         max = 40
     )
     private String agentFirstName;
 
     @CCD(
-        label = "Agent's last name",
+        label = "Agent’s last name",
         max = 40
     )
     private String agentLastName;
 
     @CCD(
-        label = "Agent's licence number",
+        label = "Agent’s licence number",
         max = 40
     )
     private String agentLicenceNumber;
 
     @CCD(
-        label = "Agent's date of appointment",
+        label = "Agent’s date of appointment",
         hint = "For example, 16 4 2021"
     )
     private LocalDate agentAppointmentDate;

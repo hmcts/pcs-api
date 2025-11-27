@@ -161,7 +161,7 @@ public class SecureOrFlexibleGroundsReasons {
     private String overcrowdingGround;
 
     @CCD(
-        label = "Give details about your reasons for claiming possession (Landlord's works (ground 10))",
+        label = "Give details about your reasons for claiming possession (Landlord’s works (ground 10))",
         hint = "you’ll be able to upload documents to support or further explain your reasons later on. "
             + "You can enter up to 500 characters",
         typeOverride = TextArea
