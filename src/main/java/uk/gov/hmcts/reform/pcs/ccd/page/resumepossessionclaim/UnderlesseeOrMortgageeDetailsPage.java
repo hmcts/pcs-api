@@ -30,14 +30,12 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
             .pageLabel("Underlessee or mortgagee details")
             .showCondition("hasUnderlesseeOrMortgagee=\"YES\"")
             .complex(PCSCase::getUnderlesseeOrMortgagee1)
-                .readonlyNoSummary(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameLabel)
-                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeNameKnown)
-                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeName,
-                           "underlesseeOrMortgageeNameKnown=\"YES\"")
-                .readonlyNoSummary(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressLabel)
-                .mandatory(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddressKnown)
-                    .complex(UnderlesseeMortgageeDetails::getUnderlesseeOrMortgageeAddress,
-                             "underlesseeOrMortgageeAddressKnown=\"YES\"")
+                .readonlyNoSummary(UnderlesseeMortgageeDetails::getNameSectionLabel)
+                .mandatory(UnderlesseeMortgageeDetails::getNameKnown)
+                .mandatory(UnderlesseeMortgageeDetails::getName)
+                .readonlyNoSummary(UnderlesseeMortgageeDetails::getAddressSectionLabel)
+                .mandatory(UnderlesseeMortgageeDetails::getAddressKnown)
+                    .complex(UnderlesseeMortgageeDetails::getAddress)
                         .mandatory(AddressUK::getAddressLine1)
                         .optional(AddressUK::getAddressLine2)
                         .optional(AddressUK::getAddressLine3)
@@ -52,8 +50,23 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
                 <h2 class="govuk-heading-m">Additional underlessee or mortgagee?</h2>
                 """)
             .mandatory(PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
-            .mandatory(PCSCase::getAdditionalUnderlesseeOrMortgagee,
+            .list(PCSCase::getAdditionalUnderlesseeOrMortgagee,
                        "addAdditionalUnderlesseeOrMortgagee=\"YES\"")
+                .readonlyNoSummary(UnderlesseeMortgageeDetails::getNameSectionLabel)
+                .mandatory(UnderlesseeMortgageeDetails::getNameKnown)
+                .mandatory(UnderlesseeMortgageeDetails::getName)
+                .readonlyNoSummary(UnderlesseeMortgageeDetails::getAddressSectionLabel)
+                .mandatory(UnderlesseeMortgageeDetails::getAddressKnown)
+                .complex(UnderlesseeMortgageeDetails::getAddress)
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+                .done()
+            .done()
             .label("underlesseeMortgagee-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
     }

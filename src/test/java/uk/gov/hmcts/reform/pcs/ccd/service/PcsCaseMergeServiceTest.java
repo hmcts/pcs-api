@@ -328,10 +328,6 @@ class PcsCaseMergeServiceTest {
                  .getSecureContractMandatoryGroundsWales()).thenReturn(null);
         when(secureContractGroundsWales
                  .getSecureContractEstateManagementGroundsWales()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
@@ -378,10 +374,6 @@ class PcsCaseMergeServiceTest {
                  .getSecureContractMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
         when(secureContractGroundsWales
                  .getSecureContractEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGrounds()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt()).thenReturn(null);
-        when(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
