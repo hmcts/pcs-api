@@ -1,9 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcement;
 
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -35,12 +35,9 @@ public class EnforcementOrderService {
     }
 
     @Transactional
-    public void saveSubmittedDataAndDeleteDraftData(long caseReference, EnforcementOrder enforcementOrder) {
+    public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
         createEnforcementOrder(caseReference, enforcementOrder);
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
-
-        log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}",
-                caseReference);
     }
 
     private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
@@ -62,7 +59,5 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
         enforcementOrderRepository.save(enforcementOrderEntity);
-
-        log.debug("Created Enforcement Order for case reference {}", caseReference);
     }
 }

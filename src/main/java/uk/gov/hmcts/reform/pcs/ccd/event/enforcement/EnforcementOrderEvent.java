@@ -108,8 +108,11 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
 
-        enforcementOrderService.saveSubmittedDataAndDeleteDraftData(caseReference,
+        enforcementOrderService.saveAndClearDraftData(caseReference,
                 eventPayload.caseData().getEnforcementOrder());
+
+        log.debug("Saved submitted enforcement order data and deleted draft data for case reference {}",
+                caseReference);
 
         return SubmitResponse.defaultResponse();
     }

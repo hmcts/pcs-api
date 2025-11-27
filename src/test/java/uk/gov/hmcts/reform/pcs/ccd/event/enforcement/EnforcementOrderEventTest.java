@@ -117,6 +117,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(enforcementOrderService).saveSubmittedDataAndDeleteDraftData(TEST_CASE_REFERENCE, enforcementOrder);
+        verify(enforcementOrderService).saveAndClearDraftData(TEST_CASE_REFERENCE, enforcementOrder);
     }
 }

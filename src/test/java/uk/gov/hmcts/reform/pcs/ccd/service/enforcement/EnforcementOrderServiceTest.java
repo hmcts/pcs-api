@@ -24,6 +24,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -94,7 +95,7 @@ class EnforcementOrderServiceTest {
                 .thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        enforcementOrderService.saveSubmittedDataAndDeleteDraftData(CASE_REFERENCE, enforcementOrder);
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
@@ -115,9 +116,10 @@ class EnforcementOrderServiceTest {
         // When &
         // Then
         assertThatThrownBy(() ->
-                enforcementOrderService.saveSubmittedDataAndDeleteDraftData(CASE_REFERENCE, enforcementOrder))
+                enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder))
                 .isInstanceOf(ClaimNotFoundException.class)
                 .hasMessageContaining("No claim found for case reference");
+        verifyNoInteractions(draftCaseDataService);
     }
 
     @Test
@@ -130,7 +132,7 @@ class EnforcementOrderServiceTest {
                 .thenReturn(Optional.of(pcsCaseEntity));
 
         // When
-        enforcementOrderService.saveSubmittedDataAndDeleteDraftData(CASE_REFERENCE, enforcementOrder);
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
