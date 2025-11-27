@@ -25,6 +25,8 @@ java:
           alias: PCS_PRD_ADMIN_USERNAME
         - name: pcs-prd-admin-password
           alias: PCS_PRD_ADMIN_PASSWORD
+        - name: ccd-elastic-search-hosts
+          alias: ELASTIC_SEARCH_HOSTS
   environment:
     PCS_DB_PORT: "5432"
     PCS_DB_USER_NAME: pgadmin
