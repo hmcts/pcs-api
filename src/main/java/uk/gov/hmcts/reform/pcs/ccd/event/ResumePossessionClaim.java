@@ -367,9 +367,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation">
-            <h1 class="govuk-panel__title">
-              Pay %s claim fee
-            </h1>
+            <span class="govuk-panel__title govuk-!-font-size-36">Pay %s claim fee</span>
             </div>
 
             <h3>Make a payment</h3>
@@ -377,9 +375,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             You must pay the claim fee of %s. Your claim will not progress until this
             fee has been paid.
             <a href="/cases/case-details/%d#Service%%20Request"
-                    class="govuk-link govuk-link--no-visited-state">
-                   Pay the claim fee
-                 </a>.
+                    class="govuk-link govuk-link--no-visited-state">Pay the claim fee</a>.
             """.formatted(caseIssueFee, caseIssueFee, caseReference);
     }
 
@@ -387,9 +383,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return """
             ---
             <div class="govuk-panel govuk-panel--confirmation">
-              <h1 class="govuk-panel__title">
-                Claim saved
-              </h1>
+              <span class="govuk-panel__title govuk-!-font-size-36">Claim saved</span>
             </div>
 
             A draft of your claim has been saved. To sign, submit and pay for your claim:
