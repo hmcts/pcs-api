@@ -49,7 +49,7 @@ import {
   uploadAdditionalDocs,
   user,
   wantToUploadDocuments,
-  whatAreYourGroundsForPossession, caseList
+  whatAreYourGroundsForPossession
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import {payClaimFee} from "@data/page-data/payClaimFee.page.data";
@@ -75,6 +75,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - England] @regression', async () => {
+  //pay claim fee close and return
   test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
@@ -195,7 +196,6 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('payClaimFee');
-    //await performAction('clickLinkAndVerifyNewTabTitle', payClaimFee.payClaimFeeLink, caseList.mainHeader);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
@@ -205,7 +205,7 @@ test.describe('[Create Case - England] @regression', async () => {
       ['formLabelValue', propertyDetails.countryLabel],
     )
   });
-
+  //pay claim fee click link
   test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
@@ -323,7 +323,7 @@ test.describe('[Create Case - England] @regression', async () => {
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
-    await performAction('payClaimFee');
+    await performAction('payClaimFee',{clickLink: true});
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
