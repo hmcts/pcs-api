@@ -6,11 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenService;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -152,5 +155,35 @@ class OrganisationDetailsServiceTest {
             .isInstanceOf(OrganisationDetailsException.class)
             .hasMessage("Unexpected error retrieving organisation details")
             .hasCause(generalException);
+    }
+
+    @Test
+    @DisplayName("Should successfully get organisation address")
+    void shouldSuccessfullyGetOrganisationAddress() {
+        // Given
+        OrganisationDetailsResponse.ContactInformation contactInfo =  OrganisationDetailsResponse.ContactInformation
+            .builder()
+            .addressLine1("27 Feather street")
+            .townCity("London")
+            .postCode("B8 7FH")
+            .build();
+
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .contactInformation(List.of(contactInfo))
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenService.getPrdAdminToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result.getAddressLine1()).isEqualTo(contactInfo.getAddressLine1());
+        assertThat(result.getPostTown()).isEqualTo(contactInfo.getTownCity());
+        assertThat(result.getPostCode()).isEqualTo(contactInfo.getPostCode());
     }
 }
