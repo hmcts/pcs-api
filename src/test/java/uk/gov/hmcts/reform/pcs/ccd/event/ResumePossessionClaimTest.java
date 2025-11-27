@@ -49,7 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
@@ -159,7 +159,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
     @Mock
-    private ReasonsForPosessionWales reasonsForPosessionWales;
+    private ReasonsForPossessionWales reasonsForPossessionWales;
     @Mock
     private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     @Mock
@@ -198,7 +198,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
             claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
             draftCaseDataService, occupationLicenceDetailsWalesPage,
-            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPosessionWales,
+            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
             addressFormatter,
             rentArrearsGroundsForPossession,
             rentArrearsGroundForPossessionAdditionalGrounds,
