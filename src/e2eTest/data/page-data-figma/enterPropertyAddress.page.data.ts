@@ -1,10 +1,10 @@
 export const enterPropertyAddress = {
   makeAClaimCaption: `Make a claim`,
-  mainHeader: `What is the address of the property you're claiming possession of?`,
+  mainHeader: `What is the address of the property you’re claiming possession of?`,
   subHeader: `Property address`,
   enterAUKPostcodeTextLabel: `Enter a UK postcode`,
   findAddressButton: `Find address`,
-  iCantEnterAUKPostcodeLink: `I can't enter a UK postcode`,
+  iCantEnterAUKPostcodeLink: `I can’t enter a UK postcode`,
   previousButton: `Previous`,
   cancelLink: `Cancel`,
   selectAnAddressTextLabelHidden: `Select an address`,
