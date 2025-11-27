@@ -677,6 +677,7 @@ export class CreateCaseAction implements IAction {
 
   private async claimSaved() {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickButton', claimSaved.closeAndReturnButton);
   }
 
