@@ -5,6 +5,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant.EnforcementOrder;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     @Override
@@ -27,7 +29,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             ...
                         </div>
                     </details>
-                    """);
+                    """)
+                .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);
     }
 
 }
