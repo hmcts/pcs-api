@@ -15,7 +15,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         pageBuilder
                 .page("landRegistryFees")
                 .pageLabel("Land Registry fees")
-                .label("landRegistryFeesPage-content", "---")
+                .label("landRegistryFees-content", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getLandRegistryFees)
                     .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
@@ -24,7 +24,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
                         "haveLandRegistryFeesBeenPaid=\"YES\"")
                     .done()
                 .done()
-                .label("landRegistryFeesPage-save-and-return", SAVE_AND_RETURN);
+                .label("landRegistryFees-save-and-return", SAVE_AND_RETURN);
     }
 
 }
