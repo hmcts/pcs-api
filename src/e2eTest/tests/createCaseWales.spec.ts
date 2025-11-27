@@ -513,4 +513,115 @@ test.describe('[Create Case - Wales] @regression', async () => {
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
+
+  test('Wales - Secure contract - Rent arrears + other options  @PR', async () => {
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimantDetails',
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
+        question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
+        question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.no,
+      correspondenceAddress: contactPreferences.no,
+      phoneNumber: contactPreferences.yes
+    });
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
+    });
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput,
+      files: 'occupationContract.pdf'
+    });
+    await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
+      discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession]
+    });
+    await performAction('clickButton', reasonsForPossession.continue);
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.no
+    });
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£32.85',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
+    await performAction('selectMoneyJudgment', moneyJudgment.no);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.no,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: false
+    });
+    await performAction('selectProhibitedConductStandardContract', {
+      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductStandardContractWales.no,
+    });
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: underlesseeOrMortgageeEntitledToClaim.no});
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
+    await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await performValidations('address information entered',
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
+  });
 });
