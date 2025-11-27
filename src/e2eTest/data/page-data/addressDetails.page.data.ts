@@ -5,7 +5,7 @@ export const addressDetails = {
   enterUKPostcodeTextLabel : 'Enter a UK postcode',
   findAddressButton: 'Find address',
   addressSelectLabel: 'Select an address',
-  cantEnterUKPostcodeLink: 'I can’t enter a UK postcode',
+  cantEnterUKPostcodeLink: `I can't enter a UK postcode`,//This needs to be modified
   buildingAndStreetTextLabel: 'Building and Street',
   addressLine2TextLabel: 'Address Line 2 (Optional)',
   addressLine3TextLabel: 'Address Line 3 (Optional)',
