@@ -13,7 +13,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("landRegistryFeesPage")
+                .page("landRegistryFees")
                 .pageLabel("Land Registry fees")
                 .label("landRegistryFeesPage-content", "---")
                 .complex(PCSCase::getEnforcementOrder)
