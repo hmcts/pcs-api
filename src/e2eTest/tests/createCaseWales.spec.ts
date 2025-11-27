@@ -207,7 +207,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession',
-      [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession1,whatAreYourGroundsForPossessionWales.discretionary.buildingWorks]);
+      [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession,whatAreYourGroundsForPossessionWales.discretionary.buildingWorks]);
     await performAction('selectAsbQuestions', {
       asbChoice: asbQuestionsWales.noRadioOption,
       illegalPurposesChoice: asbQuestionsWales.noRadioOption,
@@ -447,7 +447,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
     });
     await performAction('enterReasonForPossession',
-      whatAreYourGroundsForPossessionWales.discretionary.buildingWorks,whatAreYourGroundsForPossessionWales.mandatory.section191);
+      [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks,whatAreYourGroundsForPossessionWales.mandatory.section191]);
     await performAction('selectAsbQuestions', {
       asbChoice: asbQuestionsWales.noRadioOption,
       illegalPurposesChoice: asbQuestionsWales.noRadioOption,
@@ -549,7 +549,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract]
     });
     await performAction('enterReasonForPossession',
-        whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract);
+        [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract]);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
@@ -561,21 +561,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no
     });
-    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
-    });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
-    await performAction('provideDetailsOfRentArrears', {
-      files: ['rentArrears.pdf'],
-      rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
-    });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.no);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.no,
@@ -654,7 +639,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract]
     });
     await performAction('enterReasonForPossession',
-      whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract);
+      [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract]);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
