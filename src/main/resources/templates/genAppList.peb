@@ -10,7 +10,7 @@
 {% if genAppActions is not empty %}
 <ul class="govuk-list govuk-list--bullet">
 {% for action in genAppActions %}
-  <li>{{ action.getLabel() }}</li>
+  <li><a href=\"" class="govuk-link govuk-link--no-visited-state">{{ action.getLabel() }}</a></li>
 {% endfor %}
 </ul>
 {% endif %}

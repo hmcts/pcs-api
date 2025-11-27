@@ -20,7 +20,7 @@
 {% if claimActions is not empty %}
 <ul class="govuk-list govuk-list--bullet">
 {% for action in claimActions %}
-  <li>{{ action.getLabel() }}</li>
+  <li><a href="" class="govuk-link govuk-link--no-visited-state">{{ action.getLabel() }}</a></li>
 {% endfor %}
 </ul>
 {% endif %}
