@@ -853,10 +853,10 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
   test('England - Flexible tenancy with Rent arrears only', async () => {
@@ -962,10 +962,10 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
   test('England - Secure tenancy with Rent and other grounds', async () => {
@@ -1091,10 +1091,10 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
   test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow', async () => {
@@ -1302,9 +1302,9 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 });

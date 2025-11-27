@@ -1,14 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
-
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
@@ -33,6 +25,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroun
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 
 /**
@@ -543,37 +544,8 @@ public class PCSCase {
     @CCD
     private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
 
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleDiscretionaryGrounds"
-    )
-    private Set<SecureOrFlexibleDiscretionaryGrounds> secureOrFlexibleDiscretionaryGrounds;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleMandatoryGrounds"
-    )
-    private Set<SecureOrFlexibleMandatoryGrounds> secureOrFlexibleMandatoryGrounds;
-
-    @CCD(
-        label = "Discretionary grounds (if alternative accommodation available)",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm"
-    )
-    private Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> secureOrFlexibleDiscretionaryGroundsAlt;
-
-    @CCD(
-        label = "Mandatory grounds (if alternative accommodation available)",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm"
-    )
-    private Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> secureOrFlexibleMandatoryGroundsAlt;
+    @JsonUnwrapped
+    private SecureOrFlexiblePossessionGrounds secureOrFlexiblePossessionGrounds;
 
     @CCD(
         label = "What does your ground 1 claim involve?",
@@ -749,7 +721,7 @@ public class PCSCase {
     @CCD(label = "Is there an underlessee or mortgagee entitled to claim relief against forfeiture?")
     private VerticalYesNo hasUnderlesseeOrMortgagee;
 
-    @JsonUnwrapped
+    @CCD
     private UnderlesseeMortgageeDetails underlesseeOrMortgagee1;
 
     @CCD(label = "Do you need to add another underlessee or mortgagee?")
