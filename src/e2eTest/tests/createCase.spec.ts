@@ -75,7 +75,6 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - England] @regression', async () => {
-  //pay claim fee close and return
   test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
@@ -205,7 +204,6 @@ test.describe('[Create Case - England] @regression', async () => {
       ['formLabelValue', propertyDetails.countryLabel],
     )
   });
-  //pay claim fee click link
   test('England - Assured tenancy with Rent arrears and no other mandatory or discretionary possession grounds', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
