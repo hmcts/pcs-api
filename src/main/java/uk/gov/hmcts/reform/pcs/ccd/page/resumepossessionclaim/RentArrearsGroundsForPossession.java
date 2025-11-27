@@ -36,7 +36,7 @@ public class RentArrearsGroundsForPossession implements CcdPageConfiguration {
                 .label("groundForPossessionRentArrears-info", """
                 ---
                 <p class="govuk-body">You may have already given the defendants notice of your intention to begin
-                    possession proceedings. If you have, you should have written the grounds you're making your
+                    possession proceedings. If you have, you should have written the grounds you’re making your
                     claim under. You should select these grounds here.</p>
                 <h2 class="govuk-!-font-size-19 govuk-!-margin-bottom-1">Serious rent arrears (ground 8)</h2>
                 <p class="govuk-body">Mandatory ground. Can be used if the defendants owe at least:</p>

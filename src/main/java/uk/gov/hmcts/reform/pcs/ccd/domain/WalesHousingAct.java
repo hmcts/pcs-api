@@ -19,7 +19,7 @@ public class WalesHousingAct {
     private YesNoNotApplicable registered;
 
     @CCD(
-        label = "What's your registration number?",
+        label = "What’s your registration number?",
         max = 40
     )
     private String registrationNumber;
@@ -30,7 +30,7 @@ public class WalesHousingAct {
     private YesNoNotApplicable licensed;
 
     @CCD(
-        label = "What's your licence number?",
+        label = "What’s your licence number?",
         max = 40
     )
     private String licenceNumber;

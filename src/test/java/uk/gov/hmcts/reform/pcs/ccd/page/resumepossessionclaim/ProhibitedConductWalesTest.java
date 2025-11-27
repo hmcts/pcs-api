@@ -49,7 +49,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
                     .errors(errors)
                     .build();
             });
-        
+
         pageUnderTest = new ProhibitedConductWales(textAreaValidationService);
         setPageUnderTest(pageUnderTest);
     }
@@ -105,7 +105,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
         VerticalYesNo agreedTermsOfPeriodicContract,
         String detailsOfTerms,
         String whyMakingClaim) {
-        
+
         // Given
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(claimForProhibitedConductContract)
@@ -135,7 +135,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
         // Given
         String expectedDetailsOfTerms = "We have agreed on specific payment terms and maintenance responsibilities";
         String expectedWhyMakingClaim = "The tenant has repeatedly violated the terms of the contract";
-        
+
         PCSCase caseData = PCSCase.builder()
             .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWalesWhyMakingClaim(expectedWhyMakingClaim)
@@ -249,7 +249,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
                 + "250 characters"
         );
         assertThat(response.getErrors()).contains(
-            "In 'Give details of the terms you've agreed', you have entered more than the maximum number of "
+            "In 'Give details of the terms you’ve agreed', you have entered more than the maximum number of "
                 + "250 characters"
         );
     }
@@ -294,7 +294,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
             .prohibitedConductWalesWhyMakingClaim(longText)
             .periodicContractTermsWales(PeriodicContractTermsWales.builder()
                 .agreedTermsOfPeriodicContract(VerticalYesNo.NO)
-                .detailsOfTerms(longText) 
+                .detailsOfTerms(longText)
                 .build())
             .build();
 
@@ -320,7 +320,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
                 + "250 characters"
         );
         assertThat(response.getErrors()).doesNotContain(
-            "In 'Give details of the terms you've agreed', you have entered more than the maximum number of "
+            "In 'Give details of the terms you’ve agreed', you have entered more than the maximum number of "
                 + "250 characters"
         );
     }
@@ -338,7 +338,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
             .data(caseData)
             .build();
-        
+
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = pageUnderTest.midEvent(caseDetails, caseDetails);
 
