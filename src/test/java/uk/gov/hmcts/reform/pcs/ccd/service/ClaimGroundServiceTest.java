@@ -22,7 +22,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -307,5 +313,83 @@ class ClaimGroundServiceTest {
             arguments(Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY)),
             arguments(Set.of(IntroductoryDemotedOrOtherGrounds.OTHER))
         );
+    }
+
+    @Test
+    void shouldReturnClaimGroundEntities_WhenWalesGrounds() {
+        // Given
+        Set<MandatoryGroundWales> mandatoryGrounds = Set.of(
+            MandatoryGroundWales.FAIL_TO_GIVE_UP_S170,
+            MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178
+        );
+        Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
+            DiscretionaryGroundWales.OTHER_BREACH_SECTION_157
+        );
+        Set<EstateManagementGroundsWales> estateGrounds = Set.of(
+            EstateManagementGroundsWales.BUILDING_WORKS
+        );
+        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = Set.of(
+            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170
+        );
+
+        GroundsReasonsWales reasons = GroundsReasonsWales.builder()
+            .failToGiveUpS170Reason("Failure to give up possession reason")
+            .landlordNoticePeriodicS178Reason("Landlord notice reason")
+            .otherBreachSection157Reason("Other breach reason")
+            .buildingWorksReason("Building works reason")
+            .secureFailureToGiveUpPossessionSection170Reason("Secure failure reason")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .mandatoryGroundsWales(mandatoryGrounds)
+            .discretionaryGroundsWales(discretionaryGrounds)
+            .estateManagementGroundsWales(estateGrounds)
+            .secureContractMandatoryGroundsWales(secureMandatoryGrounds)
+            .groundsReasonsWales(reasons)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = claimGroundService.getGroundsWithReason(caseData);
+
+        // Then
+        assertThat(result).hasSize(5);
+
+        Map<String, String> groundAndReason = result.stream()
+            .collect(Collectors.toMap(ClaimGroundEntity::getGroundId, ClaimGroundEntity::getGroundReason));
+
+        assertThat(groundAndReason)
+            .containsEntry("FAIL_TO_GIVE_UP_S170", "Failure to give up possession reason")
+            .containsEntry("LANDLORD_NOTICE_PERIODIC_S178", "Landlord notice reason")
+            .containsEntry("OTHER_BREACH_SECTION_157", "Other breach reason")
+            .containsEntry("BUILDING_WORKS", "Building works reason")
+            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170", "Secure failure reason");
+    }
+
+    @Test
+    void shouldHandleWalesBeforeTenancyTypeCheck() {
+        // Given
+        Set<MandatoryGroundWales> mandatoryGrounds = Set.of(
+            MandatoryGroundWales.FAIL_TO_GIVE_UP_S170
+        );
+
+        GroundsReasonsWales reasons = GroundsReasonsWales.builder()
+            .failToGiveUpS170Reason("Test reason")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .typeOfTenancyLicence(null) // Wales doesn't use this field
+            .mandatoryGroundsWales(mandatoryGrounds)
+            .groundsReasonsWales(reasons)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = claimGroundService.getGroundsWithReason(caseData);
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getGroundId()).isEqualTo("FAIL_TO_GIVE_UP_S170");
+        assertThat(result.getFirst().getGroundReason()).isEqualTo("Test reason");
     }
 }
