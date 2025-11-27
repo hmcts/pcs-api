@@ -40,7 +40,7 @@ import {
   languageUsed,
   completeYourClaim,
   checkYourAnswers,
-  propertyDetails
+  propertyDetails, underlesseeOrMortgageeDetails
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
@@ -542,9 +542,12 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performAction('addDefendantDetails', {
       nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
-      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
-      addAdditionalDefendantsOption: defendantDetails.noRadioOption
-    });
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.defendantPostcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.yesRadioOption, numberOfDefendants: 2,
+      name1Option: defendantDetails.yesRadioOption,
+      correspondenceAddress1Option: defendantDetails.yesRadioOption, correspondenceAddressSame1Option: defendantDetails.yesRadioOption,
+      name2Option: defendantDetails.noRadioOption,
+      correspondenceAddress2Option: defendantDetails.yesRadioOption, correspondenceAddressSame2Option: defendantDetails.yesRadioOption});
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
       occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
@@ -594,7 +597,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
       defendantCircumstance: defendantCircumstances.yesRadioOption,
-      additionalDefendants: false
+      additionalDefendants: true
     });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
@@ -607,7 +610,16 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.no});
+      option: underlesseeOrMortgageeEntitledToClaim.yes});
+    await performAction('selectUnderlesseeOrMortgageeDetails', {
+      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
+      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
+    });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
