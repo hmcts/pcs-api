@@ -69,21 +69,22 @@ public class OrganisationDetailsService {
     }
 
     /**
-     * Gets the organisation name for a given user ID (for claimant name population).
-     * @param userId The user ID to get organisation name for
-     * @return Organisation name
+     * Gets the organisation Address for a given user ID (for claimant Address population).
+     * @param userId The user ID to get organisation Address for
+     * @return Organisation Address
      */
     public AddressUK getOrganisationAddress(String userId) {
-        OrganisationDetailsResponse details = getOrganisationDetails(userId);
+        OrganisationDetailsResponse.ContactInformation addressDetails = getOrganisationDetails(userId)
+            .getContactInformation().getFirst();
 
         return AddressUK.builder()
-            .addressLine1(details.getContactInformation().getFirst().getAddressLine1())
-            .addressLine2(details.getContactInformation().getFirst().getAddressLine2())
-            .addressLine3(details.getContactInformation().getFirst().getAddressLine3())
-            .postTown(details.getContactInformation().getFirst().getTownCity())
-            .county(details.getContactInformation().getFirst().getCounty())
-            .country(details.getContactInformation().getFirst().getCountry())
-            .postCode(details.getContactInformation().getFirst().getPostCode())
+            .addressLine1(addressDetails.getAddressLine1())
+            .addressLine2(addressDetails.getAddressLine2())
+            .addressLine3(addressDetails.getAddressLine3())
+            .postTown(addressDetails.getTownCity())
+            .county(addressDetails.getCounty())
+            .country(addressDetails.getCountry())
+            .postCode(addressDetails.getPostCode())
             .build();
     }
 

@@ -264,8 +264,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
-        AddressUK claimantAddress = organisationService.getOrganisationAddressForCurrentUser() == null?
-            caseData.getPropertyAddress() : organisationService.getOrganisationAddressForCurrentUser();
+        AddressUK claimantAddress = organisationService.getOrganisationAddressForCurrentUser() == null
+            ? caseData.getPropertyAddress() : organisationService.getOrganisationAddressForCurrentUser();
         caseData.setFormattedClaimantContactAddress(addressFormatter
             .formatAddressWithHtmlLineBreaks(claimantAddress));
 

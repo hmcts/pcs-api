@@ -55,10 +55,13 @@ public class OrganisationService {
 
         try {
             UUID userId = securityContextService.getCurrentUserId();
+            if (userId == null) {
+                log.warn("User ID is null from security context, cannot fetch organisation details");
+                return null;
+            }
             AddressUK organisationAddress = organisationDetailsService.getOrganisationAddress(userId.toString());
             if (organisationAddress == null) {
                 log.warn("Organisation Address is null for user ID: {}", userId);
-                return null;
             }
             return organisationAddress;
         } catch (Exception ex) {
