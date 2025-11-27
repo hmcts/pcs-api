@@ -35,7 +35,12 @@ import {
   whatAreYourGroundsForPossessionWales,
   underlesseeOrMortgageeEntitledToClaim,
   additionalReasonsForPossession,
-  wantToUploadDocuments, applications, languageUsed, completeYourClaim, checkYourAnswers, propertyDetails
+  wantToUploadDocuments,
+  applications,
+  languageUsed,
+  completeYourClaim,
+  checkYourAnswers,
+  propertyDetails
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
