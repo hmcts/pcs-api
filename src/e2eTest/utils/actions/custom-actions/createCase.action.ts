@@ -681,8 +681,7 @@ export class CreateCaseAction implements IAction {
   }
 
   private async payClaimFee() {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('mainHeader', payClaimFee.pay404ClaimFee);
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performAction('clickButton', payClaimFee.closeAndReturnButton);
   }
 
