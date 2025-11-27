@@ -676,12 +676,14 @@ export class CreateCaseAction implements IAction {
   private async claimSaved() {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'span', text: claimSaved.claimSavedBanner});
     await performAction('clickButton', claimSaved.closeAndReturnButton);
   }
 
   private async payClaimFee(params?: { clickLink?: boolean }) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeBanner});
     if (params?.clickLink === true) {
       await performAction('clickButton', payClaimFee.payClaimFeeLink);
     }
