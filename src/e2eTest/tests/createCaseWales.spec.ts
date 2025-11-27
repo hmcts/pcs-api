@@ -2,7 +2,8 @@ import { test } from '@playwright/test';
 import {
   initializeExecutor,
   performAction,
-  performValidation, performValidations
+  performValidation,
+  performValidations
 } from '@utils/controller';
 import {
   addressCheckYourAnswers,
@@ -143,7 +144,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
     await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
