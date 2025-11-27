@@ -562,7 +562,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private YesOrNo showReasonsForGroundsPage;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "wales")
     @CCD
     private GroundsReasonsWales groundsReasonsWales;
 

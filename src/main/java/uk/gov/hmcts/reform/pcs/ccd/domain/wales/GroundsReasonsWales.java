@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +14,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class GroundsReasonsWales {
 
     // ---------- Standard/Other Contract - Mandatory grounds ----------
