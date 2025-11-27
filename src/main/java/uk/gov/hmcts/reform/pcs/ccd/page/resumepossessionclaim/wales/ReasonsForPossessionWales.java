@@ -43,7 +43,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             // ---------- Standard/Other Contract - Mandatory grounds ----------
             .label("wales-failToGiveUpS170-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Failure to give up possession on date specified in contract-holder's notice (section 170)
+                    Failure to give up possession on date specified in contract-holder’s notice (section 170)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
@@ -54,7 +54,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-landlordNoticePeriodicS178-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Landlord's notice given in relation to periodic standard contract (section 178)
+                    Landlord’s notice given in relation to periodic standard contract (section 178)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
@@ -76,7 +76,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-landlordNoticeFtEndS186-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Landlord's notice in connection with end of fixed term given (section 186)
+                    Landlord’s notice in connection with end of fixed term given (section 186)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
@@ -99,7 +99,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             .label("wales-failToGiveUpBreakNoticeS191-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in 
-                    contract-holder's break clause notice (section 191)
+                    contract-holder’s break clause notice (section 191)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
@@ -110,7 +110,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-landlordBreakClauseS199-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Notice given under a landlord's break clause (section 199)
+                    Notice given under a landlord’s break clause (section 199)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
@@ -246,7 +246,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             // ---------- Secure Contract - Mandatory grounds ----------
             .label("wales-secure-failureToGiveUpPossessionSection170-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Failure to give up possession on date specified in contract-holder's notice (section 170)
+                    Failure to give up possession on date specified in contract-holder’s notice (section 170)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
@@ -257,7 +257,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-secure-landlordNoticeSection186-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Landlord's notice in connection with end of fixed term given (section 186)
+                    Landlord’s notice in connection with end of fixed term given (section 186)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
@@ -268,7 +268,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-secure-failureToGiveUpPossessionSection191-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Failure to give up possession on date specified in contract-holder's break 
+                    Failure to give up possession on date specified in contract-holder’s break 
                     clause notice (section 191)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
@@ -280,7 +280,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-secure-landlordNoticeSection199-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Notice given under a landlord's break clause (section 199)
+                    Notice given under a landlord’s break clause (section 199)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
