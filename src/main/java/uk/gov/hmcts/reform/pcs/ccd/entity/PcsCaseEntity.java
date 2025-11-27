@@ -20,6 +20,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
@@ -82,7 +83,7 @@ public class PcsCaseEntity {
 
     @Column(name = "defendant_details")
     @JdbcTypeCode(SqlTypes.JSON)
-    private List<Defendant> defendants;
+    private List<Defendant> defendants; // TODO: Remove
 
     @Column(name = "party_documents")
     @JdbcTypeCode(SqlTypes.JSON)

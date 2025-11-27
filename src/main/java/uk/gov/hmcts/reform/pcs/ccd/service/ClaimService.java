@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
@@ -26,7 +26,7 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
     private final ClaimGroundService claimGroundService;
 
-    public ClaimEntity createMainClaimEntity(PCSCase pcsCase, PartyEntity claimantPartyEntity) {
+    public ClaimEntity createMainClaimEntity(PCSCase pcsCase, PartyEntity claimantPartyEntity) { // TODO: Clean up
 
         String additionalReasons = pcsCase.getAdditionalReasonsForPossession().getReasons();
 
@@ -60,7 +60,7 @@ public class ClaimService {
             .build();
 
 
-        claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
+//        claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
         claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
 

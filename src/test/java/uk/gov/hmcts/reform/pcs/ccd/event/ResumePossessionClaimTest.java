@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -312,9 +312,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
-        PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
-            .thenReturn(partyEntity);
+//        PartyEntity partyEntity = mock(PartyEntity.class);
+//        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+//            .thenReturn(partyEntity);
 
         when(claimService.createMainClaimEntity(eq(caseData), any())).thenReturn(ClaimEntity.builder().build());
 
@@ -328,7 +328,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldCreatePartyInSubmitCallback() {
+    void shouldCreatePartiesInSubmitCallback() {
         // Given
         AddressUK propertyAddress = mock(AddressUK.class);
         String claimantName = "Test Claimant";
@@ -338,7 +338,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(propertyAddress)
             .legislativeCountry(WALES)
@@ -351,18 +350,14 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimingCostsWanted(VerticalYesNo.YES)
             .build();
 
+        ClaimEntity claimEntity = mock(ClaimEntity.class);
+        when(claimService.createMainClaimEntity(caseData, null)).thenReturn(claimEntity);
+
         // When
         callSubmitHandler(caseData);
 
         // Then
-        verify(partyService).createPartyEntity(
-            USER_ID,
-            claimantName,
-            null,
-            claimantContactEmail,
-            propertyAddress,
-            claimantContactPhoneNumber
-        );
+        verify(partyService).createAllParties(caseData, pcsCaseEntity, claimEntity);
     }
 
     @Test
@@ -372,8 +367,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
-            .thenReturn(partyEntity);
+//        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+//            .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
         when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);
@@ -393,9 +388,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
-        PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
-            .thenReturn(partyEntity);
+//        PartyEntity partyEntity = mock(PartyEntity.class);
+//        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+//            .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = ClaimEntity.builder().build();
         when(claimService.createMainClaimEntity(any(PCSCase.class), any(PartyEntity.class))).thenReturn(claimEntity);

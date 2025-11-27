@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
@@ -275,13 +275,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        PartyEntity claimantPartyEntity = createClaimantPartyEntity(pcsCase);
-        pcsCaseEntity.addParty(claimantPartyEntity);
-
-        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, null);
         pcsCaseEntity.addClaim(claimEntity);
+
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
         pcsCaseService.save(pcsCaseEntity);
 
@@ -292,28 +291,28 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return SubmitResponse.defaultResponse();
     }
 
-    private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {
-        UserInfo userDetails = securityContextService.getCurrentUserDetails();
-        UUID userID = UUID.fromString(userDetails.getUid());
-
-        String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
-            ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
-
-        AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
-            ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
-
-        String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
-            ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
-
-        return partyService.createPartyEntity(
-            userID,
-            claimantName,
-            null,
-            contactEmail,
-            contactAddress,
-            pcsCase.getClaimantContactPhoneNumber()
-        );
-    }
+//    private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {
+//        UserInfo userDetails = securityContextService.getCurrentUserDetails();
+//        UUID userID = UUID.fromString(userDetails.getUid());
+//
+//        String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
+//            ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
+//
+//        AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
+//            ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+//
+//        String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
+//            ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
+//
+//        return partyService.createPartyEntity(
+//            userID,
+//            claimantName,
+//            null,
+//            contactEmail,
+//            contactAddress,
+//            pcsCase.getClaimantContactPhoneNumber()
+//        );
+//    }
 
     private void scheduleCaseIssuedFeeTask(long caseReference, String responsibleParty) {
         String taskId = UUID.randomUUID().toString();

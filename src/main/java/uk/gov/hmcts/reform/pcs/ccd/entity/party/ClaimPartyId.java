@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity;
+package uk.gov.hmcts.reform.pcs.ccd.entity.party;
 
 import jakarta.persistence.Embeddable;
 import lombok.EqualsAndHashCode;

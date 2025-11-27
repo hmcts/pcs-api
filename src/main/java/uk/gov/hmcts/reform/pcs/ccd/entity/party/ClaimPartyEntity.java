@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity;
+package uk.gov.hmcts.reform.pcs.ccd.entity.party;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.EmbeddedId;
@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
 @Entity
 @Builder

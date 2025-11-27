@@ -22,9 +22,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import java.util.List;
@@ -58,7 +58,7 @@ class ClaimServiceTest {
         String expectedAdditionalReasons = "some additional reasons";
         String claimantCircumstancesDetails = UUID.randomUUID().toString();
         String asbDetails = "Some antisocial behaviour details";
-        String prohibitedConductDetails = "Some other prohibited conduct details"; 
+        String prohibitedConductDetails = "Some other prohibited conduct details";
 
         PCSCase pcsCase = mock(PCSCase.class);
         PartyEntity claimantPartyEntity = new PartyEntity();
