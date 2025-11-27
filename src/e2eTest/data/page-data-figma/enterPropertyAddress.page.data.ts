@@ -4,7 +4,7 @@ export const enterPropertyAddress = {
   subHeader: `Property address`,
   enterAUKPostcodeTextLabel: `Enter a UK postcode`,
   findAddressButton: `Find address`,
-  iCantEnterAUKPostcodeLink: `I can’t enter a UK postcode`,
+  iCantEnterAUKPostcodeLink: `I can't enter a UK postcode`,//This needs to be modified
   previousButton: `Previous`,
   cancelLink: `Cancel`,
   selectAnAddressTextLabelHidden: `Select an address`,
