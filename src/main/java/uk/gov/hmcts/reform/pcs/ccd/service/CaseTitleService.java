@@ -18,6 +18,8 @@ public class CaseTitleService {
      * @return A markdown string for the case title
      */
     public String buildCaseTitle(PCSCase pcsCase) {
+        String formattedAddress = addressFormatter.formatAddressWithCommas(pcsCase.getPropertyAddress());
+        String addressDisplay = formattedAddress != null ? formattedAddress : "";
 
         return """
                 <p class="govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-1">
@@ -25,7 +27,7 @@ public class CaseTitleService {
                 </p>
                 <p class="govuk-!-font-size-24 govuk-!-margin-bottom-0">
                     Property address: %s
-                </p>""".formatted(addressFormatter.formatAddressWithCommas(pcsCase.getPropertyAddress()));
+                </p>""".formatted(addressDisplay);
     }
 
 }
