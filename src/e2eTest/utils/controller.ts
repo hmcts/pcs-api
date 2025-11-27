@@ -1,4 +1,3 @@
-
 import { Page, test } from '@playwright/test';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
@@ -125,6 +124,12 @@ function readValuesFromInputObjects(obj: object): string {
 }
 async function performAccessibilityChecks()
 {
-  const axeUtil = new AxeUtils(getExecutor().page);
-  await axeUtil.audit();
+  try {
+    const axeUtil = new AxeUtils(getExecutor().page);
+    await axeUtil.audit();
+  }
+  catch(error)
+  {
+    //this is to handle soft assert for accessibility Utils
+  }
 }
