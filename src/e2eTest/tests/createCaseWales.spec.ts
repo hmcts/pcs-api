@@ -2,7 +2,8 @@ import { test } from '@playwright/test';
 import {
   initializeExecutor,
   performAction,
-  performValidation
+  performValidation,
+  performValidations
 } from '@utils/controller';
 import {
   addressCheckYourAnswers,
@@ -31,7 +32,15 @@ import {
   asbQuestionsWales,
   noticeDetails,
   user,
-  whatAreYourGroundsForPossessionWales
+  whatAreYourGroundsForPossessionWales,
+  underlesseeOrMortgageeEntitledToClaim,
+  additionalReasonsForPossession,
+  wantToUploadDocuments,
+  applications,
+  languageUsed,
+  completeYourClaim,
+  checkYourAnswers,
+  propertyDetails, underlesseeOrMortgageeDetails
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
@@ -100,7 +109,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
     });
-    // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -141,12 +149,13 @@ test.describe('[Create Case - Wales] @regression', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
-    /*await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -157,11 +166,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
@@ -206,7 +215,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession]
     });
     await performAction('clickButton', reasonsForPossession.continue);
-    // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
+    await performAction('selectAsbQuestions', {
+      asbChoice: asbQuestionsWales.noRadioOption,
+      illegalPurposesChoice: asbQuestionsWales.noRadioOption,
+      prohibitedConductChoice: asbQuestionsWales.noRadioOption
+    });
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -217,7 +230,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no
     });
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {
       rentAmount: '850',
@@ -257,11 +269,13 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     // The following sections are commented out pending development of the Wales journey.
-    /*await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -275,11 +289,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('Wales - Standard contract - Rent arrears + ASB', async () => {
@@ -322,7 +336,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
     await performAction('selectAsbQuestions', {
       asbChoice: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
@@ -340,7 +354,6 @@ test.describe('[Create Case - Wales] @regression', async () => {
       question: noticeOfYourIntention.servedNoticeInteractiveText,
       option: noticeOfYourIntention.no,
     });
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performAction('selectDailyRentAmount', {
@@ -375,12 +388,13 @@ test.describe('[Create Case - Wales] @regression', async () => {
       option2: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
-    /*await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.no);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -391,11 +405,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('Wales - Other - No Rent arrears,  ASB + other options', async () => {
@@ -440,6 +454,11 @@ test.describe('[Create Case - Wales] @regression', async () => {
       mandatory: [whatAreYourGroundsForPossessionWales.mandatory.section191],
     });
     await performAction('clickButton', reasonsForPossession.continue);
+    await performAction('selectAsbQuestions', {
+      asbChoice: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
+      illegalPurposesChoice: asbQuestionsWales.noRadioOption,
+      prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
+    });
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -453,11 +472,9 @@ test.describe('[Create Case - Wales] @regression', async () => {
       option: noticeOfYourIntention.yes,
       typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
     });
-    //selectNoticeDetails has been commented out and will be modified as part of https://tools.hmcts.net/jira/browse/HDPI-2515 + https://tools.hmcts.net/jira/browse/HDPI-2516
-    //await performAction('selectNoticeDetails', {
-    // howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
-    //  day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
-    // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
+    await performAction('selectNoticeDetails', {
+     howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
+      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
       circumstanceOption: claimantCircumstances.no,
@@ -473,12 +490,13 @@ test.describe('[Create Case - Wales] @regression', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    // The following sections are commented out pending development of the Wales journey.
-    /*await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
@@ -489,10 +507,133 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.buildingAndStreet],
-      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.townOrCity],
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
       ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.country]);*/
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
+  });
+
+  test('Wales - Secure contract - Rent arrears + other options', async () => {
+    await performAction('enterTestAddressManually', {
+      buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
+      townOrCity: addressDetails.walesTownOrCityTextInput,
+      county: addressDetails.walesCountyTextInput,
+      postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
+      country: addressDetails.walesCountryTextInput
+    });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
+    await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
+    await performAction('provideMoreDetailsOfClaim');
+    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimType', claimType.no);
+    await performAction('selectClaimantName', claimantName.yes);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimantDetails',
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
+        question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
+        question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
+    await performAction('selectContactPreferences', {
+      notifications: contactPreferences.no,
+      correspondenceAddress: contactPreferences.no,
+      phoneNumber: contactPreferences.yes
+    });
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.defendantPostcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.yesRadioOption, numberOfDefendants: 2,
+      name1Option: defendantDetails.yesRadioOption,
+      correspondenceAddress1Option: defendantDetails.yesRadioOption, correspondenceAddressSame1Option: defendantDetails.yesRadioOption,
+      name2Option: defendantDetails.noRadioOption,
+      correspondenceAddress2Option: defendantDetails.yesRadioOption, correspondenceAddressSame2Option: defendantDetails.yesRadioOption});
+    await performAction('selectOccupationContractOrLicenceDetails', {
+      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
+      day: occupationContractOrLicenceDetailsWales.dayInput,
+      month: occupationContractOrLicenceDetailsWales.monthInput,
+      year: occupationContractOrLicenceDetailsWales.yearInput,
+      files: 'occupationContract.pdf'
+    });
+    await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
+    await performAction('selectYourPossessionGrounds', {
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
+      discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
+      mandatory: [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession]
+    });
+    await performAction('clickButton', reasonsForPossession.continue);
+    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
+      settlementWithDefendantsOption: mediationAndSettlement.no,
+    });
+    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performAction('selectNoticeOfYourIntention', {
+      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      option: noticeOfYourIntention.no
+    });
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£32.85',
+      unpaidRentInteractiveOption: dailyRentAmount.yes
+    });
+    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: detailsOfRentArrears.yes,
+      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+    });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
+    await performAction('selectMoneyJudgment', moneyJudgment.no);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.no,
+      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+    });
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: true
+    });
+    await performAction('selectProhibitedConductStandardContract', {
+      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductStandardContractWales.no,
+    });
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
+      option: underlesseeOrMortgageeEntitledToClaim.yes});
+    await performAction('selectUnderlesseeOrMortgageeDetails', {
+      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
+      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
+    });
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
+    await performAction('selectApplications', applications.yes);
+    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await performValidations('address information entered',
+      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
+      ['formLabelValue', propertyDetails.addressLine2Label, addressDetails.addressLine2TextInput],
+      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
+      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcode],
+      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 });
