@@ -61,29 +61,8 @@ public class PCSCase {
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
-    @CCD(
-        label = "Claimant Name",
-        access = {CitizenAccess.class}
-    )
-    @External
-    private String claimantName;
-
-    @CCD(
-        label = "Organisation Name"
-    )
-    @External
-    private String organisationName;
-
-    @CCD(
-        searchable = false,
-        access = {CitizenAccess.class}
-    )
-    private VerticalYesNo isClaimantNameCorrect;
-
-    @CCD(
-        access = {CitizenAccess.class}
-    )
-    private String overriddenClaimantName;
+    @JsonUnwrapped
+    private ClaimantInformation claimantInformation;
 
     @CCD(
         label = "Property address",
@@ -553,37 +532,8 @@ public class PCSCase {
     @CCD
     private IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason;
 
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleDiscretionaryGrounds"
-    )
-    private Set<SecureOrFlexibleDiscretionaryGrounds> secureOrFlexibleDiscretionaryGrounds;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleMandatoryGrounds"
-    )
-    private Set<SecureOrFlexibleMandatoryGrounds> secureOrFlexibleMandatoryGrounds;
-
-    @CCD(
-        label = "Discretionary grounds (if alternative accommodation available)",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm"
-    )
-    private Set<SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm> secureOrFlexibleDiscretionaryGroundsAlt;
-
-    @CCD(
-        label = "Mandatory grounds (if alternative accommodation available)",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureOrFlexibleMandatoryGroundsAlternativeAccomm"
-    )
-    private Set<SecureOrFlexibleMandatoryGroundsAlternativeAccomm> secureOrFlexibleMandatoryGroundsAlt;
+    @JsonUnwrapped
+    private SecureOrFlexiblePossessionGrounds secureOrFlexiblePossessionGrounds;
 
     @CCD(
         label = "What does your ground 1 claim involve?",
