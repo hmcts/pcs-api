@@ -14,7 +14,7 @@ export const underlesseeOrMortgageeDetails =
     removeButtonHidden: 'Remove',
     addAnUnderlesseeOrMortgageeParagraph: 'Add an underlessee or mortgagee to the case',
     underlesseePostcodeTextInput: 'SL6',
-    iCantEnterAUKPostcodeLink: 'I can’t enter a UK postcode',
+    iCantEnterAUKPostcodeLink: `I can't enter a UK postcode`,//As this is controlled by exui, it still be using ' instead of ’ Ref HDPI-3258
     previousButton: 'Previous',
     selectAnAddressTextLabelHidden: 'Select an address',
     buildingAndStreetTextLabelHidden: 'Building and Street',
