@@ -4,7 +4,7 @@ export const vulnerableAdultsAndChildren = {
   IsAnyOneLivingAtThePropertyQuestion: 'Is anyone living at the property vulnerable?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
-  notSureRadioOption:'I\'m not sure',
+  notSureRadioOption:'I’m not sure',
   confirmVulnerablePeopleQuestion: 'Confirm if the vulnerable people in the property are adults, children, or both adults and children',
   vulnerableAdultsRadioOption: 'Vulnerable adults',
   vulnerableChildrenRadioOption: 'Vulnerable children',
