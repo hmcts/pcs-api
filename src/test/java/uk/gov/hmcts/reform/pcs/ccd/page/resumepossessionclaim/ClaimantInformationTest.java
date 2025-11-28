@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -18,15 +19,16 @@ class ClaimantInformationTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ClaimantInformation());
+        setPageUnderTest(new ClaimantInformationPage());
     }
 
     @Test
     void shouldHandleNullOrganisationNameAndNullClaimantName() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .organisationName(null)
-            .claimantName(null)
+            .claimantInformation(
+                ClaimantInformation.builder().build()
+            )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
             .build();
 
@@ -41,8 +43,12 @@ class ClaimantInformationTest extends BasePageTest {
     void shouldFallbackToClaimantNameWhenOrganisationNameIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .organisationName(null)
-            .claimantName("Claimant Name")
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .organisationName(null)
+                    .claimantName("Claimant Name")
+                    .build()
+            )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
             .build();
 
@@ -58,8 +64,12 @@ class ClaimantInformationTest extends BasePageTest {
     void shouldFallbackToClaimantNameWhenOrganisationNameIsEmpty() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .organisationName("")
-            .claimantName("Claimant Name")
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .organisationName("")
+                    .claimantName("Claimant Name")
+                    .build()
+            )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
             .build();
 
@@ -79,9 +89,15 @@ class ClaimantInformationTest extends BasePageTest {
                                                           String overriddenOrganisationName,
                                                           String expectedDisplayedName) {
         // Given
-        PCSCase caseData = PCSCase.builder().organisationName(organisationName)
-            .overriddenClaimantName(overriddenOrganisationName)
-            .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
+        PCSCase caseData = PCSCase.builder()
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .organisationName(organisationName)
+                    .overriddenClaimantName(overriddenOrganisationName)
+                    .build()
+            )
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
+            .build();
 
         // When
         callMidEventHandler(caseData);
@@ -99,9 +115,15 @@ class ClaimantInformationTest extends BasePageTest {
                                            String overriddenOrganisationName,
                                            String expectedDisplayedClaimantName) {
         // Given
-        PCSCase caseData = PCSCase.builder().organisationName(organisationName)
-            .overriddenClaimantName(overriddenOrganisationName)
-            .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
+        PCSCase caseData = PCSCase.builder()
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .organisationName(organisationName)
+                    .overriddenClaimantName(overriddenOrganisationName)
+                    .build()
+            )
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
+            .build();
 
         // When
         callMidEventHandler(caseData);
@@ -119,9 +141,15 @@ class ClaimantInformationTest extends BasePageTest {
                                                 String overriddenOrganisationName,
                                                 String expectedDisplayedName) {
         // Given
-        PCSCase caseData = PCSCase.builder().organisationName(organisationName)
-            .overriddenClaimantName(overriddenOrganisationName)
-            .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
+        PCSCase caseData = PCSCase.builder()
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .organisationName(organisationName)
+                    .overriddenClaimantName(overriddenOrganisationName)
+                    .build()
+            )
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
+            .build();
 
         // When
         callMidEventHandler(caseData);
@@ -139,9 +167,15 @@ class ClaimantInformationTest extends BasePageTest {
                                                  String overriddenOrganisationName,
                                                  String expectedDisplayedName) {
         // Given
-        PCSCase caseData = PCSCase.builder().organisationName(organisationName)
-            .overriddenClaimantName(overriddenOrganisationName)
-            .claimantCircumstances(ClaimantCircumstances.builder().build()).build();
+        PCSCase caseData = PCSCase.builder()
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .organisationName(organisationName)
+                    .overriddenClaimantName(overriddenOrganisationName)
+                    .build()
+            )
+            .claimantCircumstances(ClaimantCircumstances.builder().build())
+            .build();
 
         // When
         callMidEventHandler(caseData);
