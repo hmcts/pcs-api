@@ -61,29 +61,8 @@ public class PCSCase {
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
-    @CCD(
-        label = "Claimant Name",
-        access = {CitizenAccess.class}
-    )
-    @External
-    private String claimantName;
-
-    @CCD(
-        label = "Organisation Name"
-    )
-    @External
-    private String organisationName;
-
-    @CCD(
-        searchable = false,
-        access = {CitizenAccess.class}
-    )
-    private VerticalYesNo isClaimantNameCorrect;
-
-    @CCD(
-        access = {CitizenAccess.class}
-    )
-    private String overriddenClaimantName;
+    @JsonUnwrapped
+    private ClaimantInformation claimantInformation;
 
     @CCD(
         label = "Property address",
