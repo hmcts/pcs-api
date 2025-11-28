@@ -30,7 +30,8 @@ public class ClaimantInformation {
 
     @CCD(
         label = "Is this the correct claimant name?",
-        access = {CitizenAccess.class}
+        access = {CitizenAccess.class},
+        searchable = false
     )
     private VerticalYesNo isClaimantNameCorrect;
 
