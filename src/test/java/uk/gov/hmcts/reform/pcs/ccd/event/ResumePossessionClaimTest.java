@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -286,7 +287,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getOrganisationName()).isEqualTo(expectedUserEmail);
+            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedUserEmail);
             assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
             assertThat(updatedCaseData.getFormattedClaimantContactAddress())
                 .isEqualTo("10 High Street<br>London<br>W1 2BC");
@@ -352,7 +353,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldReturnConfirmationScreen() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .organisationName("Org Ltd")
                 .completionNextStep(CompletionNextStep.SAVE_IT_FOR_LATER)
                 .build();
 
@@ -426,7 +426,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(propertyAddress)
                 .legislativeCountry(WALES)
-                .claimantName(claimantName)
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .claimantName(claimantName)
+                        .build()
+                )
                 .claimantContactEmail(claimantContactEmail)
                 .claimantContactPhoneNumber(claimantContactPhoneNumber)
                 .claimantCircumstances(ClaimantCircumstances.builder()
@@ -482,7 +486,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
             final FeeDetails feeDetails = stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
-                .organisationName("Org Ltd")
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .organisationName("Org Ltd")
+                        .build()
+                )
                 .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
                 .build();
 
@@ -532,6 +540,29 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(submitResponse.getConfirmationBody()).contains("You must pay the claim fee of " + formattedFee);
+        }
+
+        @Test
+        void shouldGetClaimantInformation() {
+
+            PCSCase caseData = PCSCase.builder()
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .claimantName("TestName")
+                        .organisationName("Org Ltd")
+                        .build()
+                )
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            assertThat(caseData.getClaimantInformation().getClaimantName())
+                .isEqualTo("TestName");
+
+            assertThat(caseData.getClaimantInformation().getOrganisationName())
+                .isEqualTo("Org Ltd");
         }
 
         private FeeDetails stubFeeService() {
