@@ -677,7 +677,7 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "secureContract_")
     private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
 
     @CCD(
