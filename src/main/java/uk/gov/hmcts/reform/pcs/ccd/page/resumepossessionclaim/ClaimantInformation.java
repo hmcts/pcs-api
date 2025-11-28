@@ -60,17 +60,17 @@ public class ClaimantInformation implements CcdPageConfiguration {
         if (value == null) {
             return null;
         }
-        
+
         String trimmed = value.trim();
-        
+
         if (trimmed.isEmpty()) {
             return "";
         }
-        
+
         if (trimmed.endsWith("'") || trimmed.endsWith("'s") || trimmed.endsWith("'S")) {
             return trimmed;
         }
-        
+
         return trimmed.endsWith("s") || trimmed.endsWith("S") ? trimmed + "'" : trimmed + "'s";
     }
 
