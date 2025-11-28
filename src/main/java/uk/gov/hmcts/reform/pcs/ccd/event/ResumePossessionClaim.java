@@ -99,6 +99,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -310,10 +311,17 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
             ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
 
+        String organisationName = isNotBlank(claimantInfo.getOverriddenClaimantName())
+            ? claimantInfo.getOverriddenClaimantName() : claimantInfo.getOrganisationName();
+        if (isBlank(organisationName)) {
+            organisationName = claimantName;
+        }
+
         return partyService.createPartyEntity(
             userID,
             claimantName,
             null,
+            organisationName,
             contactEmail,
             contactAddress,
             pcsCase.getClaimantContactPhoneNumber()

@@ -40,6 +40,7 @@ class PartyServiceTest {
         String forename = "Alice";
         String surname = "Smith";
         AddressUK contactAddress = mock(AddressUK.class);
+        String organisationName = "Org Name";
         String contactEmail = "Alice.Smith@test.com";
         String contactPhone = "07478963256";
 
@@ -47,13 +48,21 @@ class PartyServiceTest {
         when(modelMapper.map(contactAddress, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        PartyEntity createdPartyEntity = underTest.createPartyEntity(userId, forename, surname, contactEmail,
-                                                        contactAddress, contactPhone);
+        PartyEntity createdPartyEntity = underTest.createPartyEntity(
+            userId,
+            forename,
+            surname,
+            organisationName,
+            contactEmail,
+            contactAddress,
+            contactPhone
+        );
 
         // Then
         assertThat(createdPartyEntity.getIdamId()).isEqualTo(userId);
         assertThat(createdPartyEntity.getForename()).isEqualTo(forename);
         assertThat(createdPartyEntity.getSurname()).isEqualTo(surname);
+        assertThat(createdPartyEntity.getOrgName()).isEqualTo(organisationName);
         assertThat(createdPartyEntity.getContactEmail()).isEqualTo(contactEmail);
         assertThat(createdPartyEntity.getContactAddress()).isEqualTo(addressEntity);
         assertThat(createdPartyEntity.getContactPhoneNumber()).isEqualTo(contactPhone);
