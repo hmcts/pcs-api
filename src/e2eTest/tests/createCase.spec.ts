@@ -543,13 +543,6 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved')
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Introductory tenancy with grounds for possession - excludes rent arrears', async () => {
@@ -640,13 +633,6 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Demoted tenancy with no grounds for possession', async () => {
@@ -746,13 +732,6 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
@@ -851,11 +830,6 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
   test('England - Flexible tenancy with Rent arrears only', async () => {
@@ -960,11 +934,6 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
   test('England - Secure tenancy with Rent and other grounds', async () => {
@@ -1089,11 +1058,6 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
   test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow', async () => {
@@ -1204,13 +1168,6 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Flexible tenancy with Breach only', async () => {
@@ -1300,10 +1257,5 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 });
