@@ -4,7 +4,7 @@ export const enterPropertyAddress = {
   subHeader: `Property address`,
   enterAUKPostcodeTextLabel: `Enter a UK postcode`,
   findAddressButton: `Find address`,
-  iCantEnterAUKPostcodeLink: `I can't enter a UK postcode`,//This needs to be modified
+  iCantEnterAUKPostcodeLink: `I can't enter a UK postcode`,//As this is controlled by exui, it still be using ' instead of ’ Ref: HDPI-3258
   previousButton: `Previous`,
   cancelLink: `Cancel`,
   selectAnAddressTextLabelHidden: `Select an address`,
