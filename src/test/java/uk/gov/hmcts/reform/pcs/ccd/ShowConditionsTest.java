@@ -9,16 +9,16 @@ class ShowConditionsTest {
 
     @Test
     void shouldCreateShowConditionForStateEquals() {
-        String showCondition = ShowConditions.stateEquals(State.AWAITING_FURTHER_CLAIM_DETAILS);
+        String showCondition = ShowConditions.stateEquals(State.AWAITING_SUBMISSION_TO_HMCTS);
 
-        assertThat(showCondition).isEqualTo("[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"");
+        assertThat(showCondition).isEqualTo("[STATE]=\"AWAITING_SUBMISSION_TO_HMCTS\"");
     }
 
     @Test
     void shouldCreateShowConditionForStateNotEquals() {
-        String showCondition = ShowConditions.stateNotEquals(State.AWAITING_FURTHER_CLAIM_DETAILS);
+        String showCondition = ShowConditions.stateNotEquals(State.AWAITING_SUBMISSION_TO_HMCTS);
 
-        assertThat(showCondition).isEqualTo("[STATE]!=\"AWAITING_FURTHER_CLAIM_DETAILS\"");
+        assertThat(showCondition).isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
     }
 
     @Test
