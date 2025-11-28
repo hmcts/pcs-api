@@ -514,7 +514,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
       ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
-  test('Wales - Secure contract - Rent arrears + other options  @PR', async () => {
+  test('Wales - Secure contract - Rent arrears + other options', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
