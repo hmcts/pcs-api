@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ClaimantInformationTest extends BasePageTest {
+class ClaimantInformationPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {

@@ -49,10 +49,13 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
 
     private void setClaimantNamePossessiveForm(CaseDetails<PCSCase, State> details) {
         PCSCase caseData = details.getData();
+        ClaimantInformation claimantInfo = caseData.getClaimantInformation();
         String claimantNamePossessiveForm =
-            StringUtils.isNotEmpty(caseData.getClaimantInformation().getOverriddenClaimantName())
-            ? caseData.getClaimantInformation().getOverriddenClaimantName()
-            : caseData.getClaimantInformation().getClaimantName();
+            StringUtils.isNotEmpty(claimantInfo.getOverriddenClaimantName())
+            ? claimantInfo.getOverriddenClaimantName()
+            : (StringUtils.isNotEmpty(claimantInfo.getOrganisationName())
+                ? claimantInfo.getOrganisationName()
+                : claimantInfo.getClaimantName());
         caseData.getClaimantCircumstances().setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
     }
 
