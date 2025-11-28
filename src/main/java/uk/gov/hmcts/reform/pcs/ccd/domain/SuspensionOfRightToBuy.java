@@ -24,7 +24,7 @@ public class SuspensionOfRightToBuy {
 
     @CCD(
         label = SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL,
-        hint = "Give details of the defendants' conduct and any other reasons you think are relevant. You can enter "
+        hint = "Give details of the defendants’ conduct and any other reasons you think are relevant. You can enter "
             + "up to 250 characters",
         typeOverride = TextArea
     )

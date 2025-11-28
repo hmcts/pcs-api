@@ -31,8 +31,8 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
             .label("prohibitedConductWales-info", """
                  ---
                 <p class="govuk-body" tabindex="0">
-                    If a judge decides that possession is not reasonable at this time, 
-                    they may instead decide to make an order imposing a prohibited 
+                    If a judge decides that possession is not reasonable at this time,
+                    they may instead decide to make an order imposing a prohibited
                     conduct standard contract.
                 </p>
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
@@ -40,7 +40,7 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
             .mandatory(PCSCase::getProhibitedConductWalesClaim)
             .complex(PCSCase::getPeriodicContractTermsWales, "prohibitedConductWalesClaim=\"YES\"")
                 .mandatory(PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract)
-                .mandatory(PeriodicContractTermsWales::getDetailsOfTerms, 
+                .mandatory(PeriodicContractTermsWales::getDetailsOfTerms,
                     "periodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
             .done()
             .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"")
@@ -61,7 +61,7 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
             && periodicContractTermsWales.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
                 periodicContractTermsWales.getDetailsOfTerms(),
-                "Give details of the terms you've agreed",
+                "Give details of the terms you’ve agreed",
                 TextAreaValidationService.SHORT_TEXT_LIMIT,
                 validationErrors
             );

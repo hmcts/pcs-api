@@ -22,7 +22,7 @@ import java.util.List;
 public class PropertyAccessDetailsPage implements CcdPageConfiguration {
 
     private static final String CLARIFICATION_PROPERTY_ACCESS_LABEL =
-            "Explain why it's difficult to access the property";
+            "Explain why it’s difficult to access the property";
 
     private final TextAreaValidationService textAreaValidationService;
 

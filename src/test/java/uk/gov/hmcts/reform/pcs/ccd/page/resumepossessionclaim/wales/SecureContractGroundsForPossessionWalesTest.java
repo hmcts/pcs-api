@@ -49,7 +49,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
         // Then
         if (expectEstateError) {
             assertThat(response.getErrors()).containsExactly(
-                "Please select at least one ground in 'Estate management grounds (section 160)'.");
+                "Please select at least one ground in ‘Estate management grounds (section 160)’.");
         } else if (expectGroundsError) {
             assertThat(response.getErrors()).containsExactly("Please select at least one ground");
         } else if (expectValid) {
@@ -64,7 +64,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(), Set.of(), Set.of(),
                         false, true, false
                 ),
-                // ESTATE_MANAGEMENT_GROUNDS selected with no estate details 
+                // ESTATE_MANAGEMENT_GROUNDS selected with no estate details
                 // - should error on missing estate management grounds
                 arguments(
                         Set.of(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),

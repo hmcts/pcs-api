@@ -126,8 +126,8 @@ class DefendantsDetailsTest extends BasePageTest {
 
     private static Stream<Arguments> defendantTermScenarios() {
         return Stream.of(
-            argumentSet("No additional defendants", VerticalYesNo.NO, "defendant's"),
-            argumentSet("Additional defendants", VerticalYesNo.YES, "defendants'")
+            argumentSet("No additional defendants", VerticalYesNo.NO, "defendant’s"),
+            argumentSet("Additional defendants", VerticalYesNo.YES, "defendants’")
         );
     }
 

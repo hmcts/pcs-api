@@ -95,7 +95,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
         }
 
         caseData.getDefendantCircumstances()
-            .setDefendantTermPossessive(additionalDefendantsProvided ? "defendants'" : "defendant's");
+            .setDefendantTermPossessive(additionalDefendantsProvided ? "defendants’" : "defendant’s");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
