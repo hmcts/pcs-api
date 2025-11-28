@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class EnforcementApplicationPage implements CcdPageConfiguration {
     public static final String WRIT_OR_WARRANT_INFORMATION = """
                     <details class="govuk-details">
@@ -82,6 +84,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                 .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
                 .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
                 .done()
-                .label("enforcementApplication-clarification", WRIT_OR_WARRANT_INFORMATION);
+                .label("enforcementApplication-clarification", WRIT_OR_WARRANT_INFORMATION)
+                .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);
     }
 }
