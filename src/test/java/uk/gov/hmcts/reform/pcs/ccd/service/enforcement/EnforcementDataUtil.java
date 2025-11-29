@@ -2,11 +2,11 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcement;
 
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.NameAndAddressForEviction;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant.NameAndAddressForEviction;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.warrant.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementOrderEntity;
