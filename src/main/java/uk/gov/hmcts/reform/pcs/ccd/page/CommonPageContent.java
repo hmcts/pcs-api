@@ -23,5 +23,4 @@ public class CommonPageContent {
             </div>
         </details>
         """;
-
 }
