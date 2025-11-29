@@ -15,7 +15,7 @@ export const tenancyLicenceDetails = {
   day: '16',
   month: '04',
   year: '2021',
-  giveDetailsOfTypeOfTenancyOrLicenceAgreement: 'Give details of the type of tenancy or licence agreement that\'s in place',
+  giveDetailsOfTypeOfTenancyOrLicenceAgreement: 'Give details of the type of tenancy or licence agreement that’s in place',
   detailsOfLicence: 'This is the details of Licence or Tenancy agreement.',
   addNew: 'Add new',
   continue: 'Continue'
