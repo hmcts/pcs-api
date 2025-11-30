@@ -2,13 +2,25 @@ import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, vulnerableAdultsAndChildren,
-  violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-  verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty,
+  yourApplication,
+  nameAndAddressForEviction,
+  everyoneLivingAtTheProperty,
+  vulnerableAdultsAndChildren,
+  violentOrAggressiveBehaviour,
+  firearmPossession,
+  criminalOrAntisocialBehaviour,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  groupProtestsEviction,
+  policeOrSocialServiceVisit,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  accessToTheProperty,
   peopleWillBeEvicted,
   youNeedPermission,
   legalCosts,
-  landRegistryFees
+  landRegistryFees,
+  rePayments
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
@@ -39,6 +51,7 @@ export class EnforcementAction implements IAction {
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
+      ['inputErrorValidation', () => this.inputErrorValidation(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -198,6 +211,25 @@ export class EnforcementAction implements IAction {
     if (langRegistry.option === accessToTheProperty.yesRadioOption) {
       await performAction('inputText', langRegistry.label, langRegistry.input);
     };
-    await performAction('clickButton', landRegistryFees.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', landRegistryFees.continueButton, rePayments.mainHeader);
+  }
+
+  private async inputErrorValidation(validationArr: actionRecord) {
+
+    if (validationArr.validationReq === 'YES') {
+
+      if (Array.isArray(validationArr.inputArray)) {
+        for (const item of validationArr.inputArray) {
+          await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+          if (validationArr.option === 'Yes') {
+            await performAction('inputText', validationArr.label, item.input);
+            await performAction('clickButton', validationArr.button);
+            await performValidation('moneyInputError', validationArr.label, item.errMessage);
+          };
+          await performAction('clickRadioButton', { question: validationArr.question, option: 'No' });
+        }
+      }
+
+    }
   }
 }

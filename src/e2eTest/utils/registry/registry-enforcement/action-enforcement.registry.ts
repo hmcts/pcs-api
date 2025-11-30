@@ -45,7 +45,8 @@ export class ActionEnforcementRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['provideLegalCosts', new EnforcementAction()],
-    ['provideLandRegistryFees', new EnforcementAction()]
+    ['provideLandRegistryFees', new EnforcementAction()],
+    ['inputErrorValidation', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {
