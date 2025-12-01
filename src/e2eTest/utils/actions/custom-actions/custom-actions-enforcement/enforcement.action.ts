@@ -43,11 +43,16 @@ export class EnforcementAction implements IAction {
     await actionToPerform();
   }
 
+  private async writOrWarrantDiff(summaryOption: actionRecord){
+    await performAction('expandSummary',summaryOption.type);
+    await performValidation('formLabelValue',summaryOption.warrant,yourApplication.warrantFeeValidationText);
+  }
+
   private async selectApplicationType(applicationType: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
-    await performAction('clickButton', yourApplication.continue);
+    await performAction('clickButton', yourApplication.continueButton);
   }
 
   private async selectNameAndAddressForEviction(page: Page, nameAndAddress: actionRecord) {

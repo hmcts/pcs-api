@@ -6,5 +6,9 @@ export const yourApplication = {
     warrantOfPossession: 'Warrant of possession',
     writOfPossession: 'Writ of possession'
   },
-  continue: 'Continue',
+  summaryWritOrWarrant: 'I do not know if I need a writ or a warrant',
+  summarySaveApplication: 'I want to save this application and return to it later',
+  warrantFeeValidationText:'It costs £404 to apply',
+  writFeeValidationText:'It costs £404 to apply',
+  continueButton: 'Continue',
 }
