@@ -208,8 +208,8 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession',
-      [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession,whatAreYourGroundsForPossessionWales.discretionary.buildingWorks]);
-    await performAction('selectAsbQuestions', {
+      [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession, whatAreYourGroundsForPossessionWales.discretionary.buildingWorks]);
+    await performAction('selectAsb', {
       asbChoice: asbQuestionsWales.noRadioOption,
       illegalPurposesChoice: asbQuestionsWales.noRadioOption,
       prohibitedConductChoice: asbQuestionsWales.noRadioOption
@@ -449,7 +449,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performAction('enterReasonForPossession',
       [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks,whatAreYourGroundsForPossessionWales.mandatory.section191]);
-    await performAction('selectAsbQuestions', {
+    await performAction('selectAsb', {
       asbChoice: asbQuestionsWales.noRadioOption,
       illegalPurposesChoice: asbQuestionsWales.noRadioOption,
       prohibitedConductChoice: asbQuestionsWales.noRadioOption
