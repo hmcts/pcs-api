@@ -120,11 +120,11 @@ public class PcsCaseMergeService {
             .walesMandatoryGrounds(mapToLabels(pcsCase.getMandatoryGroundsWales()))
             .walesEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGroundsWales()))
             .walesSecureContractDiscretionaryGrounds(mapToLabels(secureContractGroundsWales
-                                                                     .getSecureContractDiscretionaryGroundsWales()))
+                                                                     .getDiscretionaryGroundsWales()))
             .walesSecureContractMandatoryGrounds(mapToLabels(secureContractGroundsWales
-                                                                 .getSecureContractMandatoryGroundsWales()))
+                                                                 .getMandatoryGroundsWales()))
             .walesSecureContractEstateManagementGrounds(mapToLabels(secureContractGroundsWales
-                                .getSecureContractEstateManagementGroundsWales()))
+                                .getEstateManagementGroundsWales()))
             .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
     }

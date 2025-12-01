@@ -28,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -323,11 +324,11 @@ class PcsCaseMergeServiceTest {
         when(pcsCase.getMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
         when(pcsCase.getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
         when(secureContractGroundsWales
-                 .getSecureContractDiscretionaryGroundsWales()).thenReturn(null);
+                 .getDiscretionaryGroundsWales()).thenReturn(null);
         when(secureContractGroundsWales
-                 .getSecureContractMandatoryGroundsWales()).thenReturn(null);
+                 .getMandatoryGroundsWales()).thenReturn(null);
         when(secureContractGroundsWales
-                 .getSecureContractEstateManagementGroundsWales()).thenReturn(null);
+                 .getEstateManagementGroundsWales()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
@@ -356,12 +357,12 @@ class PcsCaseMergeServiceTest {
             mock(SecureContractGroundsForPossessionWales.class);
         when(pcsCase.getSecureContractGroundsForPossessionWales()).thenReturn(secureContractGroundsWales);
 
-        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = Set.of(
+        EnumSet<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = EnumSet.of(
                 SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
                 SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
-        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = Set.of(
+        EnumSet<SecureContractMandatoryGroundsWales> mandatoryGrounds = EnumSet.of(
                 SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170);
-        Set<EstateManagementGroundsWales> estateManagementGrounds = Set.of(
+        EnumSet<EstateManagementGroundsWales> estateManagementGrounds = EnumSet.of(
                 EstateManagementGroundsWales.BUILDING_WORKS,
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
 
@@ -369,11 +370,11 @@ class PcsCaseMergeServiceTest {
         when(pcsCase.getMandatoryGroundsWales()).thenReturn(null);
         when(pcsCase.getEstateManagementGroundsWales()).thenReturn(null);
         when(secureContractGroundsWales
-                 .getSecureContractDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
+                 .getDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
         when(secureContractGroundsWales
-                 .getSecureContractMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
+                 .getMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
         when(secureContractGroundsWales
-                 .getSecureContractEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
+                 .getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
         when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();

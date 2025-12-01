@@ -41,9 +41,9 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                .secureContractDiscretionaryGroundsWales(discretionaryGrounds)
-                .secureContractMandatoryGroundsWales(mandatoryGrounds)
-                .secureContractEstateManagementGroundsWales(estateGrounds)
+                .discretionaryGroundsWales(discretionaryGrounds)
+                .mandatoryGroundsWales(mandatoryGrounds)
+                .estateManagementGroundsWales(estateGrounds)
                 .build()
             )
             .build();
@@ -128,9 +128,9 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                    .secureContractDiscretionaryGroundsWales(discretionaryGrounds)
-                    .secureContractEstateManagementGroundsWales(estateManagementGrounds)
-                    .secureContractMandatoryGroundsWales(mandatoryGrounds)
+                    .discretionaryGroundsWales(discretionaryGrounds)
+                    .estateManagementGroundsWales(estateManagementGrounds)
+                    .mandatoryGroundsWales(mandatoryGrounds)
                     .build()
                 )
                 .build();

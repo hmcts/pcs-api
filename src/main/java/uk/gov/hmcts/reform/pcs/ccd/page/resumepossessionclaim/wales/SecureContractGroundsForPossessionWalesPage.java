@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Set;
 
@@ -40,10 +41,10 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                </p>
                """)
             .complex(PCSCase::getSecureContractGroundsForPossessionWales)
-                .optional(SecureContractGroundsForPossessionWales::getSecureContractDiscretionaryGroundsWales)
-                .optional(SecureContractGroundsForPossessionWales::getSecureContractEstateManagementGroundsWales,
-                        "secureContractDiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
-                .optional(SecureContractGroundsForPossessionWales::getSecureContractMandatoryGroundsWales)
+                .optional(SecureContractGroundsForPossessionWales::getDiscretionaryGroundsWales)
+                .optional(SecureContractGroundsForPossessionWales::getEstateManagementGroundsWales,
+                        "secureContract_DiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
+                .optional(SecureContractGroundsForPossessionWales::getMandatoryGroundsWales)
                 .done()
                 .label("secureOrFlexibleGroundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -54,13 +55,13 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
         PCSCase caseData = details.getData();
 
         Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds =
-            caseData.getSecureContractGroundsForPossessionWales().getSecureContractDiscretionaryGroundsWales();
+            caseData.getSecureContractGroundsForPossessionWales().getDiscretionaryGroundsWales();
 
         Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = caseData
-            .getSecureContractGroundsForPossessionWales().getSecureContractMandatoryGroundsWales();
+            .getSecureContractGroundsForPossessionWales().getMandatoryGroundsWales();
 
         Set<EstateManagementGroundsWales> estateManagement = caseData
-            .getSecureContractGroundsForPossessionWales().getSecureContractEstateManagementGroundsWales();
+            .getSecureContractGroundsForPossessionWales().getEstateManagementGroundsWales();
 
         if (discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
                 && estateManagement.isEmpty()) {
