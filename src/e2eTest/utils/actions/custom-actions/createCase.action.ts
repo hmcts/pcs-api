@@ -525,8 +525,8 @@ export class CreateCaseAction implements IAction {
     );
     await performAction('collectCYAData', {actionName: 'selectClaimantCircumstances',
       question: claimantCircumstances.isThereAnyInformationYouWouldLikeToProvideQuestion.replace("Claimants", nameClaimant),
-      option: claimantCircumstance.circumstanceOption});
-    if (claimantCircumstance.circumstanceOption == claimantCircumstances.yes) {
+      answer: claimantCircumstance.circumstanceOption});
+   if (claimantCircumstance.circumstanceOption == claimantCircumstances.yes) {
       await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimantCircumstance.claimantInput);
       await performAction('collectCYAData', {actionName: 'selectClaimantCircumstances', question: claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), answer: claimantCircumstance.claimantInput});
     }
