@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.feesandpay.config.Jurisdictions;
+import uk.gov.hmcts.reform.pcs.feesandpay.config.ServiceName;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
@@ -29,17 +31,23 @@ public class FeesAndPayTaskComponent {
     private final PaymentService paymentService;
     private final int maxRetriesFeesAndPay;
     private final Duration feesAndPayBackoffDelay;
+    private ServiceName serviceName;
+    private Jurisdictions jurisdictions;
 
     public FeesAndPayTaskComponent(
         FeeService feeService,
         PaymentService paymentService,
         @Value("${fees.request.max-retries}") int maxRetriesFeesAndPay,
-        @Value("${fees.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay
-    ) {
+        @Value("${fees.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay,
+        @Value("${fees.makeaclaim.service}") String feesServiceName,
+        @Value("${fees.makeaclaim.jurisdiction1}") String jurisdiction1,
+        @Value("${fees.makeaclaim.jurisdiction2}") String jurisdiction2) {
         this.feeService = feeService;
         this.paymentService = paymentService;
         this.maxRetriesFeesAndPay = maxRetriesFeesAndPay;
         this.feesAndPayBackoffDelay = feesAndPayBackoffDelay;
+        this.serviceName = new ServiceName(feesServiceName);
+        this.jurisdictions = new Jurisdictions(jurisdiction1, jurisdiction2);
     }
 
     /**
@@ -62,7 +70,7 @@ public class FeesAndPayTaskComponent {
                 log.debug("Executing fee lookup task for fee type: {}", taskData.getFeeType());
 
                 try {
-                    FeeDetails feeDetails = feeService.getFee(taskData.getFeeType());
+                    FeeDetails feeDetails = feeService.getFee(serviceName, jurisdictions, taskData.getFeeType());
 
                     paymentService.createServiceRequest(
                         taskData.getCaseReference(),

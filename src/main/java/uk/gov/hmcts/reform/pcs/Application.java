@@ -5,7 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
+import uk.gov.hmcts.reform.pcs.feesandpay.config.EnforcementFeesApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.api.IdamTokenApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
@@ -16,8 +18,7 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         "uk.gov.hmcts.reform.docassembly",
         "uk.gov.hmcts.reform.pcs",
         "uk.gov.hmcts.ccd.sdk",
-        "uk.gov.hmcts.reform.payments.client",
-        "uk.gov.hmcts.reform.fees.client"
+        "uk.gov.hmcts.reform.payments.client"
     })
 @SuppressWarnings("HideUtilityClassConstructor") // Spring needs a constructor, it's not a utility class
 @EnableFeignClients(
@@ -27,6 +28,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         IdamApi.class,
         IdamTokenApi.class,
         RdProfessionalApi.class,
+        FeesApi.class,
+        EnforcementFeesApi.class
     }
 )
 @EnableJms
