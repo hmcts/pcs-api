@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferencesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -243,7 +244,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
-        caseData.setClaimantContactEmail(userEmail);
+        ContactPreferencesDetails contactPreferences = Optional.ofNullable(caseData.getContactPreferencesDetails())
+            .orElse(ContactPreferencesDetails.builder().build());
+        contactPreferences.setClaimantContactEmail(userEmail);
+        caseData.setContactPreferencesDetails(contactPreferences);
         caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {
@@ -265,8 +269,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);
-        caseData.setFormattedClaimantContactAddress(addressFormatter
+        contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatAddressWithHtmlLineBreaks(caseData.getPropertyAddress()));
+        caseData.setContactPreferencesDetails(contactPreferences);
 
         return caseData;
     }
@@ -304,11 +309,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             ? claimantInfo.getOverriddenClaimantName()
             : claimantInfo.getClaimantName();
 
-        AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
-            ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+        ContactPreferencesDetails contactPreferences = getContactPreferences(pcsCase);
 
-        String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
-            ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
+        AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
+            ? contactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+
+        String contactEmail = isNotBlank(contactPreferences.getOverriddenClaimantContactEmail())
+            ? contactPreferences.getOverriddenClaimantContactEmail() : contactPreferences.getClaimantContactEmail();
 
         return partyService.createPartyEntity(
             userID,
@@ -316,13 +323,18 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             null,
             contactEmail,
             contactAddress,
-            pcsCase.getClaimantContactPhoneNumber()
+            contactPreferences.getClaimantContactPhoneNumber()
         );
     }
 
     private ClaimantInformation getClaimantInfo(PCSCase caseData) {
         return Optional.ofNullable(caseData.getClaimantInformation())
             .orElse(ClaimantInformation.builder().build());
+    }
+
+    private ContactPreferencesDetails getContactPreferences(PCSCase caseData) {
+        return Optional.ofNullable(caseData.getContactPreferencesDetails())
+            .orElse(ContactPreferencesDetails.builder().build());
     }
 
     private void scheduleCaseIssuedFeeTask(long caseReference, String responsibleParty) {

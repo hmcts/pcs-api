@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferencesDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
@@ -271,8 +272,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         // Then
         assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedUserEmail);
-        assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
-        assertThat(updatedCaseData.getFormattedClaimantContactAddress())
+        assertThat(updatedCaseData.getContactPreferencesDetails().getClaimantContactEmail())
+            .isEqualTo(expectedUserEmail);
+        assertThat(updatedCaseData.getContactPreferencesDetails().getFormattedClaimantContactAddress())
             .isEqualTo("10 High Street<br>London<br>W1 2BC");
     }
 
@@ -349,8 +351,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
                     .build()
             )
-            .claimantContactEmail(claimantContactEmail)
-            .claimantContactPhoneNumber(claimantContactPhoneNumber)
+            .contactPreferencesDetails(
+                ContactPreferencesDetails.builder()
+                    .claimantContactEmail(claimantContactEmail)
+                    .claimantContactPhoneNumber(claimantContactPhoneNumber)
+                    .build()
+            )
             .claimantCircumstances(ClaimantCircumstances.builder()
                                        .claimantCircumstancesDetails(claimantCircumstances)
                                        .build())
