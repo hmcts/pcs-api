@@ -8,7 +8,7 @@ import {MainHeaderValidation} from "@utils/validations/element-validations/pageH
 import {ErrorMessageValidation} from "@utils/validations/element-validations/error-message.validation";
 import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
 import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
-import {MoneyInputErrorValidation} from "@utils/validations/element-validations/moneyInputError.validation";
+import {InputErrorValidation} from "@utils/validations/element-validations/inputError.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -23,7 +23,7 @@ export class ValidationRegistry {
     ['elementNotToBeVisible', new VisibilityValidation()],
     ['waitUntilElementDisappears', new VisibilityValidation()],
     ['autoValidatePageContent', new PageContentValidation()],
-    ['moneyInputError', new MoneyInputErrorValidation()],
+    ['inputError', new InputErrorValidation()],
   ]);
 
   static getValidation(validationType: string): IValidation {

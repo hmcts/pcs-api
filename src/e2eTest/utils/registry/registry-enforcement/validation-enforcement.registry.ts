@@ -7,7 +7,7 @@ import {OptionListValidation} from '@utils/validations/element-validations/optio
 import {MainHeaderValidation} from '@utils/validations/element-validations/pageHeader.validation';
 import {ErrorMessageValidation} from '@utils/validations/element-validations/error-message.validation';
 import {RadioButtonValidation} from '@utils/validations/element-validations/radioButton.validation';
-import {MoneyInputErrorValidation} from "@utils/validations/element-validations/moneyInputError.validation";
+import {InputErrorValidation} from "@utils/validations/element-validations/inputError.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -21,7 +21,7 @@ export class ValidationRegistry {
     ['elementToBeVisible', new VisibilityValidation()],
     ['elementNotToBeVisible', new VisibilityValidation()],
     ['waitUntilElementDisappears', new VisibilityValidation()],
-    ['moneyInputError', new MoneyInputErrorValidation()],
+    ['inputError', new InputErrorValidation()],
   ]);
 
   static getValidation(validationType: string): IValidation {

@@ -1,7 +1,7 @@
 import { Page, expect, Locator } from '@playwright/test';
 import { IValidation, validationData } from '../../interfaces/validation.interface';
 
-export class MoneyInputErrorValidation implements IValidation {
+export class InputErrorValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationData): Promise<void> {
 
     const valueLocator = await this.findFieldValueLocator(page, fieldName, data);

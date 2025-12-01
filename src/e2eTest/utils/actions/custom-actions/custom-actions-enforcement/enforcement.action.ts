@@ -224,7 +224,7 @@ export class EnforcementAction implements IAction {
           if (validationArr.option === 'Yes') {
             await performAction('inputText', validationArr.label, item.input);
             await performAction('clickButton', validationArr.button);
-            await performValidation('moneyInputError', validationArr.label, item.errMessage);
+            await performValidation('inputError', validationArr.label, item.errMessage);
           };
           await performAction('clickRadioButton', { question: validationArr.question, option: 'No' });
         }
