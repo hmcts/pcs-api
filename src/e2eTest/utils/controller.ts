@@ -3,6 +3,7 @@ import { actionData, actionRecord, actionTuple } from './interfaces/action.inter
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
 import { ActionRegistry } from './registry/action.registry';
 import { ValidationRegistry } from './registry/validation.registry';
+import { AxeUtils} from "@hmcts/playwright-common";
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
@@ -37,13 +38,13 @@ async function validatePageIfNavigated(action:string): Promise<void> {
     const pageNavigated = await detectPageNavigation();
     if (pageNavigated) {
       await performValidation('autoValidatePageContent');
+      await new AxeUtils(getExecutor().page).audit();
     }
   }
 }
 
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
-  await validatePageIfNavigated(action);
   const actionInstance = ActionRegistry.getAction(action);
 
   let displayFieldName = fieldName;
@@ -120,3 +121,4 @@ function readValuesFromInputObjects(obj: object): string {
   });
   return `${formattedPairs.join(', ')}`;
 }
+
