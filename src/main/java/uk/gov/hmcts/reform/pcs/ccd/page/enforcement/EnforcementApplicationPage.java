@@ -37,7 +37,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             </ul>
                             <p class="govuk-body govuk-!-margin-bottom-1"> You'll need to:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">ask the judge for a writ (you’ll need additional
+                              <li class="govuk-!-font-size-19">ask the judge for a writ (you'll need additional
                               evidence for this and the judge could still refuse your request)</li>
                               <li class="govuk-!-font-size-19">hire a private High Court Enforcement Officer (bailiff)
                               to carry out the eviction</li>
@@ -49,12 +49,12 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                               rel="noreferrer noopener"
                               target="_blank" class="govuk-link">You can get a quote from a bailiff to find out how
                               much it will cost</a> (they usually charge by the hour)</li>
-                              <li class="govuk-!-font-size-19">It’s usually faster (6 to 12 weeks, depending on the
+                              <li class="govuk-!-font-size-19">It's usually faster (6 to 12 weeks, depending on the
                               court you apply to)</li>
                             </ul>
-                            <p class="govuk-body govuk-!-font-weight-bold">The additional evidence you’ll need to
+                            <p class="govuk-body govuk-!-font-weight-bold">The additional evidence you'll need to
                             apply for a writ</p>
-                            <p class="govuk-body govuk-!-margin-bottom-1">You’ll need to show that either:</p>
+                            <p class="govuk-body govuk-!-margin-bottom-1">You'll need to show that either:</p>
                             <ul class="govuk-list govuk-list--bullet">
                               <li class="govuk-!-font-size-19">there is a backlog in the County Court bailiff service
                               </li>
@@ -64,7 +64,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                               due to lost income</li>
                             </ul>
                             <p class="govuk-body">If you do not have this evidence the judge could deny your request.
-                            If they deny it, you’ll need to start again (re-apply for the writ or the warrant with new
+                            If they deny it, you'll need to start again (re-apply for the writ or the warrant with new
                             evidence).</p>
                             <p class="govuk-body">Contact a lawyer or a High Court Enforcement Officer (bailiff)
                             before you apply for a writ. They can help you to check if you have the evidence to apply
