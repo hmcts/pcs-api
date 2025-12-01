@@ -77,17 +77,14 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                     .errors(List.of("Please select at least one ground"))
                     .build();
         }
-
         // ASB/Reasons routing (from master - conditional logic)
-        boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
-        boolean hasMandatory = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
+        boolean hasDiscretionary = !discretionaryGrounds.isEmpty();
+        boolean hasMandatory = !mandatoryGrounds.isEmpty();
 
-        boolean hasRentArrears = hasDiscretionary
-                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.RENT_ARREARS);
-        boolean hasASB = discretionaryGrounds != null
-                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
-        boolean hasOtherBreach = hasDiscretionary
-                && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT);
+        boolean hasRentArrears = discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.RENT_ARREARS);
+        boolean hasASB = discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
+        boolean hasOtherBreach =
+            discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT);
         boolean hasEstateManagement = hasDiscretionary
                 && discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS);
 
