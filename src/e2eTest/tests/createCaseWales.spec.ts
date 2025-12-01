@@ -31,7 +31,8 @@ import {
   asbQuestionsWales,
   noticeDetails,
   user,
-  whatAreYourGroundsForPossessionWales, whatAreYourGroundsForPossession
+  whatAreYourGroundsForPossessionWales,
+  whatAreYourGroundsForPossession
 } from '@data/page-data';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
@@ -331,8 +332,8 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears,whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
     });
-    await performAction('selectAsbQuestions', {
-      asbChoice: asbQuestionsWales.yesRadioOption,giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
+    await performAction('selectAsb', {
+      asbChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
       illegalPurposesChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfIllegal: asbQuestionsWales.giveDetailsOfIllegalHiddenTextInput,
       prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
     });
