@@ -23,6 +23,9 @@ public class Party {
     @CCD(label = "Party's surname")
     private String surname;
 
+    @CCD(label = "Organisation name")
+    private String orgName;
+
     @CCD(typeOverride = FieldType.Email)
     private String contactEmail;
 
