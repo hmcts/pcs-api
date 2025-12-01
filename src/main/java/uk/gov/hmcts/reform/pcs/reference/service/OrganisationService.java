@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 /**
  * Service to populate organisation info from rd-professional API.
  */
@@ -68,8 +70,10 @@ public class OrganisationService {
 
             AddressUK organisationAddress = organisationDetailsService.getOrganisationAddress(userId.toString());
 
-            if (organisationAddress == null) {
-                log.warn("Organisation Address is null for user ID: {}", userId);
+            // Return null if address is null or all key address fields to be displayed are empty
+            if (keyAddressFieldsEmpty(organisationAddress)) {
+                log.warn("Organisation Address is null or empty for user ID: {}", userId);
+                return null;
             }
 
             return organisationAddress;
@@ -87,6 +91,12 @@ public class OrganisationService {
             log.warn("User ID is null from security context, cannot fetch organisation details");
         }
         return userId;
+    }
+
+    private boolean keyAddressFieldsEmpty(AddressUK organisationAddress) {
+        return organisationAddress == null || (isBlank(organisationAddress.getAddressLine1())
+            && isBlank(organisationAddress.getPostTown())
+            && isBlank(organisationAddress.getPostCode()));
     }
 
 }

@@ -129,8 +129,23 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should return null when organisation Address is empty")
+    @DisplayName("Should return null when organisation Address key fields are empty")
     void shouldReturnNullWhenOrganisationAddressIsEmpty() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(organisationDetailsService.getOrganisationAddress(USER_ID.toString()))
+            .thenReturn(AddressUK.builder().build());
+
+        // When
+        AddressUK result = organisationService.getOrganisationAddressForCurrentUser();
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when organisation Address is null")
+    void shouldReturnNullWhenOrganisationAddressIsNull() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(organisationDetailsService.getOrganisationAddress(USER_ID.toString()))
