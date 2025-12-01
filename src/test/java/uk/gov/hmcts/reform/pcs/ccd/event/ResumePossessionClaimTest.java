@@ -316,7 +316,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
             .thenReturn(partyEntity);
 
         when(claimService.createMainClaimEntity(eq(caseData), any())).thenReturn(ClaimEntity.builder().build());
@@ -338,6 +338,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         String claimantContactEmail = "claimant@test.com";
         String claimantContactPhoneNumber = "01234 567890";
         String claimantCircumstances = "Some circumstances";
+        String organisationName = "Org Name";
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
@@ -348,7 +349,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimantInformation(
                 ClaimantInformation.builder()
                     .claimantName(claimantName)
-
+                    .organisationName(organisationName)
                     .build()
             )
             .contactPreferencesDetails(
@@ -371,6 +372,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             USER_ID,
             claimantName,
             null,
+            organisationName,
             claimantContactEmail,
             propertyAddress,
             claimantContactPhoneNumber
@@ -384,7 +386,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
             .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
@@ -406,7 +408,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
             .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = ClaimEntity.builder().build();
@@ -434,7 +436,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
             .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = ClaimEntity.builder().build();
