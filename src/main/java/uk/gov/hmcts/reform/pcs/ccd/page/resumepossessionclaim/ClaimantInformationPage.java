@@ -49,10 +49,13 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
 
     private void setClaimantNamePossessiveForm(CaseDetails<PCSCase, State> details) {
         PCSCase caseData = details.getData();
+        ClaimantInformation claimantInfo = caseData.getClaimantInformation();
         String claimantNamePossessiveForm =
-            StringUtils.isNotEmpty(caseData.getClaimantInformation().getOverriddenClaimantName())
-            ? caseData.getClaimantInformation().getOverriddenClaimantName()
-            : caseData.getClaimantInformation().getClaimantName();
+            StringUtils.isNotEmpty(claimantInfo.getOverriddenClaimantName())
+            ? claimantInfo.getOverriddenClaimantName()
+            : (StringUtils.isNotEmpty(claimantInfo.getOrganisationName())
+                ? claimantInfo.getOrganisationName()
+                : claimantInfo.getClaimantName());
         caseData.getClaimantCircumstances().setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
     }
 
@@ -60,7 +63,18 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
         if (value == null) {
             return null;
         }
-        return value.endsWith("s") || value.endsWith("S") ? value + "’" : value + "’s";
+
+        String trimmed = value.trim();
+
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+
+        if (trimmed.endsWith("’") || trimmed.endsWith("’s") || trimmed.endsWith("’S")) {
+            return trimmed;
+        }
+
+        return trimmed.endsWith("s") || trimmed.endsWith("S") ? trimmed + "’" : trimmed + "’s";
     }
 
 }
