@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -59,16 +60,21 @@ class CitizenCreateApplicationTest extends CftlibTest {
     void citizenCreatesApplication() {
 
         PCSCase caseData = PCSCase.builder()
-            .claimantName("Wrong Name")
-            .isClaimantNameCorrect(VerticalYesNo.NO)
-            .overriddenClaimantName("New Name")
+            .claimantInformation(
+                ClaimantInformation.builder()
+                    .claimantName("Wrong Name")
+                    .isClaimantNameCorrect(VerticalYesNo.NO)
+                    .overriddenClaimantName("New Name")
+                    .build()
+            )
             .propertyAddress(AddressUK.builder()
                                  .addressLine1("123 Baker Street")
                                  .addressLine2("Marylebone")
                                  .postTown("London")
                                  .county("Greater London")
                                  .postCode("NW1 6XE")
-                                 .build())
+                                 .build()
+            )
             .build();
 
         CaseDetails caseDetails = startAndSubmitCreationEvent(citizenCreateApplication, caseData);
