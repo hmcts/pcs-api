@@ -448,6 +448,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 USER_ID,
                 claimantName,
                 null,
+                claimantName,
                 claimantContactEmail,
                 propertyAddress,
                 claimantContactPhoneNumber
@@ -575,7 +576,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         private PartyEntity stubPartyCreation() {
             PartyEntity partyEntity = mock(PartyEntity.class);
-            when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+            when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
                 .thenReturn(partyEntity);
 
             return partyEntity;
