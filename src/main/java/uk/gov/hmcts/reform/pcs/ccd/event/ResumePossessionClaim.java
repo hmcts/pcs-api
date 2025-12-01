@@ -245,8 +245,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
-        ContactPreferencesDetails contactPreferences = Optional.ofNullable(caseData.getContactPreferencesDetails())
-            .orElse(ContactPreferencesDetails.builder().build());
+        ContactPreferencesDetails contactPreferences = caseData.getContactPreferencesDetails();
+        if (contactPreferences == null) {
+            contactPreferences = ContactPreferencesDetails.builder().build();
+        }
         contactPreferences.setClaimantContactEmail(userEmail);
         caseData.setContactPreferencesDetails(contactPreferences);
         caseData.setClaimantInformation(claimantInfo);
