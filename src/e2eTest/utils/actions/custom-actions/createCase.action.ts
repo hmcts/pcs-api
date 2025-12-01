@@ -519,12 +519,12 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
     await performAction('clickRadioButton', {
-      question: claimantCircumstances.claimantCircumstanceInfoInputData.replace("Claimants", nameClaimant),
-      option: claimantCircumstance.circumstanceOption
-    }
+        question: claimantCircumstances.isThereAnyInformationYouWouldLikeToProvideQuestion.replace("Claimants", nameClaimant),
+        option: claimantCircumstance.circumstanceOption
+      }
     );
     await performAction('collectCYAData', {actionName: 'selectClaimantCircumstances',
-      question: claimantCircumstances.claimantCircumstanceInfoInputData.replace("Claimants", nameClaimant),
+      question: claimantCircumstances.isThereAnyInformationYouWouldLikeToProvideQuestion.replace("Claimants", nameClaimant),
       option: claimantCircumstance.circumstanceOption});
     if (claimantCircumstance.circumstanceOption == claimantCircumstances.yes) {
       await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimantCircumstance.claimantInput);
