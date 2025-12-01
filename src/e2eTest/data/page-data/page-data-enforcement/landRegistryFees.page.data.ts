@@ -10,11 +10,11 @@ export const landRegistryFees = {
   errorValidation: 'NO',//set it to 'NO' before raising a PR
   moneyValidation: {
     errorMoneyField: [
-      { type: 'empty', input: '', errMessage: 'The data entered is not valid for How much did you spend on Land Registry fees?' },
+      { type: 'empty', input: 'a', errMessage: 'The data entered is not valid for How much did you spend on Land Registry fees?' },
       { type: 'negativeDecimal', input: '-0.5', errMessage: 'Should be more than or equal to £0.01' },
       { type: 'negative', input: '-5', errMessage: 'Should be more than or equal to £0.01' },
       { type: 'zero', input: '0', errMessage: 'Should be more than or equal to £0.01' },
-      { type: 'max', input: '100000000000000000', errMessage: '10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence' },
+      { type: 'max', input: '100000000000000000', errMessage: '100000000000000000 is not a valid value. Money GBP needs to be expressed in pence' },
       { type: 'alpha', input: 'test', errMessage: 'The data entered is not valid for How much did you spend on Land Registry fees?' },
       { type: 'decimal', input: '10.234', errMessage: 'The data entered is not valid for How much did you spend on Land Registry fees?' },
     ]
