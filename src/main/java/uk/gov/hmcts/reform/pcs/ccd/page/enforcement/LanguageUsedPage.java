@@ -15,12 +15,13 @@ public class LanguageUsedPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("enforcementLanguageUsed")
+            .page("languageUsed")
             .pageLabel("Language used")
-            .label("enforcementLanguageUsed-separator", "---")
+            .label("languageUsed-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getEnforcementLanguageUsed)
-            .label("enforcementLanguageUsed-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                .mandatory(EnforcementOrder::getEnforcementLanguageUsed)
+                .done()
+            .label("languageUsed-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
 
