@@ -517,21 +517,17 @@ export class CreateCaseAction implements IAction {
   private async selectClaimantCircumstances(claimantCircumstance: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    //As discussed with pod1 team, part of HDPI-2011, Below steps will be enabled back when dynamic organisation name handled in new ticket on claimant circumstances page.
-    //const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
-    const claimOption = claimantCircumstance.circumstanceOption;
-    /*await performAction('clickRadioButton', {
-     // question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
-      question: claimantCircumstances.claimantCircumstanceInfo,
-      option: claimOption
+    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
+    await performAction('clickRadioButton', {
+      question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+      option: claimantCircumstance.circumstanceOption
     }
-    );*/
+    );
     await performAction('clickRadioButton', claimantCircumstance.circumstanceOption);
     await performAction('collectCYAData', {actionName: 'selectClaimantCircumstances', question: claimantCircumstances.isThereAnyInformationYouWouldLikeToProvideQuestion, answer: claimOption});
-    if (claimOption == claimantCircumstances.yes) {
-      //await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
-      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimantCircumstance.claimantInput);
-      await performAction('collectCYAData', {actionName: 'selectClaimantCircumstances', question: claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, answer: claimantCircumstance.claimantInput});
+    if (claimantCircumstance.circumstanceOption == claimantCircumstances.yes) {
+      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimantCircumstance.claimantInput);
+      await performAction('collectCYAData', {actionName: 'selectClaimantCircumstances', question: claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), answer: claimantCircumstance.claimantInput});
     }
     await performAction('clickButton', claimantCircumstances.continue);
   }
