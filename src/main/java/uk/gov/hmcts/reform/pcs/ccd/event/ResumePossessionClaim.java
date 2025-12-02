@@ -87,8 +87,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -101,7 +104,7 @@ import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
@@ -153,13 +156,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final WalesCheckingNotice walesCheckingNotice;
     private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
+    private final FeeService feeService;
+    private final FeeFormatter feeFormatter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
-                .forStateTransition(AWAITING_FURTHER_CLAIM_DETAILS, AWAITING_SUBMISSION_TO_HMCTS)
+                .forState(AWAITING_SUBMISSION_TO_HMCTS)
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
@@ -276,6 +281,14 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
+        if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
+            return submitClaim(caseReference, pcsCase);
+        } else {
+            return saveForLater();
+        }
+    }
+
+    private SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
@@ -288,11 +301,23 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         pcsCaseService.save(pcsCaseEntity);
 
+        String responsibleParty = getClaimantInfo(pcsCase).getOrganisationName();
+        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
+        String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
+
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        scheduleCaseIssuedFeeTask(caseReference, getClaimantInfo(pcsCase).getOrganisationName());
+        return SubmitResponse.<State>builder()
+            .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
+            .state(State.PENDING_CASE_ISSUED)
+            .build();
+    }
 
-        return SubmitResponse.defaultResponse();
+    private SubmitResponse<State> saveForLater() {
+        return SubmitResponse.<State>builder()
+            .confirmationBody(getClaimSavedMarkdown())
+            .state(AWAITING_SUBMISSION_TO_HMCTS)
+            .build();
     }
 
     private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {
@@ -333,11 +358,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .orElse(ClaimantInformation.builder().build());
     }
 
-    private void scheduleCaseIssuedFeeTask(long caseReference, String responsibleParty) {
+    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
+
+        FeeDetails feeDetails = feeService.getFee(FeeTypes.CASE_ISSUE_FEE);
+
         String taskId = UUID.randomUUID().toString();
 
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
             .feeType(FeeTypes.CASE_ISSUE_FEE)
+            .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(caseReference))
             .responsibleParty(responsibleParty)
@@ -349,6 +378,43 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
+
+        return feeDetails;
+    }
+
+    private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-36">Pay %s claim fee</span>
+            </div>
+
+            <h3>Make a payment</h3>
+
+            You must pay the claim fee of %s. Your claim will not progress until this
+            fee has been paid.
+            <a href="/cases/case-details/%d#Service%%20Request"
+                    class="govuk-link govuk-link--no-visited-state">Pay the claim fee</a>.
+            """.formatted(caseIssueFee, caseIssueFee, caseReference);
+    }
+
+    private static String getClaimSavedMarkdown() {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+              <span class="govuk-panel__title govuk-!-font-size-36">Claim saved</span>
+            </div>
+
+            A draft of your claim has been saved. To sign, submit and pay for your claim:
+
+            <ol class="govuk-list govuk-list--number">
+            <li>Resume your claim.</li>
+            <li>Click through the questions.</li>
+            <li>Choose the ‘Submit and pay for my claim now’ option when asked
+                how you’d like to complete your claim.</li>
+            <li>Select the ‘Pay the claim fee’ link on the confirmation screen.</li>
+            </ol>
+            """;
     }
 
 }
