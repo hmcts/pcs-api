@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
 
@@ -35,7 +36,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             ...
                         </div>
                     </details>
-                    """);
+                    """)
+                .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

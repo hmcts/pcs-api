@@ -133,7 +133,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         callSubmitHandler(pcsCase);
 
         // Then
-        verify(enforcementOrderService).createEnforcementOrder(TEST_CASE_REFERENCE, enforcementOrder);
+        verify(enforcementOrderService).saveAndClearDraftData(TEST_CASE_REFERENCE, enforcementOrder);
     }
 
     @Nested

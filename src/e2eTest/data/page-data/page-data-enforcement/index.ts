@@ -16,3 +16,5 @@ export * from '@data/page-data/page-data-enforcement/accessToTheProperty.page.da
 export * from '@data/page-data/page-data-enforcement/peopleWhoWillBeEvicted.page.data';
 export * from '@data/page-data/page-data-enforcement/peopleYouWantToEvict.page.data';
 export * from '@data/page-data/page-data-enforcement/youNeedPermission.page.data';
+export * from '@data/page-data/page-data-enforcement/moneyOwed.page.data';
+export * from '@data/page-data/page-data-enforcement/legalCosts.page.data';

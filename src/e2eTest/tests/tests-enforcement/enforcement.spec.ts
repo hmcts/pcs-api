@@ -23,7 +23,9 @@ import {
   violentOrAggressiveBehaviour,
   vulnerableAdultsAndChildren,
   youNeedPermission,
-  yourApplication
+  yourApplication,
+  moneyOwed,
+  legalCosts
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -31,10 +33,10 @@ import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-e
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
-  await performAction('getDefendantDetails', { 
-    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown, 
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+  await performAction('getDefendantDetails', {
+    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
     additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
   });
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
@@ -61,7 +63,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown, 
+      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
     });
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {
@@ -136,6 +138,15 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
       input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
     });
+    await performValidation('mainHeader', moneyOwed.mainHeader);
+    await performAction('clickButton', moneyOwed.continueButton);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.yesRadioOption,
+      label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      input: legalCosts.howMuchYouWantToReclaimTextInput
+    });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -184,6 +195,15 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       option: anythingElseHelpWithEviction.noRadioOption,
       label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
       input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
+    });
+    await performValidation('mainHeader', moneyOwed.mainHeader);
+    await performAction('clickButton', moneyOwed.continueButton);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.noRadioOption,
+      label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      input: legalCosts.howMuchYouWantToReclaimTextInput
     });
   });
 
@@ -237,6 +257,15 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       option: anythingElseHelpWithEviction.yesRadioOption,
       label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
       input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
+    });
+    await performValidation('mainHeader', moneyOwed.mainHeader);
+    await performAction('clickButton', moneyOwed.continueButton);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.yesRadioOption,
+      label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      input: legalCosts.howMuchYouWantToReclaimTextInput
     });
   });
 
