@@ -48,7 +48,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getEnforcementRiskCategories()).isEqualTo(selectedRisks);
     }
 
@@ -120,7 +120,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getRiskDetails()).isNotNull();
     }
 
@@ -142,7 +142,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getEnforcementRiskCategories())
             .isEqualTo(allCategories);
     }

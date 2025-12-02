@@ -74,7 +74,8 @@ class CaseDefinitionIT extends AbstractPostgresContainerIT {
                 EventId.enforceTheOrder,
                 List.of(
                     "evictionDelayWarning",
-                    "checkYourAnswersPlaceHolder"
+                    "checkYourAnswersPlaceHolder",
+                    "changeNameAddress"
                 )
 
             )
