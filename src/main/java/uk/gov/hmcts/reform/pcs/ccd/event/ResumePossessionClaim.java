@@ -337,7 +337,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String taskId = UUID.randomUUID().toString();
 
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeType(FeeTypes.CASE_ISSUE_FEE)
+            .feeType(FeeTypes.CASE_ISSUE_FEE.getCode())
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(caseReference))
             .responsibleParty(responsibleParty)

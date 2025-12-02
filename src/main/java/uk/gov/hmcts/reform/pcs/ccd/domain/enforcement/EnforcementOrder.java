@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -85,7 +86,7 @@ public class EnforcementOrder {
     private YesNoNotSure vulnerablePeoplePresent;
     
     private VulnerableAdultsChildren vulnerableAdultsChildren;
-    
+
     @JsonUnwrapped
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
@@ -93,4 +94,16 @@ public class EnforcementOrder {
     @JsonUnwrapped
     @CCD
     private LegalCosts legalCosts;
+
+    @CCD(
+        searchable = false
+    )
+    @External
+    private String warrantFeeAmount;
+
+    @CCD(
+        searchable = false
+    )
+    @External
+    private String writFeeAmount;
 }
