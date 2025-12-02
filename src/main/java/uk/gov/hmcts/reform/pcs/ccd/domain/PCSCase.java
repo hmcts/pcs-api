@@ -118,7 +118,7 @@ public class PCSCase {
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "contactPreferences_")
     private ContactPreferencesDetails contactPreferencesDetails;
 
     @CCD(
