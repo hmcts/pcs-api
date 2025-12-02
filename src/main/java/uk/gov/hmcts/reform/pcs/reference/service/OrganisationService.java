@@ -72,14 +72,14 @@ public class OrganisationService {
 
             // Return null if address is null or all key address fields to be displayed are empty
             if (keyAddressFieldsEmpty(organisationAddress)) {
-                log.warn("Organisation Address is null or empty for user ID: {}", userId);
+                log.warn("Organisation address is null or empty for user ID: {}", userId);
                 return null;
             }
 
             return organisationAddress;
 
         } catch (Exception ex) {
-            log.error("Error retrieving organisation Address from rd-professional API. Error: {}",
+            log.error("Error retrieving organisation address from rd-professional API. Error: {}",
                       ex.getMessage(), ex);
             return null;
         }

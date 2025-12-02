@@ -69,9 +69,9 @@ public class OrganisationDetailsService {
     }
 
     /**
-     * Gets the organisation Address for a given user ID (for claimant Address population).
-     * @param userId The user ID to get organisation Address for
-     * @return Organisation Address
+     * Gets the organisation address for a given user ID (for claimant address population).
+     * @param userId The user ID to get organisation address for
+     * @return Organisation address
      */
     public AddressUK getOrganisationAddress(String userId) {
         OrganisationDetailsResponse.ContactInformation addressDetails = getOrganisationDetails(userId)

@@ -129,7 +129,7 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should return null when organisation Address key fields are empty")
+    @DisplayName("Should return null when organisation address key fields are empty")
     void shouldReturnNullWhenOrganisationAddressIsEmpty() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
@@ -144,7 +144,7 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should return null when organisation Address is null")
+    @DisplayName("Should return null when organisation address is null")
     void shouldReturnNullWhenOrganisationAddressIsNull() {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
@@ -159,7 +159,7 @@ class OrganisationServiceTest {
     }
 
     @Test
-    @DisplayName("Should successfully retrieve organisation Address for current user")
+    @DisplayName("Should successfully retrieve organisation address for current user")
     void shouldSuccessfullyRetrieveOrganisationAddressForCurrentUser() {
         // Given
         AddressUK orgAddress =  AddressUK.builder()
