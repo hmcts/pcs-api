@@ -62,16 +62,16 @@ export class EnforcementAction implements IAction {
   }
 
   private async writOrWarrantDiff(summaryOption: actionRecord){
-    await performAction('expandSummary',summaryOption.type);
-    await performValidation('formLabelValue',summaryOption.label1,summaryOption.text1);
-    await performValidation('formLabelValue',summaryOption.label2,summaryOption.text2);
-    await performAction('expandSummary',summaryOption.type);
+    await performAction('expandSummary', summaryOption.type);
+    await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
+    await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
+    await performAction('expandSummary', summaryOption.type);
   }
 
   private async validateQuoteFromBailiff(bailiffQuote: actionRecord){
-    await performAction('expandSummary',bailiffQuote.type);
+    await performAction('expandSummary', bailiffQuote.type);
     await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
-    await performAction('expandSummary',bailiffQuote.type);
+    await performAction('expandSummary', bailiffQuote.type);
   }
 
   private async selectApplicationType(applicationType: actionRecord) {
