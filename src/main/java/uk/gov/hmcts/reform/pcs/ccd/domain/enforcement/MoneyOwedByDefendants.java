@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 public class MoneyOwedByDefendants {
 
     @CCD(
+        label = "What is the total amount that the defendants owe you?",
         typeOverride = FieldType.MoneyGBP,
         min = 1
     )

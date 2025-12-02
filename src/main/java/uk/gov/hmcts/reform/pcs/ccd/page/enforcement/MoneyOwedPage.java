@@ -18,20 +18,18 @@ public class MoneyOwedPage implements CcdPageConfiguration {
             .label("moneyOwed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getMoneyOwedByDefendants)
-            .label("moneyOwed-amount-label-hint",
+            .label("moneyOwed-amount-label",
                 """
-                    <h3 class="govuk-heading-s"
-                    govuk-!-margin-bottom-0>What is the total amount that the defendants owe you</h3>
-                    <p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-bottom-0">
+                    <p class="govuk-body govuk-!-margin-bottom-0">
                         You can include:
-                        <ul class="govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1">
-                            <li class="govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1">
+                        <ul class="govuk-list govuk-list--bullet" style="color: #0b0c0c;">
+                            <li class="govuk-!-font-size-19">
                             rent or mortgage arrears</li>
-                            <li class="govuk-hint govuk-!-font-size-16 govuk-!-margin-top-1">
+                            <li class="govuk-!-font-size-19">
                             the fee you paid to make a possession claim</li>
                         </ul>
                     </p>
-                    <p class="govuk-hint govuk-!-font-size-16 govuk-!-margin-bottom-0">
+                    <p class="govuk-body">
                         If you do not know the fee you paid to make your possession claim,
                         <a href="/cases/case-details/${[CASE_REFERENCE]}#Service%20Request" target="_blank">
                             check the service request tab (opens in a new tab)
