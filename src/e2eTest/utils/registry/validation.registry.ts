@@ -8,6 +8,7 @@ import {MainHeaderValidation} from "@utils/validations/element-validations/pageH
 import {ErrorMessageValidation} from "@utils/validations/element-validations/error-message.validation";
 import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
 import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
+import { CYAPageValidation } from '@utils/validations/element-validations/cyaPage.validation';
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
@@ -21,7 +22,8 @@ export class ValidationRegistry {
     ['elementToBeVisible', new VisibilityValidation()],
     ['elementNotToBeVisible', new VisibilityValidation()],
     ['waitUntilElementDisappears', new VisibilityValidation()],
-    ['autoValidatePageContent', new PageContentValidation()]
+    ['autoValidatePageContent', new PageContentValidation()],
+    ['cyaPage', new CYAPageValidation()]
   ]);
 
   static getValidation(validationType: string): IValidation {

@@ -133,9 +133,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -252,9 +252,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -378,9 +378,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -478,9 +478,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -597,9 +597,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -691,9 +691,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -796,7 +796,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -901,7 +901,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -1021,7 +1021,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performAction('selectNoticeDetails', {
@@ -1139,9 +1139,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performAction('selectNoticeDetails', {
@@ -1254,7 +1254,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes,
     });
     await performAction('selectNoticeDetails', {
