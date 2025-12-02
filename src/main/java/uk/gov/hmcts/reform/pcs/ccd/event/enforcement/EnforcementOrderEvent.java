@@ -30,6 +30,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RepaymentsPlaceHolder;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.StatementOfTruthPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleWhoWillBeEvictedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleYouWantToEvictPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
@@ -106,7 +108,9 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(additionalInformationPage)
                 .add(new MoneyOwedPage())
                 .add(new LegalCostsPage())
+                .add(new RepaymentsPlaceHolder())
                 .add(new LanguageUsedPage())
+                .add(new StatementOfTruthPlaceHolder())
                 .add(new LandRegistryFeesPlaceHolder())
                 .add(new CheckYourAnswersPlaceHolder());
     }
