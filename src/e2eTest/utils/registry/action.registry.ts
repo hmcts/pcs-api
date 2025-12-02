@@ -90,7 +90,9 @@ export class ActionRegistry {
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
     ['clickLinkAndVerifyNewTabTitle', new clickLinkAndVerifyNewTabTitleAction()],
     ['selectStatementOfTruth', new CreateCaseAction()],
-    ['selectAsbQuestions', new CreateCaseWalesAction()]
+    ['selectAsbQuestions', new CreateCaseWalesAction()],
+    ['payClaimFee', new CreateCaseAction()],
+    ['claimSaved', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {
