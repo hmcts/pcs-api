@@ -116,10 +116,10 @@ class TenancyLicenceServiceTest {
 
         // Test notice_served field updates
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getHasNoticeBeenServed()).thenReturn(YesOrNo.YES),
+                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.YES),
                 expected -> assertThat(expected.getNoticeServed()).isTrue());
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getHasNoticeBeenServed()).thenReturn(YesOrNo.NO),
+                pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
                 expected -> assertThat(expected.getNoticeServed()).isFalse());
 
         // Test rent amount field

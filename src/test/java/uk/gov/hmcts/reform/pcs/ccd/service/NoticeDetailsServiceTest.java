@@ -39,7 +39,7 @@ class NoticeDetailsServiceTest {
         @Test
         void shouldReturnNoErrorsWhenNoticeNotServed() {
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.NO)
+                .noticeServed(YesOrNo.NO)
                 .build();
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
@@ -49,7 +49,7 @@ class NoticeDetailsServiceTest {
         @Test
         void shouldReturnNoErrorsWhenNoticeServedIsNull() {
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(null)
+                .noticeServed(null)
                     .noticeServedDetails(NoticeServedDetails.builder()
                         .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                         .noticePostedDate(LocalDate.now().minusDays(1))
@@ -63,7 +63,7 @@ class NoticeDetailsServiceTest {
         @Test
         void shouldValidateNoticeDetailsWhenNoticeServedIsYes() {
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(null)
                     .build())
@@ -82,7 +82,7 @@ class NoticeDetailsServiceTest {
         void shouldRequireNoticeServiceMethod() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .build();
 
             caseData.setNoticeServedDetails(NoticeServedDetails.builder().build());
@@ -103,7 +103,7 @@ class NoticeDetailsServiceTest {
         void shouldValidateFirstClassPostWithValidDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(LocalDate.of(2023, 1, 1))
@@ -121,7 +121,7 @@ class NoticeDetailsServiceTest {
         void shouldValidateFirstClassPostWithNullDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(null) // Null date is allowed for optional fields
@@ -139,7 +139,7 @@ class NoticeDetailsServiceTest {
         void shouldValidateFirstClassPostWithFutureDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(LocalDate.of(2099, 1, 1))
@@ -158,7 +158,7 @@ class NoticeDetailsServiceTest {
         void shouldValidateFirstClassPostWithTodayDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(LocalDate.now())
@@ -177,7 +177,7 @@ class NoticeDetailsServiceTest {
         void shouldValidateDeliveredPermittedPlaceWithValidDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
                     .noticeDeliveredDate(LocalDate.of(2023, 1, 1))
@@ -195,7 +195,7 @@ class NoticeDetailsServiceTest {
         void shouldValidateDeliveredPermittedPlaceWithNullDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
                     .noticeDeliveredDate(null)
@@ -214,7 +214,7 @@ class NoticeDetailsServiceTest {
         void shouldAcceptValidDateFormats(String dateString) {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(LocalDate.parse(dateString))
@@ -232,7 +232,7 @@ class NoticeDetailsServiceTest {
         void shouldRejectInvalidDateFormats() {
             // Given - with null date (invalid)
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(null)
@@ -265,7 +265,7 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
                     .noticeHandedOverDateTime(pastDateTime) // Valid past date-time
@@ -286,7 +286,7 @@ class NoticeDetailsServiceTest {
             LocalDateTime pastDateOnly = LocalDateTime.now().minusDays(1)
                 .withHour(0).withMinute(0).withSecond(0).withNano(0);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
                     .noticeHandedOverDateTime(pastDateOnly) // Date with default time (midnight)
@@ -305,7 +305,7 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
                     .noticeHandedOverDateTime(futureDateTime) // Future date-time
@@ -326,7 +326,7 @@ class NoticeDetailsServiceTest {
             LocalDateTime todayDateTime = LocalDateTime.now()
                 .withHour(0).withMinute(0).withSecond(0).withNano(0);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
                     .noticeHandedOverDateTime(todayDateTime) // Today's date-time
@@ -346,7 +346,7 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
                     .noticeOtherElectronicDateTime(pastDateTime) // Valid past date-time
@@ -365,7 +365,7 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
                     .noticeOtherElectronicDateTime(futureDateTime) // Future date-time
@@ -389,7 +389,7 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(pastDateTime)
@@ -413,7 +413,7 @@ class NoticeDetailsServiceTest {
             String longText = "0123456789".repeat(26); // 10 chars x 26 = 260 chars
             
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(pastDateTime)
@@ -436,7 +436,7 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .noticeEmailSentDateTime(futureDateTime)
@@ -461,7 +461,7 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.OTHER)
                     .noticeOtherDateTime(pastDateTime)
@@ -485,7 +485,7 @@ class NoticeDetailsServiceTest {
             String longText = "0123456789".repeat(26); // 10 chars x 26 = 260 chars
             
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.OTHER)
                     .noticeOtherDateTime(pastDateTime)
@@ -508,7 +508,7 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.OTHER)
                     .noticeOtherDateTime(futureDateTime)
@@ -532,7 +532,7 @@ class NoticeDetailsServiceTest {
         void shouldHandleNullValuesGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(null)
@@ -550,7 +550,7 @@ class NoticeDetailsServiceTest {
         void shouldHandleEmptyStringValuesGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(null)
@@ -568,7 +568,7 @@ class NoticeDetailsServiceTest {
         void shouldHandleWhitespaceOnlyValuesGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(null)

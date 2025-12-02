@@ -27,14 +27,14 @@ public class NoticeDetails implements CcdPageConfiguration {
     private final NoticeDetailsService noticeDetailsService;
     private final TextAreaValidationService textAreaValidationService;
 
-    private static final String NOTICE_SERVICE_METHOD_CONDITION = "noticeServiceMethod=\"";
+    private static final String NOTICE_SERVICE_METHOD_CONDITION = "engNoticeServiceMethod=\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("noticeDetails", this::midEvent)
             .pageLabel("Notice details")
-            .showCondition("hasNoticeBeenServed=\"Yes\"")
+            .showCondition("noticeServed=\"Yes\"")
             .label("noticeDetails-separator", "---")
             .complex(PCSCase::getNoticeServedDetails)
             .mandatory(NoticeServedDetails::getNoticeServiceMethod)

@@ -56,7 +56,7 @@ public class TenancyLicenceService {
     private void buildNoticeServedDetails(PCSCase pcsCase,
                                                     TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         // Add notice served details
-        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getHasNoticeBeenServed()));
+        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
 
         if (pcsCase.getNoticeServedDetails() != null) {
             tenancyLicenceBuilder

@@ -37,8 +37,8 @@ public class NoticeDetailsService {
         List<String> errors = new ArrayList<>();
 
         if (caseData.getNoticeServedDetails() == null
-            || (caseData.getHasNoticeBeenServed() != null
-                && !caseData.getHasNoticeBeenServed().toBoolean())) {
+            || (caseData.getNoticeServed() != null
+                && !caseData.getNoticeServed().toBoolean())) {
             return errors;
         }
 

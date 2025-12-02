@@ -245,9 +245,9 @@ public class PCSCase {
     @CCD(
         label = "Have you served notice to the defendants?"
     )
-    private YesOrNo hasNoticeBeenServed;
+    private YesOrNo noticeServed;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "eng")
     @CCD
     private NoticeServedDetails noticeServedDetails;
 

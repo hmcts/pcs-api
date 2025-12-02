@@ -59,7 +59,7 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldCallNoticeDetailsServiceForValidation() {
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .build())
@@ -78,7 +78,7 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldReturnNoErrorsWhenServiceValidationPasses() {
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .build())
@@ -92,7 +92,7 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldHandleMultipleValidationErrorsFromService() {
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.EMAIL)
                     .build())
@@ -118,7 +118,7 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldRequireNoticeServiceMethodSelection() {
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .build();
 
             List<String> validationErrors = new ArrayList<>();
@@ -134,7 +134,7 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldAllowProceedingWithValidData() {
             PCSCase caseData = PCSCase.builder()
-                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServed(YesOrNo.YES)
                 .noticeServedDetails(NoticeServedDetails.builder()
                     .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
                     .noticePostedDate(LocalDate.of(2023, 1, 1))
