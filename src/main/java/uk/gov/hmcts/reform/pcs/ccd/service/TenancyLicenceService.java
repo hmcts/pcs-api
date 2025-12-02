@@ -19,7 +19,6 @@ public class TenancyLicenceService {
             .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
             .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
             .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
-            .noticeServed(YesOrNoToBoolean.convert(pcsCase.getHasNoticeBeenServed()))
             .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
             .rentPaymentFrequency(pcsCase.getRentFrequency())
             .otherRentFrequency(pcsCase.getOtherRentFrequency())
@@ -57,9 +56,7 @@ public class TenancyLicenceService {
     private void buildNoticeServedDetails(PCSCase pcsCase,
                                                     TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         // Add notice served details
-        if (pcsCase.getNoticeServedDetails() != null) {
-            tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getHasNoticeBeenServed()));
-        }
+        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getHasNoticeBeenServed()));
 
         if (pcsCase.getNoticeServedDetails() != null) {
             tenancyLicenceBuilder
@@ -75,8 +72,7 @@ public class TenancyLicenceService {
                 .noticeOtherElectronicDateTime(pcsCase.getNoticeServedDetails().getNoticeOtherElectronicDateTime())
                 .noticeOtherDateTime(pcsCase.getNoticeServedDetails().getNoticeOtherDateTime())
                 .noticeOtherExplanation(pcsCase.getNoticeServedDetails().getNoticeOtherExplanation())
-                .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeServedDetails().getNoticeDocuments()))
-                .build();
+                .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeServedDetails().getNoticeDocuments()));
         }
     }
 
