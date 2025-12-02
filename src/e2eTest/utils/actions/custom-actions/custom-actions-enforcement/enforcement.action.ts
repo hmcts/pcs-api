@@ -2,21 +2,35 @@ import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, vulnerableAdultsAndChildren,
-  violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-  verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty,
+  yourApplication,
+  nameAndAddressForEviction,
+  everyoneLivingAtTheProperty,
+  vulnerableAdultsAndChildren,
+  violentOrAggressiveBehaviour,
+  firearmPossession,
+  criminalOrAntisocialBehaviour,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  groupProtestsEviction,
+  policeOrSocialServiceVisit,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  accessToTheProperty,
   peopleWillBeEvicted,
   youNeedPermission,
+  peopleYouWantToEvict,
   legalCosts
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData } from '@data/api-data';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
   townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
   engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
 };
 
+export let defendantDetails:string[] = [];
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
@@ -24,7 +38,9 @@ export class EnforcementAction implements IAction {
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(page, fieldName as actionRecord)],
       ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
       ['selectPermissionFromJudge', () => this.selectPermissionFromJudge(page)],
+      ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
       ['selectPeopleWhoWillBeEvicted', () => this.selectPeopleWhoWillBeEvicted(fieldName as actionRecord)],
+      ['selectPeopleYouWantToEvict', () => this.selectPeopleYouWantToEvict(fieldName as actionRecord)],
       ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord)],
       ['provideDetailsViolentOrAggressiveBehaviour', () => this.provideDetailsViolentOrAggressiveBehaviour(fieldName as actionRecord)],
       ['provideDetailsFireArmPossession', () => this.provideDetailsFireArmPossession(fieldName as actionRecord)],
@@ -50,11 +66,32 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', yourApplication.continue);
   }
 
+  private async getDefendantDetails(defendantsDetails: actionRecord) {
+
+    if (defendantsDetails.defendant1NameKnown === 'YES') {
+      defendantDetails.push(
+        `${submitCaseApiData.submitCasePayload.defendant1.firstName} ${submitCaseApiData.submitCasePayload.defendant1.lastName}`
+      );
+    };
+
+    if (defendantsDetails.additionalDefendants === 'YES') {
+      submitCaseApiData.submitCasePayload.additionalDefendants.forEach(defendant => {
+        if (defendant.value.nameKnown === 'YES') {
+          defendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
+        }
+      });
+    };
+
+  }
+
   private async selectNameAndAddressForEviction(page: Page, nameAndAddress: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performValidation('formLabelValue', nameAndAddressForEviction.subHeader, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
-    await performAction('clickRadioButton', nameAndAddress.option);
+    if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
+      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
+    }    
+    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);    
+    await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
   }
 
@@ -65,8 +102,16 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', peopleWillBeEvicted.continueButton);
   }
 
+    private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('check', peopleYouWantEvicted.defendants);
+    await performAction('clickButton', peopleYouWantToEvict.continueButton);
+  }
+
   private async selectPermissionFromJudge(page: Page) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     const [generalApplicationPage] = await Promise.all([
       page.waitForEvent('popup'),
       await performAction('clickButton', youNeedPermission.askTheJudgeLink)
