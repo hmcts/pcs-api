@@ -14,5 +14,5 @@ export const yourApplication = {
   writFeeValidationLabel:'If you apply for a writ:',
   writFeeValidationText:'it costs £404 to apply',
   quoteFromBailiffLink:'you can get a quote from a bailiff to find out how much it will cost',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }
