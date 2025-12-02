@@ -158,6 +158,43 @@ class OrganisationDetailsServiceTest {
     }
 
     @Test
+    @DisplayName("Should return null when organisation details is null")
+    void shouldReturnNullWhenOrganisationDetailsIsNull() {
+        // Given
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenService.getPrdAdminToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(null);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when contact information is empty")
+    void shouldReturnNullWhenContactInformationIsEmpty() {
+        // Given
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .contactInformation(List.of())
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenService.getPrdAdminToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
     @DisplayName("Should successfully get organisation address")
     void shouldSuccessfullyGetOrganisationAddress() {
         // Given
