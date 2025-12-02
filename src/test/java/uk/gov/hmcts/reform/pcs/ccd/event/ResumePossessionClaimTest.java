@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
@@ -47,13 +48,13 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDem
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -63,8 +64,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
-
 
 import java.util.List;
 import java.util.UUID;
@@ -160,7 +159,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
     @Mock
-    private ReasonsForPosessionWales reasonsForPosessionWales;
+    private ReasonsForPossessionWales reasonsForPossessionWales;
     @Mock
     private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     @Mock
@@ -199,7 +198,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             statementOfExpressTerms, demotionOfTenancyOrderReason, organisationNameService,
             claimantDetailsWalesPage, prohibitedConductWalesPage, schedulerClient,
             draftCaseDataService, occupationLicenceDetailsWalesPage,
-            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPosessionWales,
+            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
             addressFormatter,
             rentArrearsGroundsForPossession,
             rentArrearsGroundForPossessionAdditionalGrounds,
@@ -314,7 +313,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
             .thenReturn(partyEntity);
 
         when(claimService.createMainClaimEntity(eq(caseData), any())).thenReturn(ClaimEntity.builder().build());
@@ -336,6 +335,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         String claimantContactEmail = "claimant@test.com";
         String claimantContactPhoneNumber = "01234 567890";
         String claimantCircumstances = "Some circumstances";
+        String organisationName = "Org Name";
 
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
@@ -346,7 +346,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .claimantInformation(
                 ClaimantInformation.builder()
                     .claimantName(claimantName)
-
+                    .organisationName(organisationName)
                     .build()
             )
             .claimantContactEmail(claimantContactEmail)
@@ -365,6 +365,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             USER_ID,
             claimantName,
             null,
+            organisationName,
             claimantContactEmail,
             propertyAddress,
             claimantContactPhoneNumber
@@ -378,7 +379,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
             .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = mock(ClaimEntity.class);
@@ -400,7 +401,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
             .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = ClaimEntity.builder().build();
@@ -428,7 +429,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
 
         PartyEntity partyEntity = mock(PartyEntity.class);
-        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any()))
+        when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
             .thenReturn(partyEntity);
 
         ClaimEntity claimEntity = ClaimEntity.builder().build();
