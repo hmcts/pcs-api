@@ -1,10 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -25,12 +20,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroun
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyList;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class ReasonsForPossessionWalesTest extends BasePageTest {
@@ -50,21 +50,21 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
+
         setPageUnderTest(new ReasonsForPossessionWales(textAreaValidationService));
     }
 
     @ParameterizedTest
     @MethodSource("asbRoutingScenarios")
     void shouldSetShowASBQuestionsPageWalesBasedOnGroundsSelection(
-            Set<DiscretionaryGroundWales> discretionaryGrounds,
-            Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds,
-            YesOrNo expectedShowASBQuestionsPage) {
+        Set<DiscretionaryGroundWales> discretionaryGrounds,
+        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds,
+        YesOrNo expectedShowASBQuestionsPage) {
 
         PCSCase caseData = PCSCase.builder()
-                .discretionaryGroundsWales(discretionaryGrounds)
-                .secureContractDiscretionaryGroundsWales(secureDiscretionaryGrounds)
-                .build();
+            .discretionaryGroundsWales(discretionaryGrounds)
+            .secureContractDiscretionaryGroundsWales(secureDiscretionaryGrounds)
+            .build();
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
@@ -74,54 +74,54 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
 
     private static Stream<Arguments> asbRoutingScenarios() {
         return Stream.of(
-                // ASB in discretionaryGroundsWales only - should show ASB questions page
-                arguments(
-                        Set.of(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157),
-                        null,
-                        YesOrNo.YES
+            // ASB in discretionaryGroundsWales only - should show ASB questions page
+            arguments(
+                Set.of(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157),
+                null,
+                YesOrNo.YES
+            ),
+            // ASB in secureContractDiscretionaryGroundsWales only - should show ASB questions page
+            arguments(
+                null,
+                Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR),
+                YesOrNo.YES
+            ),
+            // ASB with other grounds in discretionaryGroundsWales - should show ASB questions page
+            arguments(
+                Set.of(
+                    DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
+                    DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157
                 ),
-                // ASB in secureContractDiscretionaryGroundsWales only - should show ASB questions page
-                arguments(
-                        null,
-                        Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR),
-                        YesOrNo.YES
+                null,
+                YesOrNo.YES
+            ),
+            // ASB with other grounds in secureContractDiscretionaryGroundsWales - should show ASB questions page
+            arguments(
+                null,
+                Set.of(
+                    SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT,
+                    SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR
                 ),
-                // ASB with other grounds in discretionaryGroundsWales - should show ASB questions page
-                arguments(
-                        Set.of(
-                                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
-                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157
-                        ),
-                        null,
-                        YesOrNo.YES
-                ),
-                // ASB with other grounds in secureContractDiscretionaryGroundsWales - should show ASB questions page
-                arguments(
-                        null,
-                        Set.of(
-                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT,
-                                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR
-                        ),
-                        YesOrNo.YES
-                ),
-                // Only non-ASB in discretionaryGroundsWales - should not show ASB questions page
-                arguments(
-                        Set.of(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157),
-                        null,
-                        YesOrNo.NO
-                ),
-                // Only non-ASB in secureContractDiscretionaryGroundsWales - should not show ASB questions page
-                arguments(
-                        null,
-                        Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT),
-                        YesOrNo.NO
-                ),
-                // Both grounds null - should not show ASB questions page
-                arguments(
-                        null,
-                        null,
-                        YesOrNo.NO
-                )
+                YesOrNo.YES
+            ),
+            // Only non-ASB in discretionaryGroundsWales - should not show ASB questions page
+            arguments(
+                Set.of(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157),
+                null,
+                YesOrNo.NO
+            ),
+            // Only non-ASB in secureContractDiscretionaryGroundsWales - should not show ASB questions page
+            arguments(
+                null,
+                Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT),
+                YesOrNo.NO
+            ),
+            // Both grounds null - should not show ASB questions page
+            arguments(
+                null,
+                null,
+                YesOrNo.NO
+            )
         );
     }
 
@@ -281,4 +281,5 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
         }
     }
 }
+
 
