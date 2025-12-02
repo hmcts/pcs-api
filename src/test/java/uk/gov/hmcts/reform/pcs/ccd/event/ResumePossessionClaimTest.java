@@ -13,10 +13,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -248,10 +248,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     void shouldSetClaimantDetailsInStartCallback() {
         // Given
         String expectedUserEmail = "user@test.com";
-        when(userDetails.getSub()).thenReturn(expectedUserEmail);
-        when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-
-        AddressUK propertyAddress = AddressUK.builder()
+        AddressUK claimantAddress = AddressUK.builder()
             .addressLine1("10 High Street")
             .addressLine2("address line 2")
             .addressLine3("address line 3")
@@ -259,9 +256,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
             .postCode("W1 2BC")
             .country("United Kingdom")
             .build();
+        when(userDetails.getSub()).thenReturn(expectedUserEmail);
+        when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+        when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(claimantAddress);
 
         PCSCase caseData = PCSCase.builder()
-            .propertyAddress(propertyAddress)
+            .propertyAddress(mock(AddressUK.class))
             .legislativeCountry(WALES)
             .build();
 

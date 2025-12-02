@@ -15,6 +15,9 @@ public class AddressFormatter {
     }
 
     public String formatAddressWithHtmlLineBreaks(AddressUK address) {
+        if (address == null) {
+            return null;
+        }
         return formatAddressWithDelimiter(address, "<br>");
     }
 
