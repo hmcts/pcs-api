@@ -557,11 +557,6 @@ public class PCSCase {
 
     @JsonUnwrapped
     @CCD
-    private GroundsReasonsWales groundsReasonsWales;
-
-
-    @JsonUnwrapped
-    @CCD
     private SecureOrFlexibleGroundsReasons secureOrFlexibleGroundsReasons;
 
     @CCD(
