@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcement;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -13,9 +14,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ChangeNameAddressPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
@@ -27,14 +30,22 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleWhoWillBeEvictedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleYouWantToEvictPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
@@ -46,6 +57,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
 
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
+    private final DefendantService defendantService;
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
     private final ProtestorGroupRiskPage protestorGroupRiskPage;
@@ -74,6 +86,9 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         pageBuilder
                 .add(new EnforcementApplicationPage())
                 .add(new NameAndAddressForEvictionPage())
+                .add(new ChangeNameAddressPage())
+                .add(new PeopleWhoWillBeEvictedPage())
+                .add(new PeopleYouWantToEvictPage())
                 .add(new LivingInThePropertyPage())
                 .add(new EvictionDelayWarningPage())
                 .add(new EvictionRisksPosedPage())
@@ -98,10 +113,30 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         pcsCase.setFormattedPropertyAddress(addressFormatter
             .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
 
-        if (pcsCase.getAllDefendants() != null && !pcsCase.getAllDefendants().isEmpty()) {
-            pcsCase.setDefendant1(pcsCase.getAllDefendants().getFirst().getValue());
-        }
+        initializeDefendantData(pcsCase);
+        populateDefendantSelectionList(pcsCase);
+
         return pcsCase;
+    }
+
+    private void initializeDefendantData(PCSCase caseData) {
+        var allDefendants = caseData.getAllDefendants();
+        if (!CollectionUtils.isEmpty(allDefendants)) {
+            caseData.setDefendant1(allDefendants.getFirst().getValue());
+        }
+    }
+
+    void populateDefendantSelectionList(PCSCase caseData) {
+        EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
+        var allDefendants = caseData.getAllDefendants();
+        List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
+
+        enforcementOrder.setSelectedDefendants(
+            DynamicMultiSelectStringList.builder()
+                .value(new ArrayList<>())
+                .listItems(listItems)
+                .build()
+        );
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
