@@ -61,29 +61,8 @@ public class PCSCase {
     @CCD(label = "Do you want to resume your claim using your saved answers?")
     private YesOrNo resumeClaimKeepAnswers;
 
-    @CCD(
-        label = "Claimant Name",
-        access = {CitizenAccess.class}
-    )
-    @External
-    private String claimantName;
-
-    @CCD(
-        label = "Organisation Name"
-    )
-    @External
-    private String organisationName;
-
-    @CCD(
-        searchable = false,
-        access = {CitizenAccess.class}
-    )
-    private VerticalYesNo isClaimantNameCorrect;
-
-    @CCD(
-        access = {CitizenAccess.class}
-    )
-    private String overriddenClaimantName;
+    @JsonUnwrapped
+    private ClaimantInformation claimantInformation;
 
     @CCD(
         label = "Property address",
@@ -367,18 +346,27 @@ public class PCSCase {
     @CCD(searchable = false)
     private String postcodeNotAssignedView;
 
+    /**
+     * The primary defendant in the case.
+     */
     @CCD
     private DefendantDetails defendant1;
 
     @CCD(label = "Do you need to add another defendant?")
     private VerticalYesNo addAnotherDefendant;
 
+    /**
+     * List of additional defendants added by the user, after the primary defendant.
+     */
     @CCD(
         label = "Add additional defendant",
         hint = "Add an additional defendant to the case"
     )
     private List<ListValue<DefendantDetails>> additionalDefendants;
 
+    /**
+     * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
+     */
     private List<ListValue<DefendantDetails>> allDefendants;
 
     // Notice Details fields
@@ -751,5 +739,8 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
+
+    @CCD(searchable = false)
+    private String formattedDefendantNames;
 
 }
