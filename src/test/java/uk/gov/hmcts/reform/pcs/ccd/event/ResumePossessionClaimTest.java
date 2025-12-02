@@ -60,7 +60,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestions
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -175,7 +175,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
     @Mock
-    private ReasonsForPosessionWales reasonsForPosessionWales;
+    private ReasonsForPossessionWales reasonsForPossessionWales;
     @Mock
     private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     @Mock
@@ -217,7 +217,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
             demotionOfTenancyOrderReason, organisationNameService, claimantDetailsWalesPage, prohibitedConductWalesPage,
             schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage, groundsForPossessionWales,
-            secureContractGroundsForPossessionWales, reasonsForPosessionWales, addressFormatter,
+            secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossession, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
             underlesseeOrMortgageePage, feeService, feeFormatter
