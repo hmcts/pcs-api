@@ -108,7 +108,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -214,7 +214,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
@@ -337,7 +337,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no,
     });
     // Following lines enabled to reach the Prohibited conduct standard contract page as HDPI-2506
@@ -449,7 +449,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes,
       typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
     });

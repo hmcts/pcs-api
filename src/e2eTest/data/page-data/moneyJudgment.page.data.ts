@@ -3,5 +3,6 @@ export const moneyJudgment = {
   mainHeader: 'Money judgment',
   continue: 'Continue',
   yes: 'Yes',
-  no: 'No'
+  no: 'No',
+  courtMakeJudgementQuestion: 'Do you want the court to make a judgment for the outstanding arrears?'
 }
