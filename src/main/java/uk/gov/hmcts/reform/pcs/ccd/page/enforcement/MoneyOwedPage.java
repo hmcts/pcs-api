@@ -22,7 +22,7 @@ public class MoneyOwedPage implements CcdPageConfiguration {
                 """
                     <p class="govuk-body govuk-!-margin-bottom-0">
                         You can include:
-                        <ul class="govuk-list govuk-list--bullet" style="color: #0b0c0c;">
+                        <ul class="govuk-list govuk-list--bullet">
                             <li class="govuk-!-font-size-19">
                             rent or mortgage arrears</li>
                             <li class="govuk-!-font-size-19">
