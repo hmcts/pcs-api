@@ -36,7 +36,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             </ul>
                             <p class="govuk-body govuk-!-font-weight-bold">If you ask the judge for a writ of
                             possession</p>
-                            <p class="govuk-body govuk-!-margin-bottom-1">Its usually faster to evict someone using a
+                            <p class="govuk-body govuk-!-margin-bottom-1">It’s usually faster to evict someone using a
                             writ, but:</p>
                             <ul class="govuk-list govuk-list--bullet">
                               <li class="govuk-!-font-size-19">it’s more difficult to prove that you need a writ</li>
