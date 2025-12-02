@@ -32,8 +32,8 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  await performAction('createCaseAPI', {data: createCaseApiData.createCasePayload});
-  await performAction('submitCaseAPI', {data: submitCaseApiData.submitCasePayload});
+  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl'
     , `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
   await performAction('handleCookieConsent', {
@@ -51,7 +51,11 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performAction('writOrWarrantDiff', { type: yourApplication.summaryWritOrWarrant });
+    await performAction('writOrWarrantDiff', { type: yourApplication.summaryWritOrWarrant, label: yourApplication.warrantFeeValidationLabel, text: yourApplication.warrantFeeValidationText });
+    await performAction('writOrWarrantDiff', { type: yourApplication.summaryWritOrWarrant, label: yourApplication.writFeeValidationLabel, text: yourApplication.writFeeValidationText });
+    await performAction('expandSummary', yourApplication.summaryWritOrWarrant);
+    await performAction('clickLinkAndVerifyNewTabTitle', yourApplication.quoteFromBailiffLink, yourApplication.hceoTitle);
+    await performAction('expandSummary', yourApplication.summarySaveApplication);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,

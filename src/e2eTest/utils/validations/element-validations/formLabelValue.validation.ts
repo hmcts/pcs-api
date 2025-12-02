@@ -25,7 +25,7 @@ export class FormLabelValueValidation implements IValidation {
         .locator('xpath=../..')
         .locator('td span.text-16:not(:has(ccd-field-read-label))'),
 
-      page.locator(`//h3[text()="${fieldName}"]/ancestor::main[@class='govuk-main-wrapper']/descendant::p`),
+      page.locator(`//th[text()="${fieldName}"]/following-sibling::td`),
 
       page.locator(`//p[text()="${fieldName}"]/following-sibling::ul[1]/li[1]`)
     ];

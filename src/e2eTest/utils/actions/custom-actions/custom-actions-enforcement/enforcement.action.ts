@@ -2,9 +2,20 @@ import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, vulnerableAdultsAndChildren,
-  violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-  verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty,
+  yourApplication,
+  nameAndAddressForEviction,
+  everyoneLivingAtTheProperty,
+  vulnerableAdultsAndChildren,
+  violentOrAggressiveBehaviour,
+  firearmPossession,
+  criminalOrAntisocialBehaviour,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  groupProtestsEviction,
+  policeOrSocialServiceVisit,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  accessToTheProperty,
   peopleWillBeEvicted,
   youNeedPermission,
   legalCosts
@@ -20,6 +31,7 @@ export const addressInfo = {
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
+      ['writOrWarrantDiff', () => this.writOrWarrantDiff(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(page, fieldName as actionRecord)],
       ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
@@ -45,7 +57,8 @@ export class EnforcementAction implements IAction {
 
   private async writOrWarrantDiff(summaryOption: actionRecord){
     await performAction('expandSummary',summaryOption.type);
-    await performValidation('formLabelValue',summaryOption.warrant,yourApplication.warrantFeeValidationText);
+    await performValidation('formLabelValue',summaryOption.label,summaryOption.text);
+    await performAction('expandSummary',summaryOption.type);
   }
 
   private async selectApplicationType(applicationType: actionRecord) {
