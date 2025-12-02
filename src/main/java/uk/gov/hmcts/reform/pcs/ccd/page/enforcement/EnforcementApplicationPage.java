@@ -51,10 +51,10 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             </ul>
                             <p class="govuk-body govuk-!-margin-bottom-1">If you apply for a writ:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">It costs ${writFeeAmount} to apply</li>
+                              <li class="govuk-!-font-size-19">it costs ${writFeeAmount} to apply</li>
                               <li class="govuk-!-font-size-19"><a href="https://www.hceoa.org.uk/choosing-a-hceo"
                               rel="noreferrer noopener"
-                              target="_blank" class="govuk-link">You can get a quote from a bailiff to find out how
+                              target="_blank" class="govuk-link">you can get a quote from a bailiff to find out how
                               much it will cost</a> (they usually charge by the hour)</li>
                               <li class="govuk-!-font-size-19">it’s usually faster (6 to 12 weeks, depending on the
                               court you apply to)</li>
