@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -63,6 +64,24 @@ class AddressFormatterTest {
 
         // Then
         assertThat(result).isEqualTo(expectedFormattedAddress);
+    }
+
+    @Test
+    void shouldReturnNullWhenAddressIsNullForWithCommas() {
+        // When
+        String result = underTest.formatAddressWithCommas(null);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void shouldReturnNullWhenAddressIsNullForHtmlLineBreaks() {
+        // When
+        String result = underTest.formatAddressWithHtmlLineBreaks(null);
+
+        // Then
+        assertThat(result).isNull();
     }
 
     private static Stream<Arguments> commaAddressScenarios() {

@@ -15,13 +15,13 @@ public class AddressFormatter {
     }
 
     public String formatAddressWithHtmlLineBreaks(AddressUK address) {
-        if (address == null) {
-            return null;
-        }
         return formatAddressWithDelimiter(address, "<br>");
     }
 
     private static String formatAddressWithDelimiter(AddressUK address, String delimiter) {
+        if (address == null) {
+            return null;
+        }
         return Stream.of(address.getAddressLine1(), address.getPostTown(), address.getPostCode())
             .filter(StringUtils::isNotBlank)
             .collect(Collectors.joining(delimiter));
