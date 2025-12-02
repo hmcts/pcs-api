@@ -63,6 +63,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.assigncaseaccess.AssignCaseAccessService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -172,6 +173,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private WalesCheckingNotice walesCheckingNotice;
     @Mock
     private ASBQuestionsWales asbQuestionsWales;
+    @Mock
+    private AssignCaseAccessService assignCaseAccessService;
+
 
     private final AddressFormatter addressFormatter = new AddressFormatter();
 
@@ -206,7 +210,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             checkingNotice,
             walesCheckingNotice,
             asbQuestionsWales,
-            underlesseeOrMortgageePage
+            underlesseeOrMortgageePage,
+            assignCaseAccessService
         );
 
         setEventUnderTest(underTest);
