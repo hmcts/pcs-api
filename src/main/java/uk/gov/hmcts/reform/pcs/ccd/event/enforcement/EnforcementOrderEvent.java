@@ -108,10 +108,10 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(additionalInformationPage)
                 .add(new MoneyOwedPage())
                 .add(new LegalCostsPage())
+                .add(new LandRegistryFeesPlaceHolder())
                 .add(new RepaymentsPlaceHolder())
                 .add(new LanguageUsedPage())
                 .add(new StatementOfTruthPlaceHolder())
-                .add(new LandRegistryFeesPlaceHolder())
                 .add(new CheckYourAnswersPlaceHolder());
     }
 
