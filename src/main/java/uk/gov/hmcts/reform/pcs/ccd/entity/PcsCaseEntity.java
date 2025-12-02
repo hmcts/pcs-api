@@ -96,6 +96,10 @@ public class PcsCaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<UnderlesseeMortgagee> underlesseesMortgagees;
 
+    @Column(name = "defendant_final_response_submitted")
+    @JdbcTypeCode(SqlTypes.BOOLEAN)
+    private boolean defendantResponseFinalSubmit;
+
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
         claim.setPcsCase(this);

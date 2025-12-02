@@ -12,7 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole.CREATOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
@@ -23,6 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.defendantResponse;
 @RequiredArgsConstructor
 public class DefendantResponse implements CCDConfig<PCSCase, State, UserRole> {
     private final DraftCaseDataService draftCaseDataService;
+    private final PcsCaseService pcsCaseService;
 
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -37,16 +40,22 @@ public class DefendantResponse implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        log.info("Draft Case Data {}", eventPayload.caseReference());
+        log.info("Update Draft Data for Defendant Response, Case Reference: {}", eventPayload.caseReference());
 
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        draftCaseDataService.patchUnsubmittedCaseData(caseReference, caseData, defendantResponse);
+        if (caseData.getDefendantResponseFinalSubmit().toBoolean()) {
+            PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
+            pcsCaseService.mergeCaseData(pcsCaseEntity, caseData);
+            pcsCaseService.save(pcsCaseEntity);
 
-        PCSCase pcsCase = eventPayload.caseData();
+            draftCaseDataService.deleteUnsubmittedCaseData(caseReference, defendantResponse);
+
+        } else {
+            draftCaseDataService.patchUnsubmittedCaseData(caseReference, caseData, defendantResponse);
+        }
         return SubmitResponse.defaultResponse();
     }
-
 }

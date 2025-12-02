@@ -780,4 +780,5 @@ public class PCSCase {
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
+    private YesOrNo defendantResponseFinalSubmit;
 }
