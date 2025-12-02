@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -58,8 +59,10 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldCallNoticeDetailsServiceForValidation() {
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .build())
                 .build();
 
             List<String> validationErrors = new ArrayList<>();
@@ -75,8 +78,10 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldReturnNoErrorsWhenServiceValidationPasses() {
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .build())
                 .build();
 
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -87,8 +92,10 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldHandleMultipleValidationErrorsFromService() {
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                    .build())
                 .build();
 
             List<String> validationErrors = new ArrayList<>();
@@ -111,7 +118,7 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldRequireNoticeServiceMethodSelection() {
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
+                .hasNoticeBeenServed(YesOrNo.YES)
                 .build();
 
             List<String> validationErrors = new ArrayList<>();
@@ -127,9 +134,11 @@ class NoticeDetailsTest extends BasePageTest {
         @Test
         void shouldAllowProceedingWithValidData() {
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(LocalDate.of(2023, 1, 1))
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(LocalDate.of(2023, 1, 1))
+                    .build())
                 .build();
 
             when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());

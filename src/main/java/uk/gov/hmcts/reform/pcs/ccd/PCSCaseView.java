@@ -103,7 +103,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
                 ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
-            .noticeServed(pcsCaseEntity.getTenancyLicence() != null
+            .hasNoticeBeenServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .allDefendants(wrapListItems(defendantService.mapToDefendantDetails(pcsCaseEntity.getDefendants())))

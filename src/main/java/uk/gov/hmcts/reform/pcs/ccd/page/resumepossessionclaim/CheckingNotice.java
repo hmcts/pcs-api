@@ -46,7 +46,7 @@ public class CheckingNotice implements CcdPageConfiguration {
                         </div>
                         </section>
                         """)
-                .mandatory(PCSCase::getNoticeServed)
+                .mandatory(PCSCase::getHasNoticeBeenServed)
                 .label("checkingNotice-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 

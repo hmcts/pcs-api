@@ -12,79 +12,32 @@ import java.math.BigDecimal;
 public class TenancyLicenceService {
 
     public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
-        return TenancyLicence.builder()
-                .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
-                        ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
-                .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
-                .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
-                .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
-                .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
-                .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeDocuments()))
-                .noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()))
-                .walesNoticeServed(YesOrNoToBoolean.convert(pcsCase.getWalesNoticeDetails() != null
-                                                                ? pcsCase.getWalesNoticeDetails().getNoticeServed()
-                                                                : null))
-                .walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails() != null
-                                             ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null)
-                .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
-                .rentPaymentFrequency(pcsCase.getRentFrequency())
-                .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
-                .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
-                .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
-                .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
-                // Add notice details fields
-                .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null
-                                    ? pcsCase.getNoticeServiceMethod().name()
-                                    : null)
-                .noticePostedDate(pcsCase.getNoticePostedDate())
-                .noticeDeliveredDate(pcsCase.getNoticeDeliveredDate())
-                .noticeHandedOverDateTime(pcsCase.getNoticeHandedOverDateTime())
-                .noticePersonName(pcsCase.getNoticePersonName())
-                .noticeEmailSentDateTime(pcsCase.getNoticeEmailSentDateTime())
-                .noticeEmailExplanation(pcsCase.getNoticeEmailExplanation())
-                .noticeOtherElectronicDateTime(pcsCase.getNoticeOtherElectronicDateTime())
-                .noticeOtherDateTime(pcsCase.getNoticeOtherDateTime())
-                .noticeOtherExplanation(pcsCase.getNoticeOtherExplanation())
-                .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()))
-                // Add Wales Housing Act details
-                .walesRegistered(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getRegistered() : null)
-                .walesRegistrationNumber(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getRegistrationNumber() : null)
-                .walesLicensed(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getLicensed() : null)
-                .walesLicenceNumber(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getLicenceNumber() : null)
-                .walesLicensedAgentAppointed(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getLicensedAgentAppointed() : null)
-                .walesAgentFirstName(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getAgentFirstName() : null)
-                .walesAgentLastName(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getAgentLastName() : null)
-                .walesAgentLicenceNumber(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getAgentLicenceNumber() : null)
-                .walesAgentAppointmentDate(pcsCase.getWalesHousingAct() != null 
-                    ? pcsCase.getWalesHousingAct().getAgentAppointmentDate() : null)
-                // Wales Occupation Contract/Licence details
-                .occupationLicenceTypeWales(
-                    pcsCase.getOccupationLicenceDetailsWales() != null
-                        ? pcsCase.getOccupationLicenceDetailsWales().getOccupationLicenceTypeWales()
-                        : null)
-                .walesOtherLicenceTypeDetails(
-                    pcsCase.getOccupationLicenceDetailsWales() != null
-                        ? pcsCase.getOccupationLicenceDetailsWales().getOtherLicenceTypeDetails()
-                        : null)
-                .walesLicenceStartDate(
-                    pcsCase.getOccupationLicenceDetailsWales() != null
-                        ? pcsCase.getOccupationLicenceDetailsWales().getLicenceStartDate()
-                        : null)
-                .walesLicenceDocuments(
-                    pcsCase.getOccupationLicenceDetailsWales() != null
-                        ? ListValueUtils.unwrapListItems(
-                            pcsCase.getOccupationLicenceDetailsWales().getLicenceDocuments())
-                        : null)
-                .build();
+        TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder = TenancyLicence.builder()
+            .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
+                    ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
+            .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
+            .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
+            .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+            .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
+            .noticeServed(YesOrNoToBoolean.convert(pcsCase.getHasNoticeBeenServed()))
+            .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
+            .rentPaymentFrequency(pcsCase.getRentFrequency())
+            .otherRentFrequency(pcsCase.getOtherRentFrequency())
+            .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
+            .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+            .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
+            .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
+            .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
+
+        buildNoticeServedDetails(pcsCase, tenancyLicenceBuilder);
+
+        buildWalesNoticeServedDetails(pcsCase, tenancyLicenceBuilder);
+
+        buildWalesHousingActDetails(pcsCase, tenancyLicenceBuilder);
+
+        buildWalesOccupationContractDetails(pcsCase, tenancyLicenceBuilder);
+
+        return tenancyLicenceBuilder.build();
     }
 
     private BigDecimal getDailyRentAmount(PCSCase pcsCase) {
@@ -99,6 +52,74 @@ public class TenancyLicenceService {
             }
         }
         return null;
+    }
+
+    private void buildNoticeServedDetails(PCSCase pcsCase,
+                                                    TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
+        // Add notice served details
+        if (pcsCase.getNoticeServedDetails() != null) {
+            tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getHasNoticeBeenServed()));
+        }
+
+        if (pcsCase.getNoticeServedDetails() != null) {
+            tenancyLicenceBuilder
+                .noticeServiceMethod(pcsCase.getNoticeServedDetails().getNoticeServiceMethod() != null
+                        ? pcsCase.getNoticeServedDetails().getNoticeServiceMethod().name()
+                        : null)
+                .noticePostedDate(pcsCase.getNoticeServedDetails().getNoticePostedDate())
+                .noticeDeliveredDate(pcsCase.getNoticeServedDetails().getNoticeDeliveredDate())
+                .noticeHandedOverDateTime(pcsCase.getNoticeServedDetails().getNoticeHandedOverDateTime())
+                .noticePersonName(pcsCase.getNoticeServedDetails().getNoticePersonName())
+                .noticeEmailSentDateTime(pcsCase.getNoticeServedDetails().getNoticeEmailSentDateTime())
+                .noticeEmailExplanation(pcsCase.getNoticeServedDetails().getNoticeEmailExplanation())
+                .noticeOtherElectronicDateTime(pcsCase.getNoticeServedDetails().getNoticeOtherElectronicDateTime())
+                .noticeOtherDateTime(pcsCase.getNoticeServedDetails().getNoticeOtherDateTime())
+                .noticeOtherExplanation(pcsCase.getNoticeServedDetails().getNoticeOtherExplanation())
+                .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeServedDetails().getNoticeDocuments()))
+                .build();
+        }
+    }
+
+    private void buildWalesNoticeServedDetails(PCSCase pcsCase,
+                                               TenancyLicence.TenancyLicenceBuilder tenancyLicence) {
+        // Add notice served details for Wales
+        if (pcsCase.getWalesNoticeDetails() != null) {
+            tenancyLicence.walesNoticeServed(pcsCase.getWalesNoticeDetails().getNoticeServed() != null
+                ? YesOrNoToBoolean.convert(pcsCase.getWalesNoticeDetails().getNoticeServed()) : null);
+            tenancyLicence.walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed());
+        }
+    }
+
+    private void buildWalesHousingActDetails(PCSCase pcsCase,
+                                             TenancyLicence.TenancyLicenceBuilder tenancyLicence) {
+        // Add Wales Housing Act details
+        if (pcsCase.getWalesHousingAct() != null) {
+            tenancyLicence.walesRegistered(pcsCase.getWalesHousingAct().getRegistered());
+            tenancyLicence.walesRegistrationNumber(pcsCase.getWalesHousingAct().getRegistrationNumber());
+            tenancyLicence.walesLicensed(pcsCase.getWalesHousingAct().getLicensed());
+            tenancyLicence.walesLicenceNumber(pcsCase.getWalesHousingAct().getLicenceNumber());
+            tenancyLicence.walesLicensedAgentAppointed(pcsCase.getWalesHousingAct().getLicensedAgentAppointed());
+            tenancyLicence.walesAgentFirstName(pcsCase.getWalesHousingAct().getAgentFirstName());
+            tenancyLicence.walesAgentLastName(pcsCase.getWalesHousingAct().getAgentLastName());
+            tenancyLicence.walesAgentLicenceNumber(pcsCase.getWalesHousingAct().getAgentLicenceNumber());
+            tenancyLicence.walesAgentAppointmentDate(pcsCase.getWalesHousingAct().getAgentAppointmentDate());
+        }
+    }
+
+    private void buildWalesOccupationContractDetails(PCSCase pcsCase,
+                                                     TenancyLicence.TenancyLicenceBuilder tenancyLicence) {
+        // Add Wales Occupation Contract/Licence details
+        if (pcsCase.getOccupationLicenceDetailsWales() != null) {
+            tenancyLicence.occupationLicenceTypeWales(
+                pcsCase.getOccupationLicenceDetailsWales().getOccupationLicenceTypeWales());
+            tenancyLicence.walesOtherLicenceTypeDetails(
+                pcsCase.getOccupationLicenceDetailsWales().getOtherLicenceTypeDetails());
+            tenancyLicence.walesLicenceStartDate(
+                pcsCase.getOccupationLicenceDetailsWales().getLicenceStartDate());
+            tenancyLicence.walesLicenceDocuments(
+                ListValueUtils.unwrapListItems(
+                    pcsCase.getOccupationLicenceDetailsWales().getLicenceDocuments()));
+        }
     }
 
     private static BigDecimal penceToPounds(String pence) {

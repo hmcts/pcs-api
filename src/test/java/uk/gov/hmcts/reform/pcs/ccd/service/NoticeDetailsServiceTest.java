@@ -7,6 +7,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
@@ -25,11 +26,10 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 class NoticeDetailsServiceTest {
 
     private NoticeDetailsService noticeDetailsService;
-    private TextAreaValidationService textAreaValidationService;
 
     @BeforeEach
     void setUp() {
-        textAreaValidationService = new TextAreaValidationService();
+        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
         noticeDetailsService = new NoticeDetailsService(textAreaValidationService);
     }
 
@@ -39,7 +39,7 @@ class NoticeDetailsServiceTest {
         @Test
         void shouldReturnNoErrorsWhenNoticeNotServed() {
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.NO)
+                .hasNoticeBeenServed(YesOrNo.NO)
                 .build();
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
@@ -49,10 +49,12 @@ class NoticeDetailsServiceTest {
         @Test
         void shouldReturnNoErrorsWhenNoticeServedIsNull() {
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(null)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(LocalDate.now().minusDays(1))
-                .build();
+                .hasNoticeBeenServed(null)
+                    .noticeServedDetails(NoticeServedDetails.builder()
+                        .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                        .noticePostedDate(LocalDate.now().minusDays(1))
+                        .build())
+                    .build();
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
             assertThat(errors).isEmpty();
@@ -61,8 +63,10 @@ class NoticeDetailsServiceTest {
         @Test
         void shouldValidateNoticeDetailsWhenNoticeServedIsYes() {
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(null)
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(null)
+                    .build())
                 .build();
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
 
@@ -78,8 +82,10 @@ class NoticeDetailsServiceTest {
         void shouldRequireNoticeServiceMethod() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
+                .hasNoticeBeenServed(YesOrNo.YES)
                 .build();
+
+            caseData.setNoticeServedDetails(NoticeServedDetails.builder().build());
 
             // When
             List<String> errors = noticeDetailsService.validateNoticeDetails(caseData);
@@ -97,9 +103,11 @@ class NoticeDetailsServiceTest {
         void shouldValidateFirstClassPostWithValidDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(LocalDate.of(2023, 1, 1))
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(LocalDate.of(2023, 1, 1))
+                    .build())
                 .build();
 
             // When
@@ -113,9 +121,11 @@ class NoticeDetailsServiceTest {
         void shouldValidateFirstClassPostWithNullDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(null) // Null date is allowed for optional fields
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(null) // Null date is allowed for optional fields
+                    .build())
                 .build();
 
             // When
@@ -129,9 +139,11 @@ class NoticeDetailsServiceTest {
         void shouldValidateFirstClassPostWithFutureDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(LocalDate.of(2099, 1, 1))
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(LocalDate.of(2099, 1, 1))
+                    .build())
                 .build();
 
             // When
@@ -146,9 +158,11 @@ class NoticeDetailsServiceTest {
         void shouldValidateFirstClassPostWithTodayDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(LocalDate.now())
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(LocalDate.now())
+                    .build())
                 .build();
 
             // When
@@ -163,9 +177,11 @@ class NoticeDetailsServiceTest {
         void shouldValidateDeliveredPermittedPlaceWithValidDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                .noticeDeliveredDate(LocalDate.of(2023, 1, 1))
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
+                    .noticeDeliveredDate(LocalDate.of(2023, 1, 1))
+                    .build())
                 .build();
 
             // When
@@ -179,9 +195,11 @@ class NoticeDetailsServiceTest {
         void shouldValidateDeliveredPermittedPlaceWithNullDate() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
-                .noticeDeliveredDate(null) // Null date is allowed for optional fields
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
+                    .noticeDeliveredDate(null)
+                    .build())
                 .build();
 
             // When
@@ -196,9 +214,11 @@ class NoticeDetailsServiceTest {
         void shouldAcceptValidDateFormats(String dateString) {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(LocalDate.parse(dateString))
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(LocalDate.parse(dateString))
+                    .build())
                 .build();
 
             // When
@@ -212,9 +232,11 @@ class NoticeDetailsServiceTest {
         void shouldRejectInvalidDateFormats() {
             // Given - with null date (invalid)
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(null) // Invalid date
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(null)
+                    .build())
                 .build();
 
             // When
@@ -243,9 +265,11 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                .noticeHandedOverDateTime(pastDateTime) // Valid past date-time
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                    .noticeHandedOverDateTime(pastDateTime) // Valid past date-time
+                    .build())
                 .build();
 
             // When
@@ -262,9 +286,11 @@ class NoticeDetailsServiceTest {
             LocalDateTime pastDateOnly = LocalDateTime.now().minusDays(1)
                 .withHour(0).withMinute(0).withSecond(0).withNano(0);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                .noticeHandedOverDateTime(pastDateOnly) // Date with default time (midnight)
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                    .noticeHandedOverDateTime(pastDateOnly) // Date with default time (midnight)
+                    .build())
                 .build();
 
             // When
@@ -279,9 +305,11 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                .noticeHandedOverDateTime(futureDateTime) // Future date-time
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                    .noticeHandedOverDateTime(futureDateTime) // Future date-time
+                    .build())
                 .build();
 
             // When
@@ -298,9 +326,11 @@ class NoticeDetailsServiceTest {
             LocalDateTime todayDateTime = LocalDateTime.now()
                 .withHour(0).withMinute(0).withSecond(0).withNano(0);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
-                .noticeHandedOverDateTime(todayDateTime) // Today's date-time
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.PERSONALLY_HANDED)
+                    .noticeHandedOverDateTime(todayDateTime) // Today's date-time
+                    .build())
                 .build();
 
             // When
@@ -316,9 +346,11 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
-                .noticeOtherElectronicDateTime(pastDateTime) // Valid past date-time
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
+                    .noticeOtherElectronicDateTime(pastDateTime) // Valid past date-time
+                    .build())
                 .build();
 
             // When
@@ -333,9 +365,11 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
-                .noticeOtherElectronicDateTime(futureDateTime) // Future date-time
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.OTHER_ELECTRONIC)
+                    .noticeOtherElectronicDateTime(futureDateTime) // Future date-time
+                    .build())
                 .build();
 
             // When
@@ -355,10 +389,12 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                .noticeEmailSentDateTime(pastDateTime)
-                .noticeEmailExplanation("Sent to tenant@example.com") // Valid explanation
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                    .noticeEmailSentDateTime(pastDateTime)
+                    .noticeEmailExplanation("Sent to tenant@example.com") // Valid explanation
+                    .build())
                 .build();
 
             // When
@@ -374,16 +410,15 @@ class NoticeDetailsServiceTest {
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             
             // Create a string that exceeds 250 characters
-            StringBuilder longText = new StringBuilder();
-            for (int i = 0; i < 26; i++) {
-                longText.append("0123456789"); // 10 chars x 26 = 260 chars
-            }
+            String longText = "0123456789".repeat(26); // 10 chars x 26 = 260 chars
             
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                .noticeEmailSentDateTime(pastDateTime)
-                .noticeEmailExplanation(longText.toString()) // Too long explanation
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                    .noticeEmailSentDateTime(pastDateTime)
+                    .noticeEmailExplanation(longText) // Too long explanation
+                    .build())
                 .build();
 
             // When
@@ -391,8 +426,9 @@ class NoticeDetailsServiceTest {
 
             // Then
             // Text area length validation is now handled by TextAreaValidationService in NoticeDetailsService
-            assertThat(errors).isNotEmpty();
-            assertThat(errors).anyMatch(error -> error.contains("more than the maximum number of characters"));
+            assertThat(errors)
+                .isNotEmpty()
+                .anyMatch(error -> error.contains("more than the maximum number of characters"));
         }
 
         @Test
@@ -400,10 +436,12 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.EMAIL)
-                .noticeEmailSentDateTime(futureDateTime)
-                .noticeEmailExplanation("Valid explanation")
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                    .noticeEmailSentDateTime(futureDateTime)
+                    .noticeEmailExplanation("Valid explanation")
+                    .build())
                 .build();
 
             // When
@@ -423,10 +461,12 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                .noticeOtherDateTime(pastDateTime)
-                .noticeOtherExplanation("Hand delivered by courier service") // Valid explanation
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.OTHER)
+                    .noticeOtherDateTime(pastDateTime)
+                    .noticeOtherExplanation("Hand delivered by courier service") // Valid explanation
+                    .build())
                 .build();
 
             // When
@@ -442,16 +482,15 @@ class NoticeDetailsServiceTest {
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
             
             // Create a string that exceeds 250 characters
-            StringBuilder longText = new StringBuilder();
-            for (int i = 0; i < 26; i++) {
-                longText.append("0123456789"); // 10 chars x 26 = 260 chars
-            }
+            String longText = "0123456789".repeat(26); // 10 chars x 26 = 260 chars
             
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                .noticeOtherDateTime(pastDateTime)
-                .noticeOtherExplanation(longText.toString()) // Too long explanation
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.OTHER)
+                    .noticeOtherDateTime(pastDateTime)
+                    .noticeOtherExplanation(longText) // Too long explanation
+                    .build())
                 .build();
 
             // When
@@ -459,8 +498,9 @@ class NoticeDetailsServiceTest {
 
             // Then
             // Text area length validation is now handled by TextAreaValidationService in NoticeDetailsService
-            assertThat(errors).isNotEmpty();
-            assertThat(errors).anyMatch(error -> error.contains("more than the maximum number of characters"));
+            assertThat(errors)
+                .isNotEmpty()
+                .anyMatch(error -> error.contains("more than the maximum number of characters"));
         }
 
         @Test
@@ -468,10 +508,12 @@ class NoticeDetailsServiceTest {
             // Given
             LocalDateTime futureDateTime = LocalDateTime.now().plusDays(1);
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.OTHER)
-                .noticeOtherDateTime(futureDateTime)
-                .noticeOtherExplanation("Valid explanation")
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.OTHER)
+                    .noticeOtherDateTime(futureDateTime)
+                    .noticeOtherExplanation("Valid explanation")
+                    .build())
                 .build();
 
             // When
@@ -490,9 +532,11 @@ class NoticeDetailsServiceTest {
         void shouldHandleNullValuesGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(null)
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(null)
+                    .build())
                 .build();
 
             // When
@@ -506,9 +550,11 @@ class NoticeDetailsServiceTest {
         void shouldHandleEmptyStringValuesGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(null)
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(null)
+                    .build())
                 .build();
 
             // When
@@ -522,9 +568,11 @@ class NoticeDetailsServiceTest {
         void shouldHandleWhitespaceOnlyValuesGracefully() {
             // Given
             PCSCase caseData = PCSCase.builder()
-                .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(null)
+                .hasNoticeBeenServed(YesOrNo.YES)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(null)
+                    .build())
                 .build();
 
             // When

@@ -27,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -44,8 +43,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class PCSCase {
 
     // Field label constants - shared between domain annotations and validation
-    public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
-    public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that's in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
@@ -248,7 +245,11 @@ public class PCSCase {
     @CCD(
         label = "Have you served notice to the defendants?"
     )
-    private YesOrNo noticeServed;
+    private YesOrNo hasNoticeBeenServed;
+
+    @JsonUnwrapped
+    @CCD
+    private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
 
@@ -359,78 +360,6 @@ public class PCSCase {
     private List<ListValue<DefendantDetails>> additionalDefendants;
 
     private List<ListValue<DefendantDetails>> allDefendants;
-
-    // Notice Details fields
-    @CCD(
-        label = "How did you serve the notice?"
-    )
-    private NoticeServiceMethod noticeServiceMethod;
-
-    // Date fields for different service methods
-    @CCD(
-        label = "Date the document was posted",
-        hint = "For example, 16 4 2021"
-    )
-    private LocalDate noticePostedDate;
-
-    @CCD(
-        label = "Date the document was delivered",
-        hint = "For example, 16 4 2021"
-    )
-    private LocalDate noticeDeliveredDate;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15"
-    )
-    private LocalDateTime noticeHandedOverDateTime;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15"
-    )
-    private LocalDateTime noticeEmailSentDateTime;
-
-    @CCD(
-        label = "Date and time email or message sent",
-        hint = "For example, 16 4 2021, 11 15"
-    )
-    private LocalDateTime noticeOtherElectronicDateTime;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15"
-    )
-    private LocalDateTime noticeOtherDateTime;
-
-    // Text fields for different service methods
-    @CCD(
-        label = "Name of person the document was left with"
-    )
-    private String noticePersonName;
-
-    @CCD(
-        label = NOTICE_EMAIL_EXPLANATION_LABEL,
-        hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
-    )
-    private String noticeEmailExplanation;
-
-    @CCD(
-        label = NOTICE_OTHER_EXPLANATION_LABEL,
-        hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
-    )
-    private String noticeOtherExplanation;
-
-    @CCD(
-        label = "Add document",
-        hint = "Upload a document to the system",
-        typeOverride = FieldType.Collection,
-        typeParameterOverride = "Document",
-        access = {CaseworkerReadAccess.class}
-    )
-    private List<ListValue<Document>> noticeDocuments;
 
     @CCD(
         label = "What type of tenancy or licence is in place?",
