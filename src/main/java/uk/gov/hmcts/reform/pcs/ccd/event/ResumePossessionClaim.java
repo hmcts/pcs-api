@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -29,7 +30,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligib
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
@@ -95,8 +96,10 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -170,7 +173,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(new ClaimantInformation())
+            .add(new ClaimantInformationPage())
             .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
@@ -223,26 +226,26 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new CompletingYourClaim())
             .add(new StatementOfTruth());
 
-
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
-
         // Fetch organisation name from rd-professional API
         String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+        ClaimantInformation claimantInfo = getClaimantInfo(caseData);
+
         if (organisationName != null) {
-            caseData.setOrganisationName(organisationName);
+            claimantInfo.setOrganisationName(organisationName);
         } else {
             // Fallback to user details if organisation name cannot be retrieved
-            caseData.setOrganisationName(userEmail);
+            claimantInfo.setOrganisationName(userEmail);
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
         caseData.setClaimantContactEmail(userEmail);
-
+        caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {
             throw new IllegalStateException("Cannot resume claim without property address already set");
@@ -287,7 +290,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        scheduleCaseIssuedFeeTask(caseReference, pcsCase.getOrganisationName());
+        scheduleCaseIssuedFeeTask(caseReference, getClaimantInfo(pcsCase).getOrganisationName());
 
         return SubmitResponse.defaultResponse();
     }
@@ -296,8 +299,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         UserInfo userDetails = securityContextService.getCurrentUserDetails();
         UUID userID = UUID.fromString(userDetails.getUid());
 
-        String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
-            ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
+        ClaimantInformation claimantInfo = getClaimantInfo(pcsCase);
+
+        String claimantName = isNotBlank(claimantInfo.getOverriddenClaimantName())
+            ? claimantInfo.getOverriddenClaimantName()
+            : claimantInfo.getClaimantName();
 
         AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
             ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
@@ -305,14 +311,26 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
             ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
 
+        String organisationName = isNotBlank(claimantInfo.getOverriddenClaimantName())
+            ? claimantInfo.getOverriddenClaimantName() : claimantInfo.getOrganisationName();
+        if (isBlank(organisationName)) {
+            organisationName = claimantName;
+        }
+
         return partyService.createPartyEntity(
             userID,
             claimantName,
             null,
+            organisationName,
             contactEmail,
             contactAddress,
             pcsCase.getClaimantContactPhoneNumber()
         );
+    }
+
+    private ClaimantInformation getClaimantInfo(PCSCase caseData) {
+        return Optional.ofNullable(caseData.getClaimantInformation())
+            .orElse(ClaimantInformation.builder().build());
     }
 
     private void scheduleCaseIssuedFeeTask(long caseReference, String responsibleParty) {
@@ -332,4 +350,5 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .scheduledTo(Instant.now())
         );
     }
+
 }
