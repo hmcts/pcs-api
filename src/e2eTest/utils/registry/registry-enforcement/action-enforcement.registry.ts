@@ -31,6 +31,7 @@ export class ActionEnforcementRegistry {
     ['expandSummary', new ExpandSummaryAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
     ['writOrWarrantDiff', new EnforcementAction()],
+    ['validateQuoteFromBailiff', new EnforcementAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
     ['getDefendantDetails', new EnforcementAction()],

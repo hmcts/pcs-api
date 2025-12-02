@@ -55,10 +55,18 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performAction('writOrWarrantDiff', { type: yourApplication.summaryWritOrWarrant, label: yourApplication.warrantFeeValidationLabel, text: yourApplication.warrantFeeValidationText });
-    await performAction('writOrWarrantDiff', { type: yourApplication.summaryWritOrWarrant, label: yourApplication.writFeeValidationLabel, text: yourApplication.writFeeValidationText });
-    await performAction('expandSummary', yourApplication.summaryWritOrWarrant);
-    await performAction('clickLinkAndVerifyNewTabTitle', yourApplication.quoteFromBailiffLink, yourApplication.hceoTitle);
+    await performAction('writOrWarrantDiff', {
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
+    await performAction('validateQuoteFromBailiff',{
+      type: yourApplication.summaryWritOrWarrant,
+      link: yourApplication.quoteFromBailiffLink,
+      newPage: yourApplication.hceoTitle
+    });
     await performAction('expandSummary', yourApplication.summarySaveApplication);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
