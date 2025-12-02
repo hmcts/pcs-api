@@ -18,10 +18,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWa
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 
 @AllArgsConstructor
@@ -98,7 +98,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-failToGiveUpBreakNoticeS191-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Failure to give up possession on date specified in 
+                    Failure to give up possession on date specified in
                     contract-holder’s break clause notice (section 191)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
@@ -121,7 +121,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-convertedFixedTermSch1225B2-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Notice given in relation to end of converted fixed term standard contract 
+                    Notice given in relation to end of converted fixed term standard contract
                     (paragraph 25B(2) of Schedule 12)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
@@ -268,7 +268,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .label("wales-secure-failureToGiveUpPossessionSection191-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Failure to give up possession on date specified in contract-holder’s break 
+                    Failure to give up possession on date specified in contract-holder’s break
                     clause notice (section 191)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
@@ -399,7 +399,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 </h3>
                 """, "secureContractEstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
             .mandatory(GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason,
-                "secureContractEstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")    
+                "secureContractEstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
 
             .done()
             .label("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -417,13 +417,10 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         }
 
         boolean hasASB = hasASBSelected(caseData);
-        if (hasASB) {
-            caseData.setShowASBQuestionsPageWales(YesOrNo.YES);
-        } else {
-            caseData.setShowASBQuestionsPageWales(YesOrNo.NO);
-        }
+        caseData.setShowASBQuestionsPageWales(YesOrNo.from(hasASB));
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+
     }
 
     private boolean hasASBSelected(PCSCase caseData) {
@@ -431,9 +428,9 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         var secureDiscretionaryGrounds = caseData.getSecureContractDiscretionaryGroundsWales();
 
         boolean hasASBStandard = discretionaryGrounds != null
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
+            && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
         boolean hasASBSecure = secureDiscretionaryGrounds != null
-                && secureDiscretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
+            && secureDiscretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
 
         return hasASBStandard || hasASBSecure;
     }
@@ -648,3 +645,4 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         };
     }
 }
+
