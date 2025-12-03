@@ -69,7 +69,7 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
                 LocalDate currentDate = LocalDate.now(ukClock);
                 if (appointmentDate.isAfter(currentDate)) {
                     return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .errors(List.of("The agent's date of appointment must be in the past"))
+                        .errors(List.of("The agent’s date of appointment must be in the past"))
                         .build();
                 }
             }
