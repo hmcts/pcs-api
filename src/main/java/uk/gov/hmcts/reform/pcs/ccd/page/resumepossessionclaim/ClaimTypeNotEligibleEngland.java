@@ -17,7 +17,7 @@ public class ClaimTypeNotEligibleEngland implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("claimTypeNotEligibleEngland", this::midEvent)
-            .pageLabel("You're not eligible for this online service")
+            .pageLabel("You’re not eligible for this online service")
             .showCondition("showClaimTypeNotEligibleEngland=\"Yes\"")
             .readonly(PCSCase::getShowClaimTypeNotEligibleEngland, NEVER_SHOW)
             .label("claimTypeNotEligibleEngland-info", """
@@ -39,7 +39,7 @@ public class ClaimTypeNotEligibleEngland implements CcdPageConfiguration {
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-warning-text__assistive">Warning</span>
                     <span id="warning-message">
-                      To exit back to the case list, select 'Cancel'
+                      To exit back to the case list, select ‘Cancel’
                     </span>
                   </strong>
                 </div>
@@ -50,7 +50,7 @@ public class ClaimTypeNotEligibleEngland implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("You're not eligible for this online service"))
+            .errors(List.of("You’re not eligible for this online service"))
             .build();
     }
 
