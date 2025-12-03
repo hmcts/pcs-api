@@ -47,7 +47,6 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
 @Slf4j
@@ -76,7 +75,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
-                .forState(AWAITING_SUBMISSION_TO_HMCTS)
+                .forAllStates()
                 .name("Enforce the order")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
         configurePages(eventBuilder);

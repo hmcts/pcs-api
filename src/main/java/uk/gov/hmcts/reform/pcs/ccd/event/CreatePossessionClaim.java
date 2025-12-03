@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
@@ -37,6 +38,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
+    private final FeeFormatter feeFormatter;
 
     private static final String FEE = "Unable to retrieve";
 
@@ -45,7 +47,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(createPossessionClaim.name(), this::submit, this::start)
-                .initialState(State.AWAITING_FURTHER_CLAIM_DETAILS)
+                .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
@@ -88,6 +90,6 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         if (amount == null) {
             return FEE;
         }
-        return "£" + amount.stripTrailingZeros().toPlainString();
+        return feeFormatter.formatFee(amount);
     }
 }
