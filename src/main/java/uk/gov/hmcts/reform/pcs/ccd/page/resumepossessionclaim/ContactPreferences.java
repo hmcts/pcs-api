@@ -35,7 +35,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                 ---
                 <h2 class="govuk-heading-m">Notifications</h2>
                 <p class="govuk-body-m govuk-!-margin-bottom-1">
-                    You'll receive updates about your claim by email. For example, when a hearing
+                    You’ll receive updates about your claim by email. For example, when a hearing
                     has been scheduled or when a document is ready to view.
                 </p>
                   <h3 class="govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1">
