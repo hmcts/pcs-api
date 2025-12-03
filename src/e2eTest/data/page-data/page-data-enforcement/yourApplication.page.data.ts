@@ -1,7 +1,7 @@
 export const yourApplication = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Your application',
-  hceoTitle: 'Choosing a HCEO',
+  hceoPageTitle: 'Choosing a HCEO',
   typeOfApplicationQuestion: 'What do you want to apply for?',
   typeOfApplicationOptions: {
     warrantOfPossession: 'Warrant of possession',
