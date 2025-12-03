@@ -25,7 +25,9 @@ import {
   moneyOwed,
   legalCosts,
   landRegistryFees,
-  rePayments
+  rePayments,
+  peopleWillBeEvicted,
+  youNeedPermission
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
