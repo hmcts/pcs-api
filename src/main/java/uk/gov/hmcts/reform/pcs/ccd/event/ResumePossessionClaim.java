@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferencesDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -250,9 +250,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
-        ContactPreferencesDetails contactPreferences = caseData.getContactPreferencesDetails();
+        ClaimantContactPreferences contactPreferences = caseData.getContactPreferencesDetails();
         if (contactPreferences == null) {
-            contactPreferences = ContactPreferencesDetails.builder().build();
+            contactPreferences = ClaimantContactPreferences.builder().build();
         }
         contactPreferences.setClaimantContactEmail(userEmail);
         caseData.setContactPreferencesDetails(contactPreferences);
@@ -337,7 +337,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             ? claimantInfo.getOverriddenClaimantName()
             : claimantInfo.getClaimantName();
 
-        ContactPreferencesDetails contactPreferences = getContactPreferences(pcsCase);
+        ClaimantContactPreferences contactPreferences = getContactPreferences(pcsCase);
 
         AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
             ? contactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
@@ -367,9 +367,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .orElse(ClaimantInformation.builder().build());
     }
 
-    private ContactPreferencesDetails getContactPreferences(PCSCase caseData) {
+    private ClaimantContactPreferences getContactPreferences(PCSCase caseData) {
         return Optional.ofNullable(caseData.getContactPreferencesDetails())
-            .orElse(ContactPreferencesDetails.builder().build());
+            .orElse(ClaimantContactPreferences.builder().build());
     }
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {

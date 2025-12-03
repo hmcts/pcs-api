@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferencesDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -434,7 +434,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
                         .build()
                 )
                 .contactPreferencesDetails(
-                    ContactPreferencesDetails.builder()
+                    ClaimantContactPreferences.builder()
                         .claimantContactEmail(claimantContactEmail)
                         .claimantContactPhoneNumber(claimantContactPhoneNumber)
                         .build()

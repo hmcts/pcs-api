@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContactPreferencesDetails {
+public class ClaimantContactPreferences {
 
     @CCD(typeOverride = FieldType.Email)
     private String claimantContactEmail;

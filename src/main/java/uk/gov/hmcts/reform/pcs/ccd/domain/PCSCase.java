@@ -120,7 +120,7 @@ public class PCSCase {
     private List<ListValue<Party>> parties;
 
     @JsonUnwrapped
-    private ContactPreferencesDetails contactPreferencesDetails;
+    private ClaimantContactPreferences contactPreferencesDetails;
 
     @CCD(
         label = "Do you want to ask for your costs back?",

@@ -7,7 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ContactPreferencesDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -32,7 +32,7 @@ public class ContactPreferences implements CcdPageConfiguration {
 
             // Email section
             .complex(PCSCase::getContactPreferencesDetails)
-                .readonly(ContactPreferencesDetails::getClaimantContactEmail, NEVER_SHOW)
+                .readonly(ClaimantContactPreferences::getClaimantContactEmail, NEVER_SHOW)
                 .label("contactPreferences-email", """
                     ---
                     <h2 class="govuk-heading-m">Notifications</h2>
@@ -47,9 +47,9 @@ public class ContactPreferences implements CcdPageConfiguration {
                         ${claimantContactEmail}
                     </p>
                     """)
-                .mandatory(ContactPreferencesDetails::getIsCorrectClaimantContactEmail)
+                .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactEmail)
                 .mandatory(
-                    ContactPreferencesDetails::getOverriddenClaimantContactEmail,
+                    ClaimantContactPreferences::getOverriddenClaimantContactEmail,
                     "isCorrectClaimantContactEmail=\"NO\""
                 )
             .done()
@@ -66,7 +66,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                         the address registered with My HMCTS.
                     </p>
                     """)
-                .readonly(ContactPreferencesDetails::getFormattedClaimantContactAddress, NEVER_SHOW)
+                .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
                 .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         Your My HMCTS registered address is:
@@ -75,9 +75,9 @@ public class ContactPreferences implements CcdPageConfiguration {
                         ${formattedClaimantContactAddress}
                     </p>
                     """)
-                .mandatory(ContactPreferencesDetails::getIsCorrectClaimantContactAddress)
+                .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress)
                 .complex(
-                    ContactPreferencesDetails::getOverriddenClaimantContactAddress,
+                    ClaimantContactPreferences::getOverriddenClaimantContactAddress,
                     "isCorrectClaimantContactAddress=\"NO\""
                 )
                     .mandatory(AddressUK::getAddressLine1)
@@ -99,9 +99,9 @@ public class ContactPreferences implements CcdPageConfiguration {
                         You should provide a phone number so we can contact you if there are urgent updates.
                     </p>
                     """)
-                .optional(ContactPreferencesDetails::getClaimantProvidePhoneNumber)
+                .optional(ClaimantContactPreferences::getClaimantProvidePhoneNumber)
                 .mandatory(
-                    ContactPreferencesDetails::getClaimantContactPhoneNumber,
+                    ClaimantContactPreferences::getClaimantContactPhoneNumber,
                     "claimantProvidePhoneNumber=\"YES\""
                 )
             .done()
@@ -114,7 +114,7 @@ public class ContactPreferences implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        ContactPreferencesDetails contactPreferences = caseData.getContactPreferencesDetails();
+        ClaimantContactPreferences contactPreferences = caseData.getContactPreferencesDetails();
         if (contactPreferences != null) {
             VerticalYesNo isCorrectClaimantContactAddress = contactPreferences.getIsCorrectClaimantContactAddress();
             if (isCorrectClaimantContactAddress == VerticalYesNo.NO) {
