@@ -65,11 +65,11 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             return "";
         }
 
-        if (trimmed.endsWith("'") || trimmed.endsWith("'s") || trimmed.endsWith("'S")) {
+        if (trimmed.endsWith("’") || trimmed.endsWith("’s") || trimmed.endsWith("’S")) {
             return trimmed;
         }
 
-        return trimmed.endsWith("s") || trimmed.endsWith("S") ? trimmed + "'" : trimmed + "'s";
+        return trimmed.endsWith("s") || trimmed.endsWith("S") ? trimmed + "’" : trimmed + "’s";
     }
 
 }
