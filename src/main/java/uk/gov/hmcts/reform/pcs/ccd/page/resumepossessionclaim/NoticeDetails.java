@@ -7,9 +7,9 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -34,7 +34,8 @@ public class NoticeDetails implements CcdPageConfiguration {
         pageBuilder
             .page("noticeDetails", this::midEvent)
             .pageLabel("Notice details")
-            .showCondition("noticeServed=\"Yes\"")
+            .showCondition("noticeServed=\"Yes\""
+                               + " OR walesNoticeServed=\"Yes\"")
             .label("noticeDetails-separator", "---")
             .complex(PCSCase::getNoticeServedDetails)
             .mandatory(NoticeServedDetails::getNoticeServiceMethod)

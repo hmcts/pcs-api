@@ -17,7 +17,7 @@ public class DefendantValidator {
 
     static final String EXUI_POFCC81_ERROR = """
         This page did not load correctly. Go back to the previous page and return to
-        this page to enter the defendant's correspondence address. The answers you've
+        this page to enter the defendant's correspondence address. The answers you’ve
         entered so far on this page will be kept
         """;
 

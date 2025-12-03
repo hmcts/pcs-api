@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
@@ -44,7 +45,7 @@ public class PCSCase {
 
     // Field label constants - shared between domain annotations and validation
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
-        "Give details of the type of tenancy or licence agreement that's in place";
+        "Give details of the type of tenancy or licence agreement that’s in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
     @CCD(
@@ -152,7 +153,7 @@ public class PCSCase {
 
     @CCD(
         label = "Are you claiming possession because of rent arrears?",
-        hint = "You'll be able to add additional grounds later if you select yes"
+        hint = "You’ll be able to add additional grounds later if you select yes"
     )
     private YesOrNo claimDueToRentArrears;
 
@@ -236,7 +237,7 @@ public class PCSCase {
     private VerticalYesNo settlementAttempted;
 
     @CCD(
-        label = "Explain what steps you've taken to reach a settlement",
+        label = "Explain what steps you’ve taken to reach a settlement",
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
@@ -347,18 +348,27 @@ public class PCSCase {
     @CCD(searchable = false)
     private String postcodeNotAssignedView;
 
+    /**
+     * The primary defendant in the case.
+     */
     @CCD
     private DefendantDetails defendant1;
 
     @CCD(label = "Do you need to add another defendant?")
     private VerticalYesNo addAnotherDefendant;
 
+    /**
+     * List of additional defendants added by the user, after the primary defendant.
+     */
     @CCD(
         label = "Add additional defendant",
         hint = "Add an additional defendant to the case"
     )
     private List<ListValue<DefendantDetails>> additionalDefendants;
 
+    /**
+     * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
+     */
     private List<ListValue<DefendantDetails>> allDefendants;
 
     @CCD(
@@ -439,7 +449,7 @@ public class PCSCase {
 
     @CCD(
             label = OTHER_GROUND_DESCRIPTION_LABEL,
-            hint = "You'll be able to explain your reasons for claiming possession"
+            hint = "You’ll be able to explain your reasons for claiming possession"
                     + " under these grounds on the next screen. You can enter up to 500 characters",
             typeOverride = TextArea
     )
@@ -468,6 +478,11 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private YesOrNo showReasonsForGroundsPage;
+
+    @JsonUnwrapped(prefix = "wales")
+    @CCD
+    private GroundsReasonsWales groundsReasonsWales;
+
 
     @JsonUnwrapped
     @CCD
@@ -553,7 +568,7 @@ public class PCSCase {
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
-        hint = "After you've submitted your claim, there will be instructions on how to make an application"
+        hint = "After you’ve submitted your claim, there will be instructions on how to make an application"
     )
     private VerticalYesNo applicationWithClaim;
 
@@ -659,5 +674,8 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
+
+    @CCD(searchable = false)
+    private String formattedDefendantNames;
 
 }

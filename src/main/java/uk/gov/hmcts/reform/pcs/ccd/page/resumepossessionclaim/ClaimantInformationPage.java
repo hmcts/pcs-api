@@ -14,11 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 @Slf4j
 public class ClaimantInformationPage implements CcdPageConfiguration {
 
-    private static final String UPDATED_CLAIMANT_NAME_HINT = """
-        Changing your claimant name here only updates it for this claim.
-        It does not change your registered claimant name on My HMCTS
-        """;
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -49,10 +44,13 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
 
     private void setClaimantNamePossessiveForm(CaseDetails<PCSCase, State> details) {
         PCSCase caseData = details.getData();
+        ClaimantInformation claimantInfo = caseData.getClaimantInformation();
         String claimantNamePossessiveForm =
-            StringUtils.isNotEmpty(caseData.getClaimantInformation().getOverriddenClaimantName())
-            ? caseData.getClaimantInformation().getOverriddenClaimantName()
-            : caseData.getClaimantInformation().getClaimantName();
+            StringUtils.isNotEmpty(claimantInfo.getOverriddenClaimantName())
+            ? claimantInfo.getOverriddenClaimantName()
+            : (StringUtils.isNotEmpty(claimantInfo.getOrganisationName())
+                ? claimantInfo.getOrganisationName()
+                : claimantInfo.getClaimantName());
         caseData.getClaimantCircumstances().setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
     }
 
@@ -60,7 +58,18 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
         if (value == null) {
             return null;
         }
-        return value.endsWith("s") || value.endsWith("S") ? value + "'" : value + "'s";
+
+        String trimmed = value.trim();
+
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+
+        if (trimmed.endsWith("’") || trimmed.endsWith("’s") || trimmed.endsWith("’S")) {
+            return trimmed;
+        }
+
+        return trimmed.endsWith("s") || trimmed.endsWith("S") ? trimmed + "’" : trimmed + "’s";
     }
 
 }
