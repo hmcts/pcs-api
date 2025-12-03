@@ -17,10 +17,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Party {
-    @CCD(label = "Party's forename")
+    @CCD(label = "Party’s forename")
     private String forename;
 
-    @CCD(label = "Party's surname")
+    @CCD(label = "Party’s surname")
     private String surname;
 
     @CCD(label = "Organisation name")
