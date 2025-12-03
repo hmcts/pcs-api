@@ -6,6 +6,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 
 /**
  * All possible PCS case states.
@@ -24,7 +25,7 @@ public enum State {
 
     @CCD(
         label = "Awaiting Submission to HMCTS",
-        access = {ClaimantAccess.class, CitizenAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class, DefendantAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     AWAITING_SUBMISSION_TO_HMCTS,

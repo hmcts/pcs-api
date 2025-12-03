@@ -33,7 +33,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Draft case")
             .description("Save Draft Case")
-            .grant(Permission.CRU, UserRole.CITIZEN);
+            .grant(Permission.CRU, UserRole.DEFENDANT);
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -42,7 +42,8 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         long caseReference = eventPayload.caseReference();
         DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
 
-        if (defendantResponse.getDefendantResponseFinalSubmit().toBoolean()) {
+        if (defendantResponse != null
+            && defendantResponse.getDefendantResponseFinalSubmit().toBoolean()) {
             //Store defendant response to database
             //This will be implemented in a future ticket.
             //Note that defendants will be stored in a list
