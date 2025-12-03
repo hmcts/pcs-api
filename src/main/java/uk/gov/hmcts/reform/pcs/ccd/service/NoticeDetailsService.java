@@ -27,6 +27,9 @@ public class NoticeDetailsService {
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
     private static final String FUTURE_DATE_ERROR = "The date cannot be today or in the future";
     private static final String NOTICE_SERVICE_METHOD_REQUIRED = "You must select how you served the notice";
+    private static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
+    private static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
+
 
     /**
      * Validates notice details and returns any validation errors.
@@ -75,12 +78,12 @@ public class NoticeDetailsService {
         errors.addAll(textAreaValidationService.validateMultipleTextAreas(
             TextAreaValidationService.FieldValidation.of(
                 noticeServedDetails.getNoticeEmailExplanation(),
-                NoticeServedDetails.NOTICE_EMAIL_EXPLANATION_LABEL,
+                NOTICE_EMAIL_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 noticeServedDetails.getNoticeOtherExplanation(),
-                NoticeServedDetails.NOTICE_OTHER_EXPLANATION_LABEL,
+                NOTICE_OTHER_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             )
         ));

@@ -1,7 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -16,10 +20,10 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class NoticeServedDetails {
-
-    public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
-    public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
 
     // Notice Details fields
     @CCD(
@@ -71,14 +75,14 @@ public class NoticeServedDetails {
     private String noticePersonName;
 
     @CCD(
-            label = NOTICE_EMAIL_EXPLANATION_LABEL,
+            label = "Explain how it was served by email",
             hint = "You can enter up to 250 characters",
             typeOverride = TextArea
     )
     private String noticeEmailExplanation;
 
     @CCD(
-            label = NOTICE_OTHER_EXPLANATION_LABEL,
+            label = "Explain what the other means were",
             hint = "You can enter up to 250 characters",
             typeOverride = TextArea
     )
