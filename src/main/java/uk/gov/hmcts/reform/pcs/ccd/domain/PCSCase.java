@@ -780,6 +780,9 @@ public class PCSCase {
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
 
-//    private DefendantResponse defendantResponse;
+    @CCD(
+        access = {CitizenAccess.class}
+    )
+    private DefendantResponse defendantResponse;
 
 }

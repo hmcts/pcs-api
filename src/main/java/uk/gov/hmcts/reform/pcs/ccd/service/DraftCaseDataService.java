@@ -48,7 +48,7 @@ public class DraftCaseDataService {
         return draftCaseDataRepository.existsByCaseReferenceAndEventId(caseReference, eventId);
     }
 
-    public void patchUnsubmittedCaseData(long caseReference, PCSCase caseDataPatch, EventId eventId) {
+    public <T> void patchUnsubmittedEventData(long caseReference, T caseDataPatch, EventId eventId) {
 
         String patchCaseDataJson = writeCaseDataJson(caseDataPatch);
 
@@ -91,7 +91,7 @@ public class DraftCaseDataService {
         }
     }
 
-    private String writeCaseDataJson(PCSCase caseData) {
+    private <T> String writeCaseDataJson(T caseData) {
         try {
             return objectMapper.writeValueAsString(caseData);
         } catch (JsonProcessingException e) {

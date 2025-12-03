@@ -40,15 +40,15 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         log.info("Update Draft Data for Defendant Response, Case Reference: {}", eventPayload.caseReference());
 
         long caseReference = eventPayload.caseReference();
-//        DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
+        DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
 
-//        if (defendantResponse.getDefendantResponseFinalSubmit().toBoolean()) {
-          if(false) {
+        if (defendantResponse.getDefendantResponseFinalSubmit().toBoolean()) {
             //Store defendant response to database
             //This will be implemented in a future ticket.
             //Note that defendants will be stored in a list
         } else {
-            draftCaseDataService.patchUnsubmittedCaseData(caseReference,  PCSCase.builder().build(), EventId.submitDefendantResponse);
+            draftCaseDataService.patchUnsubmittedEventData(
+                caseReference, defendantResponse, EventId.submitDefendantResponse);
         }
         return SubmitResponse.defaultResponse();
     }
