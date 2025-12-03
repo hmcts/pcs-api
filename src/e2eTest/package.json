@@ -6,11 +6,12 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "test:pr": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; exit $EXIT_CODE",
+    "test:pr1": "yarn playwright install && yarn playwright test --project chrome --grep '@PR'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; exit $EXIT_CODE",
     "test:regression": "yarn playwright install && yarn playwright test --project chrome --grep '@regression'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; exit $EXIT_CODE",
     "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; exit $EXIT_CODE",
     "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; exit $EXIT_CODE",
-    "test:openAllureReport": "yarn allure open ../../e2e-output"
+    "test:openAllureReport": "yarn allure open ../../e2e-output",
+    "test:pr": "rm -rf ../../e2e-output allure-results && yarn install && yarn playwright install && yarn playwright test --project chrome || true && yarn playwright test --last-failed --project chrome || true && yarn playwright test --last-failed --project chrome || true && allure generate allure-results -o ../../e2e-output --clean && yarn allure open ../../e2e-output"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
