@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 
 import java.math.BigDecimal;
 
@@ -26,10 +27,13 @@ public class TenancyLicenceService {
                                                                 : null))
                 .walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails() != null
                                              ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null)
-                .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
-                .rentPaymentFrequency(pcsCase.getRentFrequency())
-                .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
+                .rentAmount(penceToPounds(pcsCase.getRentDetails() != null 
+                        ? pcsCase.getRentDetails().getCurrentRent() : null))
+                .rentPaymentFrequency(pcsCase.getRentDetails() != null 
+                        ? pcsCase.getRentDetails().getRentFrequency() : null)
+                .otherRentFrequency(pcsCase.getRentDetails() != null 
+                        ? pcsCase.getRentDetails().getOtherRentFrequency() : null)
+                .dailyRentChargeAmount(getDailyRentAmount(pcsCase.getRentDetails()))
                 .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
                 .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
                 .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
@@ -87,11 +91,14 @@ public class TenancyLicenceService {
                 .build();
     }
 
-    private BigDecimal getDailyRentAmount(PCSCase pcsCase) {
+    private BigDecimal getDailyRentAmount(RentDetailsSection rentDetails) {
+        if (rentDetails == null) {
+            return null;
+        }
         String[] fieldValues = {
-            pcsCase.getAmendedDailyRentChargeAmount(),
-            pcsCase.getCalculatedDailyRentChargeAmount(),
-            pcsCase.getDailyRentChargeAmount()
+            rentDetails.getAmendedDailyRentChargeAmount(),
+            rentDetails.getCalculatedDailyRentChargeAmount(),
+            rentDetails.getDailyRentChargeAmount()
         };
         for (String value : fieldValues) {
             if (value != null && !value.trim().isEmpty()) {
