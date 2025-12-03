@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcod
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
@@ -36,6 +37,8 @@ class CreatePossessionClaimTest extends BaseEventTest {
     private CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     @Mock
     private PropertyNotEligible propertyNotEligible;
+    @Mock
+    private FeeFormatter feeFormatter;
 
     @BeforeEach
     void setUp() {
@@ -44,7 +47,8 @@ class CreatePossessionClaimTest extends BaseEventTest {
             feeService,
             enterPropertyAddress,
             crossBorderPostcodeSelection,
-            propertyNotEligible
+            propertyNotEligible,
+            feeFormatter
         );
         setEventUnderTest(underTest);
     }
@@ -66,46 +70,20 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @Test
     void shouldSetFeeAmountOnStart() {
         PCSCase caseData = PCSCase.builder().build();
+
+        BigDecimal feeAmount = new BigDecimal("404.00");
+        String expectedFormattedFee = "formatted fee";
+
         when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(
             FeeDetails.builder()
-                .feeAmount(new BigDecimal("404.00"))
+                .feeAmount(feeAmount)
                 .build()
         );
+        when(feeFormatter.formatFee(feeAmount)).thenReturn(expectedFormattedFee);
 
         PCSCase result = callStartHandler(caseData);
 
-        assertThat(result.getFeeAmount()).isEqualTo("£404");
-        verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-    }
-
-    @Test
-    void shouldHandleFeeWithDecimalPlaces() {
-        PCSCase caseData = PCSCase.builder().build();
-        when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(
-            FeeDetails.builder()
-                .feeAmount(new BigDecimal("123.45"))
-                .build()
-        );
-
-        PCSCase result = callStartHandler(caseData);
-
-        assertThat(result.getFeeAmount()).isEqualTo("£123.45");
-        verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-    }
-
-    @Test
-    void shouldHandleZeroFeeAmount() {
-        PCSCase caseData = PCSCase.builder().build();
-        when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(
-            FeeDetails.builder()
-                .feeAmount(BigDecimal.ZERO)
-                .build()
-        );
-
-        PCSCase result = callStartHandler(caseData);
-
-        assertThat(result.getFeeAmount()).isEqualTo("£0");
-        verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
+        assertThat(result.getFeeAmount()).isEqualTo(expectedFormattedFee);
     }
 
     @Test
