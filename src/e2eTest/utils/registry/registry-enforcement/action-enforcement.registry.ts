@@ -28,7 +28,9 @@ export class ActionEnforcementRegistry {
     ['filterCaseFromCaseList', new SearchCaseAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
+    ['getDefendantDetails', new EnforcementAction()],
     ['selectPeopleWhoWillBeEvicted', new EnforcementAction()],
+    ['selectPeopleYouWantToEvict', new EnforcementAction()],
     ['selectPermissionFromJudge', new EnforcementAction()],
     ['selectEveryoneLivingAtTheProperty', new EnforcementAction()],
     ['selectRiskPosedByEveryoneAtProperty', new EnforcementAction()],
@@ -45,6 +47,8 @@ export class ActionEnforcementRegistry {
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['provideLegalCosts', new EnforcementAction()],
+    ['provideLandRegistryFees', new EnforcementAction()],
+    ['inputErrorValidation', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

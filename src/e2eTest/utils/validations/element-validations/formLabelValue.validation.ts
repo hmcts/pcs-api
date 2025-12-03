@@ -1,5 +1,5 @@
 import { Page, expect, Locator } from '@playwright/test';
-import { IValidation, validationData, validationRecord } from '../../interfaces/validation.interface';
+import { IValidation, validationData } from '../../interfaces/validation.interface';
 
 export class FormLabelValueValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data?: validationData): Promise<void> {
@@ -25,7 +25,7 @@ export class FormLabelValueValidation implements IValidation {
         .locator('xpath=../..')
         .locator('td span.text-16:not(:has(ccd-field-read-label))'),
 
-      page.locator(`//h3[text()="${fieldName}"]/ancestor::main[@class='govuk-main-wrapper']/descendant::p`)
+      page.locator(`//th[text()="${fieldName}"]/following-sibling::td`)
     ];
 
     for (const locator of locators) {

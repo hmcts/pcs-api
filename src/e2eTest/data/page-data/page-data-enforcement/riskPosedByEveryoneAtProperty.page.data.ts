@@ -8,5 +8,5 @@ export const riskPosedByEveryoneAtProperty = {
   protestGroupCheckbox: 'Member of a group that protests evictions',
   policeOrSocialServiceCheckbox: 'Police or social services visits to the property',
   aggressiveAnimalsCheckbox: 'Aggressive dogs or other animals',
-  continueButton: 'Continue',
+  continueButton: 'Continue'
 }
