@@ -14,11 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 @Slf4j
 public class ClaimantInformationPage implements CcdPageConfiguration {
 
-    private static final String UPDATED_CLAIMANT_NAME_HINT = """
-        Changing your claimant name here only updates it for this claim.
-        It does not change your registered claimant name on My HMCTS
-        """;
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -70,11 +65,11 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             return "";
         }
 
-        if (trimmed.endsWith("'") || trimmed.endsWith("'s") || trimmed.endsWith("'S")) {
+        if (trimmed.endsWith("’") || trimmed.endsWith("’s") || trimmed.endsWith("’S")) {
             return trimmed;
         }
 
-        return trimmed.endsWith("s") || trimmed.endsWith("S") ? trimmed + "'" : trimmed + "'s";
+        return trimmed.endsWith("s") || trimmed.endsWith("S") ? trimmed + "’" : trimmed + "’s";
     }
 
 }

@@ -1,13 +1,53 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement,
-        tenancyLicenceDetails, resumeClaimOptions, rentDetails, dailyRentAmount, reasonsForPossession, detailsOfRentArrears, claimantType, claimType,
-        groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy,
-        noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
-        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder,
-        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, userIneligible, whatAreYourGroundsForPossessionWales,
-        underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from '@data/page-data';
+import {
+  createCase,
+  addressDetails,
+  housingPossessionClaim,
+  defendantDetails,
+  claimantName,
+  contactPreferences,
+  mediationAndSettlement,
+  tenancyLicenceDetails,
+  resumeClaimOptions,
+  rentDetails,
+  dailyRentAmount,
+  reasonsForPossession,
+  detailsOfRentArrears,
+  claimantType,
+  claimType,
+  groundsForPossession,
+  preActionProtocol,
+  noticeOfYourIntention,
+  borderPostcode,
+  rentArrearsPossessionGrounds,
+  rentArrearsOrBreachOfTenancy,
+  noticeDetails,
+  moneyJudgment,
+  whatAreYourGroundsForPossession,
+  languageUsed,
+  defendantCircumstances,
+  applications,
+  claimantCircumstances,
+  claimingCosts,
+  alternativesToPossession,
+  reasonsForRequestingADemotionOrder,
+  statementOfExpressTerms,
+  reasonsForRequestingASuspensionOrder,
+  uploadAdditionalDocs,
+  additionalReasonsForPossession,
+  completeYourClaim,
+  userIneligible,
+  whatAreYourGroundsForPossessionWales,
+  underlesseeOrMortgageeDetails,
+  reasonsForRequestingASuspensionAndDemotionOrder,
+  provideMoreDetailsOfClaim,
+  addressCheckYourAnswers,
+  statementOfTruth,
+  claimSaved,
+  payClaimFee
+} from '@data/page-data';
 
 export let caseNumber: string;
 export let claimantsName: string;
@@ -63,7 +103,9 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
-      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)]
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
+      ['claimSaved', () => this.claimSaved()],
+      ['payClaimFee', () => this.payClaimFee()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -392,7 +434,7 @@ export class CreateCaseAction implements IAction {
       throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
     }
     for (let n = 0; n < reasons.length; n++) {
-      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
+      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason+"-"+reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
@@ -471,7 +513,7 @@ export class CreateCaseAction implements IAction {
   private async selectClaimantCircumstances(claimantCircumstance: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
+    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}’` : `${claimantsName}’s`;
     await performAction('clickRadioButton', {
       question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
       option: claimantCircumstance.circumstanceOption
@@ -625,6 +667,23 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: languageDetails.question, option: languageDetails.option});
     await performAction('clickButton', languageUsed.continue);
+  }
+
+  private async claimSaved() {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'span', text: claimSaved.claimSavedBanner});
+    await performAction('clickButton', claimSaved.closeAndReturnButton);
+  }
+
+  private async payClaimFee(params?: { clickLink?: boolean }) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeBanner});
+    if (params?.clickLink === true) {
+      await performAction('clickButton', payClaimFee.payClaimFeeLink);
+    }
+    await performAction('clickButton', payClaimFee.closeAndReturnButton);
   }
 
   private async selectDefendantCircumstances(

@@ -4,6 +4,6 @@ export const everyoneLivingAtTheProperty = {
   riskToBailiffQuestion: 'Does anyone living at the property pose a risk to the bailiff?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
-  notSureRadioOption:'I\'m not sure',
+  notSureRadioOption:'I’m not sure',
   continueButton: 'Continue'
 }
