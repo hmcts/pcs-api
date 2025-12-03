@@ -107,7 +107,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
             .allDefendants(wrapListItems(defendantService.mapToDefendantDetails(pcsCaseEntity.getDefendants())))
-            .defendantResponseFinalSubmit(YesOrNo.from(pcsCaseEntity.isDefendantResponseFinalSubmit()))
+            //.defendantResponseFinalSubmit(YesOrNo.from(pcsCaseEntity.isDefendantResponseFinalSubmit()))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);

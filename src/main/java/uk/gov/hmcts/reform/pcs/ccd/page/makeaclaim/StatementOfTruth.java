@@ -41,7 +41,7 @@ public class StatementOfTruth implements CcdPageConfiguration {
                 .mandatory(StatementOfTruthDetails::getPositionLegalRep,
                     "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
             .done()
-            .label("statementOfTruth-saveAndReturn", CommonPageContent.SAVE_AND_RETURN)
-            .readonly(PCSCase::getDefendantResponseFinalSubmit, ShowConditions.NEVER_SHOW);
+            .label("statementOfTruth-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+//            .readonly(PCSCase::getDefendantResponse, ShowConditions.NEVER_SHOW);
     }
 }
