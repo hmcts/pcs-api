@@ -1,8 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
@@ -28,13 +32,15 @@ public class TenancyLicenceService {
             .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
             .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
 
-        buildNoticeServedDetails(pcsCase, tenancyLicenceBuilder);
+        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
 
-        buildWalesNoticeServedDetails(pcsCase, tenancyLicenceBuilder);
+        buildNoticeServedDetails(pcsCase.getNoticeServedDetails(), tenancyLicenceBuilder);
 
-        buildWalesHousingActDetails(pcsCase, tenancyLicenceBuilder);
+        buildWalesNoticeServedDetails(pcsCase.getWalesNoticeDetails(), tenancyLicenceBuilder);
 
-        buildWalesOccupationContractDetails(pcsCase, tenancyLicenceBuilder);
+        buildWalesHousingActDetails(pcsCase.getWalesHousingAct(), tenancyLicenceBuilder);
+
+        buildWalesOccupationContractDetails(pcsCase.getOccupationLicenceDetailsWales(), tenancyLicenceBuilder);
 
         return tenancyLicenceBuilder.build();
     }
@@ -53,68 +59,66 @@ public class TenancyLicenceService {
         return null;
     }
 
-    private void buildNoticeServedDetails(PCSCase pcsCase,
+    private void buildNoticeServedDetails(NoticeServedDetails noticeServedDetails,
                                                     TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         // Add notice served details
-        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
-
-        if (pcsCase.getNoticeServedDetails() != null) {
+        if (noticeServedDetails != null) {
             tenancyLicenceBuilder
-                .noticeServiceMethod(pcsCase.getNoticeServedDetails().getNoticeServiceMethod() != null
-                        ? pcsCase.getNoticeServedDetails().getNoticeServiceMethod().name()
+                .noticeServiceMethod(noticeServedDetails.getNoticeServiceMethod() != null
+                        ? noticeServedDetails.getNoticeServiceMethod().name()
                         : null)
-                .noticePostedDate(pcsCase.getNoticeServedDetails().getNoticePostedDate())
-                .noticeDeliveredDate(pcsCase.getNoticeServedDetails().getNoticeDeliveredDate())
-                .noticeHandedOverDateTime(pcsCase.getNoticeServedDetails().getNoticeHandedOverDateTime())
-                .noticePersonName(pcsCase.getNoticeServedDetails().getNoticePersonName())
-                .noticeEmailSentDateTime(pcsCase.getNoticeServedDetails().getNoticeEmailSentDateTime())
-                .noticeEmailExplanation(pcsCase.getNoticeServedDetails().getNoticeEmailExplanation())
-                .noticeOtherElectronicDateTime(pcsCase.getNoticeServedDetails().getNoticeOtherElectronicDateTime())
-                .noticeOtherDateTime(pcsCase.getNoticeServedDetails().getNoticeOtherDateTime())
-                .noticeOtherExplanation(pcsCase.getNoticeServedDetails().getNoticeOtherExplanation())
-                .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeServedDetails().getNoticeDocuments()));
+                .noticePostedDate(noticeServedDetails.getNoticePostedDate())
+                .noticeDeliveredDate(noticeServedDetails.getNoticeDeliveredDate())
+                .noticeHandedOverDateTime(noticeServedDetails.getNoticeHandedOverDateTime())
+                .noticePersonName(noticeServedDetails.getNoticePersonName())
+                .noticeEmailSentDateTime(noticeServedDetails.getNoticeEmailSentDateTime())
+                .noticeEmailExplanation(noticeServedDetails.getNoticeEmailExplanation())
+                .noticeOtherElectronicDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime())
+                .noticeOtherDateTime(noticeServedDetails.getNoticeOtherDateTime())
+                .noticeOtherExplanation(noticeServedDetails.getNoticeOtherExplanation())
+                .noticeDocuments(ListValueUtils.unwrapListItems(noticeServedDetails.getNoticeDocuments()));
         }
     }
 
-    private void buildWalesNoticeServedDetails(PCSCase pcsCase,
+    private void buildWalesNoticeServedDetails(WalesNoticeDetails walesNoticeDetails,
                                                TenancyLicence.TenancyLicenceBuilder tenancyLicence) {
         // Add notice served details for Wales
-        if (pcsCase.getWalesNoticeDetails() != null) {
-            tenancyLicence.walesNoticeServed(pcsCase.getWalesNoticeDetails().getNoticeServed() != null
-                ? YesOrNoToBoolean.convert(pcsCase.getWalesNoticeDetails().getNoticeServed()) : null);
-            tenancyLicence.walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed());
+        if (walesNoticeDetails != null) {
+            tenancyLicence.walesNoticeServed(walesNoticeDetails.getNoticeServed() != null
+                ? YesOrNoToBoolean.convert(walesNoticeDetails.getNoticeServed()) : null);
+            tenancyLicence.walesTypeOfNoticeServed(walesNoticeDetails.getTypeOfNoticeServed());
         }
     }
 
-    private void buildWalesHousingActDetails(PCSCase pcsCase,
+    private void buildWalesHousingActDetails(WalesHousingAct walesHousingAct,
                                              TenancyLicence.TenancyLicenceBuilder tenancyLicence) {
         // Add Wales Housing Act details
-        if (pcsCase.getWalesHousingAct() != null) {
-            tenancyLicence.walesRegistered(pcsCase.getWalesHousingAct().getRegistered());
-            tenancyLicence.walesRegistrationNumber(pcsCase.getWalesHousingAct().getRegistrationNumber());
-            tenancyLicence.walesLicensed(pcsCase.getWalesHousingAct().getLicensed());
-            tenancyLicence.walesLicenceNumber(pcsCase.getWalesHousingAct().getLicenceNumber());
-            tenancyLicence.walesLicensedAgentAppointed(pcsCase.getWalesHousingAct().getLicensedAgentAppointed());
-            tenancyLicence.walesAgentFirstName(pcsCase.getWalesHousingAct().getAgentFirstName());
-            tenancyLicence.walesAgentLastName(pcsCase.getWalesHousingAct().getAgentLastName());
-            tenancyLicence.walesAgentLicenceNumber(pcsCase.getWalesHousingAct().getAgentLicenceNumber());
-            tenancyLicence.walesAgentAppointmentDate(pcsCase.getWalesHousingAct().getAgentAppointmentDate());
+        if (walesHousingAct != null) {
+            tenancyLicence.walesRegistered(walesHousingAct.getRegistered());
+            tenancyLicence.walesRegistrationNumber(walesHousingAct.getRegistrationNumber());
+            tenancyLicence.walesLicensed(walesHousingAct.getLicensed());
+            tenancyLicence.walesLicenceNumber(walesHousingAct.getLicenceNumber());
+            tenancyLicence.walesLicensedAgentAppointed(walesHousingAct.getLicensedAgentAppointed());
+            tenancyLicence.walesAgentFirstName(walesHousingAct.getAgentFirstName());
+            tenancyLicence.walesAgentLastName(walesHousingAct.getAgentLastName());
+            tenancyLicence.walesAgentLicenceNumber(walesHousingAct.getAgentLicenceNumber());
+            tenancyLicence.walesAgentAppointmentDate(walesHousingAct.getAgentAppointmentDate());
         }
     }
 
-    private void buildWalesOccupationContractDetails(PCSCase pcsCase,
+    private void buildWalesOccupationContractDetails(OccupationLicenceDetailsWales occupationLicenceDetailsWales,
                                                      TenancyLicence.TenancyLicenceBuilder tenancyLicence) {
         // Add Wales Occupation Contract/Licence details
-        if (pcsCase.getOccupationLicenceDetailsWales() != null) {
+        if (occupationLicenceDetailsWales != null) {
             tenancyLicence.occupationLicenceTypeWales(
-                pcsCase.getOccupationLicenceDetailsWales().getOccupationLicenceTypeWales());
+                occupationLicenceDetailsWales.getOccupationLicenceTypeWales());
             tenancyLicence.walesOtherLicenceTypeDetails(
-                pcsCase.getOccupationLicenceDetailsWales().getOtherLicenceTypeDetails());
+                occupationLicenceDetailsWales.getOtherLicenceTypeDetails());
             tenancyLicence.walesLicenceStartDate(
-                pcsCase.getOccupationLicenceDetailsWales().getLicenceStartDate());
+                occupationLicenceDetailsWales.getLicenceStartDate());
             tenancyLicence.walesLicenceDocuments(
                 ListValueUtils.unwrapListItems(
-                    pcsCase.getOccupationLicenceDetailsWales().getLicenceDocuments()));
+                    occupationLicenceDetailsWales.getLicenceDocuments()));
         }
     }
 
