@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { IValidation } from '../../interfaces/validation.interface';
 import * as fs from 'fs';
 import * as path from 'path';
-import { cyaStore, cyaValidation } from './cyaPage.validation';
+import { cyaValidation, CYAStore } from '../custom-validations/CYA/cyaPage.validation';
 
 const ELEMENT_TYPES = [
   'Button', 'Link', 'Header', 'Caption', 'Checkbox', 'Question',
@@ -19,7 +19,6 @@ export class PageContentValidation implements IValidation {
   private static testCounter = 0;
   private static pageToFileNameMap = new Map<string, string>();
   private static pageToHeaderTextMap = new Map<string, string>();
-  private static cyaPageValidated = false;
 
   private readonly locatorPatterns = {
     Button: (page: Page, value: string) => page.locator(`
@@ -94,48 +93,16 @@ export class PageContentValidation implements IValidation {
   async validateCurrentPage(page: Page): Promise<void> {
     const pageUrl = page.url();
 
-    // Check if this is a CYA page (has 'submit' in URL)
-    if (pageUrl.includes('/submit')) {
-      const urlSegments = pageUrl.split('/').filter(Boolean);
-      const lastSegment = urlSegments[urlSegments.length - 1];
-      const secondLastSegment = urlSegments.length >= 2 ? urlSegments[urlSegments.length - 2] : '';
-
-      // Check for resumePossessionClaim/submit pattern
-      if (secondLastSegment === 'resumePossessionClaim' && lastSegment === 'submit') {
-        console.log('\n🎯 Detected CYA page (resumePossessionClaim/submit)');
-        PageContentValidation.cyaPageValidated = true;
-        await cyaValidation.validateCYAPage(page);
-        return;
-      }
-
-      // Check for createPossessionClaim/submit pattern
-      if (secondLastSegment === 'createPossessionClaim' && lastSegment === 'submit') {
-        console.log('\n🎯 Detected CYA page (createPossessionClaim/submit) - Using special mapping');
-        PageContentValidation.cyaPageValidated = true;
-        // For createPossessionClaim, use special mapping
-        const fileName = 'checkYourAnswers-addressInfo';
-        PageContentValidation.pageToFileNameMap.set(pageUrl, fileName);
-
-        // Continue with normal page validation using the mapped file
-        const pageData = await this.loadPageDataFile(fileName);
-        if (pageData) {
-          await this.validatePageData(page, pageData, pageUrl);
-        }
-        return;
-      }
+    if (PageContentValidation.isCYAPage(pageUrl)) {
+      await cyaValidation.validateCYAPage(page);
+      return;
     }
 
-    // For non-CYA pages, continue with original logic
     const pageData = await this.getPageData(page);
 
     if (!pageData) return;
 
-    await this.validatePageData(page, pageData, pageUrl);
-  }
-
-  private async validatePageData(page: Page, pageData: any, pageUrl: string): Promise<void> {
     const pageResults: ValidationResult[] = [];
-
     for (const [key, value] of Object.entries(pageData)) {
       if (key.includes('Input') || key.includes('Hidden')) continue;
       if (typeof value === 'string' && value.trim() !== '') {
@@ -146,6 +113,19 @@ export class PageContentValidation implements IValidation {
     }
 
     PageContentValidation.validationResults.set(pageUrl, pageResults);
+  }
+
+  private static isCYAPage(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      const segments = urlObj.pathname.split('/').filter(Boolean);
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment === 'submit';
+    } catch {
+      const segments = url.split('/').filter(Boolean);
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment === 'submit';
+    }
   }
 
   private async getPageData(page: Page): Promise<any> {
@@ -174,20 +154,6 @@ export class PageContentValidation implements IValidation {
   }
 
   private async getFileName(urlSegment: string, page: Page): Promise<string | null> {
-    const pageUrl = page.url();
-
-    // Skip file lookup for resumePossessionClaim/submit CYA pages
-    if (pageUrl.includes('/submit')) {
-      const urlSegments = pageUrl.split('/').filter(Boolean);
-      const lastSegment = urlSegments[urlSegments.length - 1];
-      const secondLastSegment = urlSegments.length >= 2 ? urlSegments[urlSegments.length - 2] : '';
-
-      // For resumePossessionClaim/submit, don't look for files
-      if (secondLastSegment === 'resumePossessionClaim' && lastSegment === 'submit') {
-        return null;
-      }
-    }
-
     try {
       const mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
       if (!fs.existsSync(mappingPath)) return null;
@@ -269,16 +235,6 @@ export class PageContentValidation implements IValidation {
   static finaliseTest(): void {
     PageContentValidation.testCounter++;
 
-    // Add CYA information to summary
-    const cyaAnswers = cyaStore.getAnswers();
-    if (cyaAnswers.length > 0) {
-      console.log(`\n📝 CYA Answers Captured: ${cyaAnswers.length}`);
-    }
-
-    if (this.cyaPageValidated) {
-      console.log(`   CYA Page Validated: Yes`);
-    }
-
     if (this.validationExecuted && this.validationResults.size === 0 && this.missingDataFiles.size === 0) {
       return;
     }
@@ -290,6 +246,8 @@ export class PageContentValidation implements IValidation {
     const validatedPages = new Set<string>();
 
     for (const [pageUrl, results] of Array.from(this.validationResults.entries())) {
+      if (this.isCYAPage(pageUrl)) continue;
+
       const pageName = this.getPageNameForLogging(pageUrl);
       validatedPages.add(pageName);
 
@@ -309,13 +267,13 @@ export class PageContentValidation implements IValidation {
       failedPages.set(pageName, pageFailuresByType);
     }
 
-    const totalValidated = validatedPages.size + (this.cyaPageValidated ? 1 : 0);
+    const totalValidated = validatedPages.size;
     const passedCount = passedPages.size;
     const failedCount = failedPages.size;
     const missingFilesCount = this.missingDataFiles.size;
 
     console.log(`\n📊 PAGE CONTENT VALIDATION SUMMARY (Test #${this.testCounter}):`);
-    console.log(`   Total pages validated: ${totalValidated}`);
+    console.log(`   Total regular pages validated: ${totalValidated}`);
     console.log(`   Number of pages passed: ${passedCount}`);
     console.log(`   Number of pages failed: ${failedCount}`);
     console.log(`   Missing data files: ${missingFilesCount}`);
@@ -324,9 +282,11 @@ export class PageContentValidation implements IValidation {
     if (failedCount > 0) console.log(`   Failed pages: ${Array.from(failedPages.keys()).join(', ') || 'None'}`);
     if (missingFilesCount > 0) console.log(`   Page files not found: ${Array.from(this.missingDataFiles).join(', ') || 'None'}`);
 
-    process.stdout.write('');
+    let shouldThrowError = false;
+    let errorMessages: string[] = [];
 
     if (failedPages.size > 0) {
+      shouldThrowError = true;
       console.log(`\n❌ VALIDATION FAILED:\n`);
       for (const [pageName, pageFailures] of failedPages) {
         console.log(`   Page: ${pageName}`);
@@ -338,17 +298,27 @@ export class PageContentValidation implements IValidation {
         }
         console.log(`     Total missing on this page: ${pageFailureCount}\n`);
       }
-      process.stdout.write('');
-      throw new Error(`Page content validation failed: ${failedPages.size} pages have missing elements`);
-    } else if (totalValidated > 0) {
+      errorMessages.push(`Page content validation failed: ${failedPages.size} pages have missing elements`);
+    }
+
+    const cyaFailed = cyaValidation.hasValidationFailed();
+    if (cyaFailed) {
+      shouldThrowError = true;
+      errorMessages.push(`CYA page validation failed`);
+    }
+
+    if (totalValidated > 0 && failedPages.size === 0 && !cyaFailed) {
       console.log(`\n✅ VALIDATION PASSED: All intended pages validated successfully!`);
-      process.stdout.write('');
-    } else if (missingFilesCount > 0) {
+    } else if (missingFilesCount > 0 && totalValidated === 0) {
       console.log(`\n⚠️  NO VALIDATION: Missing data files for all pages`);
-      process.stdout.write('');
     }
 
     this.clearValidationResults();
+    CYAStore.getInstance().clearAll();
+
+    if (shouldThrowError) {
+      throw new Error(errorMessages.join(' | '));
+    }
   }
 
   private static getPageNameForLogging(url: string): string {
@@ -391,9 +361,5 @@ export class PageContentValidation implements IValidation {
     this.pageToFileNameMap.clear();
     this.pageToHeaderTextMap.clear();
     this.validationExecuted = false;
-    this.cyaPageValidated = false;
-
-    // Clear CYA answers for next test
-    cyaStore.clearAnswers();
   }
 }
