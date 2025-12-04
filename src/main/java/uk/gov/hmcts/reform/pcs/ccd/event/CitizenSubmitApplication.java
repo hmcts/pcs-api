@@ -25,7 +25,7 @@ public class CitizenSubmitApplication implements CCDConfig<PCSCase, State, UserR
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(citizenSubmitApplication.name(), this::submit)
-            .forStateTransition(AWAITING_SUBMISSION_TO_HMCTS, CASE_ISSUED)
+            .forState(CASE_ISSUED)
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Submit case")
             .description("Submit the possession case")
