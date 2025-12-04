@@ -50,6 +50,8 @@ public class PCSCase {
         "Give details of the type of tenancy or licence agreement that's in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
+    private YesOrNo submitDraftAnswers;
+
     @CCD(
         searchable = false
     )

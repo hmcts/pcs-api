@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantResponse;
@@ -29,10 +30,10 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(submitDefendantResponse.name(), this::submit)
-            .forStateTransition(State.AWAITING_SUBMISSION_TO_HMCTS, State.AWAITING_SUBMISSION_TO_HMCTS)
+            .forStateTransition(State.CASE_ISSUED, State.CASE_ISSUED)
             .showCondition(ShowConditions.NEVER_SHOW)
-            .name("Draft case")
-            .description("Save Draft Case")
+            .name("Defendant Response Submission")
+            .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT);
     }
 
@@ -41,15 +42,17 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
 
         long caseReference = eventPayload.caseReference();
         DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
+        YesOrNo submitDraft = eventPayload.caseData().getSubmitDraftAnswers();
 
-        if (defendantResponse != null
-            && defendantResponse.getDefendantResponseFinalSubmit().toBoolean()) {
-            //Store defendant response to database
-            //This will be implemented in a future ticket.
-            //Note that defendants will be stored in a list
-        } else {
-            draftCaseDataService.patchUnsubmittedEventData(
-                caseReference, defendantResponse, EventId.submitDefendantResponse);
+        if (defendantResponse != null) {
+            if (submitDraft.toBoolean()) {
+                //Store defendant response to database
+                //This will be implemented in a future ticket.
+                //Note that defendants will be stored in a list
+            } else {
+                draftCaseDataService.patchUnsubmittedEventData(
+                    caseReference, defendantResponse, EventId.submitDefendantResponse);
+            }
         }
         return SubmitResponse.defaultResponse();
     }
