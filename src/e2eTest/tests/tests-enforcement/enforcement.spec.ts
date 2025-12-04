@@ -50,7 +50,8 @@ test.beforeEach(async ({ page }) => {
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
-  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  // Wait for case details page to load (hash fragment may be added by JavaScript later)
+  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/**`);
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
