@@ -3,14 +3,19 @@ package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 
 class RentSectionRoutingServiceTest {
 
@@ -46,7 +51,7 @@ class RentSectionRoutingServiceTest {
     void shouldDelegateToSecureFlexiblePolicy() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.SECURE_TENANCY)
-            .secureOrFlexibleDiscretionaryGrounds(null)
+            .secureOrFlexiblePossessionGrounds(SecureOrFlexiblePossessionGrounds.builder().build())
             .build();
 
         YesOrNo result = service.shouldShowRentSection(caseData);
@@ -71,8 +76,8 @@ class RentSectionRoutingServiceTest {
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsMandatoryGroundsOptions(
-                java.util.Set.of(
-                    uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS
+                Set.of(
+                    NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS
                 )
             )
             .noRentArrearsDiscretionaryGroundsOptions(null)
@@ -87,15 +92,12 @@ class RentSectionRoutingServiceTest {
     void shouldHandleSecureTenancyWithRentArrears() {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.SECURE_TENANCY)
-            .secureOrFlexibleDiscretionaryGrounds(
-                java.util.Set.of(
-                    uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds
-                        .RENT_ARREARS_OR_BREACH_OF_TENANCY
-                )
-            )
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds
+                    .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY)).build())
             .rentArrearsOrBreachOfTenancy(
-                java.util.Set.of(
-                    uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy.RENT_ARREARS
+                Set.of(
+                    RentArrearsOrBreachOfTenancy.RENT_ARREARS
                 )
             )
             .build();

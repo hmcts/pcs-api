@@ -17,18 +17,18 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 public enum State {
 
     @CCD(
-        label = "Awaiting further claim details",
-        access = {ClaimantAccess.class},
-        hint = "${caseTitleMarkdown}"
-    )
-    AWAITING_FURTHER_CLAIM_DETAILS,
-
-    @CCD(
         label = "Awaiting Submission to HMCTS",
         access = {ClaimantAccess.class, CitizenAccess.class, DefendantAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     AWAITING_SUBMISSION_TO_HMCTS,
+
+    @CCD(
+        label = "Pending Case Issued",
+        access = {ClaimantAccess.class, CitizenAccess.class},
+        hint = "${caseTitleMarkdown}"
+    )
+    PENDING_CASE_ISSUED,
 
     @CCD(
         label = "Case Issued",

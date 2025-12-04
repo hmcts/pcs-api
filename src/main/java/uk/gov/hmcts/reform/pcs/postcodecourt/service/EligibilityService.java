@@ -43,7 +43,7 @@ public class EligibilityService {
      */
     public EligibilityResult checkEligibility(String postcode, LegislativeCountry providedLegislativeCountry) {
         if (postcode == null || postcode.isBlank()) {
-            throw new InvalidPostCodeException("Postcode can't be empty or null");
+            throw new InvalidPostCodeException("Postcode can’t be empty or null");
         }
 
         List<PostcodeCourtMapping> postcodeMappings = findMatchingMappings(postcode, providedLegislativeCountry);
