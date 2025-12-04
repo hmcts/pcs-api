@@ -102,4 +102,8 @@ public class EnforcementOrder {
     @JsonUnwrapped
     @CCD
     private LegalCosts legalCosts;
+
+    @JsonUnwrapped
+    @CCD
+    private LandRegistryFees landRegistryFees;
 }

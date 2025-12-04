@@ -21,7 +21,7 @@ public class UnderlesseeMortgageeDetails {
                     """, typeOverride = FieldType.Label)
     private String nameSectionLabel;
 
-    @CCD(label = "Do you know the underlessee or mortgagee's name?")
+    @CCD(label = "Do you know the underlessee or mortgagee’s name?")
     private VerticalYesNo nameKnown;
 
     @CCD(label = "What is their name?",
@@ -36,7 +36,7 @@ public class UnderlesseeMortgageeDetails {
                     """, typeOverride = FieldType.Label)
     private String addressSectionLabel;
 
-    @CCD(label = "Do you know the underlessee or mortgagee's correspondence address?")
+    @CCD(label = "Do you know the underlessee or mortgagee’s correspondence address?")
     private VerticalYesNo addressKnown;
 
     @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\"")
