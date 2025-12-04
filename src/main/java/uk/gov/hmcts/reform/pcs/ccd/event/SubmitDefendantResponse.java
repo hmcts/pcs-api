@@ -30,7 +30,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(submitDefendantResponse.name(), this::submit)
-            .forStateTransition(State.CASE_ISSUED, State.CASE_ISSUED)
+            .forState(State.CASE_ISSUED)
             .showCondition(ShowConditions.NEVER_SHOW)
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")

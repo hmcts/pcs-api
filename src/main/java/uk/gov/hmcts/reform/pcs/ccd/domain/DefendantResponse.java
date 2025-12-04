@@ -13,4 +13,3 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 public class DefendantResponse {
     private YesOrNo contactByPhone;
 }
-
