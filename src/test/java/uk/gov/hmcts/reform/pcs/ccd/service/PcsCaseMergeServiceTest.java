@@ -108,7 +108,7 @@ class PcsCaseMergeServiceTest {
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
 
         when(pcsCase.getDefendant1()).thenReturn(mock(DefendantDetails.class));
-        when(defendantService.buildDefendantsList(pcsCase)).thenReturn(expectedDefendants);
+        when(defendantService.buildDefendantsList(pcsCase,pcsCaseEntity)).thenReturn(expectedDefendants);
 
         // When
         underTest.mergeCaseData(pcsCaseEntity, pcsCase);

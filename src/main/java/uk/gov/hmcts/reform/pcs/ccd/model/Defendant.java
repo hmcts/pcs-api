@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 
+import java.util.UUID;
+
 
 @Builder
 @Data
@@ -15,6 +17,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Defendant {
+
+    private UUID partyId;
 
     private Boolean nameKnown;
 
