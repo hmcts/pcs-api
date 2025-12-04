@@ -32,12 +32,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
     void shouldPatchUnsubmittedEventData() {
         // Given Defendant response
         DefendantResponse defendantResponse = DefendantResponse.builder()
-            .defendantResponseFinalSubmit(YesOrNo.NO)
             .contactByPhone(YesOrNo.YES)
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .defendantResponse(defendantResponse)
+            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         // When
