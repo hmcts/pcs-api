@@ -507,7 +507,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             FeesAndPayTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
 
-            assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE);
+            assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
         }
 
@@ -568,7 +568,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         private FeeDetails stubFeeService() {
             FeeDetails feeDetails = FeeDetails.builder().feeAmount(CLAIM_FEE_AMOUNT).build();
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE))
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE.getCode()))
                 .thenReturn(feeDetails);
 
             return feeDetails;
