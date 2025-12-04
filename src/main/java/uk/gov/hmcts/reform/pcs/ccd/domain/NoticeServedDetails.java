@@ -33,37 +33,37 @@ public class NoticeServedDetails {
 
     // Date fields for different service methods
     @CCD(
-            label = "Date the document was posted (Optional)",
+            label = "Date the document was posted",
             hint = "For example, 16 4 2021"
     )
     private LocalDate noticePostedDate;
 
     @CCD(
-            label = "Date the document was delivered (Optional)",
+            label = "Date the document was delivered",
             hint = "For example, 16 4 2021"
     )
     private LocalDate noticeDeliveredDate;
 
     @CCD(
-            label = "Date and time the document was handed over (Optional)",
+            label = "Date and time the document was handed over",
             hint = "For example, 16 4 2021, 11 15"
     )
     private LocalDateTime noticeHandedOverDateTime;
 
     @CCD(
-            label = "Date and time the email was sent (Optional)",
+            label = "Date and time the email was sent",
             hint = "For example, 16 4 2021, 11 15"
     )
     private LocalDateTime noticeEmailSentDateTime;
 
     @CCD(
-            label = "Date and time the electronic message was sent (Optional)",
+            label = "Date and time the electronic message was sent",
             hint = "For example, 16 4 2021, 11 15"
     )
     private LocalDateTime noticeOtherElectronicDateTime;
 
     @CCD(
-            label = "Date and time the document was served (Optional)",
+            label = "Date and time the document was served",
             hint = "For example, 16 4 2021, 11 15"
     )
     private LocalDateTime noticeOtherDateTime;
