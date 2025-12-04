@@ -93,7 +93,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -139,7 +139,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
-    private final OrganisationNameService organisationNameService;
+    private final OrganisationService organisationService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
     private final ProhibitedConductWales prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
@@ -238,7 +238,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
         // Fetch organisation name from rd-professional API
-        String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+        String organisationName = organisationService.getOrganisationNameForCurrentUser();
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
@@ -271,8 +271,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);
+
         caseData.setFormattedClaimantContactAddress(addressFormatter
-            .formatAddressWithHtmlLineBreaks(caseData.getPropertyAddress()));
+            .formatAddressWithHtmlLineBreaks(organisationService.getOrganisationAddressForCurrentUser()));
 
         return caseData;
     }

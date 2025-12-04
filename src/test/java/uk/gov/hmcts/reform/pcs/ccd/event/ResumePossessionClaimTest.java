@@ -18,12 +18,12 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -74,7 +74,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -157,7 +157,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     @Mock
-    private OrganisationNameService organisationNameService;
+    private OrganisationService organisationService;
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
@@ -215,7 +215,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
-            demotionOfTenancyOrderReason, organisationNameService, claimantDetailsWalesPage, prohibitedConductWalesPage,
+            demotionOfTenancyOrderReason, organisationService, claimantDetailsWalesPage, prohibitedConductWalesPage,
             schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage, groundsForPossessionWales,
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossession, rentArrearsGroundForPossessionAdditionalGrounds,
@@ -266,10 +266,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldSetClaimantDetails() {
             // Given
             String expectedUserEmail = "user@test.com";
-            when(userDetails.getSub()).thenReturn(expectedUserEmail);
-            when(organisationNameService.getOrganisationNameForCurrentUser()).thenReturn(null);
-
-            AddressUK propertyAddress = AddressUK.builder()
+            AddressUK claimantAddress = AddressUK.builder()
                 .addressLine1("10 High Street")
                 .addressLine2("address line 2")
                 .addressLine3("address line 3")
@@ -277,9 +274,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .postCode("W1 2BC")
                 .country("United Kingdom")
                 .build();
+            when(userDetails.getSub()).thenReturn(expectedUserEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(claimantAddress);
 
             PCSCase caseData = PCSCase.builder()
-                .propertyAddress(propertyAddress)
+                .propertyAddress(mock(AddressUK.class))
                 .legislativeCountry(WALES)
                 .build();
 
