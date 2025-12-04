@@ -18,3 +18,5 @@ export * from '@data/page-data/page-data-enforcement/peopleYouWantToEvict.page.d
 export * from '@data/page-data/page-data-enforcement/youNeedPermission.page.data';
 export * from '@data/page-data/page-data-enforcement/moneyOwed.page.data';
 export * from '@data/page-data/page-data-enforcement/legalCosts.page.data';
+export * from '@data/page-data/page-data-enforcement/landRegistryFees.page.data';
+export * from '@data/page-data/page-data-enforcement/rePayments.page.data';
