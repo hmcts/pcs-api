@@ -86,8 +86,8 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
         }
 
         boolean hasOtherDiscretionaryGrounds =
-            introductoryDemotedOtherGroundsForPossession.getIntroductoryDemotedOrOtherGrounds() != null &&
-                introductoryDemotedOtherGroundsForPossession.getIntroductoryDemotedOrOtherGrounds()
+            introductoryDemotedOtherGroundsForPossession.getIntroductoryDemotedOrOtherGrounds() != null
+                && introductoryDemotedOtherGroundsForPossession.getIntroductoryDemotedOrOtherGrounds()
                 .stream()
                 .anyMatch(ground -> ground != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
                 );
