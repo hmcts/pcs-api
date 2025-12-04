@@ -44,7 +44,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
         YesOrNo submitDraft = eventPayload.caseData().getSubmitDraftAnswers();
 
-        if (defendantResponse != null) {
+        if (defendantResponse != null && submitDraft != null) {
             if (submitDraft.toBoolean()) {
                 //Store defendant response to database
                 //This will be implemented in a future ticket.

@@ -32,7 +32,7 @@ public enum State {
 
     @CCD(
         label = "Case Issued",
-        access = {CaseworkerReadAccess.class, ClaimantAccess.class},
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class},
         hint = "${caseTitleMarkdown}"
     )
     CASE_ISSUED
