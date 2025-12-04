@@ -12,9 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration.LookUpReferenceData;
-import uk.gov.hmcts.reform.pcs.feesandpay.config.Jurisdictions;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.PCSFeesClient;
-import uk.gov.hmcts.reform.pcs.feesandpay.config.ServiceName;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
@@ -40,13 +38,10 @@ class RealFeeServiceTest {
 
     private RealFeeService underTest;
 
-    private static final String FEE_TYPE = FeeTypes.CASE_ISSUE_FEE.getCode();
+    private static final FeeTypes FEE_TYPE = FeeTypes.CASE_ISSUE_FEE;
 
     private LookUpReferenceData lookUpReferenceData;
     private FeeLookupResponseDto feeLookupResponseDto;
-
-    private final ServiceName serviceName = new ServiceName("test");
-    private final Jurisdictions jurisdictions = new Jurisdictions("j1", "j2");
 
     @BeforeEach
     void setUp() {
@@ -69,15 +64,15 @@ class RealFeeServiceTest {
 
     @Test
     void shouldSuccessfullyGetFeeDetails() {
-        when(feesConfiguration.getLookup(FEE_TYPE)).thenReturn(lookUpReferenceData);
-        when(pcsFeesClient.lookupFee(serviceName, jurisdictions,
+        when(feesConfiguration.getLookup(FEE_TYPE.getCode())).thenReturn(lookUpReferenceData);
+        when(pcsFeesClient.lookupFee(FEE_TYPE.getCode(),
             "default",
             "issue",
             new BigDecimal("1"),
             "PossessionCC"
         )).thenReturn(feeLookupResponseDto);
 
-        FeeDetails feeDetails = underTest.getFee(serviceName, jurisdictions, FEE_TYPE);
+        FeeDetails feeDetails = underTest.getFee(FEE_TYPE);
 
         assertThat(feeDetails).isNotNull();
         assertThat(feeDetails.getCode()).isEqualTo("FEE0412");
@@ -86,22 +81,22 @@ class RealFeeServiceTest {
         assertThat(feeDetails.getFeeAmount()).isEqualTo(BigDecimal.valueOf(404.00));
 
         verify(pcsFeesClient)
-            .lookupFee(serviceName, jurisdictions,"default", "issue",
+            .lookupFee(FEE_TYPE.getCode(), "default", "issue",
                        new BigDecimal("1"), "PossessionCC");
     }
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeeTypeNotInConfiguration() {
-        when(feesConfiguration.getLookup(FEE_TYPE)).thenReturn(null);
+        when(feesConfiguration.getLookup(FEE_TYPE.getCode())).thenReturn(null);
 
-        assertThatThrownBy(() -> underTest.getFee(serviceName, jurisdictions, FEE_TYPE))
+        assertThatThrownBy(() -> underTest.getFee(FEE_TYPE.getCode()))
             .isInstanceOf(FeeNotFoundException.class)
-            .hasMessageContaining("Fee not found for feeType: " + FEE_TYPE);
+            .hasMessageContaining("Fee not found for feeType: " + FEE_TYPE.getCode());
     }
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignCallFails() {
-        when(feesConfiguration.getLookup(FEE_TYPE)).thenReturn(lookUpReferenceData);
+        when(feesConfiguration.getLookup(FEE_TYPE.getCode())).thenReturn(lookUpReferenceData);
 
         Request request = Request.create(
             Request.HttpMethod.GET,
@@ -111,19 +106,19 @@ class RealFeeServiceTest {
             new RequestTemplate()
         );
 
-        when(pcsFeesClient.lookupFee(any(ServiceName.class), any(Jurisdictions.class), anyString(), anyString(),
-                                     any(BigDecimal.class), anyString()))
+        when(pcsFeesClient.lookupFee(anyString(), anyString(),
+                                     anyString(), any(BigDecimal.class), anyString()))
             .thenThrow(new NotFound("Fee not found", request, null, null));
 
-        assertThatThrownBy(() -> underTest.getFee(serviceName, jurisdictions, FEE_TYPE))
+        assertThatThrownBy(() -> underTest.getFee(FEE_TYPE.getCode()))
             .isInstanceOf(FeeNotFoundException.class)
-            .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
+            .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE.getCode())
             .hasCauseInstanceOf(NotFound.class);
     }
 
     @Test
     void shouldThrowFeeNotFoundExceptionWhenFeignReturnsServerError() {
-        when(feesConfiguration.getLookup(FEE_TYPE)).thenReturn(lookUpReferenceData);
+        when(feesConfiguration.getLookup(FEE_TYPE.getCode())).thenReturn(lookUpReferenceData);
 
         Request request = Request.create(
             Request.HttpMethod.GET,
@@ -133,14 +128,13 @@ class RealFeeServiceTest {
             new RequestTemplate()
         );
 
-        when(pcsFeesClient.lookupFee(any(ServiceName.class), any(Jurisdictions.class),
-                                     anyString(), anyString(), any(BigDecimal.class), anyString()))
+        when(pcsFeesClient.lookupFee(anyString(), anyString(), anyString(), any(BigDecimal.class), anyString()))
             .thenThrow(new InternalServerError(
                 "Internal server error", request, null, null));
 
-        assertThatThrownBy(() -> underTest.getFee(serviceName, jurisdictions, FEE_TYPE))
+        assertThatThrownBy(() -> underTest.getFee(FEE_TYPE.getCode()))
             .isInstanceOf(FeeNotFoundException.class)
-            .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE)
+            .hasMessageContaining("Unable to retrieve fee: " + FEE_TYPE.getCode())
             .hasCauseInstanceOf(InternalServerError.class);
     }
 

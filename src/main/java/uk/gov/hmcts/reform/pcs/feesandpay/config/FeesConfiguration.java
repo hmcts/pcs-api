@@ -24,7 +24,8 @@ public class FeesConfiguration {
         private String keyword;
     }
 
-    public LookUpReferenceData getLookup(String key) {
-        return lookup.get(key);
+    public LookUpReferenceData getLookup(String feeTypesCode) {
+        return lookup.get(feeTypesCode);
     }
+
 }

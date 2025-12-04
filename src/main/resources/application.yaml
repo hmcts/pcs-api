@@ -144,7 +144,7 @@ rd-professional:
 
 fees:
   mock: false
-  makeaclaim:
+  api:
     url: ${FEES_REGISTER_API_URL:http://localhost:8991}
     service: possession claim
     jurisdiction1: civil

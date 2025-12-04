@@ -1,53 +1,37 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.fees.client.FeesApi;
-import uk.gov.hmcts.reform.fees.client.model.Fee2Dto;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class PCSFeesClient {
 
-    private final FeesApi feesApi;
+    private final List<FeesClientContext> strategies;
 
-    public PCSFeesClient(FeesApi feesApi) {
-        this.feesApi = feesApi;
+    public PCSFeesClient(List<FeesClientContext> strategies) {
+        this.strategies = strategies;
     }
 
-    public FeeLookupResponseDto lookupFee(ServiceName serviceName, Jurisdictions jurisdictions, String channel,
-                                          String event, BigDecimal amount) {
-        return this.feesApi.lookupFee(
-            serviceName.service(),
-            jurisdictions.jurisdiction1(),
-            jurisdictions.jurisdiction2(),
-            channel,
-            event,
-            null,
-            amount,
-            null
-        );
-    }
+    public FeeLookupResponseDto lookupFee(String feeTypesCode, String channel, String event, BigDecimal amount,
+                                          String keyword) {
+        FeesClientContext context = strategies.stream()
+            .filter(strategy -> strategy.supports(feeTypesCode))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("No strategy found for fee type: " + feeTypesCode));
 
-    public FeeLookupResponseDto lookupFee(ServiceName serviceName, Jurisdictions jurisdictions, String channel, String event,
-                                          BigDecimal amount, String keyword) {
-        return this.feesApi.lookupFee(
-            serviceName.service(),
-            jurisdictions.jurisdiction1(),
-            jurisdictions.jurisdiction2(),
+        return context.getApi().lookupFee(
+            context.getServiceName().service(),
+            context.getJurisdictions().jurisdiction1(),
+            context.getJurisdictions().jurisdiction2(),
             channel,
             event,
             null,
             amount,
             keyword
         );
-    }
-
-    public Fee2Dto[] findRangeGroup(Jurisdictions jurisdictions, String channel, String event) {
-        return this.feesApi.findRangeGroup(service, jurisdictions.jurisdiction1(), jurisdictions.jurisdiction2(),
-                                           channel, event);
     }
 
 }
