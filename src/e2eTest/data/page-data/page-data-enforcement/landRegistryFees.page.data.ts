@@ -1,5 +1,3 @@
-import { error } from "console";
-
 export const landRegistryFees = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Land Registry fees',
