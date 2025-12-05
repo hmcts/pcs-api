@@ -37,7 +37,7 @@ public class AccessCodeService {
     public void createAccessCodesForDefendants(String caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepo
             .findByCaseReference(Long.valueOf(caseReference))
-            .orElseThrow(() -> new CaseNotFoundException( Long.valueOf(caseReference)));
+            .orElseThrow(() -> new CaseNotFoundException(Long.valueOf(caseReference)));
 
         pcsCaseEntity.getDefendants().forEach(defendant -> {
             boolean exists = partyAccessCodeRepo.findByPcsCase_IdAndPartyId(pcsCaseEntity.getId(),
