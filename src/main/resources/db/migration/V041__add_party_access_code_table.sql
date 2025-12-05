@@ -5,7 +5,7 @@ CREATE TABLE party_access_code (
   party_id       UUID NOT NULL, --Once we move to using party entities, this should be set as the FK to party(id)
   code           VARCHAR(12) NOT NULL,
   role           VARCHAR(20),
-  created        TIMESTAMP
+  created        TIMESTAMP,
   CONSTRAINT uq_party_access_code_case_code UNIQUE (case_id, code)
 );
 

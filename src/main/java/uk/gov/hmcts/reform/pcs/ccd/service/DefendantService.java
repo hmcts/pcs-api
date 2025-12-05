@@ -8,8 +8,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -26,7 +24,7 @@ public class DefendantService {
     private final ModelMapper modelMapper;
     private final AccessCodeService  accessCodeService;
 
-    public List<Defendant> buildDefendantsList(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    public List<Defendant> buildDefendantsList(PCSCase pcsCase) {
         Objects.requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
 
         List<Defendant> defendants = new ArrayList<>();
@@ -39,7 +37,6 @@ public class DefendantService {
             List<Defendant> additionalDefendants = buildAdditionalDefendants(pcsCase.getAdditionalDefendants());
             defendants.addAll(additionalDefendants);
         }
-        linkWithPartyAccessCodeEntity(pcsCaseEntity, defendants);
 
         return defendants;
     }
@@ -51,15 +48,6 @@ public class DefendantService {
 
         return defendantList.stream()
             .map(defendant -> modelMapper.map(defendant, DefendantDetails.class))
-            .toList();
-    }
-
-    private List<PartyAccessCodeEntity> linkWithPartyAccessCodeEntity(PcsCaseEntity caseEntity,
-                                                                      List<Defendant> defendants) {
-
-        return defendants.stream()
-            .filter(Objects::nonNull)
-            .map(defendant -> accessCodeService.createPartyAccessCodeEntity(caseEntity, defendant.getPartyId()))
             .toList();
     }
 

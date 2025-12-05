@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 
 import java.util.UUID;
 
@@ -24,6 +25,9 @@ class AccessCodeServiceTest {
     @Mock
     private PartyAccessCodeRepository partyAccessCodeRepo;
 
+    @Mock
+    private PcsCaseRepository pcsCaseRepository;
+
     private AccessCodeService underTest;
 
     @Captor
@@ -31,7 +35,7 @@ class AccessCodeServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new AccessCodeService(partyAccessCodeRepo);
+        underTest = new AccessCodeService(partyAccessCodeRepo, pcsCaseRepository);
     }
 
     @Test

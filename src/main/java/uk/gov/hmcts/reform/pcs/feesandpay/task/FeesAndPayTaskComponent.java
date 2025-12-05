@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
@@ -29,17 +30,20 @@ public class FeesAndPayTaskComponent {
     private final PaymentService paymentService;
     private final int maxRetriesFeesAndPay;
     private final Duration feesAndPayBackoffDelay;
+    private final AccessCodeService accessCodeService;
 
     public FeesAndPayTaskComponent(
         FeeService feeService,
         PaymentService paymentService,
         @Value("${fees.request.max-retries}") int maxRetriesFeesAndPay,
-        @Value("${fees.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay
+        @Value("${fees.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay,
+        AccessCodeService accessCodeService
     ) {
         this.feeService = feeService;
         this.paymentService = paymentService;
         this.maxRetriesFeesAndPay = maxRetriesFeesAndPay;
         this.feesAndPayBackoffDelay = feesAndPayBackoffDelay;
+        this.accessCodeService = accessCodeService;
     }
 
     /**
@@ -62,6 +66,7 @@ public class FeesAndPayTaskComponent {
 
                 FeeDetails feeDetails = taskData.getFeeDetails();
 
+                accessCodeService.createAccessCodesForDefendants(taskData.getCaseReference());
                 try {
                     paymentService.createServiceRequest(
                         taskData.getCaseReference(),

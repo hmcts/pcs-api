@@ -16,7 +16,6 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -59,7 +58,7 @@ class DefendantServiceTest {
         when(pcsCase.getDefendant1()).thenReturn(null);
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class)));
+        Throwable throwable = catchThrowable(() -> underTest.buildDefendantsList(pcsCase));
 
         // Then
         assertThat(throwable)
@@ -75,7 +74,7 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
 
         expectedDefendant.setPartyId(defendantList.getFirst().getPartyId());
 
@@ -117,7 +116,7 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
@@ -175,7 +174,7 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
@@ -208,7 +207,7 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
@@ -251,7 +250,7 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
