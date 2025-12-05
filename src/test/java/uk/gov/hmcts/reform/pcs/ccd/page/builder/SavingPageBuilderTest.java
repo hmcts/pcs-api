@@ -42,7 +42,7 @@ class SavingPageBuilderTest {
     @Captor
     private ArgumentCaptor<MidEvent<PCSCase, State>> midEventCaptor;
 
-    private EventId eventId = EventId.resumePossessionClaim;
+    private final EventId eventId = EventId.resumePossessionClaim;
 
     private SavingPageBuilder underTest;
 
@@ -71,7 +71,7 @@ class SavingPageBuilderTest {
             .handle(caseDetails, caseDetailsBefore);
 
         // Then
-        verify(draftCaseDataService).patchUnsubmittedCaseData(CASE_REFERENCE, caseData, eventId);
+        verify(draftCaseDataService).patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
         assertThat(response.getData()).isEqualTo(caseData);
     }
 
@@ -101,7 +101,7 @@ class SavingPageBuilderTest {
         // Then
         InOrder inOrder = Mockito.inOrder(pageMidEvent, draftCaseDataService);
         inOrder.verify(pageMidEvent).handle(caseDetails, caseDetailsBefore);
-        inOrder.verify(draftCaseDataService).patchUnsubmittedCaseData(CASE_REFERENCE, caseData, eventId);
+        inOrder.verify(draftCaseDataService).patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
         assertThat(response).isEqualTo(pageMidEventResponse);
     }
 
