@@ -20,3 +20,4 @@ export * from '@data/page-data/page-data-enforcement/moneyOwed.page.data';
 export * from '@data/page-data/page-data-enforcement/legalCosts.page.data';
 export * from '@data/page-data/page-data-enforcement/landRegistryFees.page.data';
 export * from '@data/page-data/page-data-enforcement/rePayments.page.data';
+export * from '@data/page-data/page-data-enforcement/languageUsed.page.data';

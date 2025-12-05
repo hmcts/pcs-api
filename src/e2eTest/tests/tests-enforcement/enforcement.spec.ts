@@ -27,7 +27,8 @@ import {
   landRegistryFees,
   rePayments,
   peopleWillBeEvicted,
-  youNeedPermission
+  youNeedPermission,
+  languageUsed
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -150,14 +151,15 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: legalCosts.howMuchYouWantToReclaimTextInput
     });
     await performValidation('mainHeader', landRegistryFees.mainHeader);
-    await performAction('inputErrorValidation',{
+    await performAction('inputErrorValidation', {
       validationReq: landRegistryFees.errorValidation,
-      inputArray: landRegistryFees.moneyValidation.errorMoneyField,
+      validationType: landRegistryFees.errorValidationType.one,
+      inputArray: landRegistryFees.errorValidationField.errorMoneyField,
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.yesRadioOption,
       label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
       button: landRegistryFees.continueButton
-    })
+    });
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.yesRadioOption,
@@ -165,6 +167,18 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('clickButton', rePayments.continueButton);
+    await performValidation('mainHeader', languageUsed.mainHeader);
+    await performAction('inputErrorValidation', {
+      validationReq: languageUsed.errorValidation,
+      validationType: languageUsed.errorValidationType.three,
+      inputArray: languageUsed.errorValidationField.errorRadioOption,
+      question: languageUsed.whichLanguageUsedQuestion,
+      option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+      label: languageUsed.whichLanguageUsedQuestion,
+      button: languageUsed.continueButton
+    });
+    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -231,6 +245,9 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('clickButton', rePayments.continueButton);
+    await performValidation('mainHeader', languageUsed.mainHeader);
+    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
