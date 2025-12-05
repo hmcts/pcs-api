@@ -49,7 +49,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 public class PCSCaseView implements CaseView<PCSCase, State> {
 
     // private static final String PUI_HOST = "http://localhost:3209";
-    private static final String PUI_HOST = "https://pcs-frontend-pr-745.preview.platform.hmcts.net";
+    private static final String PUI_HOST = "https://pcs-frontend-pr-727.preview.platform.hmcts.net";
 
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
