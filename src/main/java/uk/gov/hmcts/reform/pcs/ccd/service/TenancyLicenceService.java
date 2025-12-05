@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 
 import java.math.BigDecimal;
 
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 public class TenancyLicenceService {
 
     public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
-        return TenancyLicence.builder()
+        TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder = TenancyLicence.builder()
                 .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
                         ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
                 .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
@@ -25,11 +26,11 @@ public class TenancyLicenceService {
                                                                 ? pcsCase.getWalesNoticeDetails().getNoticeServed()
                                                                 : null))
                 .walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails() != null
-                                             ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null)
-                .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
-                .rentPaymentFrequency(pcsCase.getRentFrequency())
-                .otherRentFrequency(pcsCase.getOtherRentFrequency())
-                .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
+                                             ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null);
+        
+        buildRentDetailsSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
+        
+        return tenancyLicenceBuilder
                 .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
                 .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
                 .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
@@ -87,11 +88,25 @@ public class TenancyLicenceService {
                 .build();
     }
 
-    private BigDecimal getDailyRentAmount(PCSCase pcsCase) {
+    private void buildRentDetailsSection(RentDetailsSection rentDetails,
+                                         TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
+        if (rentDetails != null) {
+            tenancyLicenceBuilder
+                    .rentAmount(penceToPounds(rentDetails.getCurrentRent()))
+                    .rentPaymentFrequency(rentDetails.getRentFrequency())
+                    .otherRentFrequency(rentDetails.getOtherRentFrequency())
+                    .dailyRentChargeAmount(getDailyRentAmount(rentDetails));
+        }
+    }
+
+    private BigDecimal getDailyRentAmount(RentDetailsSection rentDetails) {
+        if (rentDetails == null) {
+            return null;
+        }
         String[] fieldValues = {
-            pcsCase.getAmendedDailyRentChargeAmount(),
-            pcsCase.getCalculatedDailyRentChargeAmount(),
-            pcsCase.getDailyRentChargeAmount()
+            rentDetails.getAmendedDailyRentChargeAmount(),
+            rentDetails.getCalculatedDailyRentChargeAmount(),
+            rentDetails.getDailyRentChargeAmount()
         };
         for (String value : fieldValues) {
             if (value != null && !value.trim().isEmpty()) {
