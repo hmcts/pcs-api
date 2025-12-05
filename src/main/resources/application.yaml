@@ -167,3 +167,8 @@ payments:
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
     hmctsOrgId: AAA3
+
+logging:
+  level:
+    uk.gov.hmcts.reform.pcs.controllers.CasePartyLinkController: DEBUG
+    uk.gov.hmcts.reform.pcs.service.CasePartyLinkService: DEBUG

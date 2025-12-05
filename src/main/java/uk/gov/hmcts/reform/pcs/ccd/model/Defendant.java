@@ -20,6 +20,8 @@ public class Defendant {
 
     private UUID partyId;
 
+    private String linkedUserId;
+
     private Boolean nameKnown;
 
     @CCD
