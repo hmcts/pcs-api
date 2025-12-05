@@ -472,6 +472,8 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_gw,ccd_data,pcs_api,pcs_frontend'
+
 //  environment 'IDAM_S2S_URL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
 }
 

@@ -8,12 +8,16 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
@@ -32,6 +36,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.caseworkerUpdateCase;
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -42,6 +47,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 @Component
 @AllArgsConstructor
 public class PCSCaseView implements CaseView<PCSCase, State> {
+
+    // private static final String PUI_HOST = "http://localhost:3209";
+    private static final String PUI_HOST = "https://pcs-frontend-pr-745.preview.platform.hmcts.net";
 
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
@@ -63,7 +71,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
         pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
-        setMarkdownFields(pcsCase);
+        setMarkdownFields(pcsCase, caseReference);
 
         return pcsCase;
     }
@@ -78,10 +86,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private PCSCase getSubmittedCase(long caseReference) {
         PcsCaseEntity pcsCaseEntity = loadCaseData(caseReference);
+
+        String claimantEmail = getClaimantEmail(pcsCaseEntity);
+
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
+            .claimantContactEmail(claimantEmail)
             .claimantType(pcsCaseEntity.getClaimantType() != null
                 ? DynamicStringList.builder()
                     .value(DynamicStringListElement.builder()
@@ -114,6 +126,22 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return pcsCase;
     }
 
+    private static String getClaimantEmail(PcsCaseEntity pcsCaseEntity) {
+        Set<ClaimEntity> claims = pcsCaseEntity.getClaims();
+
+        if (claims.isEmpty()) {
+            return null;
+        }
+
+        ClaimEntity mainClaim = claims.iterator().next();
+        return mainClaim.getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT)
+            .map(ClaimPartyEntity::getParty)
+            .map(PartyEntity::getContactEmail)
+            .findFirst()
+            .orElse(null);
+    }
+
     private void setDerivedProperties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         boolean pcqIdSet = findPartyForCurrentUser(pcsCaseEntity)
             .map(party -> party.getPcqId() != null)
@@ -124,8 +152,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
-    private void setMarkdownFields(PCSCase pcsCase) {
-        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
+    private void setMarkdownFields(PCSCase pcsCase, long caseReference) {
+        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase, currentUserDetails));
+
+        String extraMarkdown = getEventSpikeMarkdown(caseReference, pcsCase);
+
+        pcsCase.setEventSpikeMarkdown(extraMarkdown);
 
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""
@@ -159,6 +192,23 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              </p>
                                              """.formatted(resumePossessionClaim));
         }
+    }
+
+    private String getEventSpikeMarkdown(long caseReference, PCSCase pcsCase) {
+        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        String userId = currentUserDetails.getUid();
+
+        String puiUrl = PUI_HOST + "/pui/%d/%s/start?userId=%s"
+            .formatted(caseReference, caseworkerUpdateCase.name(), userId);
+
+        return """
+            <p>
+            Claimant Email Address: <span class="govuk-!-font-weight-bold">%s</span>
+            </p>
+            <p>
+            <a href="%s" class="govuk-link govuk-link--no-visited-state">Edit claimant email address</a>
+            </p>
+            """.formatted(pcsCase.getClaimantContactEmail(), puiUrl);
     }
 
     private Optional<PartyEntity> findPartyForCurrentUser(PcsCaseEntity pcsCaseEntity) {

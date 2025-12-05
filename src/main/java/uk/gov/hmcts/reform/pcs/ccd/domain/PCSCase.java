@@ -469,6 +469,9 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
+    @CCD(searchable = false)
+    private String eventSpikeMarkdown;
+
     // --- Rent arrears (statement upload + totals + third party payments) ---
     @CCD(
         label = "Add document",
