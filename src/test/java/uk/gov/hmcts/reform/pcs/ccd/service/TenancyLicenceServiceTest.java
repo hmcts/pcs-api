@@ -340,10 +340,10 @@ class TenancyLicenceServiceTest {
             .agentAppointmentDate(appointmentDate)
             .build();
 
-        when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
+        when(pcsCaseMock.getWalesHousingAct()).thenReturn(walesHousingAct);
 
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
 
         // Then
         assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.YES);
@@ -386,10 +386,10 @@ class TenancyLicenceServiceTest {
             .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
             .build();
 
-        when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
+        when(pcsCaseMock.getWalesHousingAct()).thenReturn(walesHousingAct);
 
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
 
         // Then
         assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
