@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
@@ -26,6 +27,9 @@ public class NoticeDetailsService {
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
     private static final String FUTURE_DATE_ERROR = "The date cannot be today or in the future";
     private static final String NOTICE_SERVICE_METHOD_REQUIRED = "You must select how you served the notice";
+    private static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
+    private static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
+
 
     /**
      * Validates notice details and returns any validation errors.
@@ -35,11 +39,14 @@ public class NoticeDetailsService {
     public List<String> validateNoticeDetails(PCSCase caseData) {
         List<String> errors = new ArrayList<>();
 
-        if (caseData.getNoticeServed() != null && !caseData.getNoticeServed().toBoolean()) {
+        if (caseData.getNoticeServedDetails() == null
+            || (caseData.getNoticeServed() != null
+                && !caseData.getNoticeServed().toBoolean())) {
             return errors;
         }
 
-        NoticeServiceMethod noticeServiceMethod = caseData.getNoticeServiceMethod();
+        NoticeServedDetails noticeServedDetails = caseData.getNoticeServedDetails();
+        NoticeServiceMethod noticeServiceMethod = caseData.getNoticeServedDetails().getNoticeServiceMethod();
         if (noticeServiceMethod == null) {
             errors.add(NOTICE_SERVICE_METHOD_REQUIRED);
             return errors;
@@ -48,35 +55,35 @@ public class NoticeDetailsService {
         // Validate based on selected method
         switch (noticeServiceMethod) {
             case FIRST_CLASS_POST:
-                validateDateField(caseData.getNoticePostedDate(), errors);
+                validateDateField(noticeServedDetails.getNoticePostedDate(), errors);
                 break;
             case DELIVERED_PERMITTED_PLACE:
-                validateDateField(caseData.getNoticeDeliveredDate(), errors);
+                validateDateField(noticeServedDetails.getNoticeDeliveredDate(), errors);
                 break;
             case PERSONALLY_HANDED:
-                validateDateTimeField(caseData.getNoticeHandedOverDateTime(), errors);
+                validateDateTimeField(noticeServedDetails.getNoticeHandedOverDateTime(), errors);
                 break;
             case EMAIL:
-                validateEmail(caseData, errors);
+                validateEmail(noticeServedDetails, errors);
                 break;
             case OTHER_ELECTRONIC:
-                validateDateTimeField(caseData.getNoticeOtherElectronicDateTime(), errors);
+                validateDateTimeField(noticeServedDetails.getNoticeOtherElectronicDateTime(), errors);
                 break;
             case OTHER:
-                validateOther(caseData, errors);
+                validateOther(noticeServedDetails, errors);
                 break;
         }
 
         // Validate textarea fields for character limits
         errors.addAll(textAreaValidationService.validateMultipleTextAreas(
             TextAreaValidationService.FieldValidation.of(
-                caseData.getNoticeEmailExplanation(),
-                PCSCase.NOTICE_EMAIL_EXPLANATION_LABEL,
+                noticeServedDetails.getNoticeEmailExplanation(),
+                NOTICE_EMAIL_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
-                caseData.getNoticeOtherExplanation(),
-                PCSCase.NOTICE_OTHER_EXPLANATION_LABEL,
+                noticeServedDetails.getNoticeOtherExplanation(),
+                NOTICE_OTHER_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             )
         ));
@@ -88,7 +95,7 @@ public class NoticeDetailsService {
      * Validates a date field with common validation logic.
      */
     private void validateDateField(LocalDate dateValue, List<String> errors) {
-        if (dateValue != null && isTodayOrFutureDate(dateValue)) {
+        if (isTodayOrFutureDate(dateValue)) {
             errors.add(FUTURE_DATE_ERROR);
         }
     }
@@ -106,12 +113,12 @@ public class NoticeDetailsService {
         }
     }
 
-    private void validateEmail(PCSCase caseData, List<String> errors) {
-        validateDateTimeField(caseData.getNoticeEmailSentDateTime(), errors);
+    private void validateEmail(NoticeServedDetails noticeServed, List<String> errors) {
+        validateDateTimeField(noticeServed.getNoticeEmailSentDateTime(), errors);
     }
 
-    private void validateOther(PCSCase caseData, List<String> errors) {
-        validateDateTimeField(caseData.getNoticeOtherDateTime(), errors);
+    private void validateOther(NoticeServedDetails noticeServed, List<String> errors) {
+        validateDateTimeField(noticeServed.getNoticeOtherDateTime(), errors);
     }
 
 
