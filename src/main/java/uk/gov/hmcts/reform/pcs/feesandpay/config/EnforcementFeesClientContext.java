@@ -14,11 +14,9 @@ public class EnforcementFeesClientContext implements FeesClientContext {
     private final Jurisdictions jurisdictions;
     private final ServiceName serviceName;
 
-    public EnforcementFeesClientContext(
-        EnforcementFeesApi enforcementFeesApi,
+    public EnforcementFeesClientContext(EnforcementFeesApi enforcementFeesApi,
         @Qualifier("enforcementJurisdictions") Jurisdictions jurisdictions,
-        @Qualifier("enforcementServiceName") ServiceName serviceName
-    ) {
+        @Qualifier("enforcementServiceName") ServiceName serviceName) {
         this.enforcementFeesApi = enforcementFeesApi;
         this.jurisdictions = jurisdictions;
         this.serviceName = serviceName;

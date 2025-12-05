@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class PCSFeesClientConfiguration {
 
     @Bean
-    @ConfigurationProperties(prefix = "fee.api")
+    @ConfigurationProperties(prefix = "fees.api")
     public FeesProperties claimFeesProperties() {
         return new FeesProperties();
     }

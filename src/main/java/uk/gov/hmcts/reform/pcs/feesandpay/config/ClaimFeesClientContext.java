@@ -15,11 +15,9 @@ public class ClaimFeesClientContext implements FeesClientContext {
     private final Jurisdictions jurisdictions;
     private final ServiceName serviceName;
 
-    public ClaimFeesClientContext(
-        FeesApi feesApi,
+    public ClaimFeesClientContext(FeesApi feesApi,
         @Qualifier("feesJurisdictions") Jurisdictions jurisdictions,
-        @Qualifier("feesServiceName") ServiceName serviceName
-    ) {
+        @Qualifier("feesServiceName") ServiceName serviceName) {
         this.feesApi = feesApi;
         this.jurisdictions = jurisdictions;
         this.serviceName = serviceName;
@@ -27,7 +25,7 @@ public class ClaimFeesClientContext implements FeesClientContext {
 
     @Override
     public boolean supports(String feeTypesCode) {
-        return true; // Fallback for any type not handled by other strategies
+        return true;
     }
 
     @Override

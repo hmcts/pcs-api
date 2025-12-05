@@ -28,7 +28,7 @@ public class FakeFeeService implements FeeService {
     private FeeDetails getFeeDetails() {
         return FeeDetails.builder()
             .code("FEE0123")
-            .feeAmount(new BigDecimal("404.00"))
+            .feeAmount(new BigDecimal("999999.99"))
             .description("Fake fee")
             .version(1)
             .build();
