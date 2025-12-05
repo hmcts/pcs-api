@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 public class TenancyLicenceService {
 
     public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
-        return TenancyLicence.builder()
+        TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder = TenancyLicence.builder()
                 .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
                         ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
                 .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
@@ -26,14 +26,11 @@ public class TenancyLicenceService {
                                                                 ? pcsCase.getWalesNoticeDetails().getNoticeServed()
                                                                 : null))
                 .walesTypeOfNoticeServed(pcsCase.getWalesNoticeDetails() != null
-                                             ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null)
-                .rentAmount(penceToPounds(pcsCase.getRentDetails() != null 
-                        ? pcsCase.getRentDetails().getCurrentRent() : null))
-                .rentPaymentFrequency(pcsCase.getRentDetails() != null 
-                        ? pcsCase.getRentDetails().getRentFrequency() : null)
-                .otherRentFrequency(pcsCase.getRentDetails() != null 
-                        ? pcsCase.getRentDetails().getOtherRentFrequency() : null)
-                .dailyRentChargeAmount(getDailyRentAmount(pcsCase.getRentDetails()))
+                                             ? pcsCase.getWalesNoticeDetails().getTypeOfNoticeServed() : null);
+        
+        buildRentDetailsSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
+        
+        return tenancyLicenceBuilder
                 .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
                 .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
                 .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
@@ -89,6 +86,17 @@ public class TenancyLicenceService {
                             pcsCase.getOccupationLicenceDetailsWales().getLicenceDocuments())
                         : null)
                 .build();
+    }
+
+    private void buildRentDetailsSection(RentDetailsSection rentDetails,
+                                         TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
+        if (rentDetails != null) {
+            tenancyLicenceBuilder
+                    .rentAmount(penceToPounds(rentDetails.getCurrentRent()))
+                    .rentPaymentFrequency(rentDetails.getRentFrequency())
+                    .otherRentFrequency(rentDetails.getOtherRentFrequency())
+                    .dailyRentChargeAmount(getDailyRentAmount(rentDetails));
+        }
     }
 
     private BigDecimal getDailyRentAmount(RentDetailsSection rentDetails) {
