@@ -77,6 +77,8 @@ class DefendantServiceTest {
         // When
         List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
 
+        expectedDefendant.setPartyId(defendantList.getFirst().getPartyId());
+
         // Then
         assertThat(defendantList).containsExactly(expectedDefendant);
     }
@@ -119,6 +121,7 @@ class DefendantServiceTest {
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -129,6 +132,7 @@ class DefendantServiceTest {
             .build();
 
         Defendant expectedDefendant2 = Defendant.builder()
+            .partyId(defendantList.get(1).getPartyId())
             .nameKnown(true)
             .firstName("defendant 2 first name")
             .lastName("defendant 2 last name")
@@ -136,6 +140,7 @@ class DefendantServiceTest {
             .build();
 
         Defendant expectedDefendant3 = Defendant.builder()
+            .partyId(defendantList.get(2).getPartyId())
             .nameKnown(false)
             .addressKnown(true)
             .addressSameAsPossession(true)
@@ -174,6 +179,7 @@ class DefendantServiceTest {
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -206,6 +212,7 @@ class DefendantServiceTest {
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.get(0).getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -248,12 +255,14 @@ class DefendantServiceTest {
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(false)
             .addressKnown(false)
             .additionalDefendantsAdded(true)
             .build();
 
         Defendant expectedDefendant2 = Defendant.builder()
+            .partyId(defendantList.get(1).getPartyId())
             .nameKnown(false)
             .addressKnown(false)
             .build();
