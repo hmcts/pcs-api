@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.functional.testutils;
+package uk.gov.hmcts.reform.pcs.functional.testUtils;
 
 import net.serenitybdd.rest.SerenityRest;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
