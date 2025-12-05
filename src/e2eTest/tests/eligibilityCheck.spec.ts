@@ -51,7 +51,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
       "elementType": "paragraph"
     });
     await performValidation('text', {
-      "text": borderPostcode.englandWalesInlineContent,
+      "text": borderPostcode.isProtpertyLocatedInEnglandOrWalesQuestion,
       "elementType": "inlineText"
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);

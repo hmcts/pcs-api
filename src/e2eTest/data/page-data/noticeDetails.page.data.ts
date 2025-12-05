@@ -1,7 +1,7 @@
 export const noticeDetails = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Notice details',
-  howDidYouServeNotice: 'How did you serve the notice?',
+  howDidYouServeNoticeQuestion: 'How did you serve the notice?',
   byFirstClassPost: 'By first class post or other service which provides for delivery on the next business day',
   byDeliveringAtPermittedPlace: 'By delivering it to or leaving it at a permitted place',
   byPersonallyHandling: 'By personally handing it to or leaving it with someone',

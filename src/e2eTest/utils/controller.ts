@@ -4,13 +4,16 @@ import { validationData, validationRecord, validationTuple } from '@utils/interf
 import { ActionRegistry } from '@utils/registry/action.registry';
 import { ValidationRegistry } from '@utils/registry/validation.registry';
 import { AxeUtils} from "@hmcts/playwright-common";
+import { cyaStore } from '../utils/validations/custom-validations/CYA/cyaPage.validation';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
+let captureDataForCYAPage = false;
 
 export function initializeExecutor(page: Page): void {
   testExecutor = { page };
   previousUrl = page.url();
+  captureDataForCYAPage = false;
 }
 
 function getExecutor(): { page: Page } {
@@ -64,9 +67,21 @@ async function validatePageIfNavigated(action:string): Promise<void> {
   }
 }
 
+function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
+  if (action === 'selectClaimantType') {
+    captureDataForCYAPage = true;
+  }
+
+  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile'].includes(action)) {
+    cyaStore.captureAnswer(action, fieldName, value);
+  }
+}
+
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
+
+  captureDataForCYA(action, fieldName, value);
 
   let displayFieldName = fieldName;
   let displayValue = value ?? fieldName;

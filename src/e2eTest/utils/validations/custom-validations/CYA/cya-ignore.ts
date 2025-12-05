@@ -1,0 +1,15 @@
+export const cyaIgnoreQuestions = [
+  'Day',
+  'Month',
+  'Year',
+  'Uploaded files',
+  'Uploaded file',
+  'Defendant’s first name',
+  'Defendant’s last name',
+  'I believe that the facts stated in this claim form are true.',
+  'Enter a UK postcode',
+  'Is the defendant’s correspondence address the same as the address of the property you’re claiming possession of?',
+  'Do you know the defendant’s name?',
+  'Selected options',
+  'Total rent arrears',
+];
