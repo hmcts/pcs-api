@@ -8,6 +8,8 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -22,8 +24,9 @@ import java.util.UUID;
 public class DefendantService {
 
     private final ModelMapper modelMapper;
+    private final AccessCodeService  accessCodeService;
 
-    public List<Defendant> buildDefendantsList(PCSCase pcsCase) {
+    public List<Defendant> buildDefendantsList(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         Objects.requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
 
         List<Defendant> defendants = new ArrayList<>();
@@ -36,6 +39,7 @@ public class DefendantService {
             List<Defendant> additionalDefendants = buildAdditionalDefendants(pcsCase.getAdditionalDefendants());
             defendants.addAll(additionalDefendants);
         }
+        linkWithPartyAccessCodeEntity(pcsCaseEntity, defendants);
 
         return defendants;
     }
@@ -50,9 +54,19 @@ public class DefendantService {
             .toList();
     }
 
+    private List<PartyAccessCodeEntity> linkWithPartyAccessCodeEntity(PcsCaseEntity caseEntity,
+                                                                      List<Defendant> defendants) {
+
+        return defendants.stream()
+            .filter(Objects::nonNull)
+            .map(defendant -> accessCodeService.createPartyAccessCodeEntity(caseEntity, defendant.getPartyId()))
+            .toList();
+    }
+
     private Defendant buildDefendant(DefendantDetails defendantDetails) {
         Defendant defendant = new Defendant();
 
+        defendant.setPartyId(UUID.randomUUID());
         boolean nameKnown = defendantDetails.getNameKnown().toBoolean();
         defendant.setNameKnown(nameKnown);
         if (nameKnown) {
@@ -88,7 +102,7 @@ public class DefendantService {
     /**
      * Builds a display name for a defendant from their details.
      * Handles cases where the name is not known.
-     * 
+     *
      * @param details Defendant details
      * @return Display name for the defendant
      */
@@ -107,28 +121,28 @@ public class DefendantService {
 
     /**
      * Builds a list of DynamicStringListElement from defendant details stored in the database.
-     * 
+     *
      * @param defendants List of defendants from the case data
      * @return List of DynamicStringListElement for the multi-select list
      */
     public List<DynamicStringListElement> buildDefendantListItems(
         List<ListValue<DefendantDetails>> defendants) {
-        
+
         if (CollectionUtils.isEmpty(defendants)) {
             return new ArrayList<>();
         }
-        
+
         List<DynamicStringListElement> listItems = new ArrayList<>();
         for (ListValue<DefendantDetails> listValue : defendants) {
             DefendantDetails defendantDetails = listValue.getValue();
             String defendantName = buildDefendantDisplayName(defendantDetails);
-            
+
             listItems.add(DynamicStringListElement.builder()
                 .code(UUID.randomUUID().toString())
                 .label(defendantName)
                 .build());
         }
-        
+
         return listItems;
     }
 

@@ -16,6 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -38,6 +39,10 @@ class DefendantServiceTest {
 
     @Mock
     private ModelMapper modelMapper;
+
+    @Mock
+    private AccessCodeService accessCodeService;
+
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
 
@@ -45,7 +50,7 @@ class DefendantServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DefendantService(modelMapper);
+        underTest = new DefendantService(modelMapper,accessCodeService);
     }
 
     @Test
@@ -54,7 +59,7 @@ class DefendantServiceTest {
         when(pcsCase.getDefendant1()).thenReturn(null);
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.buildDefendantsList(pcsCase));
+        Throwable throwable = catchThrowable(() -> underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class)));
 
         // Then
         assertThat(throwable)
@@ -70,7 +75,9 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
+
+        expectedDefendant.setPartyId(defendantList.getFirst().getPartyId());
 
         // Then
         assertThat(defendantList).containsExactly(expectedDefendant);
@@ -110,10 +117,11 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -124,6 +132,7 @@ class DefendantServiceTest {
             .build();
 
         Defendant expectedDefendant2 = Defendant.builder()
+            .partyId(defendantList.get(1).getPartyId())
             .nameKnown(true)
             .firstName("defendant 2 first name")
             .lastName("defendant 2 last name")
@@ -131,6 +140,7 @@ class DefendantServiceTest {
             .build();
 
         Defendant expectedDefendant3 = Defendant.builder()
+            .partyId(defendantList.get(2).getPartyId())
             .nameKnown(false)
             .addressKnown(true)
             .addressSameAsPossession(true)
@@ -165,10 +175,11 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -197,10 +208,11 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.get(0).getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -239,16 +251,18 @@ class DefendantServiceTest {
         when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
         // When
-        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
+        List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase,mock(PcsCaseEntity.class));
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(false)
             .addressKnown(false)
             .additionalDefendantsAdded(true)
             .build();
 
         Defendant expectedDefendant2 = Defendant.builder()
+            .partyId(defendantList.get(1).getPartyId())
             .nameKnown(false)
             .addressKnown(false)
             .build();
@@ -443,7 +457,7 @@ class DefendantServiceTest {
             // Then
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getCode()).matches(Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 Pattern.CASE_INSENSITIVE));
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
         }
@@ -480,7 +494,7 @@ class DefendantServiceTest {
             // Then
             assertThat(result).hasSize(3);
             Pattern uuidPattern = Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 Pattern.CASE_INSENSITIVE);
             assertThat(result.get(0).getCode()).matches(uuidPattern);
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
@@ -539,7 +553,7 @@ class DefendantServiceTest {
             // Then
             assertThat(result).hasSize(5);
             Pattern uuidPattern = Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 Pattern.CASE_INSENSITIVE);
             assertThat(result.get(0).getCode()).matches(uuidPattern);
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
@@ -570,7 +584,7 @@ class DefendantServiceTest {
             // Then
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getCode()).matches(Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 Pattern.CASE_INSENSITIVE));
             assertThat(result.get(0).getLabel()).isEqualTo("Unknown");
         }
