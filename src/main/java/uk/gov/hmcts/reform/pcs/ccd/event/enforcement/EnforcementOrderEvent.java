@@ -19,14 +19,13 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ChangeNameAddressPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CheckYourAnswersPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
@@ -35,6 +34,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleYouWantToEvictPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RepaymentsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
@@ -49,7 +49,6 @@ import java.util.List;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 
 @Slf4j
@@ -78,9 +77,10 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(enforceTheOrder.name(), this::submit, this::start)
-                .forState(AWAITING_SUBMISSION_TO_HMCTS)
+                .forAllStates()
                 .name("Enforce the order")
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
+                .showSummary();
         configurePages(eventBuilder);
     }
 
@@ -107,8 +107,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(additionalInformationPage)
                 .add(new MoneyOwedPage())
                 .add(new LegalCostsPage())
-                .add(new LandRegistryFeesPlaceHolder())
-                .add(new CheckYourAnswersPlaceHolder());
+                .add(new LandRegistryFeesPage())
+                .add(new RepaymentsPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

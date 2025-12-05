@@ -84,7 +84,7 @@ public class EnforcementOrder {
         label = "Is anyone living at the property vulnerable?"
     )
     private YesNoNotSure vulnerablePeoplePresent;
-    
+
     private VulnerableAdultsChildren vulnerableAdultsChildren;
 
     @JsonUnwrapped
@@ -94,6 +94,10 @@ public class EnforcementOrder {
     @JsonUnwrapped
     @CCD
     private LegalCosts legalCosts;
+
+    @JsonUnwrapped
+    @CCD
+    private LandRegistryFees landRegistryFees;
 
     @CCD(
         searchable = false

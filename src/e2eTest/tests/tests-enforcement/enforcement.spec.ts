@@ -16,16 +16,18 @@ import {
   firearmPossession,
   groupProtestsEviction,
   nameAndAddressForEviction,
-  peopleWillBeEvicted,
   policeOrSocialServiceVisit,
   riskPosedByEveryoneAtProperty,
   verbalOrWrittenThreats,
   violentOrAggressiveBehaviour,
   vulnerableAdultsAndChildren,
-  youNeedPermission,
   yourApplication,
   moneyOwed,
-  legalCosts
+  legalCosts,
+  landRegistryFees,
+  rePayments,
+  peopleWillBeEvicted,
+  youNeedPermission
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -48,7 +50,7 @@ test.beforeEach(async ({ page }) => {
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
-  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/**`);
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
@@ -166,6 +168,22 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
         label: legalCosts.howMuchYouWantToReclaimTextLabel,
         input: legalCosts.howMuchYouWantToReclaimTextInput
       });
+      await performValidation('mainHeader', landRegistryFees.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: landRegistryFees.errorValidation,
+        inputArray: landRegistryFees.moneyValidation.errorMoneyField,
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        button: landRegistryFees.continueButton
+      })
+      await performAction('provideLandRegistryFees', {
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+      });
+      await performValidation('mainHeader', rePayments.mainHeader);
     });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -224,6 +242,14 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       label: legalCosts.howMuchYouWantToReclaimTextLabel,
       input: legalCosts.howMuchYouWantToReclaimTextInput
     });
+    await performValidation('mainHeader', landRegistryFees.mainHeader);
+    await performAction('provideLandRegistryFees', {
+      question: landRegistryFees.landRegistryFeeQuestion,
+      option: landRegistryFees.noRadioOption,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+    });
+    await performValidation('mainHeader', rePayments.mainHeader);
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -286,6 +312,14 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       label: legalCosts.howMuchYouWantToReclaimTextLabel,
       input: legalCosts.howMuchYouWantToReclaimTextInput
     });
+    await performValidation('mainHeader', landRegistryFees.mainHeader);
+    await performAction('provideLandRegistryFees', {
+      question: landRegistryFees.landRegistryFeeQuestion,
+      option: landRegistryFees.noRadioOption,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+    });
+    await performValidation('mainHeader', rePayments.mainHeader);
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {

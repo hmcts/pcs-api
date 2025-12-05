@@ -48,7 +48,7 @@ public class PCSCase {
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
-        "Give details of the type of tenancy or licence agreement that's in place";
+        "Give details of the type of tenancy or licence agreement that’s in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
     @CCD(
@@ -119,28 +119,8 @@ public class PCSCase {
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
 
-    @CCD(typeOverride = FieldType.Email)
-    private String claimantContactEmail;
-
-    @CCD(label = "Do you want to use this email address for notifications?")
-    private VerticalYesNo isCorrectClaimantContactEmail;
-
-    @CCD(label = "Enter email address", typeOverride = FieldType.Email)
-    private String overriddenClaimantContactEmail;
-
-    private String formattedClaimantContactAddress;
-
-    @CCD(label = "Do you want documents to be sent to this address?")
-    private VerticalYesNo isCorrectClaimantContactAddress;
-
-    @CCD(label = "Enter address details")
-    private AddressUK overriddenClaimantContactAddress;
-
-    @CCD(label = "Do you want to provide a contact phone number?")
-    private VerticalYesNo claimantProvidePhoneNumber;
-
-    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$")
-    private String claimantContactPhoneNumber;
+    @JsonUnwrapped
+    private ClaimantContactPreferences contactPreferencesDetails;
 
     @CCD(
         label = "Do you want to ask for your costs back?",
@@ -156,7 +136,7 @@ public class PCSCase {
 
     @CCD(
         label = "Are you claiming possession because of rent arrears?",
-        hint = "You'll be able to add additional grounds later if you select yes"
+        hint = "You’ll be able to add additional grounds later if you select yes"
     )
     private YesOrNo claimDueToRentArrears;
 
@@ -240,7 +220,7 @@ public class PCSCase {
     private VerticalYesNo settlementAttempted;
 
     @CCD(
-        label = "Explain what steps you've taken to reach a settlement",
+        label = "Explain what steps you’ve taken to reach a settlement",
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
@@ -520,7 +500,7 @@ public class PCSCase {
 
     @CCD(
             label = OTHER_GROUND_DESCRIPTION_LABEL,
-            hint = "You'll be able to explain your reasons for claiming possession"
+            hint = "You’ll be able to explain your reasons for claiming possession"
                     + " under these grounds on the next screen. You can enter up to 500 characters",
             typeOverride = TextArea
     )
@@ -639,7 +619,7 @@ public class PCSCase {
 
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
-        hint = "After you've submitted your claim, there will be instructions on how to make an application"
+        hint = "After you’ve submitted your claim, there will be instructions on how to make an application"
     )
     private VerticalYesNo applicationWithClaim;
 
