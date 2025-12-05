@@ -1,8 +1,6 @@
-package uk.gov.hmcts.reform.pcs.functional.testUtils;
+package uk.gov.hmcts.reform.pcs.functional.testutils;
 
 public class EnvUtils {
-
-    private EnvUtils() {}
 
     public static String getEnv(String name) {
         String value = System.getenv(name);

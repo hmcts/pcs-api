@@ -15,8 +15,8 @@ import net.serenitybdd.rest.SerenityRest;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.testUtils.IdamAuthenticationGenerator;
-import uk.gov.hmcts.reform.pcs.functional.testUtils.ServiceAuthenticationGenerator;
+import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
+import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

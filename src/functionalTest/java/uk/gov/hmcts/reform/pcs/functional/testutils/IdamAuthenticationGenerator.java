@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.functional.testUtils;
+package uk.gov.hmcts.reform.pcs.functional.testutils;
 
 import net.serenitybdd.rest.SerenityRest;
 
@@ -10,7 +10,7 @@ import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.CLIENT_ID;
 import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.GRANT_TYPE;
 import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.SCOPE;
 import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.ENDPOINT;
-import static uk.gov.hmcts.reform.pcs.functional.testUtils.EnvUtils.getEnv;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
 public class IdamAuthenticationGenerator {
 

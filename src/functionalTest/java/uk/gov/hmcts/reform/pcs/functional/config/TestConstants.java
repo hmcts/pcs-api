@@ -1,6 +1,6 @@
 package uk.gov.hmcts.reform.pcs.functional.config;
 
-import static uk.gov.hmcts.reform.pcs.functional.testUtils.EnvUtils.getEnv;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
 public class TestConstants {
     public static final String PCS_API = "pcs_api";
