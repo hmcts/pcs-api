@@ -63,6 +63,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .caseReferenceField()
             .field(PCSCase::getPropertyAddress, "Property Address");
 
+        builder.tab("eventSpike", "Event Demo")
+            .label("eventSpikeMarkdownLabel", null, "${eventSpikeMarkdown}")
+            .field("eventSpikeMarkdown", NEVER_SHOW);
+
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")

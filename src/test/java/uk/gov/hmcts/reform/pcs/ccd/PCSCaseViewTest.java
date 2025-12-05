@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -42,6 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,7 +58,7 @@ class PCSCaseViewTest {
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
-    @Mock
+    @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
@@ -74,6 +76,8 @@ class PCSCaseViewTest {
     @BeforeEach
     void setUp() {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(mock(UserInfo.class));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
                 modelMapper, draftCaseDataService, caseTitleService, defendantService);
@@ -133,7 +137,7 @@ class PCSCaseViewTest {
         AddressUK addressUK = stubAddressEntityModelMapper(addressEntity);
 
         String expectedCaseTitle = "expected case title";
-        when(caseTitleService.buildCaseTitle(any(PCSCase.class))).thenReturn(expectedCaseTitle);
+        when(caseTitleService.buildCaseTitle(any(PCSCase.class), any())).thenReturn(expectedCaseTitle);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -142,7 +146,7 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getCaseTitleMarkdown()).isEqualTo(expectedCaseTitle);
 
         ArgumentCaptor<PCSCase> pcsCaseCaptor = ArgumentCaptor.forClass(PCSCase.class);
-        verify(caseTitleService).buildCaseTitle(pcsCaseCaptor.capture());
+        verify(caseTitleService).buildCaseTitle(pcsCaseCaptor.capture(), any());
         assertThat(pcsCaseCaptor.getValue().getPropertyAddress()).isEqualTo(addressUK);
     }
 

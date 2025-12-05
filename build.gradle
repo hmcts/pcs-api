@@ -257,12 +257,7 @@ sonarqube {
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
       "**/model/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/Application.java," +
-      "**/uk/gov/hmcts/reform/pcs/config/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/**" +
       "**/entities/**," + "**/model/**"
   }
 }
@@ -472,6 +467,8 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_gw,ccd_data,pcs_api,pcs_frontend'
+
 //  environment 'IDAM_S2S_URL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
 }
 
