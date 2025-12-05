@@ -24,11 +24,13 @@ public class IntroductoryDemotedOtherRentSectionRoutingPolicy implements RentSec
 
     @Override
     public YesOrNo shouldShowRentSection(PCSCase caseData) {
-        if (caseData.getHasIntroductoryDemotedOtherGroundsForPossession() != VerticalYesNo.YES) {
+        if (caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
+            .getHasIntroductoryDemotedOtherGroundsForPossession() != VerticalYesNo.YES) {
             return YesOrNo.NO;
         }
 
-        Set<IntroductoryDemotedOrOtherGrounds> grounds = caseData.getIntroductoryDemotedOrOtherGrounds();
+        Set<IntroductoryDemotedOrOtherGrounds> grounds = caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
+            .getIntroductoryDemotedOrOtherGrounds();
         if (grounds == null || grounds.isEmpty()) {
             return YesOrNo.NO;
         }

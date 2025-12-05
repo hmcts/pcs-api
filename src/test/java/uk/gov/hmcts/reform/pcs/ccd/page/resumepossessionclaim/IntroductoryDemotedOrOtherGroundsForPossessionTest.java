@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -58,12 +59,17 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     @Test
     void shouldNotShowReasonsPageIfRentArrearsGround() {
         // Given
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(
+                    Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS))
+                .build();
+
         PCSCase caseData =
             PCSCase.builder()
-              .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-              .introductoryDemotedOrOtherGrounds(
-                  Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS))
-              .build();
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -78,11 +84,16 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     void shouldShowReasonsPageIfOtherGroundThanRentArrearsSelected(
         Set<IntroductoryDemotedOrOtherGrounds> grounds) {
         // Given
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(grounds)
+                .build();
+
         PCSCase caseData =
             PCSCase.builder()
-              .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-              .introductoryDemotedOrOtherGrounds(grounds)
-              .build();
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -95,10 +106,15 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     @Test
     void shouldShowReasonsPageWhenUserDoesntHaveGroundsForPossession() {
         // Given
-        PCSCase caseData =
-            PCSCase.builder()
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
                 .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
                 .introductoryDemotedOrOtherGrounds(null)
+                .build();
+
+        PCSCase caseData =
+            PCSCase.builder()
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
         // When
@@ -112,32 +128,46 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     @Test
     void shouldShowGroundsOptionsWhenGroundsForPossessionIsYes() {
         // Given
-        PCSCase caseData =
-            PCSCase.builder()
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
                 .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(
                     IntroductoryDemotedOrOtherGroundsForPossessionTest
-                        .buildIntroductoryDemotedOrOtherGrounds())
+                        .buildIntroductoryDemotedOrOtherGrounds()
+                )
+                .build();
+
+        PCSCase caseData =
+            PCSCase.builder()
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isNotEmpty();
+        assertThat(response.getData().getIntroductoryDemotedOrOtherGroundsForPossession()
+                    .getIntroductoryDemotedOrOtherGrounds()).isNotEmpty();
     }
 
     @Test
     void shouldNotShowGroundsOptionsWhenGroundsForPossessionIsNo() {
         // Given
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                .build();
+
         PCSCase caseData =
-            PCSCase.builder().hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO).build();
+            PCSCase.builder()
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession).build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isNull();
+        assertThat(response.getData().getIntroductoryDemotedOrOtherGroundsForPossession()
+                        .getIntroductoryDemotedOrOtherGrounds()).isNull();
     }
 
     private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {
@@ -173,8 +203,13 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         @DisplayName("Should validate otherGroundDescription when provided")
         void shouldValidateOtherGroundDescriptionWhenProvided() {
             // Given
+            IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .otherGroundDescription("Valid ground description")
+                    .build();
+
             PCSCase caseData = PCSCase.builder()
-                .otherGroundDescription("Valid ground description")
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
             // When
@@ -189,8 +224,13 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         @DisplayName("Should handle null otherGroundDescription gracefully")
         void shouldHandleNullOtherGroundDescriptionGracefully() {
             // Given
+            IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .otherGroundDescription(null)
+                    .build();
+
             PCSCase caseData = PCSCase.builder()
-                .otherGroundDescription(null)
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
             // When
@@ -207,12 +247,17 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
             // Given
             String longText = "a".repeat(501); // Exceeds MEDIUM_TEXT_LIMIT (500)
             List<String> validationErrors = List.of("Error message");
-            
+
             lenient().doReturn(validationErrors).when(textAreaValidationService)
                 .validateSingleTextArea(any(), any(), anyInt());
-            
+
+            IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .otherGroundDescription(longText)
+                    .build();
+
             PCSCase caseData = PCSCase.builder()
-                .otherGroundDescription(longText)
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
             // When
