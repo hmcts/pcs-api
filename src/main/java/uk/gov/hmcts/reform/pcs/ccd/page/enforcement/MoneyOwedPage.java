@@ -32,8 +32,7 @@ public class MoneyOwedPage implements CcdPageConfiguration {
                     <p class="govuk-body">
                         If you do not know the fee you paid to make your possession claim,
                         <a href="/cases/case-details/${[CASE_REFERENCE]}#Service%20Request" target="_blank">
-                            check the service request tab (opens in a new tab)
-                        </a>.
+                            check the service request tab (opens in a new tab)</a>.
                         This shows all of the fees you have paid when you made a claim
                     </p>
                 """
