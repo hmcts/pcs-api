@@ -39,9 +39,6 @@ class DefendantServiceTest {
     @Mock
     private ModelMapper modelMapper;
 
-    @Mock
-    private AccessCodeService accessCodeService;
-
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
 
@@ -49,7 +46,7 @@ class DefendantServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new DefendantService(modelMapper,accessCodeService);
+        underTest = new DefendantService(modelMapper);
     }
 
     @Test

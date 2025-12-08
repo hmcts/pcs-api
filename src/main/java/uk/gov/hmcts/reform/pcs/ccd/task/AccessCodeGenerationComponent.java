@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeService;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 
 import java.time.Duration;
 
@@ -22,18 +22,18 @@ public class AccessCodeGenerationComponent {
     public static final TaskDescriptor<AccessCodeTaskData> ACCESS_CODE_TASK_DESCRIPTOR =
         TaskDescriptor.of(ACCESS_CODE_GENERATION_TASK_NAME, AccessCodeTaskData.class);
 
-    private final AccessCodeService accessCodeService;
+    private final AccessCodeGenerationService accessCodeGenerationService;
     private final int maxRetries;
     private final Duration backoffDelay;
 
     public AccessCodeGenerationComponent(
-        AccessCodeService accessCodeService,
-        @Value("${fees.request.max-retries}") int maxRetries,
-        @Value("${fees.request.backoff-delay-seconds}") Duration backoffDelay
+        AccessCodeGenerationService accessCodeGenerationService,
+        @Value("${access-code.request.max-retries}") int maxRetries,
+        @Value("${access-code.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
         this.maxRetries = maxRetries;
         this.backoffDelay = backoffDelay;
-        this.accessCodeService = accessCodeService;
+        this.accessCodeGenerationService = accessCodeGenerationService;
     }
 
     /**
@@ -51,14 +51,14 @@ public class AccessCodeGenerationComponent {
             ))
             .execute((taskInstance, executionContext) -> {
                 String caseReference = taskInstance.getData().getCaseReference();
-                log.debug("Executing Party Access Code generation for parties in case: {}", caseReference);
+                log.debug("Starting generation of access codes for all parties in case: {}", caseReference);
 
                 try {
-                    accessCodeService.createAccessCodesForParties(caseReference);
+                    accessCodeGenerationService.createAccessCodesForParties(caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {
-                    log.error("Failed to create Party Access Code for parties in case: {}. Attempt {}/{}",
+                    log.error("Party access code generation failed for case: {}. Attempt {}/{}",
                               caseReference,
                               executionContext.getExecution().consecutiveFailures + 1,
                               maxRetries,

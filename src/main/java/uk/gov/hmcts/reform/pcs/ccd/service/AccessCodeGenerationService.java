@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 @Slf4j
-public class AccessCodeService {
+public class AccessCodeGenerationService {
 
     private final PartyAccessCodeRepository partyAccessCodeRepo;
     private final PcsCaseRepository pcsCaseRepo;

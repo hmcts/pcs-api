@@ -22,7 +22,6 @@ import java.util.UUID;
 public class DefendantService {
 
     private final ModelMapper modelMapper;
-    private final AccessCodeService  accessCodeService;
 
     public List<Defendant> buildDefendantsList(PCSCase pcsCase) {
         Objects.requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");

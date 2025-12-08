@@ -29,7 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AccessCodeServiceTest {
+class AccessCodeGenerationServiceTest {
 
     @Mock
     private PartyAccessCodeRepository partyAccessCodeRepo;
@@ -37,14 +37,14 @@ class AccessCodeServiceTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
 
-    private AccessCodeService underTest;
+    private AccessCodeGenerationService underTest;
 
     @Captor
     private ArgumentCaptor<Iterable<PartyAccessCodeEntity>> captor;
 
     @BeforeEach
     void setUp() {
-        underTest = new AccessCodeService(partyAccessCodeRepo, pcsCaseRepository);
+        underTest = new AccessCodeGenerationService(partyAccessCodeRepo, pcsCaseRepository);
     }
 
     @Test
