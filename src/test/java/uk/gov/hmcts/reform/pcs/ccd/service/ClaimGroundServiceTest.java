@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
@@ -64,7 +65,11 @@ class ClaimGroundServiceTest {
         PCSCase caseData =
             PCSCase.builder()
                 .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .tenancyLicenceDetails(
+                    TenancyLicenceDetails.builder()
+                        .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                        .build()
+                )
                 .introductoryDemotedOrOtherGrounds(grounds)
                 .introductoryDemotedOtherGroundReason(getReasonForGround(grounds))
                 .build();
@@ -86,7 +91,11 @@ class ClaimGroundServiceTest {
         PCSCase caseData =
             PCSCase.builder()
                 .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                .tenancyLicenceDetails(
+                    TenancyLicenceDetails.builder()
+                        .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                        .build()
+                )
                 .introductoryDemotedOrOtherGrounds(grounds)
                 .introductoryDemotedOtherGroundReason(getReasonForGround(grounds))
                 .build();
@@ -103,7 +112,11 @@ class ClaimGroundServiceTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-            .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .introductoryDemotedOrOtherGrounds(null)
             .introductoryDemotedOtherGroundReason(
                 IntroductoryDemotedOtherGroundReason.builder()
@@ -151,7 +164,11 @@ class ClaimGroundServiceTest {
             .noRentArrearsDiscretionaryGroundsOptions(discretionary)
             .noRentArrearsMandatoryGroundsOptions(mandatory)
             .noRentArrearsReasonForGrounds(grounds)
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .build();
 
         List<ClaimGroundEntity> entities = claimGroundService.getGroundsWithReason(
@@ -194,7 +211,11 @@ class ClaimGroundServiceTest {
     void shouldIgnoreNullGrounds_WhenAssuredTenancyNoRentArrears() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .build();
 
         // When
@@ -225,7 +246,11 @@ class ClaimGroundServiceTest {
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsMandatoryGrounds(mandatoryGrounds)
             .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
@@ -258,7 +283,11 @@ class ClaimGroundServiceTest {
         );
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsGrounds(rentArrearsGrounds)
             .build();
@@ -439,7 +468,11 @@ class ClaimGroundServiceTest {
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
-            .typeOfTenancyLicence(null) // Wales doesn't use this field
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(null)
+                    .build()
+            )
             .mandatoryGroundsWales(mandatoryGrounds)
             .groundsReasonsWales(reasons)
             .build();
