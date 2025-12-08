@@ -35,7 +35,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("enterPropertyAddress", this::midEvent)
-            .pageLabel("What is the address of the property you're claiming possession of?")
+            .pageLabel("What is the address of the property you’re claiming possession of?")
             .label("enterPropertyAddress-lineSeparator", "---")
             .complex(PCSCase::getPropertyAddress)
                 .mandatory(AddressUK::getAddressLine1)

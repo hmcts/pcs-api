@@ -24,7 +24,7 @@ public class TextAreaValidationService {
 
     // Error message template for character limit validation
     public static final String CHARACTER_LIMIT_ERROR_TEMPLATE =
-        "In '%s', you have entered more than the maximum number of characters (%s)";
+        "In ‘%s’, you have entered more than the maximum number of characters (%s)";
 
     public void validateTextArea(String fieldValue, String fieldLabel, int maxCharacters, List<String> errors) {
         if (fieldValue != null && fieldValue.length() > maxCharacters) {
