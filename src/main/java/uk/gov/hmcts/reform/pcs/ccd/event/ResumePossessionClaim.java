@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.accesscode.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
@@ -104,6 +105,7 @@ import java.util.UUID;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static uk.gov.hmcts.reform.pcs.accesscode.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -301,6 +303,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         pcsCaseService.save(pcsCaseEntity);
 
+        schedulePartyAccessCodeGeneration(caseReference);
+
         String responsibleParty = getClaimantInfo(pcsCase).getOrganisationName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
         String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
@@ -380,6 +384,23 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         );
 
         return feeDetails;
+    }
+
+
+    private void schedulePartyAccessCodeGeneration(long caseReference){
+
+        String taskId = UUID.randomUUID().toString();
+
+        AccessCodeTaskData taskData = AccessCodeTaskData.builder()
+            .caseReference(String.valueOf(caseReference))
+            .build();
+
+        schedulerClient.scheduleIfNotExists(
+            ACCESS_CODE_TASK_DESCRIPTOR.
+            instance(taskId)
+                .data(taskData)
+                .scheduledTo(Instant.now())
+        );
     }
 
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {

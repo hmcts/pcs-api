@@ -7,6 +7,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.accesscode.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -78,7 +79,7 @@ class AccessCodeServiceTest {
             .thenReturn(Optional.empty());
 
         //When
-        underTest.createAccessCodesForDefendants("1");
+        underTest.createAccessCodesForParties("1");
 
         //Then
         verify(partyAccessCodeRepo).save(argumentCaptor.capture());
@@ -99,7 +100,7 @@ class AccessCodeServiceTest {
         //When & then
         assertThrows(
             CaseNotFoundException.class,
-            () -> underTest.createAccessCodesForDefendants("999"));
+            () -> underTest.createAccessCodesForParties("999"));
     }
 
     @Test
@@ -115,7 +116,7 @@ class AccessCodeServiceTest {
             .thenReturn(Optional.of(new PartyAccessCodeEntity()));
 
         //When
-        underTest.createAccessCodesForDefendants("2");
+        underTest.createAccessCodesForParties("2");
 
         //Then
         verify(partyAccessCodeRepo, never()).save(any());

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.accesscode.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class AccessCodeService {
     }
 
 
-    public void createAccessCodesForDefendants(String caseReference) {
+    public void createAccessCodesForParties(String caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepo
             .findByCaseReference(Long.valueOf(caseReference))
             .orElseThrow(() -> new CaseNotFoundException(Long.valueOf(caseReference)));

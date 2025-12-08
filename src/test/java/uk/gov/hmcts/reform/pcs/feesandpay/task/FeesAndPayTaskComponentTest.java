@@ -17,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -56,9 +55,6 @@ class FeesAndPayTaskComponentTest {
     private ExecutionContext executionContext;
 
     @Mock
-    private AccessCodeService accessCodeService;
-
-    @Mock
     private Execution execution;
 
     private final Duration feesAndPayBackoffDelay = Duration.ofMinutes(5);
@@ -72,8 +68,7 @@ class FeesAndPayTaskComponentTest {
             feeService,
             paymentService,
             maxRetriesFeesAndPay,
-            feesAndPayBackoffDelay,
-            accessCodeService
+            feesAndPayBackoffDelay
         );
 
         when(taskInstance.getId()).thenReturn(TASK_ID);
