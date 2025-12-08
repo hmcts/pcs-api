@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -21,19 +22,13 @@ import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeRequest;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeResponse;
 import uk.gov.hmcts.reform.pcs.service.CasePartyLinkService;
 
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-
 @RestController
 @RequestMapping("/cases")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(
-        name = "Citizen Access Code Validation",
-        description = "Validate access code and link citizen user ID into defendant JSON"
-)
+@Tag(name = "Citizen Access Code Validation",
+        description = "Validate access code and link citizen user ID into defendant JSON")
 public class CasePartyLinkController {
-
-    private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
 
     private final IdamService idamService;
     private final CasePartyLinkService casePartyLinkService;
@@ -49,28 +44,27 @@ public class CasePartyLinkController {
     )
     @ApiResponse(responseCode = "200", description = "Successful validation and linking",
             content = @Content(schema = @Schema(implementation = ValidateAccessCodeResponse.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid request or schema")
-    @ApiResponse(responseCode = "401", description = "Invalid IDAM token")
-    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization")
-    @ApiResponse(responseCode = "404", description = "Case or Access Code not found")
-    @ApiResponse(responseCode = "409", description = "Access code already used by another user")
+    @ApiResponse(responseCode = "400", description = "Invalid access code for this case",
+            content = @Content())
+    @ApiResponse(responseCode = "401", description = "Invalid IDAM token",
+            content = @Content())
+    @ApiResponse(responseCode = "403", description = "Invalid Service Authorization",
+            content = @Content())
+    @ApiResponse(responseCode = "404", description = "Case not found or party does not belong to this case",
+            content = @Content())
+    @ApiResponse(responseCode = "409", description = "Access code already used by another user",
+            content = @Content())
     public ResponseEntity<ValidateAccessCodeResponse> validateAccessCode(
+            @Parameter(description = "The 12-digit case reference number", required = true)
             @PathVariable long caseReference,
             @Valid @RequestBody ValidateAccessCodeRequest request,
-            @RequestHeader(AUTHORIZATION) String authorization,
-            @RequestHeader(SERVICE_AUTHORIZATION) String s2sToken
+            @RequestHeader("Authorization") String authorization,
+            @RequestHeader("ServiceAuthorization") String s2sToken
     ) {
-        log.info("Validating access code for case reference: {}", caseReference);
-        log.debug("Request details - caseReference: {}, accessCode: {}", caseReference, request.getAccessCode());
-
         var user = idamService.validateAuthToken(authorization).getUserDetails();
-        log.debug("IDAM token validated successfully for user: {}", user.getUid());
 
         ValidateAccessCodeResponse response =
                 casePartyLinkService.validateAndLinkParty(caseReference, request.getAccessCode(), user);
-
-        log.info("Successfully linked user to case reference: {}", caseReference);
-        log.debug("Response - caseReference: {}, status: {}", response.getCaseReference(), response.getStatus());
 
         return ResponseEntity.ok(response);
     }

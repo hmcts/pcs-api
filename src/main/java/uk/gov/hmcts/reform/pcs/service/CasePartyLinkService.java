@@ -9,7 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeResponse;
 
 import java.util.List;
@@ -28,61 +30,66 @@ public class CasePartyLinkService {
             String accessCode,
             UserInfo userInfo
     ) {
-        log.debug("Starting validateAndLinkParty - caseReference: {}, accessCode: {}, userId: {}",
-                caseReference, accessCode, userInfo.getUid());
+        String userId = userInfo.getUid();
+        log.warn("validateAndLinkParty started - caseRef: {}, accessCode: {}, userId: {}",
+                caseReference, accessCode, userId);
 
-        // Load case
-        log.debug("Loading case for caseReference: {}", caseReference);
+        // 1) Load case
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
-        log.debug("Case loaded successfully - caseId: {}", caseEntity.getId());
+        log.warn("Case loaded successfully - caseId: {}", caseEntity.getId());
 
-        // Find PAC row
-        log.debug("Searching for PartyAccessCode - caseId: {}, accessCode: {}", caseEntity.getId(), accessCode);
+        // 2) Validate access code (must belong to this case)
         PartyAccessCodeEntity pac = pacRepository
                 .findByPcsCase_IdAndCode(caseEntity.getId(), accessCode)
                 .orElseThrow(() -> {
-                    log.warn("PartyAccessCode not found - caseId: {}, accessCode: {}", caseEntity.getId(), accessCode);
-                    return new CaseNotFoundException(caseReference);
+                    log.warn("Invalid PAC - caseId: {}, accessCode: {}", caseEntity.getId(), accessCode);
+                    return new InvalidAccessCodeException("Invalid access code for this case.");
                 });
-        log.debug("PartyAccessCode found - partyId: {}, role: {}", pac.getPartyId(), pac.getRole());
 
         UUID partyId = pac.getPartyId();
-        String currentUserUid = userInfo.getUid();
-        log.debug("Matching defendant - partyId: {}, currentUserUid: {}", partyId, currentUserUid);
+        log.warn("PAC matched - partyId: {}, role: {}", partyId, pac.getRole());
 
+        // 3) Find matching defendant by partyId
         List<Defendant> defendants = caseEntity.getDefendants();
-        log.debug("Defendants list size: {}", defendants != null ? defendants.size() : 0);
-
-        // Match defendant by partyId
-        Defendant match = defendants.stream()
+        Defendant defendant = defendants.stream()
                 .filter(d -> partyId.equals(d.getPartyId()))
                 .findFirst()
                 .orElseThrow(() -> {
-                    log.warn("Defendant not found for partyId: {} in caseReference: {}", partyId, caseReference);
-                    return new CaseNotFoundException(caseReference);
+                    log.warn("PAC partyId does not match any defendant - partyId: {}, caseRef: {}",
+                            partyId, caseReference);
+                    return new InvalidPartyForCaseException("Party does not belong to this case.");
                 });
-        log.debug("Defendant matched - partyId: {}, firstName: {}, lastName: {}, linkedUserId: {}",
-                match.getPartyId(), match.getFirstName(), match.getLastName(), match.getLinkedUserId());
 
-        // Conflict: already linked (regardless of which user)
-        if (match.getLinkedUserId() != null) {
-            log.warn("User already linked - caseReference: {}, partyId: {}, existingLinkedUserId: {}, "
-                            + "attemptedUserId: {}",
-                    caseReference, partyId, match.getLinkedUserId(), currentUserUid);
-            throw new IllegalStateException("User already linked");
+        log.warn("Defendant found - partyId: {}, linkedUserId: {}",
+                defendant.getPartyId(), defendant.getLinkedUserId());
+
+        // 4) Prevent re-linking this same defendant
+        if (defendant.getLinkedUserId() != null) {
+            log.warn("Defendant already linked - partyId: {}, existing userId: {}, attempted userId: {}",
+                    defendant.getPartyId(), defendant.getLinkedUserId(), userId);
+            throw new AccessCodeAlreadyUsedException("This access code is already linked to a user.");
         }
 
-        // Link user
-        log.debug("Linking user - caseReference: {}, partyId: {}, userId: {}", caseReference, partyId, currentUserUid);
-        match.setLinkedUserId(currentUserUid);
+        // 4a) Prevent linking same user ID to multiple defendants in the same case
+        boolean userIdAlreadyLinked = defendants.stream()
+                .filter(d -> !d.getPartyId().equals(partyId)) // Exclude the current defendant
+                .anyMatch(d -> userId.equals(d.getLinkedUserId()));
 
-        // Persist updated JSON
+        if (userIdAlreadyLinked) {
+            log.warn("User ID already linked to another defendant in this case - userId: {}, caseRef: {}, partyId: {}",
+                    userId, caseReference, partyId);
+            throw new AccessCodeAlreadyUsedException(
+                    "This user ID is already linked to another defendant in this case.");
+        }
+
+        // 5) Link user to party
+        log.warn("Linking user {} to case {} for partyId {}", userId, caseReference, partyId);
+        defendant.setLinkedUserId(userId);
+
         caseEntity.setDefendants(defendants);
-        log.debug("Saving case entity with updated defendants - caseReference: {}", caseReference);
         pcsCaseService.save(caseEntity);
-        log.info("Successfully linked user {} to caseReference: {}, partyId: {}",
-                currentUserUid, caseReference, partyId);
 
+        log.warn("Successfully linked user {} to partyId {} for case {}", userId, partyId, caseReference);
         return new ValidateAccessCodeResponse(caseReference, "linked");
     }
 
