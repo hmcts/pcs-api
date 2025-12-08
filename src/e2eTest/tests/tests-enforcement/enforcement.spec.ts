@@ -56,7 +56,7 @@ test.beforeEach(async ({ page }) => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
     timeout: LONG_TIMEOUT + MEDIUM_TIMEOUT,
-  }); 
+  });
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
