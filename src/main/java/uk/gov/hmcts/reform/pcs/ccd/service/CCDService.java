@@ -20,9 +20,6 @@ public class CCDService {
     private final IdamService idamService;
     private final CaseAssignmentApi caseAssignmentApi;
 
-    //    @Value("${core_case_data.api.url}")
-    //    private String ccdApiUrl;
-
     public void assignDefendantRole(String userId) {
         String s2s = authTokenGenerator.generate();
         String userToken = idamService.getSystemUserAuthorisation();
