@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.authorisation.generators.ServiceAuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
@@ -18,14 +19,14 @@ import java.util.ArrayList;
 public class CCDService {
 
     private final CaseAssignmentApi caseAssignmentApi;
-    private final ServiceAuthTokenGenerator serviceAuthTokenGenerator;
+    private final AuthTokenGenerator authTokenGenerator;
     private final IdamService idamService;
 
     @Value("${core_case_data.api.url}")
     private String ccdApiUrl;
 
     public void assignDefendantRole(String userId) {
-        String s2s = serviceAuthTokenGenerator.generate();
+        String s2s = authTokenGenerator.generate();
         String userToken = idamService.getSystemUserAuthorisation();
 
         log.error("CCD API URL IS : {}", ccdApiUrl);
@@ -33,9 +34,9 @@ public class CCDService {
         //we want to do this without org. SO may need to update the client.
         CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
             = CaseAssignmentUserRoleWithOrganisation.builder()
-            .caseRole("[DEFENDANT]")
-            .organisationId("NO")
             .caseDataId("CASE ID")
+            .caseRole("[DEFENDANT]")
+            .userId(userId)
             .build();
 
         ArrayList<CaseAssignmentUserRoleWithOrganisation> caseAssignmentList = new ArrayList<>();
