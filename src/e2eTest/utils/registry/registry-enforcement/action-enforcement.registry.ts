@@ -11,6 +11,8 @@ import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.actio
 import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { handleCookieConsentAction } from '@utils/actions/custom-actions/handleCookieConsent.action';
 import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI.action';
+import { ExpandSummaryAction } from '@utils/actions/element-actions';
+import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -25,7 +27,11 @@ export class ActionEnforcementRegistry {
     ['navigateToUrl', new NavigateToUrlAction()],
     ['handleCookieConsent', new handleCookieConsentAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
+    ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
+    ['expandSummary', new ExpandSummaryAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],
+    ['validateWritOrWarrantFeeAmount', new EnforcementAction()],
+    ['validateGetQuoteFromBailiffLink', new EnforcementAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
     ['getDefendantDetails', new EnforcementAction()],
