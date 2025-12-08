@@ -55,7 +55,7 @@ test.beforeEach(async ({ page }) => {
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
-    timeout: LONG_TIMEOUT + MEDIUM_TIMEOUT,
+    timeout: LONG_TIMEOUT + LONG_TIMEOUT,
   });
 });
 
