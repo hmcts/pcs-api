@@ -8,7 +8,8 @@ export const landRegistryFees = {
   howMuchYouSpendOnLandRegistryFeeTextInput: '100',
   continueButton: 'Continue',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
-  moneyValidation: {
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
+  errorValidationField: {
     errorMoneyField: [
       { type: 'negativeDecimal', input: '-0.5', errMessage: 'Should be more than or equal to £0.01' },
       { type: 'negative', input: '-5', errMessage: 'Should be more than or equal to £0.01' },

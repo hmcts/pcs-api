@@ -31,7 +31,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
-import { LONG_TIMEOUT, MEDIUM_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT } from 'playwright.config';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -54,8 +54,8 @@ test.beforeEach(async ({ page }) => {
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
-    timeout: LONG_TIMEOUT + MEDIUM_TIMEOUT,
-  });  
+    timeout: LONG_TIMEOUT + LONG_TIMEOUT,
+  });
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
@@ -186,7 +186,8 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       await performValidation('mainHeader', landRegistryFees.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: landRegistryFees.errorValidation,
-        inputArray: landRegistryFees.moneyValidation.errorMoneyField,
+        validationType: landRegistryFees.errorValidationType.five,
+        inputArray: landRegistryFees.errorValidationField.errorMoneyField,
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.yesRadioOption,
         label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
@@ -249,13 +250,6 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
     });
     await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('inputErrorValidation', {
-      validationReq: moneyOwed.errorValidation,
-      validationType: moneyOwed.errorValidationType.one,
-      inputArray: moneyOwed.errorValidationField.errorMoneyField,
-      label: moneyOwed.totalAmountOwedTextLabel,
-      button: moneyOwed.continueButton
-    });
     await performAction('provideMoneyOwed', {
       label: moneyOwed.totalAmountOwedTextLabel,
       input: moneyOwed.totalAmountOwedTextInput
@@ -329,7 +323,10 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
     });
     await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('clickButton', moneyOwed.continueButton);
+    await performAction('provideMoneyOwed', {
+      label: moneyOwed.totalAmountOwedTextLabel,
+      input: moneyOwed.totalAmountOwedTextInput
+    });
     await performValidation('mainHeader', legalCosts.mainHeader);
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,

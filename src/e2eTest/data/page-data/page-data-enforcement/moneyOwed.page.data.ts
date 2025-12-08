@@ -4,8 +4,8 @@ export const moneyOwed = {
   totalAmountOwedTextLabel: 'What is the total amount that the defendants owe you?',
   totalAmountOwedTextInput: '100',
   continueButton: 'Continue',
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
-  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyAndRadioOption' },
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorMoneyField: [
       { type: 'negativeDecimal', input: '-0.5', errMessage: 'Should be more than or equal to £0.01' },
