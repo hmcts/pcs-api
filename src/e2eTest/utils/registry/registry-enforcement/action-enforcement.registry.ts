@@ -54,6 +54,7 @@ export class ActionEnforcementRegistry {
     ['submitCaseAPI', new CreateCaseAPIAction()],
     ['provideLegalCosts', new EnforcementAction()],
     ['provideLandRegistryFees', new EnforcementAction()],
+    ['selectLanguageUsed', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
   ]);
 
