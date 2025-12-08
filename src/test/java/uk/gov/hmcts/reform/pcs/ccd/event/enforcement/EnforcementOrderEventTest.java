@@ -35,17 +35,24 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPa
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static org.mockito.Mockito.when;
 
@@ -53,7 +60,9 @@ import static org.mockito.Mockito.when;
 class EnforcementOrderEventTest extends BaseEventTest {
 
     @Mock
-    private final AddressFormatter addressFormatter = new AddressFormatter();
+    private AddressFormatter addressFormatter;
+    @Mock
+    private FeeApplier feeApplier;
     @Mock
     private DefendantService defendantService;
     @Mock
@@ -103,6 +112,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
         String firstName = "Test";
         String lastName = "Testing";
+
         DefendantDetails defendantDetails = DefendantDetails.builder().firstName(firstName).lastName(lastName).build();
         List<ListValue<DefendantDetails>> allDefendants = List.of(
             ListValue.<DefendantDetails>builder().value(defendantDetails).build()
@@ -267,8 +277,81 @@ class EnforcementOrderEventTest extends BaseEventTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("enforcementFeeScenarios")
+    void shouldSetFeeAmountOnStart(FeeTypes fee, Function<EnforcementOrder, String> feeGetter) {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build())
+            .build();
+
+        String expectedFormattedFee = "£" + (1 + (int)(Math.random() * 1000));
+
+        doAnswer(invocation -> {
+            PCSCase pcs = invocation.getArgument(0);
+            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
+            setter.accept(pcs, expectedFormattedFee);
+            return null;
+        }).when(feeApplier).applyFeeAmount(
+            any(PCSCase.class),
+            any(FeeTypes.class),
+            any()
+        );
+
+        // When
+        PCSCase result = callStartHandler(caseData);
+
+        // Then
+        assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFormattedFee);
+        verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
+    }
+
+    @ParameterizedTest
+    @MethodSource("enforcementFeeScenarios")
+    void shouldSetDefaultFeeWhenFeeServiceFails(FeeTypes fee, Function<EnforcementOrder, String> feeGetter) {
+        // Given
+        PCSCase caseData = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
+        String expectedFeesMessage = FeeApplier.UNABLE_TO_RETRIEVE;
+
+        doAnswer(invocation -> {
+            PCSCase pcs = invocation.getArgument(0);
+            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
+            try {
+                throw new RuntimeException("Fee not found");
+            } catch (RuntimeException e) {
+                setter.accept(pcs, expectedFeesMessage);
+            }
+            return null;
+        }).when(feeApplier).applyFeeAmount(
+            eq(caseData),
+            any(FeeTypes.class),
+            any());
+
+        // When
+        PCSCase result = callStartHandler(caseData);
+
+        // Then
+        assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFeesMessage);
+        verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
+    }
+
+    private static Stream<Arguments> enforcementFeeScenarios() {
+        return Stream.of(
+            argumentSet(
+                "Writ fee",
+                FeeTypes.ENFORCEMENT_WRIT_FEE,
+                (Function<EnforcementOrder, String>) EnforcementOrder::getWritFeeAmount
+            ),
+            argumentSet(
+                "Warrant fee",
+                FeeTypes.ENFORCEMENT_WARRANT_FEE,
+                (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount
+            )
+        );
+    }
+
     private EnforcementOrderEvent newEnforcementOrderEvent() {
-        return new EnforcementOrderEvent(enforcementOrderService, addressFormatter, defendantService,
+        return new EnforcementOrderEvent(enforcementOrderService, addressFormatter, defendantService, feeApplier,
                                          violentAggressiveRiskPage, verbalOrWrittenThreatsRiskPage,
                                          protestorGroupRiskPage, policeOrSocialServicesRiskPage,
                                          firearmsPossessionRiskPage, criminalAntisocialRiskPage,
@@ -276,5 +359,4 @@ class EnforcementOrderEventTest extends BaseEventTest {
                                          vulnerableAdultsChildrenPage, additionalInformationPage,
                                          savingPageBuilderFactory);
     }
-
 }

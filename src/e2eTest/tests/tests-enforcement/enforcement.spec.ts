@@ -55,13 +55,32 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
-  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButton', caseSummary.go);
-    await performAction('selectApplicationType', {
-      question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-    });
+  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', {
+    annotation: {
+      type: 'issue',
+      description: `Fee validation in Your Application page will handle dynamic fee validation upon completion of the following - 'https://tools.hmcts.net/jira/browse/HDPI-3386'`,
+    },
+  },
+    async () => {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+      await performAction('clickButton', caseSummary.go);
+      await performAction('validateWritOrWarrantFeeAmount', {
+        type: yourApplication.summaryWritOrWarrant,
+        label1: yourApplication.warrantFeeValidationLabel,
+        text1: yourApplication.warrantFeeValidationText,
+        label2: yourApplication.writFeeValidationLabel,
+        text2: yourApplication.writFeeValidationText
+      });
+      await performAction('validateGetQuoteFromBailiffLink', {
+        type: yourApplication.summaryWritOrWarrant,
+        link: yourApplication.quoteFromBailiffLink,
+        newPage: yourApplication.hceoPageTitle
+      });
+      await performAction('expandSummary', yourApplication.summarySaveApplication);
+      await performAction('selectApplicationType', {
+        question: yourApplication.typeOfApplicationQuestion,
+        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+      });
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,

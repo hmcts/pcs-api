@@ -37,6 +37,8 @@ export let defendantDetails: string[] = [];
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
+      ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
+      ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(page, fieldName as actionRecord)],
       ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
@@ -65,11 +67,24 @@ export class EnforcementAction implements IAction {
     await actionToPerform();
   }
 
+  private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord){
+    await performAction('expandSummary', summaryOption.type);
+    await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
+    await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
+    await performAction('expandSummary', summaryOption.type);
+  }
+
+  private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord){
+    await performAction('expandSummary', bailiffQuote.type);
+    await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
+    await performAction('expandSummary', bailiffQuote.type);
+  }
+
   private async selectApplicationType(applicationType: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
-    await performAction('clickButton', yourApplication.continue);
+    await performAction('clickButton', yourApplication.continueButton);
   }
 
   private async getDefendantDetails(defendantsDetails: actionRecord) {
