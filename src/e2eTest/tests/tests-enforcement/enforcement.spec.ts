@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import {
@@ -32,6 +32,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
+import { LONG_TIMEOUT, MEDIUM_TIMEOUT } from 'playwright.config';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -51,7 +52,11 @@ test.beforeEach(async ({ page }) => {
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
-  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  await expect(async () => {
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  }).toPass({
+    timeout: LONG_TIMEOUT + MEDIUM_TIMEOUT,
+  }); 
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
