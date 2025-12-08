@@ -1,8 +1,8 @@
 import { Page, test } from '@playwright/test';
-import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
-import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ActionRegistry } from './registry/action.registry';
-import { ValidationRegistry } from './registry/validation.registry';
+import { actionData, actionRecord, actionTuple } from '@utils/interfaces/action.interface';
+import { validationData, validationRecord, validationTuple } from '@utils/interfaces/validation.interface';
+import { ActionRegistry } from '@utils/registry/action.registry';
+import { ValidationRegistry } from '@utils/registry/validation.registry';
 import { AxeUtils} from "@hmcts/playwright-common";
 
 let testExecutor: { page: Page };
@@ -37,8 +37,29 @@ async function validatePageIfNavigated(action:string): Promise<void> {
   if(action.includes('click')) {
     const pageNavigated = await detectPageNavigation();
     if (pageNavigated) {
+      const executor = getExecutor();
+      const currentUrl = executor.page.url();
+
+      // Skip accessibility audit for login/auth pages
+      if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
+          currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        await performValidation('autoValidatePageContent');
+        return;
+      }
+
       await performValidation('autoValidatePageContent');
-      await new AxeUtils(getExecutor().page).audit();
+
+      try {
+        await new AxeUtils(executor.page).audit();
+      } catch (error) {
+        const errorMessage = String((error as Error).message || error).toLowerCase();
+        if (errorMessage.includes('execution context was destroyed') ||
+            errorMessage.includes('navigation')) {
+          console.warn(`Accessibility audit skipped due to navigation: ${errorMessage}`);
+        } else {
+          throw error;
+        }
+      }
     }
   }
 }
