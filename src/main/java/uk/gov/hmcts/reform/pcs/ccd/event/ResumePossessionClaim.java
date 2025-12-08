@@ -239,8 +239,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
 
-        ccdService.assignDefendantRole("123");
-
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
         // Fetch organisation name from rd-professional API
         String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
