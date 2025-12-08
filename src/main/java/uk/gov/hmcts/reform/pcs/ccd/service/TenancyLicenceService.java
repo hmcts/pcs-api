@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
@@ -12,12 +13,16 @@ import java.math.BigDecimal;
 public class TenancyLicenceService {
 
     public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
+        TenancyLicenceDetails tenancyDetails =
+            pcsCase.getTenancyLicenceDetails();
         return TenancyLicence.builder()
-                .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
-                        ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
-                .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
-                .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
-                .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+                .tenancyLicenceType(tenancyDetails != null && tenancyDetails.getTypeOfTenancyLicence() != null
+                        ? tenancyDetails.getTypeOfTenancyLicence().getLabel() : null)
+                .tenancyLicenceDate(tenancyDetails != null ? tenancyDetails.getTenancyLicenceDate() : null)
+                .detailsOfOtherTypeOfTenancyLicence(tenancyDetails != null
+                        ? tenancyDetails.getDetailsOfOtherTypeOfTenancyLicence() : null)
+                .supportingDocuments(ListValueUtils.unwrapListItems(
+                        tenancyDetails != null ? tenancyDetails.getTenancyLicenceDocuments() : null))
                 .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
                 .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeDocuments()))
                 .noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()))

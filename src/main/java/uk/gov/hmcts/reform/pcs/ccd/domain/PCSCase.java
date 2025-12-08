@@ -47,8 +47,6 @@ public class PCSCase {
     // Field label constants - shared between domain annotations and validation
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
-    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
-        "Give details of the type of tenancy or licence agreement that’s in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
     @CCD(
@@ -422,29 +420,9 @@ public class PCSCase {
     )
     private List<ListValue<Document>> noticeDocuments;
 
-    @CCD(
-        label = "What type of tenancy or licence is in place?",
-        access = {CaseworkerReadAccess.class}
-    )
-    private TenancyLicenceType typeOfTenancyLicence;
-
-    @CCD(
-        label = DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
-        hint = "You can enter up to 500 characters",
-        typeOverride = TextArea
-    )
-    private String detailsOfOtherTypeOfTenancyLicence;
-
-    @CCD(
-        label = "What date did the tenancy or licence begin?",
-        hint = "For example, 16 4 2021"
-    )
-    private LocalDate tenancyLicenceDate;
-
-    @CCD(
-        label = "Add document",hint = "Upload a document to the system"
-    )
-    private List<ListValue<Document>> tenancyLicenceDocuments;
+    @JsonUnwrapped
+    @CCD
+    private TenancyLicenceDetails tenancyLicenceDetails;
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;

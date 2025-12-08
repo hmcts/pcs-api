@@ -18,12 +18,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
-public class TenancyLicenceDetails implements CcdPageConfiguration {
+public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
 
     private final Clock ukClock;
     private final TextAreaValidationService textAreaValidationService;
 
-    public TenancyLicenceDetails(@Qualifier("ukClock") Clock ukClock,
+    public TenancyLicenceDetailsPage(@Qualifier("ukClock") Clock ukClock,
                                 TextAreaValidationService textAreaValidationService) {
         this.ukClock = ukClock;
         this.textAreaValidationService = textAreaValidationService;
@@ -40,7 +40,9 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>
                """)
             .complex(PCSCase::getTenancyLicenceDetails)
-                .mandatory(TenancyLicenceDetails::getTypeOfTenancyLicence)
+                .mandatory(
+                    TenancyLicenceDetails::getTypeOfTenancyLicence
+                )
                 .mandatory(
                     TenancyLicenceDetails::getDetailsOfOtherTypeOfTenancyLicence,
                     "typeOfTenancyLicence=\"OTHER\""
@@ -73,16 +75,8 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        TenancyLicenceDetails tenancyDetails =
-            caseData.getTenancyLicenceDetails();
-
-        if (tenancyDetails == null) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .build();
-        }
-
-        LocalDate tenancyLicenceDate = tenancyDetails.getTenancyLicenceDate();
+        LocalDate tenancyLicenceDate = caseData.getTenancyLicenceDetails() != null
+                ? caseData.getTenancyLicenceDetails().getTenancyLicenceDate() : null;
         LocalDate currentDate = LocalDate.now(ukClock);
 
         // Validate tenancy licence date
@@ -94,7 +88,8 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
 
         // Validate details of other type of tenancy licence character limit
         List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
-            tenancyDetails.getDetailsOfOtherTypeOfTenancyLicence(),
+            caseData.getTenancyLicenceDetails() != null
+                    ? caseData.getTenancyLicenceDetails().getDetailsOfOtherTypeOfTenancyLicence() : null,
             TenancyLicenceDetails.DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
         );
