@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
@@ -449,42 +450,9 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
-    // --- Rent arrears (statement upload + totals + third party payments) ---
-    @CCD(
-        label = "Add document",
-        hint = "Upload a document to the system",
-        typeOverride = FieldType.Collection,
-        typeParameterOverride = "Document"
-    )
-    private List<ListValue<Document>> rentStatementDocuments;
-
-    @CCD(
-        label = "Total rent arrears",
-        min = 0,
-        typeOverride = FieldType.MoneyGBP
-    )
-    private String totalRentArrears;
-
-    @CCD(
-        label = "For the period shown on the rent statement, have any rent payments been paid by someone "
-            + "other than the defendants?",
-        hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government department, like the Department for Work and Pensions (DWP)"
-    )
-    private VerticalYesNo thirdPartyPayments;
-
-    @CCD(
-        label = "Where have the payments come from?",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "ThirdPartyPaymentSource"
-    )
-    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
-
-    @CCD(
-        label = "Payment source"
-    )
-    private String thirdPartyPaymentSourceOther;
+    @JsonUnwrapped
+    @CCD
+    private RentArrearsSection rentArrears;
 
     @CCD(
         label = "Do you have grounds for possession?"
