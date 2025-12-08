@@ -297,7 +297,7 @@ export class EnforcementAction implements IAction {
             case 'moneyField':
               await performAction('inputText', validationArr.label, item.input);
               await performAction('clickButton', validationArr.button);
-              await performAction('errormessage', item.errMessage);
+              await performValidation('errorMessage', validationArr.label, item.errMessage);
               await performValidation('inputError', validationArr.label, item.errMessage);
               break;
 
