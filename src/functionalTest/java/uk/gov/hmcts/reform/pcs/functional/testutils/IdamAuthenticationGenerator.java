@@ -10,6 +10,7 @@ import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.CLIENT_ID;
 import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.GRANT_TYPE;
 import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.SCOPE;
 import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.ENDPOINT;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
 public class IdamAuthenticationGenerator {
 
@@ -46,13 +47,5 @@ public class IdamAuthenticationGenerator {
         assertThat(SerenityRest.lastResponse().getStatusCode()).isEqualTo(200);
 
         return SerenityRest.lastResponse().jsonPath().getString("access_token");
-    }
-
-    private static String getEnv(String name) {
-        String value = System.getenv(name);
-        if (value == null || value.isBlank()) {
-            throw new IllegalStateException("Missing required environment variable: " + name);
-        }
-        return value;
     }
 }
