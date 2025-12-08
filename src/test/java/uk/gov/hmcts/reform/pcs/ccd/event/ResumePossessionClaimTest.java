@@ -574,7 +574,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         private FeeDetails stubFeeService() {
             FeeDetails feeDetails = FeeDetails.builder().feeAmount(CLAIM_FEE_AMOUNT).build();
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE.getCode()))
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE))
                 .thenReturn(feeDetails);
 
             return feeDetails;

@@ -7,6 +7,4 @@ public interface FeeService {
 
     FeeDetails getFee(FeeTypes feeType);
 
-    FeeDetails getFee(String feeTypeCode);
-
 }

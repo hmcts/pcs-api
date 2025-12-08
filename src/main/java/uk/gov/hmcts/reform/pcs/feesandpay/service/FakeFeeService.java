@@ -20,11 +20,6 @@ public class FakeFeeService implements FeeService {
         return getFeeDetails();
     }
 
-    @Override
-    public FeeDetails getFee(String feeTypesCode) {
-        return getFeeDetails();
-    }
-
     private FeeDetails getFeeDetails() {
         return FeeDetails.builder()
             .code("FEE0123")

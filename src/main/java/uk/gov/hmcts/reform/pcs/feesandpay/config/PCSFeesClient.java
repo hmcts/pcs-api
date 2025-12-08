@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.config;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,12 +16,12 @@ public class PCSFeesClient {
         this.strategies = strategies;
     }
 
-    public FeeLookupResponseDto lookupFee(String feeTypesCode, String channel, String event, BigDecimal amount,
+    public FeeLookupResponseDto lookupFee(FeeTypes feeTypes, String channel, String event, BigDecimal amount,
                                           String keyword) {
         FeesClientContext context = strategies.stream()
-            .filter(strategy -> strategy.supports(feeTypesCode))
+            .filter(strategy -> strategy.supports(feeTypes.getCode()))
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No strategy found for fee type: " + feeTypesCode));
+            .orElseThrow(() -> new IllegalStateException("No strategy found for fee type: " + feeTypes));
 
         return context.getApi().lookupFee(
             context.getServiceName().service(),

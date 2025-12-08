@@ -32,21 +32,16 @@ public class RealFeeService implements FeeService {
      */
     @Override
     public FeeDetails getFee(FeeTypes feeTypes) {
-        return getFee(feeTypes.getCode());
-    }
-
-    @Override
-    public FeeDetails getFee(String feeTypesCode) {
-        log.debug("Requesting fee of type: {}", feeTypesCode);
-        LookUpReferenceData ref = feesConfiguration.getLookup(feeTypesCode);
+        log.debug("Requesting fee of type: {}", feeTypes);
+        LookUpReferenceData ref = feesConfiguration.getLookup(feeTypes);
 
         if (ref == null) {
-            log.error("Fee type '{}' not found in configuration", feeTypesCode);
-            throw new FeeNotFoundException("Fee not found for feeType: " + feeTypesCode);
+            log.error("Fee type '{}' not found in configuration", feeTypes);
+            throw new FeeNotFoundException("Fee not found for feeType: " + feeTypes);
         }
 
         try {
-            FeeLookupResponseDto feeLookupResponse = pcsFeesClient.lookupFee(feeTypesCode,
+            FeeLookupResponseDto feeLookupResponse = pcsFeesClient.lookupFee(feeTypes,
                                                                              ref.getChannel(),
                                                                              ref.getEvent(),
                                                                              ref.getAmountOrVolume(),
@@ -54,12 +49,12 @@ public class RealFeeService implements FeeService {
             );
 
             log.debug("Successfully retrieved fee: type={}, code={}, amount={}",
-                      feeTypesCode, feeLookupResponse.getCode(), feeLookupResponse.getFeeAmount());
+                      feeTypes, feeLookupResponse.getCode(), feeLookupResponse.getFeeAmount());
 
             return FeeDetails.fromFeeLookupResponse(feeLookupResponse);
         } catch (FeignException e) {
-            log.error("Failed to retrieve fee for type: {}", feeTypesCode, e);
-            throw new FeeNotFoundException("Unable to retrieve fee: " + feeTypesCode, e);
+            log.error("Failed to retrieve fee for type: {}", feeTypes, e);
+            throw new FeeNotFoundException("Unable to retrieve fee: " + feeTypes, e);
         }
     }
 

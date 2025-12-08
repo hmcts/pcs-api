@@ -374,7 +374,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
 
-        FeeDetails feeDetails = feeService.getFee(FeeTypes.CASE_ISSUE_FEE.getCode());
+        FeeDetails feeDetails = feeService.getFee(FeeTypes.CASE_ISSUE_FEE);
 
         String taskId = UUID.randomUUID().toString();
 
