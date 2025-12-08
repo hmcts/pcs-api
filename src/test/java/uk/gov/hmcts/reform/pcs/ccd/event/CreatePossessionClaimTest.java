@@ -87,6 +87,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
 
         assertThat(result.getFeeAmount()).isEqualTo(expectedFormattedFee);
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeTypes.CASE_ISSUE_FEE), any());
+
     }
 
 
@@ -107,8 +108,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         }).when(feeApplier).applyFeeAmount(
             eq(caseData),
             any(FeeTypes.class),
-            any()
-        );
+            any());
 
         PCSCase result = callStartHandler(caseData);
 
