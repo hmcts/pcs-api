@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -290,8 +291,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedUserEmail);
-            assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
-            assertThat(updatedCaseData.getFormattedClaimantContactAddress())
+            assertThat(updatedCaseData.getContactPreferencesDetails().getClaimantContactEmail())
+                .isEqualTo(expectedUserEmail);
+            assertThat(updatedCaseData.getContactPreferencesDetails().getFormattedClaimantContactAddress())
                 .isEqualTo("10 High Street<br>London<br>W1 2BC");
         }
 
@@ -433,8 +435,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
                         .claimantName(claimantName)
                         .build()
                 )
-                .claimantContactEmail(claimantContactEmail)
-                .claimantContactPhoneNumber(claimantContactPhoneNumber)
+                .contactPreferencesDetails(
+                    ClaimantContactPreferences.builder()
+                        .claimantContactEmail(claimantContactEmail)
+                        .claimantContactPhoneNumber(claimantContactPhoneNumber)
+                        .build()
+                )
                 .claimantCircumstances(ClaimantCircumstances.builder()
                                            .claimantCircumstancesDetails(claimantCircumstances)
                                            .build())
@@ -509,7 +515,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             FeesAndPayTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
 
-            assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE);
+            assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
         }
 
@@ -604,7 +610,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         private FeeDetails stubFeeService() {
             FeeDetails feeDetails = FeeDetails.builder().feeAmount(CLAIM_FEE_AMOUNT).build();
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE))
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE.getCode()))
                 .thenReturn(feeDetails);
 
             return feeDetails;

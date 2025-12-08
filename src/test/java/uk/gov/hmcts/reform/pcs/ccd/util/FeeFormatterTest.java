@@ -46,5 +46,4 @@ class FeeFormatterTest {
             arguments(new BigDecimal("15.0000000"), "£15")
         );
     }
-
 }
