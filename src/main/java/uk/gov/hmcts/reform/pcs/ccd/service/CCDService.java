@@ -21,14 +21,14 @@ public class CCDService {
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamService idamService;
 
-    @Value("${core_case_data.api.url}")
-    private String ccdApiUrl;
+    //    @Value("${core_case_data.api.url}")
+    //    private String ccdApiUrl;
 
     public void assignDefendantRole(String userId) {
         String s2s = authTokenGenerator.generate();
         String userToken = idamService.getSystemUserAuthorisation();
 
-        log.error("CCD API URL IS : {}", ccdApiUrl);
+        log.error("CCD API URL IS : {}", "url");
 
         //we want to do this without org. SO may need to update the client.
         CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
