@@ -12,4 +12,5 @@ export const cyaIgnoreQuestions = [
   'Do you know the defendant’s name?',
   'Selected options',
   'Total rent arrears',
+  'How much is the rent?'
 ];

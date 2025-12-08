@@ -538,7 +538,11 @@ export class CreateCaseAction implements IAction {
   ) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: defendantCircumstances.defendantCircumstancesQuestion, option: defendantDetails.defendantCircumstance});
+    let defendantCircumstancesQuestion = defendantCircumstances.singleDefendantCircumstancesQuestion;
+    if (defendantDetails.additionalDefendants == true) {
+      defendantCircumstancesQuestion = defendantCircumstances.singleDefendantCircumstancesQuestion;
+    }
+    await performAction('clickRadioButton', {question: defendantCircumstancesQuestion, option: defendantDetails.defendantCircumstance});
     if (defendantDetails.defendantCircumstance == defendantCircumstances.yesRadioOption) {
       if (defendantDetails.additionalDefendants == true) {
         await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
@@ -723,7 +727,7 @@ export class CreateCaseAction implements IAction {
 
   private async provideMoreDetailsOfClaim(page: Page) {
     // Reloading to reset session/UI state before performing next step
-    // await page.reload();
+    await page.reload();
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
