@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
-import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 @Slf4j
 public class CCDService {
 
-    private final CaseAssignmentApi caseAssignmentApi;
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamService idamService;
 
@@ -45,7 +43,7 @@ public class CCDService {
                     .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
                         .build();
 
-        caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+        //caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
 
     }
 }
