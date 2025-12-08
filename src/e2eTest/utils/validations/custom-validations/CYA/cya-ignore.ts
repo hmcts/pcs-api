@@ -11,6 +11,5 @@ export const cyaIgnoreQuestions = [
   'Is the defendant’s correspondence address the same as the address of the property you’re claiming possession of?',
   'Do you know the defendant’s name?',
   'Selected options',
-  'Total rent arrears',
   'How much is the rent?'
 ];

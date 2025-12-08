@@ -5,10 +5,18 @@ interface QAObject {
   answer: string | string[];
 }
 
+export interface FormattingRule {
+  originalQuestion?: string;
+  alternativeQuestion?: string;
+  answerFormatter?: (answer: string | string[]) => string | string[];
+  answerPatterns?: string[];
+}
+
 export class CYAStore {
   private static instance: CYAStore;
   private qaObjects: QAObject[] = [];
   private ignoreQuestions: string[] = [];
+  private formattingRules: FormattingRule[] = [];
   private validationFailed: boolean = false;
   private failedValidations: Array<{question: string, expected: string, actual: string}> = [];
 
@@ -21,6 +29,7 @@ export class CYAStore {
 
   private constructor() {
     this.loadIgnoreQuestions();
+    this.loadFormattingRules();
   }
 
   private loadIgnoreQuestions(): void {
@@ -31,6 +40,17 @@ export class CYAStore {
       }
     } catch (error) {
       this.ignoreQuestions = [];
+    }
+  }
+
+  private loadFormattingRules(): void {
+    try {
+      const formattingModule = require('./cya-value-formatting');
+      if (formattingModule && formattingModule.cyaFormattingRules) {
+        this.formattingRules = formattingModule.cyaFormattingRules;
+      }
+    } catch (error) {
+      this.formattingRules = [];
     }
   }
 
@@ -95,7 +115,7 @@ export class CYAStore {
       }
 
       if (normalizedQuestion.startsWith(normalizedIgnore + ' ') ||
-        normalizedIgnore.startsWith(normalizedQuestion + ' ')) {
+          normalizedIgnore.startsWith(normalizedQuestion + ' ')) {
         return true;
       }
 
@@ -122,6 +142,21 @@ export class CYAStore {
     return false;
   }
 
+  getFormattingRule(question: string): FormattingRule | null {
+    const normalizedQuestion = this.normalizeText(question);
+
+    for (const rule of this.formattingRules) {
+      if (rule.originalQuestion) {
+        const normalizedOriginal = this.normalizeText(rule.originalQuestion);
+        if (normalizedQuestion === normalizedOriginal) {
+          return rule;
+        }
+      }
+    }
+
+    return null;
+  }
+
   markValidationFailed(question: string, expected: string, actual: string): void {
     this.validationFailed = true;
     this.failedValidations.push({ question, expected, actual });
@@ -137,10 +172,10 @@ export class CYAStore {
 
   private normalizeText(text: string): string {
     return text
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase()
-      .replace(/[^\w\s]/g, '');
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '');
   }
 
   clearAll(): void {
@@ -174,7 +209,7 @@ export class CYAPageValidation {
       this.printTable('Unvalidated Q&As', unvalidatedQAs, false);
     }
 
-    console.log('\n📊 CYA Validation Sumamry');
+    console.log('\n📊 CYA Validation Summary');
     console.log('═'.repeat(50));
     console.log(`   Total Questions on CYA Page: ${extractedQA.length}`);
     console.log(`   Questions Captured for Validation: ${savedQA.length}`);
@@ -253,7 +288,7 @@ export class CYAPageValidation {
   private isStructuralElement(text: string): boolean {
     const lowerText = text.toLowerCase();
     return lowerText.length < 2 ||
-      /defendant.*name$|defendant.*address$|add additional|enter address|^change$/i.test(lowerText);
+        /defendant.*name$|defendant.*address$|add additional|enter address|^change$/i.test(lowerText);
   }
 
   private validateAndPrintResults(savedQA: QAObject[], extractedQA: QAObject[]): {
@@ -308,14 +343,42 @@ export class CYAPageValidation {
         validatedExtractedQuestions.add(this.normalizeText(extractedQuestion));
       }
 
-      const found = pageAnswer ? this.compareAnswers(pageAnswer, saved.answer) : false;
+      const formattingRule = this.store.getFormattingRule(saved.question);
+      let found = false;
+
+      if (pageAnswer) {
+        // Try standard comparison first
+        found = this.compareAnswers(pageAnswer, saved.answer);
+
+        // If not found and we have formatting rule, try formatted answer
+        if (!found && formattingRule) {
+          // Try with formatted answer
+          if (formattingRule.answerFormatter) {
+            const formattedAnswer = formattingRule.answerFormatter(saved.answer);
+            found = this.compareAnswers(pageAnswer, formattedAnswer);
+          }
+
+          // Try with answer patterns
+          if (!found && formattingRule.answerPatterns) {
+            for (const pattern of formattingRule.answerPatterns) {
+              if (this.compareAnswers(pageAnswer, pattern)) {
+                found = true;
+                break;
+              }
+            }
+          }
+        }
+      }
 
       if (!found && pageAnswer) {
         const expected = this.answerToString(saved.answer);
         this.store.markValidationFailed(saved.question, expected, pageAnswer);
       }
 
-      const expected = this.answerToString(saved.answer);
+      const expected = formattingRule && formattingRule.answerFormatter
+          ? this.answerToString(formattingRule.answerFormatter(saved.answer))
+          : this.answerToString(saved.answer);
+
       const actual = pageAnswer || 'NOT FOUND';
       const rowNumber = (index + 1).toString().padStart(3);
       const questionLines = this.wrapText(saved.question, this.maxQuestionWidth);
@@ -343,7 +406,7 @@ export class CYAPageValidation {
     console.log('└─────┴──────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────┴───────────────┘');
 
     const unvalidatedQAs = extractedQA.filter(qa =>
-      !validatedExtractedQuestions.has(this.normalizeText(qa.question))
+        !validatedExtractedQuestions.has(this.normalizeText(qa.question))
     );
 
     return { passed, failed, ignored, unvalidatedQAs, ignoredQAs };
