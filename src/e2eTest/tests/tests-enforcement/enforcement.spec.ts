@@ -51,7 +51,9 @@ test.beforeEach(async ({ page }) => {
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
-  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  await expect(async () => {
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  }).toPass(); 
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
