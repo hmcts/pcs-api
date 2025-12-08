@@ -187,7 +187,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message", is("This user ID is already linked to another defendant in this case.")));
+                .andExpect(jsonPath("$.message",
+                        is("This user ID is already linked to another defendant in this case.")));
     }
 
     @Test
@@ -257,7 +258,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         return pcsCaseRepository.save(caseEntity);
     }
 
-    private PcsCaseEntity createTestCaseWithMultipleDefendants(long caseReference, String firstLinkedUserId, String secondLinkedUserId) {
+    private PcsCaseEntity createTestCaseWithMultipleDefendants(
+            long caseReference, String firstLinkedUserId, String secondLinkedUserId) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
