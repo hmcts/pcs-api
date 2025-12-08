@@ -256,7 +256,7 @@ sonarqube {
     property "sonar.exclusions", ".github/workflows/publish-openapi.yaml"
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
-      "**/model/*.java," +
+      "**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/**" +
       "**/entities/**," + "**/model/**"
   }
