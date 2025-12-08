@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.accesscode.service;
+package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -24,31 +26,32 @@ public class AccessCodeService {
     public PartyAccessCodeEntity createPartyAccessCodeEntity(PcsCaseEntity  pcsCaseEntity, UUID partyId) {
         String code = AccessCodeGenerator.generateAccessCode();
 
-        PartyAccessCodeEntity partyAccessCodeEntity =  PartyAccessCodeEntity.builder()
+        return PartyAccessCodeEntity.builder()
             .partyId(partyId)
             .pcsCase(pcsCaseEntity)
             .code(code)
             .role(PartyRole.DEFENDANT)
             .build();
-        return partyAccessCodeRepo.save(partyAccessCodeEntity);
     }
-
 
     public void createAccessCodesForParties(String caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepo
             .findByCaseReference(Long.valueOf(caseReference))
             .orElseThrow(() -> new CaseNotFoundException(Long.valueOf(caseReference)));
 
-        pcsCaseEntity.getDefendants().forEach(defendant -> {
-            boolean exists = partyAccessCodeRepo.findByPcsCase_IdAndPartyId(pcsCaseEntity.getId(),
-                                                                       defendant.getPartyId()).isPresent();
+        Set<UUID> existingPartyIds = partyAccessCodeRepo.findAllByPcsCase_Id(pcsCaseEntity.getId())
+            .stream()
+            .map(PartyAccessCodeEntity::getPartyId)
+            .collect(Collectors.toSet());
 
-            if (!exists) {
-                createPartyAccessCodeEntity(pcsCaseEntity, defendant.getPartyId());
-                log.debug("Access code created for defendant {}", defendant.getPartyId());
-            } else {
-                log.debug("Access code already exists for defendant {}", defendant.getPartyId());
-            }
-        });
+        Set<PartyAccessCodeEntity> newCodes = pcsCaseEntity.getDefendants().stream()
+            .filter(d -> !existingPartyIds.contains(d.getPartyId()))
+            .map(d -> createPartyAccessCodeEntity(pcsCaseEntity, d.getPartyId()))
+            .collect(Collectors.toSet());
+
+        if (!newCodes.isEmpty()) {
+            partyAccessCodeRepo.saveAll(newCodes);
+            log.debug("Created {} new access codes for case {}", newCodes.size(), caseReference);
+        }
     }
 }

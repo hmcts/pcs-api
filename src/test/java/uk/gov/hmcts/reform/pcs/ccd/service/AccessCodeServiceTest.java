@@ -7,7 +7,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.accesscode.service.AccessCodeService;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -16,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +40,7 @@ class AccessCodeServiceTest {
     private AccessCodeService underTest;
 
     @Captor
-    private ArgumentCaptor<PartyAccessCodeEntity> argumentCaptor;
+    private ArgumentCaptor<Iterable<PartyAccessCodeEntity>> captor;
 
     @BeforeEach
     void setUp() {
@@ -49,77 +49,79 @@ class AccessCodeServiceTest {
 
     @Test
     void shouldCreatePartyAccessCodeEntity() {
-        //Given
+        // Given
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = mock(PcsCaseEntity.class);
 
-        //When
-        underTest.createPartyAccessCodeEntity(caseEntity, partyId);
+        // When
+        PartyAccessCodeEntity createdEntity = underTest.createPartyAccessCodeEntity(caseEntity, partyId);
 
-        //Then
-        verify(partyAccessCodeRepo).save(argumentCaptor.capture());
-        PartyAccessCodeEntity savedEntity = argumentCaptor.getValue();
-
-        assertThat(savedEntity.getPartyId()).isEqualTo(partyId);
-        assertThat(savedEntity.getRole()).isEqualTo(PartyRole.DEFENDANT);
-        assertThat(savedEntity.getCode()).isNotNull().hasSize(12);
-        assertThat(savedEntity.getCode()).matches("[ABCDEFGHJKLMNPRSTVWXYZ23456789]{12}");
+        // Then
+        assertThat(createdEntity.getPartyId()).isEqualTo(partyId);
+        assertThat(createdEntity.getRole()).isEqualTo(PartyRole.DEFENDANT);
+        assertThat(createdEntity.getCode()).isNotNull().hasSize(12);
+        assertThat(createdEntity.getCode()).matches("[ABCDEFGHJKLMNPRSTVWXYZ23456789]{12}");
     }
 
     @Test
     void shouldCreateAccessCodeForDefendantWithoutExistingCode() {
-        //Given
+        // Given
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setId(UUID.randomUUID());
         caseEntity.setDefendants(List.of(Defendant.builder().partyId(partyId).build()));
 
         when(pcsCaseRepository.findByCaseReference(1L)).thenReturn(Optional.of(caseEntity));
-        when(partyAccessCodeRepo.findByPcsCase_IdAndPartyId(caseEntity.getId(), partyId))
-            .thenReturn(Optional.empty());
+        when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId())).thenReturn(List.of());
 
-        //When
+        // When
         underTest.createAccessCodesForParties("1");
 
-        //Then
-        verify(partyAccessCodeRepo).save(argumentCaptor.capture());
-        PartyAccessCodeEntity saved = argumentCaptor.getValue();
+        // Then
+        verify(partyAccessCodeRepo).saveAll(captor.capture());
 
-        assertThat(saved.getPartyId()).isEqualTo(partyId);
-        assertThat(saved.getRole()).isEqualTo(PartyRole.DEFENDANT);
-        assertThat(saved.getCode()).isNotNull()
+        List<PartyAccessCodeEntity> savedEntities = new ArrayList<>();
+        captor.getValue().forEach(savedEntities::add);
+
+        assertThat(savedEntities).hasSize(1);
+
+        PartyAccessCodeEntity savedEntity = savedEntities.get(0);
+        assertThat(savedEntity.getPartyId()).isEqualTo(partyId);
+        assertThat(savedEntity.getRole()).isEqualTo(PartyRole.DEFENDANT);
+        assertThat(savedEntity.getCode()).isNotNull()
             .hasSize(12)
             .matches("[ABCDEFGHJKLMNPRSTVWXYZ23456789]{12}");
     }
 
     @Test
     void shouldThrowExceptionIfCaseNotFound() {
-        //Given
+        // Given
         when(pcsCaseRepository.findByCaseReference(999L)).thenReturn(Optional.empty());
 
-        //When & then
-        assertThrows(
-            CaseNotFoundException.class,
-            () -> underTest.createAccessCodesForParties("999"));
+        // When & Then
+        assertThrows(CaseNotFoundException.class,
+                     () -> underTest.createAccessCodesForParties("999"));
     }
 
     @Test
     void shouldNotCreateAccessCodeIfDefendantAlreadyHasCode() {
-        //Given
+        // Given
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setId(UUID.randomUUID());
         caseEntity.setDefendants(List.of(Defendant.builder().partyId(partyId).build()));
+        PartyAccessCodeEntity existingCodeEntity = mock(PartyAccessCodeEntity.class);
 
         when(pcsCaseRepository.findByCaseReference(2L)).thenReturn(Optional.of(caseEntity));
-        when(partyAccessCodeRepo.findByPcsCase_IdAndPartyId(caseEntity.getId(), partyId))
-            .thenReturn(Optional.of(new PartyAccessCodeEntity()));
+        when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId()))
+            .thenReturn(List.of(existingCodeEntity));
+        when(existingCodeEntity.getPartyId()).thenReturn(partyId);
 
-        //When
+        // When
         underTest.createAccessCodesForParties("2");
 
-        //Then
-        verify(partyAccessCodeRepo, never()).save(any());
+        // Then
+        verify(partyAccessCodeRepo, never()).saveAll(any());
     }
-
 }
+

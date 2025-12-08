@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.accesscode.task;
+package uk.gov.hmcts.reform.pcs.ccd.task;
 
 import com.github.kagkarlsson.scheduler.task.CompletionHandler;
 import com.github.kagkarlsson.scheduler.task.FailureHandler;
@@ -9,9 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.accesscode.model.AccessCodeTaskData;
-import uk.gov.hmcts.reform.pcs.accesscode.service.AccessCodeService;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
+import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeService;
 
 import java.time.Duration;
 
@@ -24,17 +23,16 @@ public class AccessCodeGenerationComponent {
         TaskDescriptor.of(ACCESS_CODE_GENERATION_TASK_NAME, AccessCodeTaskData.class);
 
     private final AccessCodeService accessCodeService;
-    private final int maxRetriesFeesAndPay;
-    private final Duration feesAndPayBackoffDelay;
+    private final int maxRetries;
+    private final Duration backoffDelay;
 
     public AccessCodeGenerationComponent(
         AccessCodeService accessCodeService,
-        PaymentService paymentService,
-        @Value("${fees.request.max-retries}") int maxRetriesFeesAndPay,
-        @Value("${fees.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay
+        @Value("${fees.request.max-retries}") int maxRetries,
+        @Value("${fees.request.backoff-delay-seconds}") Duration backoffDelay
     ) {
-        this.maxRetriesFeesAndPay = maxRetriesFeesAndPay;
-        this.feesAndPayBackoffDelay = feesAndPayBackoffDelay;
+        this.maxRetries = maxRetries;
+        this.backoffDelay = backoffDelay;
         this.accessCodeService = accessCodeService;
     }
 
@@ -48,24 +46,22 @@ public class AccessCodeGenerationComponent {
     public CustomTask<AccessCodeTaskData> accessCodeGenerationTask() {
         return Tasks.custom(ACCESS_CODE_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
-                maxRetriesFeesAndPay,
-                new FailureHandler.ExponentialBackoffFailureHandler<>(feesAndPayBackoffDelay)
+                maxRetries,
+                new FailureHandler.ExponentialBackoffFailureHandler<>(backoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
-                AccessCodeTaskData taskData = taskInstance.getData();
-                log.debug("Executing Access code generation for parties in case: {}", taskData.getCaseReference());
-
-                String caseReference = taskData.getCaseReference();
+                String caseReference = taskInstance.getData().getCaseReference();
+                log.debug("Executing Party Access Code generation for parties in case: {}", caseReference);
 
                 try {
                     accessCodeService.createAccessCodesForParties(caseReference);
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {
-                    log.error("Failed to create access code for parties in case: {}. Attempt {}/{}",
-                              taskData.getCaseReference(),
+                    log.error("Failed to create Party Access Code for parties in case: {}. Attempt {}/{}",
+                              caseReference,
                               executionContext.getExecution().consecutiveFailures + 1,
-                              maxRetriesFeesAndPay,
+                              maxRetries,
                               e);
                     throw e;
                 }

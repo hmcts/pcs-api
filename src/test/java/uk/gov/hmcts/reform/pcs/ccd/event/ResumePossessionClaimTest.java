@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
@@ -510,6 +511,40 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE);
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
+        }
+
+        @Test
+        void shouldScheduleAccessCodeTask() {
+            // Given
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            stubPartyCreation();
+            stubClaimCreation();
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            @SuppressWarnings("unchecked")
+            ArgumentCaptor<SchedulableInstance<AccessCodeTaskData>> captor
+                = ArgumentCaptor.forClass(SchedulableInstance.class);
+
+            verify(schedulerClient, atLeastOnce()).scheduleIfNotExists(captor.capture());
+
+            SchedulableInstance<AccessCodeTaskData> accessCodeTaskInstance = captor.getAllValues().stream()
+                .filter(s -> s.getTaskInstance().getData() instanceof AccessCodeTaskData)
+                .map(s -> (SchedulableInstance<AccessCodeTaskData>) s)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Access code task was not scheduled"));
+
+            AccessCodeTaskData taskData = (AccessCodeTaskData) accessCodeTaskInstance.getTaskInstance().getData();
+
+            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
         private void stubClaimCreation() {

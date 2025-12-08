@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.accesscode.model;
+package uk.gov.hmcts.reform.pcs.ccd.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

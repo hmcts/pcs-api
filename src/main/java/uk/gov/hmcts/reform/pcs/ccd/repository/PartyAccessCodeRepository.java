@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -10,5 +11,5 @@ public interface PartyAccessCodeRepository extends JpaRepository<PartyAccessCode
 
     Optional<PartyAccessCodeEntity> findByPcsCase_IdAndCode(UUID pcsCaseId, String code);
 
-    Optional<PartyAccessCodeEntity> findByPcsCase_IdAndPartyId(UUID pcsCaseId, UUID partyId);
+    List<PartyAccessCodeEntity> findAllByPcsCase_Id(UUID pcsCaseId);
 }
