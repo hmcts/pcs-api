@@ -23,6 +23,7 @@ import {
   rePayments,
   peopleYouWantToEvict,
   moneyOwed,
+  languageUsed
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -60,6 +61,7 @@ export class EnforcementAction implements IAction {
       ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
+      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -270,6 +272,13 @@ export class EnforcementAction implements IAction {
       await performAction('inputText', langRegistry.label, langRegistry.input);
     };
     await performAction('clickButtonAndVerifyPageNavigation', landRegistryFees.continueButton, rePayments.mainHeader);
+  }
+
+  private async selectLanguageUsed(languageDetails: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: languageDetails.question, option: languageDetails.option });
+    await performAction('clickButton', languageUsed.continueButton);
   }
 
   private async inputErrorValidation(validationArr: actionRecord) {
