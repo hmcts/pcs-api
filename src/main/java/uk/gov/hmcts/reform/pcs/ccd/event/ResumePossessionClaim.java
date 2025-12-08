@@ -387,7 +387,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
 
-    private void schedulePartyAccessCodeGeneration(long caseReference){
+    private void schedulePartyAccessCodeGeneration(long caseReference) {
 
         String taskId = UUID.randomUUID().toString();
 
@@ -396,8 +396,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
 
         schedulerClient.scheduleIfNotExists(
-            ACCESS_CODE_TASK_DESCRIPTOR.
-            instance(taskId)
+            ACCESS_CODE_TASK_DESCRIPTOR
+            .instance(taskId)
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );

@@ -18,12 +18,12 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -89,6 +89,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -503,7 +504,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor
                 = ArgumentCaptor.forClass(SchedulableInstance.class);
 
-            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            verify(schedulerClient,atLeastOnce()).scheduleIfNotExists(schedulableInstanceCaptor.capture());
 
             FeesAndPayTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
 
