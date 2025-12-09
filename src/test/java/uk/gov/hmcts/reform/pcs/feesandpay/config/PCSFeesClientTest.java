@@ -50,7 +50,6 @@ class PCSFeesClientTest {
     @Test
     void shouldLookupFeeWhenStrategySupportsFeeType() {
         // Given
-        String feeCode = "testCode";
         String channel = "default";
         String event = "issue";
         BigDecimal amount = BigDecimal.TEN;
@@ -59,8 +58,7 @@ class PCSFeesClientTest {
         String jurisdiction1 = "j1";
         String jurisdiction2 = "j2";
 
-        when(feeTypes.getCode()).thenReturn(feeCode);
-        when(strategy.supports(feeCode)).thenReturn(true);
+        when(strategy.supports(feeTypes)).thenReturn(true);
         when(strategy.getApi()).thenReturn(feesApi);
         when(strategy.getServiceName()).thenReturn(serviceName);
         when(strategy.getJurisdictions()).thenReturn(jurisdictions);
@@ -100,12 +98,7 @@ class PCSFeesClientTest {
 
     @Test
     void shouldThrowExceptionWhenNoStrategyFound() {
-        // Given
-        String feeCode = "unsupportedCode";
-        when(feeTypes.getCode()).thenReturn(feeCode);
-        when(strategy.supports(feeCode)).thenReturn(false);
-
-        // When/Then
+        // Given // When/Then
         assertThatThrownBy(() -> underTest.lookupFee(feeTypes, "channel",
                                                          "event", BigDecimal.TEN, "keyword"))
             .isInstanceOf(IllegalStateException.class)
@@ -129,11 +122,8 @@ class PCSFeesClientTest {
         FeesClientContext unsupportedStrategy = mock(FeesClientContext.class);
         FeesClientContext supportedStrategy = mock(FeesClientContext.class);
         underTest = new PCSFeesClient(List.of(unsupportedStrategy, supportedStrategy));
-
-        String feeCode = "testCode";
-        when(feeTypes.getCode()).thenReturn(feeCode);
-        when(unsupportedStrategy.supports(feeCode)).thenReturn(false);
-        when(supportedStrategy.supports(feeCode)).thenReturn(true);
+        when(unsupportedStrategy.supports(feeTypes)).thenReturn(false);
+        when(supportedStrategy.supports(feeTypes)).thenReturn(true);
         when(supportedStrategy.getApi()).thenReturn(feesApi);
         when(supportedStrategy.getServiceName()).thenReturn(serviceName);
         when(supportedStrategy.getJurisdictions()).thenReturn(jurisdictions);
@@ -160,10 +150,10 @@ class PCSFeesClientTest {
 
         // Then
         assertThat(result).isEqualTo(expectedResponse);
-        verify(unsupportedStrategy).supports(feeCode);
+        verify(unsupportedStrategy).supports(feeTypes);
         verify(unsupportedStrategy, never()).getApi();
 
-        verify(supportedStrategy).supports(feeCode);
+        verify(supportedStrategy).supports(feeTypes);
         verify(supportedStrategy).getApi();
         verify(supportedStrategy).getServiceName();
         verify(supportedStrategy, times(2)).getJurisdictions();

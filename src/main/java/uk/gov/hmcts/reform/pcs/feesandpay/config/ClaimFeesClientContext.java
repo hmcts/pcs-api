@@ -5,6 +5,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE)
@@ -24,8 +25,9 @@ public class ClaimFeesClientContext implements FeesClientContext {
     }
 
     @Override
-    public boolean supports(String feeTypesCode) {
-        return true;
+    public boolean supports(FeeTypes feeTypes) {
+        return FeeTypes.ENFORCEMENT_WARRANT_FEE != feeTypes && FeeTypes.ENFORCEMENT_WRIT_FEE != feeTypes
+            && null != feeTypes;
     }
 
     @Override

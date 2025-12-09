@@ -23,9 +23,8 @@ public class EnforcementFeesClientContext implements FeesClientContext {
     }
 
     @Override
-    public boolean supports(String feeTypesCode) {
-        return FeeTypes.ENFORCEMENT_WARRANT_FEE.getCode().equals(feeTypesCode)
-            || FeeTypes.ENFORCEMENT_WRIT_FEE.getCode().equals(feeTypesCode);
+    public boolean supports(FeeTypes feeTypes) {
+        return FeeTypes.ENFORCEMENT_WARRANT_FEE == feeTypes || FeeTypes.ENFORCEMENT_WRIT_FEE == feeTypes;
     }
 
     @Override

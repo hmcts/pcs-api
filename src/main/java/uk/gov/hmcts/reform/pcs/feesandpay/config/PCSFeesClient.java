@@ -19,7 +19,7 @@ public class PCSFeesClient {
     public FeeLookupResponseDto lookupFee(FeeTypes feeTypes, String channel, String event, BigDecimal amount,
                                           String keyword) {
         FeesClientContext context = strategies.stream()
-            .filter(strategy -> strategy.supports(feeTypes.getCode()))
+            .filter(strategy -> strategy.supports(feeTypes))
             .findFirst()
             .orElseThrow(() -> new IllegalStateException("No strategy found for fee type: " + feeTypes));
 
