@@ -2,6 +2,9 @@ export const cyaIgnoreQuestions = [
   'Day',
   'Month',
   'Year',
+  'Hour',
+  'Minute',
+  'Second',
   'Uploaded files',
   'Uploaded file',
   'Defendant’s first name',
@@ -11,5 +14,8 @@ export const cyaIgnoreQuestions = [
   'Is the defendant’s correspondence address the same as the address of the property you’re claiming possession of?',
   'Do you know the defendant’s name?',
   'Selected options',
-  'How much is the rent?'
+  'How much is the rent?',
+  'The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.',
+  'Do you know the underlessee or mortgagee’s correspondence address?',
+  'Do you know the underlessee or mortgagee’s name?'
 ];
