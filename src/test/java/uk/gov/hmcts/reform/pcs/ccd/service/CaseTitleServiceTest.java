@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.COMMA_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class CaseTitleServiceTest {
@@ -44,7 +45,8 @@ class CaseTitleServiceTest {
 
         AddressUK propertyAddress = mock(AddressUK.class);
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
-        when(addressFormatter.formatAddressWithCommas(propertyAddress)).thenReturn(expectedPropertyAddress);
+        when(addressFormatter.formatShortAddress(propertyAddress, COMMA_DELIMITER))
+            .thenReturn(expectedPropertyAddress);
 
         // When
         String actualCaseTitle = underTest.buildCaseTitle(pcsCase);

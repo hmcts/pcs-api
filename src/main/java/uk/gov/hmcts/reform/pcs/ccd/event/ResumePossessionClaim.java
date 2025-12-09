@@ -108,6 +108,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
@@ -279,7 +280,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         caseData.setClaimantType(claimantTypeList);
 
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
-            .formatAddressWithHtmlLineBreaks(organisationService.getOrganisationAddressForCurrentUser()));
+            .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
 
         caseData.setContactPreferencesDetails(contactPreferences);
 

@@ -195,18 +195,25 @@ class OrganisationDetailsServiceTest {
     }
 
     @Test
-    @DisplayName("Should successfully get organisation address")
+    @DisplayName("Should successfully get first organisation address")
     void shouldSuccessfullyGetOrganisationAddress() {
         // Given
-        OrganisationDetailsResponse.ContactInformation contactInfo =  OrganisationDetailsResponse.ContactInformation
+        OrganisationDetailsResponse.ContactInformation contactInfo1 =  OrganisationDetailsResponse.ContactInformation
             .builder()
-            .addressLine1("27 Feather street")
+            .addressLine1("27 Feather Street")
             .townCity("London")
             .postCode("B8 7FH")
             .build();
 
+        OrganisationDetailsResponse.ContactInformation contactInfo2 =  OrganisationDetailsResponse.ContactInformation
+            .builder()
+            .addressLine1("1 Additional Street")
+            .townCity("London")
+            .postCode("AD1 5TR")
+            .build();
+
         OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
-            .contactInformation(List.of(contactInfo))
+            .contactInformation(List.of(contactInfo1, contactInfo2))
             .organisationIdentifier(ORGANISATION_IDENTIFIER)
             .build();
 
@@ -219,8 +226,8 @@ class OrganisationDetailsServiceTest {
         AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
 
         // Then
-        assertThat(result.getAddressLine1()).isEqualTo(contactInfo.getAddressLine1());
-        assertThat(result.getPostTown()).isEqualTo(contactInfo.getTownCity());
-        assertThat(result.getPostCode()).isEqualTo(contactInfo.getPostCode());
+        assertThat(result.getAddressLine1()).isEqualTo(contactInfo1.getAddressLine1());
+        assertThat(result.getPostTown()).isEqualTo(contactInfo1.getTownCity());
+        assertThat(result.getPostCode()).isEqualTo(contactInfo1.getPostCode());
     }
 }
