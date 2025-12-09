@@ -167,6 +167,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         @MethodSource("emptyDefendantsScenarios")
         @DisplayName("Should handle empty or null defendants list")
         void shouldHandleEmptyOrNullDefendantsList(
+            String scenario,
             List<ListValue<DefendantDetails>> allDefendants) {
             // Given
             List<DynamicStringListElement> expectedListItems = new ArrayList<>();
