@@ -22,6 +22,7 @@ import {
   landRegistryFees,
   rePayments,
   peopleYouWantToEvict,
+  languageUsed
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -32,7 +33,7 @@ export const addressInfo = {
   engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
 };
 
-export let defendantDetails:string[] = [];
+export let defendantDetails: string[] = [];
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
@@ -58,6 +59,7 @@ export class EnforcementAction implements IAction {
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
+      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -108,8 +110,8 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
       await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
-    }    
-    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);    
+    }
+    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
   }
@@ -121,7 +123,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', peopleWillBeEvicted.continueButton);
   }
 
-    private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord) {
+  private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('check', peopleYouWantEvicted.defendants);
@@ -263,22 +265,40 @@ export class EnforcementAction implements IAction {
     await performAction('clickButtonAndVerifyPageNavigation', landRegistryFees.continueButton, rePayments.mainHeader);
   }
 
+  private async selectLanguageUsed(languageDetails: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: languageDetails.question, option: languageDetails.option });
+    await performAction('clickButton', languageUsed.continueButton);
+  }
+
   private async inputErrorValidation(validationArr: actionRecord) {
 
     if (validationArr.validationReq === 'YES') {
 
       if (Array.isArray(validationArr.inputArray)) {
         for (const item of validationArr.inputArray) {
-          await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
-          if (validationArr.option === 'Yes') {
-            await performAction('inputText', validationArr.label, item.input);
-            await performAction('clickButton', validationArr.button);
-            await performValidation('inputError', validationArr.label, item.errMessage);
+          switch (validationArr.validationType) {
+            case 'moneyField':
+              await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+              if (validationArr.option === 'Yes') {
+                await performAction('inputText', validationArr.label, item.input);
+                await performAction('clickButton', validationArr.button);
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              };
+              await performAction('clickRadioButton', { question: validationArr.question, option: 'No' });
+              break;
+
+            case 'radioOptions':
+              await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', validationArr.label, item.errMessage);
+              break;
+
+            default:
+              break;
           };
-          await performAction('clickRadioButton', { question: validationArr.question, option: 'No' });
         }
       }
-
     }
   }
 }
