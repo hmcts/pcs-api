@@ -306,6 +306,7 @@ export class EnforcementAction implements IAction {
             case 'moneyField':
               await performAction('inputText', validationArr.label, item.input);
               await performAction('clickButton', validationArr.button);
+              //below line be uncommented after the bug https://tools.hmcts.net/jira/browse/HDPI-3396 is resolved
               //await performValidation('errorMessage', validationArr.label, item.errMessage);
               await performValidation('inputError', validationArr.label, item.errMessage);
               break;
