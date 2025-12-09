@@ -204,7 +204,11 @@ export class CreateCaseAction implements IAction {
   private async selectGroundsForPossession(possessionGrounds: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:groundsForPossession.areYouClaimingPossessionBecauseOfRentArrearsQuestion, option: possessionGrounds.groundsRadioInput});
+    let groundsForPossessionQuestion = groundsForPossession.areYouClaimingPossessionBecauseOfRentArrearsQuestion;
+    if (possessionGrounds.rentArrears == groundsForPossession.no) {
+      groundsForPossessionQuestion = groundsForPossession.doYouHaveGroundsForPossessionQuestion;
+    }
+    await performAction('clickRadioButton', {question:groundsForPossessionQuestion, option: possessionGrounds.groundsRadioInput});
     if (possessionGrounds.groundsRadioInput == groundsForPossession.yes) {
       if (possessionGrounds.grounds) {
         await performAction('check', possessionGrounds.grounds);

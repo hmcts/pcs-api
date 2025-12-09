@@ -460,7 +460,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.other});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes,
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes, rentArrears: groundsForPossession.no,
       grounds: [groundsForPossession.rentArrears, groundsForPossession.antiSocialBehaviour,
         groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds,groundsForPossession.other]});
     await performAction('enterReasonForPossession'
@@ -574,7 +574,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes,
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes, rentArrears: groundsForPossession.no,
       grounds: [groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy]});
     await performAction('enterReasonForPossession'
       , [groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy]);
@@ -664,7 +664,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.demotedTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no, rentArrears: groundsForPossession.no});
     await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
