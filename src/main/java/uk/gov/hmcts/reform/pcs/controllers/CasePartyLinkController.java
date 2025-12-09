@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeRequest;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeResponse;
-import uk.gov.hmcts.reform.pcs.service.CasePartyLinkService;
+import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeLinkService;
 
 @RestController
 @RequestMapping("/cases")
@@ -29,7 +29,7 @@ import uk.gov.hmcts.reform.pcs.service.CasePartyLinkService;
 public class CasePartyLinkController {
 
     private final IdamService idamService;
-    private final CasePartyLinkService casePartyLinkService;
+    private final PartyAccessCodeLinkService partyAccessCodeLinkService;
 
     @PostMapping(
             value = "/{caseReference}/validate-access-code",
@@ -62,7 +62,7 @@ public class CasePartyLinkController {
         var user = idamService.validateAuthToken(authorization).getUserDetails();
 
         ValidateAccessCodeResponse response =
-                casePartyLinkService.validateAndLinkParty(caseReference, request.getAccessCode(), user);
+                partyAccessCodeLinkService.linkPartyByAccessCode(caseReference, request.getAccessCode(), user);
 
         return ResponseEntity.ok(response);
     }

@@ -188,7 +188,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message",
-                        is("This user ID is already linked to another defendant in this case.")));
+                        is("This user ID is already linked to another party in this case.")));
     }
 
     @Test
@@ -236,6 +236,72 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should rollback transaction when exception occurs - no partial data saved")
+    void shouldRollbackTransactionWhenExceptionOccurs() throws Exception {
+        // Given - Create a case with a defendant that's already linked
+        // This will cause an exception when trying to link again
+        long caseReference = 12352L;
+        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, USER_ID);
+        String accessCode = createPartyAccessCode(caseEntity, caseEntity.getDefendants().get(0).getPartyId());
+
+        // Capture the initial state before the failed operation
+        PcsCaseEntity caseBefore = pcsCaseRepository.findByCaseReference(caseReference)
+                .orElseThrow();
+        UUID initialIdamUserId = caseBefore.getDefendants().get(0).getIdamUserId();
+
+        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
+
+        // When - Attempt to link (should fail with 409)
+        mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
+                        .header(AUTHORIZATION, AUTH_HEADER)
+                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message", is("This access code is already linked to a user.")));
+
+        // Then - Verify transaction rolled back: database state unchanged
+        PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
+                .orElseThrow();
+        UUID finalIdamUserId = caseAfter.getDefendants().get(0).getIdamUserId();
+
+        // The idamUserId should remain unchanged (transaction rolled back)
+        assertThat(finalIdamUserId).isEqualTo(initialIdamUserId);
+        assertThat(finalIdamUserId).isEqualTo(USER_ID);
+    }
+
+    @Test
+    @DisplayName("Should commit transaction when operation succeeds - data persisted correctly")
+    void shouldCommitTransactionWhenOperationSucceeds() throws Exception {
+        // Given
+        long caseReference = 12353L;
+        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, null);
+        String accessCode = createPartyAccessCode(caseEntity, caseEntity.getDefendants().get(0).getPartyId());
+
+        // Verify initial state - defendant not linked
+        PcsCaseEntity caseBefore = pcsCaseRepository.findByCaseReference(caseReference)
+                .orElseThrow();
+        assertThat(caseBefore.getDefendants().get(0).getIdamUserId()).isNull();
+
+        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
+
+        // When - Successful linking
+        mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
+                        .header(AUTHORIZATION, AUTH_HEADER)
+                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("linked")));
+
+        // Then - Verify transaction committed: data persisted
+        PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)
+                .orElseThrow();
+        assertThat(caseAfter.getDefendants().get(0).getIdamUserId()).isEqualTo(USER_ID);
+        assertThat(caseAfter.getDefendants().get(0).getIdamUserId()).isNotNull();
     }
 
     // Helper methods
