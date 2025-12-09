@@ -51,9 +51,9 @@ public class RentDetails implements CcdPageConfiguration {
         // Only process if rentFrequency is set
         if (rentFrequency != null) {
             if (rentFrequency != RentPaymentFrequency.OTHER) {
-                // Only calculate if currentRent is also set
-                if (rentDetails.getCurrentRent() != null && !rentDetails.getCurrentRent().isEmpty()) {
-                    BigDecimal rentAmountInPence = new BigDecimal(rentDetails.getCurrentRent());
+                String currentRent = rentDetails.getCurrentRent();
+                if (currentRent != null && !currentRent.isEmpty()) {
+                    BigDecimal rentAmountInPence = new BigDecimal(currentRent);
                     BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, rentFrequency);
                     String dailyAmountString = dailyAmountInPence.toPlainString();
 
