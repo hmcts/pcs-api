@@ -18,7 +18,9 @@ public class TenancyLicenceService {
                 .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
                 .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
                 .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
-                .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
+                .rentStatementDocuments(pcsCase.getRentArrears() != null
+                        ? ListValueUtils.unwrapListItems(pcsCase.getRentArrears().getRentStatementDocuments())
+                        : null)
                 .noticeDocuments(ListValueUtils.unwrapListItems(pcsCase.getNoticeDocuments()))
                 .noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()))
                 .walesNoticeServed(YesOrNoToBoolean.convert(pcsCase.getWalesNoticeDetails() != null
@@ -30,9 +32,12 @@ public class TenancyLicenceService {
                 .rentPaymentFrequency(pcsCase.getRentFrequency())
                 .otherRentFrequency(pcsCase.getOtherRentFrequency())
                 .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
-                .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
-                .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
-                .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
+                .totalRentArrears(penceToPounds(pcsCase.getRentArrears() != null
+                        ? pcsCase.getRentArrears().getTotalRentArrears() : null))
+                .thirdPartyPaymentSources(pcsCase.getRentArrears() != null
+                        ? pcsCase.getRentArrears().getThirdPartyPaymentSources() : null)
+                .thirdPartyPaymentSourceOther(pcsCase.getRentArrears() != null
+                        ? pcsCase.getRentArrears().getThirdPartyPaymentSourceOther() : null)
                 // Add notice details fields
                 .noticeServiceMethod(pcsCase.getNoticeServiceMethod() != null
                                     ? pcsCase.getNoticeServiceMethod().name()
