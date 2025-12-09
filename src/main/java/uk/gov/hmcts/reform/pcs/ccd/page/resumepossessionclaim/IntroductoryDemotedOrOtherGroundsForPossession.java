@@ -74,26 +74,24 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
 
         List<String> validationErrors = new ArrayList<>();
 
-        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
-            caseData.getIntroductoryDemotedOrOtherGroundsForPossession();
-
-        if (introductoryDemotedOtherGroundsForPossession.getOtherGroundDescription() != null) {
+        if (caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription() != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                introductoryDemotedOtherGroundsForPossession.getOtherGroundDescription(),
+                caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription(),
                 PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ));
         }
 
-        boolean hasOtherDiscretionaryGrounds =
-            introductoryDemotedOtherGroundsForPossession.getIntroductoryDemotedOrOtherGrounds() != null
-                && introductoryDemotedOtherGroundsForPossession.getIntroductoryDemotedOrOtherGrounds()
-                .stream()
-                .anyMatch(ground -> ground != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
-                );
+        boolean hasOtherDiscretionaryGrounds = caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
+                .getIntroductoryDemotedOrOtherGrounds() == null ? false
+            : caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds()
+            .stream()
+            .anyMatch(ground -> ground != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
+            );
 
         if (hasOtherDiscretionaryGrounds
-            || introductoryDemotedOtherGroundsForPossession.getHasIntroductoryDemotedOtherGroundsForPossession()
+            || caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
+                .getHasIntroductoryDemotedOtherGroundsForPossession()
             == VerticalYesNo.NO) {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.YES);
         } else {
