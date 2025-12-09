@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +18,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.OTHER_GROUND_DESCRIPTIO
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class IntroductoryDemotedOtherGroundsForPossession {
 
     @CCD(
