@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,11 @@ public class CasePartyLinkController {
     )
     @Operation(
             summary = "Validate access code and link citizen to a case",
-            description = "Stores the citizen's IDAM user ID inside the matching defendant JSON record"
+            description = "Stores the citizen's IDAM user ID inside the matching defendant JSON record",
+            security = {
+                @SecurityRequirement(name = "AuthorizationToken"),
+                @SecurityRequirement(name = "ServiceAuthorization")
+            }
     )
     @ApiResponse(responseCode = "200", description = "Successful validation and linking",
             content = @Content(schema = @Schema(implementation = ValidateAccessCodeResponse.class)))
@@ -56,7 +61,9 @@ public class CasePartyLinkController {
             @Parameter(description = "The 12-digit case reference number", required = true)
             @PathVariable long caseReference,
             @Valid @RequestBody ValidateAccessCodeRequest request,
+            @Parameter(description = "Bearer token for user authentication", required = true)
             @RequestHeader("Authorization") String authorization,
+            @Parameter(description = "Service-to-Service (S2S) authorization token", required = true)
             @RequestHeader("ServiceAuthorization") String s2sToken
     ) {
         var user = idamService.validateAuthToken(authorization).getUserDetails();

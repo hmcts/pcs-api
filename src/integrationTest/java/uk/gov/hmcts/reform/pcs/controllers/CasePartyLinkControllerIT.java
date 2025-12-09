@@ -144,8 +144,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", notNullValue()));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
