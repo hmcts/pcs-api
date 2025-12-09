@@ -156,6 +156,23 @@ fees:
       applicantType: all
       amountOrVolume: 1
       keyword: PossessionCC
+    enforcementWarrantFee:
+      channel: default
+      event: issue
+      applicantType: all
+      amountOrVolume: 1
+      keyword: PossessionCC
+    enforcementWritFee:
+      channel: default
+      event: issue
+      applicantType: all
+      amountOrVolume: 1
+      keyword: PossessionCC
+  request:
+    max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
+    backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+
+access-code:
   request:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
@@ -167,8 +184,3 @@ payments:
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
     hmctsOrgId: AAA3
-
-logging:
-  level:
-    uk.gov.hmcts.reform.pcs.controllers.CasePartyLinkController: DEBUG
-    uk.gov.hmcts.reform.pcs.service.CasePartyLinkService: DEBUG
