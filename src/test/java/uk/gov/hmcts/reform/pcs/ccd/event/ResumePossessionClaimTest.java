@@ -18,15 +18,17 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
@@ -89,6 +91,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -288,8 +291,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedUserEmail);
-            assertThat(updatedCaseData.getClaimantContactEmail()).isEqualTo(expectedUserEmail);
-            assertThat(updatedCaseData.getFormattedClaimantContactAddress())
+            assertThat(updatedCaseData.getContactPreferencesDetails().getClaimantContactEmail())
+                .isEqualTo(expectedUserEmail);
+            assertThat(updatedCaseData.getContactPreferencesDetails().getFormattedClaimantContactAddress())
                 .isEqualTo("10 High Street<br>London<br>W1 2BC");
         }
 
@@ -431,8 +435,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
                         .claimantName(claimantName)
                         .build()
                 )
-                .claimantContactEmail(claimantContactEmail)
-                .claimantContactPhoneNumber(claimantContactPhoneNumber)
+                .contactPreferencesDetails(
+                    ClaimantContactPreferences.builder()
+                        .claimantContactEmail(claimantContactEmail)
+                        .claimantContactPhoneNumber(claimantContactPhoneNumber)
+                        .build()
+                )
                 .claimantCircumstances(ClaimantCircumstances.builder()
                                            .claimantCircumstancesDetails(claimantCircumstances)
                                            .build())
@@ -503,12 +511,46 @@ class ResumePossessionClaimTest extends BaseEventTest {
             ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor
                 = ArgumentCaptor.forClass(SchedulableInstance.class);
 
-            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            verify(schedulerClient,atLeastOnce()).scheduleIfNotExists(schedulableInstanceCaptor.capture());
 
             FeesAndPayTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
 
-            assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE);
+            assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
+        }
+
+        @Test
+        void shouldScheduleAccessCodeTask() {
+            // Given
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            stubPartyCreation();
+            stubClaimCreation();
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            @SuppressWarnings("unchecked")
+            ArgumentCaptor<SchedulableInstance<AccessCodeTaskData>> captor
+                = ArgumentCaptor.forClass(SchedulableInstance.class);
+
+            verify(schedulerClient, atLeastOnce()).scheduleIfNotExists(captor.capture());
+
+            SchedulableInstance<AccessCodeTaskData> accessCodeTaskInstance = captor.getAllValues().stream()
+                .filter(s -> s.getTaskInstance().getData() instanceof AccessCodeTaskData)
+                .map(s -> (SchedulableInstance<AccessCodeTaskData>) s)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Access code task was not scheduled"));
+
+            AccessCodeTaskData taskData = (AccessCodeTaskData) accessCodeTaskInstance.getTaskInstance().getData();
+
+            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
         private void stubClaimCreation() {
@@ -568,7 +610,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         private FeeDetails stubFeeService() {
             FeeDetails feeDetails = FeeDetails.builder().feeAmount(CLAIM_FEE_AMOUNT).build();
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE))
+            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE.getCode()))
                 .thenReturn(feeDetails);
 
             return feeDetails;

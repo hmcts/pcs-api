@@ -141,7 +141,7 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should rethrow exception when payment service call fails")
         void shouldThrowFeeNotFoundExceptionWhenApiCallFails() {
             FeeDetails feeDetails = mock(FeeDetails.class);
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE, feeDetails);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE.getCode(), feeDetails);
             when(taskInstance.getData()).thenReturn(data);
 
             FeignException exception = mock(FeignException.class);
