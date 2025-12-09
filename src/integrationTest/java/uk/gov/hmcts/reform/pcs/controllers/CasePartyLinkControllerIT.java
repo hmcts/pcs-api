@@ -50,7 +50,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
-    private static final String USER_ID = "test-user-123";
+    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
     private static final String ACCESS_CODE = "ABC123XYZ789";
 
     @Autowired
@@ -80,7 +80,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         // Stub IDAM user info for token validation
         UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getUid()).thenReturn(USER_ID);
+        when(userInfo.getUid()).thenReturn(USER_ID.toString());
         when(idamClient.getUserInfo(anyString())).thenReturn(userInfo);
     }
 
@@ -108,7 +108,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         // Verify defendant is linked in database
         PcsCaseEntity updatedCase = pcsCaseRepository.findByCaseReference(caseReference)
                 .orElseThrow();
-        assertThat(updatedCase.getDefendants().get(0).getLinkedUserId()).isEqualTo(USER_ID);
+        assertThat(updatedCase.getDefendants().get(0).getIdamUserId()).isEqualTo(USER_ID);
     }
 
     @Test
@@ -129,8 +129,8 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Should return 404 when access code not found")
-    void shouldReturn404WhenAccessCodeNotFound() throws Exception {
+    @DisplayName("Should return 400 when access code not found")
+    void shouldReturn400WhenAccessCodeNotFound() throws Exception {
         // Given
         long caseReference = 12346L;
         createTestCaseWithDefendant(caseReference, null);
@@ -138,19 +138,19 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(invalidAccessCode);
 
-        // When/Then
+        // When/Then - Updated to expect 400 (BAD_REQUEST) instead of 404
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
                         .header(AUTHORIZATION, AUTH_HEADER)
                         .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", notNullValue()));
     }
 
     @Test
-    @DisplayName("Should return 409 when user already linked")
-    void shouldReturn409WhenUserAlreadyLinked() throws Exception {
+    @DisplayName("Should return 409 when access code already used")
+    void shouldReturn409WhenAccessCodeAlreadyUsed() throws Exception {
         // Given
         long caseReference = 12347L;
         PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, USER_ID);
@@ -158,21 +158,44 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
 
-        // When/Then
+        // When/Then - Updated message to match new exception
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
                         .header(AUTHORIZATION, AUTH_HEADER)
                         .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message", is("User already linked")));
+                .andExpect(jsonPath("$.message", is("This access code is already linked to a user.")));
+    }
+
+    @Test
+    @DisplayName("Should return 409 when user ID already linked to another defendant")
+    void shouldReturn409WhenUserIdAlreadyLinkedToAnotherDefendant() throws Exception {
+        // Given
+        long caseReference = 12348L;
+        PcsCaseEntity caseEntity = createTestCaseWithMultipleDefendants(caseReference, USER_ID, null);
+        // Get access code for the second defendant (not yet linked)
+        UUID secondDefendantPartyId = caseEntity.getDefendants().get(1).getPartyId();
+        String accessCode = createPartyAccessCode(caseEntity, secondDefendantPartyId);
+
+        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
+
+        // When/Then - Should fail because USER_ID is already linked to first defendant
+        mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
+                        .header(AUTHORIZATION, AUTH_HEADER)
+                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message",
+                        is("This user ID is already linked to another defendant in this case.")));
     }
 
     @Test
     @DisplayName("Should return 400 when access code is missing")
     void shouldReturn400WhenAccessCodeIsMissing() throws Exception {
         // Given
-        long caseReference = 12348L;
+        long caseReference = 12349L;
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(null);
 
         // When/Then
@@ -188,7 +211,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     @DisplayName("Should return 400 when access code is blank")
     void shouldReturn400WhenAccessCodeIsBlank() throws Exception {
         // Given
-        long caseReference = 12349L;
+        long caseReference = 12350L;
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest("");
 
         // When/Then
@@ -204,7 +227,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     @DisplayName("Should return 400 when authorization header is missing")
     void shouldReturn400WhenAuthorizationHeaderIsMissing() throws Exception {
         // Given
-        long caseReference = 12350L;
+        long caseReference = 12351L;
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(ACCESS_CODE);
 
         // When/Then - Spring returns 400 for missing required headers
@@ -217,19 +240,46 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     // Helper methods
 
-    private PcsCaseEntity createTestCaseWithDefendant(long caseReference, String linkedUserId) {
+    private PcsCaseEntity createTestCaseWithDefendant(long caseReference, UUID idamUserId) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
         UUID partyId = UUID.randomUUID();
         Defendant defendant = new Defendant();
         defendant.setPartyId(partyId);
-        defendant.setLinkedUserId(linkedUserId);
+        defendant.setIdamUserId(idamUserId);
         defendant.setFirstName("John");
         defendant.setLastName("Doe");
 
         List<Defendant> defendants = new ArrayList<>();
         defendants.add(defendant);
+        caseEntity.setDefendants(defendants);
+
+        return pcsCaseRepository.save(caseEntity);
+    }
+
+    private PcsCaseEntity createTestCaseWithMultipleDefendants(
+            long caseReference, UUID firstIdamUserId, UUID secondIdamUserId) {
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setCaseReference(caseReference);
+
+        UUID partyId1 = UUID.randomUUID();
+        Defendant defendant1 = new Defendant();
+        defendant1.setPartyId(partyId1);
+        defendant1.setIdamUserId(firstIdamUserId);
+        defendant1.setFirstName("John");
+        defendant1.setLastName("Doe");
+
+        UUID partyId2 = UUID.randomUUID();
+        Defendant defendant2 = new Defendant();
+        defendant2.setPartyId(partyId2);
+        defendant2.setIdamUserId(secondIdamUserId);
+        defendant2.setFirstName("Jane");
+        defendant2.setLastName("Smith");
+
+        List<Defendant> defendants = new ArrayList<>();
+        defendants.add(defendant1);
+        defendants.add(defendant2);
         caseEntity.setDefendants(defendants);
 
         return pcsCaseRepository.save(caseEntity);

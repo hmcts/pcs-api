@@ -1,10 +1,8 @@
 package uk.gov.hmcts.reform.pcs.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -13,28 +11,25 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CasePartyLinkServiceTest {
 
-    private static final long CASE_REFERENCE = 12345L;
-    private static final String ACCESS_CODE = "ABC123XYZ789";
-    private static final String USER_ID = "user-123";
-    private static final String OTHER_USER_ID = "user-456";
+    @InjectMocks
+    private CasePartyLinkService service;
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -42,333 +37,194 @@ class CasePartyLinkServiceTest {
     @Mock
     private PartyAccessCodeRepository pacRepository;
 
-    @Captor
-    private ArgumentCaptor<PcsCaseEntity> caseEntityCaptor;
+    private static final long CASE_REFERENCE = 123456L;
+    private static final String ACCESS_CODE = "ABCD1234";
+    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
-    private CasePartyLinkService underTest;
-
-    @BeforeEach
-    void setUp() {
-        underTest = new CasePartyLinkService(pcsCaseService, pacRepository);
+    private UserInfo createUser() {
+        return new UserInfo(null, USER_ID.toString(), null, null, null, List.of());
     }
 
-    // Positive Tests
-
-    @Test
-    void shouldSuccessfullyLinkPartyWhenValidAccessCodeAndUnlinkedDefendant() {
-        // Given
-        UUID caseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, partyId, null);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
-
-        // When
-        ValidateAccessCodeResponse response = underTest.validateAndLinkParty(
-                CASE_REFERENCE, ACCESS_CODE, userInfo);
-
-        // Then
-        assertThat(response.getCaseReference()).isEqualTo(CASE_REFERENCE);
-        assertThat(response.getStatus()).isEqualTo("linked");
-        assertThat(caseEntity.getDefendants().get(0).getLinkedUserId()).isEqualTo(USER_ID);
-        verify(pcsCaseService).save(caseEntityCaptor.capture());
-        assertThat(caseEntityCaptor.getValue()).isSameAs(caseEntity);
+    private Defendant createDefendant(UUID partyId, UUID idamUserId) {
+        Defendant d = new Defendant();
+        d.setPartyId(partyId);
+        d.setIdamUserId(idamUserId);
+        return d;
     }
 
     @Test
-    void shouldSaveCaseEntityWithUpdatedDefendantsAfterLinking() {
-        // Given
+    void shouldLinkSuccessfully_WhenValidCasePacAndDefendant() {
+        // GIVEN
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, partyId, null);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
+
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(caseId);
+        caseEntity.setCaseReference(CASE_REFERENCE);
+
+        Defendant defendant = createDefendant(partyId, null);
+        caseEntity.setDefendants(List.of(defendant));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(partyId)
+            .code(ACCESS_CODE)
+            .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
+            .thenReturn(Optional.of(pac));
 
-        // When
-        underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo);
+        // WHEN
+        ValidateAccessCodeResponse response =
+            service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser());
 
-        // Then
-        verify(pcsCaseService).save(caseEntityCaptor.capture());
-        PcsCaseEntity savedEntity = caseEntityCaptor.getValue();
-        assertThat(savedEntity).isSameAs(caseEntity);
-        assertThat(savedEntity.getDefendants()).isNotNull();
-        assertThat(savedEntity.getDefendants().get(0).getLinkedUserId()).isEqualTo(USER_ID);
-    }
-
-    @Test
-    void shouldSetLinkedUserIdOnMatchingDefendant() {
-        // Given
-        UUID caseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, partyId, null);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
-
-        // When
-        underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo);
-
-        // Then
-        List<Defendant> defendants = caseEntity.getDefendants();
-        assertThat(defendants).isNotEmpty();
-        Defendant matchedDefendant = defendants.stream()
-                .filter(d -> partyId.equals(d.getPartyId()))
-                .findFirst()
-                .orElse(null);
-        assertThat(matchedDefendant).isNotNull();
-        assertThat(matchedDefendant.getLinkedUserId()).isEqualTo(USER_ID);
-    }
-
-    @Test
-    void shouldReturnCorrectResponseWithCaseReferenceAndLinkedStatus() {
-        // Given
-        UUID caseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, partyId, null);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
-
-        // When
-        ValidateAccessCodeResponse response = underTest.validateAndLinkParty(
-                CASE_REFERENCE, ACCESS_CODE, userInfo);
-
-        // Then
+        // THEN
         assertThat(response).isNotNull();
-        assertThat(response.getCaseReference()).isEqualTo(CASE_REFERENCE);
         assertThat(response.getStatus()).isEqualTo("linked");
+        assertThat(defendant.getIdamUserId()).isEqualTo(USER_ID);
+        verify(pcsCaseService).save(caseEntity);
     }
 
-    // Exception/Negative Tests
-
     @Test
-    void shouldThrowIllegalStateExceptionWhenUserAlreadyLinked() {
-        // Given
+    void shouldThrowInvalidAccessCodeException_WhenPacNotFound() {
+        // GIVEN
         UUID caseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, partyId, OTHER_USER_ID);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
-
-        // When
-        Throwable throwable = catchThrowable(() ->
-                underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo));
-
-        // Then
-        assertThat(throwable)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("User already linked");
-        verify(pcsCaseService, never()).save(caseEntity);
-    }
-
-    @Test
-    void shouldThrowIllegalStateExceptionWhenSameUserCallsAgainWithAlreadyLinkedDefendant() {
-        // Given
-        UUID caseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, partyId, USER_ID);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
-
-        // When
-        Throwable throwable = catchThrowable(() ->
-                underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo));
-
-        // Then
-        assertThat(throwable)
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("User already linked");
-        verify(pcsCaseService, never()).save(caseEntity);
-    }
-
-    @Test
-    void shouldThrowCaseNotFoundExceptionWhenCaseReferenceNotFound() {
-        // Given
-        when(pcsCaseService.loadCase(CASE_REFERENCE))
-                .thenThrow(new CaseNotFoundException(CASE_REFERENCE));
-
-        UserInfo userInfo = mock(UserInfo.class);
-
-        // When
-        Throwable throwable = catchThrowable(() ->
-                underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo));
-
-        // Then
-        assertThat(throwable)
-                .isInstanceOf(CaseNotFoundException.class)
-                .hasMessage("No case found with reference " + CASE_REFERENCE);
-        verify(pacRepository, never()).findByPcsCase_IdAndCode(null, ACCESS_CODE);
-    }
-
-    @Test
-    void shouldThrowCaseNotFoundExceptionWhenAccessCodeNotFound() {
-        // Given
-        UUID caseId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, UUID.randomUUID(), null);
-        UserInfo userInfo = mock(UserInfo.class);
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.empty());
-
-        // When
-        Throwable throwable = catchThrowable(() ->
-                underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo));
-
-        // Then
-        assertThat(throwable)
-                .isInstanceOf(CaseNotFoundException.class)
-                .hasMessage("No case found with reference " + CASE_REFERENCE);
-        verify(pcsCaseService, never()).save(caseEntity);
-    }
-
-    @Test
-    void shouldThrowCaseNotFoundExceptionWhenDefendantNotFoundByPartyId() {
-        // Given
-        UUID caseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        UUID differentPartyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, differentPartyId, null);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
-
-        // When
-        Throwable throwable = catchThrowable(() ->
-                underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo));
-
-        // Then
-        assertThat(throwable)
-                .isInstanceOf(CaseNotFoundException.class)
-                .hasMessage("No case found with reference " + CASE_REFERENCE);
-        verify(pcsCaseService, never()).save(caseEntity);
-    }
-
-    @Test
-    void shouldHandleNullDefendantsList() {
-        // Given
-        UUID caseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setId(caseId);
-        caseEntity.setDefendants(null);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
+        caseEntity.setCaseReference(CASE_REFERENCE);
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
+            .thenReturn(Optional.empty());
 
-        // When
-        Throwable throwable = catchThrowable(() ->
-                underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo));
-
-        // Then
-        assertThat(throwable)
-                .isInstanceOf(NullPointerException.class);
-        verify(pcsCaseService, never()).save(caseEntity);
+        // WHEN + THEN
+        assertThatThrownBy(() -> service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser()))
+            .isInstanceOf(InvalidAccessCodeException.class)
+            .hasMessageContaining("Invalid access code");
     }
 
     @Test
-    void shouldHandleEmptyDefendantsList() {
-        // Given
+    void shouldThrowInvalidPartyForCase_WhenPartyIdDoesNotMatchDefendant() {
+        // GIVEN
         UUID caseId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
+        UUID pacPartyId = UUID.randomUUID();
+        UUID defendantPartyId = UUID.randomUUID(); // DIFFERENT → mismatch
+
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setId(caseId);
-        caseEntity.setDefendants(new ArrayList<>());
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
+        caseEntity.setCaseReference(CASE_REFERENCE);
+        caseEntity.setDefendants(List.of(createDefendant(defendantPartyId, null)));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(pacPartyId)
+            .code(ACCESS_CODE)
+            .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
+            .thenReturn(Optional.of(pac));
 
-        // When
-        Throwable throwable = catchThrowable(() ->
-                underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo));
-
-        // Then
-        assertThat(throwable)
-                .isInstanceOf(CaseNotFoundException.class)
-                .hasMessage("No case found with reference " + CASE_REFERENCE);
-        verify(pcsCaseService, never()).save(caseEntity);
+        // WHEN + THEN
+        assertThatThrownBy(() -> service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser()))
+            .isInstanceOf(InvalidPartyForCaseException.class)
+            .hasMessageContaining("Party does not belong to this case");
     }
 
     @Test
-    void shouldNotSaveWhenUserAlreadyLinked() {
-        // Given
+    void shouldThrowAccessCodeAlreadyUsedException_WhenDefendantAlreadyLinked() {
+        // GIVEN
         UUID caseId = UUID.randomUUID();
         UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseEntity(caseId, partyId, OTHER_USER_ID);
-        PartyAccessCodeEntity pac = createPartyAccessCodeEntity(partyId);
-        UserInfo userInfo = createUserInfo(USER_ID);
+
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(caseId);
+        caseEntity.setCaseReference(CASE_REFERENCE);
+
+        Defendant defendant = createDefendant(partyId, UUID.randomUUID()); // already linked
+        caseEntity.setDefendants(List.of(defendant));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(partyId)
+            .code(ACCESS_CODE)
+            .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-                .thenReturn(Optional.of(pac));
+            .thenReturn(Optional.of(pac));
 
-        // When
-        catchThrowable(() ->
-                underTest.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, userInfo));
-
-        // Then
-        verify(pcsCaseService, never()).save(caseEntity);
+        // WHEN + THEN
+        assertThatThrownBy(() -> service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser()))
+            .isInstanceOf(AccessCodeAlreadyUsedException.class)
+            .hasMessageContaining("already linked");
     }
 
-    // Helper methods
+    @Test
+    void shouldThrowAccessCodeAlreadyUsedException_WhenUserIdAlreadyLinkedToAnotherDefendant() {
+        // GIVEN
+        UUID caseId = UUID.randomUUID();
+        UUID partyId1 = UUID.randomUUID();
+        UUID partyId2 = UUID.randomUUID();
 
-    private PcsCaseEntity createCaseEntity(UUID caseId, UUID partyId, String linkedUserId) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setId(caseId);
+        caseEntity.setCaseReference(CASE_REFERENCE);
 
-        Defendant defendant = new Defendant();
-        defendant.setPartyId(partyId);
-        defendant.setLinkedUserId(linkedUserId);
+        // Defendant 1: Already linked to USER_ID
+        Defendant defendant1 = createDefendant(partyId1, USER_ID);
+        // Defendant 2: Not linked yet (this is the one we're trying to link)
+        Defendant defendant2 = createDefendant(partyId2, null);
+        caseEntity.setDefendants(List.of(defendant1, defendant2));
 
-        List<Defendant> defendants = new ArrayList<>();
-        defendants.add(defendant);
-        caseEntity.setDefendants(defendants);
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(partyId2) // Access code for defendant 2
+            .code(ACCESS_CODE)
+            .build();
 
-        return caseEntity;
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
+            .thenReturn(Optional.of(pac));
+
+        // WHEN + THEN
+        assertThatThrownBy(() -> service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser()))
+            .isInstanceOf(AccessCodeAlreadyUsedException.class)
+            .hasMessageContaining("already linked to another defendant");
     }
 
-    private PartyAccessCodeEntity createPartyAccessCodeEntity(UUID partyId) {
-        PartyAccessCodeEntity pac = new PartyAccessCodeEntity();
-        pac.setPartyId(partyId);
-        pac.setCode(ACCESS_CODE);
-        return pac;
-    }
+    @Test
+    void shouldLinkSuccessfully_WhenUserIdNotLinkedToAnyDefendant() {
+        // GIVEN
+        UUID caseId = UUID.randomUUID();
+        UUID partyId1 = UUID.randomUUID();
+        UUID partyId2 = UUID.randomUUID();
 
-    private UserInfo createUserInfo(String userId) {
-        UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getUid()).thenReturn(userId);
-        return userInfo;
-    }
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(caseId);
+        caseEntity.setCaseReference(CASE_REFERENCE);
 
+        // Defendant 1: Linked to different user
+        Defendant defendant1 = createDefendant(partyId1, UUID.randomUUID());
+        // Defendant 2: Not linked yet
+        Defendant defendant2 = createDefendant(partyId2, null);
+        caseEntity.setDefendants(List.of(defendant1, defendant2));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(partyId2)
+            .code(ACCESS_CODE)
+            .build();
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
+            .thenReturn(Optional.of(pac));
+
+        // WHEN
+        ValidateAccessCodeResponse response =
+            service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser());
+
+        // THEN
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo("linked");
+        assertThat(defendant2.getIdamUserId()).isEqualTo(USER_ID);
+        verify(pcsCaseService).save(caseEntity);
+    }
 }
+

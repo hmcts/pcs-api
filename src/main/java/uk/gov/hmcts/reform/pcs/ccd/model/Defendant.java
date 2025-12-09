@@ -20,7 +20,7 @@ public class Defendant {
 
     private UUID partyId;
 
-    private String linkedUserId;
+    private UUID idamUserId;
 
     private Boolean nameKnown;
 
