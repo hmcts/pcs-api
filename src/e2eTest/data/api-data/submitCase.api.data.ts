@@ -63,13 +63,13 @@ export const submitCaseApiData = {
           addressSameAsPossession: 'YES'
         },
         id: null
-      },      
+      },
     ],
     typeOfTenancyLicence: 'DEMOTED_TENANCY',
     tenancyLicenceDate: null,
     tenancyLicenceDocuments: [],
     showIntroductoryDemotedOtherGroundReasonPage: 'Yes',
-    hasIntroductoryDemotedOtherGroundsForPossession: 'NO',
+    introGrounds_HasIntroductoryDemotedOtherGroundsForPossession: 'NO',
     noGrounds: 'text no grounds',
     preActionProtocolCompleted: 'NO',
     mediationAttempted: 'NO',
