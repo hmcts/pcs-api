@@ -1,15 +1,13 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.config;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
+import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import java.util.stream.Stream;
@@ -19,19 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(MockitoExtension.class)
 class ClaimFeesClientContextTest {
 
+    @InjectMocks
     private ClaimFeesClientContext underTest;
-
-    @Mock
-    private FeesApi feesApi;
-    @Mock
-    private Jurisdictions jurisdictions;
-    @Mock
-    private ServiceName serviceName;
-
-    @BeforeEach
-    void beforeEach() {
-        underTest = new ClaimFeesClientContext(feesApi, jurisdictions, serviceName);
-    }
 
     @ParameterizedTest
     @MethodSource("makeAClaimFeeTypes")
