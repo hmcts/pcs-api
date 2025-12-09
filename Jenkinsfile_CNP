@@ -53,7 +53,7 @@ withPipeline(type, product, component) {
       enableHighLevelDataSetup()
     }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
-      env.E2E_SUITE = "regression"
+      env.E2E_SUITE = "chrome"
     }
   }
 
