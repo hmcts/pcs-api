@@ -31,6 +31,7 @@ public class CasePartyLinkService {
             UserInfo userInfo
     ) {
         String userId = userInfo.getUid();
+        UUID idamUserId = UUID.fromString(userId);
         log.warn("validateAndLinkParty started - caseRef: {}, accessCode: {}, userId: {}",
                 caseReference, accessCode, userId);
 
@@ -60,31 +61,31 @@ public class CasePartyLinkService {
                     return new InvalidPartyForCaseException("Party does not belong to this case.");
                 });
 
-        log.warn("Defendant found - partyId: {}, linkedUserId: {}",
-                defendant.getPartyId(), defendant.getLinkedUserId());
+        log.warn("Defendant found - partyId: {}, idamUserId: {}",
+                defendant.getPartyId(), defendant.getIdamUserId());
 
         // 4) Prevent re-linking this same defendant
-        if (defendant.getLinkedUserId() != null) {
+        if (defendant.getIdamUserId() != null) {
             log.warn("Defendant already linked - partyId: {}, existing userId: {}, attempted userId: {}",
-                    defendant.getPartyId(), defendant.getLinkedUserId(), userId);
+                    defendant.getPartyId(), defendant.getIdamUserId(), idamUserId);
             throw new AccessCodeAlreadyUsedException("This access code is already linked to a user.");
         }
 
         // 4a) Prevent linking same user ID to multiple defendants in the same case
         boolean userIdAlreadyLinked = defendants.stream()
                 .filter(d -> !d.getPartyId().equals(partyId)) // Exclude the current defendant
-                .anyMatch(d -> userId.equals(d.getLinkedUserId()));
+                .anyMatch(d -> idamUserId.equals(d.getIdamUserId()));
 
         if (userIdAlreadyLinked) {
             log.warn("User ID already linked to another defendant in this case - userId: {}, caseRef: {}, partyId: {}",
-                    userId, caseReference, partyId);
+                    idamUserId, caseReference, partyId);
             throw new AccessCodeAlreadyUsedException(
                     "This user ID is already linked to another defendant in this case.");
         }
 
         // 5) Link user to party
         log.warn("Linking user {} to case {} for partyId {}", userId, caseReference, partyId);
-        defendant.setLinkedUserId(userId);
+        defendant.setIdamUserId(idamUserId);
 
         caseEntity.setDefendants(defendants);
         pcsCaseService.save(caseEntity);

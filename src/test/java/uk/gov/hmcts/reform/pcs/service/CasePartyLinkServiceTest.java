@@ -39,16 +39,16 @@ class CasePartyLinkServiceTest {
 
     private static final long CASE_REFERENCE = 123456L;
     private static final String ACCESS_CODE = "ABCD1234";
-    private static final String USER_ID = "user-123";
+    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
     private UserInfo createUser() {
-        return new UserInfo(null, USER_ID, null, null, null, List.of());
+        return new UserInfo(null, USER_ID.toString(), null, null, null, List.of());
     }
 
-    private Defendant createDefendant(UUID partyId, String linkedUserId) {
+    private Defendant createDefendant(UUID partyId, UUID idamUserId) {
         Defendant d = new Defendant();
         d.setPartyId(partyId);
-        d.setLinkedUserId(linkedUserId);
+        d.setIdamUserId(idamUserId);
         return d;
     }
 
@@ -81,7 +81,7 @@ class CasePartyLinkServiceTest {
         // THEN
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo("linked");
-        assertThat(defendant.getLinkedUserId()).isEqualTo(USER_ID);
+        assertThat(defendant.getIdamUserId()).isEqualTo(USER_ID);
         verify(pcsCaseService).save(caseEntity);
     }
 
@@ -140,7 +140,7 @@ class CasePartyLinkServiceTest {
         caseEntity.setId(caseId);
         caseEntity.setCaseReference(CASE_REFERENCE);
 
-        Defendant defendant = createDefendant(partyId, "existing-user"); // already linked
+        Defendant defendant = createDefendant(partyId, UUID.randomUUID()); // already linked
         caseEntity.setDefendants(List.of(defendant));
 
         PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
@@ -202,7 +202,7 @@ class CasePartyLinkServiceTest {
         caseEntity.setCaseReference(CASE_REFERENCE);
 
         // Defendant 1: Linked to different user
-        Defendant defendant1 = createDefendant(partyId1, "different-user-id");
+        Defendant defendant1 = createDefendant(partyId1, UUID.randomUUID());
         // Defendant 2: Not linked yet
         Defendant defendant2 = createDefendant(partyId2, null);
         caseEntity.setDefendants(List.of(defendant1, defendant2));
@@ -223,7 +223,7 @@ class CasePartyLinkServiceTest {
         // THEN
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo("linked");
-        assertThat(defendant2.getLinkedUserId()).isEqualTo(USER_ID);
+        assertThat(defendant2.getIdamUserId()).isEqualTo(USER_ID);
         verify(pcsCaseService).save(caseEntity);
     }
 }

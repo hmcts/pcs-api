@@ -50,7 +50,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     private static final String SERVICE_AUTH_HEADER = "ServiceAuthToken";
     private static final String SERVICE_AUTHORIZATION = "ServiceAuthorization";
     private static final String SYSTEM_USER_ID_TOKEN = "system-user-id-token";
-    private static final String USER_ID = "test-user-123";
+    private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174001");
     private static final String ACCESS_CODE = "ABC123XYZ789";
 
     @Autowired
@@ -80,7 +80,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
         // Stub IDAM user info for token validation
         UserInfo userInfo = mock(UserInfo.class);
-        when(userInfo.getUid()).thenReturn(USER_ID);
+        when(userInfo.getUid()).thenReturn(USER_ID.toString());
         when(idamClient.getUserInfo(anyString())).thenReturn(userInfo);
     }
 
@@ -108,7 +108,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         // Verify defendant is linked in database
         PcsCaseEntity updatedCase = pcsCaseRepository.findByCaseReference(caseReference)
                 .orElseThrow();
-        assertThat(updatedCase.getDefendants().get(0).getLinkedUserId()).isEqualTo(USER_ID);
+        assertThat(updatedCase.getDefendants().get(0).getIdamUserId()).isEqualTo(USER_ID);
     }
 
     @Test
@@ -240,14 +240,14 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     // Helper methods
 
-    private PcsCaseEntity createTestCaseWithDefendant(long caseReference, String linkedUserId) {
+    private PcsCaseEntity createTestCaseWithDefendant(long caseReference, UUID idamUserId) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
         UUID partyId = UUID.randomUUID();
         Defendant defendant = new Defendant();
         defendant.setPartyId(partyId);
-        defendant.setLinkedUserId(linkedUserId);
+        defendant.setIdamUserId(idamUserId);
         defendant.setFirstName("John");
         defendant.setLastName("Doe");
 
@@ -259,21 +259,21 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     private PcsCaseEntity createTestCaseWithMultipleDefendants(
-            long caseReference, String firstLinkedUserId, String secondLinkedUserId) {
+            long caseReference, UUID firstIdamUserId, UUID secondIdamUserId) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
         UUID partyId1 = UUID.randomUUID();
         Defendant defendant1 = new Defendant();
         defendant1.setPartyId(partyId1);
-        defendant1.setLinkedUserId(firstLinkedUserId);
+        defendant1.setIdamUserId(firstIdamUserId);
         defendant1.setFirstName("John");
         defendant1.setLastName("Doe");
 
         UUID partyId2 = UUID.randomUUID();
         Defendant defendant2 = new Defendant();
         defendant2.setPartyId(partyId2);
-        defendant2.setLinkedUserId(secondLinkedUserId);
+        defendant2.setIdamUserId(secondIdamUserId);
         defendant2.setFirstName("Jane");
         defendant2.setLastName("Smith");
 
