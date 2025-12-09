@@ -276,7 +276,7 @@ public class PCSCase {
     @CCD
     private PeriodicContractTermsWales periodicContractTermsWales;
 
-    @JsonUnwrapped(prefix = "rent")
+    @JsonUnwrapped
     @CCD
     private RentDetailsSection rentDetails;
 
