@@ -67,7 +67,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - Wales]', async () => {
-  test('Wales - Secure contract - Rent arrears only @PR  @regression', async () => {
+  test('Wales - Secure contract - Rent arrears only @PR @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -170,7 +170,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + ASB + other options  @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + ASB + other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -500,7 +500,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + other options  @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -728,7 +728,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + Other options  @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + Other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,

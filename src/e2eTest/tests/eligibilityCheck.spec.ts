@@ -60,7 +60,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Cross border - Verify postcode page for England and Scotland content  @regression', async () => {
+  test('Cross border - Verify postcode page for England and Scotland content @regression', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -88,7 +88,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR  @regression', async () => {
+  test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -125,7 +125,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     })
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only  @regression', async () => {
+  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -167,7 +167,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('clickButton', userIneligible.cancel);
   });
 
-  test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only  @regression', async () => {
+  test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -190,7 +190,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('clickButton', userIneligible.cancel);
   });
 
-  test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only  @regression', async () => {
+  test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
