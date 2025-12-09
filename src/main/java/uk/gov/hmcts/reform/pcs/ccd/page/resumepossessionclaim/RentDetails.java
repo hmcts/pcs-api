@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -72,24 +73,24 @@ public class RentDetails implements CcdPageConfiguration {
     }
 
     private BigDecimal calculateDailyRent(BigDecimal rentAmount, RentPaymentFrequency frequency) {
-        double divisor = 0;
+        BigDecimal divisor;
 
         switch (frequency) {
             case WEEKLY:
-                divisor = 7.0;
+                divisor = new BigDecimal("7.0");
                 break;
             case FORTNIGHTLY:
-                divisor = 14.0;
+                divisor = new BigDecimal("14.0");
                 break;
             case MONTHLY:
-                divisor = 30.44;
+                divisor = new BigDecimal("30.44");
                 break;
             case OTHER:
             default:
                 throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
         }
 
-        return new BigDecimal(Math.round(rentAmount.doubleValue() / divisor));
+        return rentAmount.divide(divisor, 2, RoundingMode.HALF_UP);
     }
 
     private String formatCurrency(BigDecimal amount) {

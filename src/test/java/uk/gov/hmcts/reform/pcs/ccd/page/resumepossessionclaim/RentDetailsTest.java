@@ -30,7 +30,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo("1000"); // £10.00 per day
+        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo(new BigDecimal("10.00"));
     }
 
     @Test
@@ -45,7 +45,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo("986"); // £9.86 per day
+        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo(new BigDecimal("9.86"));
     }
 
     @Test
@@ -60,7 +60,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getDailyRentChargeAmount()).isEqualTo("1500");
+        assertThat(caseData.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("15.00"));
     }
 
     @Test
@@ -120,7 +120,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo("1000"); // £10.00 per day in pence
+        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo(new BigDecimal("10.00"));
         assertThat(caseData.getFormattedCalculatedDailyRentChargeAmount()).isEqualTo("£10.00");
     }
 
