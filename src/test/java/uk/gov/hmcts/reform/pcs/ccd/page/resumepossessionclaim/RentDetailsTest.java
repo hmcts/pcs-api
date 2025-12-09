@@ -7,6 +7,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class RentDetailsTest extends BasePageTest {
@@ -20,7 +22,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldCalculateDailyRentForWeeklyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .currentRent("7000") // £70.00 in pence
+                .currentRent(new BigDecimal("70.00"))
                 .rentFrequency(RentPaymentFrequency.WEEKLY)
                 .build();
 
@@ -35,7 +37,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldCalculateDailyRentForMonthlyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .currentRent("30000") // £300.00 in pence
+                .currentRent(new BigDecimal("300.00"))
                 .rentFrequency(RentPaymentFrequency.MONTHLY)
                 .build();
 
@@ -51,7 +53,7 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentFrequency(RentPaymentFrequency.OTHER)
-                .dailyRentChargeAmount("1500") // £15.00 per day
+                .dailyRentChargeAmount(new BigDecimal("15.00"))
                 .build();
 
         // When
@@ -66,7 +68,7 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentFrequency(RentPaymentFrequency.WEEKLY)
-                .currentRent("7000")
+                .currentRent(new BigDecimal("70.00"))
                 .build();
 
         // When
@@ -94,7 +96,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldCalculateDailyRentForFortnightlyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .currentRent("14000") // £140.00 in pence
+                .currentRent(new BigDecimal("140.00"))
                 .rentFrequency(RentPaymentFrequency.FORTNIGHTLY)
                 .build();
 
@@ -102,7 +104,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo("1000"); // £10.00 per day
+        assertThat(caseData.getCalculatedDailyRentChargeAmount()).isEqualTo(new BigDecimal("10.00"));
         assertThat(caseData.getFormattedCalculatedDailyRentChargeAmount()).isEqualTo("£10.00");
     }
 
@@ -110,7 +112,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldSetFormattedCurrencyWhenCalculatingDailyRent() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .currentRent("7000") // £70.00 in pence
+                .currentRent(new BigDecimal("70.00"))
                 .rentFrequency(RentPaymentFrequency.WEEKLY)
                 .build();
 
@@ -126,7 +128,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldNotProcessWhenRentFrequencyIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .currentRent("7000")
+                .currentRent(new BigDecimal("70.00"))
                 .rentFrequency(null)
                 .build();
 
@@ -140,10 +142,10 @@ class RentDetailsTest extends BasePageTest {
     }
 
     @Test
-    void shouldSetShowRentArrearsPageWhenCurrentRentIsEmpty() {
+    void shouldSetShowRentArrearsPageWhenCurrentRentIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .currentRent("")
+                .currentRent(null)
                 .rentFrequency(RentPaymentFrequency.WEEKLY)
                 .build();
 
@@ -161,7 +163,7 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentFrequency(RentPaymentFrequency.MONTHLY)
-                .currentRent("30000")
+                .currentRent(new BigDecimal("300.00"))
                 .build();
 
         // When

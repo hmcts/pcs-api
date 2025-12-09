@@ -25,16 +25,14 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
-
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -94,15 +92,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
             .currentRent(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
+                ? pcsCaseEntity.getTenancyLicence().getRentAmount() : null)
             .rentFrequency(pcsCaseEntity.getTenancyLicence() != null
                 ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
             .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null
                 ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
             .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
+                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
@@ -192,7 +188,4 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
     }
 
-    private static String poundsToPence(BigDecimal pounds) {
-        return pounds.movePointRight(2).toPlainString();
-    }
 }

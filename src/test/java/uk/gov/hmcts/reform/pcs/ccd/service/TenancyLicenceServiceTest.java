@@ -70,7 +70,7 @@ class TenancyLicenceServiceTest {
             expected -> {
                 assertThat(expected.getSupportingDocuments()).hasSize(2);
                 assertThat(expected.getSupportingDocuments())
-                    .extracting(d -> d.getFilename())
+                    .extracting(Document::getFilename)
                     .containsExactlyInAnyOrder("tenancy_agreement.pdf", "proof_of_id.png");
             }
         );
@@ -87,7 +87,7 @@ class TenancyLicenceServiceTest {
             expected -> {
                 assertThat(expected.getRentStatementDocuments()).hasSize(2);
                 assertThat(expected.getRentStatementDocuments())
-                    .extracting(d -> d.getFilename())
+                    .extracting(Document::getFilename)
                     .containsExactlyInAnyOrder("rent_statement_jan.pdf", "rent_statement_feb.pdf");
             }
         );
@@ -104,7 +104,7 @@ class TenancyLicenceServiceTest {
             expected -> {
                 assertThat(expected.getNoticeDocuments()).hasSize(2);
                 assertThat(expected.getNoticeDocuments())
-                    .extracting(d -> d.getFilename())
+                    .extracting(Document::getFilename)
                     .containsExactlyInAnyOrder("notice_served.pdf", "certificate_service.pdf");
             }
         );
@@ -119,7 +119,7 @@ class TenancyLicenceServiceTest {
 
         // Test rent amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn("120000"), // value in pence
+                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn(new BigDecimal("1200.00")),
                 expected -> assertThat(expected.getRentAmount())
                         .isEqualTo(new BigDecimal("1200.00")));// value in pounds
 
@@ -135,12 +135,12 @@ class TenancyLicenceServiceTest {
 
         // Test daily rent charge amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("4000"),
+                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn(new BigDecimal("40.00")),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
 
         // Test total rent arrears field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn("150000"), // value in pence
+                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn(new BigDecimal("1500.00")),
                 expected -> assertThat(expected.getTotalRentArrears())
                         .isEqualTo(new BigDecimal("1500.00"))); // value in pounds
 
@@ -180,10 +180,10 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseAmendedDailyRentAmountWhenAvailable() {
         // Given
-        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn("5000");
-        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("4000");
-        when(pcsCase.getDailyRentChargeAmount()).thenReturn("3500");
-        when(pcsCase.getCurrentRent()).thenReturn("120000");
+        when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(new BigDecimal("50.00"));
+        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(new BigDecimal("40.00"));
+        when(pcsCase.getDailyRentChargeAmount()).thenReturn(new BigDecimal("35.00"));
+        when(pcsCase.getCurrentRent()).thenReturn(new BigDecimal("1200.00"));
         when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -195,9 +195,9 @@ class TenancyLicenceServiceTest {
     void shouldUseCalculatedDailyRentAmountWhenAmendedNotAvailable() {
         // Given
         when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
-        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn("4000");
-        when(pcsCase.getDailyRentChargeAmount()).thenReturn("3500");
-        when(pcsCase.getCurrentRent()).thenReturn("120000");
+        when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(new BigDecimal("40.00"));
+        when(pcsCase.getDailyRentChargeAmount()).thenReturn(new BigDecimal("35.00"));
+        when(pcsCase.getCurrentRent()).thenReturn(new BigDecimal("1200.00"));
         when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -210,8 +210,8 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
         when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(null);
-        when(pcsCase.getDailyRentChargeAmount()).thenReturn("3500");
-        when(pcsCase.getCurrentRent()).thenReturn("120000");
+        when(pcsCase.getDailyRentChargeAmount()).thenReturn(new BigDecimal("35.00"));
+        when(pcsCase.getCurrentRent()).thenReturn(new BigDecimal("1200.00"));
         when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
