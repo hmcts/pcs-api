@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CCDService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -22,6 +23,7 @@ public class CasePartyLinkService {
 
     private final PcsCaseService pcsCaseService;
     private final PartyAccessCodeRepository pacRepository;
+    private final CCDService ccdService;
 
     public ValidateAccessCodeResponse validateAndLinkParty(
             long caseReference,
@@ -71,6 +73,9 @@ public class CasePartyLinkService {
 
         caseEntity.setDefendants(defendants);
         pcsCaseService.save(caseEntity);
+
+        // 6) Assign Defendant Role
+        ccdService.assignDefendantRole(caseReference, idamUserId.toString());
 
         return new ValidateAccessCodeResponse(caseReference, "linked");
     }

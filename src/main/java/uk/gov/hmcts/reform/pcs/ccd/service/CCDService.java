@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRoleWithOrganisation;
 import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 
 import java.util.ArrayList;
@@ -20,16 +21,14 @@ public class CCDService {
     private final IdamService idamService;
     private final CaseAssignmentApi caseAssignmentApi;
 
-    public void assignDefendantRole(String userId) {
+    public CaseAssignmentUserRolesResponse assignDefendantRole(long caseReference, String userId) {
         String s2s = authTokenGenerator.generate();
         String userToken = idamService.getSystemUserAuthorisation();
-
-        log.error("CCD API URL IS : {}", "url");
 
         //we want to do this without org. SO may need to update the client.
         CaseAssignmentUserRoleWithOrganisation caseAssignmentUserRoleWithOrganisation
             = CaseAssignmentUserRoleWithOrganisation.builder()
-            .caseDataId("CASE ID")
+            .caseDataId(String.valueOf(caseReference))
             .caseRole("[DEFENDANT]")
             .userId(userId)
             .build();
@@ -42,7 +41,7 @@ public class CCDService {
                     .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
                         .build();
 
-        //caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
-
+        CaseAssignmentUserRolesResponse response = caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+        return response;
     }
 }
