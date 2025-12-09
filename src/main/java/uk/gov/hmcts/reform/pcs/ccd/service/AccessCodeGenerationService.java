@@ -8,9 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.Set;
 import java.util.UUID;
@@ -22,7 +20,7 @@ import java.util.stream.Collectors;
 public class AccessCodeGenerationService {
 
     private final PartyAccessCodeRepository partyAccessCodeRepo;
-    private final PcsCaseRepository pcsCaseRepo;
+    private final PcsCaseService pcsCaseService;
 
     public PartyAccessCodeEntity createPartyAccessCodeEntity(PcsCaseEntity  pcsCaseEntity, UUID partyId) {
         String code = AccessCodeGenerator.generateAccessCode();
@@ -37,9 +35,7 @@ public class AccessCodeGenerationService {
 
     @Transactional
     public void createAccessCodesForParties(String caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepo
-            .findByCaseReference(Long.valueOf(caseReference))
-            .orElseThrow(() -> new CaseNotFoundException(Long.valueOf(caseReference)));
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(Long.valueOf(caseReference));
 
         Set<UUID> existingPartyIds = partyAccessCodeRepo.findAllByPcsCase_Id(pcsCaseEntity.getId())
             .stream()
