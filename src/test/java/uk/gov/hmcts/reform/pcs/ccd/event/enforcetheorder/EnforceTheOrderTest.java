@@ -26,17 +26,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.AdditionalInformationPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.AggressiveAnimalsRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.CriminalAntisocialRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.FirearmsPossessionRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LanguageUsedPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.PoliceOrSocialServicesRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.PropertyAccessDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.ProtestorGroupRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.VerbalOrWrittenThreatsRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.ViolentAggressiveRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
@@ -66,32 +55,11 @@ class EnforceTheOrderTest extends BaseEventTest {
     private FeeApplier feeApplier;
     @Mock
     private DefendantService defendantService;
-    @Mock
-    private ViolentAggressiveRiskPage violentAggressiveRiskPage;
-    @Mock
-    private VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;
-    @Mock
-    private ProtestorGroupRiskPage protestorGroupRiskPage;
-    @Mock
-    private PoliceOrSocialServicesRiskPage policeOrSocialServicesRiskPage;
-    @Mock
-    private FirearmsPossessionRiskPage firearmsPossessionRiskPage;
-    @Mock
-    private CriminalAntisocialRiskPage criminalAntisocialRiskPage;
-    @Mock
-    private AggressiveAnimalsRiskPage aggressiveAnimalsRiskPage;
-    @Mock
-    private PropertyAccessDetailsPage propertyAccessDetailsPage;
-    @Mock
-    private VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
-    @Mock
-    private AdditionalInformationPage additionalInformationPage;
+
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
     private EnforcementOrderService enforcementOrderService;
-    @Mock
-    private LanguageUsedPage languageUsedPage;
 
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
@@ -199,7 +167,6 @@ class EnforceTheOrderTest extends BaseEventTest {
         @MethodSource("emptyDefendantsScenarios")
         @DisplayName("Should handle empty or null defendants list")
         void shouldHandleEmptyOrNullDefendantsList(
-            String scenarioName,
             List<ListValue<DefendantDetails>> allDefendants) {
             // Given
             List<DynamicStringListElement> expectedListItems = new ArrayList<>();
