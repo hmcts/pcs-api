@@ -29,7 +29,7 @@ public class PartyAccessCodeLinkValidator {
         UUID partyId
     ) {
         return defendants.stream()
-            .filter(d -> partyId.equals(d.getPartyId()))
+            .filter(defendant -> partyId.equals(defendant.getPartyId()))
             .findFirst()
             .orElseThrow(() -> new InvalidPartyForCaseException("Party does not belong to this case."));
     }
@@ -46,8 +46,8 @@ public class PartyAccessCodeLinkValidator {
         UUID idamUserId
     ) {
         boolean userIdAlreadyLinked = defendants.stream()
-            .filter(d -> !d.getPartyId().equals(currentPartyId))
-            .anyMatch(d -> idamUserId.equals(d.getIdamUserId()));
+            .filter(defendant -> !defendant.getPartyId().equals(currentPartyId))
+            .anyMatch(defendant -> idamUserId.equals(defendant.getIdamUserId()));
 
         if (userIdAlreadyLinked) {
             throw new AccessCodeAlreadyUsedException(

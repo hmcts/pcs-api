@@ -46,10 +46,10 @@ class PartyAccessCodeLinkServiceTest {
     }
 
     private Defendant createDefendant(UUID partyId, UUID idamUserId) {
-        Defendant d = new Defendant();
-        d.setPartyId(partyId);
-        d.setIdamUserId(idamUserId);
-        return d;
+        Defendant defendant = new Defendant();
+        defendant.setPartyId(partyId);
+        defendant.setIdamUserId(idamUserId);
+        return defendant;
     }
 
     @Test

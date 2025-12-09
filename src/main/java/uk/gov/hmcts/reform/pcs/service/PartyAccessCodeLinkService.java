@@ -25,40 +25,30 @@ public class PartyAccessCodeLinkService {
             String accessCode,
             UserInfo userInfo
     ) {
-        // 1) Convert user ID
         UUID idamUserId = UUID.fromString(userInfo.getUid());
 
-        // 2) Load case
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        // 3) Validate access code (lookup partyId + caseId)
         PartyAccessCodeEntity pac = validator.validateAccessCode(
             caseEntity.getId(),
             accessCode
         );
 
-        // Note: pac.getRole() indicates party type (DEFENDANT, CLAIMANT, etc.)
-        // Current implementation works with defendants, but design is generic
-
         UUID partyId = pac.getPartyId();
 
-        // 4) Validate party belongs to case
         Defendant party = validator.validatePartyBelongsToCase(
             caseEntity.getDefendants(),
             partyId
         );
 
-        // 5) Validate party not already linked
         validator.validatePartyNotAlreadyLinked(party);
 
-        // 6) Validate user not linked to another party
         validator.validateUserNotLinkedToAnotherParty(
             caseEntity.getDefendants(),
             partyId,
             idamUserId
         );
 
-        // 7) Link user to party (works for any party type)
         party.setIdamUserId(idamUserId);
         caseEntity.setDefendants(caseEntity.getDefendants());
         pcsCaseService.save(caseEntity);
