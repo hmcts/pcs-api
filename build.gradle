@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.18.0'
+    flywayVersion = '11.19.0'
     serenityBddVersion = '4.3.2'
   }
   dependencies {
@@ -298,7 +298,7 @@ ext {
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.0"
   pactVersion = "4.6.18"
-  tomcatEmbedVersion = "11.0.14"
+  tomcatEmbedVersion = "11.0.15"
   nettyVersion = "4.1.127.Final"
 }
 
