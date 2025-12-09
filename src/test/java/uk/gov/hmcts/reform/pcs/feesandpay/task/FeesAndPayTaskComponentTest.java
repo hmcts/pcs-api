@@ -145,8 +145,9 @@ class FeesAndPayTaskComponentTest {
             when(taskInstance.getData()).thenReturn(data);
 
             FeignException exception = mock(FeignException.class);
-            when(paymentService.createServiceRequest(anyString(), anyString(), any(FeeDetails.class),
-                                                     anyInt(), anyString()
+            when(paymentService.createServiceRequest(
+                anyString(), anyString(), any(FeeDetails.class),
+                anyInt(), anyString()
             )).thenThrow(exception);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feePaymentTask();
@@ -168,4 +169,5 @@ class FeesAndPayTaskComponentTest {
             assertThat(failureHandler).isInstanceOf(FailureHandler.MaxRetriesFailureHandler.class);
         }
     }
+
 }
