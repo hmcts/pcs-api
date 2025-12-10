@@ -4,12 +4,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.CCDService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -36,6 +39,9 @@ class CasePartyLinkServiceTest {
 
     @Mock
     private PartyAccessCodeRepository pacRepository;
+
+    @Mock
+    private CCDService ccdService;
 
     private static final long CASE_REFERENCE = 123456L;
     private static final String ACCESS_CODE = "ABCD1234";
@@ -73,6 +79,9 @@ class CasePartyLinkServiceTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
             .thenReturn(Optional.of(pac));
+        when(ccdService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString() )).thenReturn
+            (CaseAssignmentUserRolesResponse.builder()
+                .statusMessage("Case-User-Role assignments created successfully").build());
 
         // WHEN
         ValidateAccessCodeResponse response =
