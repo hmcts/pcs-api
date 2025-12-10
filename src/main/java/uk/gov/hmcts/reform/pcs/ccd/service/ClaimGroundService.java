@@ -133,9 +133,9 @@ public class ClaimGroundService {
     private List<ClaimGroundEntity> assuredTenancyNoRentArrearsGroundsWithReason(PCSCase pcsCase) {
 
         Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGrounds = pcsCase
-                .getNoRentArrearsMandatoryGroundsOptions();
+                .getNoRentArrearsGroundsOptions().getNoRentArrearsMandatoryGroundsOptions();
         Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGrounds = pcsCase
-                .getNoRentArrearsDiscretionaryGroundsOptions();
+                .getNoRentArrearsGroundsOptions().getNoRentArrearsDiscretionaryGroundsOptions();
         NoRentArrearsReasonForGrounds grounds = pcsCase.getNoRentArrearsReasonForGrounds();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
@@ -238,18 +238,18 @@ public class ClaimGroundService {
         Set<MandatoryGroundWales> mandatoryGrounds = pcsCase.getMandatoryGroundsWales();
         Set<DiscretionaryGroundWales> discretionaryGrounds = pcsCase.getDiscretionaryGroundsWales();
         Set<EstateManagementGroundsWales> estateGrounds = pcsCase.getEstateManagementGroundsWales();
-        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = 
+        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds =
             pcsCase.getSecureContractMandatoryGroundsWales();
-        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds = 
+        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds =
             pcsCase.getSecureContractDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> secureEstateGrounds = 
+        Set<EstateManagementGroundsWales> secureEstateGrounds =
             pcsCase.getSecureContractEstateManagementGroundsWales();
         GroundsReasonsWales grounds = pcsCase.getGroundsReasonsWales();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
         if (mandatoryGrounds == null && discretionaryGrounds == null && estateGrounds == null
-            && secureMandatoryGrounds == null && secureDiscretionaryGrounds == null 
+            && secureMandatoryGrounds == null && secureDiscretionaryGrounds == null
             && secureEstateGrounds == null) {
             return entities;
         }
@@ -318,13 +318,13 @@ public class ClaimGroundService {
         if (secureMandatoryGrounds != null) {
             for (SecureContractMandatoryGroundsWales ground : secureMandatoryGrounds) {
                 String reasonText = grounds != null ? switch (ground) {
-                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170 -> 
+                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170 ->
                         grounds.getSecureFailureToGiveUpPossessionSection170Reason();
-                    case LANDLORD_NOTICE_SECTION_186 -> 
+                    case LANDLORD_NOTICE_SECTION_186 ->
                         grounds.getSecureLandlordNoticeSection186Reason();
-                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191 -> 
+                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191 ->
                         grounds.getSecureFailureToGiveUpPossessionSection191Reason();
-                    case LANDLORD_NOTICE_SECTION_199 -> 
+                    case LANDLORD_NOTICE_SECTION_199 ->
                         grounds.getSecureLandlordNoticeSection199Reason();
                 } : null;
 

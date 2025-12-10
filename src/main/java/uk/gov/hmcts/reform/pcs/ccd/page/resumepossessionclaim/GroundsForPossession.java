@@ -46,8 +46,8 @@ public class GroundsForPossession implements CcdPageConfiguration {
 
         //resetting options
         if (caseData.getClaimDueToRentArrears() == YesOrNo.YES) {
-            caseData.setNoRentArrearsMandatoryGroundsOptions(Set.of());
-            caseData.setNoRentArrearsDiscretionaryGroundsOptions(Set.of());
+            caseData.getNoRentArrearsGroundsOptions().setNoRentArrearsMandatoryGroundsOptions(Set.of());
+            caseData.getNoRentArrearsGroundsOptions().setNoRentArrearsDiscretionaryGroundsOptions(Set.of());
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

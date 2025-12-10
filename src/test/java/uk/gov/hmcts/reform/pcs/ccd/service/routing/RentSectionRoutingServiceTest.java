@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,8 +39,12 @@ class RentSectionRoutingServiceTest {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
             .claimDueToRentArrears(YesOrNo.NO)
-            .noRentArrearsMandatoryGroundsOptions(null)
-            .noRentArrearsDiscretionaryGroundsOptions(null)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .noRentArrearsMandatoryGroundsOptions(null)
+                    .noRentArrearsDiscretionaryGroundsOptions(null)
+                    .build()
+            )
             .build();
 
         YesOrNo result = service.shouldShowRentSection(caseData);
@@ -75,12 +80,16 @@ class RentSectionRoutingServiceTest {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
             .claimDueToRentArrears(YesOrNo.NO)
-            .noRentArrearsMandatoryGroundsOptions(
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .noRentArrearsMandatoryGroundsOptions(
                 Set.of(
                     NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS
                 )
-            )
+                    )
             .noRentArrearsDiscretionaryGroundsOptions(null)
+                    .build()
+            )
             .build();
 
         YesOrNo result = service.shouldShowRentSection(caseData);

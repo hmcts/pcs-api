@@ -31,7 +31,8 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
                    <p class="govuk-body">
                        You may have already served the defendants with notice of your intention to begin
                        possession proceedings. Notice periods vary between grounds and some do not require any
-                       notice to be served. You should read the <a href="https://www.gov.wales/understanding-possession-process-guidance-private-landlords"
+                       notice to be served. You should read the <a href="https://www.gov.wales/understanding-
+                       possession-process-guidance-private-landlords"
                        rel="noreferrer noopener" target="_blank" class="govuk-link"> guidance on
                        possession notice periods (opens in a new tab)</a>
                        to make sure your claim is valid.
@@ -57,7 +58,8 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        caseData.setShowRentSectionPage(walesRentSectionRoutingService.shouldShowRentSection(caseData));
+        caseData
+            .setShowRentSectionPage(walesRentSectionRoutingService.shouldShowRentSection(caseData));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)

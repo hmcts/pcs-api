@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
@@ -148,8 +149,12 @@ class ClaimGroundServiceTest {
         Set<NoRentArrearsDiscretionaryGrounds> discretionary = EnumSet.allOf(NoRentArrearsDiscretionaryGrounds.class);
 
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(discretionary)
-            .noRentArrearsMandatoryGroundsOptions(mandatory)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .noRentArrearsMandatoryGroundsOptions(mandatory)
+                    .noRentArrearsDiscretionaryGroundsOptions(discretionary)
+                    .build()
+            )
             .noRentArrearsReasonForGrounds(grounds)
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
             .build();
@@ -195,6 +200,12 @@ class ClaimGroundServiceTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .noRentArrearsMandatoryGroundsOptions(null)
+                    .noRentArrearsDiscretionaryGroundsOptions(null)
+                    .build()
+            )
             .build();
 
         // When
