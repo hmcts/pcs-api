@@ -8,7 +8,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeResponse;
 
 import java.util.UUID;
 
@@ -20,7 +19,7 @@ public class PartyAccessCodeLinkService {
     private final PartyAccessCodeLinkValidator validator;
 
     @Transactional
-    public ValidateAccessCodeResponse linkPartyByAccessCode(
+    public void linkPartyByAccessCode(
             long caseReference,
             String accessCode,
             UserInfo userInfo
@@ -52,8 +51,6 @@ public class PartyAccessCodeLinkService {
         party.setIdamUserId(idamUserId);
         caseEntity.setDefendants(caseEntity.getDefendants());
         pcsCaseService.save(caseEntity);
-
-        return new ValidateAccessCodeResponse(caseReference, "linked");
     }
 
 }

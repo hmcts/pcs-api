@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeRequest;
-import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeResponse;
 import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeLinkService;
 
 @RestController
@@ -46,10 +44,10 @@ public class CasePartyLinkController {
             }
     )
     @ApiResponse(responseCode = "200", description = "Successful validation and linking",
-            content = @Content(schema = @Schema(implementation = ValidateAccessCodeResponse.class)))
+            content = @Content())
     @ApiResponse(responseCode = "400", description = "Invalid access code for this case",
             content = @Content())
-    @ApiResponse(responseCode = "401", description = "Invalid IDAM token",
+    @ApiResponse(responseCode = "401", description = "Invalid access token",
             content = @Content())
     @ApiResponse(responseCode = "403", description = "Invalid Service Authorization",
             content = @Content())
@@ -57,7 +55,7 @@ public class CasePartyLinkController {
             content = @Content())
     @ApiResponse(responseCode = "409", description = "Access code already used by another user",
             content = @Content())
-    public ResponseEntity<ValidateAccessCodeResponse> validateAccessCode(
+    public ResponseEntity<Void> validateAccessCode(
             @Parameter(description = "The 12-digit case reference number", required = true)
             @PathVariable long caseReference,
             @Valid @RequestBody ValidateAccessCodeRequest request,
@@ -68,10 +66,9 @@ public class CasePartyLinkController {
     ) {
         var user = idamService.validateAuthToken(authorization).getUserDetails();
 
-        ValidateAccessCodeResponse response =
-                partyAccessCodeLinkService.linkPartyByAccessCode(caseReference, request.getAccessCode(), user);
+        partyAccessCodeLinkService.linkPartyByAccessCode(caseReference, request.getAccessCode(), user);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -32,7 +32,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -101,14 +103,36 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.caseReference", is((int) caseReference)))
-                .andExpect(jsonPath("$.status", is("linked")));
+                .andExpect(content().string(""));
 
         // Verify defendant is linked in database
         PcsCaseEntity updatedCase = pcsCaseRepository.findByCaseReference(caseReference)
                 .orElseThrow();
         assertThat(updatedCase.getDefendants().get(0).getIdamUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    @DisplayName("Should call IdamClient.getUserInfo with the exact Authorization header value")
+    void shouldCallIdamClientGetUserInfoWithExactAuthHeader() throws Exception {
+        // Given
+        long caseReference = 12355L;
+        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, null);
+        String accessCode = createPartyAccessCode(caseEntity, caseEntity.getDefendants().get(0).getPartyId());
+
+        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
+
+        // When
+        mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
+                        .header(AUTHORIZATION, AUTH_HEADER)
+                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        // Then - Verify idamClient.getUserInfo was called with the exact AUTH_HEADER value
+        // Note: getBearerToken() keeps the "Bearer " prefix if already present,
+        // so it should be called with the full "Bearer test-token" value
+        verify(idamClient).getUserInfo(eq(AUTH_HEADER));
     }
 
     @Test
@@ -126,6 +150,28 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message", notNullValue()));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when party does not belong to this case")
+    void shouldReturn404WhenPartyDoesNotBelongToCase() throws Exception {
+        // Given
+        long caseReference = 12354L;
+        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, null);
+        // Create access code for a DIFFERENT party that doesn't exist in the case
+        UUID nonExistentPartyId = UUID.randomUUID();
+        String accessCode = createPartyAccessCode(caseEntity, nonExistentPartyId);
+
+        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
+
+        // When/Then
+        mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
+                        .header(AUTHORIZATION, AUTH_HEADER)
+                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", is("Party does not belong to this case.")));
     }
 
     @Test
@@ -294,7 +340,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("linked")));
+                .andExpect(content().string(""));
 
         // Then - Verify transaction committed: data persisted
         PcsCaseEntity caseAfter = pcsCaseRepository.findByCaseReference(caseReference)

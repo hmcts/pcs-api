@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
 
+@Slf4j
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -23,6 +25,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidAccessCodeException.class)
     public ResponseEntity<Error> handleInvalidAccessCode(InvalidAccessCodeException ex) {
+        log.error("Invalid access code validation attempt", ex);
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
             .body(new Error(ex.getMessage()));
@@ -30,6 +33,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidPartyForCaseException.class)
     public ResponseEntity<Error> handleInvalidParty(InvalidPartyForCaseException ex) {
+        log.error("Party validation failed", ex);
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(new Error(ex.getMessage()));

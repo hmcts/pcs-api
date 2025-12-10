@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
-import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -80,12 +79,9 @@ class PartyAccessCodeLinkServiceTest {
             caseEntity.getDefendants(), partyId, USER_ID);
 
         // WHEN
-        ValidateAccessCodeResponse response =
-            service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser());
+        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser());
 
         // THEN
-        assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo("linked");
         assertThat(defendant.getIdamUserId()).isEqualTo(USER_ID);
         verify(pcsCaseService).save(caseEntity);
     }
@@ -240,12 +236,9 @@ class PartyAccessCodeLinkServiceTest {
             caseEntity.getDefendants(), partyId2, USER_ID);
 
         // WHEN
-        ValidateAccessCodeResponse response =
-            service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser());
+        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser());
 
         // THEN
-        assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo("linked");
         assertThat(defendant2.getIdamUserId()).isEqualTo(USER_ID);
         verify(pcsCaseService).save(caseEntity);
     }
