@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.UUID;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -35,6 +37,9 @@ class AccessCodeGenerationServiceTest {
     @Mock
     private PcsCaseService pcsCaseService;
 
+    @Mock(strictness = LENIENT)
+    private AccessCodeGenerator accessCodeGenerator;
+
     private AccessCodeGenerationService underTest;
 
     @Captor
@@ -42,7 +47,8 @@ class AccessCodeGenerationServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new AccessCodeGenerationService(partyAccessCodeRepo, pcsCaseService);
+        underTest = new AccessCodeGenerationService(partyAccessCodeRepo, pcsCaseService, accessCodeGenerator);
+        when(accessCodeGenerator.generateAccessCode()).thenCallRealMethod();
     }
 
     @Test
