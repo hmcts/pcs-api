@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -32,7 +33,8 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
             .pageLabel("Anything else that could help with the eviction ")
             .label("additionalInformationPage-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getAdditionalInformation)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getAdditionalInformation)
             .mandatoryWithLabel(
                 AdditionalInformation::getAdditionalInformationSelect,
                 "Do you want to tell us anything else that could help with the eviction?"
@@ -56,9 +58,11 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
     private List<String> getValidationErrors(PCSCase data) {
         List<String> errors = new ArrayList<>();
 
-        AdditionalInformation additionalInformation = data.getEnforcementOrder().getAdditionalInformation();
+        AdditionalInformation additionalInformation =
+                data.getEnforcementOrder().getWarrantDetails().getAdditionalInformation();
         if (additionalInformation.getAdditionalInformationSelect().toBoolean()) {
-            String txt = data.getEnforcementOrder().getAdditionalInformation().getAdditionalInformationDetails();
+            String txt = data.getEnforcementOrder()
+                    .getWarrantDetails().getAdditionalInformation().getAdditionalInformationDetails();
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,
                 ADDITIONAL_INFORMATION_DETAILS_LABEL,

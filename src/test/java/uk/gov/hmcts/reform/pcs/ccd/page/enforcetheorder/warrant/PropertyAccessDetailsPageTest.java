@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,11 +30,13 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
+                    .warrantDetails(WarrantDetails.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
                                 .isDifficultToAccessProperty(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(SHORTEST_VALID_TEXT)
                                 .build())
                         .build())
+                    .build())
                 .build();
 
         // When
@@ -42,9 +44,9 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isEmpty();
-        assertThat(response.getData().getEnforcementOrder()
-                .getPropertyAccessDetails().getClarificationOnAccessDifficultyText())
-                .isEqualTo(SHORTEST_VALID_TEXT);
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+            .getPropertyAccessDetails().getClarificationOnAccessDifficultyText())
+            .isEqualTo(SHORTEST_VALID_TEXT);
     }
 
     @Test
@@ -52,12 +54,14 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
+                    .warrantDetails(WarrantDetails.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
                                 .isDifficultToAccessProperty(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(
                                         SHORTEST_VALID_TEXT.repeat(6800))
                                 .build())
                         .build())
+                    .build())
                 .build();
 
         // When
@@ -65,7 +69,7 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isEmpty();
-        assertThat(response.getData().getEnforcementOrder()
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getPropertyAccessDetails().getClarificationOnAccessDifficultyText()).isEqualTo(
                         SHORTEST_VALID_TEXT.repeat(6800));
     }
@@ -76,11 +80,13 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         String longText = "a".repeat(6801);
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
+                    .warrantDetails(WarrantDetails.builder()
                         .propertyAccessDetails(PropertyAccessDetails.builder()
                                 .isDifficultToAccessProperty(VerticalYesNo.YES)
                                 .clarificationOnAccessDifficultyText(longText)
                                 .build())
                         .build())
+                    .build())
                 .build();
 
         // When

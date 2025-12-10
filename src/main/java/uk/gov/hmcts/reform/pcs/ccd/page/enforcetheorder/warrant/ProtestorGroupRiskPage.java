@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -31,7 +32,8 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
                     + " AND enforcementRiskCategoriesCONTAINS\"PROTEST_GROUP_MEMBER\"")
                 .label("protestorGroupRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getRiskDetails)
+                .complex(EnforcementOrder::getWarrantDetails)
+                .complex(WarrantDetails::getRiskDetails)
                 .mandatory(EnforcementRiskDetails::getEnforcementProtestGroupMemberDetails)
                 .done()
                 .label("protestorGroupRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -47,7 +49,8 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
     }
 
     private List<String> getValidationErrors(PCSCase caseData) {
-        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementProtestGroupMemberDetails();
+        String txt = caseData.getEnforcementOrder()
+                .getWarrantDetails().getRiskDetails().getEnforcementProtestGroupMemberDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

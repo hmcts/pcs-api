@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class LegalCostsPage implements CcdPageConfiguration {
@@ -58,7 +59,8 @@ public class LegalCostsPage implements CcdPageConfiguration {
                 .pageLabel("Legal costs")
                 .label("legalCosts-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getLegalCosts)
+                .complex(EnforcementOrder::getWarrantDetails)
+                .complex(WarrantDetails::getLegalCosts)
                 .mandatory(LegalCosts::getAreLegalCostsToBeClaimed)
                 .mandatory(LegalCosts::getAmountOfLegalCosts,
                         "warrantAreLegalCostsToBeClaimed=\"YES\"")

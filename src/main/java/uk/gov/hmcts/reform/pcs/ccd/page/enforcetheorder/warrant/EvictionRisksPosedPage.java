@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -21,7 +22,8 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .showCondition("anyRiskToBailiff=\"YES\"")
             .label("evictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getEnforcementRiskCategories)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .mandatory(WarrantDetails::getEnforcementRiskCategories)
             .done()
             .label("evictionRisksPosed-save-and-return", SAVE_AND_RETURN);
     }
@@ -29,20 +31,16 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
-
-        // Initialize EnforcementOrder if null
-        if (data.getEnforcementOrder() == null) {
-            data.setEnforcementOrder(EnforcementOrder.builder().build());
-        }
+        WarrantDetails warrantDetails = data.getEnforcementOrder().getWarrantDetails();
 
         // Initialize risk details if null
-        if (data.getEnforcementOrder().getRiskDetails() == null) {
-            data.getEnforcementOrder().setRiskDetails(EnforcementRiskDetails.builder().build());
+        if (warrantDetails.getRiskDetails() == null) {
+            warrantDetails.setRiskDetails(EnforcementRiskDetails.builder().build());
         }
 
         // Validate that at least one category is selected
-        if (data.getEnforcementOrder().getEnforcementRiskCategories() == null
-            || data.getEnforcementOrder().getEnforcementRiskCategories().isEmpty()) {
+        if (warrantDetails.getEnforcementRiskCategories() == null
+            || warrantDetails.getEnforcementRiskCategories().isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
                 .errors(java.util.List.of("Select at least one option"))

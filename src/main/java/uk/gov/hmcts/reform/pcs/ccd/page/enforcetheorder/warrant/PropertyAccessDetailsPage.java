@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -33,7 +34,8 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
                 .pageLabel("Access to the property")
                 .label("propertyAccessDetails-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getPropertyAccessDetails)
+                .complex(EnforcementOrder::getWarrantDetails)
+                .complex(WarrantDetails::getPropertyAccessDetails)
                 .mandatory(PropertyAccessDetails::getIsDifficultToAccessProperty)
                 .mandatory(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
                         "warrantIsDifficultToAccessProperty=\"YES\"")
@@ -55,9 +57,10 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
     private List<String> getValidationErrors(PCSCase data) {
         List<String> errors = new ArrayList<>();
 
-        String txt = data.getEnforcementOrder().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
+        String txt = data.getEnforcementOrder()
+                .getWarrantDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
 
-        if (data.getEnforcementOrder().getPropertyAccessDetails().getIsDifficultToAccessProperty()
+        if (data.getEnforcementOrder().getWarrantDetails().getPropertyAccessDetails().getIsDifficultToAccessProperty()
             .equals(VerticalYesNo.YES)) {
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,

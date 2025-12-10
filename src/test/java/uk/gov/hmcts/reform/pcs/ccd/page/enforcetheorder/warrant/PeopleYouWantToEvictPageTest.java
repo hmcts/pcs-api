@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,8 +8,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.PeopleYouWantToEvictPage;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
@@ -36,8 +36,10 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .selectedDefendants(DynamicMultiSelectStringList.builder()
-                        .value(List.of())
+                    .warrantDetails(WarrantDetails.builder()
+                        .selectedDefendants(DynamicMultiSelectStringList.builder()
+                            .value(List.of())
+                            .build())
                         .build())
                     .build())
                 .build();
@@ -57,7 +59,9 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .selectedDefendants(null)
+                    .warrantDetails(WarrantDetails.builder()
+                        .selectedDefendants(null)
+                        .build())
                     .build())
                 .build();
 
@@ -81,9 +85,11 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
                 .build();
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .selectedDefendants(DynamicMultiSelectStringList.builder()
-                        .value(List.of(element1))
-                        .listItems(List.of(element1))
+                    .warrantDetails(WarrantDetails.builder()
+                        .selectedDefendants(DynamicMultiSelectStringList.builder()
+                            .value(List.of(element1))
+                            .listItems(List.of(element1))
+                            .build())
                         .build())
                     .build())
                 .build();
@@ -94,7 +100,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNullOrEmpty();
             DynamicMultiSelectStringList selected = 
-                response.getData().getEnforcementOrder().getSelectedDefendants();
+                response.getData().getEnforcementOrder().getWarrantDetails().getSelectedDefendants();
             assertThat(selected).isNotNull();
             assertThat(selected.getValue()).hasSize(1);
             assertThat(selected.getValue().get(0).getCode()).isEqualTo(defendantCode);
@@ -117,9 +123,11 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
                 .build();
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .selectedDefendants(DynamicMultiSelectStringList.builder()
-                        .value(List.of(element1, element2))
-                        .listItems(List.of(element1, element2))
+                    .warrantDetails(WarrantDetails.builder()
+                        .selectedDefendants(DynamicMultiSelectStringList.builder()
+                            .value(List.of(element1, element2))
+                            .listItems(List.of(element1, element2))
+                            .build())
                         .build())
                     .build())
                 .build();
@@ -130,7 +138,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNullOrEmpty();
             DynamicMultiSelectStringList selected = 
-                response.getData().getEnforcementOrder().getSelectedDefendants();
+                response.getData().getEnforcementOrder().getWarrantDetails().getSelectedDefendants();
             assertThat(selected).isNotNull();
             assertThat(selected.getValue()).hasSize(2);
             assertThat(selected.getValue().stream()

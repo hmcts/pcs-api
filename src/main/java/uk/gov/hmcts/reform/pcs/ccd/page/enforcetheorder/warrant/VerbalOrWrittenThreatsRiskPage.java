@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -31,7 +32,8 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
                     + " AND enforcementRiskCategoriesCONTAINS\"VERBAL_OR_WRITTEN_THREATS\"")
                 .label("verbalOrWrittenThreatsRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getRiskDetails)
+                .complex(EnforcementOrder::getWarrantDetails)
+                .complex(WarrantDetails::getRiskDetails)
                 .mandatory(EnforcementRiskDetails::getEnforcementVerbalOrWrittenThreatsDetails)
                 .done()
                 .label("verbalOrWrittenThreatsRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -47,7 +49,8 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
     }
 
     private List<String> getValidationErrors(PCSCase caseData) {
-        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
+        String txt = caseData.getEnforcementOrder()
+                .getWarrantDetails().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

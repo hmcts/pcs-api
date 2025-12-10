@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -43,7 +44,8 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getNameAndAddressForEviction)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getNameAndAddressForEviction)
             .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
             .label("nameAndAddressForEviction-save-and-return", SAVE_AND_RETURN);
 
@@ -57,20 +59,20 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
 
         // Set navigation flags based on user selection
         NameAndAddressForEviction nameAndAddress =
-            caseData.getEnforcementOrder().getNameAndAddressForEviction();
+            caseData.getEnforcementOrder().getWarrantDetails().getNameAndAddressForEviction();
 
         VerticalYesNo correctNameAndAddress = nameAndAddress.getCorrectNameAndAddress();
 
-        EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
+        WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
 
         if (correctNameAndAddress == VerticalYesNo.NO) {
             // Navigate to ChangeNameAddressPage
-            enforcementOrder.setShowChangeNameAddressPage(VerticalYesNo.YES);
-            enforcementOrder.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.NO);
+            warrantDetails.setShowChangeNameAddressPage(VerticalYesNo.YES);
+            warrantDetails.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.NO);
         } else if (correctNameAndAddress == VerticalYesNo.YES) {
             // Navigate to PeopleWhoWillBeEvictedPage
-            enforcementOrder.setShowChangeNameAddressPage(VerticalYesNo.NO);
-            enforcementOrder.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.YES);
+            warrantDetails.setShowChangeNameAddressPage(VerticalYesNo.NO);
+            warrantDetails.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.YES);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.VulnerableAdultsChildrenPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.stream.Stream;
@@ -43,8 +43,10 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .vulnerablePeoplePresent(vulnerablePeoplePresent)
-                .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                .warrantDetails(WarrantDetails.builder()
+                    .vulnerablePeoplePresent(vulnerablePeoplePresent)
+                    .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                    .build())
                 .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -118,8 +120,10 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .vulnerablePeoplePresent(vulnerablePeoplePresent)
-                .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                .warrantDetails(WarrantDetails.builder()
+                    .vulnerablePeoplePresent(vulnerablePeoplePresent)
+                    .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                    .build())
                 .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -131,13 +135,13 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isEmpty();
-        assertThat(response.getData().getEnforcementOrder()
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getVulnerableAdultsChildren().getVulnerableReasonText())
                 .isEqualTo(vulnerableReasonText);
-        assertThat(response.getData().getEnforcementOrder()
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getVulnerablePeoplePresent())
                 .isEqualTo(vulnerablePeoplePresent);
-        assertThat(response.getData().getEnforcementOrder()
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getVulnerableAdultsChildren().getVulnerableCategory())
                 .isEqualTo(vulnerableCategory);
     }

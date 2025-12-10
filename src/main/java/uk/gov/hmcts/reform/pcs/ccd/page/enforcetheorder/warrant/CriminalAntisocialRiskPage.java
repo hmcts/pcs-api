@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
@@ -30,7 +31,8 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
             .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\"")
             .label("criminalAntisocialRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getRiskDetails)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getRiskDetails)
             .mandatory(EnforcementRiskDetails::getEnforcementCriminalDetails)
             .done()
             .label("criminalAntisocialRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -46,7 +48,8 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
     }
 
     private List<String> getValidationErrors(PCSCase caseData) {
-        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails();
+        String txt = caseData.getEnforcementOrder()
+                .getWarrantDetails().getRiskDetails().getEnforcementCriminalDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

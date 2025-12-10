@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -44,9 +45,10 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
-                .mandatory(EnforcementOrder::getVulnerablePeoplePresent)
-                .complex(EnforcementOrder::getVulnerableAdultsChildren,
-                        "vulnerablePeoplePresent=\"YES\"")
+            .complex(EnforcementOrder::getWarrantDetails)
+            .mandatory(WarrantDetails::getVulnerablePeoplePresent)
+            .complex(WarrantDetails::getVulnerableAdultsChildren,
+                    "vulnerablePeoplePresent=\"YES\"")
                     .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
                     .mandatory(
                         VulnerableAdultsChildren::getVulnerableReasonText,
@@ -72,8 +74,9 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
     private List<String> getValidationErrors(PCSCase data) {
         List<String> errors = new ArrayList<>();
 
-        if (data.getEnforcementOrder().getVulnerablePeoplePresent() == YesNoNotSure.YES) {
-            String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
+        if (data.getEnforcementOrder().getWarrantDetails().getVulnerablePeoplePresent() == YesNoNotSure.YES) {
+            String txt = data.getEnforcementOrder()
+                    .getWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText();
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,
                 "How are they vulnerable?",

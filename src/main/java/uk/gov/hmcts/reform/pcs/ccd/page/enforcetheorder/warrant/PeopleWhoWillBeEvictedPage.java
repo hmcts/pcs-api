@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +29,12 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
             .pageLabel("The people who will be evicted")
             .showCondition("showPeopleWhoWillBeEvictedPage=\"YES\"")
             .complex(PCSCase::getEnforcementOrder)
-            .readonly(EnforcementOrder::getShowPeopleWhoWillBeEvictedPage, NEVER_SHOW)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .readonly(WarrantDetails::getShowPeopleWhoWillBeEvictedPage, NEVER_SHOW)
             .done()
             .label("peopleWhoWillBeEvicted-line-separator", "---")
-            .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getPeopleToEvict)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getPeopleToEvict)
             .mandatory(PeopleToEvict::getEvictEveryone)
             .done()
             .label("peopleWhoWillBeEvicted-save-and-return", SAVE_AND_RETURN);
@@ -46,7 +48,7 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
         
         // Validate that a selection has been made
-        PeopleToEvict peopleToEvict = caseData.getEnforcementOrder().getPeopleToEvict();
+        PeopleToEvict peopleToEvict = caseData.getEnforcementOrder().getWarrantDetails().getPeopleToEvict();
         if (peopleToEvict.getEvictEveryone() == null) {
             errors.add("Please select whether you want to evict everyone or specific people");
         }
@@ -58,13 +60,13 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
                 .build();
         }
         
-        EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
+        WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
         if (peopleToEvict.getEvictEveryone() == VerticalYesNo.NO) {
             // Navigate to PeopleYouWantToEvictPage
-            enforcementOrder.setShowPeopleYouWantToEvictPage(VerticalYesNo.YES);
+            warrantDetails.setShowPeopleYouWantToEvictPage(VerticalYesNo.YES);
         } else if (peopleToEvict.getEvictEveryone() == VerticalYesNo.YES) {
             // Skip PeopleYouWantToEvictPage, go directly to LivingInThePropertyPage
-            enforcementOrder.setShowPeopleYouWantToEvictPage(VerticalYesNo.NO);
+            warrantDetails.setShowPeopleYouWantToEvictPage(VerticalYesNo.NO);
         }
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

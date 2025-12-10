@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -30,8 +31,9 @@ public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
                 .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGGRESSIVE_ANIMALS\"")
                 .label("aggressiveAnimalsRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getRiskDetails)
-                    .mandatory(EnforcementRiskDetails::getEnforcementDogsOrOtherAnimalsDetails)
+                .complex(EnforcementOrder::getWarrantDetails)
+                .complex(WarrantDetails::getRiskDetails)
+                .mandatory(EnforcementRiskDetails::getEnforcementDogsOrOtherAnimalsDetails)
                 .done()
                 .label("aggressiveAnimalsRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -46,7 +48,8 @@ public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
     }
 
     private List<String> getValidationErrors(PCSCase caseData) {
-        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
+        String txt = caseData.getEnforcementOrder()
+                .getWarrantDetails().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.PeopleWhoWillBeEvictedPage;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,7 +33,9 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .peopleToEvict(PeopleToEvict.builder().build())
+                    .warrantDetails(WarrantDetails.builder()
+                        .peopleToEvict(PeopleToEvict.builder().build())
+                        .build())
                     .build())
                 .build();
 
@@ -52,8 +54,10 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .peopleToEvict(PeopleToEvict.builder()
-                        .evictEveryone(VerticalYesNo.YES)
+                    .warrantDetails(WarrantDetails.builder()
+                        .peopleToEvict(PeopleToEvict.builder()
+                            .evictEveryone(VerticalYesNo.YES)
+                            .build())
                         .build())
                     .build())
                 .build();
@@ -64,7 +68,8 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
-            assertThat(enforcementOrder.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
+            assertThat(enforcementOrder.getWarrantDetails()
+                    .getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
         }
 
         @Test
@@ -73,8 +78,10 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .peopleToEvict(PeopleToEvict.builder()
-                        .evictEveryone(VerticalYesNo.NO)
+                    .warrantDetails(WarrantDetails.builder()
+                        .peopleToEvict(PeopleToEvict.builder()
+                            .evictEveryone(VerticalYesNo.NO)
+                            .build())
                         .build())
                     .build())
                 .build();
@@ -85,7 +92,8 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
-            assertThat(enforcementOrder.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.YES);
+            assertThat(enforcementOrder.getWarrantDetails()
+                    .getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.YES);
         }
     }
 }

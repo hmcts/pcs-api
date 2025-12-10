@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrd
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.EvictionRisksPosedPage;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -50,7 +50,8 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementRiskCategories()).isEqualTo(selectedRisks);
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getEnforcementRiskCategories()).isEqualTo(selectedRisks);
     }
 
     @ParameterizedTest
@@ -74,12 +75,12 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails())
-            .isEqualTo(expectedViolentDetails);
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails())
-            .isEqualTo(expectedFirearmsDetails);
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails())
-            .isEqualTo(expectedCriminalDetails);
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(expectedViolentDetails);
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(expectedFirearmsDetails);
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(expectedCriminalDetails);
     }
 
     @Test
@@ -99,17 +100,16 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
         // Then - should get validation error but data should be preserved
         assertThat(response.getErrors()).containsExactly("Select at least one option");
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails())
-            .isEqualTo("All violent details");
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails())
-            .isEqualTo("All firearms details");
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementCriminalDetails())
-            .isEqualTo("All criminal details");
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails()
-                .getEnforcementVerbalOrWrittenThreatsDetails())
-                .isEqualTo("All verbal details");
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails().getEnforcementProtestGroupMemberDetails())
-                .isEqualTo("All protestor details");
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getRiskDetails().getEnforcementViolentDetails()).isEqualTo("All violent details");
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo("All firearms details");
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo("All criminal details");
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails()).isEqualTo("All verbal details");
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                .getRiskDetails().getEnforcementProtestGroupMemberDetails()).isEqualTo("All protestor details");
     }
 
     @Test
@@ -122,7 +122,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder().getRiskDetails()).isNotNull();
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails().getRiskDetails()).isNotNull();
     }
 
     @Test
@@ -144,7 +144,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder().getEnforcementRiskCategories())
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails().getEnforcementRiskCategories())
             .isEqualTo(allCategories);
     }
 
@@ -152,8 +152,10 @@ class EvictionRisksPosedPageTest extends BasePageTest {
     private PCSCase createCaseData(Set<RiskCategory> selectedCategories, EnforcementRiskDetails riskDetails) {
         return PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(selectedCategories)
-                .riskDetails(riskDetails)
+                .warrantDetails(WarrantDetails.builder()
+                    .enforcementRiskCategories(selectedCategories)
+                    .riskDetails(riskDetails)
+                    .build())
                 .build())
             .build();
     }

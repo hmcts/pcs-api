@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.Set;
@@ -21,24 +21,25 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHAR
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 @ExtendWith(MockitoExtension.class)
-class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
+class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new PoliceOrSocialServicesRiskPage(textAreaValidationService));
+        setPageUnderTest(new VerbalOrWrittenThreatsRiskPage(textAreaValidationService));
     }
 
     @Test
     void shouldAcceptValidText() {
         // Given
-        String riskDetails = "Some police or social details";
-
+        String riskDetails = "Some verbal details";
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.AGENCY_VISITS))
-                        .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementPoliceOrSocialServicesDetails(riskDetails)
+                        .warrantDetails(WarrantDetails.builder()
+                                .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
+                                .riskDetails(EnforcementRiskDetails.builder()
+                                        .enforcementVerbalOrWrittenThreatsDetails(riskDetails)
+                                        .build())
                                 .build())
                         .build())
                 .build();
@@ -48,9 +49,8 @@ class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder()
-                       .getRiskDetails().getEnforcementPoliceOrSocialServicesDetails()).isEqualTo(riskDetails);
-
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+                       .getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -59,9 +59,11 @@ class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
         String longText = "a".repeat(RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.AGENCY_VISITS))
-                        .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementPoliceOrSocialServicesDetails(longText)
+                        .warrantDetails(WarrantDetails.builder()
+                                .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
+                                .riskDetails(EnforcementRiskDetails.builder()
+                                        .enforcementVerbalOrWrittenThreatsDetails(longText)
+                                        .build())
                                 .build())
                         .build())
                 .build();
@@ -71,11 +73,9 @@ class PoliceOrSocialServicesRiskPageTest extends BasePageTest {
 
         // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
-                                             RiskCategory.AGENCY_VISITS.getText(),
+                                             RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),
                                              "6,800");
 
         assertThat(response.getErrors()).containsExactly(expectedError);
-
     }
 }
-

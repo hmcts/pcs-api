@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +31,9 @@ class AdditionalInformationPageTest extends BasePageTest {
             .additionalInformationSelect(VerticalYesNo.NO)
             .build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .additionalInformation(additionalInformation)
+            .warrantDetails(WarrantDetails.builder()
+                .additionalInformation(additionalInformation)
+                .build())
             .build();
         PCSCase caseData = PCSCase.builder().enforcementOrder(enforcementOrder).build();
 
@@ -39,8 +41,8 @@ class AdditionalInformationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getEnforcementOrder().getAdditionalInformation().getAdditionalInformationDetails())
-            .isNull();
+        assertThat(caseData.getEnforcementOrder().getWarrantDetails()
+                .getAdditionalInformation().getAdditionalInformationDetails()).isNull();
     }
 
     @Test
@@ -52,7 +54,9 @@ class AdditionalInformationPageTest extends BasePageTest {
             .additionalInformationDetails(additionalInformationDetails)
             .build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .additionalInformation(additionalInformation)
+            .warrantDetails(WarrantDetails.builder()
+                .additionalInformation(additionalInformation)
+                .build())
             .build();
         PCSCase caseData = PCSCase.builder().enforcementOrder(enforcementOrder).build();
 
@@ -60,8 +64,8 @@ class AdditionalInformationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getEnforcementOrder().getAdditionalInformation().getAdditionalInformationDetails())
-            .isEqualTo(additionalInformationDetails);
+        assertThat(caseData.getEnforcementOrder().getWarrantDetails()
+                .getAdditionalInformation().getAdditionalInformationDetails()).isEqualTo(additionalInformationDetails);
     }
 
     @Test
@@ -73,7 +77,9 @@ class AdditionalInformationPageTest extends BasePageTest {
             .additionalInformationDetails(additionalInformationDetails)
             .build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .additionalInformation(additionalInformation)
+            .warrantDetails(WarrantDetails.builder()
+                .additionalInformation(additionalInformation)
+                .build())
             .build();
         PCSCase caseData = PCSCase.builder().enforcementOrder(enforcementOrder).build();
 

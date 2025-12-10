@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -32,7 +33,8 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getAnyRiskToBailiff)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .mandatory(WarrantDetails::getAnyRiskToBailiff)
             .done()
             .label("livingInTheProperty-save-and-return", SAVE_AND_RETURN);
     }

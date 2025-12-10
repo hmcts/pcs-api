@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
@@ -43,16 +44,18 @@ final class EnforcementDataUtil {
     static EnforcementOrder buildEnforcementOrder() {
         return EnforcementOrder.builder()
                 .selectEnforcementType(SelectEnforcementType.WARRANT)
-                .anyRiskToBailiff(YesNoNotSure.YES)
-                .nameAndAddressForEviction(NameAndAddressForEviction.builder()
-                        .correctNameAndAddress(VerticalYesNo.YES)
-                        .build())
-                .enforcementRiskCategories(
-                        Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS))
-                .riskDetails(EnforcementRiskDetails.builder()
-                        .enforcementViolentDetails("Violent")
-                        .enforcementVerbalOrWrittenThreatsDetails("Verbal")
-                        .build())
+                .warrantDetails(WarrantDetails.builder()
+                    .anyRiskToBailiff(YesNoNotSure.YES)
+                    .nameAndAddressForEviction(NameAndAddressForEviction.builder()
+                            .correctNameAndAddress(VerticalYesNo.YES)
+                            .build())
+                    .enforcementRiskCategories(
+                            Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS))
+                    .riskDetails(EnforcementRiskDetails.builder()
+                            .enforcementViolentDetails("Violent")
+                            .enforcementVerbalOrWrittenThreatsDetails("Verbal")
+                            .build())
+                    .build())
                 .build();
     }
 }

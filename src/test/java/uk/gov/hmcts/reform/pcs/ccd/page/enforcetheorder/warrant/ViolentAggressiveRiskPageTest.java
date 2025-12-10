@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrd
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.Set;
@@ -34,20 +34,22 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         // Given
         String riskDetails = "Some violent details";
         PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(riskDetails)
-                    .build())
-                .build())
-            .build();
+                .enforcementOrder(EnforcementOrder.builder()
+                        .warrantDetails(WarrantDetails.builder()
+                                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                                .riskDetails(EnforcementRiskDetails.builder()
+                                        .enforcementViolentDetails(riskDetails)
+                                        .build())
+                                .build())
+                        .build())
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder()
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                        .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(riskDetails);
     }
 
@@ -56,13 +58,15 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         // Given
         String longText = "a".repeat(RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder()
-                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
-                .riskDetails(EnforcementRiskDetails.builder()
-                    .enforcementViolentDetails(longText)
-                    .build())
-                .build())
-            .build();
+                .enforcementOrder(EnforcementOrder.builder()
+                        .warrantDetails(WarrantDetails.builder()
+                                .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                                .riskDetails(EnforcementRiskDetails.builder()
+                                        .enforcementViolentDetails(longText)
+                                        .build())
+                                .build())
+                        .build())
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);

@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
@@ -30,7 +31,8 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
             .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\"")
             .label("firearmsPossessionRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getRiskDetails)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getRiskDetails)
             .mandatory(EnforcementRiskDetails::getEnforcementFirearmsDetails)
             .done()
             .label("firearmsPossessionRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -46,7 +48,8 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
     }
 
     private List<String> getValidationErrors(PCSCase caseData) {
-        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementFirearmsDetails();
+        String txt = caseData.getEnforcementOrder()
+                .getWarrantDetails().getRiskDetails().getEnforcementFirearmsDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

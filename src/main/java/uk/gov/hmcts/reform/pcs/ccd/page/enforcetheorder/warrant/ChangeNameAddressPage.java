@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 
 import java.util.List;
 
@@ -29,7 +30,8 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
             .pageLabel("You need permission from a judge to change the name and address for the eviction")
             .showCondition("showChangeNameAddressPage=\"YES\"")
             .complex(PCSCase::getEnforcementOrder)
-                .readonly(EnforcementOrder::getShowChangeNameAddressPage, NEVER_SHOW)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .readonly(WarrantDetails::getShowChangeNameAddressPage, NEVER_SHOW)
             .done()
             .label("changeNameAddress-line-separator", "---")
             .label(

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.Set;
@@ -35,10 +35,12 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
         String riskDetails = "Some animal details";
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
-                        .riskDetails(EnforcementRiskDetails.builder()
+                        .warrantDetails(WarrantDetails.builder()
+                            .enforcementRiskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
+                            .riskDetails(EnforcementRiskDetails.builder()
                                 .enforcementDogsOrOtherAnimalsDetails(riskDetails)
                                 .build())
+                            .build())
                         .build())
                 .build();
 
@@ -47,7 +49,7 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder()
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails()).isEqualTo(riskDetails);
     }
 
@@ -57,9 +59,11 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
         String longText = "a".repeat(RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                        .enforcementRiskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
-                        .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementDogsOrOtherAnimalsDetails(longText)
+                        .warrantDetails(WarrantDetails.builder()
+                                .enforcementRiskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
+                                .riskDetails(EnforcementRiskDetails.builder()
+                                        .enforcementDogsOrOtherAnimalsDetails(longText)
+                                        .build())
                                 .build())
                         .build())
                 .build();

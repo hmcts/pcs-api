@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 
 import java.util.ArrayList;
@@ -27,11 +28,12 @@ public class PeopleYouWantToEvictPage implements CcdPageConfiguration {
             .pageLabel("The people you want to evict")
             .showCondition("showPeopleYouWantToEvictPage=\"YES\"")
             .complex(PCSCase::getEnforcementOrder)
-            .readonly(EnforcementOrder::getShowPeopleYouWantToEvictPage, NEVER_SHOW)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .readonly(WarrantDetails::getShowPeopleYouWantToEvictPage, NEVER_SHOW)
             .done()
             .label("peopleYouWantToEvict-line-separator", "---")
-            .complex(PCSCase::getEnforcementOrder)
-            .mandatory(EnforcementOrder::getSelectedDefendants)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .mandatory(WarrantDetails::getSelectedDefendants)
             .done()
             .label("peopleYouWantToEvict-save-and-return", SAVE_AND_RETURN);
     }
@@ -44,7 +46,7 @@ public class PeopleYouWantToEvictPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
         
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
-        DynamicMultiSelectStringList selectedDefendants = enforcementOrder.getSelectedDefendants();
+        DynamicMultiSelectStringList selectedDefendants = enforcementOrder.getWarrantDetails().getSelectedDefendants();
         
         // Validate that at least one defendant is selected
         if (selectedDefendants == null 

@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
@@ -31,7 +32,8 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
             .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\"")
             .label("violentAggressiveRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getRiskDetails)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getRiskDetails)
             .mandatory(EnforcementRiskDetails::getEnforcementViolentDetails)
             .done()
             .label("violentAggressiveRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -47,7 +49,8 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
     }
 
     private List<String> getValidationErrors(PCSCase caseData) {
-        String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails();
+        String txt = caseData.getEnforcementOrder()
+                .getWarrantDetails().getRiskDetails().getEnforcementViolentDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,
