@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
@@ -23,8 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -617,28 +616,8 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
 
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureContractDiscretionaryGroundsWales"
-    )
-    private Set<SecureContractDiscretionaryGroundsWales> secureContractDiscretionaryGroundsWales;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureContractMandatoryGroundsWales"
-    )
-    private Set<SecureContractMandatoryGroundsWales> secureContractMandatoryGroundsWales;
-
-    @CCD(
-        label = "Estate management grounds",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "EstateManagementGroundsWales"
-    )
-    private Set<EstateManagementGroundsWales> secureContractEstateManagementGroundsWales;
+    @JsonUnwrapped(prefix = "secureContract_")
+    private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
 
     @CCD(
         label = "Estate management grounds",
