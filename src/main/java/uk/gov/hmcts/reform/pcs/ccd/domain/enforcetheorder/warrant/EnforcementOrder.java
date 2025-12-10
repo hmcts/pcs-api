@@ -30,15 +30,15 @@ public class EnforcementOrder {
     )
     private SelectEnforcementType selectEnforcementType;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private AdditionalInformation additionalInformation;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private PeopleToEvict peopleToEvict;
 
@@ -76,7 +76,7 @@ public class EnforcementOrder {
     )
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD(
         label = "Risk details"
     )
@@ -97,15 +97,15 @@ public class EnforcementOrder {
     )
     private LanguageUsed enforcementLanguageUsed;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private LegalCosts legalCosts;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private LandRegistryFees landRegistryFees;
 

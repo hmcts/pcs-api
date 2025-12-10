@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 public class AdditionalInformationPage implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
-    private static final String SHOW_CONDITION = "additionalInformationSelect=\"YES\"";
+    private static final String SHOW_CONDITION = "warrantAdditionalInformationSelect=\"YES\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

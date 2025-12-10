@@ -61,7 +61,7 @@ public class LegalCostsPage implements CcdPageConfiguration {
                 .complex(EnforcementOrder::getLegalCosts)
                 .mandatory(LegalCosts::getAreLegalCostsToBeClaimed)
                 .mandatory(LegalCosts::getAmountOfLegalCosts,
-                        "areLegalCostsToBeClaimed=\"YES\"")
+                        "warrantAreLegalCostsToBeClaimed=\"YES\"")
                 .done()
                 .label("legalCosts-help", LEGAL_COSTS_HELP)
                 .label("legalCosts-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

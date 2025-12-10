@@ -36,7 +36,7 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
                 .complex(EnforcementOrder::getPropertyAccessDetails)
                 .mandatory(PropertyAccessDetails::getIsDifficultToAccessProperty)
                 .mandatory(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
-                        "isDifficultToAccessProperty=\"YES\"")
+                        "warrantIsDifficultToAccessProperty=\"YES\"")
                 .done()
                 .label("propertyAccessDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
