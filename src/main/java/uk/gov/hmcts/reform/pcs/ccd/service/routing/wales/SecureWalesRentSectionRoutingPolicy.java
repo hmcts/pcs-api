@@ -16,7 +16,7 @@ public class SecureWalesRentSectionRoutingPolicy implements WalesRentSectionRout
     @Override
     public YesOrNo shouldShowRentSection(PCSCase caseData) {
         Set<SecureContractDiscretionaryGroundsWales> discretionary =
-            caseData.getSecureContractDiscretionaryGroundsWales();
+            caseData.getSecureContractGroundsForPossessionWales().getDiscretionaryGroundsWales();
         if (discretionary == null) {
             return YesOrNo.NO;
         }
