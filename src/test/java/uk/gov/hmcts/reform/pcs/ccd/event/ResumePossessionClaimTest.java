@@ -62,7 +62,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -174,7 +174,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private GroundsForPossessionWales groundsForPossessionWales;
     @Mock
-    private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    private SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     @Mock
     private ReasonsForPossessionWales reasonsForPossessionWales;
     @Mock
