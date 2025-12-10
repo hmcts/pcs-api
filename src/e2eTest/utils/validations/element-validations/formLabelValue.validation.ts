@@ -25,7 +25,9 @@ export class FormLabelValueValidation implements IValidation {
         .locator('xpath=../..')
         .locator('td span.text-16:not(:has(ccd-field-read-label))'),
 
-      page.locator(`//th[text()="${fieldName}"]/following-sibling::td`)
+      page.locator(`//th[text()="${fieldName}"]/following-sibling::td`),
+
+      page.locator(`//p[text()="${fieldName}"]/following-sibling::ul[1]/li[1]`)
     ];
 
     for (const locator of locators) {
