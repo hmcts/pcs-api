@@ -1,37 +1,38 @@
 package uk.gov.hmcts.reform.pcs.feesandpay.config;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
-import java.math.BigDecimal;
-import java.util.List;
-
 @Service
+@Slf4j
+@AllArgsConstructor
 public class PCSFeesClient {
 
-    private final List<FeesClientContext> strategies;
+    private final FeesConfiguration feesConfiguration;
+    private FeesApi feesApi;
 
-    public PCSFeesClient(List<FeesClientContext> strategies) {
-        this.strategies = strategies;
-    }
+    public FeeLookupResponseDto lookupFee(FeeTypes feeType) {
+        FeesConfiguration.LookUpReferenceData ref = feesConfiguration.getLookup(feeType);
 
-    public FeeLookupResponseDto lookupFee(FeeTypes feeType, String channel, String event, BigDecimal amount,
-                                          String keyword) {
-        FeesClientContext context = strategies.stream()
-            .filter(strategy -> strategy.supports(feeType))
-            .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No strategy found for fee type: " + feeType));
+        if (ref == null) {
+            log.error("Fee type '{}' not found in configuration", feeType);
+            throw new FeeNotFoundException("Fee not found for feeType: " + feeType);
+        }
 
-        return context.getApi().lookupFee(
-            context.getServiceName().service(),
-            context.getJurisdictions().jurisdiction1(),
-            context.getJurisdictions().jurisdiction2(),
-            channel,
-            event,
+        return feesApi.lookupFee(
+            ref.getService(),
+            ref.getJurisdiction1(),
+            ref.getJurisdiction2(),
+            ref.getChannel(),
+            ref.getEvent(),
             null,
-            amount,
-            keyword
+            ref.getAmountOrVolume(),
+            ref.getKeyword()
         );
     }
 

@@ -3,160 +3,188 @@ package uk.gov.hmcts.reform.pcs.feesandpay.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class PCSFeesClientTest {
 
-    private PCSFeesClient underTest;
+    private static final String SERVICE = "possession claim";
+    private static final String JURISDICTION_1 = "civil";
+    private static final String JURISDICTION_2 = "county court";
+    private static final String CHANNEL = "default";
+    private static final String EVENT = "issue";
+    private static final BigDecimal AMOUNT_OR_VOLUME = new BigDecimal("1.00");
+    private static final String KEYWORD = "PossessionCC";
 
     @Mock
-    private FeesClientContext strategy;
+    private FeesConfiguration feesConfiguration;
 
     @Mock
     private FeesApi feesApi;
 
-    @Mock
-    private Jurisdictions jurisdictions;
+    @InjectMocks
+    private PCSFeesClient underTest;
 
-    @Mock
-    private ServiceName serviceName;
-
-    @Mock
-    private FeeTypes feeTypes;
+    private FeesConfiguration.LookUpReferenceData lookUpReferenceData;
+    private FeeLookupResponseDto feeLookupResponseDto;
 
     @BeforeEach
     void setUp() {
-        underTest = new PCSFeesClient(List.of(strategy));
+        lookUpReferenceData = new FeesConfiguration.LookUpReferenceData();
+        lookUpReferenceData.setService(SERVICE);
+        lookUpReferenceData.setJurisdiction1(JURISDICTION_1);
+        lookUpReferenceData.setJurisdiction2(JURISDICTION_2);
+        lookUpReferenceData.setChannel(CHANNEL);
+        lookUpReferenceData.setEvent(EVENT);
+        lookUpReferenceData.setAmountOrVolume(AMOUNT_OR_VOLUME);
+        lookUpReferenceData.setKeyword(KEYWORD);
+
+        feeLookupResponseDto = FeeLookupResponseDto.builder()
+            .code("FEE0001")
+            .description("Issue fee")
+            .version(1)
+            .feeAmount(new BigDecimal("455.00"))
+            .build();
     }
 
     @Test
-    void shouldLookupFeeWhenStrategySupportsFeeType() {
+    void shouldSuccessfullyLookupFeeWhenConfigurationExists() {
         // Given
-        String channel = "default";
-        String event = "issue";
-        BigDecimal amount = BigDecimal.TEN;
-        String keyword = "keyword";
-        String service = "service";
-        String jurisdiction1 = "j1";
-        String jurisdiction2 = "j2";
-
-        when(strategy.supports(feeTypes)).thenReturn(true);
-        when(strategy.getApi()).thenReturn(feesApi);
-        when(strategy.getServiceName()).thenReturn(serviceName);
-        when(strategy.getJurisdictions()).thenReturn(jurisdictions);
-
-        when(serviceName.service()).thenReturn(service);
-        when(jurisdictions.jurisdiction1()).thenReturn(jurisdiction1);
-        when(jurisdictions.jurisdiction2()).thenReturn(jurisdiction2);
-
-        FeeLookupResponseDto expectedResponse = new FeeLookupResponseDto();
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
         when(feesApi.lookupFee(
-            eq(service),
-            eq(jurisdiction1),
-            eq(jurisdiction2),
-            eq(channel),
-            eq(event),
+            eq(SERVICE),
+            eq(JURISDICTION_1),
+            eq(JURISDICTION_2),
+            eq(CHANNEL),
+            eq(EVENT),
             isNull(),
-            eq(amount),
-            eq(keyword)
-        )).thenReturn(expectedResponse);
+            eq(AMOUNT_OR_VOLUME),
+            eq(KEYWORD)
+        )).thenReturn(feeLookupResponseDto);
 
         // When
-        FeeLookupResponseDto result = underTest.lookupFee(feeTypes, channel, event, amount, keyword);
+        FeeLookupResponseDto result = underTest.lookupFee(FeeTypes.CASE_ISSUE_FEE);
 
         // Then
-        assertThat(result).isEqualTo(expectedResponse);
+        assertThat(result).isNotNull();
+        assertThat(result.getCode()).isEqualTo("FEE0001");
+        assertThat(result.getDescription()).isEqualTo("Issue fee");
+        assertThat(result.getFeeAmount()).isEqualTo(new BigDecimal("455.00"));
+
+        verify(feesConfiguration).getLookup(FeeTypes.CASE_ISSUE_FEE);
         verify(feesApi).lookupFee(
-            eq(service),
-            eq(jurisdiction1),
-            eq(jurisdiction2),
-            eq(channel),
-            eq(event),
+            eq(SERVICE),
+            eq(JURISDICTION_1),
+            eq(JURISDICTION_2),
+            eq(CHANNEL),
+            eq(EVENT),
             isNull(),
-            eq(amount),
-            eq(keyword)
+            eq(AMOUNT_OR_VOLUME),
+            eq(KEYWORD)
         );
     }
 
     @Test
-    void shouldThrowExceptionWhenNoStrategyFound() {
-        // Given // When/Then
-        assertThatThrownBy(() -> underTest.lookupFee(feeTypes, "channel",
-                                                         "event", BigDecimal.TEN, "keyword"))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("No strategy found for fee type: " + feeTypes);
-    }
-
-    @Test
-    void shouldHandleEmptyStrategyList() {
+    void shouldThrowFeeNotFoundExceptionWhenConfigurationIsNull() {
         // Given
-        underTest = new PCSFeesClient(List.of());
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE_FEE)).thenReturn(null);
 
-        // When/Then
-        assertThatThrownBy(() -> underTest.lookupFee(feeTypes, "channel",
-                                                       "event", BigDecimal.TEN, "keyword"))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("No strategy found for fee type: " + feeTypes);
+        // When & Then
+        assertThatThrownBy(() -> underTest.lookupFee(FeeTypes.CASE_ISSUE_FEE))
+            .isInstanceOf(FeeNotFoundException.class)
+            .hasMessageContaining("Fee not found for feeType: CASE_ISSUE_FEE");
+
+        verify(feesConfiguration).getLookup(FeeTypes.CASE_ISSUE_FEE);
+        verify(feesApi, never()).lookupFee(any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
-    void shouldSelectCorrectStrategyWhenMultipleStrategiesExist() {
-        FeesClientContext unsupportedStrategy = mock(FeesClientContext.class);
-        FeesClientContext supportedStrategy = mock(FeesClientContext.class);
-        underTest = new PCSFeesClient(List.of(unsupportedStrategy, supportedStrategy));
-        when(unsupportedStrategy.supports(feeTypes)).thenReturn(false);
-        when(supportedStrategy.supports(feeTypes)).thenReturn(true);
-        when(supportedStrategy.getApi()).thenReturn(feesApi);
-        when(supportedStrategy.getServiceName()).thenReturn(serviceName);
-        when(supportedStrategy.getJurisdictions()).thenReturn(jurisdictions);
-
-        when(serviceName.service()).thenReturn("service");
-        when(jurisdictions.jurisdiction1()).thenReturn("j1");
-        when(jurisdictions.jurisdiction2()).thenReturn("j2");
-
-        FeeLookupResponseDto expectedResponse = new FeeLookupResponseDto();
+    void shouldLookupFeeWithAllReferenceDataFields() {
+        // Given
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
         when(feesApi.lookupFee(
-            eq("service"),
-            eq("j1"),
-            eq("j2"),
-            eq("channel"),
-            eq("event"),
+            eq(SERVICE),
+            eq(JURISDICTION_1),
+            eq(JURISDICTION_2),
+            eq(CHANNEL),
+            eq(EVENT),
             isNull(),
-            eq(BigDecimal.TEN),
-            eq("keyword")
-        )).thenReturn(expectedResponse);
+            eq(AMOUNT_OR_VOLUME),
+            eq(KEYWORD)
+        )).thenReturn(feeLookupResponseDto);
 
         // When
-        FeeLookupResponseDto result = underTest.lookupFee(feeTypes, "channel",
-                                                                    "event", BigDecimal.TEN, "keyword");
+        underTest.lookupFee(FeeTypes.CASE_ISSUE_FEE);
+
+        // Then
+        verify(feesApi).lookupFee(
+            eq(SERVICE),
+            eq(JURISDICTION_1),
+            eq(JURISDICTION_2),
+            eq(CHANNEL),
+            eq(EVENT),
+            isNull(),
+            eq(AMOUNT_OR_VOLUME),
+            eq(KEYWORD)
+        );
+    }
+
+    @Test
+    void shouldHandleDifferentFeeTypes() {
+        // Given
+        FeeTypes differentFeeType = FeeTypes.CASE_ISSUE_FEE;
+        when(feesConfiguration.getLookup(differentFeeType)).thenReturn(lookUpReferenceData);
+        when(feesApi.lookupFee(any(), any(), any(), any(), any(), any(), any(), any()))
+            .thenReturn(feeLookupResponseDto);
+
+        // When
+        FeeLookupResponseDto result = underTest.lookupFee(differentFeeType);
+
+        // Then
+        assertThat(result).isNotNull();
+        verify(feesConfiguration).getLookup(differentFeeType);
+    }
+
+    @Test
+    void shouldReturnFeeLookupResponseDtoWithCorrectStructure() {
+        // Given
+        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
+
+        FeeLookupResponseDto expectedResponse = FeeLookupResponseDto.builder()
+            .code("FEE0002")
+            .description("Hearing fee")
+            .version(2)
+            .feeAmount(new BigDecimal("275.00"))
+            .build();
+
+        when(feesApi.lookupFee(any(), any(), any(), any(), any(), any(), any(), any()))
+            .thenReturn(expectedResponse);
+
+        // When
+        FeeLookupResponseDto result = underTest.lookupFee(FeeTypes.CASE_ISSUE_FEE);
 
         // Then
         assertThat(result).isEqualTo(expectedResponse);
-        verify(unsupportedStrategy).supports(feeTypes);
-        verify(unsupportedStrategy, never()).getApi();
-
-        verify(supportedStrategy).supports(feeTypes);
-        verify(supportedStrategy).getApi();
-        verify(supportedStrategy).getServiceName();
-        verify(supportedStrategy, times(2)).getJurisdictions();
+        assertThat(result.getCode()).isEqualTo("FEE0002");
+        assertThat(result.getDescription()).isEqualTo("Hearing fee");
+        assertThat(result.getVersion()).isEqualTo(2);
+        assertThat(result.getFeeAmount()).isEqualTo(new BigDecimal("275.00"));
     }
-
 }

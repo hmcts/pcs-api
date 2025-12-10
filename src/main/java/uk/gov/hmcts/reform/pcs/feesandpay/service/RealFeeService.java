@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration;
-import uk.gov.hmcts.reform.pcs.feesandpay.config.FeesConfiguration.LookUpReferenceData;
 import uk.gov.hmcts.reform.pcs.feesandpay.config.PCSFeesClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
@@ -19,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 @ConditionalOnProperty(name = "fees.mock", havingValue = "false", matchIfMissing = true)
 public class RealFeeService implements FeeService {
 
-    private final FeesConfiguration feesConfiguration;
     private final PCSFeesClient pcsFeesClient;
 
     /**
@@ -33,21 +31,8 @@ public class RealFeeService implements FeeService {
     @Override
     public FeeDetails getFee(FeeTypes feeTypes) {
         log.debug("Requesting fee of type: {}", feeTypes);
-        LookUpReferenceData ref = feesConfiguration.getLookup(feeTypes);
-
-        if (ref == null) {
-            log.error("Fee type '{}' not found in configuration", feeTypes);
-            throw new FeeNotFoundException("Fee not found for feeType: " + feeTypes);
-        }
-
         try {
-            FeeLookupResponseDto feeLookupResponse = pcsFeesClient.lookupFee(feeTypes,
-                                                                             ref.getChannel(),
-                                                                             ref.getEvent(),
-                                                                             ref.getAmountOrVolume(),
-                                                                             ref.getKeyword()
-            );
-
+            FeeLookupResponseDto feeLookupResponse = pcsFeesClient.lookupFee(feeTypes);
             log.debug("Successfully retrieved fee: type={}, code={}, amount={}",
                       feeTypes, feeLookupResponse.getCode(), feeLookupResponse.getFeeAmount());
 

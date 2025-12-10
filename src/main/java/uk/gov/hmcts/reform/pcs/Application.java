@@ -7,7 +7,6 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
-import uk.gov.hmcts.reform.pcs.feesandpay.config.EnforcementFeesApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
 import uk.gov.hmcts.reform.pcs.idam.api.IdamTokenApi;
 import uk.gov.hmcts.reform.pcs.location.service.api.LocationReferenceApi;
@@ -28,8 +27,7 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         IdamApi.class,
         IdamTokenApi.class,
         RdProfessionalApi.class,
-        FeesApi.class,
-        EnforcementFeesApi.class
+        FeesApi.class
     }
 )
 @EnableJms

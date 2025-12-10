@@ -18,6 +18,9 @@ public class FeesConfiguration {
 
     @Data
     public static class LookUpReferenceData {
+        private String service;
+        private String jurisdiction1;
+        private String jurisdiction2;
         private String channel;
         private String event;
         private String applicantType;
