@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-wm2
+data:
+  liveness-mock.json: |
+    {
+      "request": {
+        "url": "/health",
+        "method": "GET"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "status": "OKv2",
+          "components": {}
+        }
+      }
+    }
+  liveness-mock-2.json: |
+    {
+      "request": {
+        "method": "GET",
+        "url": "/health"
+      },
+      "response": {
+        "status": 200
+      }
+    }
+  readiness-mock.json: |
+    {
+      "request": {
+        "method": "GET",
+        "url": "/health/readiness"
+      },
+      "response": {
+        "status": 200
+      }
+    }
