@@ -22,10 +22,18 @@ public class DefendantDetails {
     @CCD(label = "Do you know the defendant’s name?")
     private VerticalYesNo nameKnown;
 
-    @CCD(label = "Defendant’s first name", showCondition = "nameKnown=\"YES\"")
+    @CCD(
+        label = "Defendant’s first name",
+        showCondition = "nameKnown=\"YES\"",
+        max = 60
+    )
     private String firstName;
 
-    @CCD(label = "Defendant’s last name", showCondition = "nameKnown=\"YES\"")
+    @CCD(
+        label = "Defendant’s last name",
+        showCondition = "nameKnown=\"YES\"",
+        max = 60
+    )
     private String lastName;
 
     @CCD(label = """
