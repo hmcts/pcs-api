@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.Optional;
 
 import static feign.Util.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
@@ -235,9 +237,13 @@ public class ClaimGroundService {
     }
 
     private List<ClaimGroundEntity> getWalesGroundsWithReason(PCSCase pcsCase) {
-        Set<MandatoryGroundWales> mandatoryGrounds = pcsCase.getMandatoryGroundsWales();
-        Set<DiscretionaryGroundWales> discretionaryGrounds = pcsCase.getDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> estateGrounds = pcsCase.getEstateManagementGroundsWales();
+        GroundsForPossessionWales groundsForPossessionWales =
+            Optional.ofNullable(pcsCase.getGroundsForPossessionWales())
+                .orElse(GroundsForPossessionWales.builder().build());
+
+        Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGroundsWales();
+        Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGroundsWales();
+        Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGroundsWales();
         Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = 
             pcsCase.getSecureContractMandatoryGroundsWales();
         Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds = 

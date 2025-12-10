@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +26,7 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new GroundsForPossessionWales());
+        setPageUnderTest(new GroundsForPossessionWalesPage());
     }
 
     @ParameterizedTest
@@ -38,9 +39,11 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
 
         // Given
         PCSCase caseData = PCSCase.builder()
-                .discretionaryGroundsWales(discretionaryGrounds)
-                .estateManagementGroundsWales(estateManagementGrounds)
-                .mandatoryGroundsWales(mandatoryGrounds)
+                .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                        .discretionaryGroundsWales(discretionaryGrounds)
+                        .estateManagementGroundsWales(estateManagementGrounds)
+                        .mandatoryGroundsWales(mandatoryGrounds)
+                        .build())
                 .build();
 
         // When
@@ -166,9 +169,11 @@ public class GroundsForPossessionWalesTest extends BasePageTest {
 
         // Given
         PCSCase caseData = PCSCase.builder()
-                .discretionaryGroundsWales(discretionaryGrounds)
-                .estateManagementGroundsWales(estateManagementGrounds)
-                .mandatoryGroundsWales(mandatoryGrounds)
+                .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                        .discretionaryGroundsWales(discretionaryGrounds)
+                        .estateManagementGroundsWales(estateManagementGrounds)
+                        .mandatoryGroundsWales(mandatoryGrounds)
+                        .build())
                 .build();
 
         // When
