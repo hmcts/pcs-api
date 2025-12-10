@@ -106,7 +106,7 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.empty());
 
         // When
-        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, caseData, eventId);
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
 
         // Then
         verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
@@ -135,7 +135,7 @@ class DraftCaseDataServiceTest {
             .thenReturn(Optional.of(draftCaseDataEntity));
 
         // When
-        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, newCaseData, eventId);
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId);
 
         // Then
         verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
@@ -182,7 +182,7 @@ class DraftCaseDataServiceTest {
         when(objectMapper.writeValueAsString(caseData)).thenThrow(jsonProcessingException);
 
         // Then
-        assertThatThrownBy(() -> underTest.patchUnsubmittedCaseData(CASE_REFERENCE, caseData, eventId))
+        assertThatThrownBy(() -> underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId))
            .isInstanceOf(UnsubmittedDataException.class)
             .hasMessage("Failed to save answers")
             .hasCause(jsonProcessingException);
