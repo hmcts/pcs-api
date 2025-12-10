@@ -16,4 +16,4 @@ wiremock:
 
 java:
   environment:
-    FEES_REGISTER_API_URL: "${SERVICE_NAME}-wiremock"
+    FEES_REGISTER_API_URL: "https://wiremock-${SERVICE_NAME}.preview.platform.hmcts.net"
