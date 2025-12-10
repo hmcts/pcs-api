@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
