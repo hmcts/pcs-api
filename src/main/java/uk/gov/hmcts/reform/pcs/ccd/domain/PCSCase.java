@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
@@ -50,6 +51,11 @@ public class PCSCase {
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that’s in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+
+    @CCD(
+        access = {DefendantAccess.class}
+    )
+    private YesOrNo submitDraftAnswers;
 
     @CCD(
         searchable = false
@@ -119,28 +125,8 @@ public class PCSCase {
     @CCD(label = "Party")
     private List<ListValue<Party>> parties;
 
-    @CCD(typeOverride = FieldType.Email)
-    private String claimantContactEmail;
-
-    @CCD(label = "Do you want to use this email address for notifications?")
-    private VerticalYesNo isCorrectClaimantContactEmail;
-
-    @CCD(label = "Enter email address", typeOverride = FieldType.Email)
-    private String overriddenClaimantContactEmail;
-
-    private String formattedClaimantContactAddress;
-
-    @CCD(label = "Do you want documents to be sent to this address?")
-    private VerticalYesNo isCorrectClaimantContactAddress;
-
-    @CCD(label = "Enter address details")
-    private AddressUK overriddenClaimantContactAddress;
-
-    @CCD(label = "Do you want to provide a contact phone number?")
-    private VerticalYesNo claimantProvidePhoneNumber;
-
-    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$")
-    private String claimantContactPhoneNumber;
+    @JsonUnwrapped
+    private ClaimantContactPreferences contactPreferencesDetails;
 
     @CCD(
         label = "Do you want to ask for your costs back?",
@@ -730,6 +716,11 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
+
+    @CCD(
+        access = {DefendantAccess.class}
+    )
+    private DefendantResponse defendantResponse;
 
     @CCD(searchable = false)
     private String formattedDefendantNames;

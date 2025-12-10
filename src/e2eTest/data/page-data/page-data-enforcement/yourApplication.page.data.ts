@@ -1,10 +1,18 @@
 export const yourApplication = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Your application',
+  hceoPageTitle: 'Choosing a HCEO',
   typeOfApplicationQuestion: 'What do you want to apply for?',
   typeOfApplicationOptions: {
     warrantOfPossession: 'Warrant of possession',
     writOfPossession: 'Writ of possession'
   },
-  continue: 'Continue',
+  summaryWritOrWarrant: 'I do not know if I need a writ or a warrant',
+  summarySaveApplication: 'I want to save this application and return to it later',
+  warrantFeeValidationLabel:'If you apply for a warrant:',
+  warrantFeeValidationText:'it costs £404 to apply',
+  writFeeValidationLabel:'If you apply for a writ:',
+  writFeeValidationText:'it costs £404 to apply',
+  quoteFromBailiffLink:'you can get a quote from a bailiff to find out how much it will cost',
+  continueButton: 'Continue'
 }
