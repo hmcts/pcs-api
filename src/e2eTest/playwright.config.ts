@@ -50,7 +50,7 @@ export default defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: true,
+        headless: !!process.env.CI,
       },
     },
     ...(process.env.CI ? [
