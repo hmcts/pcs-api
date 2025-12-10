@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import {
@@ -27,10 +27,12 @@ import {
   landRegistryFees,
   rePayments,
   peopleWillBeEvicted,
-  youNeedPermission
+  youNeedPermission,
+  languageUsed
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
+import { LONG_TIMEOUT, MEDIUM_TIMEOUT } from 'playwright.config';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -50,17 +52,40 @@ test.beforeEach(async ({ page }) => {
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
   });
-  await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/**`);
+  await expect(async () => {
+    await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
+  }).toPass({
+    timeout: LONG_TIMEOUT + LONG_TIMEOUT,
+  });
 });
 
 test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
-  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', async () => {
-    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
-    await performAction('clickButton', caseSummary.go);
-    await performAction('selectApplicationType', {
-      question: yourApplication.typeOfApplicationQuestion,
-      option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
-    });
+  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', {
+    annotation: {
+      type: 'issue',
+      description: `Fee validation in Your Application page will handle dynamic fee validation upon completion of the following - 'https://tools.hmcts.net/jira/browse/HDPI-3386'`,
+    },
+  },
+    async () => {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+      await performAction('clickButton', caseSummary.go);
+      await performAction('validateWritOrWarrantFeeAmount', {
+        type: yourApplication.summaryWritOrWarrant,
+        label1: yourApplication.warrantFeeValidationLabel,
+        text1: yourApplication.warrantFeeValidationText,
+        label2: yourApplication.writFeeValidationLabel,
+        text2: yourApplication.writFeeValidationText
+      });
+      await performAction('validateGetQuoteFromBailiffLink', {
+        type: yourApplication.summaryWritOrWarrant,
+        link: yourApplication.quoteFromBailiffLink,
+        newPage: yourApplication.hceoPageTitle
+      });
+      await performAction('expandSummary', yourApplication.summarySaveApplication);
+      await performAction('selectApplicationType', {
+        question: yourApplication.typeOfApplicationQuestion,
+        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+      });
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
@@ -150,14 +175,15 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: legalCosts.howMuchYouWantToReclaimTextInput
     });
     await performValidation('mainHeader', landRegistryFees.mainHeader);
-    await performAction('inputErrorValidation',{
+    await performAction('inputErrorValidation', {
       validationReq: landRegistryFees.errorValidation,
-      inputArray: landRegistryFees.moneyValidation.errorMoneyField,
+      validationType: landRegistryFees.errorValidationType.one,
+      inputArray: landRegistryFees.errorValidationField.errorMoneyField,
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.yesRadioOption,
       label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
       button: landRegistryFees.continueButton
-    })
+    });
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.yesRadioOption,
@@ -165,6 +191,18 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('clickButton', rePayments.continueButton);
+    await performValidation('mainHeader', languageUsed.mainHeader);
+    await performAction('inputErrorValidation', {
+      validationReq: languageUsed.errorValidation,
+      validationType: languageUsed.errorValidationType.three,
+      inputArray: languageUsed.errorValidationField.errorRadioOption,
+      question: languageUsed.whichLanguageUsedQuestion,
+      option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+      label: languageUsed.whichLanguageUsedQuestion,
+      button: languageUsed.continueButton
+    });
+    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -231,6 +269,9 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('clickButton', rePayments.continueButton);
+    await performValidation('mainHeader', languageUsed.mainHeader);
+    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
