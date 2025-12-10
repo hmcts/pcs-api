@@ -26,7 +26,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         pageBuilder
             .page("secureOrFlexibleGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("(typeOfTenancyLicence=\"SECURE_TENANCY\" OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\")"
+            .showCondition("(tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
+                        + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\")"
                         + " AND legislativeCountry=\"England\"")
             .label("secureOrFlexibleGroundsForPossession-info", """
                ---

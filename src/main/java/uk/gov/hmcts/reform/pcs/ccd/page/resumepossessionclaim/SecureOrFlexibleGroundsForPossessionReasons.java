@@ -35,8 +35,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .page("secureOrFlexibleGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
             .showCondition(
-                    "typeOfTenancyLicence=\"SECURE_TENANCY\""
-                            + " OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
+                    "tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
+                            + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                             + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
                             + " AND legislativeCountry=\"England\""
             )

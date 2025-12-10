@@ -420,7 +420,7 @@ public class PCSCase {
     )
     private List<ListValue<Document>> noticeDocuments;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "tenancy_")
     @CCD
     private TenancyLicenceDetails tenancyLicenceDetails;
 

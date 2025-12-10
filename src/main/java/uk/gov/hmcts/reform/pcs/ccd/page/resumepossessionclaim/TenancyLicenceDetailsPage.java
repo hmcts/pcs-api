@@ -45,7 +45,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                 )
                 .mandatory(
                     TenancyLicenceDetails::getDetailsOfOtherTypeOfTenancyLicence,
-                    "typeOfTenancyLicence=\"OTHER\""
+                    "tenancy_TypeOfTenancyLicence=\"OTHER\""
                 )
             .done()
             .label("tenancyLicenceDetails-date-section", """

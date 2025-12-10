@@ -31,9 +31,9 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             .page("introductoryDemotedOrOtherGroundsForPossession", this::midEvent)
             .pageLabel("Grounds for possession")
             .showCondition(
-                "typeOfTenancyLicence=\"INTRODUCTORY_TENANCY\" "
-                  + "OR typeOfTenancyLicence=\"DEMOTED_TENANCY\" "
-                  + "OR typeOfTenancyLicence=\"OTHER\""
+                "tenancy_TypeOfTenancyLicence=\"INTRODUCTORY_TENANCY\" "
+                  + "OR tenancy_TypeOfTenancyLicence=\"DEMOTED_TENANCY\" "
+                  + "OR tenancy_TypeOfTenancyLicence=\"OTHER\""
                   + " AND legislativeCountry=\"England\"")
             .readonly(PCSCase::getShowIntroductoryDemotedOtherGroundReasonPage,NEVER_SHOW)
             .label(

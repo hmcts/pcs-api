@@ -27,9 +27,9 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
             .page("introductoryDemotedOtherGroundsReasons", this::midEvent)
             .pageLabel("Reasons for possession ")
             .showCondition("showIntroductoryDemotedOtherGroundReasonPage=\"Yes\""
-                    + " AND (typeOfTenancyLicence=\"INTRODUCTORY_TENANCY\""
-                    + " OR typeOfTenancyLicence=\"DEMOTED_TENANCY\""
-                    +  " OR typeOfTenancyLicence=\"OTHER\")"
+                    + " AND (tenancy_TypeOfTenancyLicence=\"INTRODUCTORY_TENANCY\""
+                    + " OR tenancy_TypeOfTenancyLicence=\"DEMOTED_TENANCY\""
+                    +  " OR tenancy_TypeOfTenancyLicence=\"OTHER\")"
                     + " AND legislativeCountry=\"England\"")
             .complex(PCSCase::getIntroductoryDemotedOtherGroundReason)
             .label("introductoryDemotedOtherGroundsReasons-antiSocial-label","""
