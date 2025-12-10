@@ -77,7 +77,7 @@ public class SavingPageBuilder extends PageBuilder {
             long caseReference = details.getId();
             PCSCase caseData = details.getData();
 
-            draftCaseDataService.patchUnsubmittedCaseData(caseReference, caseData, caseEventId);
+            draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
         }
 
     }
