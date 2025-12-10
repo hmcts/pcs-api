@@ -13,3 +13,7 @@ wiremock:
     - name: wiremock-mocks
       mountPath: /home/wiremock/mappings
       subPath: mappings
+
+java:
+  environment:
+    FEES_REGISTER_API_URL: "wiremock-${SERVICE_NAME}.preview.platform.hmcts.net"
