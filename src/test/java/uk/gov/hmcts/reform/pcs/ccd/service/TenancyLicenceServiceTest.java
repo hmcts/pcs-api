@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
@@ -83,7 +84,9 @@ class TenancyLicenceServiceTest {
                 .value(Document.builder().filename("rent_statement_feb.pdf").build()).build()
         );
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getRentStatementDocuments()).thenReturn(rentStatementDocs),
+            pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                    .rentStatementDocuments(rentStatementDocs)
+                    .build()),
             expected -> {
                 assertThat(expected.getRentStatementDocuments()).hasSize(2);
                 assertThat(expected.getRentStatementDocuments())
@@ -140,15 +143,18 @@ class TenancyLicenceServiceTest {
 
         // Test total rent arrears field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn("150000"), // value in pence
+                pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                        .totalRentArrears("150000") // value in pence
+                        .build()),
                 expected -> assertThat(expected.getTotalRentArrears())
                         .isEqualTo(new BigDecimal("1500.00"))); // value in pounds
 
         // Test third party payment sources field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getThirdPartyPaymentSources()).thenReturn(
-                        Arrays.asList(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
-                                ThirdPartyPaymentSource.HOUSING_BENEFIT)),
+                pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                        .thirdPartyPaymentSources(Arrays.asList(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
+                                ThirdPartyPaymentSource.HOUSING_BENEFIT))
+                        .build()),
                 expected -> {
                     assertThat(expected.getThirdPartyPaymentSources()).hasSize(2);
                     assertThat(expected.getThirdPartyPaymentSources())
@@ -158,7 +164,9 @@ class TenancyLicenceServiceTest {
 
         // Test third party payment source other field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn("Custom payment method"),
+                pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                        .thirdPartyPaymentSourceOther("Custom payment method")
+                        .build()),
                 expected -> assertThat(expected.getThirdPartyPaymentSourceOther()).isEqualTo("Custom payment method"));
 
         // Test arrearsJudgmentWanted field updates
@@ -222,7 +230,9 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullTotalRentArrears() {
         // Given
-        when(pcsCase.getTotalRentArrears()).thenReturn(null);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .totalRentArrears(null)
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
@@ -232,7 +242,9 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSources() {
         // Given
-        when(pcsCase.getThirdPartyPaymentSources()).thenReturn(Collections.emptyList());
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .thirdPartyPaymentSources(Collections.emptyList())
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
@@ -242,7 +254,9 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSources() {
         // Given
-        when(pcsCase.getThirdPartyPaymentSources()).thenReturn(null);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .thirdPartyPaymentSources(null)
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
@@ -252,7 +266,9 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSourceOther() {
         // Given
-        when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn(null);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .thirdPartyPaymentSourceOther(null)
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
@@ -262,7 +278,9 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSourceOther() {
         // Given
-        when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn("");
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .thirdPartyPaymentSourceOther("")
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
@@ -272,7 +290,9 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullRentStatementDocuments() {
         // Given
-        when(pcsCase.getRentStatementDocuments()).thenReturn(null);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .rentStatementDocuments(null)
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
@@ -282,7 +302,9 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyRentStatementDocuments() {
         // Given
-        when(pcsCase.getRentStatementDocuments()).thenReturn(Collections.emptyList());
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .rentStatementDocuments(Collections.emptyList())
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
