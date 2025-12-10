@@ -110,4 +110,8 @@ public class EnforcementOrder {
     )
     @External
     private String writFeeAmount;
+
+    @JsonUnwrapped
+    @CCD
+    private RepaymentCosts repaymentCosts;
 }
