@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -95,6 +96,11 @@ public class PcsCaseMergeService {
     }
 
     private PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
+
+        SecureContractGroundsForPossessionWales secureContractGroundsWales =
+            Optional.ofNullable(pcsCase.getSecureContractGroundsForPossessionWales())
+                .orElse(SecureContractGroundsForPossessionWales.builder().build());
+
         SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
             .map(grounds -> modelMapper
                 .map(grounds, SecureOrFlexibleReasonsForGrounds.class))
@@ -114,10 +120,12 @@ public class PcsCaseMergeService {
             .walesDiscretionaryGrounds(mapToLabels(pcsCase.getDiscretionaryGroundsWales()))
             .walesMandatoryGrounds(mapToLabels(pcsCase.getMandatoryGroundsWales()))
             .walesEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGroundsWales()))
-            .walesSecureContractDiscretionaryGrounds(mapToLabels(pcsCase.getSecureContractDiscretionaryGroundsWales()))
-            .walesSecureContractMandatoryGrounds(mapToLabels(pcsCase.getSecureContractMandatoryGroundsWales()))
-            .walesSecureContractEstateManagementGrounds(
-                mapToLabels(pcsCase.getSecureContractEstateManagementGroundsWales()))
+            .walesSecureContractDiscretionaryGrounds(mapToLabels(secureContractGroundsWales
+                                                                     .getDiscretionaryGroundsWales()))
+            .walesSecureContractMandatoryGrounds(mapToLabels(secureContractGroundsWales
+                                                                 .getMandatoryGroundsWales()))
+            .walesSecureContractEstateManagementGrounds(mapToLabels(secureContractGroundsWales
+                                .getEstateManagementGroundsWales()))
             .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
     }
