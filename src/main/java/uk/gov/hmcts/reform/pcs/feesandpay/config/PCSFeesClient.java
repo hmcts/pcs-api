@@ -16,12 +16,12 @@ public class PCSFeesClient {
         this.strategies = strategies;
     }
 
-    public FeeLookupResponseDto lookupFee(FeeTypes feeTypes, String channel, String event, BigDecimal amount,
+    public FeeLookupResponseDto lookupFee(FeeTypes feeType, String channel, String event, BigDecimal amount,
                                           String keyword) {
         FeesClientContext context = strategies.stream()
-            .filter(strategy -> strategy.supports(feeTypes))
+            .filter(strategy -> strategy.supports(feeType))
             .findFirst()
-            .orElseThrow(() -> new IllegalStateException("No strategy found for fee type: " + feeTypes));
+            .orElseThrow(() -> new IllegalStateException("No strategy found for fee type: " + feeType));
 
         return context.getApi().lookupFee(
             context.getServiceName().service(),

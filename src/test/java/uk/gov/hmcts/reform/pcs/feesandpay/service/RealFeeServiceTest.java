@@ -7,6 +7,7 @@ import feign.RequestTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
@@ -36,6 +37,7 @@ class RealFeeServiceTest {
     @Mock
     private PCSFeesClient pcsFeesClient;
 
+    @InjectMocks
     private RealFeeService underTest;
 
     private static final FeeTypes FEE_TYPE = FeeTypes.CASE_ISSUE_FEE;
@@ -45,8 +47,6 @@ class RealFeeServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new RealFeeService(feesConfiguration, pcsFeesClient);
-
         lookUpReferenceData = new LookUpReferenceData();
         lookUpReferenceData.setChannel("default");
         lookUpReferenceData.setEvent("issue");

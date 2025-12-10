@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import org.assertj.core.api.SoftAssertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,7 +27,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @SpringBootTest
-@Disabled
 @SuppressWarnings({"rawtypes"})
 class CaseDefinitionIT extends AbstractPostgresContainerIT {
 
