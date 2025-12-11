@@ -4,6 +4,7 @@ export const whatAreYourGroundsForPossession = {
   groundsForPossessionMainHeader: 'What are your grounds for possession?',
   mandatory:
     {
+      mandatoryGroundsCategoryQuestion: 'Mandatory grounds (Optional)',
       antiSocialBehaviour: 'Antisocial behaviour',
       antiSocialBehaviour7A: 'Antisocial behaviour (ground 7A)',
       ownerOccupier: 'Owner occupier (ground 1)',
@@ -18,6 +19,7 @@ export const whatAreYourGroundsForPossession = {
     },
   discretionary:
     {
+      discretionaryGroundsCategoryQuestion: 'Discretionary grounds (Optional)',
       rentArrearsOrBreachOfTenancy: 'Rent arrears or breach of the tenancy (ground 1)',
       nuisanceAnnoyance2: 'Nuisance, annoyance, illegal or immoral use of the property (ground 2)',
       nuisanceAnnoyance14: 'Nuisance, annoyance, illegal or immoral use of the property (ground 14)',
@@ -42,6 +44,7 @@ export const whatAreYourGroundsForPossession = {
     },
   mandatoryWithAccommodation:
     {
+      mandatoryWithAccommodationGroundsCategoryQuestion: 'Mandatory grounds (if alternative accommodation available) (Optional)',
       overcrowding: 'Overcrowding (ground 9)',
       landlordsWorks: 'Landlord’s works (ground 10)',
       propertySoldForRedevelopment: 'Property sold for redevelopment (ground 10A)',
@@ -49,6 +52,7 @@ export const whatAreYourGroundsForPossession = {
     },
   discretionaryWithAccommodation:
     {
+      discretionaryWithAccommodationGroundsCategoryQuestion: 'Discretionary grounds (if alternative accommodation available) (Optional)',
       tied: 'Tied accommodation needed for another employee (ground 12)',
       adapted: 'Adapted accommodation (ground 13)',
       housingAssociationSpecialCircumstance: 'Housing association special circumstances accommodation (ground 14)',
