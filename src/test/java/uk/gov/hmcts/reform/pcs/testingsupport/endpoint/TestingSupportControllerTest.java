@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -53,6 +54,8 @@ class TestingSupportControllerTest {
     private PartyAccessCodeRepository partyAccessCodeRepository;
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private AccessCodeGenerationService accessCodeGenerationService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -61,7 +64,8 @@ class TestingSupportControllerTest {
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  docAssemblyService, eligibilityService,
-                                                 pcsCaseRepository, partyAccessCodeRepository, pcsCaseService
+                                                 pcsCaseRepository, partyAccessCodeRepository, pcsCaseService,
+                                                 accessCodeGenerationService
         );
     }
 
