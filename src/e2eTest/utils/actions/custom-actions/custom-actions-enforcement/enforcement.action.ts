@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
-import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
+import { IAction, actionData, actionRecord, actionTuple } from '@utils/interfaces/action.interface';
 import {
   yourApplication,
   nameAndAddressForEviction,
@@ -59,22 +59,23 @@ export class EnforcementAction implements IAction {
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
+      ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
-      ['inputErrorValidation', () => this.inputErrorValidation(fieldName as actionRecord)],
+      ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
   }
 
-  private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord){
+  private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord) {
     await performAction('expandSummary', summaryOption.type);
     await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
     await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
     await performAction('expandSummary', summaryOption.type);
   }
 
-  private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord){
+  private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
     await performAction('expandSummary', bailiffQuote.type);
     await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
     await performAction('expandSummary', bailiffQuote.type);
@@ -165,7 +166,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', violentAggressiveBehaviour.label, violentAggressiveBehaviour.input);
-    await performAction('clickButton', violentOrAggressiveBehaviour.continue);
+    await performAction('clickButton', violentOrAggressiveBehaviour.continueButton);
   }
 
   private async provideDetailsFireArmPossession(firearm: actionRecord) {
@@ -265,6 +266,19 @@ export class EnforcementAction implements IAction {
     await performAction('clickButtonAndVerifyPageNavigation', landRegistryFees.continueButton, rePayments.mainHeader);
   }
 
+  private async validateAmountToRePayTable(amtTable: actionRecord) {
+
+  }
+  private async provideAmountToRePay(amtToPay: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: amtToPay.question, option: amtToPay.option });
+    if (amtToPay.option === rePayments.rePaymentRadioOptions.some) {
+      await performAction('inputText', amtToPay.label, amtToPay.input);
+    };
+    await performAction('clickButton', rePayments.continueButton);
+  }
+
   private async selectLanguageUsed(languageDetails: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -272,14 +286,14 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', languageUsed.continueButton);
   }
 
-  private async inputErrorValidation(validationArr: actionRecord) {
+  private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
     if (validationArr.validationReq === 'YES') {
 
       if (Array.isArray(validationArr.inputArray)) {
         for (const item of validationArr.inputArray) {
           switch (validationArr.validationType) {
-            case 'moneyField':
+            case 'moneyFieldAndRadioOption':
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
               if (validationArr.option === 'Yes') {
                 await performAction('inputText', validationArr.label, item.input);
@@ -292,13 +306,54 @@ export class EnforcementAction implements IAction {
             case 'radioOptions':
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', validationArr.label, item.errMessage);
+              await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+              break;
+
+            case 'moneyField':
+              await performAction('inputText', validationArr.label, item.input);
+              await performAction('clickButton', validationArr.button);
+              //await performValidation('errorMessage', validationArr.label, item.errMessage);
+              await performValidation('inputError', validationArr.label, item.errMessage);
+              break;
+
+            case 'textField':
+              await performAction('inputText', validationArr.label, await this.generateRandomInputString(page, validationArr.label as string, item.input));
+              await performAction('clickButton', validationArr.button);
+              if (item.type === 'moreThanMax') {
+                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+              } else {
+                await performValidation('inputError', validationArr.label, item.errMessage);
+                await performValidation('errorMessage', validationArr.label, item.errMessage)
+              }
               break;
 
             default:
-              break;
+              throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
           };
         }
       }
     }
+  }
+
+  private async generateRandomInputString(page: Page, label: string, input: string): Promise<string> {
+
+    if (input !== 'MAXPLUS') return '';
+
+    const hintText = await page
+      .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
+      .innerText();
+
+    const charLimitInfo = hintText.match(/\b\d{1,3}(?:,\d{3})*|\d+\b/);
+    const limit = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : null;
+    if (limit == null) return '';
+
+    const length = limit + 1;
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let finalString = '';
+    for (let i = 0; i < length; i++) {
+      finalString += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return finalString;
+
   }
 }

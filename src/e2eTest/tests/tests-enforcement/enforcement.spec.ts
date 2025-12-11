@@ -63,7 +63,7 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', {
     annotation: {
       type: 'issue',
-      description: `Fee validation in Your Application page will handle dynamic fee validation upon completion of the following - 'https://tools.hmcts.net/jira/browse/HDPI-3386'`,
+      description: `Fee validation in Your Application page will handle dynamic fee validation upon completion of the following - ${'https://tools.hmcts.net/jira/browse/HDPI-3386'}`,
     },
   },
     async () => {
@@ -86,124 +86,164 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
       });
-    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
-    await performAction('selectNameAndAddressForEviction', {
-      question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
-      option: nameAndAddressForEviction.yesRadioOption,
-      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+      await performAction('selectNameAndAddressForEviction', {
+        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+        option: nameAndAddressForEviction.yesRadioOption,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      });
+      await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
+      await performAction('selectPeopleWhoWillBeEvicted', {
+        question: peopleWillBeEvicted.evictEveryOneQuestion,
+        option: peopleWillBeEvicted.yesRadioOption,
+      })
+      await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
+      await performAction('selectEveryoneLivingAtTheProperty', {
+        question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
+        option: everyoneLivingAtTheProperty.yesRadioOption,
+      });
+      await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
+      await performAction('selectRiskPosedByEveryoneAtProperty', {
+        riskTypes: [
+          riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
+          riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckbox,
+          riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviourCheckbox,
+          riskPosedByEveryoneAtProperty.verbalOrWrittenThreatsCheckbox,
+          riskPosedByEveryoneAtProperty.protestGroupCheckbox,
+          riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckbox,
+          riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckbox,
+        ],
+      });
+      await performValidation('mainHeader', violentOrAggressiveBehaviour.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: violentOrAggressiveBehaviour.errorValidation,
+        validationType: violentOrAggressiveBehaviour.errorValidationType.two,
+        inputArray: violentOrAggressiveBehaviour.errorValidationField.errorTextField,
+        header: violentOrAggressiveBehaviour.errors,
+        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
+        button: violentOrAggressiveBehaviour.continueButton
+      });
+      await performAction('provideDetailsViolentOrAggressiveBehaviour', {
+        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
+        input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput,
+      });
+      await performAction('provideDetailsFireArmPossession', {
+        label: firearmPossession.whatIsTheirHistoryOfFirearmPossession,
+        input: firearmPossession.whatIsTheirHistoryOfFirearmPossessionInput,
+      });
+      await performAction('provideDetailsCriminalOrAntisocialBehavior', {
+        label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour,
+        input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput,
+      });
+      await performAction('provideDetailsVerbalOrWrittenThreats', {
+        label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade,
+        input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput,
+      });
+      await performAction('provideDetailsGroupProtestsEviction', {
+        label: groupProtestsEviction.whichGroupMember,
+        input: groupProtestsEviction.whichGroupMemberInput,
+      });
+      await performAction('provideDetailsPoliceOrSocialServiceVisits', {
+        label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
+        input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput,
+      });
+      await performAction('provideDetailsAnimalsAtTheProperty', {
+        label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
+        input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput,
+      });
+      await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: vulnerableAdultsAndChildren.errorValidation,
+        validationType: vulnerableAdultsAndChildren.errorValidationType.three,
+        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorRadioOption1,
+        question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+        option: vulnerableAdultsAndChildren.yesRadioOption,
+        label: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+        button: vulnerableAdultsAndChildren.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: vulnerableAdultsAndChildren.errorValidation,
+        validationType: vulnerableAdultsAndChildren.errorValidationType.three,
+        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorRadioOption2,
+        question: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+        option: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+        label: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+        button: vulnerableAdultsAndChildren.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: vulnerableAdultsAndChildren.errorValidation,
+        validationType: vulnerableAdultsAndChildren.errorValidationType.two,
+        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorTextField,
+        header: vulnerableAdultsAndChildren.errors,
+        label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+        button: vulnerableAdultsAndChildren.continueButton
+      });
+      await performAction('selectVulnerablePeopleInTheProperty', {
+        question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+        option: vulnerableAdultsAndChildren.yesRadioOption,
+        confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+        peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+        label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+        input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
+      });
+      await performValidation('mainHeader', accessToTheProperty.mainHeader);
+      await performAction('accessToProperty', {
+        question: accessToTheProperty.accessToThePropertyQuestion,
+        option: accessToTheProperty.yesRadioOption,
+        label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
+        input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
+      });
+      await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
+      await performAction('provideDetailsAnythingElseHelpWithEviction', {
+        question: anythingElseHelpWithEviction.anythingElseQuestion,
+        option: anythingElseHelpWithEviction.yesRadioOption,
+        label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
+        input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
+      });
+      await performValidation('mainHeader', moneyOwed.mainHeader);
+      await performAction('clickButton', moneyOwed.continueButton);
+      await performValidation('mainHeader', legalCosts.mainHeader);
+      await performAction('provideLegalCosts', {
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        input: legalCosts.howMuchYouWantToReclaimTextInput
+      });
+      await performValidation('mainHeader', landRegistryFees.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: landRegistryFees.errorValidation,
+        validationType: landRegistryFees.errorValidationType.five,
+        inputArray: landRegistryFees.errorValidationField.errorMoneyField,
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        button: landRegistryFees.continueButton
+      });
+      await performAction('provideLandRegistryFees', {
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+      });
+      await performValidation('mainHeader', rePayments.mainHeader);
+      await performAction('provideAmountToRePay', {
+        question: rePayments.rePaymentQuestion,
+        option: rePayments.rePaymentRadioOptions.some,
+        label: rePayments.enterTheAmountTextLabel,
+        input: rePayments.enterTheAmountTextInput
+      });
+      await performValidation('mainHeader', languageUsed.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: languageUsed.errorValidation,
+        validationType: languageUsed.errorValidationType.three,
+        inputArray: languageUsed.errorValidationField.errorRadioOption,
+        question: languageUsed.whichLanguageUsedQuestion,
+        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+        label: languageUsed.whichLanguageUsedQuestion,
+        button: languageUsed.continueButton
+      });
+      await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
     });
-    await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
-    await performAction('selectPeopleWhoWillBeEvicted', {
-      question: peopleWillBeEvicted.evictEveryOneQuestion,
-      option: peopleWillBeEvicted.yesRadioOption,
-    })
-    await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
-    await performAction('selectEveryoneLivingAtTheProperty', {
-      question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
-      option: everyoneLivingAtTheProperty.yesRadioOption,
-    });
-    await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
-    await performAction('selectRiskPosedByEveryoneAtProperty', {
-      riskTypes: [
-        riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
-        riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckbox,
-        riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviourCheckbox,
-        riskPosedByEveryoneAtProperty.verbalOrWrittenThreatsCheckbox,
-        riskPosedByEveryoneAtProperty.protestGroupCheckbox,
-        riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckbox,
-        riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckbox,
-      ],
-    });
-    await performAction('provideDetailsViolentOrAggressiveBehaviour', {
-      label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
-      input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput,
-    });
-    await performAction('provideDetailsFireArmPossession', {
-      label: firearmPossession.whatIsTheirHistoryOfFirearmPossession,
-      input: firearmPossession.whatIsTheirHistoryOfFirearmPossessionInput,
-    });
-    await performAction('provideDetailsCriminalOrAntisocialBehavior', {
-      label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour,
-      input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput,
-    });
-    await performAction('provideDetailsVerbalOrWrittenThreats', {
-      label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade,
-      input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput,
-    });
-    await performAction('provideDetailsGroupProtestsEviction', {
-      label: groupProtestsEviction.whichGroupMember,
-      input: groupProtestsEviction.whichGroupMemberInput,
-    });
-    await performAction('provideDetailsPoliceOrSocialServiceVisits', {
-      label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
-      input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput,
-    });
-    await performAction('provideDetailsAnimalsAtTheProperty', {
-      label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
-      input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput,
-    });
-    await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
-    await performAction('selectVulnerablePeopleInTheProperty', {
-      question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
-      option: vulnerableAdultsAndChildren.yesRadioOption,
-      confirm: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
-      peopleOption: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
-      label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
-      input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput
-    });
-    await performValidation('mainHeader', accessToTheProperty.mainHeader);
-    await performAction('accessToProperty', {
-      question: accessToTheProperty.accessToThePropertyQuestion,
-      option: accessToTheProperty.yesRadioOption,
-      label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
-      input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
-    });
-    await performValidation('mainHeader', anythingElseHelpWithEviction.mainHeader);
-    await performAction('provideDetailsAnythingElseHelpWithEviction', {
-      question: anythingElseHelpWithEviction.anythingElseQuestion,
-      option: anythingElseHelpWithEviction.yesRadioOption,
-      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
-    });
-    await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('clickButton', moneyOwed.continueButton);
-    await performValidation('mainHeader', legalCosts.mainHeader);
-    await performAction('provideLegalCosts', {
-      question: legalCosts.reclaimLegalCostsQuestion,
-      option: legalCosts.yesRadioOption,
-      label: legalCosts.howMuchYouWantToReclaimTextLabel,
-      input: legalCosts.howMuchYouWantToReclaimTextInput
-    });
-    await performValidation('mainHeader', landRegistryFees.mainHeader);
-    await performAction('inputErrorValidation', {
-      validationReq: landRegistryFees.errorValidation,
-      validationType: landRegistryFees.errorValidationType.one,
-      inputArray: landRegistryFees.errorValidationField.errorMoneyField,
-      question: landRegistryFees.landRegistryFeeQuestion,
-      option: landRegistryFees.yesRadioOption,
-      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-      button: landRegistryFees.continueButton
-    });
-    await performAction('provideLandRegistryFees', {
-      question: landRegistryFees.landRegistryFeeQuestion,
-      option: landRegistryFees.yesRadioOption,
-      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
-    });
-    await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('clickButton', rePayments.continueButton);
-    await performValidation('mainHeader', languageUsed.mainHeader);
-    await performAction('inputErrorValidation', {
-      validationReq: languageUsed.errorValidation,
-      validationType: languageUsed.errorValidationType.three,
-      inputArray: languageUsed.errorValidationField.errorRadioOption,
-      question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.languageUsedRadioOptions.englishRadioOption,
-      label: languageUsed.whichLanguageUsedQuestion,
-      button: languageUsed.continueButton
-    });
-    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
-  });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
