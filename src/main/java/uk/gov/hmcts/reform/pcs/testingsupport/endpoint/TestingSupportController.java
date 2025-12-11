@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
@@ -64,6 +65,7 @@ public class TestingSupportController {
     private final PcsCaseRepository pcsCaseRepository;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final PcsCaseService pcsCaseService;
+    private final AccessCodeGenerationService accessCodeGenerationService;
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
@@ -72,7 +74,8 @@ public class TestingSupportController {
         EligibilityService eligibilityService,
         PcsCaseRepository pcsCaseRepository,
         PartyAccessCodeRepository partyAccessCodeRepository,
-        PcsCaseService pcsCaseService
+        PcsCaseService pcsCaseService,
+        AccessCodeGenerationService accessCodeGenerationService
     ) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
@@ -81,6 +84,7 @@ public class TestingSupportController {
         this.pcsCaseRepository = pcsCaseRepository;
         this.partyAccessCodeRepository = partyAccessCodeRepository;
         this.pcsCaseService = pcsCaseService;
+        this.accessCodeGenerationService = accessCodeGenerationService;
     }
 
     @Operation(
@@ -390,6 +394,15 @@ public class TestingSupportController {
             pcsCaseRepository.save(caseEntity);
 
             log.info("Created test case {} with {} defendants", caseReference, defendants.size());
+
+            // Generate access codes immediately (synchronous - better for testing)
+            try {
+                accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference));
+                log.info("Generated access codes for case {}", caseReference);
+            } catch (Exception e) {
+                log.warn("Failed to generate access codes for case {}: {}", caseReference, e.getMessage());
+                // Don't fail the request - codes can be generated later if needed
+            }
 
             // Build response
             CreateTestCaseResponse response = new CreateTestCaseResponse(caseReference, defendantInfos);
