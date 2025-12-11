@@ -1,24 +1,13 @@
-{{ if .Values.wiremock.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-wiremock-stubbing
+  name: {{ .Release.Name }}-wm2
 data:
   liveness-mock.json: |
     {
       "request": {
-        "method": "GET",
-        "url": "/health/liveness"
-      },
-      "response": {
-        "status": 200
-      }
-    }
-  health-mock.json: |
-    {
-      "request": {
-        "method": "GET",
-        "url": "/health"
+        "url": "/health",
+        "method": "GET"
       },
       "response": {
         "status": 200,
@@ -26,9 +15,19 @@ data:
           "Content-Type": "application/json"
         },
         "jsonBody": {
-          "status": "OK",
+          "status": "OKv2",
           "components": {}
         }
+      }
+    }
+  liveness-mock-2.json: |
+    {
+      "request": {
+        "method": "GET",
+        "url": "/health"
+      },
+      "response": {
+        "status": 200
       }
     }
   readiness-mock.json: |
@@ -41,15 +40,3 @@ data:
         "status": 200
       }
     }
-  fee-register-proxy.json: |
-    {
-      "request": {
-        "method": "GET",
-        "urlPath": "/fees-register/fees/lookup"
-      },
-      "response": {
-        "proxyBaseUrl": "http://fees-register-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
-      }
-    }
-}
-{{ end }}
