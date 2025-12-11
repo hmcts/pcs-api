@@ -5,12 +5,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
@@ -140,94 +137,5 @@ public class ApiSteps {
     @Step("the request contains the query parameter {0} as {1}")
     public void theRequestContainsTheQueryParameter(String queryParam, String value) {
         request = request.queryParam(queryParam, value);
-    }
-
-    @Step("create a test case")
-    public Long createTestCase() throws IOException {
-        // Generate timestamp-based case reference (industry standard)
-        Long caseReference = System.currentTimeMillis();
-
-        // Generate unique party IDs for defendants
-        UUID partyId1 = UUID.randomUUID();
-        UUID partyId2 = UUID.randomUUID();
-
-        // Build request payload using ObjectMapper
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode payload = mapper.createObjectNode();
-
-        // Case reference - set to null to let backend generate, or use generated value
-        payload.putNull("caseReference");
-
-        // Property address (using test-friendly postcode)
-        ObjectNode propertyAddress = mapper.createObjectNode();
-        propertyAddress.put("AddressLine1", "123 Test Street");
-        propertyAddress.put("AddressLine2", "");
-        propertyAddress.put("AddressLine3", "");
-        propertyAddress.put("PostTown", "London");
-        propertyAddress.put("County", "");
-        propertyAddress.put("PostCode", "W3 7RX");
-        propertyAddress.put("Country", "United Kingdom");
-        payload.set("propertyAddress", propertyAddress);
-
-        // Legislative country
-        payload.put("legislativeCountry", "England");
-
-        ArrayNode defendants = mapper.createArrayNode();
-
-        // Defendant 1
-        ObjectNode defendant1 = mapper.createObjectNode();
-        defendant1.put("partyId", partyId1.toString());
-        defendant1.putNull("idamUserId"); // Not linked initially
-        defendant1.put("firstName", "Test");
-        defendant1.put("lastName", "Defendant1");
-        defendants.add(defendant1);
-
-        // Defendant 2
-        ObjectNode defendant2 = mapper.createObjectNode();
-        defendant2.put("partyId", partyId2.toString());
-        defendant2.putNull("idamUserId"); // Not linked initially
-        defendant2.put("firstName", "Test");
-        defendant2.put("lastName", "Defendant2");
-        defendants.add(defendant2);
-
-        payload.set("defendants", defendants);
-
-        // Prepare request with authentication
-        request = SerenityRest.given()
-            .baseUri(baseUrl)
-            .contentType(ContentType.JSON)
-            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-            .header(TestConstants.AUTHORIZATION, "Bearer " + idamToken)
-            .body(payload.toString());
-
-        // Execute POST request
-        SerenityRest.when().post(Endpoints.CreateTestCase.getResource());
-
-        // Verify successful creation
-        SerenityRest.then().assertThat().statusCode(201);
-
-        // Extract case reference from response (backend may generate different one)
-        Long createdCaseReference = SerenityRest.lastResponse()
-            .jsonPath()
-            .getLong("caseReference");
-
-        // Return the created case reference (prefer response over generated)
-        return createdCaseReference != null ? createdCaseReference : caseReference;
-    }
-
-    @Step("delete test case {0}")
-    public void deleteTestCase(Long caseReference) {
-        // Prepare request with authentication
-        request = SerenityRest.given()
-            .baseUri(baseUrl)
-            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-            .header(TestConstants.AUTHORIZATION, "Bearer " + idamToken)
-            .pathParam("caseReference", caseReference.toString());
-
-        // Execute DELETE request
-        SerenityRest.when().delete(Endpoints.DeleteTestCase.getResource());
-
-        // Verify successful deletion
-        SerenityRest.then().assertThat().statusCode(204);
     }
 }
