@@ -36,7 +36,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
             .complex(PCSCase::getNoRentArrearsGroundsOptions)
             .readonly(NoRentArrearsGroundsOptions::getShowNoRentArrearsGroundReasonPage, NEVER_SHOW)
             .label(
-                "NoRentArrearsGroundsForPossessionOptions-information", """
+                "engNoRentArrearsGroundsForPossessionOptions-information", """
                     ---
                     <p>You may have already given the defendants notice of your intention to begin possession
                     proceedings. If you have, you should have written the grounds you’re making your claim under.
@@ -50,6 +50,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
             )
             .optional(NoRentArrearsGroundsOptions::getNoRentArrearsMandatoryGroundsOptions)
             .optional(NoRentArrearsGroundsOptions::getNoRentArrearsDiscretionaryGroundsOptions)
+            .done()
             .label("noRentArrearsGroundsForPossessionOptions-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
