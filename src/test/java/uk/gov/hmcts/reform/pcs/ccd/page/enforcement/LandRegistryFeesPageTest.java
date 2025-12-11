@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -44,16 +45,20 @@ public class LandRegistryFeesPageTest extends BasePageTest {
             .amountOfLandRegistryFees(landRegistryPence)
             .build();
 
+        MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
+            .amountOwed(rentArrearsPence)
+            .build();
+
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
             .repaymentCosts(RepaymentCosts.builder().build())
             .landRegistryFees(landRegistryFees)
             .legalCosts(legalCosts)
             .warrantFeeAmount(warrantFeeAmount)
+            .moneyOwedByDefendants(moneyOwedByDefendants)
             .build();
 
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(enforcementOrder)
-            .totalRentArrears(rentArrearsPence)
             .build();
 
         // When

@@ -39,7 +39,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         // Formatting total arrears
-        String totalArrears = caseData.getTotalRentArrears();
+        String totalArrears = caseData.getEnforcementOrder().getMoneyOwedByDefendants().getAmountOwed();
         String formattedTotalArrears =  convertPenceToPounds(totalArrears);
         caseData.getEnforcementOrder().getRepaymentCosts().setFormattedAmountOfTotalArrears(formattedTotalArrears);
 
