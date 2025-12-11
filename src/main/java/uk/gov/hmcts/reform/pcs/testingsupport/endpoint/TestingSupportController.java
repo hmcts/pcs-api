@@ -296,8 +296,8 @@ public class TestingSupportController {
 
     @Operation(
         summary = "Create a test case with defendants",
-        description = "Creates a test case with property address, legislative country, and exactly 2 defendants. "
-            + "Case reference will be auto-generated if not provided."
+        description = "Creates a test case with property address, legislative country, and at least 1 defendant. "
+            + "Case reference and party IDs will be auto-generated if not provided."
     )
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Case created successfully"),
