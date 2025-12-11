@@ -1,6 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
@@ -10,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class RepaymentCosts {
 
     @CCD(
@@ -24,18 +27,6 @@ public class RepaymentCosts {
     )
     private String amountOfRepaymentCosts;
 
-    @CCD
-    private String formattedAmountOfTotalArrears;
+    private String repaymentSummaryMarkdown;
 
-    @CCD
-    private String formattedAmountOfLegalFees;
-
-    @CCD
-    private String formattedAmountOfLandRegistryFees;
-
-    @CCD
-    private String formattedAmountOfWarrantFees;
-
-    @CCD
-    private String formattedAmountOfTotalFees;
 }

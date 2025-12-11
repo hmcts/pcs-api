@@ -1,9 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LandRegistryFees;
@@ -11,32 +14,34 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class LandRegistryFeesPageTest extends BasePageTest {
+
+    @Mock
+    private RepaymentTableRenderer repaymentTableRenderer;
 
     @BeforeEach
     void setUp() {
         MoneyConverter moneyConverter = new MoneyConverter();
-        setPageUnderTest(new LandRegistryFeesPage(moneyConverter));
+        setPageUnderTest(new LandRegistryFeesPage(moneyConverter, repaymentTableRenderer));
     }
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
-    void shouldFormatRepaymentFeesCorrectly(
-        String landRegistryPence,
-        String legalCostsPence,
-        String rentArrearsPence,
-        String warrantFeeAmount,
-        String expectedFormattedLandRegistry,
-        String expectedFormattedLegals,
-        String expectedFormattedArrears,
-        String expectedFormattedTotalFees
+    void shouldFormatRepaymentFeesCorrectly(String landRegistryPence, String legalCostsPence,
+                                            String rentArrearsPence, String warrantFeeAmount,
+                                            String expectedFormattedLandRegistry, String expectedFormattedLegals,
+                                            String expectedFormattedArrears, String expectedFormattedTotalFees
     ) {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
@@ -63,21 +68,28 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .enforcementOrder(enforcementOrder)
             .build();
 
+        when(repaymentTableRenderer.render(
+            expectedFormattedArrears,
+            expectedFormattedLegals,
+            expectedFormattedLandRegistry,
+            warrantFeeAmount,
+            expectedFormattedTotalFees
+        )).thenReturn("<table>Mock Repayment Table</table>");
+
         // When
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getEnforcementOrder().getRepaymentCosts().getFormattedAmountOfLandRegistryFees())
-            .isEqualTo(expectedFormattedLandRegistry);
+        verify(repaymentTableRenderer).render(
+            expectedFormattedArrears,
+            expectedFormattedLegals,
+            expectedFormattedLandRegistry,
+            warrantFeeAmount,
+            expectedFormattedTotalFees
+        );
 
-        assertThat(caseData.getEnforcementOrder().getRepaymentCosts().getFormattedAmountOfLegalFees())
-            .isEqualTo(expectedFormattedLegals);
-
-        assertThat(caseData.getEnforcementOrder().getRepaymentCosts().getFormattedAmountOfTotalArrears())
-            .isEqualTo(expectedFormattedArrears);
-
-        assertThat(caseData.getEnforcementOrder().getRepaymentCosts().getFormattedAmountOfTotalFees())
-            .isEqualTo(expectedFormattedTotalFees);
+        assertThat(caseData.getEnforcementOrder().getRepaymentCosts().getRepaymentSummaryMarkdown())
+            .isEqualTo("<table>Mock Repayment Table</table>");
     }
 
     private static Stream<Arguments> repaymentFeeScenarios() {
