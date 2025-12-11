@@ -13,6 +13,54 @@ wiremock:
     - name: wiremock-mocks
       mountPath: /home/wiremock/mappings
       subPath: mappings
+  initialMappings:
+    health-liveness.json: |
+      {
+        "request": {
+          "method": "GET",
+          "url": "/health/liveness"
+        },
+        "response": {
+          "status": 200
+        }
+      }
+    health.json: |
+      {
+        "request": {
+          "method": "GET",
+          "url": "/health"
+        },
+        "response": {
+            "status": 200,
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "jsonBody": {
+                "status": "OK",
+                "components": {}
+            }
+        }
+      }
+    readiness.json: |
+      {
+        "request": {
+          "method": "GET",
+          "url": "/health/readiness"
+        },
+        "response": {
+          "status": 200
+        }
+      }
+    fee-register-proxy.json: |
+      {
+        "request": {
+          "method": "GET",
+          "urlPath": "/fees-register/fees/lookup"
+        },
+        "response": {
+          "proxyBaseUrl": "http://fees-register-api-aat.service.core-compute-aat.internal"
+        }
+      }
 
 java:
   environment:
