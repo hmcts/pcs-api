@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.service.CCDService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
 import java.util.UUID;
@@ -17,6 +18,7 @@ public class PartyAccessCodeLinkService {
 
     private final PcsCaseService pcsCaseService;
     private final PartyAccessCodeLinkValidator validator;
+    private final CCDService ccdService;
 
     @Transactional
     public void linkPartyByAccessCode(
@@ -51,6 +53,9 @@ public class PartyAccessCodeLinkService {
         party.setIdamUserId(idamUserId);
         caseEntity.setDefendants(caseEntity.getDefendants());
         pcsCaseService.save(caseEntity);
+        
+        //Assign Defendant role
+        ccdService.assignDefendantRole(caseReference, idamUserId.toString());
     }
 
 }

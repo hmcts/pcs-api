@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CCDService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
@@ -77,8 +76,6 @@ class PartyAccessCodeLinkServiceTest {
             .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-            .thenReturn(Optional.of(pac));
         when(ccdService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
             CaseAssignmentUserRolesResponse.builder()
                 .statusMessage("Case-User-Role assignments created successfully").build());

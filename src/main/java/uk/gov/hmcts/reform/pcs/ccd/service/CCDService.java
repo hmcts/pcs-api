@@ -43,6 +43,10 @@ public class CCDService {
 
         CaseAssignmentUserRolesResponse response =
             caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+
+        if (response != null) {
+            log.debug("Response from RAS: {}", response.getStatusMessage());
+        }
         return response;
     }
 }
