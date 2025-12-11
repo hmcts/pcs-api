@@ -52,6 +52,7 @@ export class ActionEnforcementRegistry {
     ['accessToProperty', new EnforcementAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
+    ['provideMoneyOwed', new EnforcementAction()],
     ['provideLegalCosts', new EnforcementAction()],
     ['provideLandRegistryFees', new EnforcementAction()],
     ['selectLanguageUsed', new EnforcementAction()],
