@@ -383,7 +383,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
     private RentArrearsSection rentArrears;
 

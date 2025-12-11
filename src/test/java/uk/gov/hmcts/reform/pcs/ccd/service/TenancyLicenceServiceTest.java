@@ -90,7 +90,7 @@ class TenancyLicenceServiceTest {
         );
         assertTenancyLicenceField(
             pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                    .rentStatementDocuments(rentStatementDocs)
+                    .statementDocuments(rentStatementDocs)
                     .build()),
             expected -> {
                 assertThat(expected.getRentStatementDocuments()).hasSize(2);
@@ -149,7 +149,7 @@ class TenancyLicenceServiceTest {
         // Test total rent arrears field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                        .totalRentArrears("150000") // value in pence
+                        .total("150000") // value in pence
                         .build()),
                 expected -> assertThat(expected.getTotalRentArrears())
                         .isEqualTo(new BigDecimal("1500.00"))); // value in pounds
@@ -240,7 +240,7 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                .totalRentArrears(null)
+                .total(null)
                 .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -305,7 +305,7 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                .rentStatementDocuments(null)
+                .statementDocuments(null)
                 .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -318,7 +318,7 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                .rentStatementDocuments(Collections.emptyList())
+                .statementDocuments(Collections.emptyList())
                 .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);

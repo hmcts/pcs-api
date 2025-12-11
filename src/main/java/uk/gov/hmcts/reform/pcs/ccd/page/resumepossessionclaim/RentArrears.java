@@ -51,7 +51,7 @@ public class RentArrears implements CcdPageConfiguration {
                                  </ul>
                                </section>
                                """)
-                    .mandatory(RentArrearsSection::getRentStatementDocuments)
+                    .mandatory(RentArrearsSection::getStatementDocuments)
 
                     // ---------- Total arrears ----------
                     .label("rentArrears-totalArrears-separator", "---")
@@ -61,17 +61,19 @@ public class RentArrears implements CcdPageConfiguration {
                             <h3 class="govuk-heading-s govuk-!-margin-top-0 govuk-!-margin-bottom-0">
                             How much are the total rent arrears as shown on the rent statement?</h3>
                             """)
-                    .mandatory(RentArrearsSection::getTotalRentArrears)
+                    .mandatory(RentArrearsSection::getTotal)
 
                     // ---------- Third-party payments ----------
                     .label("rentArrears-thirdPartyPayments-separator", "---")
                     .mandatory(RentArrearsSection::getThirdPartyPayments)
 
-                    .mandatory(RentArrearsSection::getThirdPartyPaymentSources, "thirdPartyPayments=\"YES\"")
+                    .mandatory(RentArrearsSection::getThirdPartyPaymentSources,
+                            "rentArrears_ThirdPartyPayments=\"YES\"")
 
                     // "Other" free text is mandatory when OTHER is selected
                     .mandatory(RentArrearsSection::getThirdPartyPaymentSourceOther,
-                            "thirdPartyPayments=\"YES\" AND thirdPartyPaymentSources CONTAINS \"OTHER\"")
+                            "rentArrears_ThirdPartyPayments=\"YES\" "
+                            + "AND rentArrears_ThirdPartyPaymentSources CONTAINS \"OTHER\"")
                 .done()
                 .label("rentArrears-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

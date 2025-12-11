@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,8 +10,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 
@@ -20,6 +20,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class RentArrearsSection {
 
     @CCD(
@@ -28,14 +29,14 @@ public class RentArrearsSection {
         typeOverride = FieldType.Collection,
         typeParameterOverride = "Document"
     )
-    private List<ListValue<Document>> rentStatementDocuments;
+    private List<ListValue<Document>> statementDocuments;
 
     @CCD(
         label = "Total rent arrears",
         min = 0,
         typeOverride = FieldType.MoneyGBP
     )
-    private String totalRentArrears;
+    private String total;
 
     @CCD(
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "

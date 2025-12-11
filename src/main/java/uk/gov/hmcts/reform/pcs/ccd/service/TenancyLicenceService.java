@@ -62,8 +62,8 @@ public class TenancyLicenceService {
                                          TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         if (rentArrears != null) {
             tenancyLicenceBuilder
-                    .rentStatementDocuments(ListValueUtils.unwrapListItems(rentArrears.getRentStatementDocuments()))
-                    .totalRentArrears(penceToPounds(rentArrears.getTotalRentArrears()))
+                    .rentStatementDocuments(ListValueUtils.unwrapListItems(rentArrears.getStatementDocuments()))
+                    .totalRentArrears(penceToPounds(rentArrears.getTotal()))
                     .thirdPartyPaymentSources(rentArrears.getThirdPartyPaymentSources())
                     .thirdPartyPaymentSourceOther(rentArrears.getThirdPartyPaymentSourceOther());
         }
