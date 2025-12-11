@@ -8,7 +8,7 @@ wiremock:
   volumes:
     - name: wiremock-mocks
       configMap:
-        name: ${SERVICE_NAME}-wiremock-stubbing
+        name: ${SERVICE_NAME}-wiremock-wm
   volumeMounts:
     - name: wiremock-mocks
       mountPath: /home/wiremock/mappings
