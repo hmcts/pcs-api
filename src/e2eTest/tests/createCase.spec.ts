@@ -73,8 +73,8 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - England] @regression', async () => {
-  test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
+test.describe('[Create Case - England]', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds @PR @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -432,7 +432,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Other tenancy with grounds for possession - Demoted tenancy', async () => {
+  test('England - Other tenancy with grounds for possession - Demoted tenancy @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -546,7 +546,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Introductory tenancy with grounds for possession - excludes rent arrears', async () => {
+  test('England - Introductory tenancy with grounds for possession - excludes rent arrears @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -735,7 +735,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
+  test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -1061,7 +1061,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow', async () => {
+  test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
