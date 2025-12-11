@@ -335,7 +335,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-//        assignCaseAccessService.assignRole(String.valueOf(caseReference), pcsCase);
+        //assignCaseAccessService.assignRole(String.valueOf(caseReference), pcsCase);
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
