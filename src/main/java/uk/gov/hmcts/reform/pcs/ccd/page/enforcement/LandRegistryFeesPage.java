@@ -10,12 +10,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LandRegistryFees;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @AllArgsConstructor
 @Component
 public class LandRegistryFeesPage implements CcdPageConfiguration {
+
+    private MoneyConverter moneyConverter;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -56,7 +59,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             .getMoneyOwedByDefendants()
             .getAmountOwed();
 
-        String formatted = convertPenceToPounds(totalArrears);
+        String formatted = moneyConverter.convertPenceToPounds(totalArrears);
 
         caseData.getEnforcementOrder()
             .getRepaymentCosts()
@@ -68,7 +71,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             .getLandRegistryFees()
             .getAmountOfLandRegistryFees();
 
-        String formatted = convertPenceToPounds(landRegistryFee);
+        String formatted = moneyConverter.convertPenceToPounds(landRegistryFee);
 
         caseData.getEnforcementOrder()
             .getRepaymentCosts()
@@ -80,7 +83,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             .getLegalCosts()
             .getAmountOfLegalCosts();
 
-        String formatted = convertPenceToPounds(legalCosts);
+        String formatted = moneyConverter.convertPenceToPounds(legalCosts);
 
         caseData.getEnforcementOrder()
             .getRepaymentCosts()
@@ -89,7 +92,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
     private String convertWarrantFeeToPence(PCSCase caseData) {
         String warrantFee = caseData.getEnforcementOrder().getWarrantFeeAmount();
-        return convertPoundsToPence(warrantFee);
+        return moneyConverter.convertPoundsToPence(warrantFee);
     }
 
     private void formatTotalFees(PCSCase caseData, String warrantFeePence) {
@@ -97,15 +100,15 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         String legalCosts = caseData.getEnforcementOrder().getLegalCosts().getAmountOfLegalCosts();
         String totalArrears = caseData.getEnforcementOrder().getMoneyOwedByDefendants().getAmountOwed();
 
-        String totalAmountInPennies = getTotalAmount(landRegistryFee, legalCosts, totalArrears, warrantFeePence);
-        String formattedTotal = convertPenceToPounds(totalAmountInPennies);
+        String totalAmountInPence = getTotalPence(landRegistryFee, legalCosts, totalArrears, warrantFeePence);
+        String formattedTotal = moneyConverter.convertPenceToPounds(totalAmountInPence);
 
         caseData.getEnforcementOrder()
             .getRepaymentCosts()
             .setFormattedAmountOfTotalFees(formattedTotal);
     }
 
-    private String getTotalAmount(String... pennies) {
+    private String getTotalPence(String... pennies) {
         long totalPence = 0;
         for (String penceStr : pennies) {
             if (penceStr != null) {
@@ -115,48 +118,5 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             }
         }
         return String.valueOf(totalPence);
-    }
-
-    private String convertPenceToPounds(String penceString) {
-        if (penceString == null || penceString.isEmpty()) {
-            return "£0";
-        }
-
-        long pence = Long.parseLong(penceString);
-        long pounds = pence / 100;
-        long pennies = pence % 100;
-
-        if (pennies == 0) {
-            // No pennies, show whole pounds without decimals
-            return "£" + pounds;
-        } else {
-            // Has pennies, show with two decimals
-            double amount = pounds + pennies / 100.0;
-            return String.format("£%.2f", amount);
-        }
-    }
-
-    private String convertPoundsToPence(String amount) {
-        if (amount == null || amount.trim().isEmpty()) {
-            return "0";
-        }
-
-        String cleansed = amount.replace("£", "").trim();
-
-        if (cleansed.contains(".")) {
-            String[] parts = cleansed.split("\\.");
-            long pounds = Long.parseLong(parts[0]);
-            String penniesStr = parts[1];
-
-            if (penniesStr.length() == 1) {
-                penniesStr = penniesStr + "0";
-            }
-
-            long pennies = Long.parseLong(penniesStr);
-
-            return String.valueOf(pounds * 100 + pennies);
-        } else {
-            return String.valueOf(Long.parseLong(cleansed) * 100);
-        }
     }
 }

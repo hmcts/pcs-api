@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.util.stream.Stream;
 
@@ -21,7 +22,8 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new LandRegistryFeesPage());
+        MoneyConverter moneyConverter = new MoneyConverter();
+        setPageUnderTest(new LandRegistryFeesPage(moneyConverter));
     }
 
     @ParameterizedTest

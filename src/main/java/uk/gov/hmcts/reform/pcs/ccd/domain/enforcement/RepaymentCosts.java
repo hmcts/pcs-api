@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
@@ -8,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
 
 @Data
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RepaymentCosts {
 
     @CCD(
@@ -16,7 +18,7 @@ public class RepaymentCosts {
     private RepaymentPreference repaymentChoice;
 
     @CCD(
-        label = "Enter the amount that you want the defendants to repay?",
+        label = "Enter the amount that you want the defendants to repay",
         typeOverride = FieldType.MoneyGBP,
         min = 1
     )
