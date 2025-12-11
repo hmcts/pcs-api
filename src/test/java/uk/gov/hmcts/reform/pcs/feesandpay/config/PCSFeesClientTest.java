@@ -8,8 +8,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
+import uk.gov.hmcts.reform.pcs.feesandpay.client.PCSFeesClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.math.BigDecimal;
 
@@ -67,7 +68,7 @@ class PCSFeesClientTest {
     @Test
     void shouldSuccessfullyLookupFeeWhenConfigurationExists() {
         // Given
-        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
+        when(feesConfiguration.getLookup(FeeType.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
         when(feesApi.lookupFee(
             eq(SERVICE),
             eq(JURISDICTION_1),
@@ -80,7 +81,7 @@ class PCSFeesClientTest {
         )).thenReturn(feeLookupResponseDto);
 
         // When
-        FeeLookupResponseDto result = underTest.lookupFee(FeeTypes.CASE_ISSUE_FEE);
+        FeeLookupResponseDto result = underTest.lookupFee(FeeType.CASE_ISSUE_FEE);
 
         // Then
         assertThat(result).isNotNull();
@@ -88,7 +89,7 @@ class PCSFeesClientTest {
         assertThat(result.getDescription()).isEqualTo("Issue fee");
         assertThat(result.getFeeAmount()).isEqualTo(new BigDecimal("455.00"));
 
-        verify(feesConfiguration).getLookup(FeeTypes.CASE_ISSUE_FEE);
+        verify(feesConfiguration).getLookup(FeeType.CASE_ISSUE_FEE);
         verify(feesApi).lookupFee(
             eq(SERVICE),
             eq(JURISDICTION_1),
@@ -104,21 +105,21 @@ class PCSFeesClientTest {
     @Test
     void shouldThrowFeeNotFoundExceptionWhenConfigurationIsNull() {
         // Given
-        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE_FEE)).thenReturn(null);
+        when(feesConfiguration.getLookup(FeeType.CASE_ISSUE_FEE)).thenReturn(null);
 
         // When & Then
-        assertThatThrownBy(() -> underTest.lookupFee(FeeTypes.CASE_ISSUE_FEE))
+        assertThatThrownBy(() -> underTest.lookupFee(FeeType.CASE_ISSUE_FEE))
             .isInstanceOf(FeeNotFoundException.class)
             .hasMessageContaining("Fee not found for feeType: CASE_ISSUE_FEE");
 
-        verify(feesConfiguration).getLookup(FeeTypes.CASE_ISSUE_FEE);
+        verify(feesConfiguration).getLookup(FeeType.CASE_ISSUE_FEE);
         verify(feesApi, never()).lookupFee(any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void shouldLookupFeeWithAllReferenceDataFields() {
         // Given
-        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
+        when(feesConfiguration.getLookup(FeeType.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
         when(feesApi.lookupFee(
             eq(SERVICE),
             eq(JURISDICTION_1),
@@ -131,7 +132,7 @@ class PCSFeesClientTest {
         )).thenReturn(feeLookupResponseDto);
 
         // When
-        underTest.lookupFee(FeeTypes.CASE_ISSUE_FEE);
+        underTest.lookupFee(FeeType.CASE_ISSUE_FEE);
 
         // Then
         verify(feesApi).lookupFee(
@@ -149,7 +150,7 @@ class PCSFeesClientTest {
     @Test
     void shouldHandleDifferentFeeTypes() {
         // Given
-        FeeTypes differentFeeType = FeeTypes.CASE_ISSUE_FEE;
+        FeeType differentFeeType = FeeType.CASE_ISSUE_FEE;
         when(feesConfiguration.getLookup(differentFeeType)).thenReturn(lookUpReferenceData);
         when(feesApi.lookupFee(any(), any(), any(), any(), any(), any(), any(), any()))
             .thenReturn(feeLookupResponseDto);
@@ -165,7 +166,7 @@ class PCSFeesClientTest {
     @Test
     void shouldReturnFeeLookupResponseDtoWithCorrectStructure() {
         // Given
-        when(feesConfiguration.getLookup(FeeTypes.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
+        when(feesConfiguration.getLookup(FeeType.CASE_ISSUE_FEE)).thenReturn(lookUpReferenceData);
 
         FeeLookupResponseDto expectedResponse = FeeLookupResponseDto.builder()
             .code("FEE0002")
@@ -178,7 +179,7 @@ class PCSFeesClientTest {
             .thenReturn(expectedResponse);
 
         // When
-        FeeLookupResponseDto result = underTest.lookupFee(FeeTypes.CASE_ISSUE_FEE);
+        FeeLookupResponseDto result = underTest.lookupFee(FeeType.CASE_ISSUE_FEE);
 
         // Then
         assertThat(result).isEqualTo(expectedResponse);

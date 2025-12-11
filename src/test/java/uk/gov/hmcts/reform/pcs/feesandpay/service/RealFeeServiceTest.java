@@ -11,10 +11,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.fees.client.model.FeeLookupResponseDto;
-import uk.gov.hmcts.reform.pcs.feesandpay.config.PCSFeesClient;
+import uk.gov.hmcts.reform.pcs.feesandpay.client.PCSFeesClient;
 import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ class RealFeeServiceTest {
     @InjectMocks
     private RealFeeService underTest;
 
-    private static final FeeTypes FEE_TYPE = FeeTypes.CASE_ISSUE_FEE;
+    private static final FeeType FEE_TYPE = FeeType.CASE_ISSUE_FEE;
 
     private FeeLookupResponseDto feeLookupResponseDto;
 
@@ -74,7 +74,7 @@ class RealFeeServiceTest {
             new RequestTemplate()
         );
 
-        when(pcsFeesClient.lookupFee(any(FeeTypes.class)))
+        when(pcsFeesClient.lookupFee(any(FeeType.class)))
             .thenThrow(new NotFound("Fee not found", request, null, null));
 
         assertThatThrownBy(() -> underTest.getFee(FEE_TYPE))
@@ -94,7 +94,7 @@ class RealFeeServiceTest {
             new RequestTemplate()
         );
 
-        when(pcsFeesClient.lookupFee(any(FeeTypes.class)))
+        when(pcsFeesClient.lookupFee(any(FeeType.class)))
             .thenThrow(new InternalServerError(
                 "Internal server error", request, null, null));
 

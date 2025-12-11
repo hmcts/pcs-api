@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
@@ -19,7 +19,7 @@ import java.util.function.BiConsumer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes.ENFORCEMENT_WARRANT_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.ENFORCEMENT_WARRANT_FEE;
 
 @ExtendWith(MockitoExtension.class)
 class FeeApplierTest extends BaseEventTest {
@@ -39,7 +39,7 @@ class FeeApplierTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
-        FeeTypes feeType = ENFORCEMENT_WARRANT_FEE;
+        FeeType feeType = ENFORCEMENT_WARRANT_FEE;
         BigDecimal feeAmount = BigDecimal.valueOf(123.45);
         final String expectedFormattedFee = "£123.45";
 
@@ -66,7 +66,7 @@ class FeeApplierTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
-        FeeTypes feeType = FeeTypes.ENFORCEMENT_WARRANT_FEE;
+        FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
         final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
 
         when(feeService.getFee(feeType))
@@ -88,7 +88,7 @@ class FeeApplierTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
-        FeeTypes feeType = FeeTypes.ENFORCEMENT_WARRANT_FEE;
+        FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
         final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
 
         when(feeService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(null);
