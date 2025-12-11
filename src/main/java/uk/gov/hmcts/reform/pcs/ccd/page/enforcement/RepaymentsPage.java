@@ -49,7 +49,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("repaymentsPage")
-            .pageLabel("Repayments Page")
+            .pageLabel("Repayments")
             .label("repaymentsPage-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
@@ -61,6 +61,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
             .label("repayments-table-content", REPAYMENT_TABLE)
             .mandatory(RepaymentCosts::getRepaymentChoice)
             .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "repaymentChoice=\"SOME\"")
+            .done()
             .done()
             .label("repaymentsPage-save-and-return", SAVE_AND_RETURN);
     }

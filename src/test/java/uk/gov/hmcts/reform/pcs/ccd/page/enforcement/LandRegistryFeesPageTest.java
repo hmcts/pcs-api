@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-public class LandRegistryFeesPageTest extends BasePageTest {
+class LandRegistryFeesPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {

@@ -36,36 +36,73 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
+
         PCSCase caseData = details.getData();
 
-        // Formatting total arrears
-        String totalArrears = caseData.getEnforcementOrder().getMoneyOwedByDefendants().getAmountOwed();
-        String formattedTotalArrears =  convertPenceToPounds(totalArrears);
-        caseData.getEnforcementOrder().getRepaymentCosts().setFormattedAmountOfTotalArrears(formattedTotalArrears);
+        formatTotalArrears(caseData);
+        formatLandRegistryFee(caseData);
+        formatLegalCosts(caseData);
 
-        // Formatting land registry fee
-        String landRegistryFee = caseData.getEnforcementOrder().getLandRegistryFees().getAmountOfLandRegistryFees();
-        String formattedLandRegistryFee = convertPenceToPounds(landRegistryFee);
-        caseData.getEnforcementOrder().getRepaymentCosts()
-            .setFormattedAmountOfLandRegistryFees(formattedLandRegistryFee);
-
-        // Formatting legal costs fee
-        String legalCosts = caseData.getEnforcementOrder().getLegalCosts().getAmountOfLegalCosts();
-        String formattedLegalCosts = convertPenceToPounds(legalCosts);
-        caseData.getEnforcementOrder().getRepaymentCosts().setFormattedAmountOfLegalFees(formattedLegalCosts);
-
-        // Formatting warrant fee
-        String warrantFee = caseData.getEnforcementOrder().getWarrantFeeAmount();
-        String warrantFeePence = convertPoundsToPence(warrantFee);
-
-        // Formatting total costs
-        String totalAmountInPennies = getTotalAmount(landRegistryFee, legalCosts, totalArrears, warrantFeePence);
-        String formattedTotalAmount = convertPenceToPounds(totalAmountInPennies);
-        caseData.getEnforcementOrder().getRepaymentCosts().setFormattedAmountOfTotalFees(formattedTotalAmount);
+        String warrantFeePence = convertWarrantFeeToPence(caseData);
+        formatTotalFees(caseData, warrantFeePence);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
+    }
+
+    private void formatTotalArrears(PCSCase caseData) {
+        String totalArrears = caseData.getEnforcementOrder()
+            .getMoneyOwedByDefendants()
+            .getAmountOwed();
+
+        String formatted = convertPenceToPounds(totalArrears);
+
+        caseData.getEnforcementOrder()
+            .getRepaymentCosts()
+            .setFormattedAmountOfTotalArrears(formatted);
+    }
+
+    private void formatLandRegistryFee(PCSCase caseData) {
+        String landRegistryFee = caseData.getEnforcementOrder()
+            .getLandRegistryFees()
+            .getAmountOfLandRegistryFees();
+
+        String formatted = convertPenceToPounds(landRegistryFee);
+
+        caseData.getEnforcementOrder()
+            .getRepaymentCosts()
+            .setFormattedAmountOfLandRegistryFees(formatted);
+    }
+
+    private void formatLegalCosts(PCSCase caseData) {
+        String legalCosts = caseData.getEnforcementOrder()
+            .getLegalCosts()
+            .getAmountOfLegalCosts();
+
+        String formatted = convertPenceToPounds(legalCosts);
+
+        caseData.getEnforcementOrder()
+            .getRepaymentCosts()
+            .setFormattedAmountOfLegalFees(formatted);
+    }
+
+    private String convertWarrantFeeToPence(PCSCase caseData) {
+        String warrantFee = caseData.getEnforcementOrder().getWarrantFeeAmount();
+        return convertPoundsToPence(warrantFee);
+    }
+
+    private void formatTotalFees(PCSCase caseData, String warrantFeePence) {
+        String landRegistryFee = caseData.getEnforcementOrder().getLandRegistryFees().getAmountOfLandRegistryFees();
+        String legalCosts = caseData.getEnforcementOrder().getLegalCosts().getAmountOfLegalCosts();
+        String totalArrears = caseData.getEnforcementOrder().getMoneyOwedByDefendants().getAmountOwed();
+
+        String totalAmountInPennies = getTotalAmount(landRegistryFee, legalCosts, totalArrears, warrantFeePence);
+        String formattedTotal = convertPenceToPounds(totalAmountInPennies);
+
+        caseData.getEnforcementOrder()
+            .getRepaymentCosts()
+            .setFormattedAmountOfTotalFees(formattedTotal);
     }
 
     private String getTotalAmount(String... pennies) {
@@ -77,7 +114,6 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
                 totalPence += pence;
             }
         }
-
         return String.valueOf(totalPence);
     }
 
@@ -123,5 +159,4 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             return String.valueOf(Long.parseLong(cleansed) * 100);
         }
     }
-
 }
