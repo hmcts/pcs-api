@@ -106,6 +106,10 @@ public class EnforcementOrder {
 
     @JsonUnwrapped
     @CCD
+    private MoneyOwedByDefendants moneyOwedByDefendants;
+
+    @JsonUnwrapped
+    @CCD
     private LandRegistryFees landRegistryFees;
 
     @CCD(
