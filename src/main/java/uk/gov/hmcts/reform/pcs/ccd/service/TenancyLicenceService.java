@@ -92,9 +92,9 @@ public class TenancyLicenceService {
                                          TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         if (rentDetails != null) {
             tenancyLicenceBuilder
-                    .rentAmount(penceToPounds(rentDetails.getCurrentRent()))
-                    .rentPaymentFrequency(rentDetails.getRentFrequency())
-                    .otherRentFrequency(rentDetails.getOtherRentFrequency())
+                    .rentAmount(penceToPounds(rentDetails.getCurrent()))
+                    .rentPaymentFrequency(rentDetails.getFrequency())
+                    .otherRentFrequency(rentDetails.getOtherFrequency())
                     .dailyRentChargeAmount(getDailyRentAmount(rentDetails));
         }
     }
@@ -104,9 +104,9 @@ public class TenancyLicenceService {
             return null;
         }
         String[] fieldValues = {
-            rentDetails.getAmendedDailyRentChargeAmount(),
-            rentDetails.getCalculatedDailyRentChargeAmount(),
-            rentDetails.getDailyRentChargeAmount()
+            rentDetails.getAmendedDailyChargeAmount(),
+            rentDetails.getCalculatedDailyChargeAmount(),
+            rentDetails.getDailyChargeAmount()
         };
         for (String value : fieldValues) {
             if (value != null && !value.trim().isEmpty()) {

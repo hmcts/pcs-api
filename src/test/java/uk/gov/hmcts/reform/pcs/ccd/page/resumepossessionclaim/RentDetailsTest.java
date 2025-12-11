@@ -22,8 +22,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .currentRent("7000") // £70.00 in pence
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
+                        .current("7000") // £70.00 in pence
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
                 .build();
 
@@ -31,7 +31,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isEqualTo("1000"); // £10.00 per day
+        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isEqualTo("1000"); // £10.00 per day
     }
 
     @Test
@@ -39,8 +39,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .currentRent("30000") // £300.00 in pence
-                        .rentFrequency(RentPaymentFrequency.MONTHLY)
+                        .current("30000") // £300.00 in pence
+                        .frequency(RentPaymentFrequency.MONTHLY)
                         .build())
                 .build();
 
@@ -48,7 +48,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isEqualTo("986"); // £9.86 per day
+        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isEqualTo("986"); // £9.86 per day
     }
 
     @Test
@@ -56,8 +56,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .rentFrequency(RentPaymentFrequency.OTHER)
-                        .dailyRentChargeAmount("1500") // £15.00 per day
+                        .frequency(RentPaymentFrequency.OTHER)
+                        .dailyChargeAmount("1500") // £15.00 per day
                         .build())
                 .build();
 
@@ -65,7 +65,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getDailyRentChargeAmount()).isEqualTo("1500");
+        assertThat(caseData.getRentDetails().getDailyChargeAmount()).isEqualTo("1500");
     }
 
     @Test
@@ -73,8 +73,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
-                        .currentRent("7000")
+                        .frequency(RentPaymentFrequency.WEEKLY)
+                        .current("7000")
                         .build())
                 .build();
 
@@ -90,7 +90,7 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .rentFrequency(RentPaymentFrequency.OTHER)
+                        .frequency(RentPaymentFrequency.OTHER)
                         .build())
                 .build();
 
@@ -106,8 +106,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .currentRent("14000") // £140.00 in pence
-                        .rentFrequency(RentPaymentFrequency.FORTNIGHTLY)
+                        .current("14000") // £140.00 in pence
+                        .frequency(RentPaymentFrequency.FORTNIGHTLY)
                         .build())
                 .build();
 
@@ -115,8 +115,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isEqualTo("1000"); // £10.00 per day
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyRentChargeAmount()).isEqualTo("£10.00");
+        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isEqualTo("1000"); // £10.00 per day
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyChargeAmount()).isEqualTo("£10.00");
     }
 
     @Test
@@ -124,8 +124,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .currentRent("7000") // £70.00 in pence
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
+                        .current("7000") // £70.00 in pence
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
                 .build();
 
@@ -133,9 +133,9 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount())
+        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount())
             .isEqualTo("1000"); // £10.00 per day in pence
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyRentChargeAmount())
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyChargeAmount())
             .isEqualTo("£10.00");
     }
 
@@ -144,8 +144,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .currentRent("7000")
-                        .rentFrequency(null)
+                        .current("7000")
+                        .frequency(null)
                         .build())
                 .build();
 
@@ -153,8 +153,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isNull();
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyRentChargeAmount()).isNull();
+        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isNull();
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyChargeAmount()).isNull();
         assertThat(caseData.getShowRentArrearsPage()).isNull();
     }
 
@@ -163,8 +163,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .currentRent("")
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
+                        .current("")
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
                 .build();
 
@@ -172,8 +172,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isNull();
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyRentChargeAmount()).isNull();
+        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isNull();
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyChargeAmount()).isNull();
         assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.NO);
     }
 
@@ -182,8 +182,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetailsSection.builder()
-                        .rentFrequency(RentPaymentFrequency.MONTHLY)
-                        .currentRent("30000")
+                        .frequency(RentPaymentFrequency.MONTHLY)
+                        .current("30000")
                         .build())
                 .build();
 

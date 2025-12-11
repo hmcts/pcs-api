@@ -31,11 +31,11 @@ public class RentDetails implements CcdPageConfiguration {
                         ---
                         """)
                 .complex(PCSCase::getRentDetails)
-                    .mandatory(RentDetailsSection::getCurrentRent)
-                    .mandatory(RentDetailsSection::getRentFrequency)
-                    .mandatory(RentDetailsSection::getOtherRentFrequency, "rentRentFrequency=\"OTHER\"")
-                    .mandatory(RentDetailsSection::getDailyRentChargeAmount, "rentRentFrequency=\"OTHER\"")
-                    .readonly(RentDetailsSection::getCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                    .mandatory(RentDetailsSection::getCurrent)
+                    .mandatory(RentDetailsSection::getFrequency)
+                    .mandatory(RentDetailsSection::getOtherFrequency, "rentDetails_frequency=\"OTHER\"")
+                    .mandatory(RentDetailsSection::getDailyChargeAmount, "rentDetails_frequency=\"OTHER\"")
+                    .readonly(RentDetailsSection::getCalculatedDailyChargeAmount, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -46,22 +46,22 @@ public class RentDetails implements CcdPageConfiguration {
 
         RentDetailsSection rentDetails = caseData.getRentDetails();
 
-        RentPaymentFrequency rentFrequency = rentDetails.getRentFrequency();
+        RentPaymentFrequency frequency = rentDetails.getFrequency();
         
-        // Only process if rentFrequency is set
-        if (rentFrequency != null) {
-            if (rentFrequency != RentPaymentFrequency.OTHER) {
-                String currentRent = rentDetails.getCurrentRent();
-                if (currentRent != null && !currentRent.isEmpty()) {
-                    BigDecimal rentAmountInPence = new BigDecimal(currentRent);
-                    BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, rentFrequency);
+        // Only process if frequency is set
+        if (frequency != null) {
+            if (frequency != RentPaymentFrequency.OTHER) {
+                String current = rentDetails.getCurrent();
+                if (current != null && !current.isEmpty()) {
+                    BigDecimal rentAmountInPence = new BigDecimal(current);
+                    BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, frequency);
                     String dailyAmountString = dailyAmountInPence.toPlainString();
 
                     // Set pence value for calculations/integrations
-                    rentDetails.setCalculatedDailyRentChargeAmount(dailyAmountString);
+                    rentDetails.setCalculatedDailyChargeAmount(dailyAmountString);
 
                     // Set formatted value for display
-                    rentDetails.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
+                    rentDetails.setFormattedCalculatedDailyChargeAmount(formatCurrency(dailyAmountString));
                 }
                 
                 // Set flag to NO - DailyRentAmount should show first
