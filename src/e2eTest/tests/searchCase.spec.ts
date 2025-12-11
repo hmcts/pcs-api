@@ -24,7 +24,7 @@ test.beforeEach(async ({page}) => {
   });
 });
 //Skipping these tests as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
-test.describe.skip('[Search Case] @regression', () => {
+test.describe.skip('[Search Case]', () => {
   test('Search for case via case list', async ({}) => {
     await performAction('filterCaseFromCaseList', caseInfo.state);
     await performValidation('text', {
