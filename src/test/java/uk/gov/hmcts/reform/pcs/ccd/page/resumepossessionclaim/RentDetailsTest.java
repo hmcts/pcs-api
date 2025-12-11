@@ -31,7 +31,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isEqualTo("1000"); // £10.00 per day
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("1000"); // £10.00 per day
     }
 
     @Test
@@ -48,7 +48,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isEqualTo("986"); // £9.86 per day
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("986"); // £9.86 per day
     }
 
     @Test
@@ -115,8 +115,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isEqualTo("1000"); // £10.00 per day
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyChargeAmount()).isEqualTo("£10.00");
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("1000"); // £10.00 per day
+        assertThat(caseData.getRentDetails().getFormattedDailyCharge()).isEqualTo("£10.00");
     }
 
     @Test
@@ -133,9 +133,9 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount())
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge())
             .isEqualTo("1000"); // £10.00 per day in pence
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyChargeAmount())
+        assertThat(caseData.getRentDetails().getFormattedDailyCharge())
             .isEqualTo("£10.00");
     }
 
@@ -153,8 +153,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isNull();
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyChargeAmount()).isNull();
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
+        assertThat(caseData.getRentDetails().getFormattedDailyCharge()).isNull();
         assertThat(caseData.getShowRentArrearsPage()).isNull();
     }
 
@@ -172,8 +172,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyChargeAmount()).isNull();
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyChargeAmount()).isNull();
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
+        assertThat(caseData.getRentDetails().getFormattedDailyCharge()).isNull();
         assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.NO);
     }
 

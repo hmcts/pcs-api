@@ -106,7 +106,10 @@ class TenancyLicenceServiceTest {
                 .value(Document.builder().filename("certificate_service.pdf").build()).build()
         );
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getNoticeServedDetails().getNoticeDocuments()).thenReturn(noticeDocs),
+            pcsCase -> {
+                when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+                when(noticeServedDetails.getNoticeDocuments()).thenReturn(noticeDocs);
+            },
             expected -> {
                 assertThat(expected.getNoticeDocuments()).hasSize(2);
                 assertThat(expected.getNoticeDocuments())
@@ -196,8 +199,8 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
-                .amendedDailyChargeAmount("5000")
-                .calculatedDailyChargeAmount("4000")
+                .amendedDailyCharge("5000")
+                .calculatedDailyCharge("4000")
                 .dailyChargeAmount("3500")
                 .current("120000")
                 .frequency(RentPaymentFrequency.MONTHLY)
@@ -213,8 +216,8 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
-                .amendedDailyChargeAmount(null)
-                .calculatedDailyChargeAmount("4000")
+                .amendedDailyCharge(null)
+                .calculatedDailyCharge("4000")
                 .dailyChargeAmount("3500")
                 .current("120000")
                 .frequency(RentPaymentFrequency.MONTHLY)
@@ -230,8 +233,8 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
-                .amendedDailyChargeAmount(null)
-                .calculatedDailyChargeAmount(null)
+                .amendedDailyCharge(null)
+                .calculatedDailyCharge(null)
                 .dailyChargeAmount("3500")
                 .current("120000")
                 .frequency(RentPaymentFrequency.MONTHLY)
@@ -323,7 +326,7 @@ class TenancyLicenceServiceTest {
     void shouldHandleNullNoticeDocuments() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getNoticeServedDetails().getNoticeDocuments()).thenReturn(null);
+        when(noticeServedDetails.getNoticeDocuments()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -334,7 +337,7 @@ class TenancyLicenceServiceTest {
     void shouldHandleEmptyNoticeDocuments() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getNoticeServedDetails().getNoticeDocuments()).thenReturn(Collections.emptyList());
+        when(noticeServedDetails.getNoticeDocuments()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then

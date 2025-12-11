@@ -54,14 +54,14 @@ public class RentDetailsSection {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String amendedDailyChargeAmount;
+    private String amendedDailyCharge;
 
     @CCD(
         typeOverride = FieldType.MoneyGBP
     )
-    private String calculatedDailyChargeAmount;
+    private String calculatedDailyCharge;
 
     @CCD
-    private String formattedCalculatedDailyChargeAmount;
+    private String formattedDailyCharge;
 }
 

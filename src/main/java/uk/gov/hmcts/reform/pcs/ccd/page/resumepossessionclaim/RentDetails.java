@@ -35,7 +35,8 @@ public class RentDetails implements CcdPageConfiguration {
                     .mandatory(RentDetailsSection::getFrequency)
                     .mandatory(RentDetailsSection::getOtherFrequency, "rentDetails_frequency=\"OTHER\"")
                     .mandatory(RentDetailsSection::getDailyChargeAmount, "rentDetails_frequency=\"OTHER\"")
-                    .readonly(RentDetailsSection::getCalculatedDailyChargeAmount, NEVER_SHOW)
+                    .readonly(RentDetailsSection::getCalculatedDailyCharge, NEVER_SHOW)
+                    .readonly(RentDetailsSection::getFormattedDailyCharge, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -58,10 +59,10 @@ public class RentDetails implements CcdPageConfiguration {
                     String dailyAmountString = dailyAmountInPence.toPlainString();
 
                     // Set pence value for calculations/integrations
-                    rentDetails.setCalculatedDailyChargeAmount(dailyAmountString);
+                    rentDetails.setCalculatedDailyCharge(dailyAmountString);
 
                     // Set formatted value for display
-                    rentDetails.setFormattedCalculatedDailyChargeAmount(formatCurrency(dailyAmountString));
+                    rentDetails.setFormattedDailyCharge(formatCurrency(dailyAmountString));
                 }
                 
                 // Set flag to NO - DailyRentAmount should show first

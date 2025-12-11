@@ -59,8 +59,8 @@ public class TenancyLicenceService {
             return null;
         }
         String[] fieldValues = {
-            rentDetails.getAmendedDailyChargeAmount(),
-            rentDetails.getCalculatedDailyChargeAmount(),
+            rentDetails.getAmendedDailyCharge(),
+            rentDetails.getCalculatedDailyCharge(),
             rentDetails.getDailyChargeAmount()
         };
         for (String value : fieldValues) {
