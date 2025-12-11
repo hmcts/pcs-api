@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -66,7 +67,11 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
                 .discretionaryGroundsWales(discretionaryGrounds)
                 .build())
-            .secureContractDiscretionaryGroundsWales(secureDiscretionaryGrounds)
+            .secureContractGroundsForPossessionWales(
+                SecureContractGroundsForPossessionWales.builder()
+                    .discretionaryGroundsWales(secureDiscretionaryGrounds)
+                    .build()
+            )
             .build();
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);

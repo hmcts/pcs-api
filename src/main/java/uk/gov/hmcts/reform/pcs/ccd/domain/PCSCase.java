@@ -13,16 +13,16 @@ import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -49,6 +49,11 @@ public class PCSCase {
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that’s in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+
+    @CCD(
+        access = {DefendantAccess.class}
+    )
+    private YesOrNo submitDraftAnswers;
 
     @CCD(
         searchable = false
@@ -638,28 +643,8 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
 
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureContractDiscretionaryGroundsWales"
-    )
-    private Set<SecureContractDiscretionaryGroundsWales> secureContractDiscretionaryGroundsWales;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureContractMandatoryGroundsWales"
-    )
-    private Set<SecureContractMandatoryGroundsWales> secureContractMandatoryGroundsWales;
-
-    @CCD(
-        label = "Estate management grounds",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "EstateManagementGroundsWales"
-    )
-    private Set<EstateManagementGroundsWales> secureContractEstateManagementGroundsWales;
+    @JsonUnwrapped(prefix = "secureContract_")
+    private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
 
     @CCD(
         label = "Estate management grounds",
@@ -711,6 +696,11 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
+
+    @CCD(
+        access = {DefendantAccess.class}
+    )
+    private DefendantResponse defendantResponse;
 
     @CCD(searchable = false)
     private String formattedDefendantNames;
