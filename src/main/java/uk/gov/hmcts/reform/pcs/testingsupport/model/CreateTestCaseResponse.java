@@ -12,6 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CreateTestCaseResponse {
 
+    private UUID caseId;
     private Long caseReference;
     private List<DefendantInfo> defendants;
 
@@ -23,5 +24,6 @@ public class CreateTestCaseResponse {
         private UUID idamUserId;
         private String firstName;
         private String lastName;
+        private String accessCode;
     }
 }

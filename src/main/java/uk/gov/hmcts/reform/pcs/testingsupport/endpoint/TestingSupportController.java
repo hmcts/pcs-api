@@ -45,9 +45,11 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -377,12 +379,13 @@ public class TestingSupportController {
                     .build();
                 defendants.add(defendant);
 
-                // Create response info
+                // Create response info (accessCode will be set after generation)
                 CreateTestCaseResponse.DefendantInfo defendantInfo = new CreateTestCaseResponse.DefendantInfo(
                     generatedPartyId,
                     defendantRequest.getIdamUserId(),
                     defendantRequest.getFirstName(),
-                    defendantRequest.getLastName()
+                    defendantRequest.getLastName(),
+                    null  // accessCode will be populated after generation
                 );
                 defendantInfos.add(defendantInfo);
             }
@@ -404,8 +407,28 @@ public class TestingSupportController {
                 // Don't fail the request - codes can be generated later if needed
             }
 
-            // Build response
-            CreateTestCaseResponse response = new CreateTestCaseResponse(caseReference, defendantInfos);
+            // Load access codes and add to response
+            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository
+                .findAllByPcsCase_Id(caseEntity.getId());
+
+            Map<UUID, String> partyIdToCode = accessCodes.stream()
+                .collect(Collectors.toMap(
+                    PartyAccessCodeEntity::getPartyId,
+                    PartyAccessCodeEntity::getCode
+                ));
+
+            // Update defendantInfos with access codes
+            defendantInfos.forEach(info -> {
+                String code = partyIdToCode.get(info.getPartyId());
+                info.setAccessCode(code);
+            });
+
+            // Build response with caseId
+            CreateTestCaseResponse response = new CreateTestCaseResponse(
+                caseEntity.getId(),  // caseId (UUID)
+                caseReference,
+                defendantInfos
+            );
             return ResponseEntity.status(201).body(response);
 
         } catch (Exception e) {
