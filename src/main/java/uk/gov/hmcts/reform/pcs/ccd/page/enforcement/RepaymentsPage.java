@@ -34,7 +34,8 @@ public class RepaymentsPage implements CcdPageConfiguration {
              <td class="govuk-table__cell">${formattedAmountOfLandRegistryFees}</td>
             </tr>
             <tr class="govuk-table__row">
-             <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Warrant of possesion fee
+             <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">
+              Warrant of possession fee
              </th>
              <td class="govuk-table__cell">${warrantFeeAmount}</td>
             </tr>
