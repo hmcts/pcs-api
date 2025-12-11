@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -35,8 +36,9 @@ public class AssignCaseAccessService {
         String s2sToken = authTokenGenerator.generate();
 
         UUID userId = securityContextService.getCurrentUserId();
-        //      String orgId = organisationDetailsService.getOrganisationIdentifier(userId.toString());
-        String orgId = "E71FH4Q";
+        String orgId = Optional.ofNullable(organisationDetailsService
+                                               .getOrganisationIdentifier(securityContextService.getCurrentUserId()
+                                                                              .toString())).orElse("E71FH4Q");
 
         CaseAssignmentUserRoleWithOrganisation caseUser =
             CaseAssignmentUserRoleWithOrganisation.builder()
@@ -54,12 +56,12 @@ public class AssignCaseAccessService {
                 .caseAssignmentUserRolesWithOrganisation(userList)
                 .build();
 
-        CaseAssignmentUserRolesResponse respone =
+        CaseAssignmentUserRolesResponse response =
             caseAssignmentApi.assignRole(userAuthorisation, s2sToken, caseAssignmentUserRolesRequest);
 
         log.error("Add Case User Roles Response: ");
-        log.error(respone.getStatusMessage());
-        log.error(respone.toString());
+        log.error(response.getStatusMessage());
+        log.error(response.toString());
 
     }
 }
