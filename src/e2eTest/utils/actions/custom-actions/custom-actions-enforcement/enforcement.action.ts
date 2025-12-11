@@ -22,6 +22,7 @@ import {
   landRegistryFees,
   rePayments,
   peopleYouWantToEvict,
+  moneyOwed,
   languageUsed
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
@@ -57,6 +58,7 @@ export class EnforcementAction implements IAction {
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
+      ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
@@ -67,14 +69,14 @@ export class EnforcementAction implements IAction {
     await actionToPerform();
   }
 
-  private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord){
+  private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord) {
     await performAction('expandSummary', summaryOption.type);
     await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
     await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
     await performAction('expandSummary', summaryOption.type);
   }
 
-  private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord){
+  private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
     await performAction('expandSummary', bailiffQuote.type);
     await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
     await performAction('expandSummary', bailiffQuote.type);
@@ -245,6 +247,13 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', accessToTheProperty.continueButton);
   }
 
+  private async provideMoneyOwed(totalMoneyOwed: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
+    await performAction('clickButton', moneyOwed.continueButton);
+  }
+
   private async provideLegalCosts(legalCost: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -279,7 +288,7 @@ export class EnforcementAction implements IAction {
       if (Array.isArray(validationArr.inputArray)) {
         for (const item of validationArr.inputArray) {
           switch (validationArr.validationType) {
-            case 'moneyField':
+            case 'moneyFieldAndRadioOption':
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
               if (validationArr.option === 'Yes') {
                 await performAction('inputText', validationArr.label, item.input);
@@ -294,8 +303,16 @@ export class EnforcementAction implements IAction {
               await performValidation('inputError', validationArr.label, item.errMessage);
               break;
 
-            default:
+            case 'moneyField':
+              await performAction('inputText', validationArr.label, item.input);
+              await performAction('clickButton', validationArr.button);
+              //below line be uncommented after the bug https://tools.hmcts.net/jira/browse/HDPI-3396 is resolved
+              //await performValidation('errorMessage', validationArr.label, item.errMessage);
+              await performValidation('inputError', validationArr.label, item.errMessage);
               break;
+
+            default:
+              throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
           };
         }
       }
