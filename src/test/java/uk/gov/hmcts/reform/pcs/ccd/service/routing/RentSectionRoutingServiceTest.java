@@ -41,8 +41,8 @@ class RentSectionRoutingServiceTest {
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(null)
-                    .noRentArrearsDiscretionaryGroundsOptions(null)
+                    .mandatoryGrounds(null)
+                    .discretionaryGrounds(null)
                     .build()
             )
             .build();
@@ -82,12 +82,12 @@ class RentSectionRoutingServiceTest {
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(
+                    .mandatoryGrounds(
                 Set.of(
                     NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS
                 )
                     )
-            .noRentArrearsDiscretionaryGroundsOptions(null)
+            .discretionaryGrounds(null)
                     .build()
             )
             .build();

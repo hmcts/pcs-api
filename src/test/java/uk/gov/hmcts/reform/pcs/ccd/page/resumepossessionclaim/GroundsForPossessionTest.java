@@ -29,8 +29,8 @@ class GroundsForPossessionTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
-                    .noRentArrearsDiscretionaryGroundsOptions(
+                    .mandatoryGrounds(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+                    .discretionaryGrounds(
                         Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
                     .build()
             )
@@ -44,9 +44,9 @@ class GroundsForPossessionTest extends BasePageTest {
 
         // Then: Sets should be cleared
         assertThat(caseDetails.getData().getNoRentArrearsGroundsOptions()
-                       .getNoRentArrearsMandatoryGroundsOptions()).isEmpty();
+                       .getMandatoryGrounds()).isEmpty();
         assertThat(caseDetails.getData().getNoRentArrearsGroundsOptions()
-                       .getNoRentArrearsDiscretionaryGroundsOptions()).isEmpty();
+                       .getDiscretionaryGrounds()).isEmpty();
 
     }
 
@@ -57,8 +57,8 @@ class GroundsForPossessionTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
-                    .noRentArrearsDiscretionaryGroundsOptions(
+                    .mandatoryGrounds(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+                    .discretionaryGrounds(
                         Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
                     .build()
             )
@@ -73,8 +73,8 @@ class GroundsForPossessionTest extends BasePageTest {
 
         // Then: Sets should not be cleared
         assertThat(caseDetails.getData().getNoRentArrearsGroundsOptions()
-                       .getNoRentArrearsMandatoryGroundsOptions()).isNotEmpty();
+                       .getMandatoryGrounds()).isNotEmpty();
         assertThat(caseDetails.getData().getNoRentArrearsGroundsOptions()
-                       .getNoRentArrearsDiscretionaryGroundsOptions()).isNotEmpty();
+                       .getDiscretionaryGrounds()).isNotEmpty();
     }
 }

@@ -34,9 +34,9 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
             )
             .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)
             .complex(PCSCase::getNoRentArrearsGroundsOptions)
-            .readonly(NoRentArrearsGroundsOptions::getShowNoRentArrearsGroundReasonPage, NEVER_SHOW)
+            .readonly(NoRentArrearsGroundsOptions::getShowGroundReasonPage, NEVER_SHOW)
             .label(
-                "engNoRentArrearsGroundsForPossessionOptions-information", """
+                "noRentArrearsGroundsForPossessionOptions-information", """
                     ---
                     <p>You may have already given the defendants notice of your intention to begin possession
                     proceedings. If you have, you should have written the grounds you’re making your claim under.
@@ -48,8 +48,8 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                       More information about possession grounds (opens in new tab)</a>.
                     </p>"""
             )
-            .optional(NoRentArrearsGroundsOptions::getNoRentArrearsMandatoryGroundsOptions)
-            .optional(NoRentArrearsGroundsOptions::getNoRentArrearsDiscretionaryGroundsOptions)
+            .optional(NoRentArrearsGroundsOptions::getMandatoryGrounds)
+            .optional(NoRentArrearsGroundsOptions::getDiscretionaryGrounds)
             .done()
             .label("noRentArrearsGroundsForPossessionOptions-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -58,9 +58,9 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds =
-            caseData.getNoRentArrearsGroundsOptions().getNoRentArrearsMandatoryGroundsOptions();
+            caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
         Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds =
-            caseData.getNoRentArrearsGroundsOptions().getNoRentArrearsDiscretionaryGroundsOptions();
+            caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
 
         if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -78,7 +78,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
         caseData.getNoRentArrearsGroundsOptions()
-            .setShowNoRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
+            .setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

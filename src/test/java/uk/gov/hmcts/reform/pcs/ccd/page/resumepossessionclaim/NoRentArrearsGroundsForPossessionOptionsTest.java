@@ -45,8 +45,8 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
-                    .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
+                    .mandatoryGrounds(expectedMandatory)
+                    .discretionaryGrounds(expectedDiscretionary)
                     .build()
             )
             .build();
@@ -56,9 +56,9 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         // Then: Mandatory and Discretionary enum should exist in each set
         PCSCase updated = response.getData();
-        assertThat(updated.getNoRentArrearsGroundsOptions().getNoRentArrearsMandatoryGroundsOptions())
+        assertThat(updated.getNoRentArrearsGroundsOptions().getMandatoryGrounds())
             .containsExactlyInAnyOrderElementsOf(expectedMandatory);
-        assertThat(updated.getNoRentArrearsGroundsOptions().getNoRentArrearsDiscretionaryGroundsOptions())
+        assertThat(updated.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds())
             .containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
     }
 
@@ -77,8 +77,8 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
-                    .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
+                    .mandatoryGrounds(expectedMandatory)
+                    .discretionaryGrounds(expectedDiscretionary)
                     .build()
             )
             .build();
@@ -90,9 +90,9 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         // Then: Mandatory and Discretionary enum should exist in each set
         Set<NoRentArrearsMandatoryGrounds> selectedMandatory =
-            caseDetails.getData().getNoRentArrearsGroundsOptions().getNoRentArrearsMandatoryGroundsOptions();
+            caseDetails.getData().getNoRentArrearsGroundsOptions().getMandatoryGrounds();
         Set<NoRentArrearsDiscretionaryGrounds> selectedDiscretionary =
-            caseDetails.getData().getNoRentArrearsGroundsOptions().getNoRentArrearsDiscretionaryGroundsOptions();
+            caseDetails.getData().getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
 
         assertThat(selectedMandatory).containsExactlyInAnyOrderElementsOf(expectedMandatory);
         assertThat(selectedDiscretionary).containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
@@ -108,8 +108,8 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
-                    .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
+                    .mandatoryGrounds(mandatoryGrounds)
+                    .discretionaryGrounds(discretionaryGrounds)
                     .build()
             )
             .build();
@@ -119,7 +119,7 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         PCSCase updatedCaseData = response.getData();
 
-        assertThat(updatedCaseData.getNoRentArrearsGroundsOptions().getShowNoRentArrearsGroundReasonPage())
+        assertThat(updatedCaseData.getNoRentArrearsGroundsOptions().getShowGroundReasonPage())
             .isEqualTo(expectedShowFlag);
     }
 

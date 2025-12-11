@@ -80,8 +80,8 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
-                    .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
+                    .mandatoryGrounds(mandatoryGrounds)
+                    .discretionaryGrounds(discretionaryGrounds)
                     .build()
             )
             .build();
@@ -97,8 +97,8 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
             .typeOfTenancyLicence(ASSURED_TENANCY)
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(null)
-                    .noRentArrearsDiscretionaryGroundsOptions(null)
+                    .mandatoryGrounds(null)
+                    .discretionaryGrounds(null)
                     .build()
             )
             .claimDueToRentArrears(null)

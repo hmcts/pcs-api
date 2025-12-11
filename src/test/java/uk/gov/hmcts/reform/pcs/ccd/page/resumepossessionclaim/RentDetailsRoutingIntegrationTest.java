@@ -38,8 +38,8 @@ public class RentDetailsRoutingIntegrationTest {
             .typeOfTenancyLicence(tenancyType)
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(noRentArrearsMandatory)
-                    .noRentArrearsDiscretionaryGroundsOptions(noRentArrearsDiscretionary)
+                    .mandatoryGrounds(noRentArrearsMandatory)
+                    .discretionaryGrounds(noRentArrearsDiscretionary)
                     .build()
             )
             .secureOrFlexiblePossessionGrounds(
@@ -142,7 +142,7 @@ public class RentDetailsRoutingIntegrationTest {
             arguments(PCSCase.builder()
                           .typeOfTenancyLicence(null)
                           .noRentArrearsGroundsOptions(NoRentArrearsGroundsOptions.builder()
-                                                           .noRentArrearsMandatoryGroundsOptions(
+                                                           .mandatoryGrounds(
                                                                Set.of(
                                                                    NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
                                                            .build()
@@ -154,8 +154,8 @@ public class RentDetailsRoutingIntegrationTest {
                           .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
                           .noRentArrearsGroundsOptions(
                               NoRentArrearsGroundsOptions.builder()
-                                  .noRentArrearsMandatoryGroundsOptions(Set.of())
-                                  .noRentArrearsDiscretionaryGroundsOptions(Set.of())
+                                  .mandatoryGrounds(Set.of())
+                                  .discretionaryGrounds(Set.of())
                                   .build()
                           )
                           .rentArrearsOrBreachOfTenancy(Set.of())
@@ -166,9 +166,9 @@ public class RentDetailsRoutingIntegrationTest {
                      .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
                           .noRentArrearsGroundsOptions(
                               NoRentArrearsGroundsOptions.builder()
-                                  .noRentArrearsMandatoryGroundsOptions(
+                                  .mandatoryGrounds(
                                       Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
-                                  .noRentArrearsDiscretionaryGroundsOptions(
+                                  .discretionaryGrounds(
                                       Set.of(NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE))
                                   .build()
                           )
@@ -183,13 +183,13 @@ public class RentDetailsRoutingIntegrationTest {
         // For Assured Tenancy - check if grounds 8, 10, or 11 are selected
         if (TenancyLicenceType.ASSURED_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
             boolean hasRentRelatedGrounds =
-                (caseData.getNoRentArrearsGroundsOptions().getNoRentArrearsMandatoryGroundsOptions() != null
-                 && caseData.getNoRentArrearsGroundsOptions().getNoRentArrearsMandatoryGroundsOptions()
+                (caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds() != null
+                 && caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds()
                      .contains(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
-                || (caseData.getNoRentArrearsGroundsOptions().getNoRentArrearsDiscretionaryGroundsOptions() != null
-                    && (caseData.getNoRentArrearsGroundsOptions().getNoRentArrearsDiscretionaryGroundsOptions()
+                || (caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds() != null
+                    && (caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds()
                         .contains(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS)
-                        || caseData.getNoRentArrearsGroundsOptions().getNoRentArrearsDiscretionaryGroundsOptions()
+                        || caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds()
                             .contains(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY)));
             return YesOrNo.from(hasRentRelatedGrounds);
         }

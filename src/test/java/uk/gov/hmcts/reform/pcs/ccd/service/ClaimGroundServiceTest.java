@@ -152,8 +152,8 @@ class ClaimGroundServiceTest {
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(mandatory)
-                    .noRentArrearsDiscretionaryGroundsOptions(discretionary)
+                    .mandatoryGrounds(mandatory)
+                    .discretionaryGrounds(discretionary)
                     .build()
             )
             .noRentArrearsReasonForGrounds(grounds)
@@ -203,8 +203,8 @@ class ClaimGroundServiceTest {
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .noRentArrearsMandatoryGroundsOptions(null)
-                    .noRentArrearsDiscretionaryGroundsOptions(null)
+                    .mandatoryGrounds(null)
+                    .discretionaryGrounds(null)
                     .build()
             )
             .build();

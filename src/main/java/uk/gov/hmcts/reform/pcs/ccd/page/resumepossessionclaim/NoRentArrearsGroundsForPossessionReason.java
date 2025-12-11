@@ -23,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfiguration {
 
-    public static final String NO_RENT_ARREARS_OPTIONS = "engNoRentArrearsMandatoryGroundsOptions";
+    public static final String NO_RENT_ARREARS_OPTIONS = "noRentArrears_MandatoryGrounds";
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
@@ -33,7 +33,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .pageLabel("Reasons for possession")
             .showCondition("claimDueToRentArrears=\"No\" "
                                + "AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND engShowNoRentArrearsGroundReasonPage=\"Yes\""
+                               + " AND noRentArrears_ShowGroundReasonPage=\"Yes\""
                                + " AND legislativeCountry=\"England\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)

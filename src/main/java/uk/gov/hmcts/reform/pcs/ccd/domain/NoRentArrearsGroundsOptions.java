@@ -26,7 +26,7 @@ public class NoRentArrearsGroundsOptions {
         typeOverride = MultiSelectList,
         typeParameterOverride = "NoRentArrearsMandatoryGrounds"
     )
-    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions;
+    private Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds;
 
     @CCD(
         label = "Discretionary grounds",
@@ -34,7 +34,7 @@ public class NoRentArrearsGroundsOptions {
         typeOverride = MultiSelectList,
         typeParameterOverride = "NoRentArrearsDiscretionaryGrounds"
     )
-    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions;
-    private YesOrNo showNoRentArrearsGroundReasonPage;
+    private Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds;
+    private YesOrNo showGroundReasonPage;
 
 }
