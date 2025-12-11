@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,12 +11,12 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 
 /**
  * CCD domain complex type for rent details.
- * Extracted from PCSCase to reduce class size and improve maintainability (HDPI-3079).
  */
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class RentDetailsSection {
 
     @CCD(
