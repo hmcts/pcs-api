@@ -11,5 +11,13 @@ export * from '@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page
 export * from '@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data';
 export * from '@data/page-data/page-data-enforcement/vulnerableAdultsAndChildren.page.data';
 export * from '@data/page-data/page-data-enforcement/yourApplication.page.data';
-export * from '@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data'
-export * from '@data/page-data/page-data-enforcement/accessToTheProperty';
+export * from '@data/page-data/page-data-enforcement/anythingElseThatCouldHelpWithEviction.page.data';
+export * from '@data/page-data/page-data-enforcement/accessToTheProperty.page.data';
+export * from '@data/page-data/page-data-enforcement/peopleWhoWillBeEvicted.page.data';
+export * from '@data/page-data/page-data-enforcement/peopleYouWantToEvict.page.data';
+export * from '@data/page-data/page-data-enforcement/youNeedPermission.page.data';
+export * from '@data/page-data/page-data-enforcement/moneyOwed.page.data';
+export * from '@data/page-data/page-data-enforcement/legalCosts.page.data';
+export * from '@data/page-data/page-data-enforcement/landRegistryFees.page.data';
+export * from '@data/page-data/page-data-enforcement/rePayments.page.data';
+export * from '@data/page-data/page-data-enforcement/languageUsed.page.data';

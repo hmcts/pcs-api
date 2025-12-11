@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
@@ -34,6 +33,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -68,8 +69,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
-        if (State.AWAITING_FURTHER_CLAIM_DETAILS == state) {
-            return draftCaseDataService.hasUnsubmittedCaseData(caseReference);
+        if (State.AWAITING_SUBMISSION_TO_HMCTS == state) {
+            return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
         } else {
             return false;
         }
@@ -129,7 +130,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Resume claim</h2>
-                                             You've already answered some questions about this claim.
+                                             You’ve already answered some questions about this claim.
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
@@ -140,7 +141,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <p class="govuk-body govuk-!-font-size-19">
                                              <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
                                              </p>
-                                             """.formatted(EventId.resumePossessionClaim));
+                                             """.formatted(resumePossessionClaim));
         } else {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Provide more details about your claim</h2>
@@ -156,7 +157,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                                              <p class="govuk-body govuk-!-font-size-19">
                                              <span><a class="govuk-link--no-visited-state" href="/cases">Cancel</a></span>
                                              </p>
-                                             """.formatted(EventId.resumePossessionClaim));
+                                             """.formatted(resumePossessionClaim));
         }
     }
 

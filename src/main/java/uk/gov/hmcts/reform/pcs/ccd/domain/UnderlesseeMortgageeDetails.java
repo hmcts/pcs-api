@@ -19,27 +19,27 @@ public class UnderlesseeMortgageeDetails {
                     ---
                     <h2 class="govuk-heading-m"> Underlessee or mortgagee name </h2>
                     """, typeOverride = FieldType.Label)
-    private String underlesseeOrMortgageeNameLabel;
+    private String nameSectionLabel;
 
-    @CCD(label = "Do you know the underlessee or mortgagee's name?")
-    private VerticalYesNo underlesseeOrMortgageeNameKnown;
+    @CCD(label = "Do you know the underlessee or mortgagee’s name?")
+    private VerticalYesNo nameKnown;
 
     @CCD(label = "What is their name?",
         hint = "Enter their first and last name, or the company or organisation name",
-        showCondition = "underlesseeOrMortgageeNameKnown=\"YES\""
+        showCondition = "nameKnown=\"YES\""
     )
-    private String underlesseeOrMortgageeName;
+    private String name;
 
     @CCD(label = """
                     ---
                     <h2 class="govuk-heading-m">Underlessee or mortgagee correspondence address</h2>
                     """, typeOverride = FieldType.Label)
-    private String underlesseeOrMortgageeAddressLabel;
+    private String addressSectionLabel;
 
-    @CCD(label = "Do you know the underlessee or mortgagee's correspondence address?")
-    private VerticalYesNo underlesseeOrMortgageeAddressKnown;
+    @CCD(label = "Do you know the underlessee or mortgagee’s correspondence address?")
+    private VerticalYesNo addressKnown;
 
-    @CCD(label = "Enter address details", showCondition = "underlesseeOrMortgageeAddressKnown=\"YES\"")
-    private AddressUK underlesseeOrMortgageeAddress;
+    @CCD(label = "Enter address details", showCondition = "addressKnown=\"YES\"")
+    private AddressUK address;
 
 }

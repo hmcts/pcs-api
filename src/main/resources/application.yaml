@@ -151,6 +151,7 @@ rd-professional:
   api-url: ${RD_PROFESSIONAL_API_URL:http://rd-professional-api-aat.service.core-compute-aat.internal}
 
 fees:
+  mock: false
   api:
     url: ${FEES_REGISTER_API_URL:http://localhost:8991}
     service: possession claim
@@ -158,6 +159,18 @@ fees:
     jurisdiction2: county court
   lookup:
     caseIssueFee:
+      channel: default
+      event: issue
+      applicantType: all
+      amountOrVolume: 1
+      keyword: PossessionCC
+    enforcementWarrantFee:
+      channel: default
+      event: issue
+      applicantType: all
+      amountOrVolume: 1
+      keyword: PossessionCC
+    enforcementWritFee:
       channel: default
       event: issue
       applicantType: all

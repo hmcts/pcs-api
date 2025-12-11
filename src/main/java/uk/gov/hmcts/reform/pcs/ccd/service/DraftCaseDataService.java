@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
@@ -31,34 +32,36 @@ public class DraftCaseDataService {
         this.draftCaseJsonMerger = draftCaseJsonMerger;
     }
 
-    public Optional<PCSCase> getUnsubmittedCaseData(long caseReference) {
-        Optional<PCSCase> optionalCaseData = draftCaseDataRepository.findByCaseReference(caseReference)
-            .map(DraftCaseDataEntity::getCaseData)
-            .map(this::parseCaseDataJson)
-            .map(this::setUnsubmittedDataFlag);
+    public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
+        Optional<PCSCase> optionalCaseData = draftCaseDataRepository
+            .findByCaseReferenceAndEventId(caseReference, eventId)
+                .map(DraftCaseDataEntity::getCaseData)
+                .map(this::parseCaseDataJson)
+                .map(this::setUnsubmittedDataFlag);
 
         optionalCaseData.ifPresent(x -> log.debug("Found draft case data for reference {}", caseReference));
 
         return optionalCaseData;
     }
 
-    public boolean hasUnsubmittedCaseData(long caseReference) {
-        return draftCaseDataRepository.existsByCaseReference(caseReference);
+    public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
+        return draftCaseDataRepository.existsByCaseReferenceAndEventId(caseReference, eventId);
     }
 
-    public void patchUnsubmittedCaseData(long caseReference, PCSCase caseDataPatch) {
+    public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
 
-        String patchCaseDataJson = writeCaseDataJson(caseDataPatch);
+        String patchEventDataJson = writeCaseDataJson(eventData);
 
-        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository.findByCaseReference(
-                caseReference)
+        DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository.findByCaseReferenceAndEventId(
+                caseReference, eventId)
             .map(existingDraft -> {
-                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchCaseDataJson));
+                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson));
                 return existingDraft;
             }).orElseGet(() -> {
                 DraftCaseDataEntity newDraft = new DraftCaseDataEntity();
                 newDraft.setCaseReference(caseReference);
-                newDraft.setCaseData(patchCaseDataJson);
+                newDraft.setCaseData(patchEventDataJson);
+                newDraft.setEventId(eventId);
                 return newDraft;
             });
 
@@ -75,8 +78,8 @@ public class DraftCaseDataService {
     }
 
     @Transactional
-    public void deleteUnsubmittedCaseData(long caseReference) {
-        draftCaseDataRepository.deleteByCaseReference(caseReference);
+    public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
+        draftCaseDataRepository.deleteByCaseReferenceAndEventId(caseReference, eventId);
     }
 
     private PCSCase parseCaseDataJson(String caseDataJson) {
@@ -88,7 +91,7 @@ public class DraftCaseDataService {
         }
     }
 
-    private String writeCaseDataJson(PCSCase caseData) {
+    private <T> String writeCaseDataJson(T caseData) {
         try {
             return objectMapper.writeValueAsString(caseData);
         } catch (JsonProcessingException e) {

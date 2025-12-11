@@ -13,6 +13,9 @@ import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWal
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
+import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
+import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
+import {ExpandSummaryAction} from '@utils/actions/element-actions';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -24,6 +27,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
+    ['expandSummary', new ExpandSummaryAction()],
     ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
@@ -39,7 +43,8 @@ export class ActionRegistry {
     ['selectRentArrearsPossessionGround', new CreateCaseAction()],
     ['selectJurisdictionCaseTypeEvent', new CreateCaseAction()],
     ['enterTestAddressManually', new CreateCaseAction()],
-    ['createCase', new CreateCaseAction()],
+    ['createCaseAPI', new CreateCaseAPIAction()],
+    ['submitCaseAPI', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],
@@ -76,7 +81,8 @@ export class ActionRegistry {
     ['selectAlternativesToPossession', new CreateCaseAction()],
     ['selectHousingAct', new CreateCaseAction()],
     ['enterReasonForSuspensionOrder', new CreateCaseAction()],
-    ['searchCaseFromCaseList', new SearchCaseAction()],
+    ['searchCaseFromFindCase', new SearchCaseAction()],
+    ['filterCaseFromCaseList', new SearchCaseAction()],
     ['selectClaimingCosts', new CreateCaseAction()],
     ['wantToUploadDocuments', new CreateCaseAction()],
     ['uploadAdditionalDocs', new CreateCaseAction()],
@@ -84,7 +90,11 @@ export class ActionRegistry {
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
-    ['selectAsbQuestions', new CreateCaseWalesAction()]
+    ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
+    ['selectStatementOfTruth', new CreateCaseAction()],
+    ['selectAsb', new CreateCaseWalesAction()],
+    ['payClaimFee', new CreateCaseAction()],
+    ['claimSaved', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

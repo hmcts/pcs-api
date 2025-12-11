@@ -30,7 +30,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
         pageBuilder
             .page("noRentArrearsGroundsForPossessionReason", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition("groundsForPossession=\"No\" "
+            .showCondition("claimDueToRentArrears=\"No\" "
                                + "AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND showNoRentArrearsGroundReasonPage=\"Yes\""
                                + " AND legislativeCountry=\"England\"")
@@ -53,7 +53,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .label(
                 "noRentArrearsOptions-repossessionByLender-label",
                 """
-                    <h2 class="govuk-heading-l">Repossession by the landlord's mortgage lender (ground 2)</h2>
+                    <h2 class="govuk-heading-l">Repossession by the landlord’s mortgage lender (ground 2)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
                 "noRentArrearsMandatoryGroundsOptionsCONTAINS\"REPOSSESSION_BY_LENDER\""
@@ -278,10 +278,10 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         // Validate all text area fields for character limit
         List<String> validationErrors = new ArrayList<>();
-        
+
         NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds = caseData.getNoRentArrearsReasonForGrounds();
         if (noRentArrearsReasonForGrounds != null) {
             validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
@@ -379,7 +379,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             ));
         }
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

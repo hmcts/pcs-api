@@ -1,5 +1,11 @@
 import { test } from '@playwright/test';
 import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
+import {
   addressCheckYourAnswers,
   addressDetails,
   additionalReasonsForPossession,
@@ -45,12 +51,6 @@ import {
   wantToUploadDocuments,
   whatAreYourGroundsForPossession
 } from '@data/page-data';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation,
-  performValidations
-} from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
@@ -107,7 +107,7 @@ test.describe('[Create Case - England] @regression', async () => {
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
       year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+      files: ['tenancyLicence.docx']
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yes});
@@ -116,6 +116,7 @@ test.describe('[Create Case - England] @regression', async () => {
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
     await performValidation('elementNotToBeVisible',[rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent]);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink,groundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds',{
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation],
@@ -180,20 +181,19 @@ test.describe('[Create Case - England] @regression', async () => {
       option: underlesseeOrMortgageeEntitledToClaim.no});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.yes
-    });
-    await performAction('uploadAdditionalDocs', {
-      documents: [{
-        type: uploadAdditionalDocs.tenancyAgreementOption,
-        fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocs.shortDescriptionInput
-      }]
+      option: wantToUploadDocuments.no
     });
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
@@ -230,11 +230,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yes});
@@ -242,7 +238,7 @@ test.describe('[Create Case - England] @regression', async () => {
       rentArrears: [rentArrearsPossessionGrounds.rentArrears],
       otherGrounds: rentArrearsPossessionGrounds.yes
     });
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.additionalGroundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet]
     });
@@ -265,7 +261,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
+      day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
@@ -317,8 +313,15 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectApplications', applications.yes);
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantLegalRepresentativeRadioOption,
+      signThisStatementCheckbox: statementOfTruth.signThisStatementHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      nameOfFirmTextInput: statementOfTruth.nameOfFirmHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('payClaimFee',{clickLink: true});
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
@@ -359,7 +362,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary :[whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture15]
@@ -425,14 +428,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.welsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Other tenancy with grounds for possession - Demoted tenancy', async () => {
@@ -461,12 +458,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.other,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
-    });
+      tenancyOrLicenceType: tenancyLicenceDetails.other});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes,
       grounds: [groundsForPossession.rentArrears, groundsForPossession.antiSocialBehaviour,
@@ -550,14 +542,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.englishAndWelsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved')
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Introductory tenancy with grounds for possession - excludes rent arrears', async () => {
@@ -586,12 +572,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
-    });
+      tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes,
       grounds: [groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy]});
@@ -651,14 +632,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.englishAndWelsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Demoted tenancy with no grounds for possession', async () => {
@@ -756,14 +731,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
@@ -860,12 +829,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('England - Flexible tenancy with Rent arrears only', async () => {
@@ -968,12 +933,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('England - Secure tenancy with Rent and other grounds', async () => {
@@ -1003,7 +964,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy
     });
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeaderSecure);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.rentArrearsOrBreachOfTenancy, whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
@@ -1035,7 +996,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performAction('selectNoticeDetails', {
        howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
-      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
+      day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
@@ -1096,12 +1057,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 
   test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow', async () => {
@@ -1133,7 +1090,8 @@ test.describe('[Create Case - England] @regression', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeader);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossession.moreInfoLink, groundsForPossession.mainHeader);
     await performAction('selectYourPossessionGrounds', {
       mandatory : [whatAreYourGroundsForPossession.mandatory.seriousRentArrears],
       discretionary :[whatAreYourGroundsForPossession.discretionary.persistentDelayInPayingRent]
@@ -1209,14 +1167,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.welsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Flexible tenancy with Breach only', async () => {
@@ -1304,11 +1256,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.walesBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.walesTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.walesCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.walesCountryTextInput]);
   });
 });

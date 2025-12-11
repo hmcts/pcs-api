@@ -1,14 +1,54 @@
-import Axios from 'axios';
-import {ServiceAuthUtils} from '@hmcts/playwright-common';
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement, tenancyLicenceDetails, resumeClaimOptions, rentDetails, accessTokenApiData, caseApiData, dailyRentAmount, reasonsForPossession, detailsOfRentArrears,
-        claimantType, claimType, groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy, noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
-        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder, uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, home, search, userIneligible,
-        whatAreYourGroundsForPossessionWales, underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers} from "@data/page-data";
+import {
+  createCase,
+  addressDetails,
+  housingPossessionClaim,
+  defendantDetails,
+  claimantName,
+  contactPreferences,
+  mediationAndSettlement,
+  tenancyLicenceDetails,
+  resumeClaimOptions,
+  rentDetails,
+  dailyRentAmount,
+  reasonsForPossession,
+  detailsOfRentArrears,
+  claimantType,
+  claimType,
+  groundsForPossession,
+  preActionProtocol,
+  noticeOfYourIntention,
+  borderPostcode,
+  rentArrearsPossessionGrounds,
+  rentArrearsOrBreachOfTenancy,
+  noticeDetails,
+  moneyJudgment,
+  whatAreYourGroundsForPossession,
+  languageUsed,
+  defendantCircumstances,
+  applications,
+  claimantCircumstances,
+  claimingCosts,
+  alternativesToPossession,
+  reasonsForRequestingADemotionOrder,
+  statementOfExpressTerms,
+  reasonsForRequestingASuspensionOrder,
+  uploadAdditionalDocs,
+  additionalReasonsForPossession,
+  completeYourClaim,
+  userIneligible,
+  whatAreYourGroundsForPossessionWales,
+  underlesseeOrMortgageeDetails,
+  reasonsForRequestingASuspensionAndDemotionOrder,
+  provideMoreDetailsOfClaim,
+  addressCheckYourAnswers,
+  statementOfTruth,
+  claimSaved,
+  payClaimFee
+} from '@data/page-data';
 
-export let caseInfo: { id: string; fid: string; state: string };
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -16,7 +56,6 @@ export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPost
 export class CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
-      ['createCase', () => this.createCaseAction(fieldName)],
       ['housingPossessionClaim', () => this.housingPossessionClaim()],
       ['selectAddress', () => this.selectAddress(page, fieldName)],
       ['submitAddressCheckYourAnswers', () => this.submitAddressCheckYourAnswers()],
@@ -63,7 +102,10 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
-      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)]
+      ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
+      ['claimSaved', () => this.claimSaved()],
+      ['payClaimFee', () => this.payClaimFee()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -337,10 +379,7 @@ export class CreateCaseAction implements IAction {
         ['inputText', tenancyLicenceDetails.yearLabel, tenancyData.year]);
     }
     if (tenancyData.files) {
-      for (const file of tenancyData.files as Array<string>) {
-        await performAction('clickButton', tenancyLicenceDetails.addNew);
-        await performAction('uploadFile', file);
-      }
+        await performAction('uploadFile', tenancyData.files);
     }
     await performAction('clickButton', tenancyLicenceDetails.continue);
   }
@@ -349,7 +388,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     if (!possessionGrounds) {
-      await performAction('clickButton', whatAreYourGroundsForPossession.continue);
+      await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
       return;
     }
     for (const key of Object.keys(possessionGrounds)) {
@@ -375,7 +414,7 @@ export class CreateCaseAction implements IAction {
           break;
       }
     }
-    await performAction('clickButton', whatAreYourGroundsForPossession.continue);
+    await performAction('clickButton', whatAreYourGroundsForPossession.continueButton);
   }
 
   private async selectRentArrearsOrBreachOfTenancy(grounds: actionData) {
@@ -395,7 +434,7 @@ export class CreateCaseAction implements IAction {
       throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
     }
     for (let n = 0; n < reasons.length; n++) {
-      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
+      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason+"-"+reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
@@ -474,19 +513,15 @@ export class CreateCaseAction implements IAction {
   private async selectClaimantCircumstances(claimantCircumstance: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    //As discussed with pod1 team, part of HDPI-2011, Below steps will be enabled back when dynamic organisation name handled in new ticket on claimant circumstances page.
-    //const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
-    const claimOption = claimantCircumstance.circumstanceOption;
-    /*await performAction('clickRadioButton', {
-     // question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
-      question: claimantCircumstances.claimantCircumstanceInfo,
-      option: claimOption
+    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}’` : `${claimantsName}’s`;
+    await performAction('clickRadioButton', {
+      question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
+      option: claimantCircumstance.circumstanceOption
     }
-    );*/
+    );
     await performAction('clickRadioButton', claimantCircumstance.circumstanceOption);
-    if (claimOption == claimantCircumstances.yes) {
-      //await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
-      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimantCircumstance.claimantInput);
+    if (claimantCircumstance.circumstanceOption == claimantCircumstances.yes) {
+      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimantCircumstance.claimantInput);
     }
     await performAction('clickButton', claimantCircumstances.continue);
   }
@@ -634,6 +669,23 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', languageUsed.continue);
   }
 
+  private async claimSaved() {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'span', text: claimSaved.claimSavedBanner});
+    await performAction('clickButton', claimSaved.closeAndReturnButton);
+  }
+
+  private async payClaimFee(params?: { clickLink?: boolean }) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeBanner});
+    if (params?.clickLink === true) {
+      await performAction('clickButton', payClaimFee.payClaimFeeLink);
+    }
+    await performAction('clickButton', payClaimFee.closeAndReturnButton);
+  }
+
   private async selectDefendantCircumstances(
     defendantDetails: actionRecord
   ) {
@@ -757,39 +809,35 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
     }
 
+  private async selectStatementOfTruth(claimantDetails: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: statementOfTruth.completedByLabel,
+      option: claimantDetails.completedBy
+    });
+    if(claimantDetails.completedBy == statementOfTruth.claimantRadioOption){
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    if(claimantDetails.completedBy == statementOfTruth.claimantLegalRepresentativeRadioOption){
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruth.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruth.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruth.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    await performAction('clickButton', statementOfTruth.continueButton);
+  }
 
   private async reloginAndFindTheCase(userInfo: actionData) {
     await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
     await performAction('login', userInfo);
-    await performAction('clickButton', home.findCaseTab);
-    await performAction('select', search.jurisdictionLabel, search.possessionsJurisdiction);
-    await performAction('select', search.caseTypeLabel, search.caseType.civilPossessions);
-    await performAction('inputText', search.caseNumberLabel, caseNumber);
-    await performAction('clickButton', search.apply);
-    await performAction('clickButton', caseNumber);
-  }
-
-  private async createCaseAction(caseData: actionData): Promise<void> {
-    process.env.S2S_URL = accessTokenApiData.s2sUrl;
-    process.env.SERVICE_AUTH_TOKEN = await new ServiceAuthUtils().retrieveToken({microservice: caseApiData.microservice});
-    process.env.IDAM_AUTH_TOKEN = (await Axios.create().post(accessTokenApiData.accessTokenApiEndPoint, accessTokenApiData.accessTokenApiPayload)).data.access_token;
-    const createCaseApi = Axios.create(caseApiData.createCaseApiInstance);
-    process.env.EVENT_TOKEN = (await createCaseApi.get(caseApiData.eventTokenApiEndPoint)).data.token;
-    const payloadData = typeof caseData === 'object' && 'data' in caseData ? caseData.data : caseData;
-    try {
-      const response = await createCaseApi.post(caseApiData.createCaseApiEndPoint,
-        {
-          data: payloadData,
-          event: {id: `${caseApiData.eventName}`},
-          event_token: process.env.EVENT_TOKEN,
-        }
-      );
-      caseInfo.id = response.data.id;
-      caseInfo.fid =  response.data.id.replace(/(.{4})(?=.)/g, '$1-');
-      caseInfo.state = response.data.state;
-    }
-    catch (error) {
-      throw new Error('Case could not be created.');
-    }
+    await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS${process.env.CHANGE_ID ? `-${process.env.CHANGE_ID}` : ''}/${caseNumber.replace(/-/g, '')}#Next%20steps`);
+    //Skipping Find Case search as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
+    //await performAction('searchCaseFromFindCase', caseNumber);
   }
 }

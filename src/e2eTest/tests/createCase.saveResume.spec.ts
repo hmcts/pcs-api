@@ -1,5 +1,11 @@
 import { test } from '@playwright/test';
 import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
+import {
   addressCheckYourAnswers,
   addressDetails,
   additionalReasonsForPossession,
@@ -38,12 +44,6 @@ import {
   whatAreYourGroundsForPossession,
   detailsOfRentArrears
 } from '@data/page-data';
-import {
-  initializeExecutor,
-  performAction,
-  performValidation,
-  performValidations
-} from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 // This test validates the resume & find case functionality with and without saved options.
@@ -112,8 +112,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
       day: tenancyLicenceDetails.day,
       month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+      year: tenancyLicenceDetails.year
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
@@ -191,8 +190,14 @@ test.describe('[Create Case - With resume claim options]', async () => {
       option: languageUsed.english
     });
     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
@@ -241,7 +246,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancy});
-    await performValidation('mainHeader', whatAreYourGroundsForPossession.mainHeaderSecure);
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
       mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
@@ -277,7 +282,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'
+      day: '16', month: '07', year: '1985'
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
@@ -308,17 +313,10 @@ test.describe('[Create Case - With resume claim options]', async () => {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.english
     });
-    await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel],
-    )
   });
 });
 

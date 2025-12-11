@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @SpringBootTest
 @SuppressWarnings({"rawtypes"})
-class CaseDefinitionIT {
+class CaseDefinitionIT extends AbstractPostgresContainerIT {
 
     @Autowired
     private CCDDefinitionGenerator ccdDefinitionGenerator;
@@ -72,9 +73,9 @@ class CaseDefinitionIT {
             arguments(
                 EventId.enforceTheOrder,
                 List.of(
-                    "enforcementApplication",
                     "evictionDelayWarning",
-                    "checkYourAnswersPlaceHolder"
+                    "checkYourAnswersPlaceHolder",
+                    "changeNameAddress"
                 )
 
             )

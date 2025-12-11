@@ -16,12 +16,11 @@ public class CommonPageContent {
             <div class="govuk-details__text">
                 If you want to save your application and return to it later:
                 <ol class="govuk-list govuk-list--number">
-                    <li class="govuk-!-static-margin-0">Choose 'Continue'.</li>
-                    <li>On the next page choose 'Cancel'.</li>
+                    <li class="govuk-!-static-margin-0">Choose ‘Continue’.</li>
+                    <li>On the next page choose ‘Cancel’.</li>
                 </ol>
                 <p>This will save your progress and take you to the case overview.</p>
             </div>
         </details>
         """;
-
 }

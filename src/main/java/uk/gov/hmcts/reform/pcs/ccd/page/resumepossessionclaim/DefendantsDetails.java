@@ -51,7 +51,24 @@ public class DefendantsDetails implements CcdPageConfiguration {
                 ---
                 <h2>Additional defendants</h2>""")
             .mandatory(PCSCase::getAddAnotherDefendant)
-            .mandatory(PCSCase::getAdditionalDefendants, "addAnotherDefendant=\"YES\"")
+            .list(PCSCase::getAdditionalDefendants, "addAnotherDefendant=\"YES\"")
+                .readonly(DefendantDetails::getNameSectionLabel)
+                .mandatory(DefendantDetails::getNameKnown)
+                .mandatory(DefendantDetails::getFirstName)
+                .mandatory(DefendantDetails::getLastName)
+                .readonly(DefendantDetails::getAddressSectionLabel)
+                .mandatory(DefendantDetails::getAddressKnown)
+                .mandatory(DefendantDetails::getAddressSameAsPossession)
+                .complex(DefendantDetails::getCorrespondenceAddress)
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+                .done()
+            .done()
             .label("defendantsDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -78,7 +95,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
         }
 
         caseData.getDefendantCircumstances()
-            .setDefendantTermPossessive(additionalDefendantsProvided ? "defendants'" : "defendant's");
+            .setDefendantTermPossessive(additionalDefendantsProvided ? "defendants’" : "defendant’s");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

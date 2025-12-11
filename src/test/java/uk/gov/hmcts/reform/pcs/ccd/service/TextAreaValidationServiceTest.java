@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +37,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should not add error when field value is null")
         void shouldNotAddErrorWhenFieldValueIsNull() {
             // Given
-            List<String> errors = new java.util.ArrayList<>();
+            List<String> errors = new ArrayList<>();
 
             // When
             textAreaValidationService.validateTextArea(null, "Test Field", 100, errors);
@@ -49,7 +50,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should not add error when field value is empty")
         void shouldNotAddErrorWhenFieldValueIsEmpty() {
             // Given
-            List<String> errors = new java.util.ArrayList<>();
+            List<String> errors = new ArrayList<>();
 
             // When
             textAreaValidationService.validateTextArea("", "Test Field", 100, errors);
@@ -62,7 +63,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should not add error when field value is within limit")
         void shouldNotAddErrorWhenFieldValueIsWithinLimit() {
             // Given
-            List<String> errors = new java.util.ArrayList<>();
+            List<String> errors = new ArrayList<>();
             String fieldValue = "a".repeat(100);
 
             // When
@@ -76,7 +77,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should add error when field value exceeds limit")
         void shouldAddErrorWhenFieldValueExceedsLimit() {
             // Given
-            List<String> errors = new java.util.ArrayList<>();
+            List<String> errors = new ArrayList<>();
             String fieldValue = "a".repeat(101);
             String fieldLabel = "Test Field";
             int maxCharacters = 100;
@@ -95,7 +96,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should add multiple errors when called multiple times")
         void shouldAddMultipleErrorsWhenCalledMultipleTimes() {
             // Given
-            List<String> errors = new java.util.ArrayList<>();
+            List<String> errors = new ArrayList<>();
 
             // When
             textAreaValidationService.validateTextArea("a".repeat(101), "Field 1", 100, errors);
@@ -354,7 +355,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should have correct error message template")
         void shouldHaveCorrectErrorMessageTemplate() {
             assertThat(CHARACTER_LIMIT_ERROR_TEMPLATE).isEqualTo(
-                "In '%s', you have entered more than the maximum number of characters (%s)"
+                "In ‘%s’, you have entered more than the maximum number of characters (%s)"
             );
         }
     }

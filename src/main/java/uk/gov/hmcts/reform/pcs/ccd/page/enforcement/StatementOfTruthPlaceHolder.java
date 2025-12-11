@@ -1,0 +1,18 @@
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
+
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+
+public class StatementOfTruthPlaceHolder implements CcdPageConfiguration {
+
+    @Override
+    public void addTo(PageBuilder pageBuilder) {
+        pageBuilder
+                .page("statementOfTruthPlaceHolder")
+                .pageLabel("Statement of truth (place holder)")
+                .label("statementOfTruthPlaceHolder-content", "---")
+                .label("statementOfTruthPlaceHolder-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+}
+
