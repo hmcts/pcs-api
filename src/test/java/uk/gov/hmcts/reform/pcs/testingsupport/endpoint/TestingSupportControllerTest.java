@@ -15,11 +15,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
+import java.net.URI;
 import java.time.Instant;
+
+import org.assertj.core.api.Assertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -41,6 +47,12 @@ class TestingSupportControllerTest {
     private DocAssemblyService docAssemblyService;
     @Mock
     private EligibilityService eligibilityService;
+    @Mock
+    private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private PartyAccessCodeRepository partyAccessCodeRepository;
+    @Mock
+    private PcsCaseService pcsCaseService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -48,7 +60,8 @@ class TestingSupportControllerTest {
     @BeforeEach
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
-                                                 docAssemblyService, eligibilityService
+                                                 docAssemblyService, eligibilityService,
+                                                 pcsCaseRepository, partyAccessCodeRepository, pcsCaseService
         );
     }
 
@@ -115,7 +128,7 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
+        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly
         ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -156,7 +169,7 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
+        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly with hardcoded template
         ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -191,7 +204,7 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
+        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly with hardcoded template
         ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -224,7 +237,7 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
+        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
         verify(docAssemblyService).generateDocument(
             eq(formPayload),
             eq("CV-SPC-CLM-ENG-01356.docx"),
@@ -556,7 +569,7 @@ class TestingSupportControllerTest {
         when(eligibilityService.checkEligibility(postcode, null)).thenThrow(serviceException);
 
         // When/Then
-        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+        Assertions.assertThatThrownBy(() ->
             underTest.getPostcodeEligibility(serviceAuth, postcode, null)
         ).isInstanceOf(RuntimeException.class)
             .hasMessageContaining("Service error");
