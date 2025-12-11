@@ -18,7 +18,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
         pageBuilder
                 .page("dailyRentAmount", this::midEvent)
                 .pageLabel("Daily rent amount")
-                .showCondition("showRentSectionPage=\"Yes\" AND rentDetails_frequency!=\"OTHER\"")
+                .showCondition("showRentSectionPage=\"Yes\" AND rentDetails_Frequency!=\"OTHER\"")
                 .complex(PCSCase::getRentDetails)
                     .readonly(RentDetailsSection::getFormattedDailyCharge, NEVER_SHOW)
                     .label("dailyRentAmount-content",
@@ -29,13 +29,13 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                             Based on your previous answers, the amount per day that unpaid
                                             rent should be charged at is:
                                             <span class="govuk-body govuk-!-font-weight-bold">
-                                                ${rentDetails_formattedDailyCharge}
+                                                ${rentDetails_FormattedDailyCharge}
                                             </span>
                                         </p>
                                     </section>
                                     """)
                     .mandatory(RentDetailsSection::getPerDayCorrect)
-                    .mandatory(RentDetailsSection::getAmendedDailyCharge, "rentDetails_perDayCorrect=\"NO\"")
+                    .mandatory(RentDetailsSection::getAmendedDailyCharge, "rentDetails_PerDayCorrect=\"NO\"")
                 .done()
                 .label("dailyRentAmount-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
