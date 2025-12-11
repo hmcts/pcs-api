@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160;
 
-public class GroundsForPossessionWalesTest extends BasePageTest {
+public class GroundsForPossessionWalesPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
