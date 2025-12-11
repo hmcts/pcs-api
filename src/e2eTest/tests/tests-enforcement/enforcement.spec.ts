@@ -32,7 +32,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
-import { LONG_TIMEOUT, MEDIUM_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT } from 'playwright.config';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -201,7 +201,17 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
         input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
       });
       await performValidation('mainHeader', moneyOwed.mainHeader);
-      await performAction('clickButton', moneyOwed.continueButton);
+      await performAction('inputErrorValidation', {
+        validationReq: moneyOwed.errorValidation,
+        validationType: moneyOwed.errorValidationType.one,
+        inputArray: moneyOwed.errorValidationField.errorMoneyField,
+        label: moneyOwed.totalAmountOwedTextLabel,
+        button: moneyOwed.continueButton
+      });
+      await performAction('provideMoneyOwed', {
+        label: moneyOwed.totalAmountOwedTextLabel,
+        input: moneyOwed.totalAmountOwedTextInput
+      });
       await performValidation('mainHeader', legalCosts.mainHeader);
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
@@ -293,7 +303,10 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput
     });
     await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('clickButton', moneyOwed.continueButton);
+    await performAction('provideMoneyOwed', {
+      label: moneyOwed.totalAmountOwedTextLabel,
+      input: moneyOwed.totalAmountOwedTextInput
+    });
     await performValidation('mainHeader', legalCosts.mainHeader);
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
@@ -366,7 +379,10 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
     });
     await performValidation('mainHeader', moneyOwed.mainHeader);
-    await performAction('clickButton', moneyOwed.continueButton);
+    await performAction('provideMoneyOwed', {
+      label: moneyOwed.totalAmountOwedTextLabel,
+      input: moneyOwed.totalAmountOwedTextInput
+    });
     await performValidation('mainHeader', legalCosts.mainHeader);
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,

@@ -22,6 +22,7 @@ import {
   landRegistryFees,
   rePayments,
   peopleYouWantToEvict,
+  moneyOwed,
   languageUsed
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
@@ -57,6 +58,7 @@ export class EnforcementAction implements IAction {
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
+      ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
       ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
@@ -244,6 +246,13 @@ export class EnforcementAction implements IAction {
       await performAction('inputText', accessToProperty.label, accessToProperty.input);
     };
     await performAction('clickButton', accessToTheProperty.continueButton);
+  }
+
+  private async provideMoneyOwed(totalMoneyOwed: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
+    await performAction('clickButton', moneyOwed.continueButton);
   }
 
   private async provideLegalCosts(legalCost: actionRecord) {
