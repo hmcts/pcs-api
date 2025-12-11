@@ -97,5 +97,9 @@ public class WarrantDetails {
 
     @JsonUnwrapped(prefix = "warrant")
     @CCD
+    private MoneyOwedByDefendants moneyOwedByDefendants;
+
+    @JsonUnwrapped(prefix = "warrant")
+    @CCD
     private LandRegistryFees landRegistryFees;
 }
