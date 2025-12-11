@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
@@ -37,9 +38,13 @@ class TenancyLicenceServiceTest {
     @Mock
     private PCSCase pcsCaseMock;
 
+    @Mock
+    private NoticeServedDetails noticeServedDetails;
+
     @Test
     void shouldSetTenancyLicence() {
         LocalDate tenancyDate = LocalDate.of(2025, 8, 27);
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
 
         List<ListValue<Document>> uploadedDocs = Arrays.asList(
             ListValue.<Document>builder().id("1")
@@ -71,7 +76,7 @@ class TenancyLicenceServiceTest {
             expected -> {
                 assertThat(expected.getSupportingDocuments()).hasSize(2);
                 assertThat(expected.getSupportingDocuments())
-                    .extracting(d -> d.getFilename())
+                    .extracting(Document::getFilename)
                     .containsExactlyInAnyOrder("tenancy_agreement.pdf", "proof_of_id.png");
             }
         );
@@ -88,7 +93,7 @@ class TenancyLicenceServiceTest {
             expected -> {
                 assertThat(expected.getRentStatementDocuments()).hasSize(2);
                 assertThat(expected.getRentStatementDocuments())
-                    .extracting(d -> d.getFilename())
+                    .extracting(Document::getFilename)
                     .containsExactlyInAnyOrder("rent_statement_jan.pdf", "rent_statement_feb.pdf");
             }
         );
@@ -101,11 +106,11 @@ class TenancyLicenceServiceTest {
                 .value(Document.builder().filename("certificate_service.pdf").build()).build()
         );
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getNoticeDocuments()).thenReturn(noticeDocs),
+            pcsCase -> when(pcsCase.getNoticeServedDetails().getNoticeDocuments()).thenReturn(noticeDocs),
             expected -> {
                 assertThat(expected.getNoticeDocuments()).hasSize(2);
                 assertThat(expected.getNoticeDocuments())
-                    .extracting(d -> d.getFilename())
+                    .extracting(Document::getFilename)
                     .containsExactlyInAnyOrder("notice_served.pdf", "certificate_service.pdf");
             }
         );
@@ -189,6 +194,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseAmendedDailyRentAmountWhenAvailable() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
                 .amendedDailyChargeAmount("5000")
                 .calculatedDailyChargeAmount("4000")
@@ -205,6 +211,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseCalculatedDailyRentAmountWhenAmendedNotAvailable() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
                 .amendedDailyChargeAmount(null)
                 .calculatedDailyChargeAmount("4000")
@@ -221,6 +228,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseDailyRentChargeAmountWhenOthersNotAvailable() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
                 .amendedDailyChargeAmount(null)
                 .calculatedDailyChargeAmount(null)
@@ -237,6 +245,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullTotalRentArrears() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getTotalRentArrears()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -247,6 +256,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSources() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getThirdPartyPaymentSources()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -257,6 +267,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSources() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getThirdPartyPaymentSources()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -267,6 +278,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSourceOther() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getThirdPartyPaymentSourceOther()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -277,6 +289,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSourceOther() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getThirdPartyPaymentSourceOther()).thenReturn("");
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -287,6 +300,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullRentStatementDocuments() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentStatementDocuments()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -297,6 +311,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyRentStatementDocuments() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentStatementDocuments()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -307,7 +322,8 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullNoticeDocuments() {
         // Given
-        when(pcsCaseMock.getNoticeDocuments()).thenReturn(null);
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCaseMock.getNoticeServedDetails().getNoticeDocuments()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -317,7 +333,8 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyNoticeDocuments() {
         // Given
-        when(pcsCaseMock.getNoticeDocuments()).thenReturn(Collections.emptyList());
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCaseMock.getNoticeServedDetails().getNoticeDocuments()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -340,6 +357,7 @@ class TenancyLicenceServiceTest {
             .agentAppointmentDate(appointmentDate)
             .build();
 
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getWalesHousingAct()).thenReturn(walesHousingAct);
 
         // When
@@ -360,6 +378,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullWalesHousingActDetails() {
         // Given
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getWalesHousingAct()).thenReturn(null);
 
         // When
@@ -386,6 +405,7 @@ class TenancyLicenceServiceTest {
             .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
             .build();
 
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getWalesHousingAct()).thenReturn(walesHousingAct);
 
         // When
@@ -406,6 +426,7 @@ class TenancyLicenceServiceTest {
             .noticeServed(YesOrNo.YES)
             .typeOfNoticeServed(typeOfNoticeServed)
             .build();
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
 
         // When
@@ -444,6 +465,7 @@ class TenancyLicenceServiceTest {
 
         PCSCase pcsCase = PCSCase.builder()
             .occupationLicenceDetailsWales(walesDetails)
+            .noticeServedDetails(noticeServedDetails)
             .build();
 
         // When
@@ -476,6 +498,7 @@ class TenancyLicenceServiceTest {
 
         PCSCase pcsCase = PCSCase.builder()
             .occupationLicenceDetailsWales(walesDetails)
+            .noticeServedDetails(noticeServedDetails)
             .build();
 
         // When
@@ -493,6 +516,7 @@ class TenancyLicenceServiceTest {
         // Given - Case with no Wales occupation contract details
         PCSCase pcsCase = PCSCase.builder()
             .occupationLicenceDetailsWales(null)
+            .noticeServedDetails(noticeServedDetails)
             .build();
 
         // When
@@ -518,6 +542,7 @@ class TenancyLicenceServiceTest {
                 .build()
         );
 
+        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getTypeOfTenancyLicence()).thenReturn(TenancyLicenceType.ASSURED_TENANCY);
         when(pcsCaseMock.getTenancyLicenceDate()).thenReturn(tenancyDate);
         when(pcsCaseMock.getTenancyLicenceDocuments()).thenReturn(englandDocs);
