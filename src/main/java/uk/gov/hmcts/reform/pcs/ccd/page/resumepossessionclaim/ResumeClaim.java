@@ -10,12 +10,18 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
+import java.util.Optional;
+import java.util.Set;
+
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+
+
 
 @Slf4j
 @AllArgsConstructor
@@ -71,8 +77,15 @@ public class ResumeClaim implements CcdPageConfiguration {
                 );
         }
 
-        if (caseData.getRentArrearsMandatoryGrounds() == null
-            && caseData.getRentArrearsDiscretionaryGrounds() == null) {
+        RentArrearsGroundsForPossession rentArrears = Optional.ofNullable(caseData.getRentArrearsGroundsForPossession())
+            .orElseGet(() -> RentArrearsGroundsForPossession.builder()
+                .rentArrearsGrounds(Set.of())
+                .mandatoryGrounds(Set.of())
+                .discretionaryGrounds(Set.of())
+                .build());
+
+        if (rentArrears.getMandatoryGrounds() == null
+            && rentArrears.getDiscretionaryGrounds() == null) {
             caseData.setOverrideResumedGrounds(YesOrNo.YES);
         } else {
             caseData.setOverrideResumedGrounds(YesOrNo.NO);

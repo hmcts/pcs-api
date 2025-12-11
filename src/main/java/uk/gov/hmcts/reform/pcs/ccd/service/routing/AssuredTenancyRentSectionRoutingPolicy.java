@@ -38,8 +38,10 @@ public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutin
     }
 
     private YesOrNo checkRentArrearsGrounds(PCSCase caseData) {
-        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsMandatoryGrounds();
-        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsDiscretionaryGrounds();
+        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsGroundsForPossession()
+            .getMandatoryGrounds();
+        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsGroundsForPossession()
+            .getDiscretionaryGrounds();
 
         // First check the canonical sets (mandatory/discretionary grounds)
         boolean hasRentRelatedGrounds =
@@ -59,7 +61,8 @@ public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutin
         // RentArrearsGroundsForPossession.midEvent() updates the sets)
         if ((mandatoryGrounds == null || mandatoryGrounds.isEmpty())
             && (discretionaryGrounds == null || discretionaryGrounds.isEmpty())) {
-            Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
+            Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGroundsForPossession()
+                .getRentArrearsGrounds();
             if (rentArrearsGrounds != null && !rentArrearsGrounds.isEmpty()) {
                 boolean hasRentArrearsGrounds =
                     rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)

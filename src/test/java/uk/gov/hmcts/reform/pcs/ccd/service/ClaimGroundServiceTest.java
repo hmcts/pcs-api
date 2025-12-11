@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
@@ -228,8 +229,12 @@ class ClaimGroundServiceTest {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
             .claimDueToRentArrears(YesOrNo.YES)
-            .rentArrearsMandatoryGrounds(mandatoryGrounds)
-            .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                .mandatoryGrounds(mandatoryGrounds)
+                .discretionaryGrounds(discretionaryGrounds)
+                    .build()
+            )
             .rentArrearsGroundsReasons(reasons)
             .build();
 
@@ -261,7 +266,11 @@ class ClaimGroundServiceTest {
         PCSCase caseData = PCSCase.builder()
             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
             .claimDueToRentArrears(YesOrNo.YES)
-            .rentArrearsGrounds(rentArrearsGrounds)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                .rentArrearsGrounds(rentArrearsGrounds)
+                    .build()
+            )
             .build();
 
         // When
