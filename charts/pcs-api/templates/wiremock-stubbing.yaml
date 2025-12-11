@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-wm2
+  name: {{ .Release.Name }}-wiremock-stubbing
 data:
   liveness-mock.json: |
     {
