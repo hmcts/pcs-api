@@ -17,28 +17,28 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
-import uk.gov.hmcts.reform.pcs.model.ValidateAccessCodeResponse;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CasePartyLinkServiceTest {
+class PartyAccessCodeLinkServiceTest {
 
     @InjectMocks
-    private CasePartyLinkService service;
+    private PartyAccessCodeLinkService service;
 
     @Mock
     private PcsCaseService pcsCaseService;
 
     @Mock
-    private PartyAccessCodeRepository pacRepository;
+    private PartyAccessCodeLinkValidator validator;
 
     @Mock
     private CCDService ccdService;
@@ -52,10 +52,10 @@ class CasePartyLinkServiceTest {
     }
 
     private Defendant createDefendant(UUID partyId, UUID idamUserId) {
-        Defendant d = new Defendant();
-        d.setPartyId(partyId);
-        d.setIdamUserId(idamUserId);
-        return d;
+        Defendant defendant = new Defendant();
+        defendant.setPartyId(partyId);
+        defendant.setIdamUserId(idamUserId);
+        return defendant;
     }
 
     @Test
@@ -82,14 +82,18 @@ class CasePartyLinkServiceTest {
         when(ccdService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
             CaseAssignmentUserRolesResponse.builder()
                 .statusMessage("Case-User-Role assignments created successfully").build());
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyBelongsToCase(caseEntity.getDefendants(), partyId))
+            .thenReturn(defendant);
+        // validatePartyNotAlreadyLinked and validateUserNotLinkedToAnotherParty are void methods
+        doNothing().when(validator).validatePartyNotAlreadyLinked(defendant);
+        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
+            caseEntity.getDefendants(), partyId, USER_ID);
 
         // WHEN
-        ValidateAccessCodeResponse response =
-            service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser());
+        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser());
 
         // THEN
-        assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo("linked");
         assertThat(defendant.getIdamUserId()).isEqualTo(USER_ID);
         verify(pcsCaseService).save(caseEntity);
     }
@@ -103,11 +107,11 @@ class CasePartyLinkServiceTest {
         caseEntity.setCaseReference(CASE_REFERENCE);
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-            .thenReturn(Optional.empty());
+        when(validator.validateAccessCode(caseId, ACCESS_CODE))
+            .thenThrow(new InvalidAccessCodeException("Invalid access code for this case."));
 
         // WHEN + THEN
-        assertThatThrownBy(() -> service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser()))
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
             .isInstanceOf(InvalidAccessCodeException.class)
             .hasMessageContaining("Invalid access code");
     }
@@ -130,11 +134,12 @@ class CasePartyLinkServiceTest {
             .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-            .thenReturn(Optional.of(pac));
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyBelongsToCase(caseEntity.getDefendants(), pacPartyId))
+            .thenThrow(new InvalidPartyForCaseException("Party does not belong to this case."));
 
         // WHEN + THEN
-        assertThatThrownBy(() -> service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser()))
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
             .isInstanceOf(InvalidPartyForCaseException.class)
             .hasMessageContaining("Party does not belong to this case");
     }
@@ -158,11 +163,15 @@ class CasePartyLinkServiceTest {
             .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-            .thenReturn(Optional.of(pac));
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyBelongsToCase(caseEntity.getDefendants(), partyId))
+            .thenReturn(defendant);
+        // validatePartyNotAlreadyLinked throws exception (defendant already has idamUserId)
+        doThrow(new AccessCodeAlreadyUsedException("This access code is already linked to a user."))
+            .when(validator).validatePartyNotAlreadyLinked(defendant);
 
         // WHEN + THEN
-        assertThatThrownBy(() -> service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser()))
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
             .hasMessageContaining("already linked");
     }
@@ -190,13 +199,21 @@ class CasePartyLinkServiceTest {
             .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-            .thenReturn(Optional.of(pac));
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyBelongsToCase(caseEntity.getDefendants(), partyId2))
+            .thenReturn(defendant2);
+        // validatePartyNotAlreadyLinked passes
+        doNothing().when(validator).validatePartyNotAlreadyLinked(defendant2);
+        // validateUserNotLinkedToAnotherParty throws exception
+        doThrow(new AccessCodeAlreadyUsedException(
+            "This user ID is already linked to another party in this case."))
+            .when(validator).validateUserNotLinkedToAnotherParty(
+                caseEntity.getDefendants(), partyId2, USER_ID);
 
         // WHEN + THEN
-        assertThatThrownBy(() -> service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser()))
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
-            .hasMessageContaining("already linked to another defendant");
+            .hasMessageContaining("already linked to another");
     }
 
     @Test
@@ -222,16 +239,18 @@ class CasePartyLinkServiceTest {
             .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(pacRepository.findByPcsCase_IdAndCode(caseId, ACCESS_CODE))
-            .thenReturn(Optional.of(pac));
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyBelongsToCase(caseEntity.getDefendants(), partyId2))
+            .thenReturn(defendant2);
+        // All validations pass
+        doNothing().when(validator).validatePartyNotAlreadyLinked(defendant2);
+        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
+            caseEntity.getDefendants(), partyId2, USER_ID);
 
         // WHEN
-        ValidateAccessCodeResponse response =
-            service.validateAndLinkParty(CASE_REFERENCE, ACCESS_CODE, createUser());
+        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser());
 
         // THEN
-        assertThat(response).isNotNull();
-        assertThat(response.getStatus()).isEqualTo("linked");
         assertThat(defendant2.getIdamUserId()).isEqualTo(USER_ID);
         verify(pcsCaseService).save(caseEntity);
     }

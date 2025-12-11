@@ -12,12 +12,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -35,7 +33,7 @@ class AccessCodeGenerationServiceTest {
     private PartyAccessCodeRepository partyAccessCodeRepo;
 
     @Mock
-    private PcsCaseRepository pcsCaseRepository;
+    private PcsCaseService pcsCaseService;
 
     private AccessCodeGenerationService underTest;
 
@@ -44,7 +42,7 @@ class AccessCodeGenerationServiceTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new AccessCodeGenerationService(partyAccessCodeRepo, pcsCaseRepository);
+        underTest = new AccessCodeGenerationService(partyAccessCodeRepo, pcsCaseService);
     }
 
     @Test
@@ -64,14 +62,14 @@ class AccessCodeGenerationServiceTest {
     }
 
     @Test
-    void shouldCreateAccessCodeForDefendantWithoutExistingCode() {
+    void shouldCreateAccessCodeForSingleParty() {
         // Given
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setId(UUID.randomUUID());
         caseEntity.setDefendants(List.of(Defendant.builder().partyId(partyId).build()));
 
-        when(pcsCaseRepository.findByCaseReference(1L)).thenReturn(Optional.of(caseEntity));
+        when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId())).thenReturn(List.of());
 
         // When
@@ -96,7 +94,8 @@ class AccessCodeGenerationServiceTest {
     @Test
     void shouldThrowExceptionIfCaseNotFound() {
         // Given
-        when(pcsCaseRepository.findByCaseReference(999L)).thenReturn(Optional.empty());
+        when(pcsCaseService.loadCase(999L))
+            .thenThrow(new CaseNotFoundException(999L));
 
         // When & Then
         assertThrows(CaseNotFoundException.class,
@@ -104,7 +103,7 @@ class AccessCodeGenerationServiceTest {
     }
 
     @Test
-    void shouldNotCreateAccessCodeIfDefendantAlreadyHasCode() {
+    void shouldNotCreateAccessCodeIfPartyAlreadyHasCode() {
         // Given
         UUID partyId = UUID.randomUUID();
         PcsCaseEntity caseEntity = new PcsCaseEntity();
@@ -112,7 +111,7 @@ class AccessCodeGenerationServiceTest {
         caseEntity.setDefendants(List.of(Defendant.builder().partyId(partyId).build()));
         PartyAccessCodeEntity existingCodeEntity = mock(PartyAccessCodeEntity.class);
 
-        when(pcsCaseRepository.findByCaseReference(2L)).thenReturn(Optional.of(caseEntity));
+        when(pcsCaseService.loadCase(2L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId()))
             .thenReturn(List.of(existingCodeEntity));
         when(existingCodeEntity.getPartyId()).thenReturn(partyId);
@@ -123,5 +122,48 @@ class AccessCodeGenerationServiceTest {
         // Then
         verify(partyAccessCodeRepo, never()).saveAll(any());
     }
+
+    @Test
+    void shouldSkipPartiesWithExistingCodesAndCreateAccessCodesForTheRest() {
+        // Given
+        UUID partyId1 = UUID.randomUUID();
+        UUID partyId2 = UUID.randomUUID();
+        UUID partyId3 = UUID.randomUUID();
+
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(UUID.randomUUID());
+        caseEntity.setDefendants(List.of(
+            Defendant.builder().partyId(partyId1).build(),
+            Defendant.builder().partyId(partyId2).build(),
+            Defendant.builder().partyId(partyId3).build()
+        ));
+
+        PartyAccessCodeEntity existingCode = mock(PartyAccessCodeEntity.class);
+        when(existingCode.getPartyId()).thenReturn(partyId1);
+
+        when(pcsCaseService.loadCase(3L)).thenReturn(caseEntity);
+        when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId()))
+            .thenReturn(List.of(existingCode));
+
+        // When
+        underTest.createAccessCodesForParties("3");
+
+        // Then
+        verify(partyAccessCodeRepo).saveAll(captor.capture());
+        List<PartyAccessCodeEntity> savedEntities = new ArrayList<>();
+        captor.getValue().forEach(savedEntities::add);
+
+        assertThat(savedEntities).hasSize(2);
+        assertThat(savedEntities).extracting(PartyAccessCodeEntity::getPartyId)
+            .containsExactlyInAnyOrder(partyId2, partyId3);
+
+        savedEntities.forEach(entity -> {
+            assertThat(entity.getRole()).isEqualTo(PartyRole.DEFENDANT);
+            assertThat(entity.getCode()).isNotNull()
+                .hasSize(12)
+                .matches("[ABCDEFGHJKLMNPRSTVWXYZ23456789]{12}");
+        });
+    }
+
 }
 
