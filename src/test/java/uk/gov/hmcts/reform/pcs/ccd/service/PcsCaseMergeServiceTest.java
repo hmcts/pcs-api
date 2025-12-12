@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -310,6 +311,7 @@ class PcsCaseMergeServiceTest {
         SecureContractGroundsForPossessionWales secureContractGroundsWales =
             mock(SecureContractGroundsForPossessionWales.class);
         when(pcsCase.getSecureContractGroundsForPossessionWales()).thenReturn(secureContractGroundsWales);
+        
 
         Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
                 DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
@@ -320,9 +322,11 @@ class PcsCaseMergeServiceTest {
                 EstateManagementGroundsWales.BUILDING_WORKS,
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
 
-        when(pcsCase.getDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
-        when(pcsCase.getMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
-        when(pcsCase.getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
+        GroundsForPossessionWales groundsForPossessionWales = mock(GroundsForPossessionWales.class);
+        when(groundsForPossessionWales.getDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
+        when(groundsForPossessionWales.getMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
+        when(groundsForPossessionWales.getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
+        when(pcsCase.getGroundsForPossessionWales()).thenReturn(groundsForPossessionWales);
         when(secureContractGroundsWales
                  .getDiscretionaryGroundsWales()).thenReturn(null);
         when(secureContractGroundsWales
@@ -366,9 +370,11 @@ class PcsCaseMergeServiceTest {
                 EstateManagementGroundsWales.BUILDING_WORKS,
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
 
-        when(pcsCase.getDiscretionaryGroundsWales()).thenReturn(null);
-        when(pcsCase.getMandatoryGroundsWales()).thenReturn(null);
-        when(pcsCase.getEstateManagementGroundsWales()).thenReturn(null);
+        GroundsForPossessionWales groundsForPossessionWales = mock(GroundsForPossessionWales.class);
+        when(groundsForPossessionWales.getDiscretionaryGroundsWales()).thenReturn(null);
+        when(groundsForPossessionWales.getMandatoryGroundsWales()).thenReturn(null);
+        when(groundsForPossessionWales.getEstateManagementGroundsWales()).thenReturn(null);
+        when(pcsCase.getGroundsForPossessionWales()).thenReturn(groundsForPossessionWales);
         when(secureContractGroundsWales
                  .getDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
         when(secureContractGroundsWales

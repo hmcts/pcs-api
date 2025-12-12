@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
@@ -246,9 +247,13 @@ public class ClaimGroundService {
                             .estateManagementGroundsWales(Set.of())
                             .build());
 
-        Set<MandatoryGroundWales> mandatoryGrounds = pcsCase.getMandatoryGroundsWales();
-        Set<DiscretionaryGroundWales> discretionaryGrounds = pcsCase.getDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> estateGrounds = pcsCase.getEstateManagementGroundsWales();
+        GroundsForPossessionWales groundsForPossessionWales =
+            Optional.ofNullable(pcsCase.getGroundsForPossessionWales())
+                .orElse(GroundsForPossessionWales.builder().build());
+
+        Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGroundsWales();
+        Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGroundsWales();
+        Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGroundsWales();
         Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds =
             secureGrounds.getMandatoryGroundsWales();
         Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds =

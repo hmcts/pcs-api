@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
@@ -382,9 +383,11 @@ class ClaimGroundServiceTest {
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
-            .mandatoryGroundsWales(mandatoryGrounds)
-            .discretionaryGroundsWales(discretionaryGrounds)
-            .estateManagementGroundsWales(estateGrounds)
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .mandatoryGroundsWales(mandatoryGrounds)
+                .discretionaryGroundsWales(discretionaryGrounds)
+                .estateManagementGroundsWales(estateGrounds)
+                .build())
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
                     .mandatoryGroundsWales(secureMandatoryGrounds)
@@ -446,7 +449,9 @@ class ClaimGroundServiceTest {
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
             .typeOfTenancyLicence(null) // Wales doesn't use this field
-            .mandatoryGroundsWales(mandatoryGrounds)
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .mandatoryGroundsWales(mandatoryGrounds)
+                .build())
             .groundsReasonsWales(reasons)
             .build();
 
