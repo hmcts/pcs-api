@@ -71,7 +71,7 @@ public class RentDetails implements CcdPageConfiguration {
                 caseData.setShowRentArrearsPage(YesOrNo.YES);
             }
 
-            setRentSectionPaymentFrequency(caseData, rentFrequency);
+            caseData.setRentSectionPaymentFrequency(rentFrequency);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -95,9 +95,5 @@ public class RentDetails implements CcdPageConfiguration {
     private String formatCurrency(String amountInPence) {
         BigDecimal amountInPounds = new BigDecimal(amountInPence).movePointLeft(2);
         return "£" + amountInPounds.toPlainString();
-    }
-
-    private void setRentSectionPaymentFrequency(PCSCase caseData, RentPaymentFrequency frequency) {
-        caseData.setRentSectionPaymentFrequency(frequency);
     }
 }
