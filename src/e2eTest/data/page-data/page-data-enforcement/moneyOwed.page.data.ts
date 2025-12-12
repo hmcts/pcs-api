@@ -4,6 +4,7 @@ export const moneyOwed = {
   totalAmountOwedTextLabel: 'What is the total amount that the defendants owe you?',
   totalAmountOwedTextInput: '100',
   continueButton: 'Continue',
+  arrearsAndOtherCosts: 'Arrears and other costs',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
   errorValidationField: {

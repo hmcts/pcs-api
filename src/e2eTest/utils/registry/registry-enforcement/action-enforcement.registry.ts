@@ -56,6 +56,7 @@ export class ActionEnforcementRegistry {
     ['provideLegalCosts', new EnforcementAction()],
     ['provideLandRegistryFees', new EnforcementAction()],
     ['provideAmountToRePay', new EnforcementAction()],
+    ['validateAmountToRePayTable', new EnforcementAction()],
     ['selectLanguageUsed', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],

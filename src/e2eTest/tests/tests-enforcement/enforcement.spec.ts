@@ -213,6 +213,25 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
         input: moneyOwed.totalAmountOwedTextInput
       });
       await performValidation('mainHeader', legalCosts.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.three,
+        inputArray: legalCosts.errorValidationField.errorRadioOption,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        label: legalCosts.reclaimLegalCostsQuestion,
+        button: legalCosts.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.five,
+        inputArray: legalCosts.errorValidationField.errorMoneyField,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        option2: legalCosts.noRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        button: legalCosts.continueButton
+      });
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.yesRadioOption,
@@ -222,10 +241,20 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       await performValidation('mainHeader', landRegistryFees.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: landRegistryFees.errorValidation,
+        validationType: landRegistryFees.errorValidationType.three,
+        inputArray: landRegistryFees.errorValidationField.errorRadioOption,
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        label: landRegistryFees.landRegistryFeeQuestion,
+        button: landRegistryFees.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: landRegistryFees.errorValidation,
         validationType: landRegistryFees.errorValidationType.five,
         inputArray: landRegistryFees.errorValidationField.errorMoneyField,
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.yesRadioOption,
+        option2: landRegistryFees.noRadioOption,
         label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
         button: landRegistryFees.continueButton
       });
@@ -236,6 +265,26 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
       });
       await performValidation('mainHeader', rePayments.mainHeader);
+      await performAction('validateAmountToRePayTable');
+      await performAction('inputErrorValidation', {
+        validationReq: rePayments.errorValidation,
+        validationType: rePayments.errorValidationType.three,
+        inputArray: rePayments.errorValidationField.errorRadioOption,
+        question: rePayments.rePaymentQuestion,
+        option: rePayments.rePaymentRadioOptions.some,
+        label: rePayments.rePaymentQuestion,
+        button: rePayments.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: rePayments.errorValidation,
+        validationType: rePayments.errorValidationType.five,
+        inputArray: rePayments.errorValidationField.errorMoneyField,
+        question: rePayments.rePaymentQuestion,
+        option: rePayments.rePaymentRadioOptions.some,
+        option2: rePayments.rePaymentRadioOptions.none,
+        label: rePayments.enterTheAmountTextLabel,
+        button: rePayments.continueButton
+      });
       await performAction('provideAmountToRePay', {
         question: rePayments.rePaymentQuestion,
         option: rePayments.rePaymentRadioOptions.some,
@@ -258,6 +307,13 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -322,7 +378,13 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('clickButton', rePayments.continueButton);
+    await performAction('validateAmountToRePayTable');
+    await performAction('provideAmountToRePay', {
+      question: rePayments.rePaymentQuestion,
+      option: rePayments.rePaymentRadioOptions.none,
+      label: rePayments.enterTheAmountTextLabel,
+      input: rePayments.enterTheAmountTextInput
+    });
     await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
   });
@@ -330,6 +392,13 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -398,6 +467,15 @@ test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('validateAmountToRePayTable');
+    await performAction('provideAmountToRePay', {
+      question: rePayments.rePaymentQuestion,
+      option: rePayments.rePaymentRadioOptions.all,
+      label: rePayments.enterTheAmountTextLabel,
+      input: rePayments.enterTheAmountTextInput
+    });
+    await performValidation('mainHeader', languageUsed.mainHeader);
+    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {

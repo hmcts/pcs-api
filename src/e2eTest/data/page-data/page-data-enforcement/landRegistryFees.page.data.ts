@@ -5,8 +5,9 @@ export const landRegistryFees = {
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
   howMuchYouSpendOnLandRegistryFeeTextLabel: 'How much did you spend on Land Registry fees?',
-  howMuchYouSpendOnLandRegistryFeeTextInput: '100',
+  howMuchYouSpendOnLandRegistryFeeTextInput: '1000.19',
   continueButton: 'Continue',
+  landRegistryFee: 'Land Registry fees',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
@@ -18,6 +19,9 @@ export const landRegistryFees = {
       { type: 'alpha', input: 'test', errMessage: 'The data entered is not valid for How much did you spend on Land Registry fees?' },
       { type: 'decimal', input: '10.234', errMessage: 'The data entered is not valid for How much did you spend on Land Registry fees?' },
       { type: 'empty', input: '', errMessage: 'The data entered is not valid for How much did you spend on Land Registry fees?' },
+    ],
+    errorRadioOption: [
+      { type: 'none', input: '', errMessage: 'Have you paid any Land Registry fees? is required' }
     ]
   }
 }

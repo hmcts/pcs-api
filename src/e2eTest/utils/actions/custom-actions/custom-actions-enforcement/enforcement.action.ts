@@ -35,6 +35,8 @@ export const addressInfo = {
 };
 
 export let defendantDetails: string[] = [];
+const moneyMap = new Map<string, number>();
+
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
@@ -62,6 +64,7 @@ export class EnforcementAction implements IAction {
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
       ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
+      ['validateAmountToRePayTable', () => this.validateAmountToRePayTable()],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
@@ -75,6 +78,8 @@ export class EnforcementAction implements IAction {
     await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
     await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
     await performAction('expandSummary', summaryOption.type);
+    const warrantFeeAmt = await this.retrieveAmountFromString(summaryOption.text1 as string);
+    moneyMap.set(yourApplication.typeofFee.warrantOfPossessionFee, warrantFeeAmt);
   }
 
   private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
@@ -252,6 +257,8 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
+    const moneyOwedAmt = await this.retrieveAmountFromString(totalMoneyOwed.input as string);
+    moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
     await performAction('clickButton', moneyOwed.continueButton);
   }
 
@@ -261,7 +268,11 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: legalCost.question, option: legalCost.option });
     if (legalCost.option === accessToTheProperty.yesRadioOption) {
       await performAction('inputText', legalCost.label, legalCost.input);
-    };
+      const legalCostAmt = await this.retrieveAmountFromString(legalCost.input as string);
+      moneyMap.set(legalCosts.legalCostsFee, legalCostAmt);
+    } else {
+      moneyMap.set(legalCosts.legalCostsFee, 0);
+    }
     await performAction('clickButton', legalCosts.continueButton);
   }
 
@@ -271,12 +282,21 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: langRegistry.question, option: langRegistry.option });
     if (langRegistry.option === accessToTheProperty.yesRadioOption) {
       await performAction('inputText', langRegistry.label, langRegistry.input);
-    };
+      const landRegistryFeeAmt = await this.retrieveAmountFromString(langRegistry.input as string);
+      moneyMap.set(landRegistryFees.landRegistryFee, landRegistryFeeAmt);
+    } else {
+      moneyMap.set(landRegistryFees.landRegistryFee, 0);
+    }
     await performAction('clickButtonAndVerifyPageNavigation', landRegistryFees.continueButton, rePayments.mainHeader);
   }
 
-  private async validateAmountToRePayTable(amtTable: actionRecord) {
+  private async validateAmountToRePayTable() {
 
+    const totalAmt = Array.from(moneyMap.values()).reduce((a, b) => a + b, 0);
+    moneyMap.set(rePayments.totalAmt, totalAmt);
+    for (const [moneyField, amount] of moneyMap) {
+      await performValidation('formLabelValue', moneyField, `£${amount}`);
+    }
   }
   private async provideAmountToRePay(amtToPay: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
@@ -304,12 +324,13 @@ export class EnforcementAction implements IAction {
           switch (validationArr.validationType) {
             case 'moneyFieldAndRadioOption':
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
-              if (validationArr.option === 'Yes') {
-                await performAction('inputText', validationArr.label, item.input);
-                await performAction('clickButton', validationArr.button);
-                await performValidation('inputError', validationArr.label, item.errMessage);
-              };
-              await performAction('clickRadioButton', { question: validationArr.question, option: 'No' });
+              // let total: number = moneyMap.get(rePayments.totalAmt) as number;
+              // console.log(String(total+10));
+              await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(rePayments.totalAmt) as number) + 10) : item.input);
+              await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', validationArr.label, item.errMessage);
+
+              await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option2 });
               break;
 
             case 'radioOptions':
@@ -326,7 +347,7 @@ export class EnforcementAction implements IAction {
               break;
 
             case 'textField':
-              await performAction('inputText', validationArr.label, await this.generateRandomInputString(page, validationArr.label as string, item.input));
+              await performAction('inputText', validationArr.label, await this.generateMoreThanMaxString(page, validationArr.label as string, item.input));
               await performAction('clickButton', validationArr.button);
               if (item.type === 'moreThanMax') {
                 await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
@@ -344,7 +365,7 @@ export class EnforcementAction implements IAction {
     }
   }
 
-  private async generateRandomInputString(page: Page, label: string, input: string): Promise<string> {
+  private async generateMoreThanMaxString(page: Page, label: string, input: string): Promise<string> {
 
     if (input !== 'MAXPLUS') return '';
 
@@ -352,9 +373,8 @@ export class EnforcementAction implements IAction {
       .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
       .innerText();
 
-    const charLimitInfo = hintText.match(/\b\d{1,3}(?:,\d{3})*|\d+\b/);
-    const limit = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : null;
-    if (limit == null) return '';
+    const limit = await this.retrieveAmountFromString(hintText);
+    if (limit == 0) return '';
 
     const length = limit + 1;
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -364,5 +384,12 @@ export class EnforcementAction implements IAction {
     }
     return finalString;
 
+  }
+
+  private async retrieveAmountFromString(input: string): Promise<number> {
+
+    const charLimitInfo = input.match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
+    const amount = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : 0;
+    return amount;
   }
 }

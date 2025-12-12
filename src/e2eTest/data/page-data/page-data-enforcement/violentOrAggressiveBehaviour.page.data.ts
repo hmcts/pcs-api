@@ -10,7 +10,7 @@ export const violentOrAggressiveBehaviour = {
   errorValidationField: {
     errorTextField: [
       { type: 'moreThanMax', input: 'MAXPLUS', errMessage: 'In ‘How have they been violent or aggressive?’, you have entered more than the maximum number of characters (6,800)' },
-      { type: 'empty', input: 'EMPTY', errMessage: 'How are they vulnerable? is required' },
+      { type: 'empty', input: 'EMPTY', errMessage: 'How have they been violent or aggressive? is required' },
     ]
   }
 }
