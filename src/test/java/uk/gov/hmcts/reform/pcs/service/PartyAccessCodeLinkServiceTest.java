@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -77,8 +78,7 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(caseAssignmentService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
-            CaseAssignmentUserRolesResponse.builder()
-                .statusMessage("Case-User-Role assignments created successfully").build());
+            mock(CaseAssignmentUserRolesResponse.class));
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
         when(validator.validatePartyBelongsToCase(caseEntity.getDefendants(), partyId))
             .thenReturn(defendant);
