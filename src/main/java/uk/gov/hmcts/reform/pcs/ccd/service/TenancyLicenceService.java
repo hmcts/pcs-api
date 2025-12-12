@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 
 import java.math.BigDecimal;
 
@@ -17,23 +18,20 @@ public class TenancyLicenceService {
 
     public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
         TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder = TenancyLicence.builder()
-            .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
-                    ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
-            .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
-            .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
-            .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
-            .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
-            .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
-            .rentPaymentFrequency(pcsCase.getRentFrequency())
-            .otherRentFrequency(pcsCase.getOtherRentFrequency())
-            .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
-            .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
-            .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
-            .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
-            .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
-
-        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
-
+                .tenancyLicenceType(pcsCase.getTypeOfTenancyLicence() != null
+                        ? pcsCase.getTypeOfTenancyLicence().getLabel() : null)
+                .tenancyLicenceDate(pcsCase.getTenancyLicenceDate())
+                .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
+                .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
+                .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
+                .noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()))
+                .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+                .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
+                .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
+                .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
+        
+        buildRentDetailsSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
+        
         buildNoticeServedDetails(pcsCase.getNoticeServedDetails(), tenancyLicenceBuilder);
 
         buildWalesNoticeServedDetails(pcsCase.getWalesNoticeDetails(), tenancyLicenceBuilder);
@@ -45,11 +43,25 @@ public class TenancyLicenceService {
         return tenancyLicenceBuilder.build();
     }
 
-    private BigDecimal getDailyRentAmount(PCSCase pcsCase) {
+    private void buildRentDetailsSection(RentDetailsSection rentDetails,
+                                         TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
+        if (rentDetails != null) {
+            tenancyLicenceBuilder
+                    .rentAmount(penceToPounds(rentDetails.getCurrentRent()))
+                    .rentPaymentFrequency(rentDetails.getRentFrequency())
+                    .otherRentFrequency(rentDetails.getOtherRentFrequency())
+                    .dailyRentChargeAmount(getDailyRentAmount(rentDetails));
+        }
+    }
+
+    private BigDecimal getDailyRentAmount(RentDetailsSection rentDetails) {
+        if (rentDetails == null) {
+            return null;
+        }
         String[] fieldValues = {
-            pcsCase.getAmendedDailyRentChargeAmount(),
-            pcsCase.getCalculatedDailyRentChargeAmount(),
-            pcsCase.getDailyRentChargeAmount()
+            rentDetails.getAmendedDailyRentChargeAmount(),
+            rentDetails.getCalculatedDailyRentChargeAmount(),
+            rentDetails.getDailyRentChargeAmount()
         };
         for (String value : fieldValues) {
             if (value != null && !value.trim().isEmpty()) {
