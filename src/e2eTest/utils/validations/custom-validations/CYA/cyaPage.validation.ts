@@ -97,7 +97,7 @@ export class CYAStore {
 
     if (qaObject) {
       const normalizedQuestion = this.normalizeText(qaObject.question);
-      if (normalizedQuestion.includes('email address') || normalizedQuestion.includes('password')) {
+      if (normalizedQuestion.includes('Email address') || normalizedQuestion.includes('Password')) {
         return;
       }
       this.qaObjects.push(qaObject);
