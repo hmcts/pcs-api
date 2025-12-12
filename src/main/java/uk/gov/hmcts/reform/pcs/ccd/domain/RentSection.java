@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +16,8 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RentDetailsSection {
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+public class RentSection {
 
     @CCD(
         label = "How much is the rent?",
@@ -39,7 +42,7 @@ public class RentDetailsSection {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String dailyRentChargeAmount;
+    private String dailyRentCharge;
 
     @CCD(
         label = "Is the amount per day that unpaid rent should be charged at correct?"
@@ -51,13 +54,13 @@ public class RentDetailsSection {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String amendedDailyRentChargeAmount;
+    private String amendedDailyRentCharge;
 
     @CCD(
         typeOverride = FieldType.MoneyGBP
     )
-    private String calculatedDailyRentChargeAmount;
+    private String calculatedDailyRentCharge;
 
     @CCD
-    private String formattedCalculatedDailyRentChargeAmount;
+    private String formattedCalculatedDailyRentCharge;
 }
