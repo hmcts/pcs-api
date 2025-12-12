@@ -21,9 +21,9 @@ public class RepaymentsPage implements CcdPageConfiguration {
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .complex(EnforcementOrder::getRepaymentCosts)
             .readonly(RepaymentCosts::getRepaymentSummaryMarkdown, NEVER_SHOW, true)
-            .label("repayments-table-content", "${warrantRepaymentSummaryMarkdown}")
+            .label("repayments-table-content", "${repaymentRepaymentSummaryMarkdown}")
             .mandatory(RepaymentCosts::getRepaymentChoice)
-            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "warrantRepaymentChoice=\"SOME\"")
+            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "repaymentRepaymentChoice=\"SOME\"")
             .done()
             .done()
             .label("repaymentsPage-save-and-return", SAVE_AND_RETURN);

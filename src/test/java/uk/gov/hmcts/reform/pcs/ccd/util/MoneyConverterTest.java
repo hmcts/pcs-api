@@ -21,11 +21,11 @@ class MoneyConverterTest {
     }
 
     @ParameterizedTest
-    @MethodSource("penceToPoundScenarios")
-    void shouldFormatFromPenceToPound(String pence, BigDecimal expectedPound) {
-        BigDecimal formattedPound = underTest.convertPenceToBigDecimal(pence);
+    @MethodSource("penceToBigDecimalScenarios")
+    void shouldFormatFromPenceToBigDecimal(String pence, BigDecimal expectedPound) {
+        BigDecimal converted = underTest.convertPenceToBigDecimal(pence);
 
-        assertThat(formattedPound).isEqualTo(expectedPound);
+        assertThat(converted).isEqualTo(expectedPound);
     }
 
     @ParameterizedTest
@@ -36,15 +36,15 @@ class MoneyConverterTest {
         assertThat(formattedPence).isEqualTo(expectedPence);
     }
 
-    private static Stream<Arguments> penceToPoundScenarios() {
+    private static Stream<Arguments> penceToBigDecimalScenarios() {
         return Stream.of(
-            Arguments.arguments("1500", new BigDecimal("15")),
+            Arguments.arguments("1500", new BigDecimal("15.00")),
             Arguments.arguments("1501", new BigDecimal("15.01")),
             Arguments.arguments("1599", new BigDecimal("15.99")),
             Arguments.arguments("50", new BigDecimal("0.50")),
             Arguments.arguments("51", new BigDecimal("0.51")),
             Arguments.arguments("15040", new BigDecimal("150.40")),
-            Arguments.arguments("0", BigDecimal.ZERO),
+            Arguments.arguments("0", new BigDecimal("0.00")),
             Arguments.arguments(null, BigDecimal.ZERO),
             Arguments.arguments("", BigDecimal.ZERO)
         );

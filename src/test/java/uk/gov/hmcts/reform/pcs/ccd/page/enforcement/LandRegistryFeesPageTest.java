@@ -39,9 +39,9 @@ class LandRegistryFeesPageTest extends BasePageTest {
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
     void shouldFormatRepaymentFeesCorrectly(String landRegistryPence, String legalCostsPence, String rentArrearsPence,
-                                            String warrantFeeAmount, BigDecimal expectedFormattedLandRegistry,
-                                            BigDecimal expectedFormattedLegals, BigDecimal expectedFormattedArrears,
-                                            BigDecimal expectedFormattedTotalFees
+                                            String warrantFeeAmount, BigDecimal expectedLandRegistry,
+                                            BigDecimal expectedLegals, BigDecimal expectedArrears,
+                                            BigDecimal expectedTotalFees
     ) {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
@@ -69,11 +69,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .build();
 
         when(repaymentTableRenderer.render(
-            expectedFormattedArrears.stripTrailingZeros(),
-            expectedFormattedLegals.stripTrailingZeros(),
-            expectedFormattedLandRegistry.stripTrailingZeros(),
+            expectedArrears,
+            expectedLegals,
+            expectedLandRegistry,
             warrantFeeAmount,
-            expectedFormattedTotalFees.stripTrailingZeros()
+            expectedTotalFees
         )).thenReturn("<table>Mock Repayment Table</table>");
 
         // When
@@ -81,11 +81,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
         // Then
         verify(repaymentTableRenderer).render(
-            expectedFormattedArrears.stripTrailingZeros(),
-            expectedFormattedLegals.stripTrailingZeros(),
-            expectedFormattedLandRegistry.stripTrailingZeros(),
+            expectedArrears,
+            expectedLegals,
+            expectedLandRegistry,
             warrantFeeAmount,
-            expectedFormattedTotalFees.stripTrailingZeros()
+            expectedTotalFees
         );
 
         assertThat(caseData.getEnforcementOrder().getRepaymentCosts().getRepaymentSummaryMarkdown())
@@ -95,19 +95,20 @@ class LandRegistryFeesPageTest extends BasePageTest {
     private static Stream<Arguments> repaymentFeeScenarios() {
         return Stream.of(
             Arguments.of(
-                "12300", "10000", "20000", "£404", new BigDecimal("123"), new BigDecimal("100"),
-                new BigDecimal("200"), new BigDecimal("827")
+                "12300", "10000", "20000", "£404", new BigDecimal("123.00"),
+                new BigDecimal("100.00"), new BigDecimal("200.00"), new BigDecimal("827.00")
             ),
             Arguments.of(
-                "1500", "500", "999", "£50", new BigDecimal("15"), new BigDecimal("5"),
+                "1500", "500", "999", "£50", new BigDecimal("15.00"), new BigDecimal("5.00"),
                 new BigDecimal("9.99"), new BigDecimal("79.99")
             ),
             Arguments.of(
-                "0", "0", "0", "£0", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO
+                "0", "0", "0", "£0", new BigDecimal("0.00"), new BigDecimal("0.00"),
+                new BigDecimal("0.00"), new BigDecimal("0.00")
             ),
             Arguments.of(
                 "10001", "1", "5000", "£0", new BigDecimal("100.01"), new BigDecimal("0.01"),
-                new BigDecimal("50"), new BigDecimal("150.02")
+                new BigDecimal("50.00"), new BigDecimal("150.02")
             )
         );
     }

@@ -15,11 +15,8 @@ public class MoneyConverter {
         }
 
         BigDecimal pence = new BigDecimal(penceString.trim());
-        BigDecimal pounds = pence.movePointLeft(2);
-        if (pounds.stripTrailingZeros().scale() <= 0) {
-            return pounds.stripTrailingZeros();
-        }
-        return pounds;
+
+        return pence.movePointLeft(2);
     }
 
     public String convertPoundsToPence(String amount) {
