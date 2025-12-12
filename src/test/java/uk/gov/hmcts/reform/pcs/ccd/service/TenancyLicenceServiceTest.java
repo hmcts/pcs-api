@@ -25,6 +25,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -175,8 +176,8 @@ class TenancyLicenceServiceTest {
                 expected -> assertThat(expected.getArrearsJudgmentWanted()).isFalse());
     }
 
-    private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
-            java.util.function.Consumer<TenancyLicence> assertions) {
+    private void assertTenancyLicenceField(Consumer<PCSCase> setupMock,
+            Consumer<TenancyLicence> assertions) {
         setupMock.accept(pcsCaseMock);
         TenancyLicence actual = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         assertions.accept(actual);
