@@ -6,11 +6,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenService;
 import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 import uk.gov.hmcts.reform.pcs.reference.dto.OrganisationDetailsResponse;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -152,5 +155,79 @@ class OrganisationDetailsServiceTest {
             .isInstanceOf(OrganisationDetailsException.class)
             .hasMessage("Unexpected error retrieving organisation details")
             .hasCause(generalException);
+    }
+
+    @Test
+    @DisplayName("Should return null when organisation details is null")
+    void shouldReturnNullWhenOrganisationDetailsIsNull() {
+        // Given
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenService.getPrdAdminToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(null);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when contact information is empty")
+    void shouldReturnNullWhenContactInformationIsEmpty() {
+        // Given
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .contactInformation(List.of())
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenService.getPrdAdminToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @DisplayName("Should successfully get first organisation address")
+    void shouldSuccessfullyGetOrganisationAddress() {
+        // Given
+        OrganisationDetailsResponse.ContactInformation contactInfo1 =  OrganisationDetailsResponse.ContactInformation
+            .builder()
+            .addressLine1("27 Feather Street")
+            .townCity("London")
+            .postCode("B8 7FH")
+            .build();
+
+        OrganisationDetailsResponse.ContactInformation contactInfo2 =  OrganisationDetailsResponse.ContactInformation
+            .builder()
+            .addressLine1("1 Additional Street")
+            .townCity("London")
+            .postCode("AD1 5TR")
+            .build();
+
+        OrganisationDetailsResponse response = OrganisationDetailsResponse.builder()
+            .contactInformation(List.of(contactInfo1, contactInfo2))
+            .organisationIdentifier(ORGANISATION_IDENTIFIER)
+            .build();
+
+        when(authTokenGenerator.generate()).thenReturn(S2S_TOKEN);
+        when(prdAdminTokenService.getPrdAdminToken()).thenReturn(PRD_ADMIN_TOKEN);
+        when(rdProfessionalApi.getOrganisationDetails(anyString(), anyString(), anyString()))
+            .thenReturn(response);
+
+        // When
+        AddressUK result = organisationDetailsService.getOrganisationAddress(USER_ID);
+
+        // Then
+        assertThat(result.getAddressLine1()).isEqualTo(contactInfo1.getAddressLine1());
+        assertThat(result.getPostTown()).isEqualTo(contactInfo1.getTownCity());
+        assertThat(result.getPostCode()).isEqualTo(contactInfo1.getPostCode());
     }
 }

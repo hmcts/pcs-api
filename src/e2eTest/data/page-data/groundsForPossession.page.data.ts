@@ -1,7 +1,9 @@
 export const groundsForPossession = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Grounds for possession',
-  groundsForPossessionSectionInlineText: 'Are you claiming possession because of rent arrears or breach of the tenancy (ground1)?',
+  areYouClaimingPossessionBecauseOfRentArrearsOrBreachQuestion: 'Are you claiming possession because of rent arrears or breach of the tenancy (ground1)?',
+  areYouClaimingPossessionBecauseOfRentArrearsQuestion: 'Are you claiming possession because of rent arrears?',
+  doYouHaveGroundsForPossessionQuestion: 'Do you have grounds for possession?',
   enterYourGroundsForPossessionInput: 'These are the grounds for possession',
   rentArrears: 'Rent arrears',
   antiSocialBehaviour: 'Antisocial behaviour',

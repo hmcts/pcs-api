@@ -118,7 +118,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -226,7 +226,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -345,7 +345,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -459,7 +459,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes,
       typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
     });
@@ -559,7 +559,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -682,7 +682,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -777,7 +777,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});

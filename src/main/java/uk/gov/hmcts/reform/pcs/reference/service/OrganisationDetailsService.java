@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.reference.service;
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.pcs.exception.OrganisationDetailsException;
 import uk.gov.hmcts.reform.pcs.idam.PrdAdminTokenService;
@@ -65,6 +66,33 @@ public class OrganisationDetailsService {
     public String getOrganisationName(String userId) {
         OrganisationDetailsResponse details = getOrganisationDetails(userId);
         return details.getName();
+    }
+
+    /**
+     * Gets the organisation address for a given user ID (for claimant address population).
+     * @param userId The user ID to get organisation address for
+     * @return Organisation address or null if no address information is available
+     */
+    public AddressUK getOrganisationAddress(String userId) {
+
+        OrganisationDetailsResponse organisationDetails = getOrganisationDetails(userId);
+
+        if (organisationDetails == null || organisationDetails.getContactInformation().isEmpty()) {
+            return null;
+        }
+
+        OrganisationDetailsResponse.ContactInformation contactInfo = organisationDetails
+            .getContactInformation().getFirst();
+
+        return AddressUK.builder()
+            .addressLine1(contactInfo.getAddressLine1())
+            .addressLine2(contactInfo.getAddressLine2())
+            .addressLine3(contactInfo.getAddressLine3())
+            .postTown(contactInfo.getTownCity())
+            .county(contactInfo.getCounty())
+            .country(contactInfo.getCountry())
+            .postCode(contactInfo.getPostCode())
+            .build();
     }
 
     /**

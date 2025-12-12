@@ -8,7 +8,7 @@ export const languageUsed = {
     englishAndWelshRadioOption: 'English and Welsh',
   },
   errorValidation: 'NO',//set it to 'NO' before raising a PR
-  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox' },
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [
       { type: 'none', input: '', errMessage: 'Which language did you use to complete this service? is required' }

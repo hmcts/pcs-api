@@ -10,11 +10,23 @@ export class ClickRadioButtonAction implements IAction {
     }
     const { question, option, index } = params as actionRecord;
     const idx = index !== undefined ? Number(index) : 0;
-    const questionLocators = page.locator(`legend:has-text("${question}")`);
-    const targetQuestion = questionLocators.nth(idx);
-    const radioButton = targetQuestion
+
+    const radioPattern1 = page.locator(`legend:has-text("${question}")`)
+      .nth(idx)
       .locator('..')
       .getByRole('radio', { name: option as string, exact: true });
-    await radioButton.click();
+
+    try {
+      await radioPattern1.waitFor({ state: 'visible', timeout: 1000 });
+      await radioPattern1.click();
+    } catch {
+      const radioPattern2 = page.locator(`fieldset:has-text("${question}")`)
+        .nth(idx)
+        .locator('div.multiple-choice')
+        .filter({ has: page.locator('label.form-label', { hasText: new RegExp(`^${option}$`, 'i') }) })
+        .locator('input[type="radio"]');
+
+      await radioPattern2.click();
+    }
   }
 }

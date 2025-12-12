@@ -48,3 +48,5 @@ ccd:
   enabled: false
 xui-webapp:
   enabled: false
+wiremock:
+  enabled: false
