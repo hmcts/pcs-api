@@ -13,8 +13,10 @@ import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
@@ -22,13 +24,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -45,11 +44,14 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class PCSCase {
 
     // Field label constants - shared between domain annotations and validation
-    public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
-    public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
         "Give details of the type of tenancy or licence agreement that’s in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+
+    @CCD(
+        access = {DefendantAccess.class}
+    )
+    private YesOrNo submitDraftAnswers;
 
     @CCD(
         searchable = false
@@ -231,6 +233,10 @@ public class PCSCase {
     )
     private YesOrNo noticeServed;
 
+    @JsonUnwrapped(prefix = "eng")
+    @CCD
+    private NoticeServedDetails noticeServedDetails;
+
     private String caseTitleMarkdown;
 
     private LegislativeCountry legislativeCountry;
@@ -349,78 +355,6 @@ public class PCSCase {
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
     private List<ListValue<DefendantDetails>> allDefendants;
-
-    // Notice Details fields
-    @CCD(
-        label = "How did you serve the notice?"
-    )
-    private NoticeServiceMethod noticeServiceMethod;
-
-    // Date fields for different service methods
-    @CCD(
-        label = "Date the document was posted",
-        hint = "For example, 16 4 2021"
-    )
-    private LocalDate noticePostedDate;
-
-    @CCD(
-        label = "Date the document was delivered",
-        hint = "For example, 16 4 2021"
-    )
-    private LocalDate noticeDeliveredDate;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15"
-    )
-    private LocalDateTime noticeHandedOverDateTime;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15"
-    )
-    private LocalDateTime noticeEmailSentDateTime;
-
-    @CCD(
-        label = "Date and time email or message sent",
-        hint = "For example, 16 4 2021, 11 15"
-    )
-    private LocalDateTime noticeOtherElectronicDateTime;
-
-    @CCD(
-        label = "Date and time the document was handed over",
-        hint = "For example, 16 4 2021, 11 15"
-    )
-    private LocalDateTime noticeOtherDateTime;
-
-    // Text fields for different service methods
-    @CCD(
-        label = "Name of person the document was left with"
-    )
-    private String noticePersonName;
-
-    @CCD(
-        label = NOTICE_EMAIL_EXPLANATION_LABEL,
-        hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
-    )
-    private String noticeEmailExplanation;
-
-    @CCD(
-        label = NOTICE_OTHER_EXPLANATION_LABEL,
-        hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
-    )
-    private String noticeOtherExplanation;
-
-    @CCD(
-        label = "Add document",
-        hint = "Upload a document to the system",
-        typeOverride = FieldType.Collection,
-        typeParameterOverride = "Document",
-        access = {CaseworkerReadAccess.class}
-    )
-    private List<ListValue<Document>> noticeDocuments;
 
     @CCD(
         label = "What type of tenancy or licence is in place?",
@@ -652,28 +586,8 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
 
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureContractDiscretionaryGroundsWales"
-    )
-    private Set<SecureContractDiscretionaryGroundsWales> secureContractDiscretionaryGroundsWales;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "SecureContractMandatoryGroundsWales"
-    )
-    private Set<SecureContractMandatoryGroundsWales> secureContractMandatoryGroundsWales;
-
-    @CCD(
-        label = "Estate management grounds",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "EstateManagementGroundsWales"
-    )
-    private Set<EstateManagementGroundsWales> secureContractEstateManagementGroundsWales;
+    @JsonUnwrapped(prefix = "secureContract_")
+    private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
 
     @CCD(
         label = "Estate management grounds",
@@ -725,6 +639,11 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     @CCD
     private ASBQuestionsDetailsWales asbQuestionsWales;
+
+    @CCD(
+        access = {DefendantAccess.class}
+    )
+    private DefendantResponse defendantResponse;
 
     @CCD(searchable = false)
     private String formattedDefendantNames;
