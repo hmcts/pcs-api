@@ -6,13 +6,18 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @Slf4j
 @Testcontainers
 public abstract class AbstractPostgresContainerIT {
 
+    private static final DockerImageName dockerImageName = DockerImageName
+        .parse("hmctspublic.azurecr.io/imported/postgres:16-alpine")
+        .asCompatibleSubstituteFor("postgres");
+
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine");
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(dockerImageName);
 
     @DynamicPropertySource
     static void configure(DynamicPropertyRegistry registry) {
