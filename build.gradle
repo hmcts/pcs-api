@@ -330,7 +330,7 @@ dependencies {
   implementation(group: 'com.github.hmcts', name: 'fees-java-client', version: '0.1.0') {
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
-  implementation (group: 'com.github.hmcts', name: 'payments-java-client', version: '1.6.7') {
+  implementation (group: 'com.github.hmcts', name: 'payments-java-client', version: '1.6.8') {
     exclude group: 'uk.gov.hmcts.reform', module: 'service-auth-provider-client'
     exclude group: 'uk.gov.hmcts.reform', module: 'java-logging'
   }
