@@ -99,7 +99,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
@@ -114,6 +114,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_P
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
@@ -146,7 +147,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
     private final StatementOfExpressTerms statementOfExpressTerms;
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
-    private final OrganisationNameService organisationNameService;
+    private final OrganisationService organisationService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
     private final ProhibitedConductWales prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
@@ -248,7 +249,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
         // Fetch organisation name from rd-professional API
-        String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+        String organisationName = organisationService.getOrganisationNameForCurrentUser();
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
@@ -286,8 +287,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);
+
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
-            .formatAddressWithHtmlLineBreaks(caseData.getPropertyAddress()));
+            .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
+
         caseData.setContactPreferencesDetails(contactPreferences);
 
         return caseData;
@@ -312,13 +315,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             OrganisationPolicy.builder()
                 .organisation(Organisation.builder()
                     .organisationId(orgId)
-                    .organisationName(organisationNameService.getOrganisationNameForCurrentUser()).build())
+                    .organisationName(organisationService.getOrganisationNameForCurrentUser()).build())
                 .orgPolicyReference("AUTO")
                 .orgPolicyCaseAssignedRole(UserRole.CLAIMANT)
                 .build());
 
         log.warn("Organisation ID : {}", orgId);
-        log.warn("Organisation Name : {}", organisationNameService.getOrganisationNameForCurrentUser());
+        log.warn("Organisation Name : {}", organisationService.getOrganisationNameForCurrentUser());
         log.warn("Organisation role : {}", UserRole.CLAIMANT);
         log.warn("Organisation Policy : {}", pcsCase.getOrganisationPolicy());
 
