@@ -535,6 +535,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
             stubPartyCreation();
             stubClaimCreation();
             stubFeeService();
