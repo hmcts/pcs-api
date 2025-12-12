@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -30,12 +30,12 @@ public class RentDetails implements CcdPageConfiguration {
                         """
                         ---
                         """)
-                .complex(PCSCase::getRentDetails)
-                    .mandatory(RentDetailsSection::getCurrentRent)
-                    .mandatory(RentDetailsSection::getRentFrequency)
-                    .mandatory(RentDetailsSection::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
-                    .mandatory(RentDetailsSection::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"")
-                    .readonly(RentDetailsSection::getCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                .complex(PCSCase::getRentSection)
+                    .mandatory(RentSection::getCurrentRent)
+                    .mandatory(RentSection::getRentFrequency)
+                    .mandatory(RentSection::getOtherRentFrequency, "claim_RentFrequency=\"OTHER\"")
+                    .mandatory(RentSection::getDailyRentCharge, "claim_RentFrequency=\"OTHER\"")
+                    .readonly(RentSection::getCalculatedDailyRentCharge, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -44,7 +44,7 @@ public class RentDetails implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        RentDetailsSection rentDetails = caseData.getRentDetails();
+        RentSection rentDetails = caseData.getRentSection();
 
         RentPaymentFrequency rentFrequency = rentDetails.getRentFrequency();
         
@@ -58,10 +58,10 @@ public class RentDetails implements CcdPageConfiguration {
                     String dailyAmountString = dailyAmountInPence.toPlainString();
 
                     // Set pence value for calculations/integrations
-                    rentDetails.setCalculatedDailyRentChargeAmount(dailyAmountString);
+                    rentDetails.setCalculatedDailyRentCharge(dailyAmountString);
 
                     // Set formatted value for display
-                    rentDetails.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmountString));
+                    rentDetails.setFormattedCalculatedDailyRentCharge(formatCurrency(dailyAmountString));
                 }
                 
                 // Set flag to NO - DailyRentAmount should show first
@@ -70,6 +70,8 @@ public class RentDetails implements CcdPageConfiguration {
                 // Set flag to YES - RentArrears should show directly (skip DailyRentAmount)
                 caseData.setShowRentArrearsPage(YesOrNo.YES);
             }
+
+            setRentSectionPaymentFrequency(caseData, rentFrequency);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -78,22 +80,13 @@ public class RentDetails implements CcdPageConfiguration {
     }
 
     private BigDecimal calculateDailyRent(BigDecimal rentAmountInPence, RentPaymentFrequency frequency) {
-        double divisor = 0;
-
-        switch (frequency) {
-            case WEEKLY:
-                divisor = 7.0;
-                break;
-            case FORTNIGHTLY:
-                divisor = 14.0;
-                break;
-            case MONTHLY:
-                divisor = 30.44;
-                break;
-            case OTHER:
-            default:
-                throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
-        }
+        double divisor = switch (frequency) {
+            case WEEKLY -> 7.0;
+            case FORTNIGHTLY -> 14.0;
+            case MONTHLY -> 30.44;
+            default ->
+                    throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
+        };
 
         return new BigDecimal(Math.round(rentAmountInPence.doubleValue() / divisor));
     }
@@ -101,5 +94,9 @@ public class RentDetails implements CcdPageConfiguration {
     private String formatCurrency(String amountInPence) {
         BigDecimal amountInPounds = new BigDecimal(amountInPence).movePointLeft(2);
         return "£" + amountInPounds.toPlainString();
+    }
+
+    private void setRentSectionPaymentFrequency(PCSCase caseData, RentPaymentFrequency frequency) {
+        caseData.setRentSectionPaymentFrequency(frequency);
     }
 }

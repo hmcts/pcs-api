@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentSection;
 
 import java.math.BigDecimal;
 
@@ -30,7 +30,7 @@ public class TenancyLicenceService {
                 .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
                 .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
         
-        buildRentDetailsSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
+        buildRentDetailsSection(pcsCase.getRentSection(), tenancyLicenceBuilder);
         
         buildNoticeServedDetails(pcsCase.getNoticeServedDetails(), tenancyLicenceBuilder);
 
@@ -43,7 +43,7 @@ public class TenancyLicenceService {
         return tenancyLicenceBuilder.build();
     }
 
-    private void buildRentDetailsSection(RentDetailsSection rentDetails,
+    private void buildRentDetailsSection(RentSection rentDetails,
                                          TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         if (rentDetails != null) {
             tenancyLicenceBuilder
@@ -54,14 +54,14 @@ public class TenancyLicenceService {
         }
     }
 
-    private BigDecimal getDailyRentAmount(RentDetailsSection rentDetails) {
+    private BigDecimal getDailyRentAmount(RentSection rentDetails) {
         if (rentDetails == null) {
             return null;
         }
         String[] fieldValues = {
-            rentDetails.getAmendedDailyRentChargeAmount(),
-            rentDetails.getCalculatedDailyRentChargeAmount(),
-            rentDetails.getDailyRentChargeAmount()
+            rentDetails.getAmendedDailyRentCharge(),
+            rentDetails.getCalculatedDailyRentCharge(),
+            rentDetails.getDailyRentCharge()
         };
         for (String value : fieldValues) {
             if (value != null && !value.trim().isEmpty()) {

@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -94,16 +94,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
-            .rentDetails(pcsCaseEntity.getTenancyLicence() != null
-                ? RentDetailsSection.builder()
-                    .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                        ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
-                    .rentFrequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
-                    .otherRentFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
-                    .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                        ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
-                    .build()
-                : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
@@ -111,7 +101,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
-
+        setRentDetails(pcsCase, pcsCaseEntity);
         return pcsCase;
     }
 
@@ -123,6 +113,19 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
 
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
+    }
+
+    private void setRentDetails(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        if (pcsCaseEntity.getTenancyLicence() != null) {
+            pcsCase.setRentSection(RentSection.builder()
+                .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount() != null
+                    ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
+                .rentFrequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
+                .otherRentFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
+                .dailyRentCharge(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
+                    ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
+                .build());
+        }
     }
 
     private void setMarkdownFields(PCSCase pcsCase) {
