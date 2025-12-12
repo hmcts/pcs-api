@@ -41,12 +41,6 @@ public class CCDService {
                     .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
                         .build();
 
-        CaseAssignmentUserRolesResponse response =
-            caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
-
-        if (response != null) {
-            log.debug("Response from RAS: {}", response.getStatusMessage());
-        }
-        return response;
+        return caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
     }
 }
