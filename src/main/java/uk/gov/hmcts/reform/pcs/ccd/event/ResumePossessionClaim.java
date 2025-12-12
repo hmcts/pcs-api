@@ -253,12 +253,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
-        ClaimantContactPreferences contactPreferences = caseData.getContactPreferencesDetails();
+        ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
         if (contactPreferences == null) {
             contactPreferences = ClaimantContactPreferences.builder().build();
         }
         contactPreferences.setClaimantContactEmail(userEmail);
-        caseData.setContactPreferencesDetails(contactPreferences);
+        caseData.setClaimantContactPreferences(contactPreferences);
         caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {
@@ -284,7 +284,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
 
-        caseData.setContactPreferencesDetails(contactPreferences);
+        caseData.setClaimantContactPreferences(contactPreferences);
 
         return caseData;
     }
@@ -375,7 +375,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private ClaimantContactPreferences getContactPreferences(PCSCase caseData) {
-        return Optional.ofNullable(caseData.getContactPreferencesDetails())
+        return Optional.ofNullable(caseData.getClaimantContactPreferences())
             .orElse(ClaimantContactPreferences.builder().build());
     }
 
