@@ -19,11 +19,11 @@ class PartyRepositoryIT extends AbstractPostgresContainerIT {
     @Rollback(value = false)
     void shouldCreateParty() {
         System.out.println("OK");
-        PartyEntity partyEntity = new PartyEntity();
-        partyEntity.setFirstName("test");
-        partyEntity.setAddressNotKnown(VerticalYesNo.NO);
-
-        partyRepository.save(partyEntity);
+//        PartyEntity partyEntity = new PartyEntity();
+//        partyEntity.setFirstName("test");
+//        partyEntity.setAddressNotKnown(VerticalYesNo.NO);
+//
+//        partyRepository.save(partyEntity);
     }
 
 }

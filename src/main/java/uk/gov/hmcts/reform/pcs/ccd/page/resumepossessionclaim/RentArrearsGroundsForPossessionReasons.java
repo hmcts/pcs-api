@@ -51,7 +51,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
 
             .label("rentArrears-repossessionByLender-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Repossession by the landlord's mortgage lender (ground 2)
+                    Repossession by the landlord’s mortgage lender (ground 2)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
@@ -243,14 +243,14 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         RentArrearsGroundsReasons rentArrearsGrounds = caseData.getRentArrearsGroundsReasons();
         if (rentArrearsGrounds != null) {
             validationErrors.addAll(validateRentArrearsGrounds(rentArrearsGrounds));
         }
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 
@@ -258,7 +258,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         List<TextAreaValidationService.FieldValidation> allValidations = new ArrayList<>();
         allValidations.addAll(List.of(buildMandatoryGroundValidations(grounds)));
         allValidations.addAll(List.of(buildDiscretionaryGroundValidations(grounds)));
-        
+
         return textAreaValidationService.validateMultipleTextAreas(
             allValidations.toArray(new TextAreaValidationService.FieldValidation[0])
         );

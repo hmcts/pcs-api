@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
@@ -56,31 +58,33 @@ public class PartyService {
     private PartyEntity createClaimant(PCSCase pcsCase) {
         PartyEntity claimantParty = new PartyEntity();
 
-        VerticalYesNo claimantNameCorrect = pcsCase.getIsClaimantNameCorrect();
+        ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
+        VerticalYesNo claimantNameCorrect = claimantInformation.getIsClaimantNameCorrect();
         if (claimantNameCorrect == VerticalYesNo.YES) {
             claimantParty.setNameOverridden(YesOrNo.NO);
-            claimantParty.setOrgName(pcsCase.getClaimantName());
+            claimantParty.setOrgName(claimantInformation.getClaimantName());
         } else {
             claimantParty.setNameOverridden(YesOrNo.YES);
-            claimantParty.setOrgName(pcsCase.getOverriddenClaimantName());
+            claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
         }
 
-        // TODO: HDPI-3020 will fix this
-        AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
-            ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+        ClaimantContactPreferences contactPreferencesDetails = pcsCase.getContactPreferencesDetails();
+        AddressUK contactAddress = contactPreferencesDetails.getOverriddenClaimantContactAddress() != null
+            ? contactPreferencesDetails.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
 
         claimantParty.setAddress(mapAddress(contactAddress));
 
-        String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
-            ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
+        String contactEmail = isNotBlank(contactPreferencesDetails.getOverriddenClaimantContactEmail())
+            ? contactPreferencesDetails.getOverriddenClaimantContactEmail()
+            : contactPreferencesDetails.getClaimantContactEmail();
 
         claimantParty.setEmailAddress(contactEmail);
 
-        VerticalYesNo phoneNumberProvided = pcsCase.getClaimantProvidePhoneNumber();
+        VerticalYesNo phoneNumberProvided = contactPreferencesDetails.getClaimantProvidePhoneNumber();
 
         claimantParty.setPhoneNumberProvided(phoneNumberProvided);
         if (phoneNumberProvided == VerticalYesNo.YES) {
-            claimantParty.setPhoneNumber(pcsCase.getClaimantContactPhoneNumber());
+            claimantParty.setPhoneNumber(contactPreferencesDetails.getClaimantContactPhoneNumber());
         }
 
         partyRepository.save(claimantParty);

@@ -46,7 +46,7 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         ---
                         <section tabindex="0">
                             <p class="govuk-body">
-                                If your claim is on the grounds of rent arrears, this includes any steps you've taken \
+                                If your claim is on the grounds of rent arrears, this includes any steps you’ve taken \
                                 to recover the arrears or to agree a repayment plan.
                             </p>
                         </section>
@@ -59,7 +59,7 @@ public class MediationAndSettlement implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         // Validate text area fields for character limit - ultra simple approach
         List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
             TextAreaValidationService.FieldValidation.of(
@@ -69,11 +69,11 @@ public class MediationAndSettlement implements CcdPageConfiguration {
             ),
             TextAreaValidationService.FieldValidation.of(
                 caseData.getSettlementAttemptedDetails(),
-                "Explain what steps you've taken to reach a settlement",
+                "Explain what steps you’ve taken to reach a settlement",
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             )
         );
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

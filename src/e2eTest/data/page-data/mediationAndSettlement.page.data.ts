@@ -7,7 +7,7 @@ export const mediationAndSettlement = {
   no: 'No',
   attemptedMediationTextAreaLabel: 'Give details about the attempted mediation and what the outcome was',
   attemptedMediationInputData: 'Sample mediation input data',
-  settlementWithDefendantsTextAreaLabel: 'Explain what steps you\'ve taken to reach a settlement',
+  settlementWithDefendantsTextAreaLabel: 'Explain what steps you’ve taken to reach a settlement',
   settlementWithDefendantsInputData: 'Sample settlement input data',
   continue: 'Continue'
 };

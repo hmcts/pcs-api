@@ -45,7 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
@@ -111,8 +111,8 @@ class PCSCaseViewTest {
     private static Stream<Arguments> unsubmittedDataFlagScenarios() {
         return Stream.of(
             // unsubmitted case data available, expected case data value
-            arguments(false, YesOrNo.NO, AWAITING_FURTHER_CLAIM_DETAILS, resumePossessionClaim),
-            arguments(true, YesOrNo.YES, AWAITING_FURTHER_CLAIM_DETAILS, resumePossessionClaim)
+            arguments(false, YesOrNo.NO, AWAITING_SUBMISSION_TO_HMCTS, resumePossessionClaim),
+            arguments(true, YesOrNo.YES, AWAITING_SUBMISSION_TO_HMCTS, resumePossessionClaim)
         );
     }
 

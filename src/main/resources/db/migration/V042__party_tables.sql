@@ -1,5 +1,3 @@
--- TODO: Version column into all tables
-
 CREATE TYPE YES_NO AS ENUM ('YES', 'NO');
 
 DROP TABLE public.claim_party;

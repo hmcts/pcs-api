@@ -17,7 +17,8 @@ public class LegalCosts {
 
     @CCD(
             label = "How much do you want to reclaim?",
-            typeOverride = FieldType.MoneyGBP
+            typeOverride = FieldType.MoneyGBP,
+            min = 1
     )
     private String amountOfLegalCosts;
 }

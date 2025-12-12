@@ -6,17 +6,13 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 @Slf4j
-public class ClaimantInformation implements CcdPageConfiguration {
-
-    private static final String UPDATED_CLAIMANT_NAME_HINT = """
-        Changing your claimant name here only updates it for this claim.
-        It does not change your registered claimant name on My HMCTS
-        """;
+public class ClaimantInformationPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -24,14 +20,14 @@ public class ClaimantInformation implements CcdPageConfiguration {
             .page("claimantInformation", this::midEvent)
             .pageLabel("Claimant name")
             .label("claimantInformation-separator", "---")
-            .readonlyWithLabel(PCSCase::getOrganisationName, "Your claimant name registered with My HMCTS is:")
-            .mandatoryWithLabel(PCSCase::getIsClaimantNameCorrect,"Is this the correct claimant name?")
-            .mandatory(PCSCase::getOverriddenClaimantName,
-                    "isClaimantNameCorrect=\"NO\"",
-                    null,
-                    "What is the correct claimant name?",
-                    UPDATED_CLAIMANT_NAME_HINT,
-                    false)
+            .complex(PCSCase::getClaimantInformation)
+            .readonlyNoSummary(ClaimantInformation::getOrganisationName)
+            .mandatory(ClaimantInformation::getIsClaimantNameCorrect)
+            .mandatory(
+                ClaimantInformation::getOverriddenClaimantName,
+                "isClaimantNameCorrect=\"NO\""
+            )
+            .done()
             .label("claimantInformation-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
     }
@@ -48,9 +44,13 @@ public class ClaimantInformation implements CcdPageConfiguration {
 
     private void setClaimantNamePossessiveForm(CaseDetails<PCSCase, State> details) {
         PCSCase caseData = details.getData();
-        String claimantNamePossessiveForm = StringUtils.isNotEmpty(caseData.getOverriddenClaimantName())
-            ? caseData.getOverriddenClaimantName()
-            : caseData.getClaimantName();
+        ClaimantInformation claimantInfo = caseData.getClaimantInformation();
+        String claimantNamePossessiveForm =
+            StringUtils.isNotEmpty(claimantInfo.getOverriddenClaimantName())
+            ? claimantInfo.getOverriddenClaimantName()
+            : (StringUtils.isNotEmpty(claimantInfo.getOrganisationName())
+                ? claimantInfo.getOrganisationName()
+                : claimantInfo.getClaimantName());
         caseData.getClaimantCircumstances().setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
     }
 
@@ -58,7 +58,18 @@ public class ClaimantInformation implements CcdPageConfiguration {
         if (value == null) {
             return null;
         }
-        return value.endsWith("s") || value.endsWith("S") ? value + "'" : value + "'s";
+
+        String trimmed = value.trim();
+
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+
+        if (trimmed.endsWith("’") || trimmed.endsWith("’s") || trimmed.endsWith("’S")) {
+            return trimmed;
+        }
+
+        return trimmed.endsWith("s") || trimmed.endsWith("S") ? trimmed + "’" : trimmed + "’s";
     }
 
 }

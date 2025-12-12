@@ -2,29 +2,51 @@ import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
 import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
-  yourApplication, nameAndAddressForEviction, everyoneLivingAtTheProperty, vulnerableAdultsAndChildren,
-  violentOrAggressiveBehaviour, firearmPossession, criminalOrAntisocialBehaviour, riskPosedByEveryoneAtProperty,
-  verbalOrWrittenThreats, groupProtestsEviction, policeOrSocialServiceVisit, animalsAtTheProperty, anythingElseHelpWithEviction, accessToTheProperty,
+  yourApplication,
+  nameAndAddressForEviction,
+  everyoneLivingAtTheProperty,
+  vulnerableAdultsAndChildren,
+  violentOrAggressiveBehaviour,
+  firearmPossession,
+  criminalOrAntisocialBehaviour,
+  riskPosedByEveryoneAtProperty,
+  verbalOrWrittenThreats,
+  groupProtestsEviction,
+  policeOrSocialServiceVisit,
+  animalsAtTheProperty,
+  anythingElseHelpWithEviction,
+  accessToTheProperty,
   peopleWillBeEvicted,
   youNeedPermission,
-  legalCosts
+  legalCosts,
+  landRegistryFees,
+  rePayments,
+  peopleYouWantToEvict,
+  moneyOwed,
+  languageUsed
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData } from '@data/api-data';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
   townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
   engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
 };
 
+export let defendantDetails: string[] = [];
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
+      ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
+      ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(page, fieldName as actionRecord)],
       ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
       ['selectPermissionFromJudge', () => this.selectPermissionFromJudge(page)],
+      ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
       ['selectPeopleWhoWillBeEvicted', () => this.selectPeopleWhoWillBeEvicted(fieldName as actionRecord)],
+      ['selectPeopleYouWantToEvict', () => this.selectPeopleYouWantToEvict(fieldName as actionRecord)],
       ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord)],
       ['provideDetailsViolentOrAggressiveBehaviour', () => this.provideDetailsViolentOrAggressiveBehaviour(fieldName as actionRecord)],
       ['provideDetailsFireArmPossession', () => this.provideDetailsFireArmPossession(fieldName as actionRecord)],
@@ -36,25 +58,63 @@ export class EnforcementAction implements IAction {
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
+      ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
+      ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
+      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
+      ['inputErrorValidation', () => this.inputErrorValidation(fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
     await actionToPerform();
   }
 
+  private async validateWritOrWarrantFeeAmount(summaryOption: actionRecord) {
+    await performAction('expandSummary', summaryOption.type);
+    await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
+    await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
+    await performAction('expandSummary', summaryOption.type);
+  }
+
+  private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
+    await performAction('expandSummary', bailiffQuote.type);
+    await performAction('clickLinkAndVerifyNewTabTitle', bailiffQuote.link, bailiffQuote.newPage);
+    await performAction('expandSummary', bailiffQuote.type);
+  }
+
   private async selectApplicationType(applicationType: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
-    await performAction('clickButton', yourApplication.continue);
+    await performAction('clickButton', yourApplication.continueButton);
+  }
+
+  private async getDefendantDetails(defendantsDetails: actionRecord) {
+
+    if (defendantsDetails.defendant1NameKnown === 'YES') {
+      defendantDetails.push(
+        `${submitCaseApiData.submitCasePayload.defendant1.firstName} ${submitCaseApiData.submitCasePayload.defendant1.lastName}`
+      );
+    };
+
+    if (defendantsDetails.additionalDefendants === 'YES') {
+      submitCaseApiData.submitCasePayload.additionalDefendants.forEach(defendant => {
+        if (defendant.value.nameKnown === 'YES') {
+          defendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
+        }
+      });
+    };
+
   }
 
   private async selectNameAndAddressForEviction(page: Page, nameAndAddress: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performValidation('formLabelValue', nameAndAddressForEviction.subHeader, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
-    await performAction('clickRadioButton', nameAndAddress.option);
+    if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
+      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
+    }
+    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
+    await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
   }
 
@@ -65,8 +125,16 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', peopleWillBeEvicted.continueButton);
   }
 
+  private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('check', peopleYouWantEvicted.defendants);
+    await performAction('clickButton', peopleYouWantToEvict.continueButton);
+  }
+
   private async selectPermissionFromJudge(page: Page) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     const [generalApplicationPage] = await Promise.all([
       page.waitForEvent('popup'),
       await performAction('clickButton', youNeedPermission.askTheJudgeLink)
@@ -179,6 +247,13 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', accessToTheProperty.continueButton);
   }
 
+  private async provideMoneyOwed(totalMoneyOwed: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
+    await performAction('clickButton', moneyOwed.continueButton);
+  }
+
   private async provideLegalCosts(legalCost: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -187,5 +262,60 @@ export class EnforcementAction implements IAction {
       await performAction('inputText', legalCost.label, legalCost.input);
     };
     await performAction('clickButton', legalCosts.continueButton);
+  }
+
+  private async provideLandRegistryFees(langRegistry: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: langRegistry.question, option: langRegistry.option });
+    if (langRegistry.option === accessToTheProperty.yesRadioOption) {
+      await performAction('inputText', langRegistry.label, langRegistry.input);
+    };
+    await performAction('clickButtonAndVerifyPageNavigation', landRegistryFees.continueButton, rePayments.mainHeader);
+  }
+
+  private async selectLanguageUsed(languageDetails: actionRecord) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: languageDetails.question, option: languageDetails.option });
+    await performAction('clickButton', languageUsed.continueButton);
+  }
+
+  private async inputErrorValidation(validationArr: actionRecord) {
+
+    if (validationArr.validationReq === 'YES') {
+
+      if (Array.isArray(validationArr.inputArray)) {
+        for (const item of validationArr.inputArray) {
+          switch (validationArr.validationType) {
+            case 'moneyFieldAndRadioOption':
+              await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
+              if (validationArr.option === 'Yes') {
+                await performAction('inputText', validationArr.label, item.input);
+                await performAction('clickButton', validationArr.button);
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              };
+              await performAction('clickRadioButton', { question: validationArr.question, option: 'No' });
+              break;
+
+            case 'radioOptions':
+              await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', validationArr.label, item.errMessage);
+              break;
+
+            case 'moneyField':
+              await performAction('inputText', validationArr.label, item.input);
+              await performAction('clickButton', validationArr.button);
+              //below line be uncommented after the bug https://tools.hmcts.net/jira/browse/HDPI-3396 is resolved
+              //await performValidation('errorMessage', validationArr.label, item.errMessage);
+              await performValidation('inputError', validationArr.label, item.errMessage);
+              break;
+
+            default:
+              throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
+          };
+        }
+      }
+    }
   }
 }

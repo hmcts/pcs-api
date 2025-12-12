@@ -32,8 +32,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
                ---
                <p class="govuk-body" tabindex="0">
                   You may have already given the defendants notice of your intention to begin possession proceedings.
-                  If you have, you should have written the grounds you're making your claim under. You should select
-                  these grounds here and any extra ground you'd like to add to your claim, if you need to.
+                  If you have, you should have written the grounds you’re making your claim under. You should select
+                  these grounds here and any extra ground you’d like to add to your claim, if you need to.
                </p>
                <p class="govuk-body">
                  <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.

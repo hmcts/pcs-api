@@ -44,7 +44,7 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
                     <p class="govuk-body govuk-!-margin-bottom-1" tabindex="0">
                       If a judge decides that possession is not reasonable at this time, they may instead decide
                       to order a demotion of tenancy (demotion order) or a suspension of the defendants’ right
-                      to buy (suspension order), if they're not already in place.
+                      to buy (suspension order), if they’re not already in place.
                     </p>
 
                     <h2 class="govuk-heading-l govuk-!-margin-top-1" tabindex="0">Suspension of right to buy</h2>

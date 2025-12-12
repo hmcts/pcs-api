@@ -4,9 +4,10 @@ import com.github.kagkarlsson.scheduler.task.CompletionHandler;
 import com.github.kagkarlsson.scheduler.task.CompletionHandler.OnCompleteRemove;
 import com.github.kagkarlsson.scheduler.task.Execution;
 import com.github.kagkarlsson.scheduler.task.ExecutionContext;
+import com.github.kagkarlsson.scheduler.task.FailureHandler;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import com.github.kagkarlsson.scheduler.task.helper.CustomTask;
-import lombok.Getter;
+import feign.FeignException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,14 +17,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,15 +30,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.APPEAL_FEE;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.COPY_FEE;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.GENERIC_TEST_FEE;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.HEARING_FEE;
-import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponentTest.TestFeeCode.SPECIAL_CHAR_FEE;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -67,26 +61,6 @@ class FeesAndPayTaskComponentTest {
 
     private static final String TASK_ID = "fee-task-123";
 
-    @Getter
-    public enum TestFeeCode {
-        RECOVERY_OF_LAND("FEE0412", "Recovery of Land - County Court"),
-        HEARING_FEE("FEE9999", "Hearing Fee"),
-        WAIVED_FEE("FEE0000", "Waived Fee"),
-        HIGH_VALUE_FEE("FEE8888", "High Value Fee"),
-        GENERIC_TEST_FEE("FEE0001", "Test Fee"),
-        SPECIAL_CHAR_FEE("FEE0002", "Special Fee"),
-        APPEAL_FEE("FEE0003", "Appeal Fee"),
-        COPY_FEE("FEE0004", "Copy Fee");
-
-        private final String code;
-        private final String description;
-
-        TestFeeCode(String code, String description) {
-            this.code = code;
-            this.description = description;
-        }
-    }
-
     @BeforeEach
     void setUp() {
         int maxRetriesFeesAndPay = 5;
@@ -101,22 +75,14 @@ class FeesAndPayTaskComponentTest {
         when(executionContext.getExecution()).thenReturn(execution);
     }
 
-    private FeesAndPayTaskData buildTaskData(String feeType) {
+    private FeesAndPayTaskData buildTaskData(String feeType, FeeDetails feeDetails) {
         return FeesAndPayTaskData.builder()
             .feeType(feeType)
+            .feeDetails(feeDetails)
             .caseReference("BUS-123")
             .ccdCaseNumber("1111-2222-3333-4444")
             .volume(2)
             .responsibleParty("Applicant")
-            .build();
-    }
-
-    private FeeDetails buildFee(String code, String description, Integer version, BigDecimal amount) {
-        return FeeDetails.builder()
-            .code(code)
-            .description(description)
-            .version(version)
-            .feeAmount(amount)
             .build();
     }
 
@@ -136,7 +102,7 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should create fees and pay task bean")
         void shouldCreateFeesAndPayTaskBean() {
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
+            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feePaymentTask();
             assertThat(task).isNotNull();
         }
     }
@@ -146,89 +112,20 @@ class FeesAndPayTaskComponentTest {
     class SuccessfulFlowTests {
 
         @Test
-        @DisplayName("Should retrieve case issue fee and create service request successfully")
-        void shouldRetrieveCaseIssueFeeSuccessfully() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
+        @DisplayName("Should create service request with fee details")
+        void shouldCreateServiceRequestWithFeeDetails() {
+            FeeDetails feeDetails = mock(FeeDetails.class);
+            FeesAndPayTaskData data = buildTaskData("some fee type", feeDetails);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeDetails expectedFee = buildFee(
-                TestFeeCode.RECOVERY_OF_LAND.getCode(),
-                TestFeeCode.RECOVERY_OF_LAND.getDescription(),
-                4,
-                new BigDecimal("404.00")
-            );
-
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(expectedFee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
+            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feePaymentTask();
 
             CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
 
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
             verify(paymentService).createServiceRequest(
                 data.getCaseReference(),
                 data.getCcdCaseNumber(),
-                expectedFee,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
-            assertThat(result).isInstanceOf(OnCompleteRemove.class);
-        }
-
-        @Test
-        @DisplayName("Should retrieve hearing fee and create service request successfully")
-        void shouldRetrieveHearingFeeSuccessfully() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.HEARING_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeDetails fee = buildFee(
-                HEARING_FEE.getCode(),
-                HEARING_FEE.getDescription(),
-                1,
-                new BigDecimal("100.00")
-            );
-
-            when(feeService.getFee(FeeTypes.HEARING_FEE)).thenReturn(fee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-            verify(feeService).getFee(FeeTypes.HEARING_FEE);
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                fee,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
-            assertThat(result).isInstanceOf(OnCompleteRemove.class);
-        }
-
-        @Test
-        @DisplayName("Should handle large fee amounts and create service request")
-        void shouldHandleLargeFeeAmount() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeDetails fee = buildFee(
-                TestFeeCode.HIGH_VALUE_FEE.getCode(),
-                TestFeeCode.HIGH_VALUE_FEE.getDescription(),
-                1,
-                new BigDecimal("10000.00")
-            );
-
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                fee,
+                feeDetails,
                 data.getVolume(),
                 data.getResponsibleParty()
             );
@@ -241,197 +138,21 @@ class FeesAndPayTaskComponentTest {
     class FailureHandlingTests {
 
         @Test
-        @DisplayName("Should throw FeeNotFoundException when fee type not configured")
-        void shouldThrowFeeNotFoundExceptionWhenFeeTypeNotConfigured() {
-            String invalidFeeType = "invalidFeeType";
-            FeesAndPayTaskData data = buildTaskData(invalidFeeType);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeNotFoundException exception = new FeeNotFoundException("Fee not found for feeType: " + invalidFeeType);
-            when(feeService.getFee(invalidFeeType)).thenThrow(exception);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-                .isInstanceOf(FeeNotFoundException.class)
-                .hasMessage("Fee not found for feeType: " + invalidFeeType);
-
-            verify(feeService).getFee(invalidFeeType);
-            verify(paymentService, never())
-                .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
-        }
-
-        @Test
-        @DisplayName("Should rethrow exception when API call fails")
+        @DisplayName("Should rethrow exception when payment service call fails")
         void shouldThrowFeeNotFoundExceptionWhenApiCallFails() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
+            FeeDetails feeDetails = mock(FeeDetails.class);
+            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE.getCode(), feeDetails);
             when(taskInstance.getData()).thenReturn(data);
 
-            FeeNotFoundException exception = new FeeNotFoundException("Unable to retrieve fee");
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenThrow(exception);
+            FeignException exception = mock(FeignException.class);
+            when(paymentService.createServiceRequest(anyString(), anyString(), any(FeeDetails.class),
+                                                     anyInt(), anyString()
+            )).thenThrow(exception);
 
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
+            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feePaymentTask();
 
             assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-                .isInstanceOf(FeeNotFoundException.class)
-                .hasMessageContaining("Unable to retrieve fee");
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService, never())
-                .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
-        }
-
-        @Test
-        @DisplayName("Should propagate RuntimeException")
-        void shouldPropagateRuntimeException() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            RuntimeException exception = new RuntimeException("Unexpected error");
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenThrow(exception);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Unexpected error");
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService, never())
-                .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
-        }
-
-        @Test
-        @DisplayName("Should propagate IllegalArgumentException")
-        void shouldPropagateIllegalArgumentException() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            IllegalArgumentException exception = new IllegalArgumentException("Invalid fee type");
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenThrow(exception);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Invalid fee type");
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService, never())
-                .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
-        }
-    }
-
-    @Nested
-    @DisplayName("Data Validation Tests")
-    class DataValidationTests {
-
-        @Test
-        @DisplayName("Should handle different fee types")
-        void shouldHandleDifferentFeeTypes() {
-            String[] feeTypes = {"caseIssueFee", "hearingFee", "appealFee", "copyFee"};
-            TestFeeCode[] feeCodes = {
-                GENERIC_TEST_FEE,
-                HEARING_FEE,
-                APPEAL_FEE,
-                COPY_FEE
-            };
-
-            for (int i = 0; i < feeTypes.length; i++) {
-                FeesAndPayTaskData data = buildTaskData(feeTypes[i]);
-                when(taskInstance.getData()).thenReturn(data);
-
-                FeeDetails fee = buildFee(
-                    feeCodes[i].getCode(),
-                    feeCodes[i].getDescription(),
-                    1,
-                    new BigDecimal("100.00")
-                );
-
-                when(feeService.getFee(feeTypes[i])).thenReturn(fee);
-
-                CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-                CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-                verify(feeService).getFee(feeTypes[i]);
-                verify(paymentService).createServiceRequest(
-                    data.getCaseReference(),
-                    data.getCcdCaseNumber(),
-                    fee,
-                    data.getVolume(),
-                    data.getResponsibleParty()
-                );
-                assertThat(result).isInstanceOf(OnCompleteRemove.class);
-            }
-        }
-
-        @Test
-        @DisplayName("Should handle null fee type")
-        void shouldHandleNullFeeType() {
-            FeesAndPayTaskData data = buildTaskData(null);
-            when(taskInstance.getData()).thenReturn(data);
-            when(feeService.getFee(null))
-                .thenThrow(new FeeNotFoundException("Fee type cannot be null"));
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-                .isInstanceOf(FeeNotFoundException.class)
-                .hasMessageContaining("cannot be null");
-
-            verify(feeService).getFee(null);
-            verify(paymentService, never())
-                .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
-        }
-
-        @Test
-        @DisplayName("Should handle empty fee type")
-        void shouldHandleEmptyFeeType() {
-            FeesAndPayTaskData data = buildTaskData("");
-            when(taskInstance.getData()).thenReturn(data);
-            when(feeService.getFee(""))
-                .thenThrow(new FeeNotFoundException("Fee not found for feeType: "));
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-                .isInstanceOf(FeeNotFoundException.class);
-
-            verify(feeService).getFee("");
-            verify(paymentService, never())
-                .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
-        }
-
-        @Test
-        @DisplayName("Should handle fee type with special characters")
-        void shouldHandleFeeTypeWithSpecialCharacters() {
-            String specialFeeType = "case-issue_fee.v2";
-            FeesAndPayTaskData data = buildTaskData(specialFeeType);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeDetails fee = buildFee(
-                SPECIAL_CHAR_FEE.getCode(),
-                SPECIAL_CHAR_FEE.getDescription(),
-                2,
-                new BigDecimal("200.00")
-            );
-
-            when(feeService.getFee(specialFeeType)).thenReturn(fee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-            verify(feeService).getFee(specialFeeType);
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                fee,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
-            assertThat(result).isInstanceOf(OnCompleteRemove.class);
+                .isEqualTo(exception);
         }
     }
 
@@ -442,270 +163,9 @@ class FeesAndPayTaskComponentTest {
         @Test
         @DisplayName("Should configure task with correct failure handlers")
         void shouldConfigureTaskWithCorrectFailureHandlers() {
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-            assertThat(task).isNotNull();
-        }
-
-        @Test
-        @DisplayName("Should use correct configuration values")
-        void shouldUseCorrectConfigurationValues() {
-            FeesAndPayTaskComponent component = new FeesAndPayTaskComponent(
-                feeService,
-                paymentService,
-                10,
-                Duration.ofMinutes(10)
-            );
-
-            CustomTask<FeesAndPayTaskData> task = component.feesAndPayCaseIssuedTask();
-            assertThat(task).isNotNull();
-        }
-
-        @Test
-        @DisplayName("Should create component with minimum retry configuration")
-        void shouldCreateComponentWithMinimumRetryConfiguration() {
-            FeesAndPayTaskComponent component = new FeesAndPayTaskComponent(
-                feeService,
-                paymentService,
-                1,
-                Duration.ofSeconds(30)
-            );
-
-            CustomTask<FeesAndPayTaskData> task = component.feesAndPayCaseIssuedTask();
-            assertThat(task).isNotNull();
-        }
-
-        @Test
-        @DisplayName("Should create component with maximum retry configuration")
-        void shouldCreateComponentWithMaximumRetryConfiguration() {
-            FeesAndPayTaskComponent component = new FeesAndPayTaskComponent(
-                feeService,
-                paymentService,
-                100,
-                Duration.ofHours(1)
-            );
-
-            CustomTask<FeesAndPayTaskData> task = component.feesAndPayCaseIssuedTask();
-            assertThat(task).isNotNull();
-        }
-    }
-
-    @Nested
-    @DisplayName("Integration-like Flow Tests")
-    class IntegrationFlowTests {
-
-        @Test
-        @DisplayName("Should handle complete successful flow")
-        void shouldHandleCompleteSuccessfulFlow() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeDetails expectedFee = buildFee(
-                TestFeeCode.RECOVERY_OF_LAND.getCode(),
-                TestFeeCode.RECOVERY_OF_LAND.getDescription(),
-                4,
-                new BigDecimal("404.00")
-            );
-
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(expectedFee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                expectedFee,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
-            assertThat(result).isInstanceOf(OnCompleteRemove.class);
-        }
-
-        @Test
-        @DisplayName("Should handle complete error flow with exception")
-        void shouldHandleCompleteErrorFlowWithException() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeNotFoundException exception = new FeeNotFoundException("Fee not found");
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenThrow(exception);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            assertThatThrownBy(() -> task.execute(taskInstance, executionContext))
-                .isInstanceOf(FeeNotFoundException.class)
-                .hasMessage("Fee not found");
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService, never())
-                .createServiceRequest(anyString(), anyString(), any(), anyInt(), anyString());
-        }
-
-        @Test
-        @DisplayName("Should handle flow with multiple different fee types sequentially")
-        void shouldHandleFlowWithMultipleDifferentFeeTypesSequentially() {
-            String[] feeTypes = {FeeTypes.CASE_ISSUE_FEE, FeeTypes.HEARING_FEE, "appealFee"};
-            TestFeeCode[] feeCodes = {
-                GENERIC_TEST_FEE,
-                HEARING_FEE,
-                APPEAL_FEE
-            };
-
-            for (int i = 0; i < feeTypes.length; i++) {
-                FeesAndPayTaskData data = buildTaskData(feeTypes[i]);
-                when(taskInstance.getData()).thenReturn(data);
-
-                FeeDetails fee = buildFee(
-                    feeCodes[i].getCode(),
-                    feeCodes[i].getDescription(),
-                    1,
-                    new BigDecimal("150.00")
-                );
-
-                when(feeService.getFee(feeTypes[i])).thenReturn(fee);
-
-                CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-                CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-                verify(feeService).getFee(feeTypes[i]);
-                verify(paymentService).createServiceRequest(
-                    data.getCaseReference(),
-                    data.getCcdCaseNumber(),
-                    fee,
-                    data.getVolume(),
-                    data.getResponsibleParty()
-                );
-                assertThat(result).isInstanceOf(OnCompleteRemove.class);
-            }
-        }
-    }
-
-    @Nested
-    @DisplayName("Edge Cases Tests")
-    class EdgeCasesTests {
-
-        @Test
-        @DisplayName("Should handle fee with null description")
-        void shouldHandleFeeWithNullDescription() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeDetails fee = buildFee(
-                GENERIC_TEST_FEE.getCode(),
-                null,
-                1,
-                new BigDecimal("100.00")
-            );
-
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                fee,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
-            assertThat(result).isInstanceOf(OnCompleteRemove.class);
-        }
-
-        @Test
-        @DisplayName("Should handle fee with null version")
-        void shouldHandleFeeWithNullVersion() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeDetails fee = buildFee(
-                GENERIC_TEST_FEE.getCode(),
-                GENERIC_TEST_FEE.getDescription(),
-                null,
-                new BigDecimal("100.00")
-            );
-
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                fee,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
-            assertThat(result).isInstanceOf(OnCompleteRemove.class);
-        }
-
-        @Test
-        @DisplayName("Should handle fee with very long description")
-        void shouldHandleFeeWithVeryLongDescription() {
-            String longDescription = "A".repeat(1000);
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeDetails fee = buildFee(
-                GENERIC_TEST_FEE.getCode(),
-                longDescription,
-                1,
-                new BigDecimal("100.00")
-            );
-
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                fee,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
-            assertThat(result).isInstanceOf(OnCompleteRemove.class);
-        }
-
-        @Test
-        @DisplayName("Should handle fee with decimal precision")
-        void shouldHandleFeeWithDecimalPrecision() {
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE);
-            when(taskInstance.getData()).thenReturn(data);
-
-            FeeDetails fee = buildFee(
-                GENERIC_TEST_FEE.getCode(),
-                GENERIC_TEST_FEE.getDescription(),
-                1,
-                new BigDecimal("123.456789")
-            );
-
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE)).thenReturn(fee);
-
-            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feesAndPayCaseIssuedTask();
-
-            CompletionHandler<FeesAndPayTaskData> result = task.execute(taskInstance, executionContext);
-
-            verify(feeService).getFee(FeeTypes.CASE_ISSUE_FEE);
-            verify(paymentService).createServiceRequest(
-                data.getCaseReference(),
-                data.getCcdCaseNumber(),
-                fee,
-                data.getVolume(),
-                data.getResponsibleParty()
-            );
-            assertThat(result).isInstanceOf(OnCompleteRemove.class);
+            CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feePaymentTask();
+            FailureHandler<FeesAndPayTaskData> failureHandler = task.getFailureHandler();
+            assertThat(failureHandler).isInstanceOf(FailureHandler.MaxRetriesFailureHandler.class);
         }
     }
 }

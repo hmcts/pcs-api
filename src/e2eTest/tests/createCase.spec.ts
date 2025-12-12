@@ -73,8 +73,8 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - England] @regression', async () => {
-  test('England - Assured tenancy with Rent arrears and other possession grounds @PR', async () => {
+test.describe('[Create Case - England]', async () => {
+  test('England - Assured tenancy with Rent arrears and other possession grounds @PR @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -133,9 +133,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -193,6 +193,7 @@ test.describe('[Create Case - England] @regression', async () => {
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
@@ -252,9 +253,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -320,6 +321,7 @@ test.describe('[Create Case - England] @regression', async () => {
       positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
     });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('payClaimFee',{clickLink: true});
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
@@ -378,9 +380,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -426,17 +428,11 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.welsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
-  test('England - Other tenancy with grounds for possession - Demoted tenancy', async () => {
+  test('England - Other tenancy with grounds for possession - Demoted tenancy @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -464,7 +460,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.other});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes,
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes, rentArrears: groundsForPossession.no,
       grounds: [groundsForPossession.rentArrears, groundsForPossession.antiSocialBehaviour,
         groundsForPossession.breachOfTheTenancy, groundsForPossession.absoluteGrounds,groundsForPossession.other]});
     await performAction('enterReasonForPossession'
@@ -478,9 +474,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -546,17 +542,11 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.englishAndWelsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved')
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
-  test('England - Introductory tenancy with grounds for possession - excludes rent arrears', async () => {
+  test('England - Introductory tenancy with grounds for possession - excludes rent arrears @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -584,7 +574,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancy });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes,
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes, rentArrears: groundsForPossession.no,
       grounds: [groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy]});
     await performAction('enterReasonForPossession'
       , [groundsForPossession.antiSocialBehaviour, groundsForPossession.breachOfTheTenancy]);
@@ -597,9 +587,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -642,14 +632,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.englishAndWelsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Demoted tenancy with no grounds for possession', async () => {
@@ -680,7 +664,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.demotedTenancy});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no});
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.no, rentArrears: groundsForPossession.no});
     await performAction('enterReasonForPossession', [groundsForPossession.noGrounds]);
     await performValidation('mainHeader', preActionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preActionProtocol.yes);
@@ -691,9 +675,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
@@ -747,17 +731,11 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
-  test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
+  test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -796,7 +774,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -851,12 +829,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
   test('England - Flexible tenancy with Rent arrears only', async () => {
@@ -901,7 +875,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -959,12 +933,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
   test('England - Secure tenancy with Rent and other grounds', async () => {
@@ -1021,7 +991,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performAction('selectNoticeDetails', {
@@ -1087,15 +1057,11 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 
-  test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow', async () => {
+  test('England - Assured tenancy with ans no to rent arrears question, selects 08/10/11 grounds- routing flow @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -1139,9 +1105,9 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performAction('selectNoticeDetails', {
@@ -1201,14 +1167,8 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.welsh});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel]
-    )
   });
 
   test('England - Flexible tenancy with Breach only', async () => {
@@ -1254,7 +1214,7 @@ test.describe('[Create Case - England] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes,
     });
     await performAction('selectNoticeDetails', {
@@ -1296,11 +1256,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations('address information entered',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel, addressDetails.englandBuildingAndStreetTextInput],
-      ['formLabelValue', propertyDetails.townOrCityLabel, addressDetails.englandTownOrCityTextInput],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
-      ['formLabelValue', propertyDetails.countryLabel, addressDetails.englandCountryTextInput]);
   });
 });

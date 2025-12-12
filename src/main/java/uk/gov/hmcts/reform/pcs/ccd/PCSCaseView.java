@@ -69,7 +69,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
-        if (State.AWAITING_FURTHER_CLAIM_DETAILS == state) {
+        if (State.AWAITING_SUBMISSION_TO_HMCTS == state) {
             return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
         } else {
             return false;
@@ -130,7 +130,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Resume claim</h2>
-                                             You've already answered some questions about this claim.
+                                             You’ve already answered some questions about this claim.
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"

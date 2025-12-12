@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.17.2'
+    flywayVersion = '11.19.0'
     serenityBddVersion = '4.3.2'
   }
   dependencies {
@@ -19,10 +19,10 @@ plugins {
   id 'org.springframework.boot' version '3.5.8'
   id 'com.github.ben-manes.versions' version '0.53.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
-  id 'org.sonarqube' version '7.1.0.6387'
+  id 'org.sonarqube' version '7.2.0.6526'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.5.8'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1946'
+  id 'hmcts.ccd.sdk' version '6.5.10'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.1956'
   id 'io.freefair.lombok' version '9.1.0'
   id 'au.com.dius.pact' version '4.6.18'
   /*
@@ -292,13 +292,13 @@ repositories {
 
 ext {
   log4JVersion = "2.25.2"
-  logbackVersion = "1.5.21"
+  logbackVersion = "1.5.22"
   testcontainersVersion = "1.21.3"
   springFrameworkBootVersion = "3.5.8"
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.0"
   pactVersion = "4.6.18"
-  tomcatEmbedVersion = "11.0.14"
+  tomcatEmbedVersion = "11.0.15"
   nettyVersion = "4.1.127.Final"
 }
 
@@ -341,7 +341,7 @@ dependencies {
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.7.8'
   implementation group: 'com.github.hmcts', name: 'service-auth-provider-java-client', version: '5.3.3'
-  implementation group: 'io.pebbletemplates', name: 'pebble', version: '4.0.0'
+  implementation group: 'io.pebbletemplates', name: 'pebble', version: '4.1.0'
   implementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '4.3.0'
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.20.0'

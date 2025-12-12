@@ -53,7 +53,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .label(
                 "noRentArrearsOptions-repossessionByLender-label",
                 """
-                    <h2 class="govuk-heading-l">Repossession by the landlord's mortgage lender (ground 2)</h2>
+                    <h2 class="govuk-heading-l">Repossession by the landlord’s mortgage lender (ground 2)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
                 "noRentArrearsMandatoryGroundsOptionsCONTAINS\"REPOSSESSION_BY_LENDER\""

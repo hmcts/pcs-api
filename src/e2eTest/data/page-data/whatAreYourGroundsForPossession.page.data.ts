@@ -8,7 +8,7 @@ export const whatAreYourGroundsForPossession = {
       antiSocialBehaviour7A: 'Antisocial behaviour (ground 7A)',
       ownerOccupier: 'Owner occupier (ground 1)',
       holidayLet: 'Holiday let (ground 3)',
-      repossessionByLandlord: 'Repossession by the landlord\'s mortgage lender (ground 2)',
+      repossessionByLandlord: 'Repossession by the landlord’s mortgage lender (ground 2)',
       studentLet: 'Student let (ground 4)',
       propertyRequiredForMinister: 'Property required for minister of religion (ground 5)',
       propertyRequiredForRedevelopment: 'Property required for redevelopment (ground 6)',
@@ -43,7 +43,7 @@ export const whatAreYourGroundsForPossession = {
   mandatoryWithAccommodation:
     {
       overcrowding: 'Overcrowding (ground 9)',
-      landlordsWorks: 'Landlord\'s works (ground 10)',
+      landlordsWorks: 'Landlord’s works (ground 10)',
       propertySoldForRedevelopment: 'Property sold for redevelopment (ground 10A)',
       charitableLandlords: 'Charitable landlords (ground 11)'
     },

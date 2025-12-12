@@ -13,9 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -122,16 +124,16 @@ class PcsCaseMergeServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         UUID userId = UUID.randomUUID();
-        UUID expectedPcqId = UUID.randomUUID();
-        String expectedForename = "some forename";
-        String expectedSurname = "some surname";
+        String expectedPcqId = UUID.randomUUID().toString();
+        String expectedFirstName = "some first name";
+        String expectedLastName = "some last name";
 
-        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId.toString());
+        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId);
 
         UserInfo userDetails = mock(UserInfo.class);
         when(userDetails.getUid()).thenReturn(userId.toString());
-        when(userDetails.getGivenName()).thenReturn(expectedForename);
-        when(userDetails.getFamilyName()).thenReturn(expectedSurname);
+        when(userDetails.getGivenName()).thenReturn(expectedFirstName);
+        when(userDetails.getFamilyName()).thenReturn(expectedLastName);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
@@ -145,8 +147,8 @@ class PcsCaseMergeServiceTest {
             .allSatisfy(party -> {
                 assertThat(party.getIdamId()).isEqualTo(userId);
                 assertThat(party.getPcqId()).isEqualTo(expectedPcqId);
-                assertThat(party.getForename()).isEqualTo(expectedForename);
-                assertThat(party.getSurname()).isEqualTo(expectedSurname);
+                assertThat(party.getFirstName()).isEqualTo(expectedFirstName);
+                assertThat(party.getLastName()).isEqualTo(expectedLastName);
             });
 
     }
@@ -156,10 +158,10 @@ class PcsCaseMergeServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         final UUID userId = UUID.randomUUID();
-        final UUID expectedPcqId = UUID.randomUUID();
+        final String expectedPcqId = UUID.randomUUID().toString();
         final UUID existingPartyId = UUID.randomUUID();
 
-        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId.toString());
+        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId);
 
         UserInfo userDetails = mock(UserInfo.class);
         when(userDetails.getUid()).thenReturn(userId.toString());
@@ -305,6 +307,10 @@ class PcsCaseMergeServiceTest {
     void shouldMapWalesStandardContractGroundsToPossessionGrounds() {
         PCSCase pcsCase = mock(PCSCase.class);
 
+        SecureContractGroundsForPossessionWales secureContractGroundsWales =
+            mock(SecureContractGroundsForPossessionWales.class);
+        when(pcsCase.getSecureContractGroundsForPossessionWales()).thenReturn(secureContractGroundsWales);
+
         Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
                 DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
                 DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
@@ -317,9 +323,12 @@ class PcsCaseMergeServiceTest {
         when(pcsCase.getDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
         when(pcsCase.getMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
         when(pcsCase.getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
-        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(null);
-        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(null);
-        when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(null);
+        when(secureContractGroundsWales
+                 .getDiscretionaryGroundsWales()).thenReturn(null);
+        when(secureContractGroundsWales
+                 .getMandatoryGroundsWales()).thenReturn(null);
+        when(secureContractGroundsWales
+                 .getEstateManagementGroundsWales()).thenReturn(null);
         when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
@@ -344,21 +353,28 @@ class PcsCaseMergeServiceTest {
     void shouldMapWalesSecureContractGroundsToPossessionGrounds() {
         PCSCase pcsCase = mock(PCSCase.class);
 
-        Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = Set.of(
+        SecureContractGroundsForPossessionWales secureContractGroundsWales =
+            mock(SecureContractGroundsForPossessionWales.class);
+        when(pcsCase.getSecureContractGroundsForPossessionWales()).thenReturn(secureContractGroundsWales);
+
+        EnumSet<SecureContractDiscretionaryGroundsWales> discretionaryGrounds = EnumSet.of(
                 SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
                 SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
-        Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = Set.of(
+        EnumSet<SecureContractMandatoryGroundsWales> mandatoryGrounds = EnumSet.of(
                 SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170);
-        Set<EstateManagementGroundsWales> estateManagementGrounds = Set.of(
+        EnumSet<EstateManagementGroundsWales> estateManagementGrounds = EnumSet.of(
                 EstateManagementGroundsWales.BUILDING_WORKS,
                 EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES);
 
         when(pcsCase.getDiscretionaryGroundsWales()).thenReturn(null);
         when(pcsCase.getMandatoryGroundsWales()).thenReturn(null);
         when(pcsCase.getEstateManagementGroundsWales()).thenReturn(null);
-        when(pcsCase.getSecureContractDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
-        when(pcsCase.getSecureContractMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
-        when(pcsCase.getSecureContractEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
+        when(secureContractGroundsWales
+                 .getDiscretionaryGroundsWales()).thenReturn(discretionaryGrounds);
+        when(secureContractGroundsWales
+                 .getMandatoryGroundsWales()).thenReturn(mandatoryGrounds);
+        when(secureContractGroundsWales
+                 .getEstateManagementGroundsWales()).thenReturn(estateManagementGrounds);
         when(pcsCase.getSecureOrFlexibleGroundsReasons()).thenReturn(null);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();

@@ -38,7 +38,7 @@ class RealFeeServiceTest {
 
     private RealFeeService underTest;
 
-    private static final String FEE_TYPE = FeeTypes.CASE_ISSUE_FEE;
+    private static final String FEE_TYPE = FeeTypes.CASE_ISSUE_FEE.getCode();
 
     private LookUpReferenceData lookUpReferenceData;
     private FeeLookupResponseDto feeLookupResponseDto;

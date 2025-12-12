@@ -36,10 +36,35 @@ export const submitCaseApiData = {
     isCorrectClaimantContactAddress: 'YES',
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
-      nameKnown: 'NO',
-      addressKnown: 'NO'
+      nameKnown: 'YES',
+      addressKnown: 'YES',
+      addressSameAsPossession: 'YES',
+      firstName: 'John',
+      lastName: 'Doe',
     },
-    addAnotherDefendant: 'NO',
+    addAnotherDefendant: 'YES',
+    additionalDefendants: [
+      {
+        value: {
+          nameKnown: 'YES',
+          firstName: 'Peter',
+          lastName: 'Parker',
+          addressKnown: 'YES',
+          addressSameAsPossession: 'YES'
+        },
+        id: null
+      },
+      {
+        value: {
+          nameKnown: 'YES',
+          firstName: 'Jen',
+          lastName: 'Parker',
+          addressKnown: 'YES',
+          addressSameAsPossession: 'YES'
+        },
+        id: null
+      },      
+    ],
     typeOfTenancyLicence: 'DEMOTED_TENANCY',
     tenancyLicenceDate: null,
     tenancyLicenceDocuments: [],

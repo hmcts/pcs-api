@@ -11,7 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class NameAndAddressForEviction {
 
-    @CCD(label = "You can choose the defendants you want to evict on the next page")
+    @CCD(
+        label = "Is this the correct name and address for the eviction?",
+        hint = "You can choose the defendants you want to evict on the next page"
+    )
     private VerticalYesNo correctNameAndAddress;
 
 }

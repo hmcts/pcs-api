@@ -27,7 +27,7 @@ public class SuspensionOfRightToBuyDemotionOfTenancy {
 
     @CCD(
         label = SuspensionOfRightToBuy.SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL,
-        hint = "Give details of the defendants' conduct and any other reasons you think are relevant. You can enter "
+        hint = "Give details of the defendants’ conduct and any other reasons you think are relevant. You can enter "
             + "up to 250 characters",
         typeOverride = TextArea
     )
@@ -35,7 +35,7 @@ public class SuspensionOfRightToBuyDemotionOfTenancy {
 
     @CCD(
         label = DemotionOfTenancy.DEMOTION_OF_TENANCY_REASON_LABEL,
-        hint = "Give details of the defendants' conduct and any other reasons you think are relevant. "
+        hint = "Give details of the defendants’ conduct and any other reasons you think are relevant. "
             + "You can enter up to 250 characters",
         typeOverride = TextArea
     )

@@ -55,22 +55,22 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         ClaimantCircumstances claimantCircumstances = caseData.getClaimantCircumstances();
         if (claimantCircumstances != null) {
-            String dynamicLabel = "Give details about " 
-                + claimantCircumstances.getClaimantNamePossessiveForm() 
-                + "'s circumstances";
-            
+            String dynamicLabel = "Give details about "
+                + claimantCircumstances.getClaimantNamePossessiveForm()
+                + "’s circumstances";
+
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                 claimantCircumstances.getClaimantCircumstancesDetails(),
                 dynamicLabel,
                 TextAreaValidationService.LONG_TEXT_LIMIT
             ));
         }
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
