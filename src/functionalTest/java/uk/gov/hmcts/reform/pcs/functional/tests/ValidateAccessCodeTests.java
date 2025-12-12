@@ -12,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
-import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
-import uk.gov.hmcts.reform.pcs.functional.testutils.CitizenUserGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
@@ -63,14 +61,14 @@ class ValidateAccessCodeTests {
     // ============================================
 
     /**
-     * Helper method to get IDAM token
+     * Helper method to get IDAM token.
      */
     private String getIdamToken() {
         return IdamAuthenticationGenerator.generateToken();
     }
 
     /**
-     * Helper method to get S2S token
+     * Helper method to get S2S token.
      */
     private String getS2sToken() {
         ServiceAuthenticationGenerator generator = new ServiceAuthenticationGenerator();
@@ -78,7 +76,7 @@ class ValidateAccessCodeTests {
     }
 
     /**
-     * Helper method to create test case with a single defendant
+     * Helper method to create test case with a single defendant.
      */
     private CreateTestCaseResponse createTestCaseWithDefendant() {
         // Build request body - using HashMap to allow null values
@@ -117,7 +115,7 @@ class ValidateAccessCodeTests {
     }
 
     /**
-     * Helper method to create test case with multiple defendants
+     * Helper method to create test case with multiple defendants.
      */
     private CreateTestCaseResponse createTestCaseWithMultipleDefendants(int numberOfDefendants) {
         List<Map<String, Object>> defendants = new ArrayList<>();

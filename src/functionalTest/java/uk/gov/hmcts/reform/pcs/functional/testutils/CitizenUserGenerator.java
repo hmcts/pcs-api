@@ -20,11 +20,11 @@ import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
 /**
  * Utility class for creating citizen users in IDAM for functional testing.
- * 
+ * <p>
  * This is needed for tests that require different user IDs, such as:
  * - Testing access code already used by another user
  * - Testing user already linked to another defendant
- * 
+ * <p>
  * Implementation:
  * 1. Gets system access token (cached, valid for hours)
  * 2. Creates user in IDAM using system token
@@ -33,8 +33,10 @@ import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 public class CitizenUserGenerator {
 
     // Environment variables (matching Jenkins pipeline configuration)
-    private static final String IDAM_WEB_PUBLIC_API = getEnvOrDefault("IDAM_WEB_PUBLIC_API_URL", getEnvOrDefault("IDAM_API_URL", null));
-    private static final String IDAM_TESTING_SUPPORT_API = getEnvOrDefault("IDAM_TESTING_SUPPORT_API_URL", getEnvOrDefault("IDAM_API_URL", null));
+    private static final String IDAM_WEB_PUBLIC_API = getEnvOrDefault("IDAM_WEB_PUBLIC_API_URL",
+        getEnvOrDefault("IDAM_API_URL", null));
+    private static final String IDAM_TESTING_SUPPORT_API = getEnvOrDefault("IDAM_TESTING_SUPPORT_API_URL",
+        getEnvOrDefault("IDAM_API_URL", null));
     private static final String IDAM_SYSTEM_USERNAME = getEnv("IDAM_SYSTEM_USERNAME");
     private static final String IDAM_SYSTEM_PASSWORD = getEnv("IDAM_SYSTEM_USER_PASSWORD");
     // Use PCS_API_IDAM_SECRET (from Jenkins vault) instead of PCS_FRONTEND_IDAM_SECRET
