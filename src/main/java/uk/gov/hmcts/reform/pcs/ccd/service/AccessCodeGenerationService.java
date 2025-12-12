@@ -21,9 +21,10 @@ public class AccessCodeGenerationService {
 
     private final PartyAccessCodeRepository partyAccessCodeRepo;
     private final PcsCaseService pcsCaseService;
+    private final AccessCodeGenerator accessCodeGenerator;
 
     public PartyAccessCodeEntity createPartyAccessCodeEntity(PcsCaseEntity  pcsCaseEntity, UUID partyId) {
-        String code = AccessCodeGenerator.generateAccessCode();
+        String code = accessCodeGenerator.generateAccessCode();
 
         return PartyAccessCodeEntity.builder()
             .partyId(partyId)
