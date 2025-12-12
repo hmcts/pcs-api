@@ -52,6 +52,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @Slf4j
 @Component
@@ -118,7 +119,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setFormattedPropertyAddress(addressFormatter
-            .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
+            .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
 
         initializeDefendantData(pcsCase);
         populateDefendantSelectionList(pcsCase);
