@@ -29,6 +29,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
@@ -76,7 +77,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -91,6 +92,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -160,7 +162,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     @Mock
-    private OrganisationNameService organisationNameService;
+    private OrganisationService organisationService;
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
@@ -180,6 +182,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ReasonsForPossessionWales reasonsForPossessionWales;
     @Mock
+    private AddressFormatter addressFormatter;
+    @Mock
     private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     @Mock
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
@@ -195,8 +199,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private FeeFormatter feeFormatter;
-
-    private final AddressFormatter addressFormatter = new AddressFormatter();
 
     @BeforeEach
     void setUp() {
@@ -218,7 +220,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
-            demotionOfTenancyOrderReason, organisationNameService, claimantDetailsWalesPage, prohibitedConductWalesPage,
+            demotionOfTenancyOrderReason, organisationService, claimantDetailsWalesPage, prohibitedConductWalesPage,
             schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage, groundsForPossessionWales,
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossession, rentArrearsGroundForPossessionAdditionalGrounds,
@@ -268,21 +270,18 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSetClaimantDetails() {
             // Given
-            String expectedUserEmail = "user@test.com";
-            when(userDetails.getSub()).thenReturn(expectedUserEmail);
-            when(organisationNameService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            String expectedClaimantEmail = "user@test.com";
+            String expectedClaimantAddress = "formatted claimant address";
 
-            AddressUK propertyAddress = AddressUK.builder()
-                .addressLine1("10 High Street")
-                .addressLine2("address line 2")
-                .addressLine3("address line 3")
-                .postTown("London")
-                .postCode("W1 2BC")
-                .country("United Kingdom")
-                .build();
+            AddressUK claimantAddress = mock(AddressUK.class);
+            when(userDetails.getSub()).thenReturn(expectedClaimantEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(claimantAddress);
+            when(addressFormatter.formatMediumAddress(claimantAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn(expectedClaimantAddress);
 
             PCSCase caseData = PCSCase.builder()
-                .propertyAddress(propertyAddress)
+                .propertyAddress(mock(AddressUK.class))
                 .legislativeCountry(WALES)
                 .build();
 
@@ -290,11 +289,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedUserEmail);
+            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedClaimantEmail);
             assertThat(updatedCaseData.getContactPreferencesDetails().getClaimantContactEmail())
-                .isEqualTo(expectedUserEmail);
+                .isEqualTo(expectedClaimantEmail);
             assertThat(updatedCaseData.getContactPreferencesDetails().getFormattedClaimantContactAddress())
-                .isEqualTo("10 High Street<br>London<br>W1 2BC");
+                .isEqualTo("formatted claimant address");
         }
 
         @ParameterizedTest
@@ -539,12 +538,46 @@ class ResumePossessionClaimTest extends BaseEventTest {
             ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor
                 = ArgumentCaptor.forClass(SchedulableInstance.class);
 
-            verify(schedulerClient).scheduleIfNotExists(schedulableInstanceCaptor.capture());
+            verify(schedulerClient,atLeastOnce()).scheduleIfNotExists(schedulableInstanceCaptor.capture());
 
             FeesAndPayTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
 
             assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
+        }
+
+        @Test
+        void shouldScheduleAccessCodeTask() {
+            // Given
+            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            stubPartyCreation();
+            stubClaimCreation();
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            @SuppressWarnings("unchecked")
+            ArgumentCaptor<SchedulableInstance<AccessCodeTaskData>> captor
+                = ArgumentCaptor.forClass(SchedulableInstance.class);
+
+            verify(schedulerClient, atLeastOnce()).scheduleIfNotExists(captor.capture());
+
+            SchedulableInstance<AccessCodeTaskData> accessCodeTaskInstance = captor.getAllValues().stream()
+                .filter(s -> s.getTaskInstance().getData() instanceof AccessCodeTaskData)
+                .map(s -> (SchedulableInstance<AccessCodeTaskData>) s)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Access code task was not scheduled"));
+
+            AccessCodeTaskData taskData = (AccessCodeTaskData) accessCodeTaskInstance.getTaskInstance().getData();
+
+            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
         private void stubClaimCreation() {
