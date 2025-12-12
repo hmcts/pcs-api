@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -287,7 +289,8 @@ public class PCSCase {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String currentRent;
+    @JacksonMoneyGBP
+    private BigDecimal currentRent;
 
     @CCD(
         label = "How frequently should rent be paid?"
@@ -305,7 +308,8 @@ public class PCSCase {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String dailyRentChargeAmount;
+    @JacksonMoneyGBP
+    private BigDecimal dailyRentChargeAmount;
 
     @CCD(
         label = "Is the amount per day that unpaid rent should be charged at correct?"
@@ -317,12 +321,14 @@ public class PCSCase {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String amendedDailyRentChargeAmount;
+    @JacksonMoneyGBP
+    private BigDecimal amendedDailyRentChargeAmount;
 
     @CCD(
         typeOverride = FieldType.MoneyGBP
     )
-    private String calculatedDailyRentChargeAmount;
+    @JacksonMoneyGBP
+    private BigDecimal calculatedDailyRentChargeAmount;
 
     @CCD
     private String formattedCalculatedDailyRentChargeAmount;
@@ -397,7 +403,8 @@ public class PCSCase {
         min = 0,
         typeOverride = FieldType.MoneyGBP
     )
-    private String totalRentArrears;
+    @JacksonMoneyGBP
+    private BigDecimal totalRentArrears;
 
     @CCD(
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "

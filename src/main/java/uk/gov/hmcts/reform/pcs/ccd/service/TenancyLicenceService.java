@@ -23,11 +23,11 @@ public class TenancyLicenceService {
             .detailsOfOtherTypeOfTenancyLicence(pcsCase.getDetailsOfOtherTypeOfTenancyLicence())
             .supportingDocuments(ListValueUtils.unwrapListItems(pcsCase.getTenancyLicenceDocuments()))
             .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
-            .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
+            .rentAmount(pcsCase.getCurrentRent())
             .rentPaymentFrequency(pcsCase.getRentFrequency())
             .otherRentFrequency(pcsCase.getOtherRentFrequency())
             .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
-            .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+            .totalRentArrears(pcsCase.getTotalRentArrears())
             .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
             .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
             .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
@@ -46,14 +46,14 @@ public class TenancyLicenceService {
     }
 
     private BigDecimal getDailyRentAmount(PCSCase pcsCase) {
-        String[] fieldValues = {
+        BigDecimal[] fieldValues = {
             pcsCase.getAmendedDailyRentChargeAmount(),
             pcsCase.getCalculatedDailyRentChargeAmount(),
             pcsCase.getDailyRentChargeAmount()
         };
-        for (String value : fieldValues) {
-            if (value != null && !value.trim().isEmpty()) {
-                return penceToPounds(value);
+        for (BigDecimal value : fieldValues) {
+            if (value != null) {
+                return value;
             }
         }
         return null;
@@ -122,10 +122,4 @@ public class TenancyLicenceService {
         }
     }
 
-    private static BigDecimal penceToPounds(String pence) {
-        if (pence == null || pence.trim().isEmpty()) {
-            return null;
-        }
-        return new BigDecimal(pence).movePointLeft(2);
-    }
 }
