@@ -38,6 +38,7 @@ class DefendantServiceTest {
 
     @Mock
     private ModelMapper modelMapper;
+
     @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
 
@@ -71,6 +72,8 @@ class DefendantServiceTest {
 
         // When
         List<Defendant> defendantList = underTest.buildDefendantsList(pcsCase);
+
+        expectedDefendant.setPartyId(defendantList.getFirst().getPartyId());
 
         // Then
         assertThat(defendantList).containsExactly(expectedDefendant);
@@ -114,6 +117,7 @@ class DefendantServiceTest {
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -124,6 +128,7 @@ class DefendantServiceTest {
             .build();
 
         Defendant expectedDefendant2 = Defendant.builder()
+            .partyId(defendantList.get(1).getPartyId())
             .nameKnown(true)
             .firstName("defendant 2 first name")
             .lastName("defendant 2 last name")
@@ -131,6 +136,7 @@ class DefendantServiceTest {
             .build();
 
         Defendant expectedDefendant3 = Defendant.builder()
+            .partyId(defendantList.get(2).getPartyId())
             .nameKnown(false)
             .addressKnown(true)
             .addressSameAsPossession(true)
@@ -169,6 +175,7 @@ class DefendantServiceTest {
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -201,6 +208,7 @@ class DefendantServiceTest {
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.get(0).getPartyId())
             .nameKnown(true)
             .firstName("defendant 1 first name")
             .lastName("defendant 1 last name")
@@ -243,12 +251,14 @@ class DefendantServiceTest {
 
         // Then
         Defendant expectedDefendant1 = Defendant.builder()
+            .partyId(defendantList.getFirst().getPartyId())
             .nameKnown(false)
             .addressKnown(false)
             .additionalDefendantsAdded(true)
             .build();
 
         Defendant expectedDefendant2 = Defendant.builder()
+            .partyId(defendantList.get(1).getPartyId())
             .nameKnown(false)
             .addressKnown(false)
             .build();
@@ -443,7 +453,7 @@ class DefendantServiceTest {
             // Then
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getCode()).matches(Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 Pattern.CASE_INSENSITIVE));
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
         }
@@ -480,7 +490,7 @@ class DefendantServiceTest {
             // Then
             assertThat(result).hasSize(3);
             Pattern uuidPattern = Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 Pattern.CASE_INSENSITIVE);
             assertThat(result.get(0).getCode()).matches(uuidPattern);
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
@@ -539,7 +549,7 @@ class DefendantServiceTest {
             // Then
             assertThat(result).hasSize(5);
             Pattern uuidPattern = Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 Pattern.CASE_INSENSITIVE);
             assertThat(result.get(0).getCode()).matches(uuidPattern);
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
@@ -570,7 +580,7 @@ class DefendantServiceTest {
             // Then
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getCode()).matches(Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", 
+                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
                 Pattern.CASE_INSENSITIVE));
             assertThat(result.get(0).getLabel()).isEqualTo("Unknown");
         }
