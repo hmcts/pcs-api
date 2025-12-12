@@ -9,4 +9,12 @@ public class EnvUtils {
         }
         return value;
     }
+
+    public static String getEnvOrDefault(String name, String defaultValue) {
+        String value = System.getenv(name);
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        return value;
+    }
 }

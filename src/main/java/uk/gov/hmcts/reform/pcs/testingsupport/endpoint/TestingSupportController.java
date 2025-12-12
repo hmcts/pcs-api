@@ -15,15 +15,27 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -31,7 +43,13 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -46,17 +64,29 @@ public class TestingSupportController {
     private final Task<Void> helloWorldTask;
     private final DocAssemblyService docAssemblyService;
     private final EligibilityService eligibilityService;
+    private final PcsCaseRepository pcsCaseRepository;
+    private final PartyAccessCodeRepository partyAccessCodeRepository;
+    private final PcsCaseService pcsCaseService;
+    private final AccessCodeGenerationService accessCodeGenerationService;
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
         @Qualifier("helloWorldTask") Task<Void> helloWorldTask,
         DocAssemblyService docAssemblyService,
-        EligibilityService eligibilityService
+        EligibilityService eligibilityService,
+        PcsCaseRepository pcsCaseRepository,
+        PartyAccessCodeRepository partyAccessCodeRepository,
+        PcsCaseService pcsCaseService,
+        AccessCodeGenerationService accessCodeGenerationService
     ) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
         this.docAssemblyService = docAssemblyService;
         this.eligibilityService = eligibilityService;
+        this.pcsCaseRepository = pcsCaseRepository;
+        this.partyAccessCodeRepository = partyAccessCodeRepository;
+        this.pcsCaseService = pcsCaseService;
+        this.accessCodeGenerationService = accessCodeGenerationService;
     }
 
     @Operation(
@@ -268,6 +298,206 @@ public class TestingSupportController {
         @RequestParam(value = "legislativeCountry", required = false) LegislativeCountry legislativeCountry
     ) {
         return eligibilityService.checkEligibility(postcode, legislativeCountry);
+    }
+
+    @Operation(
+        summary = "Create a test case with defendants",
+        description = "Creates a test case with property address, legislative country, and at least 1 defendant. "
+            + "Case reference and party IDs will be auto-generated if not provided."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Case created successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - invalid payload"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping(
+        value = "/create-case",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<CreateTestCaseResponse> createTestCase(
+        @Parameter(
+            description = "Bearer token for user authentication",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(
+            description = "Test case creation request",
+            required = true
+        )
+        @RequestBody CreateTestCaseRequest request
+    ) {
+        try {
+            // Generate case reference if not provided (expand to 16 digits)
+            Long caseReference = Optional.ofNullable(request.getCaseReference())
+                .orElseGet(this::generateCaseReference);
+
+            // Create case using PcsCaseService
+            pcsCaseService.createCase(
+                caseReference,
+                request.getPropertyAddress(),
+                request.getLegislativeCountry()
+            );
+
+            // Load the created case entity
+            PcsCaseEntity caseEntity = pcsCaseRepository.findByCaseReference(caseReference)
+                .orElseThrow(() -> new RuntimeException("Failed to create case"));
+
+            // Create defendants and party entities
+            List<Defendant> defendants = new ArrayList<>();
+            List<CreateTestCaseResponse.DefendantInfo> defendantInfos = new ArrayList<>();
+
+            for (CreateTestCaseRequest.DefendantRequest defendantRequest : request.getDefendants()) {
+                UUID generatedPartyId = Optional.ofNullable(defendantRequest.getPartyId())
+                    .orElseGet(UUID::randomUUID);
+
+                // Create PartyEntity
+                PartyEntity partyEntity = PartyEntity.builder()
+                    .pcsCase(caseEntity)
+                    .forename(defendantRequest.getFirstName())
+                    .surname(defendantRequest.getLastName())
+                    .idamId(defendantRequest.getIdamUserId())
+                    .active(true)
+                    .build();
+                caseEntity.addParty(partyEntity);
+
+                // Create Defendant model
+                Defendant defendant = Defendant.builder()
+                    .partyId(generatedPartyId)
+                    .idamUserId(defendantRequest.getIdamUserId())
+                    .firstName(defendantRequest.getFirstName())
+                    .lastName(defendantRequest.getLastName())
+                    .build();
+                defendants.add(defendant);
+
+                // Create response info (accessCode will be populated after generation)
+                CreateTestCaseResponse.DefendantInfo defendantInfo = new CreateTestCaseResponse.DefendantInfo(
+                    generatedPartyId,
+                    defendantRequest.getIdamUserId(),
+                    defendantRequest.getFirstName(),
+                    defendantRequest.getLastName(),
+                    null  // Will be populated after access code generation
+                );
+                defendantInfos.add(defendantInfo);
+            }
+
+            // Set defendants on case entity
+            caseEntity.setDefendants(defendants);
+
+            // Save case with parties and defendants
+            pcsCaseRepository.save(caseEntity);
+
+            log.info("Created test case {} with {} defendants", caseReference, defendants.size());
+
+            // Generate access codes immediately (synchronous - better for testing)
+            try {
+                accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference));
+                log.info("Generated access codes for case {}", caseReference);
+                
+                // Load access codes from database and populate in response
+                List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository
+                    .findAllByPcsCase_Id(caseEntity.getId());
+                
+                // Create map of partyId -> accessCode
+                Map<UUID, String> partyIdToCode = accessCodes.stream()
+                    .collect(Collectors.toMap(
+                        PartyAccessCodeEntity::getPartyId,
+                        PartyAccessCodeEntity::getCode
+                    ));
+                
+                // Update defendantInfos with access codes
+                defendantInfos.forEach(info -> {
+                    String code = partyIdToCode.get(info.getPartyId());
+                    info.setAccessCode(code);
+                });
+                
+            } catch (Exception e) {
+                log.warn("Failed to generate access codes for case {}: {}", caseReference, e.getMessage());
+                // Don't fail the request - codes can be generated later if needed
+                // Set accessCode to null for all defendants if generation failed
+                defendantInfos.forEach(info -> info.setAccessCode(null));
+            }
+
+            // Build response with caseId
+            CreateTestCaseResponse response = new CreateTestCaseResponse(
+                caseEntity.getId(),  // caseId (UUID)
+                caseReference,
+                defendantInfos
+            );
+            return ResponseEntity.status(201).body(response);
+
+        } catch (Exception e) {
+            log.error("Failed to create test case", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(
+        summary = "Delete a test case and related access codes",
+        description = "Deletes a case created for testing purposes, along with any associated party access codes."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Case deleted"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @DeleteMapping("/cases/{caseReference}")
+    public ResponseEntity<Void> deleteCase(
+        @Parameter(
+            description = "Bearer token for user authentication",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "Case reference to delete", required = true)
+        @PathVariable long caseReference
+    ) {
+        try {
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+                pcsCaseEntity.getId()
+            );
+            if (!accessCodes.isEmpty()) {
+                partyAccessCodeRepository.deleteAll(accessCodes);
+            }
+
+            pcsCaseRepository.delete(pcsCaseEntity);
+            log.info("Deleted test case {} and {} access codes", caseReference, accessCodes.size());
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Failed to delete test case {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    private long generateCaseReference() {
+        // Create a 16-digit reference using current time (13 digits) plus a 3-digit suffix
+        long timestamp = System.currentTimeMillis();
+        int suffix = ThreadLocalRandom.current().nextInt(0, 1000);
+        return Long.parseLong(String.format("%d%03d", timestamp, suffix));
     }
 
     private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
