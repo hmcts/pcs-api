@@ -6,7 +6,7 @@ export const contactPreferences =
     enterPhoneNumberLabel: 'Enter phone number',
     emailAddressForNotifications: 'Do you want to use this email address for notifications?',
     doYouWantDocumentsToBeSentToAddress: 'Do you want documents to be sent to this address?',
-    provideContactPhoneNumber: 'Do you want to provide a contact phone number?',
+    provideContactPhoneNumber: 'Do you want to provide a contact phone number? (Optional)',
     emailIdInput: 'test@gmail.com',
     phoneNumberInput: '07654567345',
     yes: 'Yes',
