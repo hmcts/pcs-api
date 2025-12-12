@@ -63,7 +63,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -76,7 +76,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
@@ -160,7 +160,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     @Mock
-    private OrganisationNameService organisationNameService;
+    private OrganisationService organisationService;
     @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
@@ -176,9 +176,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private GroundsForPossessionWales groundsForPossessionWales;
     @Mock
-    private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
+    private SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     @Mock
     private ReasonsForPossessionWales reasonsForPossessionWales;
+    @Mock
+    private AddressFormatter addressFormatter;
     @Mock
     private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
     @Mock
@@ -195,8 +197,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private FeeFormatter feeFormatter;
-
-    private final AddressFormatter addressFormatter = new AddressFormatter();
 
     @BeforeEach
     void setUp() {
@@ -218,7 +218,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
-            demotionOfTenancyOrderReason, organisationNameService, claimantDetailsWalesPage, prohibitedConductWalesPage,
+            demotionOfTenancyOrderReason, organisationService, claimantDetailsWalesPage, prohibitedConductWalesPage,
             schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage, groundsForPossessionWales,
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossession, rentArrearsGroundForPossessionAdditionalGrounds,
@@ -268,21 +268,18 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSetClaimantDetails() {
             // Given
-            String expectedUserEmail = "user@test.com";
-            when(userDetails.getSub()).thenReturn(expectedUserEmail);
-            when(organisationNameService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            String expectedClaimantEmail = "user@test.com";
+            String expectedClaimantAddress = "formatted claimant address";
 
-            AddressUK propertyAddress = AddressUK.builder()
-                .addressLine1("10 High Street")
-                .addressLine2("address line 2")
-                .addressLine3("address line 3")
-                .postTown("London")
-                .postCode("W1 2BC")
-                .country("United Kingdom")
-                .build();
+            AddressUK claimantAddress = mock(AddressUK.class);
+            when(userDetails.getSub()).thenReturn(expectedClaimantEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(claimantAddress);
+            when(addressFormatter.formatMediumAddress(claimantAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn(expectedClaimantAddress);
 
             PCSCase caseData = PCSCase.builder()
-                .propertyAddress(propertyAddress)
+                .propertyAddress(mock(AddressUK.class))
                 .legislativeCountry(WALES)
                 .build();
 
@@ -290,11 +287,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedUserEmail);
+            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedClaimantEmail);
             assertThat(updatedCaseData.getContactPreferencesDetails().getClaimantContactEmail())
-                .isEqualTo(expectedUserEmail);
+                .isEqualTo(expectedClaimantEmail);
             assertThat(updatedCaseData.getContactPreferencesDetails().getFormattedClaimantContactAddress())
-                .isEqualTo("10 High Street<br>London<br>W1 2BC");
+                .isEqualTo("formatted claimant address");
         }
 
         @ParameterizedTest
