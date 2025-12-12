@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
-import uk.gov.hmcts.reform.pcs.ccd.service.CCDService;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -40,7 +40,7 @@ class PartyAccessCodeLinkServiceTest {
     private PartyAccessCodeLinkValidator validator;
 
     @Mock
-    private CCDService ccdService;
+    private CaseAssignmentService caseAssignmentService;
 
     private static final long CASE_REFERENCE = 123456L;
     private static final String ACCESS_CODE = "ABCD1234";
@@ -76,7 +76,7 @@ class PartyAccessCodeLinkServiceTest {
             .build();
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(ccdService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
+        when(caseAssignmentService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
             CaseAssignmentUserRolesResponse.builder()
                 .statusMessage("Case-User-Role assignments created successfully").build());
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);

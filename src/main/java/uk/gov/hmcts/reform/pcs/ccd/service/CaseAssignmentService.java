@@ -15,7 +15,7 @@ import java.util.ArrayList;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CCDService {
+public class CaseAssignmentService {
 
     private final AuthTokenGenerator authTokenGenerator;
     private final IdamService idamService;
