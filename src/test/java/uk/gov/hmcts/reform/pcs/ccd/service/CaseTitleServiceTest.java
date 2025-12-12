@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 
@@ -20,6 +21,8 @@ class CaseTitleServiceTest {
     private AddressFormatter addressFormatter;
     @Mock
     private PCSCase pcsCase;
+    @Mock
+    private UserInfo currentUserDetails;
 
     private CaseTitleService underTest;
 
@@ -31,7 +34,7 @@ class CaseTitleServiceTest {
     @Test
     void shouldIncludeCaseReferenceInPageTitle() {
         // When
-        String actualCaseTitle = underTest.buildCaseTitle(pcsCase);
+        String actualCaseTitle = underTest.buildCaseTitle(pcsCase, currentUserDetails);
 
         // Then
         assertThat(actualCaseTitle).contains("${[CASE_REFERENCE]}");
@@ -47,7 +50,7 @@ class CaseTitleServiceTest {
         when(addressFormatter.formatAddressWithCommas(propertyAddress)).thenReturn(expectedPropertyAddress);
 
         // When
-        String actualCaseTitle = underTest.buildCaseTitle(pcsCase);
+        String actualCaseTitle = underTest.buildCaseTitle(pcsCase, currentUserDetails);
 
         // Then
         assertThat(actualCaseTitle).contains(expectedPropertyAddress);
