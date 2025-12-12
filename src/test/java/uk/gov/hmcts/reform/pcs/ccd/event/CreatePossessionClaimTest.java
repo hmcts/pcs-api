@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddre
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.function.BiConsumer;
@@ -79,14 +79,14 @@ class CreatePossessionClaimTest extends BaseEventTest {
             return null;
         }).when(feeApplier).applyFeeAmount(
             eq(caseData),
-            eq(FeeTypes.CASE_ISSUE_FEE),
+            eq(FeeType.CASE_ISSUE_FEE),
             any()
         );
 
         PCSCase result = callStartHandler(caseData);
 
         assertThat(result.getFeeAmount()).isEqualTo(expectedFormattedFee);
-        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeTypes.CASE_ISSUE_FEE), any());
+        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
 
     }
 
@@ -107,13 +107,13 @@ class CreatePossessionClaimTest extends BaseEventTest {
             return null;
         }).when(feeApplier).applyFeeAmount(
             eq(caseData),
-            any(FeeTypes.class),
+            any(FeeType.class),
             any());
 
         PCSCase result = callStartHandler(caseData);
 
         assertThat(result.getFeeAmount()).isEqualTo(expectedFeesMessage);
-        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeTypes.CASE_ISSUE_FEE), any());
+        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
     }
 
 }

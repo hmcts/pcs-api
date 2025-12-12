@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
@@ -19,7 +19,7 @@ import java.util.function.BiConsumer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes.ENFORCEMENT_WARRANT_FEE;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.ENFORCEMENT_WARRANT_FEE;
 
 @ExtendWith(MockitoExtension.class)
 class FeeApplierTest extends BaseEventTest {
@@ -39,11 +39,11 @@ class FeeApplierTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
-        FeeTypes feeType = ENFORCEMENT_WARRANT_FEE;
+        FeeType feeType = ENFORCEMENT_WARRANT_FEE;
         BigDecimal feeAmount = BigDecimal.valueOf(123.45);
         final String expectedFormattedFee = "£123.45";
 
-        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE.getCode())).thenReturn(
+        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
             FeeDetails
                 .builder()
                 .feeAmount(feeAmount)
@@ -56,7 +56,7 @@ class FeeApplierTest extends BaseEventTest {
         underTest.applyFeeAmount(pcsCase, feeType, setter);
 
         // Then
-        verify(feeService).getFee(feeType.getCode());
+        verify(feeService).getFee(feeType);
         assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
     }
 
@@ -66,10 +66,11 @@ class FeeApplierTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
-        FeeTypes feeType = FeeTypes.ENFORCEMENT_WARRANT_FEE;
+        FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
         final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
 
-        when(feeService.getFee(feeType.getCode())).thenThrow(new RuntimeException("Fee service error"));
+        when(feeService.getFee(feeType))
+            .thenThrow(new RuntimeException("Fee service error"));
         BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
             .getEnforcementOrder().setWarrantFeeAmount(fee);
 
@@ -77,7 +78,7 @@ class FeeApplierTest extends BaseEventTest {
         underTest.applyFeeAmount(pcsCase, feeType, setter);
 
         // Then
-        verify(feeService).getFee(feeType.getCode());
+        verify(feeService).getFee(feeType);
         assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
     }
 
@@ -87,10 +88,10 @@ class FeeApplierTest extends BaseEventTest {
         PCSCase pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
-        FeeTypes feeType = FeeTypes.ENFORCEMENT_WARRANT_FEE;
+        FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
         final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
 
-        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE.getCode())).thenReturn(null);
+        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(null);
         BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
             .getEnforcementOrder().setWarrantFeeAmount(fee);
 
@@ -98,7 +99,7 @@ class FeeApplierTest extends BaseEventTest {
         underTest.applyFeeAmount(pcsCase, feeType, setter);
 
         // Then
-        verify(feeService).getFee(feeType.getCode());
+        verify(feeService).getFee(feeType);
         assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
     }
 }

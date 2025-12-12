@@ -72,7 +72,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -512,7 +512,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             FeesAndPayTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
 
-            assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE.getCode());
+            assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
         }
 
@@ -607,7 +607,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         private FeeDetails stubFeeService() {
             FeeDetails feeDetails = FeeDetails.builder().feeAmount(CLAIM_FEE_AMOUNT).build();
-            when(feeService.getFee(FeeTypes.CASE_ISSUE_FEE.getCode()))
+            when(feeService.getFee(FeeType.CASE_ISSUE_FEE))
                 .thenReturn(feeDetails);
 
             return feeDetails;

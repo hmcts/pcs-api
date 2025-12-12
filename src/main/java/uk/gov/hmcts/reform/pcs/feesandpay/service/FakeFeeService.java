@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.math.BigDecimal;
 
@@ -15,10 +16,14 @@ import java.math.BigDecimal;
 public class FakeFeeService implements FeeService {
 
     @Override
-    public FeeDetails getFee(String feeTypeKey) {
+    public FeeDetails getFee(FeeType feeType) {
+        return getFeeDetails();
+    }
+
+    private FeeDetails getFeeDetails() {
         return FeeDetails.builder()
             .code("FEE0123")
-            .feeAmount(new BigDecimal("404.00"))
+            .feeAmount(new BigDecimal("999999.99"))
             .description("Fake fee")
             .version(1)
             .build();

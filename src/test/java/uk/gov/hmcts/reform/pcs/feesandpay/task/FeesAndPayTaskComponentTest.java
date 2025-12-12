@@ -18,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
@@ -141,12 +141,13 @@ class FeesAndPayTaskComponentTest {
         @DisplayName("Should rethrow exception when payment service call fails")
         void shouldThrowFeeNotFoundExceptionWhenApiCallFails() {
             FeeDetails feeDetails = mock(FeeDetails.class);
-            FeesAndPayTaskData data = buildTaskData(FeeTypes.CASE_ISSUE_FEE.getCode(), feeDetails);
+            FeesAndPayTaskData data = buildTaskData(FeeType.CASE_ISSUE_FEE.getCode(), feeDetails);
             when(taskInstance.getData()).thenReturn(data);
 
             FeignException exception = mock(FeignException.class);
-            when(paymentService.createServiceRequest(anyString(), anyString(), any(FeeDetails.class),
-                                                     anyInt(), anyString()
+            when(paymentService.createServiceRequest(
+                anyString(), anyString(), any(FeeDetails.class),
+                anyInt(), anyString()
             )).thenThrow(exception);
 
             CustomTask<FeesAndPayTaskData> task = feesAndPayTaskComponent.feePaymentTask();
@@ -168,4 +169,5 @@ class FeesAndPayTaskComponentTest {
             assertThat(failureHandler).isInstanceOf(FailureHandler.MaxRetriesFailureHandler.class);
         }
     }
+
 }
