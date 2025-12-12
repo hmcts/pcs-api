@@ -200,7 +200,8 @@ class TenancyLicenceServiceTest {
 
     @ParameterizedTest(name = "amended={0}, calculated={1}, daily={2} -> expected={3}")
     @MethodSource("dailyRentChargeScenarios")
-    void shouldPreferDailyRentCharge(String amendedDailyRent, String calculatedDailyRent, String dailyRent, String expectedAmount) {
+    void shouldPreferDailyRentCharge(String amendedDailyRent, String calculatedDailyRent, String dailyRent,
+                                     String expectedAmount) {
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentSection()).thenReturn(RentSection.builder()
                 .amendedDailyRentCharge(amendedDailyRent)

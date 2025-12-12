@@ -85,7 +85,8 @@ public class RentDetails implements CcdPageConfiguration {
             case FORTNIGHTLY -> 14.0;
             case MONTHLY -> 30.44;
             default ->
-                    throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
+                    throw new IllegalArgumentException("Daily rent calculation not supported for frequency: "
+                            + frequency);
         };
 
         return new BigDecimal(Math.round(rentAmountInPence.doubleValue() / divisor));
