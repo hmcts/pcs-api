@@ -18,9 +18,9 @@ public class DailyRentAmount implements CcdPageConfiguration {
         pageBuilder
                 .page("dailyRentAmount", this::midEvent)
                 .pageLabel("Daily rent amount")
+                .showCondition("showRentSectionPage=\"Yes\" AND rentFrequency!=\"OTHER\"")
                 .complex(PCSCase::getRentDetails)
-                .showCondition("showRentSectionPage=\"Yes\" AND rentDetails_Frequency!=\"OTHER\"")
-                    .readonly(RentDetailsSection::getFormattedDailyCharge, NEVER_SHOW)
+                    .readonly(RentDetailsSection::getFormattedCalculatedDailyRentChargeAmount, NEVER_SHOW)
                     .label("dailyRentAmount-content",
                             """
                                     ---
@@ -29,13 +29,13 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                             Based on your previous answers, the amount per day that unpaid
                                             rent should be charged at is:
                                             <span class="govuk-body govuk-!-font-weight-bold">
-                                                ${rentDetails_FormattedDailyCharge}
+                                                ${formattedCalculatedDailyRentChargeAmount}
                                             </span>
                                         </p>
                                     </section>
                                     """)
-                    .mandatory(RentDetailsSection::getPerDayCorrect)
-                    .mandatory(RentDetailsSection::getAmendedDailyCharge, "rentDetails_PerDayCorrect=\"NO\"")
+                    .mandatory(RentDetailsSection::getRentPerDayCorrect)
+                    .mandatory(RentDetailsSection::getAmendedDailyRentChargeAmount, "rentPerDayCorrect=\"NO\"")
                 .done()
                 .label("dailyRentAmount-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -46,7 +46,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
 
         RentDetailsSection rentDetails = caseData.getRentDetails();
         // When user answers Yes/No on DailyRentAmount, set flag to show RentArrears
-        if (rentDetails.getPerDayCorrect() != null) {
+        if (rentDetails != null && rentDetails.getRentPerDayCorrect() != null) {
             caseData.setShowRentArrearsPage(YesOrNo.YES);
         }
 

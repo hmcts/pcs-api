@@ -1,7 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +14,6 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class RentDetailsSection {
 
     @CCD(
@@ -24,44 +21,43 @@ public class RentDetailsSection {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String current;
+    private String currentRent;
 
     @CCD(
         label = "How frequently should rent be paid?"
     )
-    private RentPaymentFrequency frequency;
+    private RentPaymentFrequency rentFrequency;
 
     @CCD(
         label = "Enter frequency",
         hint = "Please specify the frequency"
     )
-    private String otherFrequency;
+    private String otherRentFrequency;
 
     @CCD(
         label = "Enter the amount per day that unpaid rent should be charged at",
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String dailyChargeAmount;
+    private String dailyRentChargeAmount;
 
     @CCD(
         label = "Is the amount per day that unpaid rent should be charged at correct?"
     )
-    private VerticalYesNo perDayCorrect;
+    private VerticalYesNo rentPerDayCorrect;
 
     @CCD(
         label = "Enter amount per day that unpaid rent should be charged at",
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String amendedDailyCharge;
+    private String amendedDailyRentChargeAmount;
 
     @CCD(
         typeOverride = FieldType.MoneyGBP
     )
-    private String calculatedDailyCharge;
+    private String calculatedDailyRentChargeAmount;
 
     @CCD
-    private String formattedDailyCharge;
+    private String formattedCalculatedDailyRentChargeAmount;
 }
-
