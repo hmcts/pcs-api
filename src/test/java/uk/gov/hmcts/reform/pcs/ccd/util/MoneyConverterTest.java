@@ -42,7 +42,9 @@ class MoneyConverterTest {
             arguments("1599", "£15.99"),
             arguments("15", "£0.15"),
             arguments("15000", "£150"),
-            arguments("15040", "£150.40")
+            arguments("15040", "£150.40"),
+            arguments(null, "£0"),
+            arguments("", "£0")
         );
     }
 
@@ -53,7 +55,9 @@ class MoneyConverterTest {
             arguments("£15.99", "1599"),
             arguments("£0.15", "15"),
             arguments("£150", "15000"),
-            arguments("£150.40", "15040")
+            arguments("£150.40", "15040"),
+            arguments(null, "0"),
+            arguments("", "0")
         );
     }
 }
