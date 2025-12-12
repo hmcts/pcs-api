@@ -180,6 +180,11 @@ fees:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
 
+access-code:
+  request:
+    max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
+    backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
+
 payments:
   api:
     url: ${PAYMENT_API_URL:http://localhost:8083}

@@ -6,5 +6,6 @@ export const rentDetails = {
   amountPerDayInputLabel: 'Enter the amount per day that unpaid rent should be charged at',
   HowMuchRentLabel: 'How much is the rent?',
   rentFrequencyLabel: 'Enter frequency',
+  rentFrequencyQuestion: 'How frequently should rent be paid?',
   other: 'Other'
 };
