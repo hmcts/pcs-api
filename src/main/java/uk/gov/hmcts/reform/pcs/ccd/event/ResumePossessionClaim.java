@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Organisation;
 import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.assigncaseaccess.AssignCaseAccessService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
@@ -316,8 +317,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .organisation(Organisation.builder()
                     .organisationId(orgId)
                     .organisationName(organisationService.getOrganisationNameForCurrentUser()).build())
+                .prepopulateToUsersOrganisation(YesOrNo.YES)
                 .orgPolicyReference("AUTO")
-                .orgPolicyCaseAssignedRole(UserRole.CLAIMANT)
+                .orgPolicyCaseAssignedRole(UserRole.CLAIMANT_SOLICITOR)
                 .build());
 
         log.warn("Organisation ID : {}", orgId);
