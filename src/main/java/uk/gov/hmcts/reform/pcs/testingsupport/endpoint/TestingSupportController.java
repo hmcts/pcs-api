@@ -379,13 +379,13 @@ public class TestingSupportController {
                     .build();
                 defendants.add(defendant);
 
-                // Create response info (accessCode will be set after generation)
+                // Create response info (accessCode will be populated after generation)
                 CreateTestCaseResponse.DefendantInfo defendantInfo = new CreateTestCaseResponse.DefendantInfo(
                     generatedPartyId,
                     defendantRequest.getIdamUserId(),
                     defendantRequest.getFirstName(),
                     defendantRequest.getLastName(),
-                    null  // accessCode will be populated after generation
+                    null  // Will be populated after access code generation
                 );
                 defendantInfos.add(defendantInfo);
             }
@@ -402,26 +402,30 @@ public class TestingSupportController {
             try {
                 accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference));
                 log.info("Generated access codes for case {}", caseReference);
+                
+                // Load access codes from database and populate in response
+                List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository
+                    .findAllByPcsCase_Id(caseEntity.getId());
+                
+                // Create map of partyId -> accessCode
+                Map<UUID, String> partyIdToCode = accessCodes.stream()
+                    .collect(Collectors.toMap(
+                        PartyAccessCodeEntity::getPartyId,
+                        PartyAccessCodeEntity::getCode
+                    ));
+                
+                // Update defendantInfos with access codes
+                defendantInfos.forEach(info -> {
+                    String code = partyIdToCode.get(info.getPartyId());
+                    info.setAccessCode(code);
+                });
+                
             } catch (Exception e) {
                 log.warn("Failed to generate access codes for case {}: {}", caseReference, e.getMessage());
                 // Don't fail the request - codes can be generated later if needed
+                // Set accessCode to null for all defendants if generation failed
+                defendantInfos.forEach(info -> info.setAccessCode(null));
             }
-
-            // Load access codes and add to response
-            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository
-                .findAllByPcsCase_Id(caseEntity.getId());
-
-            Map<UUID, String> partyIdToCode = accessCodes.stream()
-                .collect(Collectors.toMap(
-                    PartyAccessCodeEntity::getPartyId,
-                    PartyAccessCodeEntity::getCode
-                ));
-
-            // Update defendantInfos with access codes
-            defendantInfos.forEach(info -> {
-                String code = partyIdToCode.get(info.getPartyId());
-                info.setAccessCode(code);
-            });
 
             // Build response with caseId
             CreateTestCaseResponse response = new CreateTestCaseResponse(
