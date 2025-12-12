@@ -305,9 +305,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
-
         String orgId = Optional.ofNullable(organisationDetailsService
                                                .getOrganisationIdentifier(securityContextService.getCurrentUserId()
                                                                               .toString())).orElse("E71FH4Q");
@@ -320,7 +317,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .orgPolicyCaseAssignedRole(UserRole.CLAIMANT)
                 .build());
 
+        log.warn("Organisation ID : {}", orgId);
+        log.warn("Organisation Name : {}", organisationNameService.getOrganisationNameForCurrentUser());
+        log.warn("Organisation role : {}", UserRole.CLAIMANT);
+        log.warn("Organisation Policy : {}", pcsCase.getOrganisationPolicy());
 
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
         PartyEntity claimantPartyEntity = createClaimantPartyEntity(pcsCase);
