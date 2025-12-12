@@ -10,15 +10,15 @@
     <tr class="govuk-table__row">
      <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Arrears and other costs
      </th>
-      <td class="govuk-table__cell">{{ totalArrears }}</td>
+      <td class="govuk-table__cell">£{{ totalArrears }}</td>
     </tr>
     <tr class="govuk-table__row">
      <th scope="row" class="govuk-table__header govuk-!-font-weight-regular">Legal costs</th>
-     <td class="govuk-table__cell">{{ legalFees }}</td>
+     <td class="govuk-table__cell">£{{ legalFees }}</td>
     </tr>
     <tr class="govuk-table__row">
      <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Land Registry fees</th>
-     <td class="govuk-table__cell">{{ landRegistryFees }}</td>
+     <td class="govuk-table__cell">£{{ landRegistryFees }}</td>
     </tr>
     <tr class="govuk-table__row">
      <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">
@@ -28,7 +28,7 @@
     </tr>
     <tr class="govuk-table__row">
      <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Total</th>
-     <td class="govuk-table__cell">{{ totalFees }}</td>
+     <td class="govuk-table__cell">£{{ totalFees }}</td>
     </tr>
   </tbody>
 </table>

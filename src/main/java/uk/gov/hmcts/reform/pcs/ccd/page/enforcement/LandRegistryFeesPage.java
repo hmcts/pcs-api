@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
+import java.math.BigDecimal;
+
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 @AllArgsConstructor
@@ -45,12 +47,12 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        String formattedTotalArrears = formatTotalArrears(caseData);
-        String formattedLandRegistryFee = formatLandRegistryFee(caseData);
-        String formattedLegalCosts = formatLegalCosts(caseData);
+        BigDecimal formattedTotalArrears = formatTotalArrears(caseData);
+        BigDecimal formattedLandRegistryFee = formatLandRegistryFee(caseData);
+        BigDecimal formattedLegalCosts = formatLegalCosts(caseData);
 
         String warrantFeePence = convertWarrantFeeToPence(caseData);
-        String formattedTotalFees = formatTotalFees(caseData, warrantFeePence);
+        BigDecimal formattedTotalFees = formatTotalFees(caseData, warrantFeePence);
 
         // Render repayment table with all formatted amounts
         String repaymentTableHtml = repaymentTableRenderer.render(
@@ -68,28 +70,28 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             .build();
     }
 
-    private String formatTotalArrears(PCSCase caseData) {
+    private BigDecimal formatTotalArrears(PCSCase caseData) {
         String totalArrears = caseData.getEnforcementOrder()
             .getMoneyOwedByDefendants()
             .getAmountOwed();
 
-        return moneyConverter.convertPenceToPounds(totalArrears);
+        return moneyConverter.convertPenceToBigDecimal(totalArrears);
     }
 
-    private String formatLandRegistryFee(PCSCase caseData) {
+    private BigDecimal formatLandRegistryFee(PCSCase caseData) {
         String landRegistryFee = caseData.getEnforcementOrder()
             .getLandRegistryFees()
             .getAmountOfLandRegistryFees();
 
-        return moneyConverter.convertPenceToPounds(landRegistryFee);
+        return moneyConverter.convertPenceToBigDecimal(landRegistryFee);
     }
 
-    private String formatLegalCosts(PCSCase caseData) {
+    private BigDecimal formatLegalCosts(PCSCase caseData) {
         String legalCosts = caseData.getEnforcementOrder()
             .getLegalCosts()
             .getAmountOfLegalCosts();
 
-        return moneyConverter.convertPenceToPounds(legalCosts);
+        return moneyConverter.convertPenceToBigDecimal(legalCosts);
     }
 
     private String convertWarrantFeeToPence(PCSCase caseData) {
@@ -97,13 +99,13 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         return moneyConverter.convertPoundsToPence(warrantFee);
     }
 
-    private String formatTotalFees(PCSCase caseData, String warrantFeePence) {
+    private BigDecimal formatTotalFees(PCSCase caseData, String warrantFeePence) {
         String landRegistryFee = caseData.getEnforcementOrder().getLandRegistryFees().getAmountOfLandRegistryFees();
         String legalCosts = caseData.getEnforcementOrder().getLegalCosts().getAmountOfLegalCosts();
         String totalArrears = caseData.getEnforcementOrder().getMoneyOwedByDefendants().getAmountOwed();
 
         String totalAmountInPence = getTotalPence(landRegistryFee, legalCosts, totalArrears, warrantFeePence);
-        return moneyConverter.convertPenceToPounds(totalAmountInPence);
+        return moneyConverter.convertPenceToBigDecimal(totalAmountInPence);
     }
 
     private String getTotalPence(String... pennies) {

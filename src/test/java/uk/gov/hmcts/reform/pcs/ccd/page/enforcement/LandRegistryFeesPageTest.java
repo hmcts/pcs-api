@@ -17,10 +17,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -38,10 +38,10 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
-    void shouldFormatRepaymentFeesCorrectly(String landRegistryPence, String legalCostsPence,
-                                            String rentArrearsPence, String warrantFeeAmount,
-                                            String expectedFormattedLandRegistry, String expectedFormattedLegals,
-                                            String expectedFormattedArrears, String expectedFormattedTotalFees
+    void shouldFormatRepaymentFeesCorrectly(String landRegistryPence, String legalCostsPence, String rentArrearsPence,
+                                            String warrantFeeAmount, BigDecimal expectedFormattedLandRegistry,
+                                            BigDecimal expectedFormattedLegals, BigDecimal expectedFormattedArrears,
+                                            BigDecimal expectedFormattedTotalFees
     ) {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
@@ -69,11 +69,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .build();
 
         when(repaymentTableRenderer.render(
-            expectedFormattedArrears,
-            expectedFormattedLegals,
-            expectedFormattedLandRegistry,
+            expectedFormattedArrears.stripTrailingZeros(),
+            expectedFormattedLegals.stripTrailingZeros(),
+            expectedFormattedLandRegistry.stripTrailingZeros(),
             warrantFeeAmount,
-            expectedFormattedTotalFees
+            expectedFormattedTotalFees.stripTrailingZeros()
         )).thenReturn("<table>Mock Repayment Table</table>");
 
         // When
@@ -81,11 +81,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
         // Then
         verify(repaymentTableRenderer).render(
-            expectedFormattedArrears,
-            expectedFormattedLegals,
-            expectedFormattedLandRegistry,
+            expectedFormattedArrears.stripTrailingZeros(),
+            expectedFormattedLegals.stripTrailingZeros(),
+            expectedFormattedLandRegistry.stripTrailingZeros(),
             warrantFeeAmount,
-            expectedFormattedTotalFees
+            expectedFormattedTotalFees.stripTrailingZeros()
         );
 
         assertThat(caseData.getEnforcementOrder().getRepaymentCosts().getRepaymentSummaryMarkdown())
@@ -94,11 +94,21 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
     private static Stream<Arguments> repaymentFeeScenarios() {
         return Stream.of(
-            arguments("12300", "10000", "20000", "£404", "£123", "£100", "£200", "£827"),
-            arguments("1500", "500", "999", "£150", "£15", "£5", "£9.99", "£179.99"),
-            arguments("0", "0", "0", "£0", "£0", "£0", "£0", "£0"),
-            arguments("10001", "1", "5000", "£100.01", "£100.01", "£0.01", "£50", "£250.03")
+            Arguments.of(
+                "12300", "10000", "20000", "£404", new BigDecimal("123"), new BigDecimal("100"),
+                new BigDecimal("200"), new BigDecimal("827")
+            ),
+            Arguments.of(
+                "1500", "500", "999", "£50", new BigDecimal("15"), new BigDecimal("5"),
+                new BigDecimal("9.99"), new BigDecimal("79.99")
+            ),
+            Arguments.of(
+                "0", "0", "0", "£0", BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO
+            ),
+            Arguments.of(
+                "10001", "1", "5000", "£0", new BigDecimal("100.01"), new BigDecimal("0.01"),
+                new BigDecimal("50"), new BigDecimal("150.02")
+            )
         );
     }
-
 }

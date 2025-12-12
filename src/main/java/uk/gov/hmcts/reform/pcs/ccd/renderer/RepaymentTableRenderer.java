@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,8 +18,8 @@ import java.util.Map;
 public class RepaymentTableRenderer {
     private final PebbleEngine pebbleEngine;
 
-    public String render(String totalArrears, String legalFees, String landRegistryFees,
-                         String warrantFeeAmount, String totalFees) {
+    public String render(BigDecimal totalArrears, BigDecimal legalFees, BigDecimal landRegistryFees,
+                         String warrantFeeAmount, BigDecimal totalFees) {
 
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("repaymentTable");
         Writer writer = new StringWriter();

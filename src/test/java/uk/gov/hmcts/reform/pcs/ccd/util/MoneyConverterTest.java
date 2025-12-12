@@ -5,6 +5,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,8 +22,8 @@ class MoneyConverterTest {
 
     @ParameterizedTest
     @MethodSource("penceToPoundScenarios")
-    void shouldFormatFromPenceToPound(String pence, String expectedPound) {
-        String formattedPound = underTest.convertPenceToPounds(pence);
+    void shouldFormatFromPenceToPound(String pence, BigDecimal expectedPound) {
+        BigDecimal formattedPound = underTest.convertPenceToBigDecimal(pence);
 
         assertThat(formattedPound).isEqualTo(expectedPound);
     }
@@ -37,14 +38,15 @@ class MoneyConverterTest {
 
     private static Stream<Arguments> penceToPoundScenarios() {
         return Stream.of(
-            arguments("1500", "£15"),
-            arguments("1501", "£15.01"),
-            arguments("1599", "£15.99"),
-            arguments("15", "£0.15"),
-            arguments("15000", "£150"),
-            arguments("15040", "£150.40"),
-            arguments(null, "£0"),
-            arguments("", "£0")
+            Arguments.arguments("1500", new BigDecimal("15")),
+            Arguments.arguments("1501", new BigDecimal("15.01")),
+            Arguments.arguments("1599", new BigDecimal("15.99")),
+            Arguments.arguments("50", new BigDecimal("0.50")),
+            Arguments.arguments("51", new BigDecimal("0.51")),
+            Arguments.arguments("15040", new BigDecimal("150.40")),
+            Arguments.arguments("0", BigDecimal.ZERO),
+            Arguments.arguments(null, BigDecimal.ZERO),
+            Arguments.arguments("", BigDecimal.ZERO)
         );
     }
 

@@ -9,16 +9,17 @@ public class MoneyConverter {
 
     private static final String CURRENCY_SYMBOL = "£";
 
-    public String convertPenceToPounds(String penceString) {
-        if (penceString == null || penceString.isEmpty()) {
-            return CURRENCY_SYMBOL + 0;
+    public BigDecimal convertPenceToBigDecimal(String penceString) {
+        if (penceString == null || penceString.trim().isEmpty()) {
+            return BigDecimal.ZERO;
         }
+
         BigDecimal pence = new BigDecimal(penceString.trim());
         BigDecimal pounds = pence.movePointLeft(2);
         if (pounds.stripTrailingZeros().scale() <= 0) {
-            return CURRENCY_SYMBOL + pounds.stripTrailingZeros().toPlainString();
+            return pounds.stripTrailingZeros();
         }
-        return String.format(CURRENCY_SYMBOL + "%.2f", pounds);
+        return pounds;
     }
 
     public String convertPoundsToPence(String amount) {
