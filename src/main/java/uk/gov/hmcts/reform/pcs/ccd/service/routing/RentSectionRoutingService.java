@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.EnumMap;
@@ -31,7 +32,10 @@ public class RentSectionRoutingService {
      * @throws IllegalStateException if no routing policy is found for the tenancy type
      */
     public YesOrNo shouldShowRentSection(PCSCase caseData) {
-        TenancyLicenceType tenancyType = caseData.getTypeOfTenancyLicence();
+        TenancyLicenceDetails tenancyDetails =
+            caseData.getTenancyLicenceDetails();
+        TenancyLicenceType tenancyType = tenancyDetails != null
+            ? tenancyDetails.getTypeOfTenancyLicence() : null;
         RentSectionRoutingPolicy policy = getPolicyOrThrow(tenancyType);
         return policy.shouldShowRentSection(caseData);
     }

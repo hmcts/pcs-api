@@ -54,7 +54,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
@@ -130,7 +130,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock(strictness = LENIENT)
     private UserInfo userDetails;
     @Mock
-    private TenancyLicenceDetails tenancyLicenceDetails;
+    private TenancyLicenceDetailsPage tenancyLicenceDetails;
     @Mock
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     @Mock

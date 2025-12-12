@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Set;
@@ -34,7 +35,11 @@ public class RentDetailsRoutingIntegrationTest {
 
         // Given
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(tenancyType)
+                    .build()
+            )
             .noRentArrearsMandatoryGroundsOptions(noRentArrearsMandatory)
             .noRentArrearsDiscretionaryGroundsOptions(noRentArrearsDiscretionary)
             .secureOrFlexiblePossessionGrounds(
@@ -135,14 +140,22 @@ public class RentDetailsRoutingIntegrationTest {
         return Stream.of(
             // Null tenancy type
             arguments(PCSCase.builder()
-                     .typeOfTenancyLicence(null)
+                     .tenancyLicenceDetails(
+                         TenancyLicenceDetails.builder()
+                             .typeOfTenancyLicence(null)
+                             .build()
+                     )
                      .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
                      .build(),
                      YesOrNo.NO, "Edge Case: Null tenancy type"),
 
             // Empty sets
             arguments(PCSCase.builder()
-                     .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                     .tenancyLicenceDetails(
+                         TenancyLicenceDetails.builder()
+                             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                             .build()
+                     )
                      .noRentArrearsMandatoryGroundsOptions(Set.of())
                      .noRentArrearsDiscretionaryGroundsOptions(Set.of())
                      .rentArrearsOrBreachOfTenancy(Set.of())
@@ -151,7 +164,11 @@ public class RentDetailsRoutingIntegrationTest {
 
             // Mixed grounds (should show Rent Details if any rent-related ground is selected)
             arguments(PCSCase.builder()
-                     .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                     .tenancyLicenceDetails(
+                         TenancyLicenceDetails.builder()
+                             .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                             .build()
+                     )
                      .noRentArrearsMandatoryGroundsOptions(
                          Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
                      .noRentArrearsDiscretionaryGroundsOptions(
@@ -165,8 +182,13 @@ public class RentDetailsRoutingIntegrationTest {
      * Simulates the complete routing logic by applying the same logic as the midEvent handlers.
      */
     private YesOrNo simulateRoutingLogic(PCSCase caseData) {
+        TenancyLicenceDetails tenancyDetails =
+            caseData.getTenancyLicenceDetails();
+        TenancyLicenceType tenancyType = tenancyDetails != null
+            ? tenancyDetails.getTypeOfTenancyLicence() : null;
+
         // For Assured Tenancy - check if grounds 8, 10, or 11 are selected
-        if (TenancyLicenceType.ASSURED_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
+        if (TenancyLicenceType.ASSURED_TENANCY.equals(tenancyType)) {
             boolean hasRentRelatedGrounds =
                 (caseData.getNoRentArrearsMandatoryGroundsOptions() != null
                  && caseData.getNoRentArrearsMandatoryGroundsOptions()
@@ -180,8 +202,8 @@ public class RentDetailsRoutingIntegrationTest {
         }
 
         // For Secure/Flexible Tenancy - check if Ground 1 is selected and Rent Arrears is chosen
-        if (TenancyLicenceType.SECURE_TENANCY.equals(caseData.getTypeOfTenancyLicence())
-            || TenancyLicenceType.FLEXIBLE_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
+        if (TenancyLicenceType.SECURE_TENANCY.equals(tenancyType)
+            || TenancyLicenceType.FLEXIBLE_TENANCY.equals(tenancyType)) {
 
             boolean hasGround1 = caseData.getSecureOrFlexiblePossessionGrounds()
                 .getSecureOrFlexibleDiscretionaryGrounds() != null

@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Arrays;
@@ -36,7 +37,11 @@ class RentSectionRoutingServiceTest {
     @Test
     void shouldDelegateToAssuredTenancyPolicy() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsMandatoryGroundsOptions(null)
             .noRentArrearsDiscretionaryGroundsOptions(null)
@@ -50,7 +55,11 @@ class RentSectionRoutingServiceTest {
     @Test
     void shouldDelegateToSecureFlexiblePolicy() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.SECURE_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.SECURE_TENANCY)
+                    .build()
+            )
             .secureOrFlexiblePossessionGrounds(SecureOrFlexiblePossessionGrounds.builder().build())
             .build();
 
@@ -62,7 +71,11 @@ class RentSectionRoutingServiceTest {
     @Test
     void shouldThrowExceptionForUnsupportedTenancyType() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .build();
 
         assertThatThrownBy(() -> service.shouldShowRentSection(caseData))
@@ -73,7 +86,11 @@ class RentSectionRoutingServiceTest {
     @Test
     void shouldHandleAssuredTenancyWithRentArrearsGrounds() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsMandatoryGroundsOptions(
                 Set.of(
@@ -91,7 +108,11 @@ class RentSectionRoutingServiceTest {
     @Test
     void shouldHandleSecureTenancyWithRentArrears() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.SECURE_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.SECURE_TENANCY)
+                    .build()
+            )
             .secureOrFlexiblePossessionGrounds(
                 SecureOrFlexiblePossessionGrounds
                     .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY)).build())

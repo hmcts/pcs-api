@@ -29,11 +29,11 @@ public class GroundsForPossession implements CcdPageConfiguration {
         pageBuilder
             .page("groundsForPossession", this::midEvent)
             .pageLabel("Grounds for possession")
-            .showCondition("typeOfTenancyLicence!=\"SECURE_TENANCY\" "
-                    + "AND typeOfTenancyLicence!=\"FLEXIBLE_TENANCY\" "
-                    + "AND typeOfTenancyLicence!=\"INTRODUCTORY_TENANCY\" "
-                    + "AND typeOfTenancyLicence!=\"DEMOTED_TENANCY\" "
-                    + "AND typeOfTenancyLicence!=\"OTHER\""
+            .showCondition("tenancy_TypeOfTenancyLicence!=\"SECURE_TENANCY\" "
+                    + "AND tenancy_TypeOfTenancyLicence!=\"FLEXIBLE_TENANCY\" "
+                    + "AND tenancy_TypeOfTenancyLicence!=\"INTRODUCTORY_TENANCY\" "
+                    + "AND tenancy_TypeOfTenancyLicence!=\"DEMOTED_TENANCY\" "
+                    + "AND tenancy_TypeOfTenancyLicence!=\"OTHER\""
                     + " AND legislativeCountry=\"England\"")
             .label("groundsForPossession-lineSeparator", "---")
             .mandatory(PCSCase::getClaimDueToRentArrears)
