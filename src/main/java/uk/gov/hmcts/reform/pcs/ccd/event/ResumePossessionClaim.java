@@ -11,7 +11,11 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Organisation;
+import uk.gov.hmcts.ccd.sdk.type.OrganisationPolicy;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.assigncaseaccess.AssignCaseAccessService;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
@@ -95,6 +99,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -109,8 +114,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
@@ -160,8 +165,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final WalesCheckingNotice walesCheckingNotice;
     private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
+    private final AssignCaseAccessService assignCaseAccessService;
+    private final OrganisationDetailsService organisationDetailsService;
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
+
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -301,8 +309,25 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        String orgId = Optional.ofNullable(organisationDetailsService
+                                               .getOrganisationIdentifier(securityContextService.getCurrentUserId()
+                                                                              .toString())).orElse("E71FH4Q");
+        pcsCase.setOrganisationPolicy(
+            OrganisationPolicy.builder()
+                .organisation(Organisation.builder()
+                    .organisationId(orgId)
+                    .organisationName(organisationService.getOrganisationNameForCurrentUser()).build())
+                .prepopulateToUsersOrganisation(YesOrNo.YES)
+                .orgPolicyReference("AUTO")
+                .orgPolicyCaseAssignedRole(UserRole.CLAIMANT_SOLICITOR)
+                .build());
 
+        log.warn("Organisation ID : {}", orgId);
+        log.warn("Organisation Name : {}", organisationService.getOrganisationNameForCurrentUser());
+        log.warn("Organisation role : {}", UserRole.CLAIMANT);
+        log.warn("Organisation Policy : {}", pcsCase.getOrganisationPolicy());
+
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
         PartyEntity claimantPartyEntity = createClaimantPartyEntity(pcsCase);
@@ -321,6 +346,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
+        //assignCaseAccessService.assignRole(String.valueOf(caseReference), pcsCase);
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)

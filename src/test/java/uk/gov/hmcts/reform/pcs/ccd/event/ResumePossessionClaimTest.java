@@ -17,11 +17,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.reform.pcs.assigncaseaccess.AssignCaseAccessService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -76,6 +77,7 @@ import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationDetailsService;
 import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -194,9 +196,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private ASBQuestionsWales asbQuestionsWales;
     @Mock
+    private AssignCaseAccessService assignCaseAccessService;
+    @Mock
     private FeeService feeService;
     @Mock
     private FeeFormatter feeFormatter;
+    @Mock
+    private OrganisationDetailsService organisationDetailsService;
 
     @BeforeEach
     void setUp() {
@@ -223,7 +229,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossession, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter
+            underlesseeOrMortgageePage, assignCaseAccessService, organisationDetailsService, feeService, feeFormatter
         );
 
         setEventUnderTest(underTest);
@@ -388,6 +394,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
 
             stubPartyCreation();
             stubFeeService();
@@ -445,6 +452,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
                 .build();
 
+            when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+
             // When
             callSubmitHandler(caseData);
 
@@ -465,6 +474,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
 
             stubClaimCreation();
             stubFeeService();
@@ -486,6 +496,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
 
             stubPartyCreation();
             stubClaimCreation();
@@ -521,6 +532,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
             stubPartyCreation();
             stubClaimCreation();
             stubFeeService();
@@ -563,6 +575,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
             when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+            when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
 
             stubPartyCreation();
             stubClaimCreation();
