@@ -7,6 +7,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
@@ -36,9 +37,13 @@ class TenancyLicenceServiceTest {
     @Mock
     private PCSCase pcsCase;
 
+    @Mock
+    private NoticeServedDetails noticeServedDetails;
+
     @Test
     void shouldSetTenancyLicence() {
         LocalDate tenancyDate = LocalDate.of(2025, 8, 27);
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
 
         List<ListValue<Document>> uploadedDocs = Arrays.asList(
             ListValue.<Document>builder().id("1")
@@ -100,7 +105,7 @@ class TenancyLicenceServiceTest {
                 .value(Document.builder().filename("certificate_service.pdf").build()).build()
         );
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getNoticeDocuments()).thenReturn(noticeDocs),
+            pcsCase -> when(pcsCase.getNoticeServedDetails().getNoticeDocuments()).thenReturn(noticeDocs),
             expected -> {
                 assertThat(expected.getNoticeDocuments()).hasSize(2);
                 assertThat(expected.getNoticeDocuments())
@@ -180,6 +185,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseAmendedDailyRentAmountWhenAvailable() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(new BigDecimal("50.00"));
         when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(new BigDecimal("40.00"));
         when(pcsCase.getDailyRentChargeAmount()).thenReturn(new BigDecimal("35.00"));
@@ -194,6 +200,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseCalculatedDailyRentAmountWhenAmendedNotAvailable() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
         when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(new BigDecimal("40.00"));
         when(pcsCase.getDailyRentChargeAmount()).thenReturn(new BigDecimal("35.00"));
@@ -208,6 +215,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldUseDailyRentChargeAmountWhenOthersNotAvailable() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getAmendedDailyRentChargeAmount()).thenReturn(null);
         when(pcsCase.getCalculatedDailyRentChargeAmount()).thenReturn(null);
         when(pcsCase.getDailyRentChargeAmount()).thenReturn(new BigDecimal("35.00"));
@@ -222,6 +230,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullTotalRentArrears() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getTotalRentArrears()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -232,6 +241,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSources() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getThirdPartyPaymentSources()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -242,6 +252,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSources() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getThirdPartyPaymentSources()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -252,6 +263,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSourceOther() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -262,6 +274,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSourceOther() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn("");
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -272,6 +285,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullRentStatementDocuments() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getRentStatementDocuments()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -282,6 +296,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyRentStatementDocuments() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getRentStatementDocuments()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
@@ -292,7 +307,8 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullNoticeDocuments() {
         // Given
-        when(pcsCase.getNoticeDocuments()).thenReturn(null);
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getNoticeServedDetails().getNoticeDocuments()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
@@ -302,7 +318,8 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyNoticeDocuments() {
         // Given
-        when(pcsCase.getNoticeDocuments()).thenReturn(Collections.emptyList());
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getNoticeServedDetails().getNoticeDocuments()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
         // Then
@@ -325,6 +342,7 @@ class TenancyLicenceServiceTest {
             .agentAppointmentDate(appointmentDate)
             .build();
 
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
 
         // When
@@ -345,6 +363,7 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullWalesHousingActDetails() {
         // Given
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getWalesHousingAct()).thenReturn(null);
 
         // When
@@ -371,6 +390,7 @@ class TenancyLicenceServiceTest {
             .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
             .build();
 
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
 
         // When
@@ -391,6 +411,7 @@ class TenancyLicenceServiceTest {
             .noticeServed(YesOrNo.YES)
             .typeOfNoticeServed(typeOfNoticeServed)
             .build();
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
 
         // When
@@ -429,6 +450,7 @@ class TenancyLicenceServiceTest {
 
         PCSCase pcsCase = PCSCase.builder()
             .occupationLicenceDetailsWales(walesDetails)
+            .noticeServedDetails(noticeServedDetails)
             .build();
 
         // When
@@ -461,6 +483,7 @@ class TenancyLicenceServiceTest {
 
         PCSCase pcsCase = PCSCase.builder()
             .occupationLicenceDetailsWales(walesDetails)
+            .noticeServedDetails(noticeServedDetails)
             .build();
 
         // When
@@ -478,6 +501,7 @@ class TenancyLicenceServiceTest {
         // Given - Case with no Wales occupation contract details
         PCSCase pcsCase = PCSCase.builder()
             .occupationLicenceDetailsWales(null)
+            .noticeServedDetails(noticeServedDetails)
             .build();
 
         // When
@@ -503,6 +527,7 @@ class TenancyLicenceServiceTest {
                 .build()
         );
 
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getTypeOfTenancyLicence()).thenReturn(TenancyLicenceType.ASSURED_TENANCY);
         when(pcsCase.getTenancyLicenceDate()).thenReturn(tenancyDate);
         when(pcsCase.getTenancyLicenceDocuments()).thenReturn(englandDocs);
