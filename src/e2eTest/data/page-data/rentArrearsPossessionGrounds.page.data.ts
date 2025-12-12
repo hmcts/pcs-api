@@ -4,6 +4,7 @@ export const rentArrearsPossessionGrounds = {
   seriousRentArrears: 'Serious rent arrears (ground 8)',
   rentArrears: 'Rent arrears (ground 10)',
   persistentDelayInPayingRent: 'Persistent delay in paying rent (ground 11)',
+  doYouHaveOtherGroundsQuestion: 'Do you have any other additional grounds for possession?',
   yes: 'Yes',
   no: 'No',
   continue: 'Continue'

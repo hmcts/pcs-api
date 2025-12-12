@@ -5,5 +5,6 @@ export const dailyRentAmount = {
   yes: 'Yes',
   no: 'No',
   enterAmountPerDayLabel: 'Enter amount per day that unpaid rent should be charged at',
-  continue: 'Continue'
+  continue: 'Continue',
+  amountPerDayQuestion: 'Is the amount per day that unpaid rent should be charged at correct?'
 }
