@@ -19,7 +19,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 @Component
 public class LandRegistryFeesPage implements CcdPageConfiguration {
 
-    private MoneyConverter moneyConverter;
+    private final MoneyConverter moneyConverter;
     private final RepaymentTableRenderer repaymentTableRenderer;
 
 
