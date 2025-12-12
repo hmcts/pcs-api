@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
@@ -66,7 +67,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
         Set<IntroductoryDemotedOrOtherGrounds> grounds,
         YesOrNo expected) {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(tenancyType)
+                    .build()
+            )
             .hasIntroductoryDemotedOtherGroundsForPossession(hasGroundsForPossession)
             .introductoryDemotedOrOtherGrounds(grounds)
             .build();
@@ -79,7 +84,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
     @Test
     void shouldReturnNoWhenHasGroundsForPossessionIsNo() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
             .introductoryDemotedOrOtherGrounds(null)
             .build();
@@ -92,7 +101,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
     @Test
     void shouldReturnNoWhenHasGroundsForPossessionIsNull() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .hasIntroductoryDemotedOtherGroundsForPossession(null)
             .introductoryDemotedOrOtherGrounds(Set.of(RENT_ARREARS))
             .build();
@@ -105,7 +118,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
     @Test
     void shouldReturnNoWhenGroundsIsNull() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
             .introductoryDemotedOrOtherGrounds(null)
             .build();
@@ -118,7 +135,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
     @Test
     void shouldReturnNoWhenGroundsIsEmpty() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
             .introductoryDemotedOrOtherGrounds(Set.of())
             .build();

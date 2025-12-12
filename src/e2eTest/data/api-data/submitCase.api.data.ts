@@ -65,9 +65,9 @@ export const submitCaseApiData = {
         id: null
       },      
     ],
-    typeOfTenancyLicence: 'DEMOTED_TENANCY',
-    tenancyLicenceDate: null,
-    tenancyLicenceDocuments: [],
+    tenancy_TypeOfTenancyLicence: 'DEMOTED_TENANCY',
+    tenancy_TenancyLicenceDate: null,
+    tenancy_TenancyLicenceDocuments: [],
     showIntroductoryDemotedOtherGroundReasonPage: 'Yes',
     hasIntroductoryDemotedOtherGroundsForPossession: 'NO',
     noGrounds: 'text no grounds',
