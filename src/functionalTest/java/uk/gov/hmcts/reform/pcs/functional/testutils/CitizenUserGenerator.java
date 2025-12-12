@@ -20,12 +20,12 @@ import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
 /**
  * Utility class for creating citizen users in IDAM for functional testing.
- * <p>
- * This is needed for tests that require different user IDs, such as:
+ *
+ * <p>This is needed for tests that require different user IDs, such as:
  * - Testing access code already used by another user
  * - Testing user already linked to another defendant
- * <p>
- * Implementation:
+ *
+ * <p>Implementation:
  * 1. Gets system access token (cached, valid for hours)
  * 2. Creates user in IDAM using system token
  * 3. Gets access token for the created user
