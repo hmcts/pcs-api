@@ -187,7 +187,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message", is("Party does not belong to this case.")));
+                .andExpect(jsonPath("$.message", is("Invalid data")));
     }
 
     @Test
@@ -249,7 +249,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message",
-                        is("This user ID is already linked to another party in this case.")));
+                        is("This user is already linked to another party in this case.")));
     }
 
     @Test

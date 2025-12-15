@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ValidateAccessCodeRequest {
 
-    @NotBlank(message = "Access code is required")
-    @Size(min = 12, max = 12, message = "Access code must be exactly 12 characters")
+    @NotBlank(message = "Invalid data")
+    @Size(min = 12, max = 12, message = "Invalid data")
     private String accessCode;
 
 }
