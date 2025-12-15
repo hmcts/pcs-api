@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -62,11 +63,16 @@ class ClaimGroundServiceTest {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(grounds)
+                .build();
+
         PCSCase caseData =
             PCSCase.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
-                .introductoryDemotedOrOtherGrounds(grounds)
                 .introductoryDemotedOtherGroundReason(getReasonForGround(grounds))
                 .build();
 
@@ -84,11 +90,16 @@ class ClaimGroundServiceTest {
         // Given
         Set<IntroductoryDemotedOrOtherGrounds> grounds = Set.of(RENT_ARREARS);
 
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(grounds)
+                .build();
+
         PCSCase caseData =
             PCSCase.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
-                .introductoryDemotedOrOtherGrounds(grounds)
                 .introductoryDemotedOtherGroundReason(getReasonForGround(grounds))
                 .build();
 
@@ -102,15 +113,21 @@ class ClaimGroundServiceTest {
     @Test
     void shouldSaveNoGroundsIfReasonIsPresent_WhenIntroDemotionOrOtherTenancy() {
         // Given
+
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(null)
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                .build();
+
         PCSCase caseData = PCSCase.builder()
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
             .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
-            .introductoryDemotedOrOtherGrounds(null)
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .introductoryDemotedOtherGroundReason(
                 IntroductoryDemotedOtherGroundReason.builder()
                     .noGrounds("No ground reason")
                     .build())
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
             .build();
 
         // When
