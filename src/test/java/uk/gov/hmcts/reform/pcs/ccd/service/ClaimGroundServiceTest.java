@@ -23,12 +23,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -401,8 +402,13 @@ class ClaimGroundServiceTest {
             .mandatoryGroundsWales(mandatoryGrounds)
             .discretionaryGroundsWales(discretionaryGrounds)
             .estateManagementGroundsWales(estateGrounds)
-            .secureContractMandatoryGroundsWales(secureMandatoryGrounds)
-            .secureContractDiscretionaryGroundsWales(secureDiscretionaryGrounds)
+            .secureContractGroundsForPossessionWales(
+                SecureContractGroundsForPossessionWales.builder()
+                    .mandatoryGroundsWales(secureMandatoryGrounds)
+                    .discretionaryGroundsWales(secureDiscretionaryGrounds)
+                    .build()
+            )
+
             .groundsReasonsWales(reasons)
             .build();
 

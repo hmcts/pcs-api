@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.Optional;
 
 import static feign.Util.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
@@ -236,15 +238,24 @@ public class ClaimGroundService {
     }
 
     private List<ClaimGroundEntity> getWalesGroundsWithReason(PCSCase pcsCase) {
+
+        SecureContractGroundsForPossessionWales secureGrounds =
+            Optional.ofNullable(pcsCase.getSecureContractGroundsForPossessionWales())
+                .orElse(SecureContractGroundsForPossessionWales.builder()
+                            .discretionaryGroundsWales(Set.of())
+                            .mandatoryGroundsWales(Set.of())
+                            .estateManagementGroundsWales(Set.of())
+                            .build());
+
         Set<MandatoryGroundWales> mandatoryGrounds = pcsCase.getMandatoryGroundsWales();
         Set<DiscretionaryGroundWales> discretionaryGrounds = pcsCase.getDiscretionaryGroundsWales();
         Set<EstateManagementGroundsWales> estateGrounds = pcsCase.getEstateManagementGroundsWales();
         Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds =
-            pcsCase.getSecureContractMandatoryGroundsWales();
+            secureGrounds.getMandatoryGroundsWales();
         Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds =
-            pcsCase.getSecureContractDiscretionaryGroundsWales();
+            secureGrounds.getDiscretionaryGroundsWales();
         Set<EstateManagementGroundsWales> secureEstateGrounds =
-            pcsCase.getSecureContractEstateManagementGroundsWales();
+            secureGrounds.getEstateManagementGroundsWales();
         GroundsReasonsWales grounds = pcsCase.getGroundsReasonsWales();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
