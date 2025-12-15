@@ -48,7 +48,7 @@ class PartyAccessCodeTests extends BaseApi {
 
     @Title("Party Access Code Tests - Access Code should be generated upon Case Creation")
     @Test
-    void SuccessfullyGenerateAccessCode() {
+    void successfullyGenerateAccessCode() {
         CreateTestCaseResponse multiDefendantTestCase = caseGenerator.createTestCaseWithMultipleDefendants(2);
 
         String defendant1AccessCode = multiDefendantTestCase.getDefendants().get(0).getAccessCode();
@@ -63,7 +63,7 @@ class PartyAccessCodeTests extends BaseApi {
 
     @Title("Party Access Code Tests - should successfully link user with valid access code")
     @Test
-    void SuccessfullyLinkUserWithValidAccessCode() {
+    void successfullyLinkUserWithValidAccessCode() {
 
         Long caseReference = testCase.getCaseReference();
         String accessCode = testCase.getDefendants().get(0).getAccessCode();
@@ -80,7 +80,7 @@ class PartyAccessCodeTests extends BaseApi {
 
     @Title("Validate Access Code - should return 400 when access code is invalid")
     @Test
-    void Return400WhenAccessCodeIsInvalid() {
+    void return400WhenAccessCodeIsInvalid() {
 
         String caseReference = testCase.getCaseReference().toString();
         Map<String, String> accessCode = Map.of("accessCode", "INVALIDCODE123");
@@ -98,7 +98,7 @@ class PartyAccessCodeTests extends BaseApi {
 
     @Title("Party Access Code Tests - should return 401 when ServiceAuthorization header is missing")
     @Test
-    void Return401WhenInvalidServiceAuthorizationToken() {
+    void return401WhenInvalidServiceAuthorizationToken() {
         String caseReference = testCase.getCaseReference().toString();
         String accessCode = testCase.getDefendants().get(0).getAccessCode();
 
@@ -113,7 +113,7 @@ class PartyAccessCodeTests extends BaseApi {
 
     @Title("Party Access Code Tests - should return a 409 when request is duplicated")
     @Test
-    void Return409WhenDuplicateRequest() {
+    void return409WhenDuplicateRequest() {
 
         String caseReference = testCase.getCaseReference().toString();
         String accessCode = testCase.getDefendants().get(0).getAccessCode();
@@ -141,7 +141,7 @@ class PartyAccessCodeTests extends BaseApi {
 
     @Title("Party Access Code Tests - Should return 404 when invalid case reference is used.")
     @Test
-    void Return404WhenCaseReferenceIsInvalid() {
+    void return404WhenCaseReferenceIsInvalid() {
 
         Long invalidCaseReference = 9999L;
         String accessCode = testCase.getDefendants().get(0).getAccessCode();

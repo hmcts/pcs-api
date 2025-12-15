@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 import java.util.*;
 
 @Slf4j
-public class TestCaseGenerator{
+public class TestCaseGenerator {
 
 
     private static final String baseUrl = System.getenv("TEST_URL");
@@ -59,9 +59,7 @@ public class TestCaseGenerator{
         return response;
     }
 
-    /**
-     * Helper method to create test case with multiple defendants.
-     */
+    //Create case with multiple defendants
     public CreateTestCaseResponse createTestCaseWithMultipleDefendants(int numberOfDefendants) {
         List<Map<String, Object>> defendants = new ArrayList<>();
         for (int i = 0; i < numberOfDefendants; i++) {
@@ -98,9 +96,7 @@ public class TestCaseGenerator{
             .as(CreateTestCaseResponse.class);
     }
 
-    /**
-     * Delete case by reference
-     */
+    //Delete case by case reference
     public void deleteTestCase(Long caseReference) {
         try {
             SerenityRest.given()

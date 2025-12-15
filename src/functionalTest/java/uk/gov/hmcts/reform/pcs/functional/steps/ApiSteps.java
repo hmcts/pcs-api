@@ -130,7 +130,7 @@ public class ApiSteps {
     }
 
     @Step("the request contains a valid Citizen Idam Token")
-    public void theRequestContainsValidCitizenIdamToken(){
+    public void theRequestContainsValidCitizenIdamToken() {
         String citizenToken = CitizenUserGenerator.createCitizenUserAndGetToken();
         request = request.header(TestConstants.AUTHORIZATION, "Bearer " + citizenToken);
     }
