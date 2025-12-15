@@ -24,33 +24,12 @@ import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 public class CitizenUserGenerator {
 
     // Environment variables (matching Jenkins pipeline configuration)
-    private static final String IDAM_WEB_PUBLIC_API = getEnvWithFallback("IDAM_WEB_PUBLIC_API", "IDAM_API_URL");
-    private static final String IDAM_TESTING_SUPPORT_API = getEnvWithFallback(
-        "IDAM_TESTING_SUPPORT_API_URL", "IDAM_API_URL");
+    private static final String IDAM_WEB_PUBLIC_API = getEnv("IDAM_API_URL");
+    private static final String IDAM_TESTING_SUPPORT_API = getEnv("IDAM_API_URL");
     private static final String IDAM_SYSTEM_USERNAME = getEnv("IDAM_SYSTEM_USERNAME");
     private static final String IDAM_SYSTEM_PASSWORD = getEnv("IDAM_SYSTEM_USER_PASSWORD");
-    // Use PCS_API_IDAM_SECRET (from Jenkins vault) instead of PCS_FRONTEND_IDAM_SECRET
     private static final String PCS_API_IDAM_SECRET = getEnv("PCS_API_IDAM_SECRET");
-    private static final String DEFAULT_PASSWORD = getEnvWithDefault("IDAM_PCS_USER_PASSWORD", "England12345");
-    
-    private static String getEnvWithDefault(String name, String defaultValue) {
-        String value = System.getenv(name);
-        if (value == null || value.isBlank()) {
-            return defaultValue;
-        }
-        return value;
-    }
-    
-    private static String getEnvWithFallback(String primaryName, String fallbackName) {
-        String value = System.getenv(primaryName);
-        if (value == null || value.isBlank()) {
-            value = System.getenv(fallbackName);
-            if (value == null || value.isBlank()) {
-                return null;
-            }
-        }
-        return value;
-    }
+    private static final String DEFAULT_PASSWORD = getEnv("IDAM_PCS_USER_PASSWORD");
 
     // System token caching - cached for entire test run duration, tokens are typically valid for hours
     private static String cachedSystemToken = null;
@@ -122,7 +101,7 @@ public class CitizenUserGenerator {
     }
 
     // Creates a user in IDAM via user creation API using endpoint /test/idam/users
-    private static void createUserInIdam(String email, String forename, String surname, 
+    private static void createUserInIdam(String email, String forename, String surname,
                                          String password, List<String> roles) {
         // Get system token (cached or refreshed)
         String systemToken = getOrRefreshSystemToken();
@@ -133,7 +112,7 @@ public class CitizenUserGenerator {
         userMap.put("forename", forename);
         userMap.put("surname", surname);
         userMap.put("roleNames", roles);
-        
+
         Map<String, Object> userRequest = new HashMap<>();
         userRequest.put("password", password);
         userRequest.put("user", userMap);
@@ -142,7 +121,7 @@ public class CitizenUserGenerator {
             // Serialize request body to JSON string to ensure proper formatting
             ObjectMapper objectMapper = new ObjectMapper();
             String requestBodyJson = objectMapper.writeValueAsString(userRequest);
-            
+
             SerenityRest
                 .given()
                 .baseUri(IDAM_TESTING_SUPPORT_API)
@@ -153,7 +132,7 @@ public class CitizenUserGenerator {
                 .post("/test/idam/users");
 
             int statusCode = SerenityRest.lastResponse().statusCode();
-            
+
             // 201 = Created, 409 = Already exists (ok for idempotency)
             if (statusCode != 201 && statusCode != 409) {
                 throw new RuntimeException(String.format(
