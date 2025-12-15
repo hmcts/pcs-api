@@ -14,12 +14,8 @@ import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 import uk.gov.hmcts.reform.pcs.functional.testutils.TestCaseGenerator;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
-
 import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
-
-
 
 @Slf4j
 @Tag("Functional")
@@ -48,7 +44,6 @@ class PartyAccessCodeTests extends BaseApi {
         }
     }
 
-
     @Title("Party Access Code Tests - Access Code should be generated upon Case Creation")
     @Test
     void successfullyGenerateAccessCode() {
@@ -70,13 +65,13 @@ class PartyAccessCodeTests extends BaseApi {
 
         Long caseReference = testCase.getCaseReference();
         String accessCode = testCase.getDefendants().get(0).getAccessCode();
+        Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
-        // Successful link
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidCitizenIdamToken();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
-        apiSteps.theRequestContainsTheQueryParameter("accessCode", accessCode);
+        apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(200);
     }
@@ -86,30 +81,30 @@ class PartyAccessCodeTests extends BaseApi {
     void return400WhenAccessCodeIsInvalid() {
 
         String caseReference = testCase.getCaseReference().toString();
-        Map<String, String> accessCode = Map.of("accessCode", "INVALIDCODE123");
+        Map<String, String> requestBody = Map.of("accessCode", "INVALIDCODE123");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsValidCitizenIdamToken();
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
-        apiSteps.theRequestContainsTheQueryParameter("accessCode", "INVALIDCODE123");
+        apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(400);
         apiSteps.theResponseBodyContainsAString("title", "Bad Request");
         apiSteps.theResponseBodyContainsAString("detail", "Invalid request content.");
     }
 
-    @Title("Party Access Code Tests - should return 401 when ServiceAuthorization header is missing")
+    @Title("Party Access Code Tests - should return 401 when ServiceAuthorization header is invalid/missing")
     @Test
     void return401WhenInvalidServiceAuthorizationToken() {
         String caseReference = testCase.getCaseReference().toString();
         String accessCode = testCase.getDefendants().get(0).getAccessCode();
+        Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsUnauthorisedServiceToken();
         apiSteps.theRequestContainsValidCitizenIdamToken();
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
-        apiSteps.theRequestContainsTheQueryParameter("accessCode", accessCode);
+        apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(401);
     }
@@ -120,13 +115,14 @@ class PartyAccessCodeTests extends BaseApi {
 
         String caseReference = testCase.getCaseReference().toString();
         String accessCode = testCase.getDefendants().get(0).getAccessCode();
+        Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
-        // Successful link
+        // Initial link between case and access code
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidCitizenIdamToken();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
-        apiSteps.theRequestContainsTheQueryParameter("accessCode", accessCode);
+        apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(200);
 
@@ -135,7 +131,7 @@ class PartyAccessCodeTests extends BaseApi {
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsValidCitizenIdamToken();
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
-        apiSteps.theRequestContainsTheQueryParameter("accessCode", accessCode);
+        apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(409);
         apiSteps.theResponseBodyContainsAString("message", "This access code is already linked to a user.");
@@ -148,18 +144,15 @@ class PartyAccessCodeTests extends BaseApi {
 
         Long invalidCaseReference = 9999L;
         String accessCode = testCase.getDefendants().get(0).getAccessCode();
+        Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
-        // Successful link
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsValidCitizenIdamToken();
         apiSteps.theRequestContainsThePathParameter("caseReference", invalidCaseReference.toString());
-        apiSteps.theRequestContainsTheQueryParameter("accessCode", accessCode);
+        apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(404);
-        apiSteps.theResponseBodyContainsAString("message", "No case found with reference" + invalidCaseReference);
+        apiSteps.theResponseBodyContainsAString("message", "No case found with reference " + invalidCaseReference);
     }
-
-
 }
-

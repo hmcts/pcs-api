@@ -9,6 +9,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ApiSteps {
 
     private RequestSpecification request;
+    private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
     private static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
@@ -61,18 +63,18 @@ public class ApiSteps {
         }
 
         String validS2sToken = serviceTokens.get(microservice.toLowerCase());
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, validS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, validS2sToken);
     }
 
     @Step("the request contains an unauthorised service token")
     public void theRequestContainsUnauthorisedServiceToken() {
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, unauthorisedS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, unauthorisedS2sToken);
     }
 
     @Step("the request contains an expired service token")
     public void theRequestContainsExpiredServiceToken() {
         String expiredS2sToken = TestConstants.EXPIRED_S2S_TOKEN;
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, expiredS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, expiredS2sToken);
     }
 
     @Step("the request contains the path parameter {0} as {1}")
@@ -85,22 +87,30 @@ public class ApiSteps {
     public void callIsSubmittedToTheEndpoint(String resource, String method) {
         Endpoints resourceAPI = Endpoints.valueOf(resource);
 
-        switch (method.toUpperCase()) {
+        response = switch (method.toUpperCase()) {
             case "POST" -> request.when().post(resourceAPI.getResource());
             case "GET" -> request.when().get(resourceAPI.getResource());
             case "DELETE" -> request.when().delete(resourceAPI.getResource());
             default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
-        }
+        };
     }
 
     @Step("Check status code is {0}")
     public void checkStatusCode(int statusCode) {
-        SerenityRest.then().assertThat().statusCode(statusCode);
+        if (response == null) {
+            throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
+        }
+        assertEquals(statusCode, response.getStatusCode(),
+                     "Expected status code " + statusCode + " but got " + response.getStatusCode()
+                         + ". Response body: " + response.getBody().asString());
     }
 
     @Step("the response body contains {0} as a string: {1}")
     public void theResponseBodyContainsAString(String attribute, String value) {
-        SerenityRest.then().assertThat().body(attribute, Matchers.equalTo(value));
+        if (response == null) {
+            throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
+        }
+        response.then().assertThat().body(attribute, Matchers.equalTo(value));
     }
 
     @Step("the response body matches the expected list")
