@@ -29,11 +29,13 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.StatementOfTruthPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleWhoWillBeEvictedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleYouWantToEvictPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LanguageUsedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RepaymentsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
@@ -50,6 +52,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @Slf4j
 @Component
@@ -108,13 +111,15 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new MoneyOwedPage())
                 .add(new LegalCostsPage())
                 .add(new LandRegistryFeesPage())
-                .add(new RepaymentsPage());
+                .add(new RepaymentsPage())
+                .add(new LanguageUsedPage())
+                .add(new StatementOfTruthPlaceHolder());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.setFormattedPropertyAddress(addressFormatter
-            .formatAddressWithHtmlLineBreaks(pcsCase.getPropertyAddress()));
+            .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
 
         initializeDefendantData(pcsCase);
         populateDefendantSelectionList(pcsCase);

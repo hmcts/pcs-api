@@ -142,11 +142,11 @@ test.describe('[Create Case - With resume claim options]', async () => {
       "elementType": "paragraphLink"
     })
     await performValidation('text', {
-      "text": noticeOfYourIntention.servedNoticeInteractiveText,
+      "text": noticeOfYourIntention.servedNoticeInteractiveQuestion,
       "elementType": "inlineText"
     });
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -278,11 +278,11 @@ test.describe('[Create Case - With resume claim options]', async () => {
       "elementType": "paragraphLink"
     })
     await performValidation('text', {
-      "text": noticeOfYourIntention.servedNoticeInteractiveText,
+      "text": noticeOfYourIntention.servedNoticeInteractiveQuestion,
       "elementType": "inlineText"
     });
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
