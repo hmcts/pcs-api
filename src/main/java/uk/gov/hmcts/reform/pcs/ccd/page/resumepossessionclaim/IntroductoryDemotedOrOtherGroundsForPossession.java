@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -35,28 +36,36 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                   + "OR typeOfTenancyLicence=\"DEMOTED_TENANCY\" "
                   + "OR typeOfTenancyLicence=\"OTHER\""
                   + " AND legislativeCountry=\"England\"")
-            .readonly(PCSCase::getShowIntroductoryDemotedOtherGroundReasonPage,NEVER_SHOW)
-            .label(
-                "introductoryDemotedOrOtherGroundsForPossession-info",
-                  """
-                   ---
-                   <p class="govuk-body" tabindex="0">In some cases, a claimant can make for possession of a property
-                   without having to rely on a specific ground. If your claim meets these
-                   requirements, you can select that you have no grounds for possession.
+            .readonly(PCSCase::getShowIntroductoryDemotedOtherGroundReasonPage, NEVER_SHOW)
+            .complex(PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession)
+                .label(
+                    "introductoryDemotedOrOtherGroundsForPossession-info",
+                      """
+                       ---
+                       <p class="govuk-body" tabindex="0">In some cases, a claimant can make for possession of a
+                        property without having to rely on a specific ground. If your claim meets these
+                       requirements, you can select that you have no grounds for possession.
 
-                   You may have already given the defendants notice of your intention to begin
-                    possession proceedings.
-                    If you have, you should have written the grounds you’re making your claim under. You should select
-                    these grounds here and any extra ground you’d like to add to your claim, if you need to.
-                   </p>
-                   """)
-            .mandatory(PCSCase::getHasIntroductoryDemotedOtherGroundsForPossession)
-            .mandatory(PCSCase::getIntroductoryDemotedOrOtherGrounds,
-                    "hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
-            .mandatory(PCSCase::getOtherGroundDescription,
-                       "introductoryDemotedOrOtherGroundsCONTAINS\"OTHER\""
-                        + "AND hasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
-            .label("introductoryDemotedOrOtherGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+                       You may have already given the defendants notice of your intention to begin
+                        possession proceedings.
+                        If you have, you should have written the grounds you’re making your claim under.
+                         You should select these grounds here and any extra ground you’d like to add to your claim,
+                         if you need to.
+                       </p>
+                       """)
+                .mandatory(
+                    IntroductoryDemotedOtherGroundsForPossession::getHasIntroductoryDemotedOtherGroundsForPossession)
+                .mandatory(IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds,
+                    "introGrounds_"
+                        + "HasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
+                .mandatory(IntroductoryDemotedOtherGroundsForPossession::getOtherGroundDescription,
+                            "introGrounds_"
+                                + "IntroductoryDemotedOrOtherGroundsCONTAINS\"OTHER\""
+                            + "AND introGrounds_"
+                                + "HasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
+                .done()
+            .label(
+                "introductoryDemotedOrOtherGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -65,22 +74,25 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
 
         List<String> validationErrors = new ArrayList<>();
 
-        if (caseData.getOtherGroundDescription() != null) {
+        if (caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription() != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                caseData.getOtherGroundDescription(),
+                caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription(),
                 PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ));
         }
 
-        boolean hasOtherDiscretionaryGrounds = caseData.getIntroductoryDemotedOrOtherGrounds() == null ? false
-            : caseData.getIntroductoryDemotedOrOtherGrounds()
+        boolean hasOtherDiscretionaryGrounds = caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
+                .getIntroductoryDemotedOrOtherGrounds() == null ? false
+            : caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds()
             .stream()
             .anyMatch(ground -> ground != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
             );
 
         if (hasOtherDiscretionaryGrounds
-            || caseData.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO) {
+            || caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
+                .getHasIntroductoryDemotedOtherGroundsForPossession()
+            == VerticalYesNo.NO) {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.YES);
         } else {
             caseData.setShowIntroductoryDemotedOtherGroundReasonPage(YesOrNo.NO);
