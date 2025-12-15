@@ -24,7 +24,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class TenancyLicenceDetails {
 
     public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
-        "Give details of the type of tenancy or licence agreement that's in place";
+        "Give details of the type of tenancy or licence agreement that’s in place";
 
     @CCD(
         label = "What type of tenancy or licence is in place?",
