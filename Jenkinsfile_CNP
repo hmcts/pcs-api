@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure")
+@Library("Infrastructure@HDPI-3467-Add-E2E-stage-To-Master")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
