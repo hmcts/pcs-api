@@ -114,8 +114,9 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
     });
+    await performValidation('text', {"text": preactionProtocol.communityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
-   /* await performAction('selectMediationAndSettlement', {
+    await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
@@ -290,7 +291,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');*/
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
   test('Wales - Standard contract - Rent arrears + ASB', async () => {

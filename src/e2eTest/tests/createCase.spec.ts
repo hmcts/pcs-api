@@ -128,6 +128,7 @@ test.describe('[Create Case - England] @regression', async () => {
        [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
          whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation])
      await performValidation('mainHeader', preactionProtocol.mainHeader);
+     await performValidation('text', {"text": preactionProtocol.registeredProvidersDynamicParagraph, "elementType": "paragraph"});
      await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
      await performValidation('mainHeader', mediationAndSettlement.mainHeader);
      await performAction('selectMediationAndSettlement', {
