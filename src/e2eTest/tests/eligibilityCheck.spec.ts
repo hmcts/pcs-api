@@ -4,14 +4,16 @@ import {
   addressDetails,
   borderPostcode,
   canNotUseOnlineService,
-  claimantType,
-  claimType,
   home,
   propertyIneligible,
   signInOrCreateAnAccount,
   user,
   userIneligible
 } from '@data/page-data';
+import{
+  claimantType,
+  claimType,
+} from '@data/page-data-figma';
 import {
   initializeExecutor,
   performAction,
@@ -134,7 +136,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.mortgageLender);
+    await performAction('selectClaimantType', claimantType.mortgageLenderRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
@@ -154,7 +156,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.privateLandlord);
+    await performAction('selectClaimantType', claimantType.privateLandlordRadioOption);
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
@@ -177,7 +179,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.yes);
+    await performAction('selectClaimType', claimType.yesRadioOption);
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
@@ -200,7 +202,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
-    await performAction('selectClaimType', claimType.yes);
+    await performAction('selectClaimType', claimType.yesRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
