@@ -45,6 +45,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class EnforceTheOrderTest extends BaseEventTest {
@@ -88,7 +89,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         // Given
         AddressUK propertyAddress = mock(AddressUK.class);
         String expectedFormattedPropertyAddress = "expected formatted property address";
-        when(addressFormatter.formatAddressWithHtmlLineBreaks(propertyAddress))
+        when(addressFormatter.formatMediumAddress(propertyAddress, BR_DELIMITER))
             .thenReturn(expectedFormattedPropertyAddress);
 
         String firstName = "Test";
