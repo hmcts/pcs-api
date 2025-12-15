@@ -290,9 +290,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedClaimantEmail);
-            assertThat(updatedCaseData.getContactPreferencesDetails().getClaimantContactEmail())
+            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail())
                 .isEqualTo(expectedClaimantEmail);
-            assertThat(updatedCaseData.getContactPreferencesDetails().getFormattedClaimantContactAddress())
+            assertThat(updatedCaseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
                 .isEqualTo("formatted claimant address");
         }
 
@@ -462,7 +462,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
                         .claimantName(claimantName)
                         .build()
                 )
-                .contactPreferencesDetails(
+                .claimantContactPreferences(
                     ClaimantContactPreferences.builder()
                         .claimantContactEmail(claimantContactEmail)
                         .claimantContactPhoneNumber(claimantContactPhoneNumber)
