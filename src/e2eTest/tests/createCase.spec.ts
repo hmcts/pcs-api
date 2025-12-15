@@ -468,7 +468,7 @@ test.describe('[Create Case - England] @regression', async () => {
         introductoryDemotedOrOtherGroundsForPossession.breachOfTheTenancyHiddenCheckbox, introductoryDemotedOrOtherGroundsForPossession.absoluteGrounds,introductoryDemotedOrOtherGroundsForPossession.otherHiddenCheckbox]});
     await performAction('enterReasonForPossession'
       , [introductoryDemotedOrOtherGroundsForPossession.antisocialBehaviourHiddenCheckbox, introductoryDemotedOrOtherGroundsForPossession.breachOfTheTenancyHiddenCheckbox, introductoryDemotedOrOtherGroundsForPossession.absoluteGrounds,introductoryDemotedOrOtherGroundsForPossession.otherHiddenCheckbox]);
-   /* await performValidation('mainHeader', preactionProtocol.mainHeader);
+    await performValidation('mainHeader', preactionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
@@ -578,9 +578,9 @@ test.describe('[Create Case - England] @regression', async () => {
       tenancyOrLicenceType: tenancyLicenceDetails.introductoryTenancyRadioOption });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yesRadioOption,
-      grounds: [introductoryDemotedOrOtherGroundsForPossession.antisocialBehaviour, introductoryDemotedOrOtherGroundsForPossession.breachOfTheTenancy]});
+      grounds: [introductoryDemotedOrOtherGroundsForPossession.antisocialBehaviourHiddenCheckbox, introductoryDemotedOrOtherGroundsForPossession.breachOfTheTenancyHiddenCheckbox]});
     await performAction('enterReasonForPossession'
-      , [introductoryDemotedOrOtherGroundsForPossession.antisocialBehaviour, introductoryDemotedOrOtherGroundsForPossession.breachOfTheTenancy]);
+      , [introductoryDemotedOrOtherGroundsForPossession.antisocialBehaviourHiddenCheckbox, introductoryDemotedOrOtherGroundsForPossession.breachOfTheTenancyHiddenCheckbox]);
     await performValidation('mainHeader', preactionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
@@ -735,7 +735,7 @@ test.describe('[Create Case - England] @regression', async () => {
     await performAction('completingYourClaim', completeYourClaim.saveItForLater);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
-    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');*/
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
   test('England - Assured tenancy with Rent arrears and no other possession grounds - Demoted tenancy', async () => {
