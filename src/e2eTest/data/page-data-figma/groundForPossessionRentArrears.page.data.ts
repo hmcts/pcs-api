@@ -20,7 +20,7 @@ export const groundsForPossessionRentArrears = {
   seriousRentArrearsGroundCheckbox: `Serious rent arrears (ground 8)`,
   rentArrearsGround10Checkbox: `Rent arrears (ground 10)`,
   persistentDelayInPayingRentCheckbox: `Persistent delay in paying rent (ground 11)`,
-  //doYouHaveAnyOtherAdditionalParagraph: `Do you have any other grounds for possession?`,
+  doYouHaveAnyOtherAdditionalDynamicQuestion: `Do you have any other grounds for possession?`,
   noRadioOption: `No`,
   yesRadioOption: `Yes`,
   iWantToSaveThisParagraph: `I want to save this application and return to it later`,

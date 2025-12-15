@@ -187,7 +187,7 @@ export class CreateCaseAction implements IAction {
   private async selectClaimType(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstTrespassersQuestion, option: caseData});
+    await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
     if(caseData === claimType.noRadioOption){
       await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantInformation.mainHeader);
     }
@@ -206,9 +206,9 @@ export class CreateCaseAction implements IAction {
   private async selectGroundsForPossession(possessionGrounds: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    let groundsForPossessionQuestion = groundsForPossession.areYouClaimingPossessionBecauseOfRentArrearsQuestion;
-    if (possessionGrounds.rentArrears == groundsForPossession.no) {
-      groundsForPossessionQuestion = groundsForPossession.doYouHaveGroundsForPossessionQuestion;
+    let groundsForPossessionQuestion = groundsForPossession.areYouClaimingPossessionQuestion;
+    if (possessionGrounds.rentArrears == groundsForPossession.noRadioOption) {
+      groundsForPossessionQuestion = introductoryDemotedOrOtherGroundsForPossession.doYouHaveGroundsForPossessionQuestion;
     }
     await performAction('clickRadioButton', {question:groundsForPossessionQuestion, option: possessionGrounds.groundsRadioInput});
     if (possessionGrounds.groundsRadioInput == groundsForPossession.yesRadioOption) {
@@ -225,7 +225,7 @@ export class CreateCaseAction implements IAction {
   private async selectPreActionProtocol(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:preActionProtocol.haveYouFollowedPreActionProtocolQuestion, option: caseData});
+    await performAction('clickRadioButton', {question:preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData});
     await performAction('clickButton', preactionProtocol.continueButton);
   }
 
@@ -247,7 +247,7 @@ export class CreateCaseAction implements IAction {
   private async selectClaimantName(page: Page, caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question:claimantName.isThisTheCorrectClaimantNameQuestion, option: caseData});
+    await performAction('clickRadioButton', {question:claimantInformation.IsCorrectClaimantNameQuestion, option: caseData});
     if(caseData == claimantInformation.noRadioOption){
       await performAction('inputText', claimantInformation.IsCorrectClaimantNameQuestion, claimantInformation.ClaimantNameTextInput);
     }
@@ -375,14 +375,14 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('check', rentArrearsPossession.rentArrears);
-    await performAction('clickRadioButton', {question: rentArrearsPossessionGrounds.doYouHaveOtherGroundsQuestion, option: rentArrearsPossession.otherGrounds});
+    await performAction('clickRadioButton', {question: groundsForPossessionRentArrears.doYouHaveAnyOtherAdditionalDynamicQuestion, option: rentArrearsPossession.otherGrounds});
     await performAction('clickButton', groundsForPossessionRentArrears.continueButton);
   }
 
   private async selectTenancyOrLicenceDetails(tenancyData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-     await performAction('clickRadioButton', {question: tenancyLicenceDetails.tenancyOrLicenceTypeQuestion, option: tenancyData.tenancyOrLicenceType});
+     await performAction('clickRadioButton', {question: tenancyLicenceDetails.whatTypeOfTenancyOrQuestion, option: tenancyData.tenancyOrLicenceType});
     if (tenancyData.tenancyOrLicenceType === tenancyLicenceDetails.otherRadioOption) {
       await performAction('inputText', tenancyLicenceDetails.giveDetailsOfTheTypeHiddenTextLabel, tenancyLicenceDetails.detailsOfLicenceTextInput);
     }

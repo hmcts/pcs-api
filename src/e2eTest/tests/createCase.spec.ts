@@ -137,9 +137,9 @@ test.describe('[Create Case - England]', async () => {
      });
      await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
      await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveText, "elementType": "inlineText"});
+     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
      await performAction('selectNoticeOfYourIntention', {
-       question: noticeOfYourIntention.servedNoticeInteractiveText,
+       question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
        option: noticeOfYourIntention.yes
      });
      await performValidation('mainHeader', noticeDetails.mainHeader);
