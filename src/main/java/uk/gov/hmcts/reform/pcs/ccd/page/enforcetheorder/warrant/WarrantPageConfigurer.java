@@ -4,12 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforceTheOrderPagesConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigurer;
 
 @Slf4j
 @Component
 @AllArgsConstructor
-public class WarrantPagesConfigurer implements EnforceTheOrderPagesConfigurer {
+public class WarrantPageConfigurer implements EnforcementPageConfigurer {
 
     private final ViolentAggressiveRiskPage violentAggressiveRiskPage;
     private final VerbalOrWrittenThreatsRiskPage verbalOrWrittenThreatsRiskPage;

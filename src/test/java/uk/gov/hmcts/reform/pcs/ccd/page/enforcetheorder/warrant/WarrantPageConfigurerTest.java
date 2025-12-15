@@ -13,10 +13,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class WarrantPagesConfigurerTest {
+class WarrantPageConfigurerTest {
 
     @InjectMocks
-    private WarrantPagesConfigurer warrantPagesConfigurer;
+    private WarrantPageConfigurer warrantPageConfigurer;
 
     @Test
     void shouldConfigureAllPages() {
@@ -25,7 +25,7 @@ class WarrantPagesConfigurerTest {
         when(pageBuilder.add(any())).thenReturn(pageBuilder);
 
         // When
-        warrantPagesConfigurer.configurePages(pageBuilder);
+        warrantPageConfigurer.configurePages(pageBuilder);
 
         // Then
         verify(pageBuilder, times(24)).add(any());
