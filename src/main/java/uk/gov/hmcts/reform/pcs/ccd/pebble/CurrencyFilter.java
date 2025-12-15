@@ -31,10 +31,6 @@ public class CurrencyFilter implements Filter {
             );
         }
 
-        if (input == BigDecimal.ZERO) {
-            return "£0";
-        }
-
         if (hasZeroPence(amount)) {
             return WHOLE_POUND_FORMAT.format(amount.stripTrailingZeros());
         }
