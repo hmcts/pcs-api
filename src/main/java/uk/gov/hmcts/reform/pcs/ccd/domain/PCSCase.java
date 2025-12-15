@@ -398,28 +398,12 @@ public class PCSCase {
     )
     private String thirdPartyPaymentSourceOther;
 
-    @CCD(
-        label = "Do you have grounds for possession?"
-    )
-    private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
-
-    @CCD(
-            label = "What are your grounds for possession?",
-            typeOverride = FieldType.MultiSelectList,
-            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds"
-    )
-    private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
-
-    @CCD(
-            label = OTHER_GROUND_DESCRIPTION_LABEL,
-            hint = "You’ll be able to explain your reasons for claiming possession"
-                    + " under these grounds on the next screen. You can enter up to 500 characters",
-            typeOverride = TextArea
-    )
-    private String otherGroundDescription;
-
     @CCD
     private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
+
+    @JsonUnwrapped(prefix = "introGrounds_")
+    @CCD
+    private IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
 
     @JsonUnwrapped
     @CCD

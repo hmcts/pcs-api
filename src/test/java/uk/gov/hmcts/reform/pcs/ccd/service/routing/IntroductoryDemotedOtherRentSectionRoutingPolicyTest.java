@@ -7,6 +7,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
@@ -66,14 +67,20 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
         VerticalYesNo hasGroundsForPossession,
         Set<IntroductoryDemotedOrOtherGrounds> grounds,
         YesOrNo expected) {
+
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(hasGroundsForPossession)
+                .introductoryDemotedOrOtherGrounds(grounds)
+                .build();
+
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(tenancyType)
                     .build()
             )
-            .hasIntroductoryDemotedOtherGroundsForPossession(hasGroundsForPossession)
-            .introductoryDemotedOrOtherGrounds(grounds)
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
         YesOrNo result = policy.shouldShowRentSection(caseData);
@@ -83,14 +90,20 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
 
     @Test
     void shouldReturnNoWhenHasGroundsForPossessionIsNo() {
+
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                .introductoryDemotedOrOtherGrounds(null)
+                .build();
+
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
                     .build()
             )
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
-            .introductoryDemotedOrOtherGrounds(null)
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
         YesOrNo result = policy.shouldShowRentSection(caseData);
@@ -100,14 +113,20 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
 
     @Test
     void shouldReturnNoWhenHasGroundsForPossessionIsNull() {
+
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(null)
+                .introductoryDemotedOrOtherGrounds(Set.of(RENT_ARREARS))
+                .build();
+
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
                     .build()
             )
-            .hasIntroductoryDemotedOtherGroundsForPossession(null)
-            .introductoryDemotedOrOtherGrounds(Set.of(RENT_ARREARS))
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
         YesOrNo result = policy.shouldShowRentSection(caseData);
@@ -117,14 +136,20 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
 
     @Test
     void shouldReturnNoWhenGroundsIsNull() {
+
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(null)
+                .build();
+
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
                     .build()
             )
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-            .introductoryDemotedOrOtherGrounds(null)
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
         YesOrNo result = policy.shouldShowRentSection(caseData);
@@ -134,14 +159,20 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
 
     @Test
     void shouldReturnNoWhenGroundsIsEmpty() {
+
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(Set.of())
+                .build();
+
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
                     .build()
             )
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-            .introductoryDemotedOrOtherGrounds(Set.of())
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
         YesOrNo result = policy.shouldShowRentSection(caseData);
