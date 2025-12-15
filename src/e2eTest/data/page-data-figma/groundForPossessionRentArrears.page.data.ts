@@ -20,7 +20,9 @@ export const groundsForPossessionRentArrears = {
   seriousRentArrearsGroundCheckbox: `Serious rent arrears (ground 8)`,
   rentArrearsGround10Checkbox: `Rent arrears (ground 10)`,
   persistentDelayInPayingRentCheckbox: `Persistent delay in paying rent (ground 11)`,
-  doYouHaveAnyOtherAdditionalDynamicQuestion: `Do you have any other grounds for possession?`,
+  // Below content will be enabled once HDPI-3491 bug is fixed.
+  //doYouHaveAnyOtherAdditionalDynamicQuestion: `Do you have any other grounds for possession?`,
+  doYouHaveAnyOtherAdditionalDynamicQuestion: `Do you have any other additional grounds for possession?`,
   noRadioOption: `No`,
   yesRadioOption: `Yes`,
   iWantToSaveThisParagraph: `I want to save this application and return to it later`,
