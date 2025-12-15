@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -240,7 +241,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
+
+        setUnsubmittedCaseDataFlag(caseReference, caseData);
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
         // Fetch organisation name from rd-professional API
@@ -289,6 +293,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         caseData.setContactPreferencesDetails(contactPreferences);
 
         return caseData;
+    }
+
+    private void setUnsubmittedCaseDataFlag(long caseReference, PCSCase caseData) {
+        boolean hasUnsubmittedCaseData = draftCaseDataService
+            .hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
+
+        caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
