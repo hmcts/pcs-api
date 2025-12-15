@@ -15,6 +15,7 @@ import net.serenitybdd.rest.SerenityRest;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
+import uk.gov.hmcts.reform.pcs.functional.testutils.CitizenUserGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
@@ -85,9 +86,9 @@ public class ApiSteps {
         Endpoints resourceAPI = Endpoints.valueOf(resource);
 
         switch (method.toUpperCase()) {
-            case "POST" -> SerenityRest.when().post(resourceAPI.getResource());
-            case "GET" -> SerenityRest.when().get(resourceAPI.getResource());
-            case "DELETE" -> SerenityRest.when().delete(resourceAPI.getResource());
+            case "POST" -> request.when().post(resourceAPI.getResource());
+            case "GET" -> request.when().get(resourceAPI.getResource());
+            case "DELETE" -> request.when().delete(resourceAPI.getResource());
             default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
         }
     }
@@ -128,6 +129,12 @@ public class ApiSteps {
         request = request.header(TestConstants.AUTHORIZATION, "Bearer " + idamToken);
     }
 
+    @Step("the request contains a valid Citizen Idam Token")
+    public void theRequestContainsValidCitizenIdamToken(){
+        String citizenToken = CitizenUserGenerator.createCitizenUserAndGetToken();
+        request = request.header(TestConstants.AUTHORIZATION, "Bearer " + citizenToken);
+    }
+
     @Step("the request contains an expired IDAM token")
     public void theRequestContainsExpiredIdamToken() {
         String expiredIdamToken = TestConstants.EXPIRED_IDAM_TOKEN;
@@ -138,4 +145,14 @@ public class ApiSteps {
     public void theRequestContainsTheQueryParameter(String queryParam, String value) {
         request = request.queryParam(queryParam, value);
     }
+
+    @Step("the request contains the query parameter as list {0} as {1}")
+    public void theRequestContainsTheQueryParameterAsList(String queryParam, Map<String, String> expectedList) {
+        request = request.queryParam(queryParam, expectedList);
+    }
+
+    public void theRequestContainsBody(Object body) {
+        request = request.body(body);
+    }
+
 }
