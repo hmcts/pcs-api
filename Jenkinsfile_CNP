@@ -102,6 +102,10 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
+  afterAlways('e2eTest:preview') {
+      archiveE2eTestReports()
+  }
+
   afterAlways('e2eTest:aat') {
     archiveE2eTestReports()
   }
