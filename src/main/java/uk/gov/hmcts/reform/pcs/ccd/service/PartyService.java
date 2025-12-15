@@ -68,7 +68,7 @@ public class PartyService {
             claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
         }
 
-        ClaimantContactPreferences contactPreferencesDetails = pcsCase.getContactPreferencesDetails();
+        ClaimantContactPreferences contactPreferencesDetails = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = contactPreferencesDetails.getOverriddenClaimantContactAddress() != null
             ? contactPreferencesDetails.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
 
