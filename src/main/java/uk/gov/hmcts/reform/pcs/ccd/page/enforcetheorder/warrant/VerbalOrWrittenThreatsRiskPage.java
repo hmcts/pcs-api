@@ -29,7 +29,8 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
                 .page("verbalOrWrittenThreatsRisk", this::midEvent)
                 .pageLabel("Their verbal or written threats")
                 .showCondition("anyRiskToBailiff=\"YES\" "
-                    + " AND enforcementRiskCategoriesCONTAINS\"VERBAL_OR_WRITTEN_THREATS\"")
+                    + " AND enforcementRiskCategoriesCONTAINS\"VERBAL_OR_WRITTEN_THREATS\""
+                    + " AND selectEnforcementType=\"WARRANT\"")
                 .label("verbalOrWrittenThreatsRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)

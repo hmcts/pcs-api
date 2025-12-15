@@ -10,7 +10,7 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
         pageBuilder
             .page("evictionDelayWarning")
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
-            .showCondition("anyRiskToBailiff=\"NOT_SURE\"")
+            .showCondition("anyRiskToBailiff=\"NOT_SURE\" AND selectEnforcementType=\"WARRANT\"")
             .label("evictionDelayWarning-line-separator", "---")
             .label(
                 "evictionDelayWarning-text",

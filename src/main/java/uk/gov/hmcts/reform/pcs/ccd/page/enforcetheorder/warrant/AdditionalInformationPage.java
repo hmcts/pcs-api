@@ -31,6 +31,7 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
         pageBuilder
             .page("additionalInformationPage", this::midEvent)
             .pageLabel("Anything else that could help with the eviction ")
+            .showCondition("selectEnforcementType=\"WARRANT\"")
             .label("additionalInformationPage-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

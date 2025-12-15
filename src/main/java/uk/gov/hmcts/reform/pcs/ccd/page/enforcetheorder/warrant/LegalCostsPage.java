@@ -57,6 +57,7 @@ public class LegalCostsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("legalCosts")
                 .pageLabel("Legal costs")
+                .showCondition("selectEnforcementType=\"WARRANT\"")
                 .label("legalCosts-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)

@@ -12,6 +12,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("repaymentsPage")
                 .pageLabel("Repayments Page (place holder)")
+                .showCondition("selectEnforcementType=\"WARRANT\"")
                 .label("repaymentsPage-content", "---")
                 .label("repaymentsPage-save-and-return", SAVE_AND_RETURN);
     }

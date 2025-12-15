@@ -29,7 +29,8 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
                 .page("protestorGroupRisk", this::midEvent)
                 .pageLabel("Their membership of a group that protests evictions")
                 .showCondition("anyRiskToBailiff=\"YES\" "
-                    + " AND enforcementRiskCategoriesCONTAINS\"PROTEST_GROUP_MEMBER\"")
+                    + " AND enforcementRiskCategoriesCONTAINS\"PROTEST_GROUP_MEMBER\""
+                    + " AND selectEnforcementType=\"WARRANT\"")
                 .label("protestorGroupRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)

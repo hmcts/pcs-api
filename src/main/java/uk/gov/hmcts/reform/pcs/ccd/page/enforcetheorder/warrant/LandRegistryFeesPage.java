@@ -16,6 +16,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         pageBuilder
                 .page("landRegistryFees")
                 .pageLabel("Land Registry fees")
+                .showCondition("selectEnforcementType=\"WARRANT\"")
                 .label("landRegistryFees-content", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)

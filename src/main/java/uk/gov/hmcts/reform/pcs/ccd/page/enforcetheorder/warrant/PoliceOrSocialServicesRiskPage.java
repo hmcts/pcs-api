@@ -28,7 +28,8 @@ public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("policeOrSocialServicesRisk", this::midEvent)
                 .pageLabel("Their history of police or social services visits to the property")
-                .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\"")
+                .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\""
+                    + " AND selectEnforcementType=\"WARRANT\"")
                 .label("policeOrSocialServicesRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)

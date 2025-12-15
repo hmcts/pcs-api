@@ -32,6 +32,7 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("propertyAccessDetails", this::midEvent)
                 .pageLabel("Access to the property")
+                .showCondition("selectEnforcementType=\"WARRANT\"")
                 .label("propertyAccessDetails-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)

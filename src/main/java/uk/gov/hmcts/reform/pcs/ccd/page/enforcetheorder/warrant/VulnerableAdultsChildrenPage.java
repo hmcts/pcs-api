@@ -28,6 +28,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         pageBuilder
             .page("vulnerableAdultsChildren", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
+            .showCondition("selectEnforcementType=\"WARRANT\"")
             .label("vulnerableAdultsChildren-line-separator", "---")
             .label(
                 "vulnerableAdultsChildren-information-text", """

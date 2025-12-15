@@ -15,6 +15,7 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
         pageBuilder
             .page("livingInTheProperty")
             .pageLabel("Everyone living at the property")
+            .showCondition("selectEnforcementType=\"WARRANT\"")
             .label("livingInTheProperty-content", "---")
             .label(
                 "livingInTheProperty-information-text", """
