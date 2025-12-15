@@ -192,7 +192,7 @@ public class ClaimGroundService {
     private List<ClaimGroundEntity> getIntroductoryDemotedOtherTenancyGroundsWithReason(
         PCSCase pcsCase) {
         Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds =
-            pcsCase.getIntroductoryDemotedOrOtherGrounds();
+            pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds();
 
         IntroductoryDemotedOtherGroundReason reasons = pcsCase.getIntroductoryDemotedOtherGroundReason();
 
@@ -208,7 +208,7 @@ public class ClaimGroundService {
                 };
 
                 String groundDescription = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
-                    ? pcsCase.getOtherGroundDescription() : null;
+                    ? pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription() : null;
 
                 entities.add(
                     ClaimGroundEntity.builder()
@@ -218,7 +218,8 @@ public class ClaimGroundService {
                         .build());
             }
         }
-        if (pcsCase.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO
+        if (pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession()
+            .getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO
             && isNotBlank(reasons.getNoGrounds())) {
 
             entities.add(
