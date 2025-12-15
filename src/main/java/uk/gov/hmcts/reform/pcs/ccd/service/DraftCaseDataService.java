@@ -49,9 +49,11 @@ public class DraftCaseDataService {
     }
 
     public void patchUnsubmittedCaseData(long caseReference, PCSCase caseDataPatch, EventId eventId) {
-
         String patchCaseDataJson = writeCaseDataJson(caseDataPatch);
+        patchUnsubmittedCaseData(caseReference, eventId, patchCaseDataJson);
+    }
 
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchCaseDataJson) {
         DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository.findByCaseReferenceAndEventId(
                 caseReference, eventId)
             .map(existingDraft -> {
@@ -82,7 +84,7 @@ public class DraftCaseDataService {
         draftCaseDataRepository.deleteByCaseReferenceAndEventId(caseReference, eventId);
     }
 
-    private PCSCase parseCaseDataJson(String caseDataJson) {
+    public PCSCase parseCaseDataJson(String caseDataJson) {
         try {
             return objectMapper.readValue(caseDataJson, PCSCase.class);
         } catch (JsonProcessingException e) {

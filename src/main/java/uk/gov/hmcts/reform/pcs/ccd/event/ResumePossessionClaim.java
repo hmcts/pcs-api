@@ -14,9 +14,9 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -83,12 +83,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.factory.ClaimantPartyFactory;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -103,8 +103,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -117,7 +115,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
-    private final PartyService partyService;
     private final ClaimService claimService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
@@ -159,6 +156,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
+    private final ClaimantPartyFactory claimantPartyFactory;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -300,7 +298,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
-        PartyEntity claimantPartyEntity = createClaimantPartyEntity(pcsCase);
+        UserInfo userDetails = securityContextService.getCurrentUserDetails();
+        PartyEntity claimantPartyEntity = claimantPartyFactory
+            .createAndPersistClaimantParty(pcsCase,
+                 new ClaimantPartyFactory.ClaimantPartyContext(
+                     UUID.fromString(userDetails.getUid()),
+                     userDetails.getSub()
+                 ));
         pcsCaseEntity.addParty(claimantPartyEntity);
 
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
@@ -327,49 +331,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
     }
 
-    private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {
-        UserInfo userDetails = securityContextService.getCurrentUserDetails();
-        UUID userID = UUID.fromString(userDetails.getUid());
-
-        ClaimantInformation claimantInfo = getClaimantInfo(pcsCase);
-
-        String claimantName = isNotBlank(claimantInfo.getOverriddenClaimantName())
-            ? claimantInfo.getOverriddenClaimantName()
-            : claimantInfo.getClaimantName();
-
-        ClaimantContactPreferences contactPreferences = getContactPreferences(pcsCase);
-
-        AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
-            ? contactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
-
-        String contactEmail = isNotBlank(contactPreferences.getOverriddenClaimantContactEmail())
-            ? contactPreferences.getOverriddenClaimantContactEmail() : contactPreferences.getClaimantContactEmail();
-
-        String organisationName = isNotBlank(claimantInfo.getOverriddenClaimantName())
-            ? claimantInfo.getOverriddenClaimantName() : claimantInfo.getOrganisationName();
-        if (isBlank(organisationName)) {
-            organisationName = claimantName;
-        }
-
-        return partyService.createPartyEntity(
-            userID,
-            claimantName,
-            null,
-            organisationName,
-            contactEmail,
-            contactAddress,
-            contactPreferences.getClaimantContactPhoneNumber()
-        );
-    }
-
     private ClaimantInformation getClaimantInfo(PCSCase caseData) {
         return Optional.ofNullable(caseData.getClaimantInformation())
             .orElse(ClaimantInformation.builder().build());
-    }
-
-    private ClaimantContactPreferences getContactPreferences(PCSCase caseData) {
-        return Optional.ofNullable(caseData.getContactPreferencesDetails())
-            .orElse(ClaimantContactPreferences.builder().build());
     }
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
