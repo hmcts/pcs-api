@@ -23,8 +23,8 @@ import uk.gov.hmcts.reform.pcs.service.PartyAccessCodeLinkService;
 @RestController
 @RequestMapping("/cases")
 @RequiredArgsConstructor
-@Tag(name = "Citizen Access Code Validation",
-        description = "Validate access code and link citizen user ID into defendant JSON")
+@Tag(name = "Access Code Validation",
+        description = "Validate access code and link user ID to party")
 public class CasePartyLinkController {
 
     private final IdamService idamService;
@@ -36,8 +36,8 @@ public class CasePartyLinkController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            summary = "Validate access code and link citizen to a case",
-            description = "Stores the citizen's IDAM user ID inside the matching defendant JSON record",
+            summary = "Validate access code and link user to a case",
+            description = "Stores the user's IDAM user ID for the matching party",
             security = {
                 @SecurityRequirement(name = "AuthorizationToken"),
                 @SecurityRequirement(name = "ServiceAuthorization")
