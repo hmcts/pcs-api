@@ -62,9 +62,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = getSubmittedCase(caseReference);
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
-        pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
-        setMarkdownFields(pcsCase);
+        setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
 
         return pcsCase;
     }
@@ -125,10 +124,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
-    private void setMarkdownFields(PCSCase pcsCase) {
+    private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
 
-        if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
+        if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Resume claim</h2>
                                              You’ve already answered some questions about this claim.
