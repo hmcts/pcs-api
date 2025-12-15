@@ -15,7 +15,8 @@ import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.common.enforcetheorder.WarrantPagesConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.InitialEnforcementPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPagesConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -61,7 +62,9 @@ class EnforceTheOrderTest extends BaseEventTest {
     @Mock
     private EnforcementOrderService enforcementOrderService;
     @Mock
-    WarrantPagesConfigurer warrantPagesConfigurer;
+    private WarrantPagesConfigurer warrantPagesConfigurer;
+    @Mock
+    private InitialEnforcementPageConfigurer initialEnforcementPageConfigurer;
 
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
@@ -81,6 +84,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         warrantPagesConfigurer.configurePages(eventBuilder);
 
         //Then
+        verify(initialEnforcementPageConfigurer, times(1)).configurePages(eventBuilder);
         verify(warrantPagesConfigurer, times(1)).configurePages(eventBuilder);
     }
 

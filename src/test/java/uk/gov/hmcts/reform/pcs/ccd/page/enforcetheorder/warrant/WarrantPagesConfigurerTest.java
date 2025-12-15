@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.common.enforcetheorder;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +43,6 @@ class WarrantPagesConfigurerTest {
         warrantPagesConfigurer.configurePages(eventBuilder);
 
         // Then
-        verify(savingPageBuilder, times(24)).add(any());
+        verify(savingPageBuilder, times(23)).add(any());
     }
 }

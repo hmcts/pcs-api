@@ -11,7 +11,8 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.common.enforcetheorder.WarrantPagesConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.InitialEnforcementPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPagesConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -37,6 +38,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     // Business requirements to be agreed on for the conditions when this event can be triggered
     private final WarrantPagesConfigurer warrantPagesConfigurer;
+    private final InitialEnforcementPageConfigurer initialEnforcementPageConfigurer;
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
     private final DefendantService defendantService;
@@ -55,6 +57,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private void configurePages(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
+        initialEnforcementPageConfigurer.configurePages(eventBuilder);
         warrantPagesConfigurer.configurePages(eventBuilder);
     }
 
