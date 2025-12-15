@@ -70,7 +70,7 @@ class PartyAccessCodeLinkValidatorTest {
         // WHEN + THEN
         assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
             .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining("Invalid access code");
+            .hasMessageContaining("Invalid data");
     }
 
     @Test
@@ -97,7 +97,7 @@ class PartyAccessCodeLinkValidatorTest {
         // WHEN + THEN
         assertThatThrownBy(() -> validator.validatePartyBelongsToCase(defendants, PARTY_ID))
             .isInstanceOf(InvalidPartyForCaseException.class)
-            .hasMessageContaining("Party does not belong to this case");
+            .hasMessageContaining("Invalid data");
     }
 
     @Test
