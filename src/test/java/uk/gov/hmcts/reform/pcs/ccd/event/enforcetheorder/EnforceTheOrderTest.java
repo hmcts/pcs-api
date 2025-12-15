@@ -14,14 +14,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.common.enforcetheorder.WarrantPagesConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -42,11 +42,14 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class EnforceTheOrderTest extends BaseEventTest {
+
+    private static final int FEE_AMOUNT = 1000;
 
     @Mock
     private AddressFormatter addressFormatter;
@@ -54,23 +57,30 @@ class EnforceTheOrderTest extends BaseEventTest {
     private FeeApplier feeApplier;
     @Mock
     private DefendantService defendantService;
-
-    @Mock
-    private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
     private EnforcementOrderService enforcementOrderService;
+    @Mock
+    WarrantPagesConfigurer warrantPagesConfigurer;
 
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
 
-    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
-        SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
-        when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
-        when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(EventId.enforceTheOrder)))
-            .thenReturn(savingPageBuilder);
         setEventUnderTest(enforceTheOrder);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void shouldConfigurePages() {
+        // Given
+        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = mock(Event.EventBuilder.class);
+
+        // When
+        warrantPagesConfigurer.configurePages(eventBuilder);
+
+        //Then
+        verify(warrantPagesConfigurer, times(1)).configurePages(eventBuilder);
     }
 
     @Test
@@ -254,7 +264,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
 
-        String expectedFormattedFee = "£" + (1 + (int)(Math.random() * 1000));
+        String expectedFormattedFee = "£" + (1 + FEE_AMOUNT);
 
         doAnswer(invocation -> {
             PCSCase pcs = invocation.getArgument(0);
