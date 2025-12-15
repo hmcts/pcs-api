@@ -4,10 +4,12 @@ import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.rest.SerenityRest;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.ArrayList;
 
 @Slf4j
 public class TestCaseGenerator {
