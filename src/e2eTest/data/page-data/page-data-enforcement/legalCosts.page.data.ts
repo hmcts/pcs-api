@@ -5,7 +5,7 @@ export const legalCosts = {
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
   howMuchYouWantToReclaimTextLabel: 'How much do you want to reclaim?',
-  howMuchYouWantToReclaimTextInput: '15555.75',
+  howMuchYouWantToReclaimTextInput: '155559.7',
   legalCostsFee: 'Legal costs',
   continueButton: 'Continue',
   errorValidation: 'NO',//set it to 'NO' before raising a PR

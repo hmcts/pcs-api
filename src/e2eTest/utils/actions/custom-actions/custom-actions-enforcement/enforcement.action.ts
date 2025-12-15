@@ -134,7 +134,7 @@ export class EnforcementAction implements IAction {
   private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('check', peopleYouWantEvicted.defendants);
+    await performAction('check', { question: peopleYouWantEvicted.question, option: peopleYouWantEvicted.option });
     await performAction('clickButton', peopleYouWantToEvict.continueButton);
   }
 
@@ -287,7 +287,7 @@ export class EnforcementAction implements IAction {
     } else {
       moneyMap.set(landRegistryFees.landRegistryFee, 0);
     }
-    await performAction('clickButtonAndVerifyPageNavigation', landRegistryFees.continueButton, rePayments.mainHeader);
+    await performAction('clickButton', landRegistryFees.continueButton);
   }
 
   private async validateAmountToRePayTable() {
@@ -295,7 +295,7 @@ export class EnforcementAction implements IAction {
     const totalAmt = Array.from(moneyMap.values()).reduce((a, b) => a + b, 0);
     moneyMap.set(rePayments.totalAmt, totalAmt);
     for (const [moneyField, amount] of moneyMap) {
-      await performValidation('formLabelValue', moneyField, `£${amount}`);
+      await performValidation('formLabelValue', moneyField, `${await this.convertCurrencyToString(amount)}`);
     }
   }
   private async provideAmountToRePay(amtToPay: actionRecord) {
@@ -324,18 +324,15 @@ export class EnforcementAction implements IAction {
           switch (validationArr.validationType) {
             case 'moneyFieldAndRadioOption':
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
-              // let total: number = moneyMap.get(rePayments.totalAmt) as number;
-              // console.log(String(total+10));
               await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(rePayments.totalAmt) as number) + 10) : item.input);
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', validationArr.label, item.errMessage);
-
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option2 });
               break;
 
             case 'radioOptions':
               await performAction('clickButton', validationArr.button);
-              await performValidation('inputError', validationArr.label, item.errMessage);
+              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
               break;
 
@@ -355,6 +352,11 @@ export class EnforcementAction implements IAction {
                 await performValidation('inputError', validationArr.label, item.errMessage);
                 await performValidation('errorMessage', validationArr.label, item.errMessage)
               }
+              break;
+
+            case 'checkBox':
+              await performAction('clickButton', validationArr.button);
+              await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
               break;
 
             default:
@@ -391,5 +393,20 @@ export class EnforcementAction implements IAction {
     const charLimitInfo = input.match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
     const amount = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : 0;
     return amount;
+  }
+
+  private async convertCurrencyToString(amount: number): Promise<string> {
+
+    const cents = Math.round(amount * 100);
+    const hasZeroDecimals = cents % 100 === 0;
+
+    const amtString =
+      new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+        minimumFractionDigits: hasZeroDecimals ? 0 : 2,
+        maximumFractionDigits: hasZeroDecimals ? 0 : 2,
+      });
+    return amtString.format(cents / 100);
   }
 }
