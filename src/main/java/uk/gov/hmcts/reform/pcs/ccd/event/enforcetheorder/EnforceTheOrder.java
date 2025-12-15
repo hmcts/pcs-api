@@ -11,7 +11,8 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.InitialEnforcementPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPagesConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -38,11 +39,11 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     // Business requirements to be agreed on for the conditions when this event can be triggered
     private final WarrantPagesConfigurer warrantPagesConfigurer;
-    private final InitialEnforcementPageConfigurer initialEnforcementPageConfigurer;
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
     private final DefendantService defendantService;
     private final FeeApplier feeApplier;
+    private final SavingPageBuilderFactory savingPageBuilderFactory;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -53,12 +54,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .name("Enforce the order")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
-        configurePages(eventBuilder);
-    }
-
-    private void configurePages(Event.EventBuilder<PCSCase, UserRole, State> eventBuilder) {
-        initialEnforcementPageConfigurer.configurePages(eventBuilder);
-        warrantPagesConfigurer.configurePages(eventBuilder);
+        SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
+        warrantPagesConfigurer.configurePages(pageBuilder);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

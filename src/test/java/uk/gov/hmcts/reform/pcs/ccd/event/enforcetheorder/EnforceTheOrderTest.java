@@ -14,12 +14,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.InitialEnforcementPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPagesConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
@@ -64,28 +64,32 @@ class EnforceTheOrderTest extends BaseEventTest {
     @Mock
     private WarrantPagesConfigurer warrantPagesConfigurer;
     @Mock
-    private InitialEnforcementPageConfigurer initialEnforcementPageConfigurer;
-
+    private SavingPageBuilderFactory savingPageBuilderFactory;
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
+    @Mock
+    private SavingPageBuilder savingPageBuilder;
 
+    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
+        when(savingPageBuilderFactory.create(any(Event.EventBuilder.class), eq(EventId.enforceTheOrder)))
+                .thenReturn(savingPageBuilder);
         setEventUnderTest(enforceTheOrder);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void shouldConfigurePages() {
         // Given
-        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = mock(Event.EventBuilder.class);
+        PCSCase caseData = PCSCase.builder()
+            .enforcementOrder(EnforcementOrder.builder().build())
+                .build();
 
         // When
-        warrantPagesConfigurer.configurePages(eventBuilder);
+        callStartHandler(caseData);
 
         //Then
-        verify(initialEnforcementPageConfigurer, times(1)).configurePages(eventBuilder);
-        verify(warrantPagesConfigurer, times(1)).configurePages(eventBuilder);
+        verify(warrantPagesConfigurer, times(1)).configurePages(savingPageBuilder);
     }
 
     @Test
