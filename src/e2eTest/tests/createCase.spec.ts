@@ -234,7 +234,7 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yesRadioOption});
@@ -362,7 +362,7 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption
     });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
@@ -653,7 +653,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.yesRadioOption, contactPreferences.mainHeader);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
@@ -764,7 +764,7 @@ test.describe('[Create Case - England]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption});
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption});
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yesRadioOption});
     await performAction('selectRentArrearsPossessionGround', {
@@ -1091,7 +1091,7 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption });
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption });
     await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
