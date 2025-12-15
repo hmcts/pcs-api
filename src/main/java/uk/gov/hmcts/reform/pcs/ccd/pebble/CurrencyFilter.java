@@ -10,32 +10,42 @@ import java.util.Map;
 
 public class CurrencyFilter implements Filter {
 
+    private static final DecimalFormat STANDARD_DECIMAL_FORMAT = new DecimalFormat("£#,##0.00");
+    private static final DecimalFormat WHOLE_POUND_FORMAT = new DecimalFormat("£#,##0");
+
     @Override
     public List<String> getArgumentNames() {
         return null;
     }
 
     @Override
-    public Object apply(Object input, Map<String, Object> args, PebbleTemplate self,
-                        EvaluationContext context, int lineNumber) {
-        if (input == null || input == "0") {
+    public Object apply(Object input, Map<String, Object> args, PebbleTemplate self, EvaluationContext context,
+                        int lineNumber) {
+        if (input == null) {
+            return null;
+        }
+
+        if (!(input instanceof BigDecimal amount)) {
+            throw new IllegalArgumentException(
+                "CurrencyFilter expects a BigDecimal but received: " + input.getClass().getSimpleName()
+            );
+        }
+
+        if (input == BigDecimal.ZERO) {
             return "£0";
         }
 
-        BigDecimal amount = input instanceof BigDecimal ? (BigDecimal) input
-            : new BigDecimal(input.toString());
-
-        // If < £1, always show 2 decimals (0.50)
-        if (amount.compareTo(BigDecimal.ONE) < 0) {
-            return new DecimalFormat("£0.00").format(amount);
+        if (hasZeroPence(amount)) {
+            return WHOLE_POUND_FORMAT.format(amount.stripTrailingZeros());
         }
 
-        // If whole pound, no decimals (150)
+        // Default: £#,##0.00
+        return STANDARD_DECIMAL_FORMAT.format(amount);
+    }
+
+    private boolean hasZeroPence(BigDecimal amount) {
         BigDecimal stripped = amount.stripTrailingZeros();
-        if (stripped.scale() <= 0) {
-            return new DecimalFormat("£#,##0").format(stripped);
-        }
-
-        return new DecimalFormat("£#,##0.00").format(amount);
+        return stripped.scale() <= 0;
     }
 }
+
