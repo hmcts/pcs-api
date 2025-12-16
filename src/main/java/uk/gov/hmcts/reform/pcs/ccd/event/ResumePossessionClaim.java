@@ -78,7 +78,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
@@ -150,7 +150,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
-    private final GroundsForPossessionWales groundsForPossessionWales;
+    private final GroundsForPossessionWalesPage groundsForPossessionWales;
     private final SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     private final ReasonsForPossessionWales reasonsForPossessionWales;
     private final AddressFormatter addressFormatter;
