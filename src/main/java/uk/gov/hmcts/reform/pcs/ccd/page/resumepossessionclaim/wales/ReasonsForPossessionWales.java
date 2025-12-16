@@ -43,96 +43,6 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             .label("reasonsForPossessionWales-separator", "---")
             .complex(PCSCase::getGroundsReasonsWales)
 
-            // ---------- Standard/Other Contract - Mandatory grounds ----------
-            .label("wales-failToGiveUpS170-label","""
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Failure to give up possession on date specified in contract-holder’s notice (section 170)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "mandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_S170\"")
-            .mandatory(GroundsReasonsWales::getFailToGiveUpS170Reason,
-                "mandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_S170\"")
-
-            .label("wales-landlordNoticePeriodicS178-label","""
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Landlord’s notice given in relation to periodic standard contract (section 178)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "mandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_PERIODIC_S178\"")
-            .mandatory(GroundsReasonsWales::getLandlordNoticePeriodicS178Reason,
-                "mandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_PERIODIC_S178\"")
-
-            .label("wales-seriousArrearsPeriodicS181-label", """
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Contract-holder under a periodic standard contract seriously in arrears with rent (section 181)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "mandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_PERIODIC_S181\"")
-            .mandatory(GroundsReasonsWales::getSeriousArrearsPeriodicS181Reason,
-                "mandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_PERIODIC_S181\"")
-
-            .label("wales-landlordNoticeFtEndS186-label","""
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Landlord’s notice in connection with end of fixed term given (section 186)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "mandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_FT_END_S186\"")
-            .mandatory(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
-                "mandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_FT_END_S186\"")
-
-            .label("wales-seriousArrearsFixedTermS187-label", """
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Contract-holder under a fixed term standard contract seriously in arrears with rent (section 187)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "mandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_FIXED_TERM_S187\"")
-            .mandatory(GroundsReasonsWales::getSeriousArrearsFixedTermS187Reason,
-                "mandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_FIXED_TERM_S187\"")
-
-            .label("wales-failToGiveUpBreakNoticeS191-label","""
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Failure to give up possession on date specified in
-                    contract-holder’s break clause notice (section 191)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "mandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_BREAK_NOTICE_S191\"")
-            .mandatory(GroundsReasonsWales::getFailToGiveUpBreakNoticeS191Reason,
-                "mandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_BREAK_NOTICE_S191\"")
-
-            .label("wales-landlordBreakClauseS199-label","""
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Notice given under a landlord’s break clause (section 199)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "mandatoryGroundsWalesCONTAINS\"LANDLORD_BREAK_CLAUSE_S199\"")
-            .mandatory(GroundsReasonsWales::getLandlordBreakClauseS199Reason,
-                "mandatoryGroundsWalesCONTAINS\"LANDLORD_BREAK_CLAUSE_S199\"")
-
-            .label("wales-convertedFixedTermSch1225B2-label","""
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Notice given in relation to end of converted fixed term standard contract
-                    (paragraph 25B(2) of Schedule 12)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "mandatoryGroundsWalesCONTAINS\"CONVERTED_FIXED_TERM_SCH12_25B2\"")
-            .mandatory(GroundsReasonsWales::getConvertedFixedTermSch1225B2Reason,
-                "mandatoryGroundsWalesCONTAINS\"CONVERTED_FIXED_TERM_SCH12_25B2\"")
 
             // ---------- Standard/Other Contract - Discretionary grounds ----------
             .label("wales-otherBreachSection157-label","""
@@ -146,7 +56,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             .mandatory(GroundsReasonsWales::getOtherBreachSection157Reason,
                 "discretionaryGroundsWalesCONTAINS\"OTHER_BREACH_SECTION_157\"")
 
-            // ---------- Estate Management grounds ----------
+            // ---------- Standard/Other Contract - Estate Management grounds ----------
             .label("wales-buildingWorks-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Building works (ground A)
@@ -246,51 +156,97 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             .mandatory(GroundsReasonsWales::getOtherEstateManagementReasonsReason,
                 "estateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
 
-            // ---------- Secure Contract - Mandatory grounds ----------
-            .label("wales-secure-failureToGiveUpPossessionSection170-label", """
+            // ---------- Standard/Other Contract - Mandatory grounds ----------
+            .label("wales-failToGiveUpS170-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in contract-holder’s notice (section 170)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170\"")
-            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason,
-                "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170\"")
+                """, "mandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_S170\"")
+            .mandatory(GroundsReasonsWales::getFailToGiveUpS170Reason,
+                "mandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_S170\"")
 
-            .label("wales-secure-landlordNoticeSection186-label", """
+            .label("wales-landlordNoticePeriodicS178-label","""
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Landlord’s notice given in relation to periodic standard contract (section 178)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "mandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_PERIODIC_S178\"")
+            .mandatory(GroundsReasonsWales::getLandlordNoticePeriodicS178Reason,
+                "mandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_PERIODIC_S178\"")
+
+            .label("wales-seriousArrearsPeriodicS181-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Contract-holder under a periodic standard contract seriously in arrears with rent (section 181)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "mandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_PERIODIC_S181\"")
+            .mandatory(GroundsReasonsWales::getSeriousArrearsPeriodicS181Reason,
+                "mandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_PERIODIC_S181\"")
+
+            .label("wales-landlordNoticeFtEndS186-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice in connection with end of fixed term given (section 186)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_186\"")
-            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection186Reason,
-                "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_186\"")
+                """, "mandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_FT_END_S186\"")
+            .mandatory(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
+                "mandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_FT_END_S186\"")
 
-            .label("wales-secure-failureToGiveUpPossessionSection191-label", """
+            .label("wales-seriousArrearsFixedTermS187-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Failure to give up possession on date specified in contract-holder’s break
-                    clause notice (section 191)
+                    Contract-holder under a fixed term standard contract seriously in arrears with rent (section 187)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191\"")
-            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason,
-                "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191\"")
+                """, "mandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_FIXED_TERM_S187\"")
+            .mandatory(GroundsReasonsWales::getSeriousArrearsFixedTermS187Reason,
+                "mandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_FIXED_TERM_S187\"")
 
-            .label("wales-secure-landlordNoticeSection199-label", """
+            .label("wales-failToGiveUpBreakNoticeS191-label","""
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Failure to give up possession on date specified in
+                    contract-holder’s break clause notice (section 191)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "mandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_BREAK_NOTICE_S191\"")
+            .mandatory(GroundsReasonsWales::getFailToGiveUpBreakNoticeS191Reason,
+                "mandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_BREAK_NOTICE_S191\"")
+
+            .label("wales-landlordBreakClauseS199-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Notice given under a landlord’s break clause (section 199)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_199\"")
-            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection199Reason,
-                "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_199\"")
+                """, "mandatoryGroundsWalesCONTAINS\"LANDLORD_BREAK_CLAUSE_S199\"")
+            .mandatory(GroundsReasonsWales::getLandlordBreakClauseS199Reason,
+                "mandatoryGroundsWalesCONTAINS\"LANDLORD_BREAK_CLAUSE_S199\"")
+
+            .label("wales-convertedFixedTermSch1225B2-label","""
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Notice given in relation to end of converted fixed term standard contract
+                    (paragraph 25B(2) of Schedule 12)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "mandatoryGroundsWalesCONTAINS\"CONVERTED_FIXED_TERM_SCH12_25B2\"")
+            .mandatory(GroundsReasonsWales::getConvertedFixedTermSch1225B2Reason,
+                "mandatoryGroundsWalesCONTAINS\"CONVERTED_FIXED_TERM_SCH12_25B2\"")
+
 
             // ---------- Secure Contract - Discretionary grounds ----------
             .label("wales-secure-otherBreachOfContract-label", """
@@ -403,6 +359,53 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 """, "secureContract_EstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
             .mandatory(GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason,
                 "secureContract_EstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
+            
+            // ---------- Secure Contract - Mandatory grounds ----------
+            .label("wales-secure-failureToGiveUpPossessionSection170-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Failure to give up possession on date specified in contract-holder’s notice (section 170)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170\"")
+            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason,
+                "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170\"")
+
+            .label("wales-secure-landlordNoticeSection186-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Landlord’s notice in connection with end of fixed term given (section 186)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_186\"")
+            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection186Reason,
+                "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_186\"")
+
+            .label("wales-secure-failureToGiveUpPossessionSection191-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Failure to give up possession on date specified in contract-holder’s break
+                    clause notice (section 191)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191\"")
+            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason,
+                "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191\"")
+
+            .label("wales-secure-landlordNoticeSection199-label", """
+                <h2 class="govuk-heading-l" tabindex="0">
+                    Notice given under a landlord’s break clause (section 199)
+                </h2>
+                <h3 class="govuk-heading-m" tabindex="0">
+                    Why are you making a claim for possession under this ground?
+                </h3>
+                """, "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_199\"")
+            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection199Reason,
+                "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_199\"")
+
 
             .done()
             .label("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
