@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
@@ -74,7 +75,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
                 .build();
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(tenancyType)
+                    .build()
+            )
             .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
@@ -93,7 +98,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
                 .build();
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
@@ -112,7 +121,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
                 .build();
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
@@ -131,7 +144,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
                 .build();
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
@@ -150,7 +167,11 @@ class IntroductoryDemotedOtherRentSectionRoutingPolicyTest {
                 .build();
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(INTRODUCTORY_TENANCY)
+                    .build()
+            )
             .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .build();
 
