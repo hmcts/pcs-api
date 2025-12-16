@@ -447,26 +447,11 @@ public class PCSCase {
     )
     private VerticalYesNo arrearsJudgmentWanted;
 
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsMandatoryGrounds"
-    )
-    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds"
-    )
-    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions;
+    @JsonUnwrapped(prefix = "noRentArrears_")
+    private NoRentArrearsGroundsOptions noRentArrearsGroundsOptions;
 
     @JsonUnwrapped
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
-
-    private YesOrNo showNoRentArrearsGroundReasonPage;
 
     private YesOrNo showRentSectionPage;
 
