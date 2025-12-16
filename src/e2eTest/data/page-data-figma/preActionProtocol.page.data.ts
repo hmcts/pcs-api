@@ -1,10 +1,10 @@
 // Disabled content will be enabled once https://tools.hmcts.net/jira/browse/HDPI-3491 bug is fixed.
 export const preactionProtocol = {
   mainHeader: `Pre-action protocol`,
-  appliedForArrearsToBeParagraph: `applied for arrears to be paid by the Department for Work and Pensions (DWP) by deductions from the defendants’ benefits`,
+  //appliedForArrearsToBeParagraph: `applied for arrears to be paid by the Department for Work and Pensions (DWP) by deductions from the defendants’ benefits`,
   cancelLink: `Cancel`,
   caseNumberParagraph: `Case number:`,
-  contactedOrAttemptedToContactParagraph: `contacted, or attempted to contact, the defendants`,
+  //contactedOrAttemptedToContactParagraph: `contacted, or attempted to contact, the defendants`,
   continueButton: `Continue`,
   haveYouFollowedThePreactionQuestion: `Have you followed the pre-action protocol?`,
   //ifYourClaimIsOnParagraph: `If your claim is on the grounds of rent arrears, you should have:`,

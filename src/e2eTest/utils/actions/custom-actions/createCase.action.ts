@@ -249,7 +249,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:claimantInformation.IsCorrectClaimantNameQuestion, option: caseData});
     if(caseData == claimantInformation.noRadioOption){
-      await performAction('inputText', claimantInformation.IsCorrectClaimantNameQuestion, claimantInformation.ClaimantNameTextInput);
+      await performAction('inputText', claimantInformation.whatIsCorrectClaimantNameHiddenQuestion, claimantInformation.ClaimantNameTextInput);
     }
     claimantsName = caseData == "No" ? claimantInformation.ClaimantNameTextInput : await this.extractClaimantName(page, claimantInformation.yourClaimantNameRegisteredParagraph);
   }
