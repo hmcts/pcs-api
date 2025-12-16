@@ -51,6 +51,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGroun
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.RENT_ARREARS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimGroundServiceTest {
@@ -234,7 +235,11 @@ class ClaimGroundServiceTest {
     void shouldIgnoreNullGrounds_WhenAssuredTenancyNoRentArrears() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(ASSURED_TENANCY)
+                    .build()
+            )
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
                     .mandatoryGrounds(null)

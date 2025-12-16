@@ -103,7 +103,11 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     @Test
     void shouldReturnNoWhenGroundsForPossessionIsNull() {
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(ASSURED_TENANCY)
+                    .build()
+            )
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
                     .mandatoryGrounds(null)

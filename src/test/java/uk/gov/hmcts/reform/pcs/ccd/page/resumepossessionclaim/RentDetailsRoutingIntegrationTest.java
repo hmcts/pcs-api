@@ -36,7 +36,11 @@ public class RentDetailsRoutingIntegrationTest {
 
         // Given
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(tenancyType)
+                    .build()
+            )
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
                     .mandatoryGrounds(noRentArrearsMandatory)
@@ -141,7 +145,11 @@ public class RentDetailsRoutingIntegrationTest {
         return Stream.of(
             // Null tenancy type
             arguments(PCSCase.builder()
-                          .typeOfTenancyLicence(null)
+                          .tenancyLicenceDetails(
+                              TenancyLicenceDetails.builder()
+                                  .typeOfTenancyLicence(null)
+                                  .build()
+                          )
                           .noRentArrearsGroundsOptions(NoRentArrearsGroundsOptions.builder()
                                                            .mandatoryGrounds(
                                                                Set.of(
@@ -152,7 +160,11 @@ public class RentDetailsRoutingIntegrationTest {
 
             // Empty sets
             arguments(PCSCase.builder()
-                          .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                          .tenancyLicenceDetails(
+                              TenancyLicenceDetails.builder()
+                                  .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                  .build()
+                          )
                           .noRentArrearsGroundsOptions(
                               NoRentArrearsGroundsOptions.builder()
                                   .mandatoryGrounds(Set.of())
@@ -164,7 +176,11 @@ public class RentDetailsRoutingIntegrationTest {
 
             // Mixed grounds (should show Rent Details if any rent-related ground is selected)
             arguments(PCSCase.builder()
-                     .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                          .tenancyLicenceDetails(
+                              TenancyLicenceDetails.builder()
+                                  .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                  .build()
+                          )
                           .noRentArrearsGroundsOptions(
                               NoRentArrearsGroundsOptions.builder()
                                   .mandatoryGrounds(
