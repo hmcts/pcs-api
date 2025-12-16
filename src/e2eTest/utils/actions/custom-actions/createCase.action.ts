@@ -290,7 +290,6 @@ export class CreateCaseAction implements IAction {
         await performAction('inputText', contactPreferences.enterPhoneNumberHiddenTextLabel, contactPreferences.enterPhoneNumberTextInput);
       }
     }
-    //await performValidation('text', {elementType: 'paragraph', text: contactPreferences.registeredEmailDynamicParagraph});
     await performAction('clickButton', contactPreferences.continueButton);
   }
 
