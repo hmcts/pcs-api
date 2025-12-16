@@ -13,7 +13,6 @@ import {
   applications,
   checkYourAnswers,
   claimantCircumstances,
-  claimantName,
   claimingCosts,
   completeYourClaim,
   dailyRentAmount,
@@ -24,7 +23,6 @@ import {
   moneyJudgment,
   noticeDetails,
   noticeOfYourIntention,
-  preActionProtocol,
   propertyDetails,
   reasonsForPossession,
   rentDetails,
@@ -91,8 +89,8 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
@@ -101,8 +99,8 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('verifyPageAndClickButton', claimantType.continueButton, claimantType.mainHeader);
     await performValidation('radioButtonChecked', claimType.noRadioOption, true);
     await performAction('verifyPageAndClickButton', claimType.continueButton, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantName.yes, true);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
@@ -129,8 +127,8 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('enterReasonForPossession',
       [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier,
         whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performValidation('mainHeader', preactionProtocol.mainHeader);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -226,8 +224,8 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
@@ -236,9 +234,9 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
     await performValidation('radioButtonChecked', claimType.noRadioOption, false);
     await performAction('selectClaimType', claimType.noRadioOption);
-    await performValidation('radioButtonChecked', claimantName.yes, false);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
@@ -265,8 +263,8 @@ test.describe('[Create Case - With resume claim options]', async () => {
         whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
         whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied
       ]);
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performValidation('mainHeader', preactionProtocol.mainHeader);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
