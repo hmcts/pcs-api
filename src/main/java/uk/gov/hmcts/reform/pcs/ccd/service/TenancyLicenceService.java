@@ -27,15 +27,15 @@ public class TenancyLicenceService {
                     ? tenancyDetails.getDetailsOfOtherTypeOfTenancyLicence() : null)
             .supportingDocuments(ListValueUtils.unwrapListItems(
                     tenancyDetails != null ? tenancyDetails.getTenancyLicenceDocuments() : null))
-            .rentStatementDocuments(ListValueUtils.unwrapListItems(
-                    pcsCase.getRentStatementDocuments())).totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+            .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
+            .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
             .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
             .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
             .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
 
-        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
+        buildRentDetailsSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
 
-        buildRentDetailsSection(pcsCase.getRentSection(), tenancyLicenceBuilder);
+        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
 
         buildNoticeServedDetails(pcsCase.getNoticeServedDetails(), tenancyLicenceBuilder);
 
