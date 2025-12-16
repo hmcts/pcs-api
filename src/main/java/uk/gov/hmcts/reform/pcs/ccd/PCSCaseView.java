@@ -117,7 +117,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private void setRentDetails(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getTenancyLicence() != null) {
-            pcsCase.setRentSection(RentDetails.builder()
+            pcsCase.setRentDetails(RentDetails.builder()
                 .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount() != null
                     ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
                 .frequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())

@@ -30,7 +30,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
                         """
                         ---
                         """)
-                .complex(PCSCase::getRentSection)
+                .complex(PCSCase::getRentDetails)
                     .mandatory(RentDetails::getCurrentRent)
                     .mandatory(RentDetails::getFrequency)
                     .mandatory(RentDetails::getOtherFrequency, "rentDetails_Frequency=\"OTHER\"")
@@ -44,7 +44,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        RentDetails rentDetails = caseData.getRentSection();
+        RentDetails rentDetails = caseData.getRentDetails();
 
         RentPaymentFrequency rentFrequency = rentDetails.getFrequency();
         

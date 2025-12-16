@@ -21,7 +21,7 @@ class DailyRentAmountTest extends BasePageTest {
     void shouldSetShowRentArrearsPageToYesWhenRentPerDayCorrectIsSet() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentDetails.builder()
+                .rentDetails(RentDetails.builder()
                         .perDayCorrect(VerticalYesNo.YES)
                         .build())
                 .build();
@@ -37,7 +37,7 @@ class DailyRentAmountTest extends BasePageTest {
     void shouldNotSetShowRentArrearsPageWhenRentPerDayCorrectIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentDetails.builder()
+                .rentDetails(RentDetails.builder()
                         .perDayCorrect(null)
                         .build())
                 .build();

@@ -20,7 +20,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                 .pageLabel("Daily rent amount")
                 .readonly(PCSCase::getRentSectionPaymentFrequency, NEVER_SHOW)
                 .showCondition("showRentSectionPage=\"Yes\" AND rentSectionPaymentFrequency!=\"OTHER\"")
-                .complex(PCSCase::getRentSection)
+                .complex(PCSCase::getRentDetails)
                     .readonly(RentDetails::getFormattedCalculatedDailyCharge, NEVER_SHOW)
                     .label("dailyRentAmount-content",
                             """
@@ -45,7 +45,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                                                     CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        RentDetails rentDetails = caseData.getRentSection();
+        RentDetails rentDetails = caseData.getRentDetails();
         // When user answers Yes/No on DailyRentAmount, set flag to show RentArrears
         if (rentDetails != null && rentDetails.getPerDayCorrect() != null) {
             caseData.setShowRentArrearsPage(YesOrNo.YES);

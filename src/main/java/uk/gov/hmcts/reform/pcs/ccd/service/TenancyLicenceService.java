@@ -33,7 +33,7 @@ public class TenancyLicenceService {
             .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
             .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
 
-        buildRentSection(pcsCase.getRentSection(), tenancyLicenceBuilder);
+        buildRentSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
 
         tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
 
