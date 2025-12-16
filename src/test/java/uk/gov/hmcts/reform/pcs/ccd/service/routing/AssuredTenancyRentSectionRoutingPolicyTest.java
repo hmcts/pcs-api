@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -86,8 +87,12 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.NO)
-            .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
-            .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(mandatoryGrounds)
+                    .discretionaryGrounds(discretionaryGrounds)
+                    .build()
+            )
             .build();
 
         YesOrNo result = policy.shouldShowRentSection(caseData);
@@ -101,6 +106,12 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(ASSURED_TENANCY)
+                    .build()
+            )
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(null)
+                    .discretionaryGrounds(null)
                     .build()
             )
             .claimDueToRentArrears(null)

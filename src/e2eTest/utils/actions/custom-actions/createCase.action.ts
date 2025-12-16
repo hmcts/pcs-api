@@ -211,7 +211,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', {question:groundsForPossessionQuestion, option: possessionGrounds.groundsRadioInput});
     if (possessionGrounds.groundsRadioInput == groundsForPossession.yes) {
       if (possessionGrounds.grounds) {
-        await performAction('check', possessionGrounds.grounds);
+        await performAction('check', {question: groundsForPossession.whatAreYourGroundsForQuestion, option: possessionGrounds.grounds});
         if ((possessionGrounds.grounds as Array<string>).includes(groundsForPossession.other)) {
           await performAction('inputText', groundsForPossession.enterGroundsForPossessionLabel, groundsForPossession.enterYourGroundsForPossessionInput);
         }
@@ -371,7 +371,7 @@ export class CreateCaseAction implements IAction {
   private async selectRentArrearsPossessionGround(rentArrearsPossession: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('check', rentArrearsPossession.rentArrears);
+    await performAction('check', {question: rentArrearsPossessionGrounds.whatAreYourGroundsForQuestion, option: rentArrearsPossession.rentArrears});
     await performAction('clickRadioButton', {question: rentArrearsPossessionGrounds.doYouHaveOtherGroundsQuestion, option: rentArrearsPossession.otherGrounds});
     await performAction('clickButton', rentArrearsPossessionGrounds.continue);
   }
@@ -405,24 +405,24 @@ export class CreateCaseAction implements IAction {
     }
     for (const key of Object.keys(possessionGrounds)) {
       switch (key) {
-        case 'discretionary':
-          await performAction('check', possessionGrounds.discretionary);
+        case 'discretionary':  
+          await performAction('check', {question: whatAreYourGroundsForPossession.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionary});
           if (
             (possessionGrounds.discretionary as Array<string>).includes(
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
             )
           ) {
-            await performAction('check', possessionGrounds.discretionaryEstateGrounds);
+              await performAction('check', {question: whatAreYourGroundsForPossessionWales.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionaryEstateGrounds});
           }
           break;
         case 'mandatory':
-          await performAction('check', possessionGrounds.mandatory);
+          await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
           break;
         case 'mandatoryAccommodation':
-          await performAction('check', possessionGrounds.mandatoryAccommodation);
+          await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryWithAccommodation.mandatoryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.mandatoryAccommodation});
           break;
-        case 'discretionaryAccommodation':
-          await performAction('check', possessionGrounds.discretionaryAccommodation);
+        case 'discretionaryAccommodation': 
+          await performAction('check', {question: whatAreYourGroundsForPossession.discretionaryWithAccommodation.discretionaryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.discretionaryAccommodation});
           break;
       }
     }
@@ -435,7 +435,7 @@ export class CreateCaseAction implements IAction {
     const rentArrearsOrBreachOfTenancyGrounds = grounds as {
       rentArrearsOrBreach: string[];
     }
-    await performAction('check', rentArrearsOrBreachOfTenancyGrounds.rentArrearsOrBreach);
+    await performAction('check', {question: rentArrearsOrBreachOfTenancy.whatDoesYourGround1Question, option: rentArrearsOrBreachOfTenancyGrounds.rentArrearsOrBreach});
     await performAction('clickButton', rentArrearsOrBreachOfTenancy.continue);
   }
 
@@ -567,7 +567,7 @@ export class CreateCaseAction implements IAction {
       option: rentArrears.rentPaidByOthersOption
     });
     if (rentArrears.rentPaidByOthersOption == detailsOfRentArrears.yes) {
-      await performAction('check', rentArrears.paymentOptions);
+      await performAction('check', {question: detailsOfRentArrears.whereHaveThePaymentsComeQuestion, option: rentArrears.paymentOptions});
       if ((rentArrears.paymentOptions as Array<string>).includes(detailsOfRentArrears.other)) {
         await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
       }

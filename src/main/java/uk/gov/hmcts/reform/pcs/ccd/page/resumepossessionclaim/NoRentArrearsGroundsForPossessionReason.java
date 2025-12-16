@@ -23,6 +23,8 @@ import java.util.List;
 @AllArgsConstructor
 public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfiguration {
 
+    public static final String NO_RENT_ARREARS_OPTIONS_MANDATORY = "noRentArrears_MandatoryGrounds";
+    public static final String NO_RENT_ARREARS_OPTIONS_DISCRETIONARY = "noRentArrears_DiscretionaryGrounds";
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
@@ -32,7 +34,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             .pageLabel("Reasons for possession")
             .showCondition("claimDueToRentArrears=\"No\" "
                                + "AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND showNoRentArrearsGroundReasonPage=\"Yes\""
+                               + " AND noRentArrears_ShowGroundReasonPage=\"Yes\""
                                + " AND legislativeCountry=\"England\"")
             .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)
@@ -43,11 +45,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Owner occupier (ground 1)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"OWNER_OCCUPIER\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"OWNER_OCCUPIER\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getOwnerOccupierTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"OWNER_OCCUPIER\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"OWNER_OCCUPIER\""
             )
             // Ground 2
             .label(
@@ -56,11 +58,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Repossession by the landlord’s mortgage lender (ground 2)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"REPOSSESSION_BY_LENDER\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"REPOSSESSION_BY_LENDER\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getRepossessionByLenderTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"REPOSSESSION_BY_LENDER\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"REPOSSESSION_BY_LENDER\""
             )
             // Ground 3
             .label(
@@ -69,11 +71,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Holiday let (ground 3)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"HOLIDAY_LET\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"HOLIDAY_LET\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getHolidayLetTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"HOLIDAY_LET\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"HOLIDAY_LET\""
             )
             // Ground 4
             .label(
@@ -81,12 +83,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 """
                     <h2 class="govuk-heading-l">Student let (ground 4)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
-                    """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"STUDENT_LET\""
+                    """, NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"STUDENT_LET\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getStudentLetTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"STUDENT_LET\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"STUDENT_LET\""
             )
             // Ground 5
             .label(
@@ -95,11 +96,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Property required for minister of religion (ground 5)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"MINISTER_OF_RELIGION\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"MINISTER_OF_RELIGION\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getMinisterOfReligionTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"MINISTER_OF_RELIGION\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"MINISTER_OF_RELIGION\""
             )
             // Ground 6
             .label(
@@ -108,11 +109,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Property required for redevelopment (ground 6)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"REDEVELOPMENT\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"REDEVELOPMENT\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getRedevelopmentTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"REDEVELOPMENT\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"REDEVELOPMENT\""
             )
             // Ground 7
             .label(
@@ -121,11 +122,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Death of the tenant (ground 7)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"DEATH_OF_TENANT\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"DEATH_OF_TENANT\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getDeathOfTenantTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"DEATH_OF_TENANT\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"DEATH_OF_TENANT\""
             )
             // Ground 7A
             .label(
@@ -134,11 +135,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Antisocial behaviour (ground 7A)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"ANTISOCIAL_BEHAVIOUR\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"ANTISOCIAL_BEHAVIOUR\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getAntisocialBehaviourTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"ANTISOCIAL_BEHAVIOUR\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"ANTISOCIAL_BEHAVIOUR\""
             )
             // Ground 7B
             .label(
@@ -147,11 +148,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Tenant does not have a right to rent (ground 7B)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"NO_RIGHT_TO_RENT\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"NO_RIGHT_TO_RENT\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getNoRightToRentTextArea,
-                "noRentArrearsMandatoryGroundsOptionsCONTAINS\"NO_RIGHT_TO_RENT\""
+                NO_RENT_ARREARS_OPTIONS_MANDATORY + "CONTAINS\"NO_RIGHT_TO_RENT\""
             )
             // Ground 9
             .label(
@@ -160,11 +161,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Suitable alternative accommodation (ground 9)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"SUITABLE_ACCOM\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"SUITABLE_ACCOM\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getSuitableAccomTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"SUITABLE_ACCOM\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"SUITABLE_ACCOM\""
             )
             // Ground 12
             .label(
@@ -173,11 +174,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Breach of tenancy conditions (ground 12)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"BREACH_OF_TENANCY_CONDITIONS\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"BREACH_OF_TENANCY_CONDITIONS\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getBreachOfTenancyConditionsTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"BREACH_OF_TENANCY_CONDITIONS\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"BREACH_OF_TENANCY_CONDITIONS\""
             )
             // Ground 13
             .label(
@@ -186,11 +187,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Deterioration in the condition of the property (ground 13)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"PROPERTY_DETERIORATION\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"PROPERTY_DETERIORATION\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getPropertyDeteriorationTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"PROPERTY_DETERIORATION\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"PROPERTY_DETERIORATION\""
             )
             // Ground 14
             .label(
@@ -200,11 +201,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     (ground 14)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"NUISANCE_OR_ILLEGAL_USE\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"NUISANCE_OR_ILLEGAL_USE\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getNuisanceOrIllegalUseTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"NUISANCE_OR_ILLEGAL_USE\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"NUISANCE_OR_ILLEGAL_USE\""
             )
             // Ground 14A
             .label(
@@ -213,11 +214,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Domestic violence (ground 14A)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"DOMESTIC_VIOLENCE\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"DOMESTIC_VIOLENCE\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getDomesticViolenceTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"DOMESTIC_VIOLENCE\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"DOMESTIC_VIOLENCE\""
             )
             // Ground 14ZA
             .label(
@@ -226,11 +227,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Offence during a riot (ground 14ZA)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"OFFENCE_DURING_RIOT\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"OFFENCE_DURING_RIOT\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getOffenceDuringRiotTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"OFFENCE_DURING_RIOT\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"OFFENCE_DURING_RIOT\""
             )
             // Ground 15
             .label(
@@ -239,11 +240,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Deterioration of furniture (ground 15)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"FURNITURE_DETERIORATION\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"FURNITURE_DETERIORATION\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getFurnitureDeteriorationTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"FURNITURE_DETERIORATION\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"FURNITURE_DETERIORATION\""
             )
             // Ground 16
             .label(
@@ -252,11 +253,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Employee of the landlord (ground 16)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"LANDLORD_EMPLOYEE\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"LANDLORD_EMPLOYEE\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getLandlordEmployeeTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"LANDLORD_EMPLOYEE\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"LANDLORD_EMPLOYEE\""
             )
             // Ground 17
             .label(
@@ -265,11 +266,11 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     <h2 class="govuk-heading-l">Tenancy obtained by false statement (ground 17)</h2>
                     <h3 class="govuk-heading-m">Why are you making a claim for possession under this ground?</h3>
                     """,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"FALSE_STATEMENT\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"FALSE_STATEMENT\""
             )
             .mandatory(
                 NoRentArrearsReasonForGrounds::getFalseStatementTextArea,
-                "noRentArrearsDiscretionaryGroundsOptionsCONTAINS\"FALSE_STATEMENT\""
+                NO_RENT_ARREARS_OPTIONS_DISCRETIONARY + "CONTAINS\"FALSE_STATEMENT\""
             )
             .done()
             .label("noRentArrearsGroundsForPossessionReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
