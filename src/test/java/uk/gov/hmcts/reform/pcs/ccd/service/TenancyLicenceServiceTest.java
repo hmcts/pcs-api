@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -26,6 +27,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -60,19 +62,31 @@ class TenancyLicenceServiceTest {
         );
 
         // Test tenancy type field
+        TenancyLicenceDetails tenancyDetails =
+            TenancyLicenceDetails.builder()
+                .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                .build();
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getTypeOfTenancyLicence()).thenReturn(TenancyLicenceType.ASSURED_TENANCY),
+            pcsCase -> when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyDetails),
             expected -> assertThat(expected.getTenancyLicenceType())
                 .isEqualTo(TenancyLicenceType.ASSURED_TENANCY.getLabel()));
 
         // Test tenancy date field
+        TenancyLicenceDetails tenancyDetailsWithDate =
+            TenancyLicenceDetails.builder()
+                .tenancyLicenceDate(tenancyDate)
+                .build();
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getTenancyLicenceDate()).thenReturn(tenancyDate),
+            pcsCase -> when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyDetailsWithDate),
             expected -> assertThat(expected.getTenancyLicenceDate()).isEqualTo(tenancyDate));
 
         //Test supporting documents field
+        TenancyLicenceDetails tenancyDetailsWithDocs =
+            TenancyLicenceDetails.builder()
+                .tenancyLicenceDocuments(uploadedDocs)
+                .build();
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getTenancyLicenceDocuments()).thenReturn(uploadedDocs),
+            pcsCase -> when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyDetailsWithDocs),
             expected -> {
                 assertThat(expected.getSupportingDocuments()).hasSize(2);
                 assertThat(expected.getSupportingDocuments())
@@ -187,8 +201,8 @@ class TenancyLicenceServiceTest {
                 expected -> assertThat(expected.getArrearsJudgmentWanted()).isFalse());
     }
 
-    private void assertTenancyLicenceField(java.util.function.Consumer<PCSCase> setupMock,
-            java.util.function.Consumer<TenancyLicence> assertions) {
+    private void assertTenancyLicenceField(Consumer<PCSCase> setupMock,
+            Consumer<TenancyLicence> assertions) {
         setupMock.accept(pcsCaseMock);
         TenancyLicence actual = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         assertions.accept(actual);
@@ -545,10 +559,15 @@ class TenancyLicenceServiceTest {
                 .build()
         );
 
+        TenancyLicenceDetails tenancyDetails =
+            TenancyLicenceDetails.builder()
+                .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                .tenancyLicenceDate(tenancyDate)
+                .tenancyLicenceDocuments(englandDocs)
+                .build();
+
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getTypeOfTenancyLicence()).thenReturn(TenancyLicenceType.ASSURED_TENANCY);
-        when(pcsCaseMock.getTenancyLicenceDate()).thenReturn(tenancyDate);
-        when(pcsCaseMock.getTenancyLicenceDocuments()).thenReturn(englandDocs);
+        when(pcsCaseMock.getTenancyLicenceDetails()).thenReturn(tenancyDetails);
         when(pcsCaseMock.getOccupationLicenceDetailsWales()).thenReturn(null);
 
         // When
