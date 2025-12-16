@@ -17,7 +17,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class RentSection {
+public class RentDetails {
 
     @CCD(
         label = "How much is the rent?",
@@ -64,3 +64,4 @@ public class RentSection {
     @CCD
     private String formattedCalculatedDailyCharge;
 }
+

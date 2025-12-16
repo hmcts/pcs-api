@@ -4,7 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -14,14 +14,14 @@ class RentDetailsTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentDetails());
+        setPageUnderTest(new RentDetailsPage());
     }
 
     @Test
     void shouldCalculateDailyRentForWeeklyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .currentRent("7000") // £70.00 in pence
                         .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
@@ -38,7 +38,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldCalculateDailyRentForMonthlyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .currentRent("30000") // £300.00 in pence
                         .frequency(RentPaymentFrequency.MONTHLY)
                         .build())
@@ -55,7 +55,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldUseProvidedDailyRentForOtherFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .frequency(RentPaymentFrequency.OTHER)
                         .dailyCharge("1500") // £15.00 per day
                         .build())
@@ -72,7 +72,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldSetShowRentArrearsPageToNoForWeeklyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .frequency(RentPaymentFrequency.WEEKLY)
                         .currentRent("7000")
                         .build())
@@ -89,7 +89,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldSetShowRentArrearsPageToYesForOtherFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .frequency(RentPaymentFrequency.OTHER)
                         .build())
                 .build();
@@ -105,7 +105,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldCalculateDailyRentForFortnightlyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .currentRent("14000") // £140.00 in pence
                         .frequency(RentPaymentFrequency.FORTNIGHTLY)
                         .build())
@@ -123,7 +123,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldSetFormattedCurrencyWhenCalculatingDailyRent() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .currentRent("7000") // £70.00 in pence
                         .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
@@ -143,7 +143,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldNotProcessWhenRentFrequencyIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .currentRent("7000")
                         .frequency(null)
                         .build())
@@ -162,7 +162,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldSetShowRentArrearsPageWhenCurrentRentIsEmpty() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .currentRent("")
                         .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
@@ -181,7 +181,7 @@ class RentDetailsTest extends BasePageTest {
     void shouldSetShowRentArrearsPageToNoForMonthlyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentSection(RentSection.builder()
+                .rentSection(RentDetails.builder()
                         .frequency(RentPaymentFrequency.MONTHLY)
                         .currentRent("30000")
                         .build())

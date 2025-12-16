@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
  * Page configuration for the Rent Details section.
  * Allows claimants to enter rent amount and payment frequency details.
  */
-public class RentDetails implements CcdPageConfiguration {
+public class RentDetailsPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -31,11 +31,11 @@ public class RentDetails implements CcdPageConfiguration {
                         ---
                         """)
                 .complex(PCSCase::getRentSection)
-                    .mandatory(RentSection::getCurrentRent)
-                    .mandatory(RentSection::getFrequency)
-                    .mandatory(RentSection::getOtherFrequency, "rentDetails_Frequency=\"OTHER\"")
-                    .mandatory(RentSection::getDailyCharge, "rentDetails_Frequency=\"OTHER\"")
-                    .readonly(RentSection::getCalculatedDailyCharge, NEVER_SHOW)
+                    .mandatory(RentDetails::getCurrentRent)
+                    .mandatory(RentDetails::getFrequency)
+                    .mandatory(RentDetails::getOtherFrequency, "rentDetails_Frequency=\"OTHER\"")
+                    .mandatory(RentDetails::getDailyCharge, "rentDetails_Frequency=\"OTHER\"")
+                    .readonly(RentDetails::getCalculatedDailyCharge, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -44,7 +44,7 @@ public class RentDetails implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        RentSection rentDetails = caseData.getRentSection();
+        RentDetails rentDetails = caseData.getRentSection();
 
         RentPaymentFrequency rentFrequency = rentDetails.getFrequency();
         
@@ -97,3 +97,4 @@ public class RentDetails implements CcdPageConfiguration {
         return "£" + amountInPounds.toPlainString();
     }
 }
+

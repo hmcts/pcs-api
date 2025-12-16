@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 
 import java.math.BigDecimal;
 
@@ -48,7 +48,7 @@ public class TenancyLicenceService {
         return tenancyLicenceBuilder.build();
     }
 
-    private void buildRentSection(RentSection rentDetails,
+    private void buildRentSection(RentDetails rentDetails,
                                   TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         if (rentDetails != null) {
             tenancyLicenceBuilder
@@ -59,7 +59,7 @@ public class TenancyLicenceService {
         }
     }
 
-    private BigDecimal getDailyRentAmount(RentSection rentDetails) {
+    private BigDecimal getDailyRentAmount(RentDetails rentDetails) {
         if (rentDetails == null) {
             return null;
         }

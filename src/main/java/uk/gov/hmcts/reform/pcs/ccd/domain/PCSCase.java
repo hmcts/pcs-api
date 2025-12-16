@@ -281,7 +281,7 @@ public class PCSCase {
 
     @JsonUnwrapped(prefix = "rentDetails_")
     @CCD
-    private RentSection rentSection;
+    private RentDetails rentSection;
 
     private RentPaymentFrequency rentSectionPaymentFrequency;
 

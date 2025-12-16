@@ -12,7 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
@@ -146,7 +146,7 @@ class TenancyLicenceServiceTest {
 
         // Test rent amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentSection()).thenReturn(RentSection.builder()
+                pcsCase -> when(pcsCase.getRentSection()).thenReturn(RentDetails.builder()
                         .currentRent("120000") // value in pence
                         .build()),
                 expected -> assertThat(expected.getRentAmount())
@@ -154,21 +154,21 @@ class TenancyLicenceServiceTest {
 
         // Test rent payment frequency field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentSection()).thenReturn(RentSection.builder()
+                pcsCase -> when(pcsCase.getRentSection()).thenReturn(RentDetails.builder()
                         .frequency(RentPaymentFrequency.MONTHLY)
                         .build()),
                 expected -> assertThat(expected.getRentPaymentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY));
 
         // Test other rent frequency field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentSection()).thenReturn(RentSection.builder()
+                pcsCase -> when(pcsCase.getRentSection()).thenReturn(RentDetails.builder()
                         .otherFrequency("Bi-weekly")
                         .build()),
                 expected -> assertThat(expected.getOtherRentFrequency()).isEqualTo("Bi-weekly"));
 
         // Test daily rent charge amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentSection()).thenReturn(RentSection.builder()
+                pcsCase -> when(pcsCase.getRentSection()).thenReturn(RentDetails.builder()
                         .dailyCharge("4000")
                         .build()),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
@@ -217,7 +217,7 @@ class TenancyLicenceServiceTest {
     void shouldPreferDailyRentCharge(String amendedDailyRent, String calculatedDailyRent, String dailyRent,
                                      String expectedAmount) {
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentSection()).thenReturn(RentSection.builder()
+        when(pcsCaseMock.getRentSection()).thenReturn(RentDetails.builder()
                 .amendedDailyCharge(amendedDailyRent)
                 .calculatedDailyCharge(calculatedDailyRent)
                 .dailyCharge(dailyRent)
