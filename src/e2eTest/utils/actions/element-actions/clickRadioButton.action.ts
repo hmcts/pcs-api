@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
 
 export class ClickRadioButtonAction implements IAction {
@@ -25,7 +25,7 @@ export class ClickRadioButtonAction implements IAction {
         .locator('div.multiple-choice')
         .filter({ has: page.locator('label.form-label', { hasText: new RegExp(`^${option}$`, 'i') }) })
         .locator('input[type="radio"]');
-
+      await radioPattern2.isVisible();
       await radioPattern2.click();
     }
   }
