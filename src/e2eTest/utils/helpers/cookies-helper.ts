@@ -33,7 +33,7 @@ export default class CookiesHelper {
       return JSON.parse(data);
     } catch (error) {
       if (isTeardown) {
-        test.skip((error as Error).message);
+        test.skip(true, (error as Error).message);
       }
       throw new Error(`Cookies path: ${cookiePath} does not exist for user: ${userKey}`);
     }
