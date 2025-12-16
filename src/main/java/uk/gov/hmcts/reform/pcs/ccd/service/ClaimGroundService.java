@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
@@ -42,7 +43,10 @@ public class ClaimGroundService {
             return getWalesGroundsWithReason(pcsCase);
         }
 
-        TenancyLicenceType tenancyLicenceType = pcsCase.getTypeOfTenancyLicence();
+        TenancyLicenceDetails tenancyDetails =
+            pcsCase.getTenancyLicenceDetails();
+        TenancyLicenceType tenancyLicenceType = tenancyDetails != null
+            ? tenancyDetails.getTypeOfTenancyLicence() : null;
 
         if (tenancyLicenceType == null) {
             return Collections.emptyList();

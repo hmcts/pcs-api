@@ -26,7 +26,7 @@ import static uk.gov.hmcts.reform.pcs.config.ClockConfiguration.UK_ZONE_ID;
 
 @ExtendWith(MockitoExtension.class)
 
-class TenancyLicenceDetailsTest extends BasePageTest {
+class TenancyLicenceDetailsPageTest extends BasePageTest {
 
 
     private static final LocalDate FIXED_CURRENT_DATE = LocalDate.of(2025, 8, 27);
@@ -51,12 +51,10 @@ class TenancyLicenceDetailsTest extends BasePageTest {
                                                       TenancyLicenceType  tenancyLicence) {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .tenancyLicenceDetails(
-                TenancyLicenceDetails.builder()
-                    .tenancyLicenceDate(date)
-                    .typeOfTenancyLicence(tenancyLicence)
-                    .build()
-            )
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder()
+                .tenancyLicenceDate(date)
+                .typeOfTenancyLicence(tenancyLicence)
+                .build())
             .build();
 
         // When
@@ -68,7 +66,8 @@ class TenancyLicenceDetailsTest extends BasePageTest {
                 .containsExactly("Date the tenancy or licence began must be in the past");
         } else {
             assertThat(response.getErrors()).isNull();
-            assertThat(response.getData().getTenancyLicenceDetails().getTenancyLicenceDate())
+            assertThat(response.getData().getTenancyLicenceDetails() != null
+                    ? response.getData().getTenancyLicenceDetails().getTenancyLicenceDate() : null)
                 .isEqualTo(date);
         }
 
