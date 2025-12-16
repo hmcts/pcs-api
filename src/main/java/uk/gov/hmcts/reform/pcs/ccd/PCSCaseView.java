@@ -108,9 +108,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
+            .allClaimants(partyMap.get(PartyRole.CLAIMANT))
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
-            .allClaimants(partyMap.get(PartyRole.CLAIMANT))
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);

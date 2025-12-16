@@ -62,9 +62,6 @@ public class PartyEntity {
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
-    @Enumerated(EnumType.STRING)
-    private PartyType type;
-
     private UUID idamId;
 
     private String firstName;

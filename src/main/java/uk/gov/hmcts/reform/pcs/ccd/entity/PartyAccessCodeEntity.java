@@ -32,8 +32,6 @@ import java.util.UUID;
 @Table(name = "party_access_code")
 public class PartyAccessCodeEntity {
 
-    // TODO: Move into party package
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
