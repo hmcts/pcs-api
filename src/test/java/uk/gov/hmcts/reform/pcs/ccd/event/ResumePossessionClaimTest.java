@@ -534,14 +534,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor
-                = ArgumentCaptor.forClass(SchedulableInstance.class);
-
-            verify(schedulerClient,atLeastOnce()).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-
-            FeesAndPayTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
-
+            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
             assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
         }
