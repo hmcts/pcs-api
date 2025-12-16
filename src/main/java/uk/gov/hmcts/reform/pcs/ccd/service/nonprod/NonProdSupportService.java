@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.nonprod;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
@@ -14,6 +15,7 @@ import java.util.List;
 @Slf4j
 @Service
 @AllArgsConstructor
+@Profile({"local", "dev", "preview"})
 public class NonProdSupportService {
 
     private final CaseSupportHelper caseSupportHelper;

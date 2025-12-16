@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -25,7 +26,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 @Component
 @Slf4j
 @AllArgsConstructor
+@Profile({"local", "dev", "preview"})
 public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
+
+    static final String EVENT_NAME = "Test Support Case Creation";
 
     private final NonProdSupportService nonProdSupportService;
     private final CaseSupportHelper caseSupportHelper;
@@ -37,7 +41,7 @@ public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
                 .decentralisedEvent(createTestCase.name(), this::submit, this::start)
                 .initialState(AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
-                .name("DA & QA - Test Case Creation")
+                .name(EVENT_NAME)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
         new PageBuilder(eventBuilder)
@@ -53,10 +57,8 @@ public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-
         Long caseReference = eventPayload.caseReference();
         nonProdSupportService.caseGenerator(caseReference, eventPayload.caseData());
-
         return SubmitResponse.<State>builder()
             .state(CASE_ISSUED)
             .build();

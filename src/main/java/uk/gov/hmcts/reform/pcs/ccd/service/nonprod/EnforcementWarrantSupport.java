@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.nonprod;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
@@ -22,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 @Slf4j
+@Profile({"local", "dev", "preview"})
 public class EnforcementWarrantSupport extends MakeAClaimCaseGenerationSupport {
 
     private static final String CASE_GENERATOR = "Create Enforcement Warrant Basic Case";
@@ -49,15 +51,25 @@ public class EnforcementWarrantSupport extends MakeAClaimCaseGenerationSupport {
     public CaseSupportGenerationResponse generate(long caseReference, PCSCase caseData, Resource nonProdResource) {
         log.info("Running : {}", CASE_GENERATOR);
         try {
-            super.generate(caseReference, caseData, caseSupportHelper.getNonProdResource(super.getLabel()));
-            log.info("Back with the Enforcement generation now: {}", CASE_GENERATOR);
-
-            String jsonString = StreamUtils.copyToString(nonProdResource.getInputStream(), StandardCharsets.UTF_8);
-            EnforcementOrder enforcementOrder = parseCaseDataJson(jsonString);
-            enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
+            CaseSupportGenerationResponse generated = super.generate(caseReference, caseData,
+                caseSupportHelper.getNonProdResource(super.getLabel()));
+            log.info("Generated response from {}: {}", CASE_GENERATOR, generated);
+            if ((generated.getErrors() == null || generated.getErrors().isEmpty())
+                && generated.getState() == State.PENDING_CASE_ISSUED) {
+                return generateEnforcementWarrant(caseReference, nonProdResource);
+            }
         } catch (IOException e) {
             throw new SupportException(e);
         }
+        return CaseSupportGenerationResponse.builder().state(State.PENDING_CASE_ISSUED).build();
+    }
+
+    private CaseSupportGenerationResponse generateEnforcementWarrant(long caseReference, Resource nonProdResource)
+        throws IOException, UnsubmittedDataException {
+        log.info("Back with the Enforcement generation now: {}", CASE_GENERATOR);
+        String jsonString = StreamUtils.copyToString(nonProdResource.getInputStream(), StandardCharsets.UTF_8);
+        EnforcementOrder enforcementOrder = parseCaseDataJson(jsonString);
+        enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
         return CaseSupportGenerationResponse.builder().state(State.PENDING_CASE_ISSUED).build();
     }
 

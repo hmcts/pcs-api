@@ -2,8 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service.nonprod;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
@@ -17,16 +18,17 @@ import java.util.UUID;
 @Component
 @AllArgsConstructor
 @Slf4j
+@Profile({"local", "dev", "preview"})
 public class CaseSupportHelper {
 
     public static final String LOCATION_PATTERN = "classpath*:nonprod/";
     public static final String JSON = ".json";
 
-    private final ApplicationContext applicationContext;
+    private final ResourcePatternResolver resourcePatternResolver;
 
     public DynamicList getNonProdFilesList() {
         try {
-            Resource[] resources = applicationContext.getResources(LOCATION_PATTERN + "*");
+            Resource[] resources = resourcePatternResolver.getResources(LOCATION_PATTERN + "*");
             List<DynamicListElement> listItems = Arrays.stream(resources)
                 .map(Resource::getFilename)
                 .filter(Objects::nonNull)
@@ -51,7 +53,7 @@ public class CaseSupportHelper {
 
     public Resource getNonProdResource(String label) throws IOException {
         String name = generateNameFromLabel(label);
-        return Arrays.stream(applicationContext.getResources(LOCATION_PATTERN + name + JSON))
+        return Arrays.stream(resourcePatternResolver.getResources(LOCATION_PATTERN + name + JSON))
             .findFirst().orElseThrow();
     }
 
