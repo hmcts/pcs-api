@@ -78,5 +78,4 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         return SubmitResponse.defaultResponse();
     }
-
 }

@@ -7,6 +7,8 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -14,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -94,6 +97,11 @@ public class PcsCaseMergeService {
     }
 
     private PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
+
+        SecureContractGroundsForPossessionWales secureContractGroundsWales =
+            Optional.ofNullable(pcsCase.getSecureContractGroundsForPossessionWales())
+                .orElse(SecureContractGroundsForPossessionWales.builder().build());
+
         SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
             .map(grounds -> modelMapper
                 .map(grounds, SecureOrFlexibleReasonsForGrounds.class))
@@ -101,6 +109,10 @@ public class PcsCaseMergeService {
 
         SecureOrFlexiblePossessionGrounds secureOrFlexiblePossessionGrounds = Optional.ofNullable(
             pcsCase.getSecureOrFlexiblePossessionGrounds()).orElse(SecureOrFlexiblePossessionGrounds.builder().build());
+
+        GroundsForPossessionWales groundsForPossessionWales =
+            Optional.ofNullable(pcsCase.getGroundsForPossessionWales())
+                .orElse(GroundsForPossessionWales.builder().build());
 
         return PossessionGrounds.builder()
             .discretionaryGrounds(
@@ -110,13 +122,15 @@ public class PcsCaseMergeService {
                 mapToLabels(secureOrFlexiblePossessionGrounds.getSecureOrFlexibleDiscretionaryGroundsAlt()))
             .mandatoryGroundsAlternativeAccommodation(
                 mapToLabels(secureOrFlexiblePossessionGrounds.getSecureOrFlexibleMandatoryGroundsAlt()))
-            .walesDiscretionaryGrounds(mapToLabels(pcsCase.getDiscretionaryGroundsWales()))
-            .walesMandatoryGrounds(mapToLabels(pcsCase.getMandatoryGroundsWales()))
-            .walesEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGroundsWales()))
-            .walesSecureContractDiscretionaryGrounds(mapToLabels(pcsCase.getSecureContractDiscretionaryGroundsWales()))
-            .walesSecureContractMandatoryGrounds(mapToLabels(pcsCase.getSecureContractMandatoryGroundsWales()))
-            .walesSecureContractEstateManagementGrounds(
-                mapToLabels(pcsCase.getSecureContractEstateManagementGroundsWales()))
+            .walesDiscretionaryGrounds(mapToLabels(groundsForPossessionWales.getDiscretionaryGroundsWales()))
+            .walesMandatoryGrounds(mapToLabels(groundsForPossessionWales.getMandatoryGroundsWales()))
+            .walesEstateManagementGrounds(mapToLabels(groundsForPossessionWales.getEstateManagementGroundsWales()))
+            .walesSecureContractDiscretionaryGrounds(mapToLabels(secureContractGroundsWales
+                                                                     .getDiscretionaryGroundsWales()))
+            .walesSecureContractMandatoryGrounds(mapToLabels(secureContractGroundsWales
+                                                                 .getMandatoryGroundsWales()))
+            .walesSecureContractEstateManagementGrounds(mapToLabels(secureContractGroundsWales
+                                .getEstateManagementGroundsWales()))
             .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
     }

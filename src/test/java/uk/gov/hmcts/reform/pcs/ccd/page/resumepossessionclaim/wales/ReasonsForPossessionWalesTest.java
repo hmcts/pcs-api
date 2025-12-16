@@ -15,8 +15,10 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -62,8 +64,14 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
         YesOrNo expectedShowASBQuestionsPage) {
 
         PCSCase caseData = PCSCase.builder()
-            .discretionaryGroundsWales(discretionaryGrounds)
-            .secureContractDiscretionaryGroundsWales(secureDiscretionaryGrounds)
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .discretionaryGroundsWales(discretionaryGrounds)
+                .build())
+            .secureContractGroundsForPossessionWales(
+                SecureContractGroundsForPossessionWales.builder()
+                    .discretionaryGroundsWales(secureDiscretionaryGrounds)
+                    .build()
+            )
             .build();
 
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
