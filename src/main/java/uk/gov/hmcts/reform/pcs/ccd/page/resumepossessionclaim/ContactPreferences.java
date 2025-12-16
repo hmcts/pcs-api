@@ -31,7 +31,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             .pageLabel("Contact preferences")
 
             // Email section
-            .complex(PCSCase::getContactPreferencesDetails)
+            .complex(PCSCase::getClaimantContactPreferences)
                 .readonly(ClaimantContactPreferences::getClaimantContactEmail, NEVER_SHOW)
                 .label("contactPreferences-email", """
                     ---
@@ -55,7 +55,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             .done()
 
             // Address section
-            .complex(PCSCase::getContactPreferencesDetails)
+            .complex(PCSCase::getClaimantContactPreferences)
                 .label("contactPreferences-address-info", """
                     ----
                     <h2 class="govuk-heading-m">Correspondence address</h2>
@@ -91,7 +91,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             .done()
 
             // Phone section
-            .complex(PCSCase::getContactPreferencesDetails)
+            .complex(PCSCase::getClaimantContactPreferences)
                 .label("contactPreferences-phoneNumber-question", """
                     ----
                     <h2 class="govuk-heading-m">Contact phone number</h2>
@@ -114,7 +114,7 @@ public class ContactPreferences implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        ClaimantContactPreferences contactPreferences = caseData.getContactPreferencesDetails();
+        ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
         if (contactPreferences != null) {
             VerticalYesNo isCorrectClaimantContactAddress = contactPreferences.getIsCorrectClaimantContactAddress();
             if (isCorrectClaimantContactAddress == VerticalYesNo.NO) {
