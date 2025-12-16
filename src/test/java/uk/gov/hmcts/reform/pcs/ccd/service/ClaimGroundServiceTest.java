@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
@@ -50,6 +52,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGroun
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.RENT_ARREARS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimGroundServiceTest {
@@ -179,8 +182,12 @@ class ClaimGroundServiceTest {
         Set<NoRentArrearsDiscretionaryGrounds> discretionary = EnumSet.allOf(NoRentArrearsDiscretionaryGrounds.class);
 
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(discretionary)
-            .noRentArrearsMandatoryGroundsOptions(mandatory)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(mandatory)
+                    .discretionaryGrounds(discretionary)
+                    .build()
+            )
             .noRentArrearsReasonForGrounds(grounds)
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
@@ -231,7 +238,13 @@ class ClaimGroundServiceTest {
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
-                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .typeOfTenancyLicence(ASSURED_TENANCY)
+                    .build()
+            )
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(null)
+                    .discretionaryGrounds(null)
                     .build()
             )
             .build();
@@ -428,9 +441,11 @@ class ClaimGroundServiceTest {
 
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
-            .mandatoryGroundsWales(mandatoryGrounds)
-            .discretionaryGroundsWales(discretionaryGrounds)
-            .estateManagementGroundsWales(estateGrounds)
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .mandatoryGroundsWales(mandatoryGrounds)
+                .discretionaryGroundsWales(discretionaryGrounds)
+                .estateManagementGroundsWales(estateGrounds)
+                .build())
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
                     .mandatoryGroundsWales(secureMandatoryGrounds)
@@ -496,7 +511,9 @@ class ClaimGroundServiceTest {
                     .typeOfTenancyLicence(null)
                     .build()
             )
-            .mandatoryGroundsWales(mandatoryGrounds)
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .mandatoryGroundsWales(mandatoryGrounds)
+                .build())
             .groundsReasonsWales(reasons)
             .build();
 

@@ -17,10 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -441,26 +440,11 @@ public class PCSCase {
     )
     private VerticalYesNo arrearsJudgmentWanted;
 
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsMandatoryGrounds"
-    )
-    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds"
-    )
-    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions;
+    @JsonUnwrapped(prefix = "noRentArrears_")
+    private NoRentArrearsGroundsOptions noRentArrearsGroundsOptions;
 
     @JsonUnwrapped
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
-
-    private YesOrNo showNoRentArrearsGroundReasonPage;
 
     private YesOrNo showRentSectionPage;
 
@@ -526,21 +510,8 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "DiscretionaryGroundWales"
-    )
-    private Set<DiscretionaryGroundWales> discretionaryGroundsWales;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "MandatoryGroundWales"
-    )
-    private Set<MandatoryGroundWales> mandatoryGroundsWales;
+    @JsonUnwrapped(prefix = "groundsForPossessionWales_")
+    private GroundsForPossessionWales groundsForPossessionWales;
 
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
