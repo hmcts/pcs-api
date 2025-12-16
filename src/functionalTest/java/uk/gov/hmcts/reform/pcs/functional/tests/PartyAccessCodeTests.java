@@ -90,8 +90,7 @@ class PartyAccessCodeTests extends BaseApi {
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(400);
-        apiSteps.theResponseBodyContainsAString("title", "Bad Request");
-        apiSteps.theResponseBodyContainsAString("detail", "Invalid request content.");
+        apiSteps.theResponseBodyContainsAString("message", "Invalid data");
     }
 
     @Title("Party Access Code Tests - should return 401 when ServiceAuthorization header is invalid/missing")
