@@ -33,7 +33,7 @@ public class TenancyLicenceService {
             .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
             .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
 
-        buildRentDetailsSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
+        buildRentSection(pcsCase.getRentSection(), tenancyLicenceBuilder);
 
         tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
 
@@ -48,8 +48,8 @@ public class TenancyLicenceService {
         return tenancyLicenceBuilder.build();
     }
 
-    private void buildRentDetailsSection(RentSection rentDetails,
-                                         TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
+    private void buildRentSection(RentSection rentDetails,
+                                  TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         if (rentDetails != null) {
             tenancyLicenceBuilder
                     .rentAmount(penceToPounds(rentDetails.getCurrentRent()))
