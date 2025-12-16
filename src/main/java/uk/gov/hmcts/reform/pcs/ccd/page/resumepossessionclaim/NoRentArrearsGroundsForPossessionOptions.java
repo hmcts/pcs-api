@@ -29,7 +29,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
         pageBuilder
             .page("noRentArrearsGroundsForPossessionOptions", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("claimDueToRentArrears=\"No\" AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
+            .showCondition("claimDueToRentArrears=\"No\" AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                              + " AND legislativeCountry=\"England\""
             )
             .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)

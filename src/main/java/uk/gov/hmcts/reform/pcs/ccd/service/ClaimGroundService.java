@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
@@ -42,7 +43,10 @@ public class ClaimGroundService {
             return getWalesGroundsWithReason(pcsCase);
         }
 
-        TenancyLicenceType tenancyLicenceType = pcsCase.getTypeOfTenancyLicence();
+        TenancyLicenceDetails tenancyDetails =
+            pcsCase.getTenancyLicenceDetails();
+        TenancyLicenceType tenancyLicenceType = tenancyDetails != null
+            ? tenancyDetails.getTypeOfTenancyLicence() : null;
 
         if (tenancyLicenceType == null) {
             return Collections.emptyList();
@@ -192,7 +196,7 @@ public class ClaimGroundService {
     private List<ClaimGroundEntity> getIntroductoryDemotedOtherTenancyGroundsWithReason(
         PCSCase pcsCase) {
         Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds =
-            pcsCase.getIntroductoryDemotedOrOtherGrounds();
+            pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds();
 
         IntroductoryDemotedOtherGroundReason reasons = pcsCase.getIntroductoryDemotedOtherGroundReason();
 
@@ -208,7 +212,7 @@ public class ClaimGroundService {
                 };
 
                 String groundDescription = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
-                    ? pcsCase.getOtherGroundDescription() : null;
+                    ? pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription() : null;
 
                 entities.add(
                     ClaimGroundEntity.builder()
@@ -218,7 +222,8 @@ public class ClaimGroundService {
                         .build());
             }
         }
-        if (pcsCase.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO
+        if (pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession()
+            .getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO
             && isNotBlank(reasons.getNoGrounds())) {
 
             entities.add(

@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 
@@ -180,8 +181,13 @@ public class RentDetailsRoutingIntegrationTest {
      * Simulates the complete routing logic by applying the same logic as the midEvent handlers.
      */
     private YesOrNo simulateRoutingLogic(PCSCase caseData) {
+        TenancyLicenceDetails tenancyDetails =
+            caseData.getTenancyLicenceDetails();
+        TenancyLicenceType tenancyType = tenancyDetails != null
+            ? tenancyDetails.getTypeOfTenancyLicence() : null;
+
         // For Assured Tenancy - check if grounds 8, 10, or 11 are selected
-        if (TenancyLicenceType.ASSURED_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
+        if (TenancyLicenceType.ASSURED_TENANCY.equals(tenancyType)) {
             boolean hasRentRelatedGrounds =
                 (caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds() != null
                  && caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds()
@@ -195,8 +201,8 @@ public class RentDetailsRoutingIntegrationTest {
         }
 
         // For Secure/Flexible Tenancy - check if Ground 1 is selected and Rent Arrears is chosen
-        if (TenancyLicenceType.SECURE_TENANCY.equals(caseData.getTypeOfTenancyLicence())
-            || TenancyLicenceType.FLEXIBLE_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
+        if (TenancyLicenceType.SECURE_TENANCY.equals(tenancyType)
+            || TenancyLicenceType.FLEXIBLE_TENANCY.equals(tenancyType)) {
 
             boolean hasGround1 = caseData.getSecureOrFlexiblePossessionGrounds()
                 .getSecureOrFlexibleDiscretionaryGrounds() != null
