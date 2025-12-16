@@ -11,7 +11,6 @@ export * from '@data/page-data/reasonsForPossession.page.data';
 export * from '@data/page-data/detailsOfRentArrears.page.data';
 export * from '@data/page-data/noticeOfYourIntention.page.data';
 export * from '@data/page-data/borderPostcode.page.data';
-export * from '@data/page-data/rentArrearsPossessionGrounds.page.data';
 export * from '@data/page-data/rentArrearsOrBreachOfTenancy.page.data';
 export * from '@data/page-data/noticeDetails.page.data';
 export * from '@data/page-data/moneyJudgment.page.data';
