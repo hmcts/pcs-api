@@ -44,7 +44,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         }
     }
 
-    @Title("Party Access Code Tests - should return 200 when successfully link user with valid access code")
+    @Title("Party Access Code Endpoint Tests - should return 200 when successfully link user with valid access code")
     @Test
     void partyAccessCodeTest200Scenario() {
 
@@ -62,7 +62,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.checkStatusCode(200);
     }
 
-    @Title("Validate Access Code - should return 400 when access code is invalid")
+    @Title("Party Access Code Endpoint Tests - should return 400 when access code is invalid")
     @Test
     void partyAccessCodeTest400Scenario() {
 
@@ -79,7 +79,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.theResponseBodyContainsAString("message", "Invalid data");
     }
 
-    @Title("Party Access Code Tests - should return 401 when S2S is missing")
+    @Title("Party Access Code Endpoint Tests - should return 401 when S2S is missing")
     @Test
     void partyAccessCodeTest401MissingServiceToken() {
         String caseReference = testCase.getCaseReference().toString();
@@ -94,7 +94,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.checkStatusCode(401);
     }
 
-    @Title("Party Access Code Tests - should return 401 when S2S is invalid")
+    @Title("Party Access Code Endpoint Tests - should return 401 when S2S is invalid")
     @Test
     void partyAccessCodeTest401InvalidServiceToken() {
         String caseReference = testCase.getCaseReference().toString();
@@ -110,7 +110,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.checkStatusCode(401);
     }
 
-    @Title("Party Access Code Tests - return 403 Forbidden when the request uses an unauthorised service token")
+    @Title("Party Access Code Endpoint Tests - return 403 Forbidden when the request uses an unauthorised service token")
     @Test
     void partyAccessCodeTest403Scenario() {
         String caseReference = testCase.getCaseReference().toString();
@@ -126,7 +126,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.checkStatusCode(403);
     }
 
-    @Title("Party Access Code Tests - should return a 409 when request is duplicated")
+    @Title("Party Access Code Endpoint Tests - should return a 409 when request is duplicated")
     @Test
     void partyAccessCodeTest409Scenario() {
 
@@ -147,7 +147,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
     }
 
-    @Title("Party Access Code Tests - Should return 404 when invalid case reference is used.")
+    @Title("Party Access Code Endpoint Tests - Should return 404 when invalid case reference is used.")
     @Test
     void partyAccessCodeTest404Scenario() {
 
