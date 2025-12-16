@@ -30,13 +30,13 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                             Based on your previous answers, the amount per day that unpaid
                                             rent should be charged at is:
                                             <span class="govuk-body govuk-!-font-weight-bold">
-                                                ${claim_FormattedCalculatedDailyRentCharge}
+                                                ${rentDetails_FormattedCalculatedDailyCharge}
                                             </span>
                                         </p>
                                     </section>
                                     """)
                     .mandatory(RentSection::getRentPerDayCorrect)
-                    .mandatory(RentSection::getAmendedDailyRentCharge, "claim_RentPerDayCorrect=\"NO\"")
+                    .mandatory(RentSection::getAmendedDailyRentCharge, "rentDetails_RentPerDayCorrect=\"NO\"")
                 .done()
                 .label("dailyRentAmount-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

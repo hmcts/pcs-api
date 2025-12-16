@@ -33,8 +33,8 @@ public class RentDetails implements CcdPageConfiguration {
                 .complex(PCSCase::getRentSection)
                     .mandatory(RentSection::getCurrentRent)
                     .mandatory(RentSection::getRentFrequency)
-                    .mandatory(RentSection::getOtherRentFrequency, "claim_RentFrequency=\"OTHER\"")
-                    .mandatory(RentSection::getDailyRentCharge, "claim_RentFrequency=\"OTHER\"")
+                    .mandatory(RentSection::getOtherRentFrequency, "rentDetails_RentFrequency=\"OTHER\"")
+                    .mandatory(RentSection::getDailyRentCharge, "rentDetails_RentFrequency=\"OTHER\"")
                     .readonly(RentSection::getCalculatedDailyRentCharge, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
