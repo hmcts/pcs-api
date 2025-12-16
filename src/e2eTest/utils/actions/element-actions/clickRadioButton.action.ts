@@ -20,7 +20,7 @@ export class ClickRadioButtonAction implements IAction {
       await radioPattern1.waitFor({ state: 'visible', timeout: 1000 });
       await radioPattern1.click();
     } catch {
-      const radioPattern2 = page.locator(`fieldset:has(legend:has-text("${question}"))`)
+      const radioPattern2 = page.locator(`fieldset:has-text("${question}")`)
         .nth(idx)
         .locator('div.multiple-choice')
         .filter({ has: page.locator('label.form-label', { hasText: new RegExp(`^${option}$`, 'i') }) })
