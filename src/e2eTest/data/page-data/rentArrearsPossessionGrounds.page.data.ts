@@ -1,6 +1,7 @@
 export const rentArrearsPossessionGrounds = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Grounds for possession',
+  whatAreYourGroundsForQuestion: 'What are your grounds for possession?',
   seriousRentArrears: 'Serious rent arrears (ground 8)',
   rentArrears: 'Rent arrears (ground 10)',
   persistentDelayInPayingRent: 'Persistent delay in paying rent (ground 11)',
