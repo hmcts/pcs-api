@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.Set;
@@ -42,8 +43,12 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
             NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
 
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
-            .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(expectedMandatory)
+                    .discretionaryGrounds(expectedDiscretionary)
+                    .build()
+            )
             .build();
 
         // When: Mid event is executed
@@ -51,9 +56,9 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         // Then: Mandatory and Discretionary enum should exist in each set
         PCSCase updated = response.getData();
-        assertThat(updated.getNoRentArrearsMandatoryGroundsOptions())
+        assertThat(updated.getNoRentArrearsGroundsOptions().getMandatoryGrounds())
             .containsExactlyInAnyOrderElementsOf(expectedMandatory);
-        assertThat(updated.getNoRentArrearsDiscretionaryGroundsOptions())
+        assertThat(updated.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds())
             .containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
     }
 
@@ -70,8 +75,12 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
             NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE,
             NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
-            .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(expectedMandatory)
+                    .discretionaryGrounds(expectedDiscretionary)
+                    .build()
+            )
             .build();
 
         caseDetails.setData(caseData);
@@ -81,9 +90,9 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         // Then: Mandatory and Discretionary enum should exist in each set
         Set<NoRentArrearsMandatoryGrounds> selectedMandatory =
-            caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions();
+            caseDetails.getData().getNoRentArrearsGroundsOptions().getMandatoryGrounds();
         Set<NoRentArrearsDiscretionaryGrounds> selectedDiscretionary =
-            caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions();
+            caseDetails.getData().getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
 
         assertThat(selectedMandatory).containsExactlyInAnyOrderElementsOf(expectedMandatory);
         assertThat(selectedDiscretionary).containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
@@ -97,9 +106,12 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         YesOrNo expectedShowFlag) {
         // Given
         PCSCase caseData = PCSCase.builder()
-
-            .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
-            .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(mandatoryGrounds)
+                    .discretionaryGrounds(discretionaryGrounds)
+                    .build()
+            )
             .build();
 
         // When
@@ -107,7 +119,8 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         PCSCase updatedCaseData = response.getData();
 
-        assertThat(updatedCaseData.getShowNoRentArrearsGroundReasonPage()).isEqualTo(expectedShowFlag);
+        assertThat(updatedCaseData.getNoRentArrearsGroundsOptions().getShowGroundReasonPage())
+            .isEqualTo(expectedShowFlag);
     }
 
     private static Stream<Arguments> provideRentArrearsScenarios() {

@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.model;
 import lombok.Getter;
 
 @Getter
-public enum FeeTypes {
+public enum FeeType {
     CASE_ISSUE_FEE("caseIssueFee"),
     HEARING_FEE("hearingFee"),
     ENFORCEMENT_WARRANT_FEE("enforcementWarrantFee"),
@@ -11,7 +11,7 @@ public enum FeeTypes {
 
     private final String code;
 
-    FeeTypes(String code) {
+    FeeType(String code) {
         this.code = code;
     }
 }

@@ -92,7 +92,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -392,12 +392,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
 
-        FeeDetails feeDetails = feeService.getFee(FeeTypes.CASE_ISSUE_FEE.getCode());
+        FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
 
         String taskId = UUID.randomUUID().toString();
 
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeType(FeeTypes.CASE_ISSUE_FEE.getCode())
+            .feeType(FeeType.CASE_ISSUE_FEE.getCode())
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(caseReference))
