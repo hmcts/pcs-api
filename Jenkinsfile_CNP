@@ -118,7 +118,7 @@ def setPreviewEnvVars() {
 }
 
 def setAatEnvVars() {
-  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net"
   env.ENVIRONMENT= "aat"
   env.E2E_SUITE= "regression"
 }
