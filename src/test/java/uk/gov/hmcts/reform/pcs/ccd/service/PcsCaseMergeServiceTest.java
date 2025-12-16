@@ -9,21 +9,19 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -51,8 +49,6 @@ class PcsCaseMergeServiceTest {
     @Mock
     private TenancyLicenceService tenancyLicenceService;
     @Mock
-    private DefendantService defendantService;
-    @Mock
     private StatementOfTruthService statementOfTruthService;
     @Mock
     private UnderlesseeMortgageeService underlesseeMortgageService;
@@ -64,7 +60,6 @@ class PcsCaseMergeServiceTest {
         underTest = new PcsCaseMergeService(securityContextService,
                                             modelMapper,
                                             tenancyLicenceService,
-                                            defendantService,
                                             statementOfTruthService,
                                             underlesseeMortgageService);
     }
@@ -101,23 +96,6 @@ class PcsCaseMergeServiceTest {
 
         // Then
         verify(pcsCaseEntity).setPropertyAddress(updatedAddressEntity);
-    }
-
-    @Test
-    void shouldUpdateDefendantsWhenDefendant1NotNull() {
-        // Given
-        List<Defendant> expectedDefendants = List.of(mock(Defendant.class), mock(Defendant.class));
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        when(pcsCase.getDefendant1()).thenReturn(mock(DefendantDetails.class));
-        when(defendantService.buildDefendantsList(pcsCase)).thenReturn(expectedDefendants);
-
-        // When
-        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        // Then
-        verify(pcsCaseEntity).setDefendants(expectedDefendants);
     }
 
     @Test

@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcement;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -24,19 +23,19 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LanguageUsedPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.MoneyOwedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.NameAndAddressForEvictionPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.StatementOfTruthPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleWhoWillBeEvictedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PeopleYouWantToEvictPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LanguageUsedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RepaymentsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.StatementOfTruthPlaceHolder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
@@ -45,11 +44,11 @@ import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
 import java.util.List;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
@@ -121,7 +120,6 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         pcsCase.setFormattedPropertyAddress(addressFormatter
             .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
 
-        initializeDefendantData(pcsCase);
         populateDefendantSelectionList(pcsCase);
 
 
@@ -129,13 +127,6 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
         applyWritFeeAmount(pcsCase);
 
         return pcsCase;
-    }
-
-    private void initializeDefendantData(PCSCase caseData) {
-        var allDefendants = caseData.getAllDefendants();
-        if (!CollectionUtils.isEmpty(allDefendants)) {
-            caseData.setDefendant1(allDefendants.getFirst().getValue());
-        }
     }
 
     void populateDefendantSelectionList(PCSCase caseData) {

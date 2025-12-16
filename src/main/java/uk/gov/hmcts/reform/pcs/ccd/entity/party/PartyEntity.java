@@ -19,9 +19,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcType;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.dialect.PostgreSQLEnumJdbcType;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -83,7 +81,7 @@ public class PartyEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo nameOverridden;
 
-    @OneToOne(cascade = ALL) // TODO: Think about these
+    @OneToOne(cascade = ALL)
     private AddressEntity address;
 
     @Enumerated(EnumType.STRING)

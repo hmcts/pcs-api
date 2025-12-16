@@ -7,12 +7,12 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -30,7 +30,6 @@ public class PcsCaseMergeService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
-    private final DefendantService defendantService;
     private final StatementOfTruthService statementOfTruthService;
     private final UnderlesseeMortgageeService underlesseeMortgageService;
 
@@ -42,7 +41,6 @@ public class PcsCaseMergeService {
         }
 
         if (pcsCase.getUserPcqId() != null) {
-//            UUID pcqId = UUID.fromString(pcsCase.getUserPcqId());
             setPcqIdForCurrentUser(pcsCase.getUserPcqId(), pcsCaseEntity);
         }
 
@@ -58,10 +56,6 @@ public class PcsCaseMergeService {
         if (pcsCase.getClaimantType() != null && pcsCase.getClaimantType().getValueCode() != null) {
             ClaimantType claimantType = ClaimantType.valueOf(pcsCase.getClaimantType().getValueCode());
             pcsCaseEntity.setClaimantType(claimantType);
-        }
-
-        if (pcsCase.getDefendant1() != null) {
-            pcsCaseEntity.setDefendants(defendantService.buildDefendantsList(pcsCase));
         }
 
         if (pcsCase.getUnderlesseeOrMortgagee1() != null) {

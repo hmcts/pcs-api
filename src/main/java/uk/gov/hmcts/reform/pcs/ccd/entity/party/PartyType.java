@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.party;
 
-/***
- * Represents the type of party, which is not the same as the party's role in a given claim
+/**
+ * Represents the type of party, which is not the same as the party's role in a given claim.
  */
 public enum PartyType {
 

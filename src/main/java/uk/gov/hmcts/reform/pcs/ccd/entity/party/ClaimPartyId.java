@@ -1,15 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.party;
 
 import jakarta.persistence.Embeddable;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 
 @Embeddable
-@Getter
+@Data
 @EqualsAndHashCode
 public class ClaimPartyId implements Serializable {
 

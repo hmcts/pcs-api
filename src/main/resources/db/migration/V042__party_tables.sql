@@ -26,9 +26,11 @@ CREATE TABLE public.party (
 CREATE INDEX idx_idam_id ON public.party (idam_id);
 
 CREATE TABLE public.claim_party (
-  claim_id UUID REFERENCES public.claim (id),
-  party_id UUID REFERENCES public.party (id),
-  role     TEXT NOT NULL,
+  claim_id    UUID REFERENCES public.claim (id),
+  party_id    UUID REFERENCES public.party (id),
+  role        TEXT NOT NULL,
 
   PRIMARY KEY (claim_id, party_id)
 );
+
+ALTER TABLE public.pcs_case DROP COLUMN defendant_details;

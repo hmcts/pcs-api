@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service;
+package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -32,7 +32,6 @@ public class PartyService {
     private final PartyRepository partyRepository;
     private final ModelMapper modelMapper;
 
-    // TODO: Test and maybe refactor (HDPI-3220)
     public void createAllParties(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity, ClaimEntity claimEntity) {
         PartyEntity claimant = createClaimant(pcsCase);
         pcsCaseEntity.addParty(claimant);
@@ -56,9 +55,12 @@ public class PartyService {
     }
 
     private PartyEntity createClaimant(PCSCase pcsCase) {
-        PartyEntity claimantParty = new PartyEntity();
 
         ClaimantInformation claimantInformation = pcsCase.getClaimantInformation();
+        Objects.requireNonNull(claimantInformation, "Claimant must be provided");
+
+        PartyEntity claimantParty = new PartyEntity();
+
         VerticalYesNo claimantNameCorrect = claimantInformation.getIsClaimantNameCorrect();
         if (claimantNameCorrect == VerticalYesNo.YES) {
             claimantParty.setNameOverridden(YesOrNo.NO);
@@ -68,23 +70,23 @@ public class PartyService {
             claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
         }
 
-        ClaimantContactPreferences contactPreferencesDetails = pcsCase.getClaimantContactPreferences();
-        AddressUK contactAddress = contactPreferencesDetails.getOverriddenClaimantContactAddress() != null
-            ? contactPreferencesDetails.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+        ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
+        AddressUK contactAddress = claimantContactPreferences.getOverriddenClaimantContactAddress() != null
+            ? claimantContactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
 
         claimantParty.setAddress(mapAddress(contactAddress));
 
-        String contactEmail = isNotBlank(contactPreferencesDetails.getOverriddenClaimantContactEmail())
-            ? contactPreferencesDetails.getOverriddenClaimantContactEmail()
-            : contactPreferencesDetails.getClaimantContactEmail();
+        String contactEmail = isNotBlank(claimantContactPreferences.getOverriddenClaimantContactEmail())
+            ? claimantContactPreferences.getOverriddenClaimantContactEmail()
+            : claimantContactPreferences.getClaimantContactEmail();
 
         claimantParty.setEmailAddress(contactEmail);
 
-        VerticalYesNo phoneNumberProvided = contactPreferencesDetails.getClaimantProvidePhoneNumber();
+        VerticalYesNo phoneNumberProvided = claimantContactPreferences.getClaimantProvidePhoneNumber();
 
         claimantParty.setPhoneNumberProvided(phoneNumberProvided);
         if (phoneNumberProvided == VerticalYesNo.YES) {
-            claimantParty.setPhoneNumber(contactPreferencesDetails.getClaimantContactPhoneNumber());
+            claimantParty.setPhoneNumber(claimantContactPreferences.getClaimantContactPhoneNumber());
         }
 
         partyRepository.save(claimantParty);
@@ -94,7 +96,6 @@ public class PartyService {
 
     private List<PartyEntity> createDefendants(PCSCase pcsCase) {
         Objects.requireNonNull(pcsCase.getDefendant1(), "Defendant 1 must be provided");
-        createDefendant(pcsCase.getDefendant1());
 
         List<PartyEntity> allDefendants = new ArrayList<>();
         allDefendants.add(createDefendant(pcsCase.getDefendant1()));
@@ -105,6 +106,8 @@ public class PartyService {
                 .map(this::createDefendant)
                 .forEach(allDefendants::add);
         }
+
+        partyRepository.saveAll(allDefendants);
 
         return allDefendants;
     }
@@ -119,9 +122,9 @@ public class PartyService {
             defendantEntity.setLastName(defendantDetails.getLastName());
         }
 
-        boolean addressKnown = defendantDetails.getAddressKnown().toBoolean();
-        defendantEntity.setAddressKnown(nameKnown);
-        if (addressKnown) {
+        VerticalYesNo addressKnown = defendantDetails.getAddressKnown();
+        defendantEntity.setAddressKnown(addressKnown);
+        if (addressKnown == VerticalYesNo.YES) {
             VerticalYesNo addressSameAsPossession = defendantDetails.getAddressSameAsPossession();
             defendantEntity.setAddressSameAsProperty(addressSameAsPossession);
             if (addressSameAsPossession == VerticalYesNo.NO) {
@@ -133,15 +136,14 @@ public class PartyService {
     }
 
     private List<PartyEntity> createUnderlesseeOrMortgagees(PCSCase pcsCase) {
-        if (pcsCase.getHasUnderlesseeOrMortgagee() == VerticalYesNo.NO) {
+        if (pcsCase.getHasUnderlesseeOrMortgagee() != VerticalYesNo.YES) {
             return List.of();
         }
 
+        Objects.requireNonNull(pcsCase.getUnderlesseeOrMortgagee1(), "Underlessee or mortgagee 1 must be provided");
+
         List<PartyEntity> allUnderlesseeOrMortgagees = new ArrayList<>();
         allUnderlesseeOrMortgagees.add(createUnderlesseeOrMortgagee(pcsCase.getUnderlesseeOrMortgagee1()));
-
-        Objects.requireNonNull(pcsCase.getUnderlesseeOrMortgagee1(), "Underlessee or mortgagee 1 must be provided");
-        createUnderlesseeOrMortgagee(pcsCase.getUnderlesseeOrMortgagee1());
 
         if (pcsCase.getAddAdditionalUnderlesseeOrMortgagee() == VerticalYesNo.YES) {
             pcsCase.getAdditionalUnderlesseeOrMortgagee().stream()
@@ -149,6 +151,8 @@ public class PartyService {
                 .map(this::createUnderlesseeOrMortgagee)
                 .forEach(allUnderlesseeOrMortgagees::add);
         }
+
+        partyRepository.saveAll(allUnderlesseeOrMortgagees);
 
         return allUnderlesseeOrMortgagees;
     }
@@ -164,7 +168,7 @@ public class PartyService {
         }
 
         VerticalYesNo addressKnown = underlesseeMortgageeDetails.getAddressKnown();
-        underlesseeMortgageeEntity.setAddressKnown(nameKnown);
+        underlesseeMortgageeEntity.setAddressKnown(addressKnown);
         if (addressKnown == VerticalYesNo.YES) {
             underlesseeMortgageeEntity
                 .setAddress(mapAddress(underlesseeMortgageeDetails.getAddress()));
