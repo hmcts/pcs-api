@@ -17,5 +17,6 @@ export const cyaIgnoreQuestions = [
   'How much is the rent?',
   'The claimant believes that the facts stated in this claim form are true. I am authorised by the claimant to sign this statement.',
   'Do you know the underlessee or mortgagee’s correspondence address?',
-  'Do you know the underlessee or mortgagee’s name?'
+  'Do you know the underlessee or mortgagee’s name?',
+  'Do you want to resume your claim using your saved answers?'
 ];
