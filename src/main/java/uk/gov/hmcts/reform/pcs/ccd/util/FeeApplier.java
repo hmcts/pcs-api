@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 
 import java.math.BigDecimal;
@@ -20,19 +20,15 @@ public class FeeApplier {
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
 
-    public void applyFeeAmount(
-        PCSCase pcsCase,
-        FeeTypes feeType,
-        BiConsumer<PCSCase, String> setter
-    ) {
+    public void applyFeeAmount(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, String> setter) {
         try {
-            BigDecimal feeAmount = feeService.getFee(feeType.getCode()).getFeeAmount();
+            BigDecimal feeAmount = feeService.getFee(feeType).getFeeAmount();
             String formatted = feeFormatter.formatFee(feeAmount);
-
             setter.accept(pcsCase, formatted != null ? formatted : UNABLE_TO_RETRIEVE);
         } catch (Exception e) {
             log.error("Error while getting {} fee", feeType.name(), e);
             setter.accept(pcsCase, UNABLE_TO_RETRIEVE);
         }
     }
+
 }
