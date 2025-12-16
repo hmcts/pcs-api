@@ -16,11 +16,12 @@ import net.serenitybdd.rest.SerenityRest;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.testutils.CitizenUserGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator.UserType.citizenUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator.UserType.systemUser;
 
 public class ApiSteps {
 
@@ -30,7 +31,8 @@ public class ApiSteps {
     private static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
     private static String unauthorisedS2sToken;
-    private static String idamToken;
+    private static String systemUserIdamToken;
+    private static String citizenUserIdamToken;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -39,7 +41,8 @@ public class ApiSteps {
         pcsFrontendS2sToken = serviceAuthenticationGenerator.generate(TestConstants.PCS_FRONTEND);
         unauthorisedS2sToken = serviceAuthenticationGenerator.generate(TestConstants.CIVIL_SERVICE);
 
-        idamToken = IdamAuthenticationGenerator.generateToken();
+        systemUserIdamToken = IdamAuthenticationGenerator.generateToken(systemUser);
+        citizenUserIdamToken = IdamAuthenticationGenerator.generateToken(citizenUser);
 
         SerenityRest.given().baseUri(baseUrl);
     }
@@ -135,14 +138,19 @@ public class ApiSteps {
     }
 
     @Step("the request contains a valid IDAM token")
-    public void theRequestContainsValidIdamToken() {
-        request = request.header(TestConstants.AUTHORIZATION, "Bearer " + idamToken);
-    }
+    public void theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType user) {
 
-    @Step("the request contains a valid Citizen Idam Token")
-    public void theRequestContainsValidCitizenIdamToken() {
-        String citizenToken = CitizenUserGenerator.createCitizenUserAndGetToken();
-        request = request.header(TestConstants.AUTHORIZATION, "Bearer " + citizenToken);
+        String userToken = switch (user) {
+            case systemUser -> systemUserIdamToken;
+            case citizenUser -> citizenUserIdamToken;
+        };
+
+        //final Map<IdamAuthenticationGenerator.UserType, String> userToken = Map.of(
+        //    systemUser, systemUserIdamToken,
+        //    citizenUser, citizenUserIdamToken
+        //);
+
+        request = request.header(TestConstants.AUTHORIZATION, "Bearer " + userToken);
     }
 
     @Step("the request contains an expired IDAM token")
@@ -156,11 +164,7 @@ public class ApiSteps {
         request = request.queryParam(queryParam, value);
     }
 
-    @Step("the request contains the query parameter as list {0} as {1}")
-    public void theRequestContainsTheQueryParameterAsList(String queryParam, Map<String, String> expectedList) {
-        request = request.queryParam(queryParam, expectedList);
-    }
-
+    @Step("the request contains a request body")
     public void theRequestContainsBody(Object body) {
         request = request.body(body);
     }

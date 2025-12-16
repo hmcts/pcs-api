@@ -12,13 +12,13 @@ import java.util.UUID;
 import java.util.ArrayList;
 
 @Slf4j
-public class TestCaseGenerator {
+public class DummyCaseGenerator {
 
 
     private static final String baseUrl = System.getenv("TEST_URL");
 
     public String getCitizenIdamToken() {
-        return CitizenUserGenerator.createCitizenUserAndGetToken();
+        return IdamAuthenticationGenerator.generateToken(IdamAuthenticationGenerator.UserType.citizenUser);
     }
 
     public String getS2sToken() {
