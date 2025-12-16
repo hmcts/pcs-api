@@ -120,9 +120,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             pcsCase.setRentSection(RentSection.builder()
                 .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount() != null
                     ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
-                .rentFrequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
-                .otherRentFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
-                .dailyRentCharge(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
+                .frequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
+                .otherFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
+                .dailyCharge(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
                     ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
                 .build());
         }

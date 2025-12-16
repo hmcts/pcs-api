@@ -29,38 +29,38 @@ public class RentSection {
     @CCD(
         label = "How frequently should rent be paid?"
     )
-    private RentPaymentFrequency rentFrequency;
+    private RentPaymentFrequency frequency;
 
     @CCD(
         label = "Enter frequency",
         hint = "Please specify the frequency"
     )
-    private String otherRentFrequency;
+    private String otherFrequency;
 
     @CCD(
         label = "Enter the amount per day that unpaid rent should be charged at",
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String dailyRentCharge;
+    private String dailyCharge;
 
     @CCD(
         label = "Is the amount per day that unpaid rent should be charged at correct?"
     )
-    private VerticalYesNo rentPerDayCorrect;
+    private VerticalYesNo perDayCorrect;
 
     @CCD(
         label = "Enter amount per day that unpaid rent should be charged at",
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String amendedDailyRentCharge;
+    private String amendedDailyCharge;
 
     @CCD(
         typeOverride = FieldType.MoneyGBP
     )
-    private String calculatedDailyRentCharge;
+    private String calculatedDailyCharge;
 
     @CCD
-    private String formattedCalculatedDailyRentCharge;
+    private String formattedCalculatedDailyCharge;
 }

@@ -32,10 +32,10 @@ public class RentDetails implements CcdPageConfiguration {
                         """)
                 .complex(PCSCase::getRentSection)
                     .mandatory(RentSection::getCurrentRent)
-                    .mandatory(RentSection::getRentFrequency)
-                    .mandatory(RentSection::getOtherRentFrequency, "rentDetails_RentFrequency=\"OTHER\"")
-                    .mandatory(RentSection::getDailyRentCharge, "rentDetails_RentFrequency=\"OTHER\"")
-                    .readonly(RentSection::getCalculatedDailyRentCharge, NEVER_SHOW)
+                    .mandatory(RentSection::getFrequency)
+                    .mandatory(RentSection::getOtherFrequency, "rentDetails_Frequency=\"OTHER\"")
+                    .mandatory(RentSection::getDailyCharge, "rentDetails_Frequency=\"OTHER\"")
+                    .readonly(RentSection::getCalculatedDailyCharge, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -46,7 +46,7 @@ public class RentDetails implements CcdPageConfiguration {
 
         RentSection rentDetails = caseData.getRentSection();
 
-        RentPaymentFrequency rentFrequency = rentDetails.getRentFrequency();
+        RentPaymentFrequency rentFrequency = rentDetails.getFrequency();
         
         // Only process if rentFrequency is set
         if (rentFrequency != null) {
@@ -58,10 +58,10 @@ public class RentDetails implements CcdPageConfiguration {
                     String dailyAmountString = dailyAmountInPence.toPlainString();
 
                     // Set pence value for calculations/integrations
-                    rentDetails.setCalculatedDailyRentCharge(dailyAmountString);
+                    rentDetails.setCalculatedDailyCharge(dailyAmountString);
 
                     // Set formatted value for display
-                    rentDetails.setFormattedCalculatedDailyRentCharge(formatCurrency(dailyAmountString));
+                    rentDetails.setFormattedCalculatedDailyCharge(formatCurrency(dailyAmountString));
                 }
                 
                 // Set flag to NO - DailyRentAmount should show first

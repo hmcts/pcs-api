@@ -23,7 +23,7 @@ class RentDetailsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
                         .currentRent("7000") // £70.00 in pence
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
                 .build();
 
@@ -31,7 +31,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentSection().getCalculatedDailyRentCharge()).isEqualTo("1000"); // £10.00 per day
+        assertThat(caseData.getRentSection().getCalculatedDailyCharge()).isEqualTo("1000"); // £10.00 per day
     }
 
     @Test
@@ -40,7 +40,7 @@ class RentDetailsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
                         .currentRent("30000") // £300.00 in pence
-                        .rentFrequency(RentPaymentFrequency.MONTHLY)
+                        .frequency(RentPaymentFrequency.MONTHLY)
                         .build())
                 .build();
 
@@ -48,7 +48,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentSection().getCalculatedDailyRentCharge()).isEqualTo("986"); // £9.86 per day
+        assertThat(caseData.getRentSection().getCalculatedDailyCharge()).isEqualTo("986"); // £9.86 per day
     }
 
     @Test
@@ -56,8 +56,8 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
-                        .rentFrequency(RentPaymentFrequency.OTHER)
-                        .dailyRentCharge("1500") // £15.00 per day
+                        .frequency(RentPaymentFrequency.OTHER)
+                        .dailyCharge("1500") // £15.00 per day
                         .build())
                 .build();
 
@@ -65,7 +65,7 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentSection().getDailyRentCharge()).isEqualTo("1500");
+        assertThat(caseData.getRentSection().getDailyCharge()).isEqualTo("1500");
     }
 
     @Test
@@ -73,7 +73,7 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .currentRent("7000")
                         .build())
                 .build();
@@ -90,7 +90,7 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
-                        .rentFrequency(RentPaymentFrequency.OTHER)
+                        .frequency(RentPaymentFrequency.OTHER)
                         .build())
                 .build();
 
@@ -107,7 +107,7 @@ class RentDetailsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
                         .currentRent("14000") // £140.00 in pence
-                        .rentFrequency(RentPaymentFrequency.FORTNIGHTLY)
+                        .frequency(RentPaymentFrequency.FORTNIGHTLY)
                         .build())
                 .build();
 
@@ -115,8 +115,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentSection().getCalculatedDailyRentCharge()).isEqualTo("1000"); // £10.00 per day
-        assertThat(caseData.getRentSection().getFormattedCalculatedDailyRentCharge()).isEqualTo("£10.00");
+        assertThat(caseData.getRentSection().getCalculatedDailyCharge()).isEqualTo("1000"); // £10.00 per day
+        assertThat(caseData.getRentSection().getFormattedCalculatedDailyCharge()).isEqualTo("£10.00");
     }
 
     @Test
@@ -125,7 +125,7 @@ class RentDetailsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
                         .currentRent("7000") // £70.00 in pence
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
                 .build();
 
@@ -133,9 +133,9 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentSection().getCalculatedDailyRentCharge())
+        assertThat(caseData.getRentSection().getCalculatedDailyCharge())
             .isEqualTo("1000"); // £10.00 per day in pence
-        assertThat(caseData.getRentSection().getFormattedCalculatedDailyRentCharge())
+        assertThat(caseData.getRentSection().getFormattedCalculatedDailyCharge())
             .isEqualTo("£10.00");
     }
 
@@ -145,7 +145,7 @@ class RentDetailsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
                         .currentRent("7000")
-                        .rentFrequency(null)
+                        .frequency(null)
                         .build())
                 .build();
 
@@ -153,8 +153,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentSection().getCalculatedDailyRentCharge()).isNull();
-        assertThat(caseData.getRentSection().getFormattedCalculatedDailyRentCharge()).isNull();
+        assertThat(caseData.getRentSection().getCalculatedDailyCharge()).isNull();
+        assertThat(caseData.getRentSection().getFormattedCalculatedDailyCharge()).isNull();
         assertThat(caseData.getShowRentArrearsPage()).isNull();
     }
 
@@ -164,7 +164,7 @@ class RentDetailsTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
                         .currentRent("")
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
                 .build();
 
@@ -172,8 +172,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentSection().getCalculatedDailyRentCharge()).isNull();
-        assertThat(caseData.getRentSection().getFormattedCalculatedDailyRentCharge()).isNull();
+        assertThat(caseData.getRentSection().getCalculatedDailyCharge()).isNull();
+        assertThat(caseData.getRentSection().getFormattedCalculatedDailyCharge()).isNull();
         assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.NO);
     }
 
@@ -182,7 +182,7 @@ class RentDetailsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
-                        .rentFrequency(RentPaymentFrequency.MONTHLY)
+                        .frequency(RentPaymentFrequency.MONTHLY)
                         .currentRent("30000")
                         .build())
                 .build();

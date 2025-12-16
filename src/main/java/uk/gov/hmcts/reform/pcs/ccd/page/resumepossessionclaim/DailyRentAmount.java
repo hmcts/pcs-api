@@ -21,7 +21,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                 .readonly(PCSCase::getRentSectionPaymentFrequency, NEVER_SHOW)
                 .showCondition("showRentSectionPage=\"Yes\" AND rentSectionPaymentFrequency!=\"OTHER\"")
                 .complex(PCSCase::getRentSection)
-                    .readonly(RentSection::getFormattedCalculatedDailyRentCharge, NEVER_SHOW)
+                    .readonly(RentSection::getFormattedCalculatedDailyCharge, NEVER_SHOW)
                     .label("dailyRentAmount-content",
                             """
                                     ---
@@ -35,8 +35,8 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                         </p>
                                     </section>
                                     """)
-                    .mandatory(RentSection::getRentPerDayCorrect)
-                    .mandatory(RentSection::getAmendedDailyRentCharge, "rentDetails_RentPerDayCorrect=\"NO\"")
+                    .mandatory(RentSection::getPerDayCorrect)
+                    .mandatory(RentSection::getAmendedDailyCharge, "rentDetails_PerDayCorrect=\"NO\"")
                 .done()
                 .label("dailyRentAmount-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -47,7 +47,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
 
         RentSection rentDetails = caseData.getRentSection();
         // When user answers Yes/No on DailyRentAmount, set flag to show RentArrears
-        if (rentDetails != null && rentDetails.getRentPerDayCorrect() != null) {
+        if (rentDetails != null && rentDetails.getPerDayCorrect() != null) {
             caseData.setShowRentArrearsPage(YesOrNo.YES);
         }
 

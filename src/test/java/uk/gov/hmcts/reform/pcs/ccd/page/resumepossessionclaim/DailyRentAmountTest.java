@@ -22,7 +22,7 @@ class DailyRentAmountTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
-                        .rentPerDayCorrect(VerticalYesNo.YES)
+                        .perDayCorrect(VerticalYesNo.YES)
                         .build())
                 .build();
 
@@ -38,7 +38,7 @@ class DailyRentAmountTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentSection(RentSection.builder()
-                        .rentPerDayCorrect(null)
+                        .perDayCorrect(null)
                         .build())
                 .build();
 
