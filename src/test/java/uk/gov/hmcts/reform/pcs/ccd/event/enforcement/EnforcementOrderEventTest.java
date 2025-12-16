@@ -18,8 +18,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
@@ -37,7 +41,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -282,7 +286,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
     @ParameterizedTest
     @MethodSource("enforcementFeeScenarios")
-    void shouldSetFeeAmountOnStart(FeeTypes fee, Function<EnforcementOrder, String> feeGetter) {
+    void shouldSetFeeAmountOnStart(FeeType fee, Function<EnforcementOrder, String> feeGetter) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
@@ -297,7 +301,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
             return null;
         }).when(feeApplier).applyFeeAmount(
             any(PCSCase.class),
-            any(FeeTypes.class),
+            any(FeeType.class),
             any()
         );
 
@@ -311,7 +315,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
 
     @ParameterizedTest
     @MethodSource("enforcementFeeScenarios")
-    void shouldSetDefaultFeeWhenFeeServiceFails(FeeTypes fee, Function<EnforcementOrder, String> feeGetter) {
+    void shouldSetDefaultFeeWhenFeeServiceFails(FeeType fee, Function<EnforcementOrder, String> feeGetter) {
         // Given
         PCSCase caseData = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
         String expectedFeesMessage = FeeApplier.UNABLE_TO_RETRIEVE;
@@ -327,7 +331,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
             return null;
         }).when(feeApplier).applyFeeAmount(
             eq(caseData),
-            any(FeeTypes.class),
+            any(FeeType.class),
             any());
 
         // When
@@ -342,12 +346,12 @@ class EnforcementOrderEventTest extends BaseEventTest {
         return Stream.of(
             argumentSet(
                 "Writ fee",
-                FeeTypes.ENFORCEMENT_WRIT_FEE,
+                FeeType.ENFORCEMENT_WRIT_FEE,
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWritFeeAmount
             ),
             argumentSet(
                 "Warrant fee",
-                FeeTypes.ENFORCEMENT_WARRANT_FEE,
+                FeeType.ENFORCEMENT_WARRANT_FEE,
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount
             )
         );

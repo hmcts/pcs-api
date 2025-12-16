@@ -49,7 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
@@ -155,7 +155,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private void applyWarrantFeeAmount(PCSCase pcsCase) {
         feeApplier.applyFeeAmount(
             pcsCase,
-            FeeTypes.ENFORCEMENT_WARRANT_FEE,
+            FeeType.ENFORCEMENT_WARRANT_FEE,
             (caseData, fee) -> caseData.getEnforcementOrder().setWarrantFeeAmount(fee)
         );
     }
@@ -163,7 +163,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private void applyWritFeeAmount(PCSCase pcsCase) {
         feeApplier.applyFeeAmount(
             pcsCase,
-            FeeTypes.ENFORCEMENT_WRIT_FEE,
+            FeeType.ENFORCEMENT_WRIT_FEE,
             (caseData, fee) -> caseData.getEnforcementOrder().setWritFeeAmount(fee)
         );
     }
