@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.SchedulableInstance;
+import com.github.kagkarlsson.scheduler.task.TaskDescriptor;
+import com.github.kagkarlsson.scheduler.task.TaskInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -55,7 +57,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
@@ -99,6 +101,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.SCOTLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
@@ -132,7 +136,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock(strictness = LENIENT)
     private UserInfo userDetails;
     @Mock
-    private TenancyLicenceDetails tenancyLicenceDetails;
+    private TenancyLicenceDetailsPage tenancyLicenceDetails;
     @Mock
     private UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
     @Mock
@@ -290,9 +294,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedClaimantEmail);
-            assertThat(updatedCaseData.getContactPreferencesDetails().getClaimantContactEmail())
+            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail())
                 .isEqualTo(expectedClaimantEmail);
-            assertThat(updatedCaseData.getContactPreferencesDetails().getFormattedClaimantContactAddress())
+            assertThat(updatedCaseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
                 .isEqualTo("formatted claimant address");
         }
 
@@ -413,12 +417,17 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @DisplayName("Submit and pay callback tests")
     class SubmitAndPayTests {
 
+        private PcsCaseEntity pcsCaseEntity;
+
+        @BeforeEach
+        void setUp() {
+            pcsCaseEntity = mock(PcsCaseEntity.class);
+            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        }
+
         @Test
         void shouldMergeCaseData() {
             // Given
-            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
             stubPartyCreation();
             stubFeeService();
 
@@ -449,9 +458,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
             String claimantContactPhoneNumber = "01234 567890";
             String claimantCircumstances = "Some circumstances";
 
-            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
@@ -462,7 +468,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
                         .claimantName(claimantName)
                         .build()
                 )
-                .contactPreferencesDetails(
+                .claimantContactPreferences(
                     ClaimantContactPreferences.builder()
                         .claimantContactEmail(claimantContactEmail)
                         .claimantContactPhoneNumber(claimantContactPhoneNumber)
@@ -493,9 +499,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldCreateMainClaim() {
             // Given
-            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
             stubClaimCreation();
             stubFeeService();
             PartyEntity partyEntity = stubPartyCreation();
@@ -514,9 +517,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSchedulePaymentTask() {
             // Given
-            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
             stubPartyCreation();
             stubClaimCreation();
             final FeeDetails feeDetails = stubFeeService();
@@ -534,23 +534,14 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<SchedulableInstance<FeesAndPayTaskData>> schedulableInstanceCaptor
-                = ArgumentCaptor.forClass(SchedulableInstance.class);
-
-            verify(schedulerClient,atLeastOnce()).scheduleIfNotExists(schedulableInstanceCaptor.capture());
-
-            FeesAndPayTaskData taskData = schedulableInstanceCaptor.getValue().getTaskInstance().getData();
-
-            assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
+            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
+            assertThat(taskData.getFeeType()).isEqualTo(FeeTypes.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
         }
 
         @Test
         void shouldScheduleAccessCodeTask() {
             // Given
-            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
             stubPartyCreation();
             stubClaimCreation();
             stubFeeService();
@@ -563,20 +554,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            @SuppressWarnings("unchecked")
-            ArgumentCaptor<SchedulableInstance<AccessCodeTaskData>> captor
-                = ArgumentCaptor.forClass(SchedulableInstance.class);
-
-            verify(schedulerClient, atLeastOnce()).scheduleIfNotExists(captor.capture());
-
-            SchedulableInstance<AccessCodeTaskData> accessCodeTaskInstance = captor.getAllValues().stream()
-                .filter(s -> s.getTaskInstance().getData() instanceof AccessCodeTaskData)
-                .map(s -> (SchedulableInstance<AccessCodeTaskData>) s)
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("Access code task was not scheduled"));
-
-            AccessCodeTaskData taskData = (AccessCodeTaskData) accessCodeTaskInstance.getTaskInstance().getData();
-
+            AccessCodeTaskData taskData = getScheduledTaskData(ACCESS_CODE_TASK_DESCRIPTOR);
             assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
@@ -591,9 +569,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldReturnConfirmationScreen() {
             // Given
-            PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-
             stubPartyCreation();
             stubClaimCreation();
             stubFeeService();
@@ -612,29 +587,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
             assertThat(submitResponse.getConfirmationBody()).contains("You must pay the claim fee of " + formattedFee);
         }
 
-        @Test
-        void shouldGetClaimantInformation() {
-
-            PCSCase caseData = PCSCase.builder()
-                .claimantInformation(
-                    ClaimantInformation.builder()
-                        .claimantName("TestName")
-                        .organisationName("Org Ltd")
-                        .build()
-                )
-                .build();
-
-            // When
-            callSubmitHandler(caseData);
-
-            // Then
-            assertThat(caseData.getClaimantInformation().getClaimantName())
-                .isEqualTo("TestName");
-
-            assertThat(caseData.getClaimantInformation().getOrganisationName())
-                .isEqualTo("Org Ltd");
-        }
-
         private FeeDetails stubFeeService() {
             FeeDetails feeDetails = FeeDetails.builder().feeAmount(CLAIM_FEE_AMOUNT).build();
             when(feeService.getFee(FeeType.CASE_ISSUE_FEE))
@@ -649,6 +601,32 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .thenReturn(partyEntity);
 
             return partyEntity;
+        }
+
+        @SuppressWarnings("unchecked")
+        private <T> T getScheduledTaskData(TaskDescriptor<T> taskDescriptor) {
+            ArgumentCaptor<SchedulableInstance<?>> captor = ArgumentCaptor.forClass(SchedulableInstance.class);
+
+            verify(schedulerClient, atLeastOnce()).scheduleIfNotExists(captor.capture());
+            List<SchedulableInstance<?>> allTasks = captor.getAllValues();
+
+            String taskName = taskDescriptor.getTaskName();
+            Class<T> taskDataClass = taskDescriptor.getDataClass();
+
+            List<T> taskDataList = allTasks.stream()
+                .filter(t -> t.getTaskInstance().getTaskName().equals(taskName))
+                .map(SchedulableInstance::getTaskInstance)
+                .map(TaskInstance::getData)
+                .map(taskDataClass::cast)
+                .toList();
+
+            if (taskDataList.isEmpty()) {
+                throw new AssertionError("No scheduled task found with name " + taskName);
+            } else if (taskDataList.size() > 1) {
+                throw new AssertionError("Multiple scheduled tasks found with name " + taskName);
+            }
+
+            return taskDataList.getFirst();
         }
     }
 
