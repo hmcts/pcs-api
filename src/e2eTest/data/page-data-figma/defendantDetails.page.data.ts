@@ -21,7 +21,7 @@ export const defendantDetails = {
   iCantEnterAUkAddressHiddenLink: `I can’t enter a UK postcode`,
   enterAddressManuallyHiddenLink: `Enter address manually`,
   selectAnAddressHiddenSelectLabel : `Select an address`,
-  selectAnAddressHiddenSelectOption: `1 Second Avenue, London`,
+  selectAnAddressHiddenDynamicSelectOption: `1 Second Avenue, London`,
   buildingAndStreetHiddenTextLabel: `Building and Street`,
   buildingAndStreetHiddenTextInput: `1 Second Avenue`,
   addressLine2OptionalHiddenTextLabel: `Address line 2 (Optional)`,
