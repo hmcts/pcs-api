@@ -83,15 +83,16 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     void partyAccessCodeTest400ScenarioMissingAccessCode() {
 
         String caseReference = testCase.getCaseReference().toString();
+        Map<String, String> requestBody = Map.of("accessCode", "");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
-        apiSteps.theRequestContainsBody("");
+        apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(400);
-        apiSteps.theResponseBodyContainsAString("detail", "Failed to read request");
+        apiSteps.theResponseBodyContainsAString("message", "Invalid data");
     }
 
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is missing")
