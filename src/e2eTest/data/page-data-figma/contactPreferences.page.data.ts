@@ -6,6 +6,7 @@ export const contactPreferences = {
   notificationsSubHeader: `Notifications`,
   //youllReceiveUpdatesAboutParagraph: `You’ll receive updates about your claim by email. For example when a hearing has been scheduled or when a document is ready to view.`,
   yourMyHmctsRegisteredEmailSubHeader: `Your My HMCTS registered email address is:`,
+  //Following email address and address lines will be addressed  HDPI-3554
   //registeredEmailParagraph:`pcs-solicitor-automation@test.com`,
   doYouWantToUseQuestion: `Do you want to use this email address for notifications?`,
   noRadioOption: `No`,
