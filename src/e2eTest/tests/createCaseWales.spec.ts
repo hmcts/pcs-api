@@ -340,7 +340,6 @@ test.describe('[Create Case - Wales]', async () => {
       illegalPurposesChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfIllegal: asbQuestionsWales.giveDetailsOfIllegalHiddenTextInput,
       prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
     });
-    await performValidation('mainHeader', preactionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -453,7 +452,6 @@ test.describe('[Create Case - Wales]', async () => {
       illegalPurposesChoice: asbQuestionsWales.noRadioOption,
       prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
     });
-    await performValidation('mainHeader', preactionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {

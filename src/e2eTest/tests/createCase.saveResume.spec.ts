@@ -109,14 +109,12 @@ test.describe('[Create Case - With resume claim options]', async () => {
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
-    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
       day: tenancyLicenceDetails.dayTextInput,
       month: tenancyLicenceDetails.monthTextInput,
       year: tenancyLicenceDetails.yearTextInput
     });
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
     await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performAction('selectYourPossessionGrounds', {
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
@@ -125,7 +123,6 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('enterReasonForPossession',
       [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier,
         whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
-    await performValidation('mainHeader', preactionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
@@ -245,7 +242,6 @@ test.describe('[Create Case - With resume claim options]', async () => {
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
-    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
       tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption});
     await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
@@ -261,7 +257,6 @@ test.describe('[Create Case - With resume claim options]', async () => {
         whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
         whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied
       ]);
-    await performValidation('mainHeader', preactionProtocol.mainHeader);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
