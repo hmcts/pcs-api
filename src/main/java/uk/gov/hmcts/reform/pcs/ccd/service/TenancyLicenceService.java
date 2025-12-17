@@ -28,7 +28,7 @@ public class TenancyLicenceService {
             .supportingDocuments(ListValueUtils.unwrapListItems(
                     tenancyDetails != null ? tenancyDetails.getTenancyLicenceDocuments() : null))
             .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
-            .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+            .totalRentArrears(pcsCase.getTotalRentArrears())
             .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
             .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
             .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));

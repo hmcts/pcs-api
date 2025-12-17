@@ -26,16 +26,14 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
-
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -196,7 +194,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
     }
 
-    private static String poundsToPence(BigDecimal pounds) {
+    private static String poundsToPence(java.math.BigDecimal pounds) {
+        if (pounds == null) {
+            return null;
+        }
         return pounds.movePointRight(2).toPlainString();
     }
 }

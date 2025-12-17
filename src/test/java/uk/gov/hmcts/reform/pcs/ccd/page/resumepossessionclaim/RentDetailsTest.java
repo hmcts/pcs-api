@@ -48,7 +48,8 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("986"); // £9.86 per day
+        // £9.86 per day (30000 / 30.44)
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("985.55");
     }
 
     @Test
@@ -159,7 +160,7 @@ class RentDetailsTest extends BasePageTest {
     }
 
     @Test
-    void shouldSetShowRentArrearsPageWhenCurrentRentIsEmpty() {
+    void shouldSetShowRentArrearsPageWhenCurrentRentIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
                 .rentDetails(RentDetails.builder()
