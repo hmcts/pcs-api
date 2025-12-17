@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.feesandpay.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -17,6 +18,9 @@ public class FeesConfiguration {
 
     @Data
     public static class LookUpReferenceData {
+        private String service;
+        private String jurisdiction1;
+        private String jurisdiction2;
         private String channel;
         private String event;
         private String applicantType;
@@ -24,7 +28,8 @@ public class FeesConfiguration {
         private String keyword;
     }
 
-    public LookUpReferenceData getLookup(String key) {
-        return lookup.get(key);
+    public LookUpReferenceData getLookup(FeeType feeType) {
+        return lookup.get(feeType.getCode());
     }
+
 }
