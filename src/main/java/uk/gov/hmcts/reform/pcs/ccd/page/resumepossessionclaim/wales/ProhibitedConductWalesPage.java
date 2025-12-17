@@ -57,7 +57,7 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
         ProhibitedConductWales prohibitedConductWales =
             caseData.getProhibitedConductWales();
 
-        if (caseData.getProhibitedConductWales().getProhibitedConductWalesClaim() == VerticalYesNo.YES
+        if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES
             && prohibitedConductWales != null
             && prohibitedConductWales.getAgreedTermsOfPeriodicContractOption() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
@@ -68,9 +68,9 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
             );
         }
 
-        if (caseData.getProhibitedConductWales().getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
+        if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
-                caseData.getProhibitedConductWales().getProhibitedConductWalesWhyMakingClaim(),
+                prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim(),
                 "Why are you making this claim?",
                 TextAreaValidationService.SHORT_TEXT_LIMIT,
                 validationErrors
