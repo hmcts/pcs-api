@@ -39,8 +39,8 @@ export class ClickRadioButtonAction implements IAction {
 
     for (const getPattern of patterns) {
       const locator = getPattern();
-      if ((await locator.count()) === 1) {
-        await locator.click();
+      if ((await locator.count()) === 1 && await locator.isVisible()) {
+        await locator.check();
         return;
       }
     }
