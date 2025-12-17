@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -30,11 +31,13 @@ public class RentDetails implements CcdPageConfiguration {
                         """
                         ---
                         """)
-                .mandatory(PCSCase::getCurrentRent)
-                .mandatory(PCSCase::getRentFrequency)
-                .mandatory(PCSCase::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
-                .mandatory(PCSCase::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"")
-                .readonly(PCSCase::getCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                .complex(PCSCase::getRentDetails)
+                    .mandatory(RentDetailsSection::getCurrentRent)
+                    .mandatory(RentDetailsSection::getRentFrequency)
+                    .mandatory(RentDetailsSection::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
+                    .mandatory(RentDetailsSection::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"")
+                    .readonly(RentDetailsSection::getCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -42,21 +45,23 @@ public class RentDetails implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        RentPaymentFrequency rentFrequency = caseData.getRentFrequency();
+        RentDetailsSection rentDetails = caseData.getRentDetails();
+
+        RentPaymentFrequency rentFrequency = rentDetails.getRentFrequency();
 
         // Only process if rentFrequency is set
         if (rentFrequency != null) {
             if (rentFrequency != RentPaymentFrequency.OTHER) {
                 // Only calculate if currentRent is also set
-                if (caseData.getCurrentRent() != null) {
-                    BigDecimal rentAmount = caseData.getCurrentRent();
+                if (rentDetails.getCurrentRent() != null) {
+                    BigDecimal rentAmount = rentDetails.getCurrentRent();
                     BigDecimal dailyAmount = calculateDailyRent(rentAmount, rentFrequency);
 
                     // Set pence value for calculations/integrations
-                    caseData.setCalculatedDailyRentChargeAmount(dailyAmount);
+                    rentDetails.setCalculatedDailyRentChargeAmount(dailyAmount);
 
                     // Set formatted value for display
-                    caseData.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmount));
+                    rentDetails.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmount));
                 }
 
                 // Set flag to NO - DailyRentAmount should show first

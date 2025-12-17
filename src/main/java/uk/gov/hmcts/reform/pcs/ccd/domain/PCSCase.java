@@ -281,54 +281,9 @@ public class PCSCase {
     @CCD
     private PeriodicContractTermsWales periodicContractTermsWales;
 
-    @CCD(
-        label = "How much is the rent?",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    @JacksonMoneyGBP
-    private BigDecimal currentRent;
-
-    @CCD(
-        label = "How frequently should rent be paid?"
-    )
-    private RentPaymentFrequency rentFrequency;
-
-    @CCD(
-        label = "Enter frequency",
-        hint = "Please specify the frequency"
-    )
-    private String otherRentFrequency;
-
-    @CCD(
-        label = "Enter the amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    @JacksonMoneyGBP
-    private BigDecimal dailyRentChargeAmount;
-
-    @CCD(
-        label = "Is the amount per day that unpaid rent should be charged at correct?"
-    )
-    private VerticalYesNo rentPerDayCorrect;
-
-    @CCD(
-        label = "Enter amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    @JacksonMoneyGBP
-    private BigDecimal amendedDailyRentChargeAmount;
-
-    @CCD(
-        typeOverride = FieldType.MoneyGBP
-    )
-    @JacksonMoneyGBP
-    private BigDecimal calculatedDailyRentChargeAmount;
-
+    @JsonUnwrapped
     @CCD
-    private String formattedCalculatedDailyRentChargeAmount;
+    private RentDetailsSection rentDetails;
 
     @CCD(searchable = false)
     private YesOrNo showPostcodeNotAssignedToCourt;

@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -90,14 +91,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
-            .currentRent(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentAmount() : null)
-            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
-            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
-            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() : null)
+            .rentDetails(pcsCaseEntity.getTenancyLicence() != null
+                ? RentDetailsSection.builder()
+                    .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount())
+                    .rentFrequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
+                    .otherRentFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
+                    .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount())
+                    .build()
+                : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
