@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -17,12 +18,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
-public class TenancyLicenceDetails implements CcdPageConfiguration {
+public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
 
     private final Clock ukClock;
     private final TextAreaValidationService textAreaValidationService;
 
-    public TenancyLicenceDetails(@Qualifier("ukClock") Clock ukClock,
+    public TenancyLicenceDetailsPage(@Qualifier("ukClock") Clock ukClock,
                                 TextAreaValidationService textAreaValidationService) {
         this.ukClock = ukClock;
         this.textAreaValidationService = textAreaValidationService;
@@ -38,13 +39,22 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
                ---
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>
                """)
-            .mandatory(PCSCase::getTypeOfTenancyLicence)
-            .mandatory(PCSCase::getDetailsOfOtherTypeOfTenancyLicence, "typeOfTenancyLicence=\"OTHER\"")
+            .complex(PCSCase::getTenancyLicenceDetails)
+                .mandatory(
+                    TenancyLicenceDetails::getTypeOfTenancyLicence
+                )
+                .mandatory(
+                    TenancyLicenceDetails::getDetailsOfOtherTypeOfTenancyLicence,
+                    "tenancy_TypeOfTenancyLicence=\"OTHER\""
+                )
+            .done()
             .label("tenancyLicenceDetails-date-section", """
                ---
                <h2 class="govuk-heading-m">Tenancy or licence start date</h2>
                """)
-            .optional(PCSCase::getTenancyLicenceDate)
+            .complex(PCSCase::getTenancyLicenceDetails)
+                .optional(TenancyLicenceDetails::getTenancyLicenceDate)
+            .done()
             .label("tenancyLicenceDetails-doc-section", """
                ---
                <h2 class="govuk-heading-m">Upload tenancy or licence agreement</h2>
@@ -55,7 +65,9 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
                 included in the pack of documents a judge will receive before hearing the hearing (the bundle)
                 </p>
                """)
-            .optional(PCSCase::getTenancyLicenceDocuments)
+            .complex(PCSCase::getTenancyLicenceDetails)
+                .optional(TenancyLicenceDetails::getTenancyLicenceDocuments)
+            .done()
             .label("lineSeparator", "---")
             .label("tenancyLicenceDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -63,7 +75,8 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        LocalDate tenancyLicenceDate = details.getData().getTenancyLicenceDate();
+        LocalDate tenancyLicenceDate = caseData.getTenancyLicenceDetails() != null
+                ? caseData.getTenancyLicenceDetails().getTenancyLicenceDate() : null;
         LocalDate currentDate = LocalDate.now(ukClock);
 
         // Validate tenancy licence date
@@ -75,8 +88,9 @@ public class TenancyLicenceDetails implements CcdPageConfiguration {
 
         // Validate details of other type of tenancy licence character limit
         List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
-            caseData.getDetailsOfOtherTypeOfTenancyLicence(),
-            PCSCase.DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
+            caseData.getTenancyLicenceDetails() != null
+                    ? caseData.getTenancyLicenceDetails().getDetailsOfOtherTypeOfTenancyLicence() : null,
+            TenancyLicenceDetails.DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
             TextAreaValidationService.MEDIUM_TEXT_LIMIT
         );
 

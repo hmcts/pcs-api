@@ -40,7 +40,7 @@ class ContactPreferencesTest extends BasePageTest {
             .overriddenClaimantContactAddress(contactAddress)
             .build();
         PCSCase caseData = PCSCase.builder()
-            .contactPreferencesDetails(contactPreferences)
+            .claimantContactPreferences(contactPreferences)
             .build();
 
         List<String> expectedValidationErrors = List.of("error 1", "error 2");

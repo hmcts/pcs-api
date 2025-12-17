@@ -11,6 +11,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
@@ -70,14 +71,14 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightT
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyActs;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeEntitledToClaimRelief;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
@@ -91,7 +92,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeTypes;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
 import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -127,7 +128,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SelectClaimantType selectClaimantType;
     private final NoticeDetails noticeDetails;
     private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
-    private final TenancyLicenceDetails tenancyLicenceDetails;
+    private final TenancyLicenceDetailsPage tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
     private final NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
@@ -149,7 +150,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
-    private final GroundsForPossessionWales groundsForPossessionWales;
+    private final GroundsForPossessionWalesPage groundsForPossessionWales;
     private final SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     private final ReasonsForPossessionWales reasonsForPossessionWales;
     private final AddressFormatter addressFormatter;
@@ -238,7 +239,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
+
+        setUnsubmittedCaseDataFlag(caseReference, caseData);
 
         String userEmail = securityContextService.getCurrentUserDetails().getSub();
         // Fetch organisation name from rd-professional API
@@ -253,12 +257,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
-        ClaimantContactPreferences contactPreferences = caseData.getContactPreferencesDetails();
+        ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
         if (contactPreferences == null) {
             contactPreferences = ClaimantContactPreferences.builder().build();
         }
         contactPreferences.setClaimantContactEmail(userEmail);
-        caseData.setContactPreferencesDetails(contactPreferences);
+        caseData.setClaimantContactPreferences(contactPreferences);
         caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {
@@ -284,9 +288,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
 
-        caseData.setContactPreferencesDetails(contactPreferences);
+        caseData.setClaimantContactPreferences(contactPreferences);
 
         return caseData;
+    }
+
+    private void setUnsubmittedCaseDataFlag(long caseReference, PCSCase caseData) {
+        boolean hasUnsubmittedCaseData = draftCaseDataService
+            .hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
+
+        caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -375,18 +386,18 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private ClaimantContactPreferences getContactPreferences(PCSCase caseData) {
-        return Optional.ofNullable(caseData.getContactPreferencesDetails())
+        return Optional.ofNullable(caseData.getClaimantContactPreferences())
             .orElse(ClaimantContactPreferences.builder().build());
     }
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
 
-        FeeDetails feeDetails = feeService.getFee(FeeTypes.CASE_ISSUE_FEE.getCode());
+        FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
 
         String taskId = UUID.randomUUID().toString();
 
         FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
-            .feeType(FeeTypes.CASE_ISSUE_FEE.getCode())
+            .feeType(FeeType.CASE_ISSUE_FEE.getCode())
             .feeDetails(feeDetails)
             .ccdCaseNumber(String.valueOf(caseReference))
             .caseReference(String.valueOf(caseReference))
