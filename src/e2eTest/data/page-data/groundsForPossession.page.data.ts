@@ -5,6 +5,7 @@ export const groundsForPossession = {
   areYouClaimingPossessionBecauseOfRentArrearsQuestion: 'Are you claiming possession because of rent arrears?',
   doYouHaveGroundsForPossessionQuestion: 'Do you have grounds for possession?',
   enterYourGroundsForPossessionInput: 'These are the grounds for possession',
+  whatAreYourGroundsForQuestion: 'What are your grounds for possession?',
   rentArrears: 'Rent arrears',
   antiSocialBehaviour: 'Antisocial behaviour',
   breachOfTheTenancy: 'Breach of the tenancy',
