@@ -15,7 +15,7 @@ export const groundsForPossessionRentArrears = {
   discretionaryGroundTheParagraph: `Discretionary ground. The defendants are in any amount of arrears.`,
   persistentDelaySubHeader: `Persistent delay in paying rent (ground 11)`,
   discretionaryGroundPayingRentParagraph: `Discretionary ground. The defendants have persistently delayed paying their rent.`,
-  whatAreYourGroundsForPossessionParagraph: `What are your grounds for possession?`,
+  whatAreYourGroundsForPossessionQuestion: `What are your grounds for possession?`,
   selectAllThatApplyHintText: `Select all that apply`,
   seriousRentArrearsGroundCheckbox: `Serious rent arrears (ground 8)`,
   rentArrearsGround10Checkbox: `Rent arrears (ground 10)`,

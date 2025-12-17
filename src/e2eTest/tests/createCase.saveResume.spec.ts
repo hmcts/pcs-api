@@ -44,8 +44,6 @@ import{
   contactPreferences,
   tenancyLicenceDetails,
   groundsForPossession,
-  introductoryDemotedOrOtherGroundsForPossession,
-  groundsForPossessionRentArrears,
   preactionProtocol
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';

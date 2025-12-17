@@ -213,13 +213,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickRadioButton', {question:groundsForPossessionQuestion, option: possessionGrounds.groundsRadioInput});
     if (possessionGrounds.groundsRadioInput == groundsForPossession.yesRadioOption) {
       if (possessionGrounds.grounds) {
-        await performAction('check', {question: groundsForPossession.whatAreYourGroundsForQuestion, option: possessionGrounds.grounds});
+        await performAction('check', {question: groundsForPossessionRentArrears.whatAreYourGroundsForPossessionQuestion, option: possessionGrounds.grounds});
         if ((possessionGrounds.grounds as Array<string>).includes(introductoryDemotedOrOtherGroundsForPossession.otherHiddenCheckbox)) {
           await performAction('inputText', introductoryDemotedOrOtherGroundsForPossession.enterYourGroundsHiddenTextLabel, introductoryDemotedOrOtherGroundsForPossession.enterYourGroundsInput);
         }
       }
     }
-    await performAction('clickButton', groundsForPossession.continue);
+    await performAction('clickButton', groundsForPossession.continueButton);
   }
 
   private async selectPreActionProtocol(caseData: actionData) {
@@ -373,7 +373,7 @@ export class CreateCaseAction implements IAction {
   private async selectRentArrearsPossessionGround(rentArrearsPossession: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('check', {question: groundsForPossessionRentArrears.whatAreYourGroundsForQuestion, option: rentArrearsPossession.rentArrears});
+    await performAction('check', {question: groundsForPossessionRentArrears.whatAreYourGroundsForPossessionQuestion, option: rentArrearsPossession.rentArrears});
     await performAction('clickRadioButton', {question: groundsForPossessionRentArrears.doYouHaveAnyOtherAdditionalDynamicQuestion, option: rentArrearsPossession.otherGrounds});
     await performAction('clickButton', groundsForPossessionRentArrears.continueButton);
   }
