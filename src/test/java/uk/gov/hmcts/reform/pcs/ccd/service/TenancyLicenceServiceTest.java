@@ -146,10 +146,10 @@ class TenancyLicenceServiceTest {
         // Test rent amount field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetailsSection.builder()
-                        .currentRent("120000") // value in pence
+                        .currentRent(new BigDecimal("1200.00"))
                         .build()),
                 expected -> assertThat(expected.getRentAmount())
-                        .isEqualTo(new BigDecimal("1200.00")));// value in pounds
+                        .isEqualTo(new BigDecimal("1200.00")));
 
         // Test rent payment frequency field
         assertTenancyLicenceField(
@@ -168,7 +168,7 @@ class TenancyLicenceServiceTest {
         // Test daily rent charge amount field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetailsSection.builder()
-                        .dailyRentChargeAmount("4000")
+                        .dailyRentChargeAmount(new BigDecimal("40.00"))
                         .build()),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
 
@@ -178,7 +178,7 @@ class TenancyLicenceServiceTest {
                         .total("150000") // value in pence
                         .build()),
                 expected -> assertThat(expected.getTotalRentArrears())
-                        .isEqualTo(new BigDecimal("1500.00"))); // value in pounds
+                        .isEqualTo(new BigDecimal("1500.00")));
 
         // Test third party payment sources field
         assertTenancyLicenceField(
@@ -221,10 +221,10 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
-                .amendedDailyRentChargeAmount("5000")
-                .calculatedDailyRentChargeAmount("4000")
-                .dailyRentChargeAmount("3500")
-                .currentRent("120000")
+                .amendedDailyRentChargeAmount(new BigDecimal("50.00"))
+                .calculatedDailyRentChargeAmount(new BigDecimal("40.00"))
+                .dailyRentChargeAmount(new BigDecimal("35.00"))
+                .currentRent(new BigDecimal("1200.00"))
                 .rentFrequency(RentPaymentFrequency.MONTHLY)
                 .build());
         // When
@@ -239,9 +239,9 @@ class TenancyLicenceServiceTest {
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
                 .amendedDailyRentChargeAmount(null)
-                .calculatedDailyRentChargeAmount("4000")
-                .dailyRentChargeAmount("3500")
-                .currentRent("120000")
+                .calculatedDailyRentChargeAmount(new BigDecimal("40.00"))
+                .dailyRentChargeAmount(new BigDecimal("35.00"))
+                .currentRent(new BigDecimal("1200.00"))
                 .rentFrequency(RentPaymentFrequency.MONTHLY)
                 .build());
         // When
@@ -257,8 +257,8 @@ class TenancyLicenceServiceTest {
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetailsSection.builder()
                 .amendedDailyRentChargeAmount(null)
                 .calculatedDailyRentChargeAmount(null)
-                .dailyRentChargeAmount("3500")
-                .currentRent("120000")
+                .dailyRentChargeAmount(new BigDecimal("35.00"))
+                .currentRent(new BigDecimal("1200.00"))
                 .rentFrequency(RentPaymentFrequency.MONTHLY)
                 .build());
         // When

@@ -51,25 +51,22 @@ public class TenancyLicenceService {
                                          TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         if (rentDetails != null) {
             tenancyLicenceBuilder
-                    .rentAmount(penceToPounds(rentDetails.getCurrentRent()))
+                    .rentAmount(rentDetails.getCurrentRent())
                     .rentPaymentFrequency(rentDetails.getRentFrequency())
                     .otherRentFrequency(rentDetails.getOtherRentFrequency())
                     .dailyRentChargeAmount(getDailyRentAmount(rentDetails));
         }
     }
 
-    private BigDecimal getDailyRentAmount(RentDetailsSection rentDetails) {
-        if (rentDetails == null) {
-            return null;
-        }
-        String[] fieldValues = {
-            rentDetails.getAmendedDailyRentChargeAmount(),
-            rentDetails.getCalculatedDailyRentChargeAmount(),
-            rentDetails.getDailyRentChargeAmount()
+    private BigDecimal getDailyRentAmount(RentDetailsSection rentDetailsSection) {
+        BigDecimal[] fieldValues = {
+            rentDetailsSection.getAmendedDailyRentChargeAmount(),
+            rentDetailsSection.getCalculatedDailyRentChargeAmount(),
+            rentDetailsSection.getDailyRentChargeAmount()
         };
-        for (String value : fieldValues) {
-            if (value != null && !value.trim().isEmpty()) {
-                return penceToPounds(value);
+        for (BigDecimal value : fieldValues) {
+            if (value != null) {
+                return value;
             }
         }
         return null;
@@ -84,6 +81,13 @@ public class TenancyLicenceService {
                     .thirdPartyPaymentSources(rentArrears.getThirdPartyPaymentSources())
                     .thirdPartyPaymentSourceOther(rentArrears.getThirdPartyPaymentSourceOther());
         }
+    }
+
+    private BigDecimal penceToPounds(String penceString) {
+        if (penceString == null || penceString.isBlank()) {
+            return null;
+        }
+        return new BigDecimal(penceString).movePointLeft(2);
     }
 
     private void buildNoticeServedDetails(NoticeServedDetails noticeServedDetails,
@@ -149,10 +153,4 @@ public class TenancyLicenceService {
         }
     }
 
-    private static BigDecimal penceToPounds(String pence) {
-        if (pence == null || pence.trim().isEmpty()) {
-            return null;
-        }
-        return new BigDecimal(pence).movePointLeft(2);
-    }
 }
