@@ -53,9 +53,8 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        //apiSteps.theRequestContainsValidCitizenIdamToken();
         apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
