@@ -113,7 +113,7 @@ test.describe('[Create Case - England]', async () => {
       files: ['tenancyLicence.docx']
     });
      await performValidation('mainHeader', groundsForPossession.mainHeader);
-      await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yesRadioOption});
+     await performAction('selectGroundsForPossession',{groundsRadioInput: groundsForPossession.yesRadioOption});
      await performAction('selectRentArrearsPossessionGround', {
        rentArrears: [groundsForPossessionRentArrears.rentArrearsGround10Checkbox, groundsForPossessionRentArrears.seriousRentArrearsGroundCheckbox, groundsForPossessionRentArrears.persistentDelayInPayingRentCheckbox],
        otherGrounds: groundsForPossessionRentArrears.yesRadioOption
