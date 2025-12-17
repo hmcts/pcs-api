@@ -28,11 +28,11 @@ public class ApiSteps {
     private RequestSpecification request;
     private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
-    private static String pcsApiS2sToken;
+    public static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
     private static String unauthorisedS2sToken;
-    private static String systemUserIdamToken;
-    private static String citizenUserIdamToken;
+    public static String systemUserIdamToken;
+    public static String citizenUserIdamToken;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -144,11 +144,6 @@ public class ApiSteps {
             case systemUser -> systemUserIdamToken;
             case citizenUser -> citizenUserIdamToken;
         };
-
-        //final Map<IdamAuthenticationGenerator.UserType, String> userToken = Map.of(
-        //    systemUser, systemUserIdamToken,
-        //    citizenUser, citizenUserIdamToken
-        //);
 
         request = request.header(TestConstants.AUTHORIZATION, "Bearer " + userToken);
     }

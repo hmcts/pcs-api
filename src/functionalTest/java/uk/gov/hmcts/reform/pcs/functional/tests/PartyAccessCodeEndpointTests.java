@@ -110,7 +110,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.checkStatusCode(401);
     }
 
-    @Title("Party Access Code Endpoint Tests - return 403 Forbidden when the request uses an unauthorised service token")
+    @Title("Party Access Code Endpoint Tests - return 403 Forbidden when the request uses an unauthorised S2S token")
     @Test
     void partyAccessCodeTest403Scenario() {
         String caseReference = testCase.getCaseReference().toString();
