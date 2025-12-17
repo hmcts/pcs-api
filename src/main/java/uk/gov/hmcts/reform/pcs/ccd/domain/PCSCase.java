@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
@@ -26,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -338,7 +340,8 @@ public class PCSCase {
         min = 0,
         typeOverride = FieldType.MoneyGBP
     )
-    private String totalRentArrears;
+    @JacksonMoneyGBP
+    private BigDecimal totalRentArrears;
 
     @CCD(
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "
