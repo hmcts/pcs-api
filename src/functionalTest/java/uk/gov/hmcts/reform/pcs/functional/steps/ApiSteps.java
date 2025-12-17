@@ -16,12 +16,12 @@ import net.serenitybdd.rest.SerenityRest;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
+import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator.UserType.citizenUser;
-import static uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator.UserType.systemUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
 
 public class ApiSteps {
 
@@ -41,8 +41,8 @@ public class ApiSteps {
         pcsFrontendS2sToken = serviceAuthenticationGenerator.generate(TestConstants.PCS_FRONTEND);
         unauthorisedS2sToken = serviceAuthenticationGenerator.generate(TestConstants.CIVIL_SERVICE);
 
-        systemUserIdamToken = IdamAuthenticationGenerator.generateToken(systemUser);
-        citizenUserIdamToken = IdamAuthenticationGenerator.generateToken(citizenUser);
+        systemUserIdamToken = PcsIdamTokenClient.generateToken(systemUser);
+        citizenUserIdamToken = PcsIdamTokenClient.generateToken(citizenUser);
 
         SerenityRest.given().baseUri(baseUrl);
     }
@@ -138,7 +138,7 @@ public class ApiSteps {
     }
 
     @Step("the request contains a valid IDAM token")
-    public void theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType user) {
+    public void theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType user) {
 
         String userToken = switch (user) {
             case systemUser -> systemUserIdamToken;

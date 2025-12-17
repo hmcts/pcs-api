@@ -12,8 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
-import uk.gov.hmcts.reform.pcs.functional.testutils.DummyCaseGenerator;
-import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
+import uk.gov.hmcts.reform.pcs.functional.testutils.PcsCaseGenerator;
+import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 import java.util.Map;
 
@@ -25,7 +25,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Steps
     ApiSteps apiSteps;
 
-    private final DummyCaseGenerator caseGenerator = new DummyCaseGenerator();
+    private final PcsCaseGenerator caseGenerator = new PcsCaseGenerator();
     private CreateTestCaseResponse testCase;
     private Long testCaseReference;
 
@@ -53,7 +53,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
         apiSteps.theRequestContainsBody(requestBody);
@@ -70,7 +70,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
-        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
@@ -78,7 +78,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.theResponseBodyContainsAString("message", "Invalid data");
     }
 
-    @Title("Party Access Code Endpoint Tests - should return 400 when access code is missing")
+    @Title("Party Access Code Endpoint Tests - should return 400 when access code is empty")
     @Test
     void partyAccessCodeTest400ScenarioMissingAccessCode() {
 
@@ -86,11 +86,12 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
-        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
+        apiSteps.theRequestContainsBody("");
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(400);
-        apiSteps.theResponseBodyContainsAString("message", "Invalid data");
+        apiSteps.theResponseBodyContainsAString("title", "Bad Request");
     }
 
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is missing")
@@ -101,7 +102,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
@@ -117,7 +118,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsExpiredServiceToken();
-        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
@@ -132,7 +133,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsUnauthorisedServiceToken();
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
@@ -149,7 +150,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
@@ -170,7 +171,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
-        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", "9999");
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");

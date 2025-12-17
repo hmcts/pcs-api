@@ -14,7 +14,7 @@ import static uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps.citizenUserIdamT
 import static uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps.pcsApiS2sToken;
 
 @Slf4j
-public class DummyCaseGenerator {
+public class PcsCaseGenerator {
 
 
     private static final String baseUrl = System.getenv("TEST_URL");

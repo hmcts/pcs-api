@@ -13,7 +13,7 @@ import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.GRANT_TYPE;
 import static uk.gov.hmcts.reform.pcs.functional.config.AuthConfig.ENDPOINT;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
-public class IdamAuthenticationGenerator {
+public class PcsIdamTokenClient {
 
     private static final String BASE_URL = getEnv("IDAM_API_URL");
     private static final String IDAM_SYSTEM_USERNAME = getEnv("IDAM_SYSTEM_USERNAME");
