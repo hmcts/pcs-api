@@ -134,7 +134,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Resume claim</h2>
-                                             You’ve already answered some questions about this claim.
+                                             You've already answered some questions about this claim.
                                              <br>
                                              <br>
                                              <a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s"
