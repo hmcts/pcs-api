@@ -64,7 +64,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
     @Title("Party Access Code Endpoint Tests - should return 400 when access code is invalid")
     @Test
-    void partyAccessCodeTest400Scenario() {
+    void partyAccessCodeTest400ScenarioInvalidAccessCode() {
 
         String caseReference = testCase.getCaseReference().toString();
         Map<String, String> requestBody = Map.of("accessCode", "INVALIDCODE123");
@@ -74,6 +74,21 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
+        apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
+        apiSteps.checkStatusCode(400);
+        apiSteps.theResponseBodyContainsAString("message", "Invalid data");
+    }
+
+    @Title("Party Access Code Endpoint Tests - should return 400 when access code is missing")
+    @Test
+    void partyAccessCodeTest400ScenarioMissingAccessCode() {
+
+        String caseReference = testCase.getCaseReference().toString();
+
+        apiSteps.requestIsPreparedWithAppropriateValues();
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidIdamToken(IdamAuthenticationGenerator.UserType.citizenUser);
+        apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(400);
         apiSteps.theResponseBodyContainsAString("message", "Invalid data");
