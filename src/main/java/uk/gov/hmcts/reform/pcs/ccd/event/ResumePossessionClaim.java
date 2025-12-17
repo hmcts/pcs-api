@@ -80,7 +80,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocume
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
@@ -146,7 +146,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     private final OrganisationService organisationService;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
-    private final ProhibitedConductWales prohibitedConductWalesPage;
+    private final ProhibitedConductWalesPage prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
     private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;

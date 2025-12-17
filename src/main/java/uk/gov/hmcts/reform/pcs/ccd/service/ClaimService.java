@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -99,19 +100,25 @@ public class ClaimService {
     }
 
     private ProhibitedConductWales buildProhibitedConduct(PCSCase pcsCase) {
-        if (pcsCase.getProhibitedConductWalesClaim() == null) {
-            return null;
-        }
 
-        return ProhibitedConductWales.builder()
-            .claimForProhibitedConductContract(YesOrNoToBoolean.convert(pcsCase.getProhibitedConductWalesClaim()))
-            .agreedTermsOfPeriodicContract(pcsCase.getPeriodicContractTermsWales() != null
-                ? YesOrNoToBoolean.convert(pcsCase.getPeriodicContractTermsWales().getAgreedTermsOfPeriodicContract())
-                : null)
-            .detailsOfTerms(pcsCase.getPeriodicContractTermsWales() != null
-                ? pcsCase.getPeriodicContractTermsWales().getDetailsOfTerms() : null)
-            .whyMakingClaim(pcsCase.getProhibitedConductWalesWhyMakingClaim())
-            .build();
+        return Optional.ofNullable(pcsCase.getProhibitedConductWales())
+            .map(pc -> {
+                if (pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim() == null) {
+                    return null;
+                }
+
+                return ProhibitedConductWales.builder()
+                    .claimForProhibitedConductContract(pcsCase.getProhibitedConductWales()
+                                                           .getProhibitedConductWalesClaim())
+                    .agreedTermsOfPeriodicContract(pcsCase.getProhibitedConductWales() != null
+                                                       ? pcsCase.getProhibitedConductWales()
+                        .getAgreedTermsOfPeriodicContractOption() : null)
+                    .detailsOfTerms(pcsCase.getProhibitedConductWales() != null
+                                        ? pcsCase.getProhibitedConductWales().getDetailsOfTermsText() : null)
+                    .whyMakingClaim(pcsCase.getProhibitedConductWales().getProhibitedConductWalesWhyMakingClaim())
+                    .build();
+            })
+            .orElse(null);
     }
 
     private ASBQuestionsWales buildAsbQuestions(PCSCase pcsCase) {

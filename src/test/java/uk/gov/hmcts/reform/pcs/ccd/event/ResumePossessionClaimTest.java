@@ -64,7 +64,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotic
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
@@ -172,7 +172,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageePage;
     @Mock
-    private ProhibitedConductWales prohibitedConductWalesPage;
+    private ProhibitedConductWalesPage prohibitedConductWalesPage;
     @Mock
     private SchedulerClient schedulerClient;
     @Mock
