@@ -28,6 +28,12 @@ export class ClickRadioButtonAction implements IAction {
           .locator('div.multiple-choice')
           .filter({ has: page.locator('label.form-label').filter({ hasText: option }) })
           .locator('input[type="radio"]');
+      },
+      () => {
+        return page.locator(`legend:has-text("${question}")`)
+          .nth(idx)
+          .locator('..')
+          .getByRole('radio', { name: option as string, exact: true });
       }
     ];
 
