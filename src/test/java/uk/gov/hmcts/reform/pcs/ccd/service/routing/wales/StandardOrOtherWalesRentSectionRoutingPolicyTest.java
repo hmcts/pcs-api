@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.util.Set;
@@ -52,7 +53,9 @@ class StandardOrOtherWalesRentSectionRoutingPolicyTest {
     void shouldReturnYesWhenRentArrearsSection157IsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .discretionaryGroundsWales(Set.of(RENT_ARREARS_SECTION_157))
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .discretionaryGroundsWales(Set.of(RENT_ARREARS_SECTION_157))
+                .build())
             .build();
 
         // When
@@ -66,7 +69,9 @@ class StandardOrOtherWalesRentSectionRoutingPolicyTest {
     void shouldReturnNoWhenRentArrearsSection157IsNotSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .discretionaryGroundsWales(Set.of(ANTISOCIAL_BEHAVIOUR_SECTION_157))
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .discretionaryGroundsWales(Set.of(ANTISOCIAL_BEHAVIOUR_SECTION_157))
+                .build())
             .build();
 
         // When
@@ -80,7 +85,9 @@ class StandardOrOtherWalesRentSectionRoutingPolicyTest {
     void shouldReturnNoWhenDiscretionaryGroundsIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .discretionaryGroundsWales(null)
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .discretionaryGroundsWales(null)
+                .build())
             .build();
 
         // When
