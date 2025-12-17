@@ -48,8 +48,8 @@ public class DraftCaseDataService {
         return draftCaseDataRepository.existsByCaseReferenceAndEventId(caseReference, eventId);
     }
 
-    public void patchUnsubmittedCaseData(long caseReference, PCSCase caseDataPatch, EventId eventId) {
-        String patchCaseDataJson = writeCaseDataJson(caseDataPatch);
+    public <T> void patchUnsubmittedCaseData(long caseReference, T eventData, EventId eventId) {
+        String patchCaseDataJson = writeCaseDataJson(eventData);
         patchUnsubmittedCaseData(caseReference, eventId, patchCaseDataJson);
     }
 
@@ -93,7 +93,7 @@ public class DraftCaseDataService {
         }
     }
 
-    private String writeCaseDataJson(PCSCase caseData) {
+    private <T> String writeCaseDataJson(T caseData) {
         try {
             return objectMapper.writeValueAsString(caseData);
         } catch (JsonProcessingException e) {

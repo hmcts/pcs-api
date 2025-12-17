@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -61,9 +62,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = getSubmittedCase(caseReference);
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
-        pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
-        setMarkdownFields(pcsCase);
+        setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
 
         return pcsCase;
     }
@@ -93,16 +93,16 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
-            .currentRent(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
-            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
-            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
-            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
+            .rentDetails(pcsCaseEntity.getTenancyLicence() != null
+                ? RentDetailsSection.builder()
+                    .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount() != null
+                        ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
+                    .rentFrequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
+                    .otherRentFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
+                    .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
+                        ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
+                    .build()
+                : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
@@ -124,10 +124,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
-    private void setMarkdownFields(PCSCase pcsCase) {
+    private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
 
-        if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
+        if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Resume claim</h2>
                                              You’ve already answered some questions about this claim.
