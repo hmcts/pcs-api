@@ -9,18 +9,18 @@ CREATE TABLE public.party (
   case_id                  UUID REFERENCES public.pcs_case (id),
   type                     TEXT,
   idam_id                  UUID,
-  first_name               TEXT,
-  last_name                TEXT,
-  org_name                 TEXT,
+  first_name               VARCHAR(60),
+  last_name                VARCHAR(60),
+  org_name                 VARCHAR(60),
   name_known               YES_NO,
   name_overridden          YES_NO,
   address_id               UUID REFERENCES public.address (id),
   address_known            YES_NO,
   address_same_as_property YES_NO,
   phone_number_provided    YES_NO,
-  phone_number             TEXT,
-  email_address            TEXT,
-  pcq_id                   TEXT
+  phone_number             VARCHAR(60),
+  email_address            VARCHAR(60),
+  pcq_id                   VARCHAR(60)
 );
 
 CREATE INDEX idx_idam_id ON public.party (idam_id);
