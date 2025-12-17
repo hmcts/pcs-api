@@ -69,7 +69,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         Map<String, String> requestBody = Map.of("accessCode", "INVALIDCODE123");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
@@ -85,13 +85,13 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         String caseReference = testCase.getCaseReference().toString();
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody("");
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(400);
-        apiSteps.theResponseBodyContainsAString("title", "Bad Request");
+        apiSteps.theResponseBodyContainsAString("detail", "Failed to read request");
     }
 
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is missing")
@@ -151,7 +151,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
@@ -170,7 +170,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
+        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", "9999");
         apiSteps.theRequestContainsBody(requestBody);
