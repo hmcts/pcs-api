@@ -34,3 +34,4 @@ CREATE TABLE public.claim_party (
 );
 
 ALTER TABLE public.pcs_case DROP COLUMN defendant_details;
+ALTER TABLE public.pcs_case DROP COLUMN underlessee_mortgagee_details;

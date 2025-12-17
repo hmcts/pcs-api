@@ -10,25 +10,22 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -50,8 +47,6 @@ class PcsCaseMergeServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private StatementOfTruthService statementOfTruthService;
-    @Mock
-    private UnderlesseeMortgageeService underlesseeMortgageService;
 
     private PcsCaseMergeService underTest;
 
@@ -60,8 +55,7 @@ class PcsCaseMergeServiceTest {
         underTest = new PcsCaseMergeService(securityContextService,
                                             modelMapper,
                                             tenancyLicenceService,
-                                            statementOfTruthService,
-                                            underlesseeMortgageService);
+                                            statementOfTruthService);
     }
 
     @Test
@@ -263,33 +257,13 @@ class PcsCaseMergeServiceTest {
     }
 
     @Test
-    void shouldUpdateUnderlesseesOrMortgageesWhenUnderlesseeOrMortgagee1NotNull() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        List<UnderlesseeMortgagee> expectedUnderlesseesOrMortgagees = List.of(mock(UnderlesseeMortgagee.class),
-                                                                              mock(UnderlesseeMortgagee.class));
-
-        when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(mock(UnderlesseeMortgageeDetails.class));
-        when(underlesseeMortgageService.buildUnderlesseeMortgageeList(pcsCase))
-            .thenReturn(expectedUnderlesseesOrMortgagees);
-
-        // When
-        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        // Then
-        verify(pcsCaseEntity).setUnderlesseesMortgagees(expectedUnderlesseesOrMortgagees);
-    }
-
-    @Test
     void shouldMapWalesStandardContractGroundsToPossessionGrounds() {
         PCSCase pcsCase = mock(PCSCase.class);
 
         SecureContractGroundsForPossessionWales secureContractGroundsWales =
             mock(SecureContractGroundsForPossessionWales.class);
         when(pcsCase.getSecureContractGroundsForPossessionWales()).thenReturn(secureContractGroundsWales);
-        
+
 
         Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
                 DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
