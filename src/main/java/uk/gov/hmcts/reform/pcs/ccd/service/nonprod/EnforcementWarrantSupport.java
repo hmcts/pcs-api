@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 @Profile({"local", "dev", "preview"})
 public class EnforcementWarrantSupport extends MakeAClaimCaseGenerationSupport {
 
-    private static final String CASE_GENERATOR = "Create Enforcement Warrant Basic Case";
+    static final String CASE_GENERATOR = "Create Enforcement Warrant Basic Case";
     private final CaseSupportHelper caseSupportHelper;
     private final EnforcementOrderService enforcementOrderService;
     private final ObjectMapper objectMapper;

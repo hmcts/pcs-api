@@ -18,6 +18,10 @@ import java.util.List;
 @Profile({"local", "dev", "preview"})
 public class NonProdSupportService {
 
+    static final String NO_NON_PROD_CASE_SELECTED = "No non-prod case selected";
+    static final String TEST_CASE_CREATION_NOT_SUPPORTED = "Strategy not supported : ";
+    static final String FAILED_TO_GENERATE_TEST_CASE = "Failed to generate Test Case";
+
     private final CaseSupportHelper caseSupportHelper;
     private final List<TestCaseGenerationStrategy> testCaseGenerationStrategies;
 
@@ -25,7 +29,7 @@ public class NonProdSupportService {
         try {
             DynamicList dynamicList = fromEvent.getNonProdSupportFileList();
             if (dynamicList == null || dynamicList.getValue() == null) {
-                throw new IllegalArgumentException("No non-prod case selected");
+                throw new IllegalArgumentException(NO_NON_PROD_CASE_SELECTED);
             }
             DynamicListElement selectedValue = dynamicList.getValue();
             return testCaseGenerationStrategies.stream()
@@ -39,9 +43,10 @@ public class NonProdSupportService {
                         throw new SupportException(e);
                     }
                 })
-                .orElseThrow(() -> new RuntimeException("No strategy found for label: " + selectedValue.getLabel()));
+                .orElseThrow(() -> new RuntimeException(TEST_CASE_CREATION_NOT_SUPPORTED
+                                                            + selectedValue.getLabel()));
         } catch (Exception e) {
-            throw new SupportException("Failed to generate test PCSCase", e);
+            throw new SupportException(FAILED_TO_GENERATE_TEST_CASE, e);
         }
     }
 

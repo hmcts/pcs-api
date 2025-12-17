@@ -10,7 +10,6 @@ import org.springframework.util.StreamUtils;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
@@ -29,7 +28,7 @@ import java.util.UUID;
 @Profile({"local", "dev", "preview"})
 public class MakeAClaimCaseGenerationSupport implements TestCaseGenerationStrategy {
 
-    private static final String CASE_GENERATOR = "Create Make A Claim Basic Case";
+    static final String CASE_GENERATOR = "Create Make A Claim Basic Case";
 
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
@@ -50,7 +49,9 @@ public class MakeAClaimCaseGenerationSupport implements TestCaseGenerationStrate
             String jsonString = StreamUtils.copyToString(nonProdResource.getInputStream(), StandardCharsets.UTF_8);
             PCSCase pcsCase = draftCaseDataService.parseCaseDataJson(jsonString);
             pcsCaseService.createCase(caseReference, pcsCase.getPropertyAddress(), pcsCase.getLegislativeCountry());
+
             PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
             pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
             UserInfo userDetails = securityContextService.getCurrentUserDetails();
             PartyEntity claimantPartyEntity = claimantPartyFactory
@@ -60,14 +61,12 @@ public class MakeAClaimCaseGenerationSupport implements TestCaseGenerationStrate
                                                    userDetails.getSub()
                                                ));
             pcsCaseEntity.addParty(claimantPartyEntity);
-            ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
-            pcsCaseEntity.addClaim(claimEntity);
+            pcsCaseEntity.addClaim(claimService.createMainClaimEntity(pcsCase, claimantPartyEntity));
             pcsCaseService.save(pcsCaseEntity);
         } catch (IOException e) {
             throw new SupportException(e);
         }
     }
-
 
     @Override
     public boolean supports(String label) {
