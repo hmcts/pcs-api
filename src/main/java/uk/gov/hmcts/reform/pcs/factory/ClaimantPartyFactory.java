@@ -62,7 +62,7 @@ public class ClaimantPartyFactory {
     }
 
     private ClaimantContactPreferences getContactPreferences(PCSCase caseData) {
-        return Optional.ofNullable(caseData.getContactPreferencesDetails())
+        return Optional.ofNullable(caseData.getClaimantContactPreferences())
             .orElse(ClaimantContactPreferences.builder().build());
     }
 

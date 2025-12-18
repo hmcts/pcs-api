@@ -48,7 +48,7 @@ public class DraftCaseDataService {
         return draftCaseDataRepository.existsByCaseReferenceAndEventId(caseReference, eventId);
     }
 
-    public <T> void patchUnsubmittedCaseData(long caseReference, T eventData, EventId eventId) {
+    public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
         String patchCaseDataJson = writeCaseDataJson(eventData);
         patchUnsubmittedCaseData(caseReference, eventId, patchCaseDataJson);
     }
