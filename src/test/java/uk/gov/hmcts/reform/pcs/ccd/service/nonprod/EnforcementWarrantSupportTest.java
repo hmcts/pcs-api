@@ -148,8 +148,8 @@ class EnforcementWarrantSupportTest {
     @Test
     void shouldParseCaseDataJson() throws IOException {
         // Given
-        CaseSupportHelper caseSupportHelper = new CaseSupportHelper(null);
-        String fileName = caseSupportHelper.generateNameFromLabel(EnforcementWarrantSupport.CASE_GENERATOR) + ".json";
+        CaseSupportHelper helper = new CaseSupportHelper(null);
+        String fileName = helper.generateNameFromLabel(EnforcementWarrantSupport.CASE_GENERATOR) + ".json";
         String jsonContent = StreamUtils.copyToString(
             getClass().getClassLoader().getResourceAsStream("nonprod/" + fileName),
             StandardCharsets.UTF_8
