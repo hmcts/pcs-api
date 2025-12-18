@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
+import { actionRetries } from '../../../playwright.config';
 
 export class ClickRadioButtonAction implements IAction {
   async execute(page: Page, action: string, params: actionRecord): Promise<void> {
@@ -34,7 +35,7 @@ export class ClickRadioButtonAction implements IAction {
       await locator.click({ timeout: 2000, force: attempt > 1 });
       await new Promise(resolve => setTimeout(resolve, 500));
       radioIsChecked = await locator.isChecked();
-    } while (!radioIsChecked && attempt < 3);
+    } while (!radioIsChecked && attempt < actionRetries);
 
     return radioIsChecked;
   }
