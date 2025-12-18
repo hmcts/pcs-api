@@ -55,6 +55,7 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
     }
+    enableE2eTest()
   }
 
   onMaster() {
@@ -99,6 +100,10 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
+  }
+
+  afterAlways('e2eTest:preview') {
+    archiveE2eTestReports()
   }
 
   afterAlways('e2eTest:aat') {
