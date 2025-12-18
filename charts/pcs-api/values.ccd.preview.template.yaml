@@ -9,7 +9,7 @@ global:
   postgresSecret: postgres
   postgresHostname: "pcs-preview.postgres.database.azure.com"
   postgresUsername: "hmcts"
-  amRoleAssignmentServiceUrl: http://am-role-assignment-service-demo.service.core-compute-demo.internal
+  amRoleAssignmentServiceUrl: http://am-role-assignment-service-aat.service.core-compute-aat.internal
   databaseNamePrefix: "pr-${CHANGE_ID}-"
 
 java:
