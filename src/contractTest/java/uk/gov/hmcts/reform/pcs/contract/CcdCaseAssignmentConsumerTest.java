@@ -60,7 +60,7 @@ public class CcdCaseAssignmentConsumerTest {
             .headers("ServiceAuthorization", SERVICE_AUTH_TOKEN,
                      "Authorization", AUTHORIZATION_TOKEN,
                      "Content-Type", "application/json")
-            .body(createUserRoleRequestBody())
+            .body(caseRoleBody())
             .willRespondWith()
             .status(201)
             .toPact(V4Pact.class);
@@ -79,7 +79,7 @@ public class CcdCaseAssignmentConsumerTest {
                      "Authorization", AUTHORIZATION_TOKEN)
             .willRespondWith()
             .status(200)
-            .body(createUserRoleRequestBody())
+            .body(caseRoleBody())
             .toPact(V4Pact.class);
     }
 
@@ -114,7 +114,7 @@ public class CcdCaseAssignmentConsumerTest {
         assertThat(response.getCaseAssignmentUserRoles().get(0).getCaseDataId()).isEqualTo(CASE_ID);
     }
 
-    static PactDslJsonBody createUserRoleRequestBody() {
+    static PactDslJsonBody caseRoleBody() {
         return (PactDslJsonBody) new PactDslJsonBody()
             .minArrayLike("case_users", 1)  // must match CCD DTO field
             .stringType("case_id", CASE_ID)
