@@ -102,22 +102,15 @@ public class ClaimService {
     private ProhibitedConductWales buildProhibitedConduct(PCSCase pcsCase) {
 
         return Optional.ofNullable(pcsCase.getProhibitedConductWales())
-            .map(pc -> {
-                if (pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim() == null) {
-                    return null;
-                }
-
-                return ProhibitedConductWales.builder()
-                    .claimForProhibitedConductContract(pcsCase.getProhibitedConductWales()
-                                                           .getProhibitedConductWalesClaim())
-                    .agreedTermsOfPeriodicContract(pcsCase.getProhibitedConductWales() != null
-                                                       ? pcsCase.getProhibitedConductWales()
-                        .getAgreedTermsOfPeriodicContractOption() : null)
-                    .detailsOfTerms(pcsCase.getProhibitedConductWales() != null
-                                        ? pcsCase.getProhibitedConductWales().getDetailsOfTermsText() : null)
-                    .whyMakingClaim(pcsCase.getProhibitedConductWales().getProhibitedConductWalesWhyMakingClaim())
-                    .build();
-            })
+            .filter(pc -> pc.getProhibitedConductWalesClaim() != null)
+            .map(pc -> ProhibitedConductWales.builder()
+                .claimForProhibitedConductContract(pc.getProhibitedConductWalesClaim())
+                .agreedTermsOfPeriodicContract(pc.getAgreedTermsOfPeriodicContractOption())
+                .detailsOfTerms(pc.getDetailsOfTermsText())
+                .whyMakingClaim(pc.getProhibitedConductWalesWhyMakingClaim())
+                .build()
+            )
+            // If no prohibited conduct or claim flag is null
             .orElse(null);
     }
 
