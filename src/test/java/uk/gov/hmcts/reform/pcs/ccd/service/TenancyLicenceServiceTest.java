@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
@@ -103,7 +104,9 @@ class TenancyLicenceServiceTest {
                 .value(Document.builder().filename("rent_statement_feb.pdf").build()).build()
         );
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getRentStatementDocuments()).thenReturn(rentStatementDocs),
+            pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                    .statementDocuments(rentStatementDocs)
+                    .build()),
             expected -> {
                 assertThat(expected.getRentStatementDocuments()).hasSize(2);
                 assertThat(expected.getRentStatementDocuments())
@@ -171,15 +174,18 @@ class TenancyLicenceServiceTest {
 
         // Test total rent arrears field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn(new BigDecimal("1500.00")),
+                pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                        .total("150000") // value in pence
+                        .build()),
                 expected -> assertThat(expected.getTotalRentArrears())
                         .isEqualTo(new BigDecimal("1500.00")));
 
         // Test third party payment sources field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getThirdPartyPaymentSources()).thenReturn(
-                        Arrays.asList(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
-                                ThirdPartyPaymentSource.HOUSING_BENEFIT)),
+                pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                        .thirdPartyPaymentSources(Arrays.asList(ThirdPartyPaymentSource.UNIVERSAL_CREDIT,
+                                ThirdPartyPaymentSource.HOUSING_BENEFIT))
+                        .build()),
                 expected -> {
                     assertThat(expected.getThirdPartyPaymentSources()).hasSize(2);
                     assertThat(expected.getThirdPartyPaymentSources())
@@ -189,7 +195,9 @@ class TenancyLicenceServiceTest {
 
         // Test third party payment source other field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getThirdPartyPaymentSourceOther()).thenReturn("Custom payment method"),
+                pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                        .thirdPartyPaymentSourceOther("Custom payment method")
+                        .build()),
                 expected -> assertThat(expected.getThirdPartyPaymentSourceOther()).isEqualTo("Custom payment method"));
 
         // Test arrearsJudgmentWanted field updates
@@ -263,7 +271,9 @@ class TenancyLicenceServiceTest {
     void shouldHandleNullTotalRentArrears() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getTotalRentArrears()).thenReturn(null);
+        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .total(null)
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -274,7 +284,9 @@ class TenancyLicenceServiceTest {
     void shouldHandleEmptyThirdPartyPaymentSources() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getThirdPartyPaymentSources()).thenReturn(Collections.emptyList());
+        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .thirdPartyPaymentSources(Collections.emptyList())
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -285,7 +297,9 @@ class TenancyLicenceServiceTest {
     void shouldHandleNullThirdPartyPaymentSources() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getThirdPartyPaymentSources()).thenReturn(null);
+        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .thirdPartyPaymentSources(null)
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -296,7 +310,9 @@ class TenancyLicenceServiceTest {
     void shouldHandleNullThirdPartyPaymentSourceOther() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getThirdPartyPaymentSourceOther()).thenReturn(null);
+        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .thirdPartyPaymentSourceOther(null)
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -307,7 +323,9 @@ class TenancyLicenceServiceTest {
     void shouldHandleEmptyThirdPartyPaymentSourceOther() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getThirdPartyPaymentSourceOther()).thenReturn("");
+        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .thirdPartyPaymentSourceOther("")
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -318,7 +336,9 @@ class TenancyLicenceServiceTest {
     void shouldHandleNullRentStatementDocuments() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentStatementDocuments()).thenReturn(null);
+        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .statementDocuments(null)
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -329,7 +349,9 @@ class TenancyLicenceServiceTest {
     void shouldHandleEmptyRentStatementDocuments() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentStatementDocuments()).thenReturn(Collections.emptyList());
+        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+                .statementDocuments(Collections.emptyList())
+                .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
