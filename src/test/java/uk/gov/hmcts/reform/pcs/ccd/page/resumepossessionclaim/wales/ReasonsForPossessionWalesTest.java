@@ -15,6 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
@@ -63,7 +64,9 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
         YesOrNo expectedShowASBQuestionsPage) {
 
         PCSCase caseData = PCSCase.builder()
-            .discretionaryGroundsWales(discretionaryGrounds)
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .discretionaryGroundsWales(discretionaryGrounds)
+                .build())
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
                     .discretionaryGroundsWales(secureDiscretionaryGrounds)
