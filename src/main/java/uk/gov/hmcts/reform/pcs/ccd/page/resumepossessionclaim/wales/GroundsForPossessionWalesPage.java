@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ import java.util.Set;
 
 @Component
 @Slf4j
-public class GroundsForPossessionWales
+public class GroundsForPossessionWalesPage
     implements CcdPageConfiguration {
 
     @Override
@@ -41,13 +42,15 @@ public class GroundsForPossessionWales
                   </p>
                 """
             )
-            .optional(PCSCase::getDiscretionaryGroundsWales)
-            .optional(
-                PCSCase::getEstateManagementGroundsWales,
-                "discretionaryGroundsWales CONTAINS "
-                    + "\"ESTATE_MANAGEMENT_GROUNDS_SECTION_160\""
-            )
-            .optional(PCSCase::getMandatoryGroundsWales)
+            .complex(PCSCase::getGroundsForPossessionWales)
+                .optional(GroundsForPossessionWales::getDiscretionaryGroundsWales)
+                .optional(
+                    GroundsForPossessionWales::getEstateManagementGroundsWales,
+                    "groundsForPossessionWales_DiscretionaryGroundsWales CONTAINS "
+                        + "\"ESTATE_MANAGEMENT_GROUNDS_SECTION_160\""
+                )
+                .optional(GroundsForPossessionWales::getMandatoryGroundsWales)
+                .done()
             .label("groundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -58,9 +61,15 @@ public class GroundsForPossessionWales
         PCSCase data = details.getData();
         List<String> errors = new ArrayList<>();
 
-        Set<DiscretionaryGroundWales> discretionaryGrounds = data.getDiscretionaryGroundsWales();
-        var mandatoryGrounds = data.getMandatoryGroundsWales();
-        var estateManagementGrounds = data.getEstateManagementGroundsWales();
+        GroundsForPossessionWales grounds = data.getGroundsForPossessionWales();
+        if (grounds == null) {
+            grounds = GroundsForPossessionWales.builder().build();
+            data.setGroundsForPossessionWales(grounds);
+        }
+
+        Set<DiscretionaryGroundWales> discretionaryGrounds = grounds.getDiscretionaryGroundsWales();
+        var mandatoryGrounds = grounds.getMandatoryGroundsWales();
+        var estateManagementGrounds = grounds.getEstateManagementGroundsWales();
 
         boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
         boolean hasMandatory = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
