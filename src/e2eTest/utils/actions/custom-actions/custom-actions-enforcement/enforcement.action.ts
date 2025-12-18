@@ -437,7 +437,6 @@ export class EnforcementAction implements IAction {
     const setIfKeyExists = (key?: string, value?: string) => {
       if (key) fieldsMap.set(key, value ?? "");
     };
-
     setIfKeyExists(fields.question as string, fields.option as string);
     setIfKeyExists(fields.label as string, fields.input as string);
     setIfKeyExists(fields.confirm as string, fields.peopleOption as string);
