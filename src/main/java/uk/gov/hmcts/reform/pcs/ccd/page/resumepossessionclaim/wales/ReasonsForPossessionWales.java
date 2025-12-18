@@ -463,12 +463,12 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
     private List<String> validateWalesGrounds(GroundsReasonsWales grounds) {
         List<TextAreaValidationService.FieldValidation> allValidations = new ArrayList<>();
-        allValidations.addAll(List.of(buildStandardMandatoryGroundValidations(grounds)));
         allValidations.addAll(List.of(buildStandardDiscretionaryGroundValidations(grounds)));
         allValidations.addAll(List.of(buildEstateManagementGroundValidations(grounds)));
-        allValidations.addAll(List.of(buildSecureMandatoryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildStandardMandatoryGroundValidations(grounds)));
         allValidations.addAll(List.of(buildSecureDiscretionaryGroundValidations(grounds)));
         allValidations.addAll(List.of(buildSecureEstateManagementGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildSecureMandatoryGroundValidations(grounds)));
 
         return textAreaValidationService.validateMultipleTextAreas(
             allValidations.toArray(new TextAreaValidationService.FieldValidation[0])
