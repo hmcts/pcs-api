@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +34,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -91,6 +91,15 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         UserInfo userInfo = mock(UserInfo.class);
         when(userInfo.getUid()).thenReturn(USER_ID.toString());
         when(idamClient.getUserInfo(anyString())).thenReturn(userInfo);
+
+        // Mock CaseAssignmentApi for all tests
+        CaseAssignmentUserRolesResponse mockedResponse = CaseAssignmentUserRolesResponse.builder()
+                .statusMessage("Case-User-Role assignments created successfully").build();
+        when(caseAssignmentApi.addCaseUserRoles(
+                anyString(),
+                anyString(),
+                any(CaseAssignmentUserRolesRequest.class)
+        )).thenReturn(mockedResponse);
     }
 
     @Test
@@ -102,15 +111,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         String accessCode = createPartyAccessCode(caseEntity, caseEntity.getDefendants().get(0).getPartyId());
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
-
-        CaseAssignmentUserRolesResponse mockedResponse = CaseAssignmentUserRolesResponse.builder()
-                 .statusMessage("Case-User-Role assignments created successfully").build();
-
-        Mockito.when(caseAssignmentApi.addCaseUserRoles(
-            Mockito.anyString(),
-            Mockito.anyString(),
-            Mockito.any(CaseAssignmentUserRolesRequest.class)
-            )).thenReturn(mockedResponse);
 
         // When/Then
         mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
