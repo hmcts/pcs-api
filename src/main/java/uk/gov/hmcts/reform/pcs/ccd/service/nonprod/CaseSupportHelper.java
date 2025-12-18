@@ -47,8 +47,7 @@ public class CaseSupportHelper {
     }
 
     private String generateLabelFromFilename(String filename) {
-        return filename.replace("-", " ")
-            .replace(JSON, "");
+        return filename.replace("-", " ").replace(JSON, "");
     }
 
     public Resource getNonProdResource(String label) throws IOException {

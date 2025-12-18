@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
+import org.springframework.util.StreamUtils;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
@@ -24,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.factory.ClaimantPartyFactory;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -141,6 +143,23 @@ class EnforcementWarrantSupportTest {
 
         // Then
         assertThat(result).isFalse();
+    }
+
+    @Test
+    void shouldParseCaseDataJson() throws IOException {
+        // Given
+        CaseSupportHelper caseSupportHelper = new CaseSupportHelper(null);
+        String fileName = caseSupportHelper.generateNameFromLabel(EnforcementWarrantSupport.CASE_GENERATOR) + ".json";
+        String jsonContent = StreamUtils.copyToString(
+            getClass().getClassLoader().getResourceAsStream("nonprod/" + fileName),
+            StandardCharsets.UTF_8
+        );
+
+        // When
+        EnforcementOrder result = underTest.parseCaseDataJson(jsonContent);
+
+        // Then
+        assertThat(result).isNotNull();
     }
 
 }

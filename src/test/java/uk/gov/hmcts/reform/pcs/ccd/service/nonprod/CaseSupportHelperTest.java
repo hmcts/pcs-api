@@ -195,6 +195,18 @@ class CaseSupportHelperTest {
         assertThat(profileAnnotation.value()).containsExactlyInAnyOrder("local", "dev", "preview");
     }
 
+    @Test
+    void shouldGenerateNameFromLabel() {
+        // Given
+        String label = "test file name";
+
+        // When
+        String result = underTest.generateNameFromLabel(label);
+
+        // Then
+        assertThat(result).isEqualTo("test-file-name");
+    }
+
 }
 
 
