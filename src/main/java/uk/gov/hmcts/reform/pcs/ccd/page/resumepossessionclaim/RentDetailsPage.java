@@ -117,7 +117,16 @@ public class RentDetailsPage implements CcdPageConfiguration {
         }
         // Remove trailing zeros and decimal point if not needed
         if (value.contains(".")) {
-            value = value.replaceAll("0*$", "").replaceAll("\\.$", "");
+            int endIndex = value.length();
+            // Remove trailing zeros
+            while (endIndex > 0 && value.charAt(endIndex - 1) == '0') {
+                endIndex--;
+            }
+            // Remove trailing decimal point if present
+            if (endIndex > 0 && value.charAt(endIndex - 1) == '.') {
+                endIndex--;
+            }
+            value = value.substring(0, endIndex);
         }
         return value;
     }
