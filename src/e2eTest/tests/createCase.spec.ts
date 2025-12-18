@@ -143,7 +143,7 @@ test.describe('[Create Case - England]', async () => {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',
@@ -263,7 +263,7 @@ test.describe('[Create Case - England]', async () => {
       howDidYouServeNotice: noticeDetails.byFirstClassPost,
       day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',
@@ -486,7 +486,7 @@ test.describe('[Create Case - England]', async () => {
       explanation: noticeDetails.byPersonallyHandlingExplanationInput,
       day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+    await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',
@@ -1117,7 +1117,7 @@ test.describe('[Create Case - England]', async () => {
       day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Weekly', rentAmount: '800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',

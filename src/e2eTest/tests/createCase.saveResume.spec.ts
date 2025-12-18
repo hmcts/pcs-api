@@ -144,7 +144,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Weekly', rentAmount: '800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',

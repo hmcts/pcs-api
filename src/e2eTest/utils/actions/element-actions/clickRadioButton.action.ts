@@ -20,13 +20,13 @@ export class ClickRadioButtonAction implements IAction {
       await radioPattern1.waitFor({ state: 'visible', timeout: 1000 });
       await radioPattern1.click();
     } catch {
-      const radioPattern2 = page.locator(`fieldset:has-text("${question}")`)
-        .nth(idx)
-        .locator('div.multiple-choice')
-        .filter({ has: page.locator('label.form-label', { hasText: new RegExp(`^${option}$`, 'i') }) })
-        .locator('input[type="radio"]');
-      await radioPattern2.isVisible();
-      await radioPattern2.click();
+      const radioPattern2 = page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
+      const count = await radioPattern2.count();
+      if (count > 1) {
+        await radioPattern2.nth(count - 1).click();
+      } else {
+        await radioPattern2.click();
+      }
     }
   }
 }
