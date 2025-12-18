@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -175,6 +175,8 @@ class DefendantServiceTest {
         @DisplayName("Should build list with single defendant")
         void shouldBuildListWithSingleDefendant() {
             // Given
+            String defendant1Id = UUID.randomUUID().toString();
+
             Party defendantDetails = Party.builder()
                 .nameKnown(VerticalYesNo.YES)
                 .firstName("John")
@@ -182,7 +184,7 @@ class DefendantServiceTest {
                 .build();
 
             List<ListValue<Party>> allDefendants = List.of(
-                ListValue.<Party>builder().value(defendantDetails).build()
+                ListValue.<Party>builder().id(defendant1Id).value(defendantDetails).build()
             );
 
             // When
@@ -190,9 +192,7 @@ class DefendantServiceTest {
 
             // Then
             assertThat(result).hasSize(1);
-            assertThat(result.getFirst().getCode()).matches(Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-                Pattern.CASE_INSENSITIVE));
+            assertThat(result.getFirst().getCode()).isEqualTo(defendant1Id);
             assertThat(result.getFirst().getLabel()).isEqualTo("John Doe");
         }
 
@@ -200,6 +200,10 @@ class DefendantServiceTest {
         @DisplayName("Should build list with multiple defendants")
         void shouldBuildListWithMultipleDefendants() {
             // Given
+            String defendant1Id = UUID.randomUUID().toString();
+            String defendant2Id = UUID.randomUUID().toString();
+            String defendant3Id = UUID.randomUUID().toString();
+
             Party defendant1 = Party.builder()
                 .nameKnown(VerticalYesNo.YES)
                 .firstName("John")
@@ -217,9 +221,9 @@ class DefendantServiceTest {
                 .build();
 
             List<ListValue<Party>> allDefendants = List.of(
-                ListValue.<Party>builder().value(defendant1).build(),
-                ListValue.<Party>builder().value(defendant2).build(),
-                ListValue.<Party>builder().value(defendant3).build()
+                ListValue.<Party>builder().id(defendant1Id).value(defendant1).build(),
+                ListValue.<Party>builder().id(defendant2Id).value(defendant2).build(),
+                ListValue.<Party>builder().id(defendant3Id).value(defendant3).build()
             );
 
             // When
@@ -227,24 +231,24 @@ class DefendantServiceTest {
 
             // Then
             assertThat(result).hasSize(3);
-            Pattern uuidPattern = Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-                Pattern.CASE_INSENSITIVE);
-            assertThat(result.get(0).getCode()).matches(uuidPattern);
+            assertThat(result.get(0).getCode()).isEqualTo(defendant1Id);
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
-            assertThat(result.get(1).getCode()).matches(uuidPattern);
+            assertThat(result.get(1).getCode()).isEqualTo(defendant2Id);
             assertThat(result.get(1).getLabel()).isEqualTo("Jane Smith");
-            assertThat(result.get(2).getCode()).matches(uuidPattern);
+            assertThat(result.get(2).getCode()).isEqualTo(defendant3Id);
             assertThat(result.get(2).getLabel()).isEqualTo("Name not known");
-            // Ensure all codes are unique
-            assertThat(result.stream().map(DynamicStringListElement::getCode).distinct())
-                .hasSize(3);
         }
 
         @Test
         @DisplayName("Should handle mixed scenarios with various name combinations")
         void shouldHandleMixedScenariosWithVariousNameCombinations() {
             // Given
+            String defendant1Id = UUID.randomUUID().toString();
+            String defendant2Id = UUID.randomUUID().toString();
+            String defendant3Id = UUID.randomUUID().toString();
+            String defendant4Id = UUID.randomUUID().toString();
+            String defendant5Id = UUID.randomUUID().toString();
+
             Party defendant1 = Party.builder()
                 .nameKnown(VerticalYesNo.YES)
                 .firstName("John")
@@ -274,11 +278,11 @@ class DefendantServiceTest {
                 .build();
 
             List<ListValue<Party>> allDefendants = List.of(
-                ListValue.<Party>builder().value(defendant1).build(),
-                ListValue.<Party>builder().value(defendant2).build(),
-                ListValue.<Party>builder().value(defendant3).build(),
-                ListValue.<Party>builder().value(defendant4).build(),
-                ListValue.<Party>builder().value(defendant5).build()
+                ListValue.<Party>builder().id(defendant1Id).value(defendant1).build(),
+                ListValue.<Party>builder().id(defendant2Id).value(defendant2).build(),
+                ListValue.<Party>builder().id(defendant3Id).value(defendant3).build(),
+                ListValue.<Party>builder().id(defendant4Id).value(defendant4).build(),
+                ListValue.<Party>builder().id(defendant5Id).value(defendant5).build()
             );
 
             // When
@@ -286,30 +290,26 @@ class DefendantServiceTest {
 
             // Then
             assertThat(result).hasSize(5);
-            Pattern uuidPattern = Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-                Pattern.CASE_INSENSITIVE);
-            assertThat(result.get(0).getCode()).matches(uuidPattern);
+            assertThat(result.get(0).getCode()).isEqualTo(defendant1Id);
             assertThat(result.get(0).getLabel()).isEqualTo("John Doe");
-            assertThat(result.get(1).getCode()).matches(uuidPattern);
+            assertThat(result.get(1).getCode()).isEqualTo(defendant2Id);
             assertThat(result.get(1).getLabel()).isEqualTo("Jane");
-            assertThat(result.get(2).getCode()).matches(uuidPattern);
+            assertThat(result.get(2).getCode()).isEqualTo(defendant3Id);
             assertThat(result.get(2).getLabel()).isEqualTo("Smith");
-            assertThat(result.get(3).getCode()).matches(uuidPattern);
+            assertThat(result.get(3).getCode()).isEqualTo(defendant4Id);
             assertThat(result.get(3).getLabel()).isEqualTo("Unknown");
-            assertThat(result.get(4).getCode()).matches(uuidPattern);
+            assertThat(result.get(4).getCode()).isEqualTo(defendant5Id);
             assertThat(result.get(4).getLabel()).isEqualTo("Name not known");
-            // Ensure all codes are unique
-            assertThat(result.stream().map(DynamicStringListElement::getCode).distinct())
-                .hasSize(5);
         }
 
         @Test
         @DisplayName("Should handle null defendant details in list")
         void shouldHandleNullDefendantDetailsInList() {
             // Given
+            String defendant1Id = UUID.randomUUID().toString();
+
             List<ListValue<Party>> allDefendants = List.of(
-                ListValue.<Party>builder().value(null).build()
+                ListValue.<Party>builder().id(defendant1Id).value(null).build()
             );
 
             // When
@@ -317,9 +317,7 @@ class DefendantServiceTest {
 
             // Then
             assertThat(result).hasSize(1);
-            assertThat(result.getFirst().getCode()).matches(Pattern.compile(
-                "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-                Pattern.CASE_INSENSITIVE));
+            assertThat(result.getFirst().getCode()).isEqualTo(defendant1Id);
             assertThat(result.getFirst().getLabel()).isEqualTo("Unknown");
         }
     }

@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -50,11 +49,12 @@ public class DefendantService {
 
         List<DynamicStringListElement> listItems = new ArrayList<>();
         for (ListValue<Party> listValue : defendants) {
+            String partyId = listValue.getId();
             Party defendantDetails = listValue.getValue();
             String defendantName = buildDefendantDisplayName(defendantDetails);
 
             listItems.add(DynamicStringListElement.builder()
-                .code(UUID.randomUUID().toString())
+                .code(partyId)
                 .label(defendantName)
                 .build());
         }
