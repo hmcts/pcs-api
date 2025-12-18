@@ -16,8 +16,6 @@ export default defineConfig({
   /* Run tests in files in parallel */
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 3 : 0,
   workers: env === 'preview' ? 1 : 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
@@ -50,7 +48,7 @@ export default defineConfig({
         trace: 'on-first-retry',
         javaScriptEnabled: true,
         viewport: DEFAULT_VIEWPORT,
-        headless: false,
+        headless: !!process.env.CI,
       },
     },
     ...(process.env.CI ? [
