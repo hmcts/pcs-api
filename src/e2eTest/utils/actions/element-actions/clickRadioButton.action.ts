@@ -7,35 +7,36 @@ export class ClickRadioButtonAction implements IAction {
     const question = params.question as string;
     const option = params.option as string;
 
-    if (await this.clickWithRetry(page, this.radioPattern1(page, question, option, idx))) return;
-    if (await this.clickWithRetry(page, this.radioPattern2(page, question, option, idx))) return;
-    if (await this.clickWithRetry(page, this.radioPattern3(page, question, option, idx))) return;
+    const patterns = [
+      () => this.radioPattern1(page, question, option, idx),
+      () => this.radioPattern2(page, question, option, idx),
+      () => this.radioPattern3(page, question, option, idx)
+    ];
+
+    for (const getLocator of patterns) {
+      const locator = getLocator();
+      if (await this.clickWithRetry(locator)) {
+        return;
+      }
+    }
   }
 
-  private async clickWithRetry(page: Page, locator: any): Promise<boolean> {
+  private async clickWithRetry(locator: any): Promise<boolean> {
     if ((await locator.count()) !== 1) {
       return false;
     }
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const clicked = await locator.click({
-        timeout: 2000,
-        force: attempt > 0
-      }).then(() => true).catch(() => false);
 
-      if (clicked) {
-        await page.waitForTimeout(300);
-        const isChecked = await locator.isChecked().then(() => true).catch(() => false);
-        if (isChecked) {
-          return true;
-        }
-      }
+    let attempt = 0;
+    let radioIsChecked = false;
 
-      if (attempt < 2) {
-        await page.waitForTimeout(500);
-      }
-    }
+    do {
+      attempt++;
+      await locator.click({ timeout: 2000, force: attempt > 1 });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      radioIsChecked = await locator.isChecked();
+    } while (!radioIsChecked && attempt < 3);
 
-    return false;
+    return radioIsChecked;
   }
 
   private radioPattern1(page: Page, question: string, option: string, idx: number) {
