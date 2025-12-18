@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
+import java.security.SecureRandom;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -494,9 +494,9 @@ public class TestingSupportController {
     }
 
     private long generateCaseReference() {
-        // Create a 16-digit reference using current time (13 digits) plus a 3-digit suffix
         long timestamp = System.currentTimeMillis();
-        int suffix = ThreadLocalRandom.current().nextInt(0, 1000);
+        SecureRandom secureRandom = new SecureRandom();
+        int suffix = secureRandom.nextInt(1000);
         return Long.parseLong(String.format("%d%03d", timestamp, suffix));
     }
 
