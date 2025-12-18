@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
@@ -25,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -272,50 +274,9 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales_")
     private ProhibitedConductWales prohibitedConductWales;
 
-    @CCD(
-        label = "How much is the rent?",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String currentRent;
-
-    @CCD(
-        label = "How frequently should rent be paid?"
-    )
-    private RentPaymentFrequency rentFrequency;
-
-    @CCD(
-        label = "Enter frequency",
-        hint = "Please specify the frequency"
-    )
-    private String otherRentFrequency;
-
-    @CCD(
-        label = "Enter the amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String dailyRentChargeAmount;
-
-    @CCD(
-        label = "Is the amount per day that unpaid rent should be charged at correct?"
-    )
-    private VerticalYesNo rentPerDayCorrect;
-
-    @CCD(
-        label = "Enter amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String amendedDailyRentChargeAmount;
-
-    @CCD(
-        typeOverride = FieldType.MoneyGBP
-    )
-    private String calculatedDailyRentChargeAmount;
-
+    @JsonUnwrapped
     @CCD
-    private String formattedCalculatedDailyRentChargeAmount;
+    private RentDetailsSection rentDetails;
 
     @CCD(searchable = false)
     private YesOrNo showPostcodeNotAssignedToCourt;
@@ -367,7 +328,8 @@ public class PCSCase {
         min = 0,
         typeOverride = FieldType.MoneyGBP
     )
-    private String totalRentArrears;
+    @JacksonMoneyGBP
+    private BigDecimal totalRentArrears;
 
     @CCD(
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "
