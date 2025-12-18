@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -20,7 +21,9 @@ class DailyRentAmountTest extends BasePageTest {
     void shouldSetShowRentArrearsPageToYesWhenRentPerDayCorrectIsSet() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentPerDayCorrect(VerticalYesNo.YES)
+                .rentDetails(RentDetailsSection.builder()
+                        .rentPerDayCorrect(VerticalYesNo.YES)
+                        .build())
                 .build();
 
         // When
@@ -34,7 +37,9 @@ class DailyRentAmountTest extends BasePageTest {
     void shouldNotSetShowRentArrearsPageWhenRentPerDayCorrectIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentPerDayCorrect(null)
+                .rentDetails(RentDetailsSection.builder()
+                        .rentPerDayCorrect(null)
+                        .build())
                 .build();
 
         // When
