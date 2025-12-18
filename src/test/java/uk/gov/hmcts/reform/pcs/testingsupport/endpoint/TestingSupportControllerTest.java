@@ -80,6 +80,7 @@ class TestingSupportControllerTest {
                                                                            "ServiceAuthToken");
 
         assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
         assertThat(response.getBody()).contains("execution time:");
@@ -110,9 +111,48 @@ class TestingSupportControllerTest {
                                                                            "ServiceAuthToken");
 
         assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("Failed to schedule Hello World task");
         assertThat(response.getBody()).contains("Scheduler failure");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testScheduleHelloWorldTask_WithDefaultDelaySeconds() {
+        TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
+        when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
+
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(1,
+                                                                           "Bearer token",
+                                                                           "ServiceAuthToken");
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
+
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+        verify(schedulerClient).scheduleIfNotExists(any(TaskInstance.class), instantCaptor.capture());
+
+        Instant scheduledInstant = instantCaptor.getValue();
+        assertThat(scheduledInstant).isAfterOrEqualTo(Instant.now());
+        assertThat(scheduledInstant).isBeforeOrEqualTo(Instant.now().plusSeconds(2));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testScheduleHelloWorldTask_WithDefaultAuthorization() {
+        TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
+        when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
+
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(3,
+                                                                           "DummyId",
+                                                                           "ServiceAuthToken");
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
+        verify(schedulerClient).scheduleIfNotExists(any(TaskInstance.class), any(Instant.class));
     }
 
     @Test
@@ -491,6 +531,24 @@ class TestingSupportControllerTest {
     }
 
     @Test
+    void testGenerateDocument_DocAssemblyServiceErrorOnly() {
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+
+        when(docAssemblyService.generateDocument(
+            any(JsonNode.class),
+            eq("CV-SPC-CLM-ENG-01356.docx"),
+            eq(OutputType.PDF),
+            eq("generated-document.pdf")
+        )).thenThrow(new DocAssemblyException("service error occurred"));
+
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().value()).isEqualTo(503);
+        assertThat(response.getBody()).contains("Doc Assembly service is temporarily unavailable: service error occurred");
+    }
+
+    @Test
     void testGenerateDocument_DocAssemblyGenericException() {
         final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
@@ -579,6 +637,24 @@ class TestingSupportControllerTest {
             .hasMessageContaining("Service error");
 
         verify(eligibilityService).checkEligibility(postcode, null);
+    }
+
+    @Test
+    void shouldReturnEligibilityResultWithWalesCountry() {
+        // Given
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "CF10 1AA";
+        LegislativeCountry country = LegislativeCountry.WALES;
+
+        EligibilityResult expectedResult = mock(EligibilityResult.class);
+        when(eligibilityService.checkEligibility(postcode, country)).thenReturn(expectedResult);
+
+        // When
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, country);
+
+        // Then
+        assertThat(result).isSameAs(expectedResult);
+        verify(eligibilityService).checkEligibility(postcode, country);
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName, String caseNumber) {
