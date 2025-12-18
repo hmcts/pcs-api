@@ -22,18 +22,29 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.assertj.core.api.Assertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -655,6 +666,451 @@ class TestingSupportControllerTest {
         // Then
         assertThat(result).isSameAs(expectedResult);
         verify(eligibilityService).checkEligibility(postcode, country);
+    }
+
+    @Test
+    void shouldCreateTestCaseSuccessfully() {
+        // Given
+        Long caseReference = 1234567890123456L;
+        UUID caseId = UUID.randomUUID();
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postCode("SW1A 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+        UUID partyId1 = UUID.randomUUID();
+        UUID partyId2 = UUID.randomUUID();
+        UUID idamUserId1 = UUID.randomUUID();
+        UUID idamUserId2 = UUID.randomUUID();
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            partyId1, idamUserId1, "John", "Doe"
+        );
+        CreateTestCaseRequest.DefendantRequest defendant2 = new CreateTestCaseRequest.DefendantRequest(
+            partyId2, idamUserId2, "Jane", "Smith"
+        );
+        defendants.add(defendant1);
+        defendants.add(defendant2);
+        request.setDefendants(defendants);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
+        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
+            .partyId(partyId1)
+            .code("ABC123")
+            .build();
+        PartyAccessCodeEntity accessCode2 = PartyAccessCodeEntity.builder()
+            .partyId(partyId2)
+            .code("XYZ789")
+            .build();
+        accessCodes.add(accessCode1);
+        accessCodes.add(accessCode2);
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(accessCodes);
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getCaseId()).isEqualTo(caseId);
+        assertThat(response.getBody().getCaseReference()).isEqualTo(caseReference);
+        assertThat(response.getBody().getDefendants()).hasSize(2);
+        assertThat(response.getBody().getDefendants().get(0).getPartyId()).isEqualTo(partyId1);
+        assertThat(response.getBody().getDefendants().get(0).getAccessCode()).isEqualTo("ABC123");
+        assertThat(response.getBody().getDefendants().get(1).getPartyId()).isEqualTo(partyId2);
+        assertThat(response.getBody().getDefendants().get(1).getAccessCode()).isEqualTo("XYZ789");
+
+        verify(pcsCaseService).createCase(caseReference, propertyAddress, legislativeCountry);
+        verify(pcsCaseRepository).findByCaseReference(caseReference);
+        verify(pcsCaseRepository).save(caseEntity);
+        verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference));
+    }
+
+    @Test
+    void shouldCreateTestCaseWithAutoGeneratedCaseReference() {
+        // Given
+        UUID caseId = UUID.randomUUID();
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("456 Test Avenue")
+            .postTown("Manchester")
+            .postCode("M1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(null); // Will be auto-generated
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            null, UUID.randomUUID(), "Bob", "Johnson" // partyId will be auto-generated
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(1234567890123456L)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(anyLong()))
+            .thenReturn(Optional.of(caseEntity));
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(new ArrayList<>());
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getCaseId()).isEqualTo(caseId);
+        assertThat(response.getBody().getDefendants()).hasSize(1);
+        assertThat(response.getBody().getDefendants().get(0).getPartyId()).isNotNull();
+        assertThat(response.getBody().getDefendants().get(0).getFirstName()).isEqualTo("Bob");
+
+        verify(pcsCaseService).createCase(anyLong(), eq(propertyAddress), eq(legislativeCountry));
+    }
+
+    @Test
+    void shouldCreateTestCaseWithAutoGeneratedPartyIds() {
+        // Given
+        Long caseReference = 9876543210987654L;
+        UUID caseId = UUID.randomUUID();
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("789 Test Road")
+            .postTown("Birmingham")
+            .postCode("B1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.WALES;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            null, null, "Alice", "Williams" // partyId and idamUserId will be auto-generated
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(new ArrayList<>());
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getDefendants()).hasSize(1);
+        assertThat(response.getBody().getDefendants().get(0).getPartyId()).isNotNull();
+        assertThat(response.getBody().getDefendants().get(0).getFirstName()).isEqualTo("Alice");
+    }
+
+    @Test
+    void shouldHandleAccessCodeGenerationFailure() {
+        // Given
+        Long caseReference = 1111111111111111L;
+        UUID caseId = UUID.randomUUID();
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("999 Test Lane")
+            .postTown("Leeds")
+            .postCode("LS1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            UUID.randomUUID(), UUID.randomUUID(), "Test", "User"
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        doThrow(new RuntimeException("Access code generation failed"))
+            .when(accessCodeGenerationService).createAccessCodesForParties(anyString());
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getDefendants()).hasSize(1);
+        assertThat(response.getBody().getDefendants().get(0).getAccessCode()).isNull();
+    }
+
+    @Test
+    void shouldHandleCaseCreationFailure() {
+        // Given
+        Long caseReference = 2222222222222222L;
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("111 Test Drive")
+            .postTown("Liverpool")
+            .postCode("L1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            UUID.randomUUID(), UUID.randomUUID(), "Error", "Test"
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        doThrow(new RuntimeException("Database error"))
+            .when(pcsCaseService).createCase(anyLong(), any(AddressUK.class), any(LegislativeCountry.class));
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldHandleCaseNotFoundAfterCreation() {
+        // Given
+        Long caseReference = 3333333333333333L;
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("222 Test Way")
+            .postTown("Sheffield")
+            .postCode("S1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            UUID.randomUUID(), UUID.randomUUID(), "NotFound", "Test"
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldDeleteCaseSuccessfully() {
+        // Given
+        Long caseReference = 4444444444444444L;
+        UUID caseId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
+        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
+            .id(UUID.randomUUID())
+            .code("TEST123")
+            .build();
+        accessCodes.add(accessCode1);
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(accessCodes);
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+        assertThat(response.getBody()).isNull();
+
+        verify(partyAccessCodeRepository).deleteAll(accessCodes);
+        verify(pcsCaseRepository).delete(caseEntity);
+    }
+
+    @Test
+    void shouldDeleteCaseWithNoAccessCodes() {
+        // Given
+        Long caseReference = 5555555555555555L;
+        UUID caseId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(new ArrayList<>());
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+        assertThat(response.getBody()).isNull();
+
+        verify(partyAccessCodeRepository, never()).deleteAll(any());
+        verify(pcsCaseRepository).delete(caseEntity);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonExistentCase() {
+        // Given
+        Long caseReference = 6666666666666666L;
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(404);
+        assertThat(response.getBody()).isNull();
+
+        verify(pcsCaseRepository, never()).delete(any());
+        verify(partyAccessCodeRepository, never()).deleteAll(any());
+    }
+
+    @Test
+    void shouldHandleDeleteCaseFailure() {
+        // Given
+        Long caseReference = 7777777777777777L;
+        UUID caseId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(new ArrayList<>());
+
+        doThrow(new RuntimeException("Database error"))
+            .when(pcsCaseRepository).delete(any(PcsCaseEntity.class));
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldHandleDeleteAccessCodesFailure() {
+        // Given
+        Long caseReference = 8888888888888888L;
+        UUID caseId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
+        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
+            .id(UUID.randomUUID())
+            .code("FAIL123")
+            .build();
+        accessCodes.add(accessCode1);
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(accessCodes);
+
+        doThrow(new RuntimeException("Delete failed"))
+            .when(partyAccessCodeRepository).deleteAll(any());
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getBody()).isNull();
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName, String caseNumber) {
