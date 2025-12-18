@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -33,10 +34,9 @@ class RestExceptionHandlerTest {
     @Test
     void shouldHandleCaseNotFoundException() {
         // Given
-        String expectedErrorMessage = "Some error message";
-
-        CaseNotFoundException caseNotFoundException = mock(CaseNotFoundException.class);
-        when(caseNotFoundException.getMessage()).thenReturn(expectedErrorMessage);
+        long caseReference = 12345L;
+        CaseNotFoundException caseNotFoundException = new CaseNotFoundException(caseReference);
+        String expectedErrorMessage = "No case found with reference " + caseReference;
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -52,8 +52,24 @@ class RestExceptionHandlerTest {
     void shouldHandleInvalidAccessCodeException() {
         // Given
         String expectedErrorMessage = "Invalid access code";
-        InvalidAccessCodeException exception = mock(InvalidAccessCodeException.class);
-        when(exception.getMessage()).thenReturn(expectedErrorMessage);
+        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleInvalidAccessCode(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleInvalidAccessCodeExceptionWithCause() {
+        // Given
+        String expectedErrorMessage = "Invalid access code";
+        Throwable cause = new RuntimeException("Root cause");
+        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -69,8 +85,24 @@ class RestExceptionHandlerTest {
     void shouldHandleInvalidPartyForCaseException() {
         // Given
         String expectedErrorMessage = "Party not found for case";
-        InvalidPartyForCaseException exception = mock(InvalidPartyForCaseException.class);
-        when(exception.getMessage()).thenReturn(expectedErrorMessage);
+        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(expectedErrorMessage);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleInvalidParty(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleInvalidPartyForCaseExceptionWithCause() {
+        // Given
+        String expectedErrorMessage = "Party not found for case";
+        Throwable cause = new RuntimeException("Root cause");
+        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(expectedErrorMessage, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -86,8 +118,24 @@ class RestExceptionHandlerTest {
     void shouldHandleInvalidAuthTokenException() {
         // Given
         String expectedErrorMessage = "Invalid authentication token";
-        InvalidAuthTokenException exception = mock(InvalidAuthTokenException.class);
-        when(exception.getMessage()).thenReturn(expectedErrorMessage);
+        InvalidAuthTokenException exception = new InvalidAuthTokenException(expectedErrorMessage);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleInvalidAuth(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleInvalidAuthTokenExceptionWithCause() {
+        // Given
+        String expectedErrorMessage = "Invalid authentication token";
+        Exception cause = new RuntimeException("Root cause");
+        InvalidAuthTokenException exception = new InvalidAuthTokenException(expectedErrorMessage, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -103,8 +151,24 @@ class RestExceptionHandlerTest {
     void shouldHandleIllegalStateException() {
         // Given
         String expectedErrorMessage = "Conflict state detected";
-        IllegalStateException exception = mock(IllegalStateException.class);
-        when(exception.getMessage()).thenReturn(expectedErrorMessage);
+        IllegalStateException exception = new IllegalStateException(expectedErrorMessage);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleConflict(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleIllegalStateExceptionWithCause() {
+        // Given
+        String expectedErrorMessage = "Conflict state detected";
+        Throwable cause = new RuntimeException("Root cause");
+        IllegalStateException exception = new IllegalStateException(expectedErrorMessage, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -120,8 +184,24 @@ class RestExceptionHandlerTest {
     void shouldHandleAccessCodeAlreadyUsedException() {
         // Given
         String expectedErrorMessage = "Access code already used";
-        AccessCodeAlreadyUsedException exception = mock(AccessCodeAlreadyUsedException.class);
-        when(exception.getMessage()).thenReturn(expectedErrorMessage);
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(expectedErrorMessage);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleAccessCodeAlreadyUsed(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleAccessCodeAlreadyUsedExceptionWithCause() {
+        // Given
+        String expectedErrorMessage = "Access code already used";
+        Throwable cause = new RuntimeException("Root cause");
+        AccessCodeAlreadyUsedException exception = new AccessCodeAlreadyUsedException(expectedErrorMessage, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -143,7 +223,7 @@ class RestExceptionHandlerTest {
         when(exception.getBindingResult()).thenReturn(bindingResult);
 
         HttpHeaders headers = new HttpHeaders();
-        HttpStatus status = HttpStatus.BAD_REQUEST;
+        HttpStatusCode status = HttpStatus.BAD_REQUEST;
         WebRequest request = mock(WebRequest.class);
 
         // When
@@ -156,6 +236,74 @@ class RestExceptionHandlerTest {
         assertThat(responseEntity.getBody()).isInstanceOf(RestExceptionHandler.Error.class);
         RestExceptionHandler.Error error = (RestExceptionHandler.Error) responseEntity.getBody();
         assertThat(error.message()).isEqualTo("Invalid data");
+    }
+
+    @Test
+    void shouldHandleMethodArgumentNotValidExceptionWithDifferentStatus() {
+        // Given
+        MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
+        BindingResult bindingResult = mock(BindingResult.class);
+        FieldError fieldError = new FieldError("object", "field", "default message");
+        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
+        when(exception.getBindingResult()).thenReturn(bindingResult);
+
+        HttpHeaders headers = new HttpHeaders();
+        HttpStatusCode status = HttpStatus.UNPROCESSABLE_ENTITY;
+        WebRequest request = mock(WebRequest.class);
+
+        // When
+        ResponseEntity<Object> responseEntity = underTest.handleMethodArgumentNotValid(
+            exception, headers, status, request);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody()).isInstanceOf(RestExceptionHandler.Error.class);
+        RestExceptionHandler.Error error = (RestExceptionHandler.Error) responseEntity.getBody();
+        assertThat(error.message()).isEqualTo("Invalid data");
+    }
+
+    @Test
+    void shouldHandleExceptionWithNullMessage() {
+        // Given
+        IllegalStateException exception = new IllegalStateException((String) null);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleConflict(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isNull();
+    }
+
+    @Test
+    void shouldHandleExceptionWithEmptyMessage() {
+        // Given
+        String expectedErrorMessage = "";
+        InvalidAccessCodeException exception = new InvalidAccessCodeException(expectedErrorMessage);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleInvalidAccessCode(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void errorRecordShouldHaveMessage() {
+        // Given
+        String message = "Test error message";
+
+        // When
+        RestExceptionHandler.Error error = new RestExceptionHandler.Error(message);
+
+        // Then
+        assertThat(error.message()).isEqualTo(message);
     }
 
 }
