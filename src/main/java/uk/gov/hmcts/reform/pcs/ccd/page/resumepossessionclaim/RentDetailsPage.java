@@ -1,8 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -10,16 +7,18 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Page configuration for the Rent Details section.
  * Allows claimants to enter rent amount and payment frequency details.
  */
-public class RentDetails implements CcdPageConfiguration {
+public class RentDetailsPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -32,11 +31,11 @@ public class RentDetails implements CcdPageConfiguration {
                         ---
                         """)
                 .complex(PCSCase::getRentDetails)
-                    .mandatory(RentDetailsSection::getCurrentRent)
-                    .mandatory(RentDetailsSection::getRentFrequency)
-                    .mandatory(RentDetailsSection::getOtherRentFrequency, "rentFrequency=\"OTHER\"")
-                    .mandatory(RentDetailsSection::getDailyRentChargeAmount, "rentFrequency=\"OTHER\"")
-                    .readonly(RentDetailsSection::getCalculatedDailyRentChargeAmount, NEVER_SHOW)
+                    .mandatory(RentDetails::getCurrentRent)
+                    .mandatory(RentDetails::getFrequency)
+                    .mandatory(RentDetails::getOtherFrequency, "rentDetails_Frequency=\"OTHER\"")
+                    .mandatory(RentDetails::getDailyCharge, "rentDetails_Frequency=\"OTHER\"")
+                    .readonly(RentDetails::getCalculatedDailyCharge, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -45,31 +44,35 @@ public class RentDetails implements CcdPageConfiguration {
             CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
 
-        RentDetailsSection rentDetails = caseData.getRentDetails();
+        RentDetails rentDetails = caseData.getRentDetails();
 
-        RentPaymentFrequency rentFrequency = rentDetails.getRentFrequency();
+        RentPaymentFrequency rentFrequency = rentDetails != null ? rentDetails.getFrequency() : null;
 
         // Only process if rentFrequency is set
         if (rentFrequency != null) {
             if (rentFrequency != RentPaymentFrequency.OTHER) {
-                // Only calculate if currentRent is also set
-                if (rentDetails.getCurrentRent() != null) {
-                    BigDecimal rentAmount = rentDetails.getCurrentRent();
-                    BigDecimal dailyAmount = calculateDailyRent(rentAmount, rentFrequency);
+                // Calculate daily rent, if currentRent is also set
+                if (rentDetails != null
+                        && rentDetails.getCurrentRent() != null
+                        && !rentDetails.getCurrentRent().trim().isEmpty()) {
+                    BigDecimal rentAmountInPence = new BigDecimal(rentDetails.getCurrentRent());
+                    BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, rentFrequency);
 
-                    // Set pence value for calculations/integrations
-                    rentDetails.setCalculatedDailyRentChargeAmount(dailyAmount);
+                    long dailyAmountInPenceRounded = dailyAmountInPence.setScale(0, RoundingMode.HALF_UP).longValue();
+                    rentDetails.setCalculatedDailyCharge(String.valueOf(dailyAmountInPenceRounded));
 
-                    // Set formatted value for display
-                    rentDetails.setFormattedCalculatedDailyRentChargeAmount(formatCurrency(dailyAmount));
+                    BigDecimal dailyAmountInPounds = new BigDecimal(dailyAmountInPenceRounded).movePointLeft(2);
+                    rentDetails.setFormattedCalculatedDailyCharge(formatCurrency(dailyAmountInPounds));
                 }
-
+                
                 // Set flag to NO - DailyRentAmount should show first
                 caseData.setShowRentArrearsPage(YesOrNo.NO);
             } else {
                 // Set flag to YES - RentArrears should show directly (skip DailyRentAmount)
                 caseData.setShowRentArrearsPage(YesOrNo.YES);
             }
+
+            caseData.setRentSectionPaymentFrequency(rentFrequency);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -77,9 +80,9 @@ public class RentDetails implements CcdPageConfiguration {
                 .build();
     }
 
-    private BigDecimal calculateDailyRent(BigDecimal rentAmount, RentPaymentFrequency frequency) {
+    private BigDecimal calculateDailyRent(BigDecimal rentAmountInPence, RentPaymentFrequency frequency) {
         BigDecimal divisor;
-
+        
         switch (frequency) {
             case WEEKLY:
                 divisor = new BigDecimal("7.0");
@@ -94,11 +97,17 @@ public class RentDetails implements CcdPageConfiguration {
             default:
                 throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
         }
-
-        return rentAmount.divide(divisor, 2, RoundingMode.HALF_UP);
+        
+        return rentAmountInPence.divide(divisor, 2, RoundingMode.HALF_UP);
     }
 
     private String formatCurrency(BigDecimal amount) {
-        return "£" + amount.toPlainString();
+        if (amount == null) {
+            return null;
+        }
+        
+        // Strip trailing zeros for cleaner display (e.g., "£42.00" -> "£42", "£42.50" -> "£42.5")
+        BigDecimal stripped = amount.stripTrailingZeros();
+        return "£" + stripped.toPlainString();
     }
 }
