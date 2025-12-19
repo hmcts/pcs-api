@@ -5,14 +5,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class SubmitDefendantResponseTest extends BaseEventTest {
@@ -23,9 +33,16 @@ class SubmitDefendantResponseTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
 
+    @Mock
+    private SecurityContextService securityContextService;
+
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new SubmitDefendantResponse(draftCaseDataService, pcsCaseService));
+        setEventUnderTest(new SubmitDefendantResponse(
+            draftCaseDataService,
+            pcsCaseService,
+            securityContextService
+        ));
     }
 
     @Test
@@ -50,6 +67,48 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             eq(EventId.submitDefendantResponse)
         );
 
+    }
+
+    @Test
+    void shouldPopulateDefendantResponseWhenUserIsMatchingDefendant() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+
+        AddressUK expectedAddress = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postCode("SW1A 1AA")
+            .build();
+
+        Defendant matchingDefendant = Defendant.builder()
+            .idamUserId(defendantUserId)
+            .firstName("John")
+            .lastName("Doe")
+            .correspondenceAddress(expectedAddress)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .defendants(List.of(matchingDefendant))
+            .build();
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        // When
+        PCSCase result = callStartHandler(caseData);
+
+        // Then
+        assertThat(result.getDefendantResponse()).isNotNull();
+        assertThat(result.getDefendantResponse().getParty()).isNotNull();
+        assertThat(result.getDefendantResponse().getParty().getForename()).isEqualTo("John");
+        assertThat(result.getDefendantResponse().getParty().getSurname()).isEqualTo("Doe");
+        assertThat(result.getDefendantResponse().getParty().getContactAddress()).isEqualTo(expectedAddress);
     }
 
 }
