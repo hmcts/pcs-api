@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClientsConfiguration;
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
     FeignAutoConfiguration.class,
     FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class,
-    org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class
+    JacksonAutoConfiguration.class
 })
 @EnableFeignClients(clients = CaseAssignmentApi.class)
 @TestPropertySource(properties = "core_case_data.api.url=http://localhost:4452")
