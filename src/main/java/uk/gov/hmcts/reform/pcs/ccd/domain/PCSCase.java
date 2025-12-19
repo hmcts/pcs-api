@@ -139,28 +139,12 @@ public class PCSCase {
     )
     private YesOrNo claimDueToRentArrears;
 
-    // Rent arrears grounds checkboxes
-    @CCD(
-        label = "What are your grounds for possession?",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround"
-    )
-    private Set<RentArrearsGround> rentArrearsGrounds;
-
-    @CCD(
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround"
-    )
-    private Set<RentArrearsGround> copyOfRentArrearsGrounds;
+    @JsonUnwrapped(prefix = "rentArrears_")
+    @CCD
+    private GroundsForPossession groundsForPossession;
 
     @CCD
     private YesOrNo overrideResumedGrounds;
-
-    @CCD(
-        label = "Do you have any other additional grounds for possession?"
-    )
-    private YesOrNo hasOtherAdditionalGrounds;
 
     // Additional grounds checkboxes - Mandatory
     @CCD(

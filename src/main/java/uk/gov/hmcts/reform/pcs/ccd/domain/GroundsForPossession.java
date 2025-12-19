@@ -18,13 +18,13 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class ArrearsGroundsForPossession {
+public class GroundsForPossession {
 
     @CCD(
         typeOverride = MultiSelectList,
         typeParameterOverride = "RentArrearsGround"
     )
-    private Set<RentArrearsGround> copyOfRentArrearsGrounds;
+    private Set<RentArrearsGround> copyOfGrounds;
 
     // Rent arrears grounds checkboxes
     @CCD(
@@ -33,7 +33,7 @@ public class ArrearsGroundsForPossession {
         typeOverride = MultiSelectList,
         typeParameterOverride = "RentArrearsGround"
     )
-    private Set<RentArrearsGround> rentArrearsGrounds;
+    private Set<RentArrearsGround> grounds;
 
     @CCD(
         label = "Do you have any other additional grounds for possession?"

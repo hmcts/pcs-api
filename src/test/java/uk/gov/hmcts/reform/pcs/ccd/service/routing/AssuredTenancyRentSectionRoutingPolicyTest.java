@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.GroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 
 import java.util.Set;
@@ -62,6 +63,11 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
             .tenancyLicenceDetails(
                 TenancyLicenceDetails.builder()
                     .typeOfTenancyLicence(ASSURED_TENANCY)
+                    .build()
+            )
+            .groundsForPossession(
+                GroundsForPossession.builder()
+                    .grounds(null)
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.YES)
@@ -130,6 +136,11 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
                     .typeOfTenancyLicence(ASSURED_TENANCY)
                     .build()
             )
+            .groundsForPossession(
+                GroundsForPossession.builder()
+                    .grounds(null)
+                    .build()
+            )
             .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsMandatoryGrounds(null)
             .rentArrearsDiscretionaryGrounds(null)
@@ -152,7 +163,11 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.YES)
-            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+            .groundsForPossession(
+                GroundsForPossession.builder()
+                    .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+                    .build()
+            )
             .rentArrearsMandatoryGrounds(null)
             .rentArrearsDiscretionaryGrounds(null)
             .build();
@@ -171,7 +186,11 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.YES)
-            .rentArrearsGrounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
+            .groundsForPossession(
+                GroundsForPossession.builder()
+                    .grounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
+                    .build()
+            )
             .rentArrearsMandatoryGrounds(Set.of())
             .rentArrearsDiscretionaryGrounds(Set.of())
             .build();
@@ -190,7 +209,11 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.YES)
-            .rentArrearsGrounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
+            .groundsForPossession(
+                GroundsForPossession.builder()
+                    .grounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
+                    .build()
+            )
             .rentArrearsMandatoryGrounds(Set.of())
             .rentArrearsDiscretionaryGrounds(Set.of())
             .build();
@@ -209,7 +232,11 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.YES)
-            .rentArrearsGrounds(Set.of())
+            .groundsForPossession(
+                GroundsForPossession.builder()
+                    .grounds(Set.of())
+                    .build()
+            )
             .rentArrearsMandatoryGrounds(null)
             .rentArrearsDiscretionaryGrounds(null)
             .build();

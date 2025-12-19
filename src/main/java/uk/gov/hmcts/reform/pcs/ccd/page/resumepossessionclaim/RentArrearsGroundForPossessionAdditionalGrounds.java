@@ -35,7 +35,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         pageBuilder
             .page("groundForPossessionAdditionalGrounds", this::midEvent)
             .pageLabel("What are your additional grounds for possession?")
-            .showCondition("hasOtherAdditionalGrounds=\"Yes\""
+            .showCondition("rentArrears_HasOtherAdditionalGrounds=\"Yes\""
                            + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                            + " AND claimDueToRentArrears=\"Yes\""
                            + " AND legislativeCountry=\"England\"")
@@ -66,7 +66,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         // Rebuild canonical sets from rent arrears grounds selection
         Set<RentArrearsMandatoryGrounds> mergedMandatory = new HashSet<>();
         Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new HashSet<>();
-        Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
+        Set<RentArrearsGround> rentArrearsGrounds = caseData.getGroundsForPossession().getGrounds();
 
         if (rentArrearsGrounds != null) {
             if (rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {

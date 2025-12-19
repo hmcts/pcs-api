@@ -59,7 +59,7 @@ public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutin
         // RentArrearsGroundsForPossession.midEvent() updates the sets)
         if ((mandatoryGrounds == null || mandatoryGrounds.isEmpty())
             && (discretionaryGrounds == null || discretionaryGrounds.isEmpty())) {
-            Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
+            Set<RentArrearsGround> rentArrearsGrounds = caseData.getGroundsForPossession().getGrounds();
             if (rentArrearsGrounds != null && !rentArrearsGrounds.isEmpty()) {
                 boolean hasRentArrearsGrounds =
                     rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)
