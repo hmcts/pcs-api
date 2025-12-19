@@ -7,6 +7,7 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "ccdDataStoreAPI_caseAssignedUserRoles", port = "4452")
 
+//Test is disabled until provider test is enabled - CCD-7001
+@Disabled
 public class CcdCaseAssignmentConsumerTest {
 
     private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
