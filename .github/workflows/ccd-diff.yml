@@ -27,7 +27,7 @@ jobs:
         run: ./gradlew generateCCDConfig
         working-directory: build/${{ matrix.target }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.target }}
           path: build/${{ matrix.target }}/build/definitions/PCS
@@ -41,11 +41,11 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: branch
           path: build/branch
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: master
           path: build/master
@@ -71,7 +71,7 @@ jobs:
             echo "summary-path=$SUMMARY_FILE"
           } >> "$GITHUB_OUTPUT"
       - name: Upload HTML report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ccd-diff-report-${{ github.run_id }}
           path: ${{ steps.ccd-diff.outputs.report-path }}
