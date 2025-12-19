@@ -11,6 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Page configuration for the Rent Details section.
@@ -49,6 +51,20 @@ public class RentDetailsPage implements CcdPageConfiguration {
         // Only process if rentFrequency is set
         if (rentFrequency != null) {
             if (rentFrequency != RentPaymentFrequency.OTHER) {
+                // Calculate daily rent, if currentRent is also set
+                if (rentDetails != null
+                        && rentDetails.getCurrentRent() != null
+                        && !rentDetails.getCurrentRent().trim().isEmpty()) {
+                    BigDecimal rentAmountInPence = new BigDecimal(rentDetails.getCurrentRent());
+                    BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, rentFrequency);
+
+                    long dailyAmountInPenceRounded = dailyAmountInPence.setScale(0, RoundingMode.HALF_UP).longValue();
+                    rentDetails.setCalculatedDailyCharge(String.valueOf(dailyAmountInPenceRounded));
+
+                    BigDecimal dailyAmountInPounds = new BigDecimal(dailyAmountInPenceRounded).movePointLeft(2);
+                    rentDetails.setFormattedCalculatedDailyCharge(formatCurrency(dailyAmountInPounds));
+                }
+                
                 // Set flag to NO - DailyRentAmount should show first
                 caseData.setShowRentArrearsPage(YesOrNo.NO);
             } else {
@@ -62,5 +78,36 @@ public class RentDetailsPage implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
                 .build();
+    }
+
+    private BigDecimal calculateDailyRent(BigDecimal rentAmountInPence, RentPaymentFrequency frequency) {
+        BigDecimal divisor;
+        
+        switch (frequency) {
+            case WEEKLY:
+                divisor = new BigDecimal("7.0");
+                break;
+            case FORTNIGHTLY:
+                divisor = new BigDecimal("14.0");
+                break;
+            case MONTHLY:
+                divisor = new BigDecimal("30.44");
+                break;
+            case OTHER:
+            default:
+                throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
+        }
+        
+        return rentAmountInPence.divide(divisor, 2, RoundingMode.HALF_UP);
+    }
+
+    private String formatCurrency(BigDecimal amount) {
+        if (amount == null) {
+            return null;
+        }
+        
+        // Strip trailing zeros for cleaner display (e.g., "£42.00" -> "£42", "£42.50" -> "£42.5")
+        BigDecimal stripped = amount.stripTrailingZeros();
+        return "£" + stripped.toPlainString();
     }
 }
