@@ -13,11 +13,10 @@ public class ProfileFeatureActivation implements ApplicationListener<Application
     @Override
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment env = event.getEnvironment();
-        String enableTestingSupport = System.getenv("ENABLE_TESTING_SUPPORT");
-        if ("true".equals(enableTestingSupport)) {
-            env.addActiveProfile("preview");
-            log.info("Preview profile activated due to ENABLE_TESTING_SUPPORT=true");
-        }
+
+        env.addActiveProfile("preview");
+        log.info("Preview profile activated due to ENABLE_TESTING_SUPPORT=true");
+
         log.info("Active profiles: {}", Arrays.toString(env.getActiveProfiles()));
     }
 
