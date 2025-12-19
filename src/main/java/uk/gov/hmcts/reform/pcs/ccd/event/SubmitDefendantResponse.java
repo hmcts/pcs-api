@@ -54,14 +54,6 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
 
         UserInfo userInfo = securityContextService.getCurrentUserDetails();
         UUID authenticatedUserId = UUID.fromString(userInfo.getUid());
-
-        log.info("Start callback for submitDefendantResponse: case={}, user={}",
-            caseReference, authenticatedUserId);
-
-        // NOTE: CCD has already validated that the user has the DEFENDANT case role
-        // via the .grant(Permission.CRU, UserRole.DEFENDANT) configuration.
-        // We only need to match the user to a defendant in our database.
-
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         List<Defendant> defendants = pcsCaseEntity.getDefendants();
 
@@ -79,12 +71,6 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
                 return new CaseAccessException("User is not linked as a defendant on this case");
             });
 
-        log.info("Matched user {} to defendant: {} {} for case {}",
-            authenticatedUserId,
-            matchedDefendant.getFirstName(),
-            matchedDefendant.getLastName(),
-            caseReference);
-
         Party party = Party.builder()
             .forename(matchedDefendant.getFirstName())
             .surname(matchedDefendant.getLastName())
@@ -101,7 +87,6 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        log.info("Update Draft Data for Defendant Response, Case Reference: {}", eventPayload.caseReference());
 
         long caseReference = eventPayload.caseReference();
         DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
