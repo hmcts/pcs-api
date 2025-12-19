@@ -41,6 +41,12 @@ public class CaseAssignmentService {
                     .caseAssignmentUserRolesWithOrganisation(caseAssignmentList)
                         .build();
 
-        return caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+        CaseAssignmentUserRolesResponse response =
+            caseAssignmentApi.addCaseUserRoles(userToken, s2s, caseAssignmentUserRolesRequest);
+
+        log.debug("Case assignment response for case {} and user {}: {}", caseReference, userId, response);
+
+        return response;
     }
+
 }

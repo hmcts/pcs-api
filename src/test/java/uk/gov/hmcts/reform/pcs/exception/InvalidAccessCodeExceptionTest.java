@@ -91,3 +91,4 @@ class InvalidAccessCodeExceptionTest {
         assertThat(exception.getCause().getCause()).isSameAs(rootCause);
     }
 }
+

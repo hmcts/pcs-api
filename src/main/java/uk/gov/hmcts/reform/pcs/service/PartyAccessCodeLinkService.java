@@ -22,7 +22,7 @@ public class PartyAccessCodeLinkService {
     private final PartyAccessCodeLinkValidator validator;
     private final CaseAssignmentService caseAssignmentService;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void linkPartyByAccessCode(
             long caseReference,
             String accessCode,
@@ -56,10 +56,15 @@ public class PartyAccessCodeLinkService {
         caseEntity.setDefendants(caseEntity.getDefendants());
         pcsCaseService.save(caseEntity);
 
+        // Role assignment happens after the main transaction work to ensure
+        // that if it fails, it doesn't affect the case save transaction.
+        // This try-catch only affects the role assignment, not the main transaction.
         try {
             caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());
         } catch (Exception e) {
             // Log error but don't fail the transaction - case assignment is not critical for linking
+            // Note: This exception is caught AFTER the main transaction work (save) is complete,
+            // so it does not affect the transaction rollback behavior for the case save.
             log.warn("Failed to assign defendant role for case {} and user {}: {}", 
                     caseReference, idamUserId, e.getMessage(), e);
         }

@@ -91,3 +91,4 @@ class InvalidPartyForCaseExceptionTest {
         assertThat(exception.getCause().getCause()).isSameAs(rootCause);
     }
 }
+
