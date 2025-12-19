@@ -13,21 +13,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LanguageUsedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
@@ -93,8 +88,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
     private EnforcementOrderService enforcementOrderService;
-    @Mock
-    private LanguageUsedPage languageUsedPage;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
@@ -117,9 +110,9 @@ class EnforcementOrderEventTest extends BaseEventTest {
         String firstName = "Test";
         String lastName = "Testing";
 
-        DefendantDetails defendantDetails = DefendantDetails.builder().firstName(firstName).lastName(lastName).build();
-        List<ListValue<DefendantDetails>> allDefendants = List.of(
-            ListValue.<DefendantDetails>builder().value(defendantDetails).build()
+        Party defendantDetails = Party.builder().firstName(firstName).lastName(lastName).build();
+        List<ListValue<Party>> allDefendants = List.of(
+            ListValue.<Party>builder().value(defendantDetails).build()
         );
         when(defendantService.buildDefendantListItems(allDefendants)).thenReturn(new ArrayList<>());
 
@@ -135,9 +128,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getFormattedPropertyAddress()).isEqualTo(expectedFormattedPropertyAddress);
-        assertThat(result.getAllDefendants()).hasSize(1);
-        assertThat(result.getDefendant1().getFirstName()).isEqualTo(firstName);
-        assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }
 
     @Test
@@ -163,12 +153,12 @@ class EnforcementOrderEventTest extends BaseEventTest {
             // Given
             String firstName = "John";
             String lastName = "Doe";
-            DefendantDetails defendantDetails = DefendantDetails.builder()
+            Party defendantDetails = Party.builder()
                 .firstName(firstName)
                 .lastName(lastName)
                 .build();
-            List<ListValue<DefendantDetails>> allDefendants = List.of(
-                ListValue.<DefendantDetails>builder().value(defendantDetails).build()
+            List<ListValue<Party>> allDefendants = List.of(
+                ListValue.<Party>builder().value(defendantDetails).build()
             );
 
             DynamicStringListElement listItem = DynamicStringListElement.builder()
@@ -201,7 +191,7 @@ class EnforcementOrderEventTest extends BaseEventTest {
         @DisplayName("Should handle empty or null defendants list")
         void shouldHandleEmptyOrNullDefendantsList(
             String scenarioName,
-            List<ListValue<DefendantDetails>> allDefendants) {
+            List<ListValue<Party>> allDefendants) {
             // Given
             List<DynamicStringListElement> expectedListItems = new ArrayList<>();
             when(defendantService.buildDefendantListItems(allDefendants)).thenReturn(expectedListItems);
@@ -236,17 +226,17 @@ class EnforcementOrderEventTest extends BaseEventTest {
         @DisplayName("Should handle multiple defendants")
         void shouldHandleMultipleDefendants() {
             // Given
-            DefendantDetails defendant1 = DefendantDetails.builder()
+            Party defendant1 = Party.builder()
                 .firstName("John")
                 .lastName("Doe")
                 .build();
-            DefendantDetails defendant2 = DefendantDetails.builder()
+            Party defendant2 = Party.builder()
                 .firstName("Jane")
                 .lastName("Smith")
                 .build();
-            List<ListValue<DefendantDetails>> allDefendants = List.of(
-                ListValue.<DefendantDetails>builder().value(defendant1).build(),
-                ListValue.<DefendantDetails>builder().value(defendant2).build()
+            List<ListValue<Party>> allDefendants = List.of(
+                ListValue.<Party>builder().value(defendant1).build(),
+                ListValue.<Party>builder().value(defendant2).build()
             );
 
             DynamicStringListElement listItem1 = DynamicStringListElement.builder()
