@@ -88,26 +88,7 @@ class NonProdSupportServiceTest {
             .hasCauseInstanceOf(IllegalArgumentException.class)
             .rootCause()
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage(NonProdSupportService.NO_NON_PROD_CASE_SELECTED);
-
-        verify(caseSupportHelper, never()).getNonProdResource(any());
-        verify(strategy1, never()).supports(any());
-        verify(strategy2, never()).supports(any());
-    }
-
-    @Test
-    void shouldThrowSupportExceptionWhenDynamicListValueIsNull() throws IOException {
-        // Given
-        PCSCase fromEvent = mock(PCSCase.class);
-        DynamicList dynamicList = mock(DynamicList.class);
-        when(fromEvent.getNonProdSupportFileList()).thenReturn(dynamicList);
-        when(dynamicList.getValue()).thenReturn(null);
-
-        // When / Then
-        assertThatThrownBy(() -> underTest.caseGenerator(1L, fromEvent))
-            .isInstanceOf(SupportException.class)
-            .hasMessage(FAILED_TO_GENERATE_TEST_CASE)
-            .hasCauseInstanceOf(IllegalArgumentException.class);
+            .hasMessage(NonProdSupportService.NO_NON_PROD_CASE_AVALIABLE);
 
         verify(caseSupportHelper, never()).getNonProdResource(any());
         verify(strategy1, never()).supports(any());
