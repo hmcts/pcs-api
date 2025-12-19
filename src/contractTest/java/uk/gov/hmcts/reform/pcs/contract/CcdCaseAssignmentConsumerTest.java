@@ -116,7 +116,7 @@ public class CcdCaseAssignmentConsumerTest {
 
     static PactDslJsonBody caseRoleBody() {
         return (PactDslJsonBody) new PactDslJsonBody()
-            .minArrayLike("case_users", 1)  // must match CCD DTO field
+            .minArrayLike("case_users", 1)
             .stringType("case_id", CASE_ID)
             .stringType("case_role", CASE_ROLE)
             .stringType("user_id", USER_ID)
