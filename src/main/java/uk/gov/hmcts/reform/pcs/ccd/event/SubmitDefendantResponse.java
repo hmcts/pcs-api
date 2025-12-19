@@ -40,7 +40,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
             .decentralisedEvent(submitDefendantResponse.name(), this::submit, this::start)
-            // TODO: HDPI-XXXX - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
+            // TODO: HDPI-3580 - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
             // Temporarily enabled for all states to allow testing before case submission/payment
             .forAllStates()
             .showCondition(ShowConditions.NEVER_SHOW)
