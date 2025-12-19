@@ -23,7 +23,7 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
             .label("claimantTypeNotEligibleWales-info", """
                 ---
                 <p class="govuk-body">
-                This service is currently only available for registered community landlords.
+                This service is currently only available for community landlords.
 
                 <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
 
