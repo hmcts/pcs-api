@@ -31,10 +31,8 @@ public class CheckingNotice implements CcdPageConfiguration {
                             You may have already served the defendants with notice of your intention to begin
                             possession proceedings. Each ground has a different notice period and some
                             do not require any notice to be served. You should read the
-                            <a href="https://www.gov.uk/government/publications/
-                            understanding-the-possession-action-process-guidance-for-landlords-and-tenants/understanding
-                            -the-possession-action-process-a-guide-for-private-landlords-in-england-and-wales"
-                            rel="noreferrer noopener" target="_blank" class="govuk-link"> guidance on
+                            <a href="https://www.gov.uk/government/publications/understanding-the-possession-action-process-guidance-for-landlords-and-tenants/understanding-the-possession-action-process-a-guide-for-private-landlords-in-england-and-wales"
+                             rel="noreferrer noopener" target="_blank" class="govuk-link"> guidance on
                             possession notice periods (opens in a new tab)</a>
                             to make sure your claim is valid.
                         </p>
