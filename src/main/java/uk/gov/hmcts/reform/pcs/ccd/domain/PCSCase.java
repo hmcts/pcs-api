@@ -139,9 +139,9 @@ public class PCSCase {
     )
     private YesOrNo claimDueToRentArrears;
 
-    @JsonUnwrapped(prefix = "rentArrears_")
+    @JsonUnwrapped(prefix = "groundsForPossession_")
     @CCD
-    private GroundsForPossession groundsForPossession;
+    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
 
     @CCD
     private YesOrNo overrideResumedGrounds;

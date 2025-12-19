@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
@@ -33,8 +33,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldErrorWhenRentArrearsSelectedAndNoAdditionalSelected() {
         // Given: user selected rent arrears (e.g., ground 8) on previous page, but nothing on this page
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
                     .build()
             )
@@ -51,8 +51,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldErrorWhenRentArrearsGround10SelectedAndNoAdditionalSelected() {
         // Given: user selected rent arrears ground 10, but nothing on this page
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
                     .build()
             )
@@ -69,8 +69,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldErrorWhenPersistentDelayGround11SelectedAndNoAdditionalSelected() {
         // Given: user selected persistent delay ground 11, but nothing on this page
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
                     .build()
             )
@@ -87,8 +87,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldMapPersistentDelayGround11ToDiscretionaryGrounds() {
         // Given: persistent delay ground 11 selected with additional mandatory
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
                     .build()
             )
@@ -108,8 +108,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldMapAllThreeRentArrearsGroundsWhenAllSelected() {
         // Given: all three rent arrears grounds selected with additional grounds
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(
                         RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
                         RentArrearsGround.RENT_ARREARS_GROUND10,
@@ -137,8 +137,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldPassAndSetShowReasonsWhenAdditionalMandatorySelected() {
         // Given: rent arrears selected earlier; user chooses an additional mandatory ground here
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
                     .build()
             )
@@ -163,8 +163,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldPassAndSetShowReasonsWhenAdditionalDiscretionarySelected() {
         // Given: rent arrears selected earlier; user chooses an additional discretionary ground here
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
                     .build()
             )
@@ -191,8 +191,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldPassWhenBothAdditionalMandatoryAndDiscretionarySelected() {
         // Given: rent arrears selected with both additional mandatory and discretionary
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
                     .build()
             )
@@ -227,8 +227,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
             RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12
         );
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of())
                     .build()
             )
@@ -251,8 +251,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldUseEmptySetsWhenNoRentArrearsAndNoAdditionalAndNoExistingCanonicalSets() {
         // Given: no rent arrears grounds, no additional grounds, and no existing canonical sets
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of())
                     .build()
             )
@@ -272,8 +272,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldMergeAdditionalWhenNoRentArrearsButHasAdditional() {
         // Given: no rent arrears grounds but has additional grounds
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of())
                     .build()
             )
@@ -298,8 +298,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         YesOrNo expectedShowReasonPage) {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(rentArrearsGrounds)
                     .build()
             )
@@ -321,8 +321,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldNotShowReasonPageWhenOnlyRentArrearsGroundsSelected() {
         // Given: only rent arrears grounds (8, 10, 11) selected, no other grounds
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
                                     RentArrearsGround.RENT_ARREARS_GROUND10,
                                     RentArrearsGround.PERSISTENT_DELAY_GROUND11))
@@ -343,8 +343,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldShowReasonPageWhenHasOtherMandatoryGrounds() {
         // Given: rent arrears ground 8 + other mandatory ground
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
                     .build()
             )
@@ -363,8 +363,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldShowReasonPageWhenHasOtherDiscretionaryGrounds() {
         // Given: rent arrears ground 10 + other discretionary ground
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
                     .build()
             )
@@ -386,8 +386,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         // Given: only ground 8 selected with additional mandatory (but no other grounds beyond 8)
         // This tests the logic: hasOtherMandatoryGrounds checks for grounds != GROUND8
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
                     .build()
             )
@@ -406,8 +406,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldHandleNullRentArrearsGrounds() {
         // Given: null rent arrears grounds
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(null)
                     .build()
             )
@@ -424,8 +424,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldHandleNullAdditionalGrounds() {
         // Given: rent arrears selected but null additional grounds
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
                     .build()
             )
@@ -444,8 +444,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldHandleEmptyAdditionalGrounds() {
         // Given: rent arrears selected but empty additional grounds
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
                     .build()
             )
@@ -464,8 +464,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldHandleNullExistingCanonicalSets() {
         // Given: no rent arrears, no additional, null existing canonical sets
         PCSCase caseData = PCSCase.builder()
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(Set.of())
                     .build()
             )

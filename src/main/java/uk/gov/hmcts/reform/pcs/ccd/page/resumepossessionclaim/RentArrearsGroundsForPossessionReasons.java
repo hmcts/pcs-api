@@ -31,7 +31,7 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
             .showCondition("claimDueToRentArrears=\"Yes\""
                                + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND showRentArrearsGroundReasonPage=\"Yes\""
-                               + " AND rentArrears_HasOtherAdditionalGrounds=\"Yes\""
+                               + " AND groundsForPossession_HasOtherAdditionalGrounds=\"Yes\""
                                + " AND legislativeCountry=\"England\""
             )
             .label("rentArrearsGrounds-lineSeparator","---")

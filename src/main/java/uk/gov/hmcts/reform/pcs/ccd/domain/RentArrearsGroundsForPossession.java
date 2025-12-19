@@ -18,7 +18,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class GroundsForPossession {
+public class RentArrearsGroundsForPossession {
 
     @CCD(
         typeOverride = MultiSelectList,

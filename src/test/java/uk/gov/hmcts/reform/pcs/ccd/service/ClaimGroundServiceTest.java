@@ -25,7 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.GroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -283,8 +283,8 @@ class ClaimGroundServiceTest {
                     .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
                     .build()
             )
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(null)
                     .build()
             )
@@ -326,8 +326,8 @@ class ClaimGroundServiceTest {
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.YES)
-            .groundsForPossession(
-                GroundsForPossession.builder()
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
                     .grounds(rentArrearsGrounds)
                     .build()
             )

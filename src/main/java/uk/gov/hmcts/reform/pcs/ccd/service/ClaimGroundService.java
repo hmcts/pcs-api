@@ -73,7 +73,7 @@ public class ClaimGroundService {
 
     private List<ClaimGroundEntity> assuredTenancyRentArrearsGroundsWithReason(PCSCase pcsCase) {
 
-        Set<RentArrearsGround> rentArrearsGrounds = pcsCase.getGroundsForPossession().getGrounds();
+        Set<RentArrearsGround> rentArrearsGrounds = pcsCase.getRentArrearsGroundsForPossession().getGrounds();
         Set<RentArrearsMandatoryGrounds> rentArrearsMandatoryGrounds = pcsCase
             .getRentArrearsMandatoryGrounds();
         Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds = pcsCase
