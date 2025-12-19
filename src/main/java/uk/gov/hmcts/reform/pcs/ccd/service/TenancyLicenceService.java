@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
@@ -28,13 +27,15 @@ public class TenancyLicenceService {
                     ? tenancyDetails.getDetailsOfOtherTypeOfTenancyLicence() : null)
             .supportingDocuments(ListValueUtils.unwrapListItems(
                     tenancyDetails != null ? tenancyDetails.getTenancyLicenceDocuments() : null))
+            .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
+            .totalRentArrears(pcsCase.getTotalRentArrears())
+            .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
+            .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
             .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
 
         buildRentSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
 
         tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
-
-        buildRentArrearsSection(pcsCase.getRentArrears(), tenancyLicenceBuilder);
 
         buildNoticeServedDetails(pcsCase.getNoticeServedDetails(), tenancyLicenceBuilder);
 
@@ -73,17 +74,6 @@ public class TenancyLicenceService {
             }
         }
         return null;
-    }
-
-    private void buildRentArrearsSection(RentArrearsSection rentArrears,
-                                         TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
-        if (rentArrears != null) {
-            tenancyLicenceBuilder
-                    .rentStatementDocuments(ListValueUtils.unwrapListItems(rentArrears.getStatementDocuments()))
-                    .totalRentArrears(penceToPounds(rentArrears.getTotal()))
-                    .thirdPartyPaymentSources(rentArrears.getThirdPartyPaymentSources())
-                    .thirdPartyPaymentSourceOther(rentArrears.getThirdPartyPaymentSourceOther());
-        }
     }
 
     private void buildNoticeServedDetails(NoticeServedDetails noticeServedDetails,
