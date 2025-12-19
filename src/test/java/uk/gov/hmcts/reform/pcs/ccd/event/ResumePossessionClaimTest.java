@@ -69,11 +69,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.factory.ClaimantPartyFactory;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -117,8 +117,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private PcsCaseService pcsCaseService;
     @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
-    @Mock
-    private PartyService partyService;
     @Mock
     private ClaimService claimService;
     @Mock
@@ -203,6 +201,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private FeeFormatter feeFormatter;
+    @Mock
+    private ClaimantPartyFactory claimantPartyFactory;
 
     @BeforeEach
     void setUp() {
@@ -214,8 +214,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
-            pcsCaseService, securityContextService,
-            partyService, claimService,
+            pcsCaseService, securityContextService, claimService,
             savingPageBuilderFactory, resumeClaim,
             selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
@@ -229,7 +228,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossession, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter
+            underlesseeOrMortgageePage, feeService, feeFormatter, claimantPartyFactory
         );
 
         setEventUnderTest(underTest);
@@ -485,15 +484,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            verify(partyService).createPartyEntity(
-                USER_ID,
-                claimantName,
-                null,
-                claimantName,
-                claimantContactEmail,
-                propertyAddress,
-                claimantContactPhoneNumber
-            );
+            verify(claimantPartyFactory).createAndPersistClaimantParty(any(PCSCase.class), any());
         }
 
         @Test
@@ -597,9 +588,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         private PartyEntity stubPartyCreation() {
             PartyEntity partyEntity = mock(PartyEntity.class);
-            when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
-                .thenReturn(partyEntity);
-
+            when(claimantPartyFactory.createAndPersistClaimantParty(any(), any())).thenReturn(partyEntity);
             return partyEntity;
         }
 
