@@ -246,10 +246,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
-            claimantInfo.setOrganisationName(organisationName);
+            claimantInfo.setClaimantName(organisationName);
         } else {
             // Fallback to user details if organisation name cannot be retrieved
-            claimantInfo.setOrganisationName(userEmail);
+            claimantInfo.setClaimantName(userEmail);  // HDPI-3582 will fix this
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
@@ -319,7 +319,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        String responsibleParty = getClaimantInfo(pcsCase).getOrganisationName();
+        String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
         String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
 

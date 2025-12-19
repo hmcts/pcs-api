@@ -292,7 +292,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedClaimantEmail);
+            assertThat(updatedCaseData.getClaimantInformation().getClaimantName())
+                .isEqualTo(expectedClaimantEmail); // HDPI-3582 will fix this
             assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail())
                 .isEqualTo(expectedClaimantEmail);
             assertThat(updatedCaseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
