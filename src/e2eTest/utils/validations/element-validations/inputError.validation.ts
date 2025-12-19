@@ -18,7 +18,7 @@ export class InputErrorValidation implements IValidation {
 
   private async findFieldValueLocator(page: Page, fieldName: string, data: validationData): Promise<Locator> {
     const locators = [
-      page.locator(`//span[text()="${fieldName}"]/ancestor::div[contains(@class,'form-group-error')]//child::span[contains(@class,'error-message')]`)
+      page.locator(`//span[text()="${fieldName}"]/ancestor::div[contains(@class,'form-group')]//child::span[contains(@class,'error-message')]`)
     ];
 
     for (const locator of locators) {
