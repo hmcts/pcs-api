@@ -38,6 +38,7 @@ java:
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     CCD_SDK_DECENTRALISED: "true"
     ENVIRONMENT: preview
+    SPRING_PROFILES_ACTIVE: preview
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
