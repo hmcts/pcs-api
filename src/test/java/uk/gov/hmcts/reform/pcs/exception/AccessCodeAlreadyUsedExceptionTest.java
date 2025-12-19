@@ -91,4 +91,3 @@ class AccessCodeAlreadyUsedExceptionTest {
         assertThat(exception.getCause().getCause()).isSameAs(rootCause);
     }
 }
-
