@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
@@ -26,15 +27,19 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentArrearsGroundsForPossession());
+        setPageUnderTest(new uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession());
     }
 
     @Test
     void shouldAutoPopulateMandatoryGroundsWhenSeriousRentArrearsGround8IsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
-            .hasOtherAdditionalGrounds(YES)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                    .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+                    .hasOtherAdditionalGrounds(YES)
+                    .build()
+            )
             .build();
 
         // When
@@ -50,8 +55,12 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
     void shouldAutoPopulateDiscretionaryGroundsWhenRentArrearsGround10IsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
-            .hasOtherAdditionalGrounds(YES)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                    .hasOtherAdditionalGrounds(YES)
+                    .grounds(Set.of(RentArrearsGround.RENT_ARREARS_GROUND10))
+                    .build()
+            )
             .build();
 
         // When
@@ -67,8 +76,12 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
     void shouldAutoPopulateDiscretionaryGroundsWhenPersistentDelayGround11IsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
-            .hasOtherAdditionalGrounds(YES)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                    .hasOtherAdditionalGrounds(YES)
+                    .grounds(Set.of(RentArrearsGround.PERSISTENT_DELAY_GROUND11))
+                    .build()
+            )
             .build();
 
         // When
@@ -84,12 +97,14 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
     void shouldAutoPopulateBothMandatoryAndDiscretionaryGroundsWhenMultipleGroundsAreSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Set.of(
-                RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
-                RentArrearsGround.RENT_ARREARS_GROUND10,
-                RentArrearsGround.PERSISTENT_DELAY_GROUND11
-            ))
-            .hasOtherAdditionalGrounds(YES)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                    .hasOtherAdditionalGrounds(YES)
+                    .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8,
+                                    RentArrearsGround.RENT_ARREARS_GROUND10,
+                                    RentArrearsGround.PERSISTENT_DELAY_GROUND11))
+                    .build()
+            )
             .build();
 
         // When
@@ -109,8 +124,12 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
     void shouldNotAutoPopulateWhenNoRentArrearsGroundsAreSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Set.of())
-            .hasOtherAdditionalGrounds(YES)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                    .hasOtherAdditionalGrounds(YES)
+                    .grounds(Set.of())
+                    .build()
+            )
             .build();
 
         // When
@@ -125,8 +144,12 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
     void shouldNotAutoPopulateWhenRentArrearsGroundsIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(null)
-            .hasOtherAdditionalGrounds(YES)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                    .hasOtherAdditionalGrounds(YES)
+                    .grounds(null)
+                    .build()
+            )
             .build();
 
         // When
@@ -141,10 +164,14 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
     void shouldInitializeEmptyListsWhenMandatoryAndDiscretionaryGroundsAreNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                    .hasOtherAdditionalGrounds(YES)
+                    .grounds(Set.of(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8))
+                    .build()
+            )
             .rentArrearsMandatoryGrounds(null)
             .rentArrearsDiscretionaryGrounds(null)
-            .hasOtherAdditionalGrounds(YES)
             .build();
 
         // When
@@ -164,8 +191,12 @@ class RentArrearsGroundsForPossessionTest extends BasePageTest {
         boolean expectOverride) {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGrounds(currentGrounds)
-            .copyOfRentArrearsGrounds(previousGrounds)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                    .grounds(currentGrounds)
+                    .copyOfGrounds(previousGrounds)
+                    .build()
+            )
             .build();
 
         // When
