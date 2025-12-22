@@ -40,6 +40,18 @@ export default defineConfig({
     ],
   ],
   projects: [
+    // Setup project - runs first to authenticate and save cookies
+    {
+      name: 'auth-setup',
+      testMatch: '**/setup/**/*.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+        viewport: DEFAULT_VIEWPORT,
+        headless: !!process.env.CI,
+      },
+    },
+    // Main test projects - depend on auth-setup
     {
       name: 'chrome',
       use: {
@@ -52,6 +64,7 @@ export default defineConfig({
         viewport: DEFAULT_VIEWPORT,
         headless: !!process.env.CI,
       },
+      dependencies: ['auth-setup'],
     },
     ...(process.env.CI ? [
       {
@@ -65,7 +78,8 @@ export default defineConfig({
           javaScriptEnabled: true,
           viewport: DEFAULT_VIEWPORT,
           headless: !!process.env.CI,
-        }
+        },
+        dependencies: ['auth-setup'],
       }
     ] : [])
   ]
