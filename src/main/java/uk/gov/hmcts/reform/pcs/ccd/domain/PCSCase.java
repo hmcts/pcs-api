@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -268,18 +268,11 @@ public class PCSCase {
     @CCD
     private WalesHousingAct walesHousingAct;
 
-    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
-    private VerticalYesNo prohibitedConductWalesClaim;
 
-    @CCD(
-        label = "Why are you making this claim?",
-        hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
-    )
-    private String prohibitedConductWalesWhyMakingClaim;
 
-    @CCD
-    private PeriodicContractTermsWales periodicContractTermsWales;
+
+    @JsonUnwrapped(prefix = "wales_")
+    private ProhibitedConductWales prohibitedConductWales;
 
     @JsonUnwrapped
     @CCD
