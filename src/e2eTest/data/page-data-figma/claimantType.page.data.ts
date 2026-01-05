@@ -1,4 +1,4 @@
-export const selectClaimantType = {
+export const claimantType = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Claimant type`,
   caseNumberParagraph: `Case number:`,
@@ -7,10 +7,15 @@ export const selectClaimantType = {
   whoIsTheClaimantQuestion: `Who is the claimant in this case?`,
   typeOfClaimantYouAreRepresentingHintText: `If you’re a legal representative, you should select the type of claimant you’re representing`,
   privateLandlordRadioOption: `Private landlord`,
-  registeredProviderOfSocialHousingRadioOption: `Registered provider of social housing`,
   mortgageLenderRadioOption: `Mortgage lender`,
   otherRadioOption: `Other`,
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
+  england: {
+    registeredProviderForSocialHousing: 'Registered provider of social housing',
+  },
+  wales: {
+    communityLandlord: 'Community landlord',
+  }
 };

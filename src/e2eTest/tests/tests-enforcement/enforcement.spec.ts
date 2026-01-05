@@ -59,13 +59,8 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test.describe('[Enforcement - Warrant of Possession] @regression', async () => {
-  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR', {
-    annotation: {
-      type: 'issue',
-      description: `Fee validation in Your Application page will handle dynamic fee validation upon completion of the following - 'https://tools.hmcts.net/jira/browse/HDPI-3386'`,
-    },
-  },
+test.describe('[Enforcement - Warrant of Possession]', async () => {
+  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);

@@ -11,23 +11,22 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -44,8 +43,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class PCSCase {
 
     // Field label constants - shared between domain annotations and validation
-    public static final String DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL =
-        "Give details of the type of tenancy or licence agreement that’s in place";
+    public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
+    public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
     @CCD(
@@ -122,7 +121,7 @@ public class PCSCase {
     private List<ListValue<Party>> parties;
 
     @JsonUnwrapped
-    private ClaimantContactPreferences contactPreferencesDetails;
+    private ClaimantContactPreferences claimantContactPreferences;
 
     @CCD(
         label = "Do you want to ask for your costs back?",
@@ -282,50 +281,11 @@ public class PCSCase {
     @CCD
     private PeriodicContractTermsWales periodicContractTermsWales;
 
-    @CCD(
-        label = "How much is the rent?",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String currentRent;
-
-    @CCD(
-        label = "How frequently should rent be paid?"
-    )
-    private RentPaymentFrequency rentFrequency;
-
-    @CCD(
-        label = "Enter frequency",
-        hint = "Please specify the frequency"
-    )
-    private String otherRentFrequency;
-
-    @CCD(
-        label = "Enter the amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String dailyRentChargeAmount;
-
-    @CCD(
-        label = "Is the amount per day that unpaid rent should be charged at correct?"
-    )
-    private VerticalYesNo rentPerDayCorrect;
-
-    @CCD(
-        label = "Enter amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String amendedDailyRentChargeAmount;
-
-    @CCD(
-        typeOverride = FieldType.MoneyGBP
-    )
-    private String calculatedDailyRentChargeAmount;
-
+    @JsonUnwrapped(prefix = "rentDetails_")
     @CCD
-    private String formattedCalculatedDailyRentChargeAmount;
+    private RentDetails rentDetails;
+
+    private RentPaymentFrequency rentSectionPaymentFrequency;
 
     @CCD(searchable = false)
     private YesOrNo showPostcodeNotAssignedToCourt;
@@ -347,7 +307,8 @@ public class PCSCase {
      */
     @CCD(
         label = "Add additional defendant",
-        hint = "Add an additional defendant to the case"
+        hint = "Add an additional defendant to the case",
+        min = 1
     )
     private List<ListValue<DefendantDetails>> additionalDefendants;
 
@@ -356,29 +317,9 @@ public class PCSCase {
      */
     private List<ListValue<DefendantDetails>> allDefendants;
 
-    @CCD(
-        label = "What type of tenancy or licence is in place?",
-        access = {CaseworkerReadAccess.class}
-    )
-    private TenancyLicenceType typeOfTenancyLicence;
-
-    @CCD(
-        label = DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
-        hint = "You can enter up to 500 characters",
-        typeOverride = TextArea
-    )
-    private String detailsOfOtherTypeOfTenancyLicence;
-
-    @CCD(
-        label = "What date did the tenancy or licence begin?",
-        hint = "For example, 16 4 2021"
-    )
-    private LocalDate tenancyLicenceDate;
-
-    @CCD(
-        label = "Add document",hint = "Upload a document to the system"
-    )
-    private List<ListValue<Document>> tenancyLicenceDocuments;
+    @JsonUnwrapped(prefix = "tenancy_")
+    @CCD
+    private TenancyLicenceDetails tenancyLicenceDetails;
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
@@ -397,7 +338,8 @@ public class PCSCase {
         min = 0,
         typeOverride = FieldType.MoneyGBP
     )
-    private String totalRentArrears;
+    @JacksonMoneyGBP
+    private BigDecimal totalRentArrears;
 
     @CCD(
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "
@@ -420,28 +362,12 @@ public class PCSCase {
     )
     private String thirdPartyPaymentSourceOther;
 
-    @CCD(
-        label = "Do you have grounds for possession?"
-    )
-    private VerticalYesNo hasIntroductoryDemotedOtherGroundsForPossession;
-
-    @CCD(
-            label = "What are your grounds for possession?",
-            typeOverride = FieldType.MultiSelectList,
-            typeParameterOverride = "IntroductoryDemotedOrOtherGrounds"
-    )
-    private Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds;
-
-    @CCD(
-            label = OTHER_GROUND_DESCRIPTION_LABEL,
-            hint = "You’ll be able to explain your reasons for claiming possession"
-                    + " under these grounds on the next screen. You can enter up to 500 characters",
-            typeOverride = TextArea
-    )
-    private String otherGroundDescription;
-
     @CCD
     private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
+
+    @JsonUnwrapped(prefix = "introGrounds_")
+    @CCD
+    private IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
 
     @JsonUnwrapped
     @CCD
@@ -479,26 +405,11 @@ public class PCSCase {
     )
     private VerticalYesNo arrearsJudgmentWanted;
 
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsMandatoryGrounds"
-    )
-    private Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGroundsOptions;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds"
-    )
-    private Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGroundsOptions;
+    @JsonUnwrapped(prefix = "noRentArrears_")
+    private NoRentArrearsGroundsOptions noRentArrearsGroundsOptions;
 
     @JsonUnwrapped
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
-
-    private YesOrNo showNoRentArrearsGroundReasonPage;
 
     private YesOrNo showRentSectionPage;
 
@@ -564,21 +475,8 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "DiscretionaryGroundWales"
-    )
-    private Set<DiscretionaryGroundWales> discretionaryGroundsWales;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "MandatoryGroundWales"
-    )
-    private Set<MandatoryGroundWales> mandatoryGroundsWales;
+    @JsonUnwrapped(prefix = "groundsForPossessionWales_")
+    private GroundsForPossessionWales groundsForPossessionWales;
 
     @JsonUnwrapped
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
@@ -617,7 +515,8 @@ public class PCSCase {
 
     @CCD(
         label = "Add underlessee or mortgagee",
-        hint = "Add an underlessee or mortgagee to the case"
+        hint = "Add an underlessee or mortgagee to the case",
+        min = 1
     )
     private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
 

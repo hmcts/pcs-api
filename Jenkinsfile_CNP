@@ -55,6 +55,9 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
     }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
+      env.E2E_SUITE = "regression"
+    }
   }
 
   onMaster() {
@@ -113,7 +116,7 @@ def setPreviewEnvVars() {
 }
 
 def setAatEnvVars() {
-  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net"
   env.ENVIRONMENT= "aat"
   env.E2E_SUITE= "regression"
 }

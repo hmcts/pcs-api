@@ -95,7 +95,13 @@ export class CYAStore {
         break;
     }
 
-    if (qaObject) this.qaObjects.push(qaObject);
+    if (qaObject) {
+      const normalizedQuestion = this.normalizeText(qaObject.question);
+      if (normalizedQuestion.includes('email address') || normalizedQuestion.includes('password')) {
+        return;
+      }
+      this.qaObjects.push(qaObject);
+    }
   }
 
   getQAObjects(): QAObject[] {
