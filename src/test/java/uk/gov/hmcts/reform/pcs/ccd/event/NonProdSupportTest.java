@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Profile;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -77,16 +76,6 @@ class NonProdSupportTest extends BaseEventTest {
         // Then
         assertThat(result.getState()).isEqualTo(State.CASE_ISSUED);
         verify(nonProdSupportService).caseGenerator(anyLong(), any());
-    }
-
-    @Test
-    void shouldOnlyBeActiveInLocalDevAndPreviewProfiles() {
-        // Given
-        Profile profileAnnotation = NonProdSupport.class.getAnnotation(Profile.class);
-
-        // Then
-        assertThat(profileAnnotation).isNotNull();
-        assertThat(profileAnnotation.value()).containsExactlyInAnyOrder("local", "dev", "preview");
     }
 
 }

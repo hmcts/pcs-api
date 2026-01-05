@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -183,16 +182,6 @@ class CaseSupportHelperTest {
         org.assertj.core.api.Assertions.assertThatThrownBy(() ->
             underTest.getNonProdResource(label)
         ).isInstanceOf(java.util.NoSuchElementException.class);
-    }
-
-    @Test
-    void shouldOnlyBeActiveInLocalDevAndPreviewProfiles() {
-        // Given
-        Profile profileAnnotation = CaseSupportHelper.class.getAnnotation(Profile.class);
-
-        // Then
-        assertThat(profileAnnotation).isNotNull();
-        assertThat(profileAnnotation.value()).containsExactlyInAnyOrder("local", "dev", "preview");
     }
 
     @Test

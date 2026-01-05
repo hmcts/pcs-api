@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.nonprod;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
@@ -23,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 @Slf4j
-@Profile({"local", "dev", "preview"})
 public class EnforcementWarrantSupport extends MakeAClaimCaseGenerationSupport {
 
     static final String CASE_GENERATOR = "Create Enforcement Warrant Basic Case";

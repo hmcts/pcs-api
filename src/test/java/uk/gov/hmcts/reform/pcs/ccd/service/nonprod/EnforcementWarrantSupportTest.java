@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.util.StreamUtils;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
@@ -109,16 +108,6 @@ class EnforcementWarrantSupportTest {
 
         // Then
         assertThat(result).isEqualTo(EnforcementWarrantSupport.CASE_GENERATOR);
-    }
-
-    @Test
-    void shouldOnlyBeActiveInLocalDevAndPreviewProfiles() {
-        // Given
-        Profile profileAnnotation = EnforcementWarrantSupport.class.getAnnotation(Profile.class);
-
-        // Then
-        assertThat(profileAnnotation).isNotNull();
-        assertThat(profileAnnotation.value()).containsExactlyInAnyOrder("local", "dev", "preview");
     }
 
     @Test

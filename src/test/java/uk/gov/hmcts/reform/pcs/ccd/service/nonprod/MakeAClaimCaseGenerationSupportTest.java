@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -123,16 +122,6 @@ class MakeAClaimCaseGenerationSupportTest {
         verify(nonProdResource).getInputStream();
         verify(draftCaseDataService, never()).parseCaseDataJson(any());
         verify(pcsCaseService, never()).createCase(anyLong(), any(), any());
-    }
-
-    @Test
-    void shouldOnlyBeActiveInLocalDevAndPreviewProfiles() {
-        // Given
-        Profile profileAnnotation = MakeAClaimCaseGenerationSupport.class.getAnnotation(Profile.class);
-
-        // Then
-        assertThat(profileAnnotation).isNotNull();
-        assertThat(profileAnnotation.value()).containsExactlyInAnyOrder("local", "dev", "preview");
     }
 
     @Test

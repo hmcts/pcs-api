@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.nonprod;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,6 @@ import java.util.UUID;
 @Component
 @AllArgsConstructor
 @Slf4j
-@Profile({"local", "dev", "preview"})
 public class CaseSupportHelper {
 
     public static final String LOCATION_PATTERN = "classpath*:nonprod/";

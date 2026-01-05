@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.nonprod;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
@@ -25,7 +24,6 @@ import java.util.UUID;
 @Component
 @AllArgsConstructor
 @Slf4j
-@Profile({"local", "dev", "preview"})
 public class MakeAClaimCaseGenerationSupport implements TestCaseGenerationStrategy {
 
     static final String CASE_GENERATOR = "Create Make A Claim Basic Case";
