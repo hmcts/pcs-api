@@ -4,11 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetailsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-
-import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,68 +14,47 @@ class RentDetailsTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentDetails());
-    }
-
-    @Test
-    void shouldCalculateDailyRentForWeeklyFrequency() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .currentRent(new BigDecimal("70.00"))
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
-                        .build())
-                .build();
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount())
-            .isEqualTo(new BigDecimal("10.00"));
-    }
-
-    @Test
-    void shouldCalculateDailyRentForMonthlyFrequency() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .currentRent(new BigDecimal("300.00"))
-                        .rentFrequency(RentPaymentFrequency.MONTHLY)
-                        .build())
-                .build();
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isEqualTo("9.86");
-    }
-
-    @Test
-    void shouldUseProvidedDailyRentForOtherFrequency() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .rentFrequency(RentPaymentFrequency.OTHER)
-                        .dailyRentChargeAmount(new BigDecimal("15.00"))
-                        .build())
-                .build();
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getRentDetails().getDailyRentChargeAmount()).isEqualTo(new BigDecimal("15.00"));
+        setPageUnderTest(new RentDetailsPage());
     }
 
     @Test
     void shouldSetShowRentArrearsPageToNoForWeeklyFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
-                        .currentRent(new BigDecimal("70.00"))
+                .rentDetails(RentDetails.builder()
+                        .frequency(RentPaymentFrequency.WEEKLY)
+                        .build())
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldSetShowRentArrearsPageToNoForMonthlyFrequency() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(RentDetails.builder()
+                        .frequency(RentPaymentFrequency.MONTHLY)
+                        .build())
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldSetShowRentArrearsPageToNoForFortnightlyFrequency() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(RentDetails.builder()
+                        .frequency(RentPaymentFrequency.FORTNIGHTLY)
                         .build())
                 .build();
 
@@ -92,8 +69,8 @@ class RentDetailsTest extends BasePageTest {
     void shouldSetShowRentArrearsPageToYesForOtherFrequency() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .rentFrequency(RentPaymentFrequency.OTHER)
+                .rentDetails(RentDetails.builder()
+                        .frequency(RentPaymentFrequency.OTHER)
                         .build())
                 .build();
 
@@ -105,50 +82,11 @@ class RentDetailsTest extends BasePageTest {
     }
 
     @Test
-    void shouldCalculateDailyRentForFortnightlyFrequency() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .currentRent(new BigDecimal("140.00"))
-                        .rentFrequency(RentPaymentFrequency.FORTNIGHTLY)
-                        .build())
-                .build();
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isEqualTo(new BigDecimal("10.00"));
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyRentChargeAmount()).isEqualTo("£10.00");
-    }
-
-    @Test
-    void shouldSetFormattedCurrencyWhenCalculatingDailyRent() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .currentRent(new BigDecimal("70.00"))
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
-                        .build())
-                .build();
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount())
-            .isEqualTo(new BigDecimal("10.00"));
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyRentChargeAmount())
-            .isEqualTo("£10.00");
-    }
-
-    @Test
     void shouldNotProcessWhenRentFrequencyIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .currentRent(new BigDecimal("70.00"))
-                        .rentFrequency(null)
+                .rentDetails(RentDetails.builder()
+                        .frequency(null)
                         .build())
                 .build();
 
@@ -156,8 +94,20 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isNull();
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyRentChargeAmount()).isNull();
+        assertThat(caseData.getShowRentArrearsPage()).isNull();
+    }
+
+    @Test
+    void shouldNotProcessWhenRentDetailsIsNull() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(null)
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
         assertThat(caseData.getShowRentArrearsPage()).isNull();
     }
 
@@ -165,9 +115,9 @@ class RentDetailsTest extends BasePageTest {
     void shouldSetShowRentArrearsPageWhenCurrentRentIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
+                .rentDetails(RentDetails.builder()
                         .currentRent(null)
-                        .rentFrequency(RentPaymentFrequency.WEEKLY)
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
                 .build();
 
@@ -175,18 +125,16 @@ class RentDetailsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getRentDetails().getCalculatedDailyRentChargeAmount()).isNull();
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyRentChargeAmount()).isNull();
         assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.NO);
     }
 
     @Test
-    void shouldSetShowRentArrearsPageToNoForMonthlyFrequency() {
+    void shouldSetShowRentArrearsPageWhenCurrentRentIsEmpty() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetailsSection.builder()
-                        .rentFrequency(RentPaymentFrequency.MONTHLY)
-                        .currentRent(new BigDecimal("300.00"))
+                .rentDetails(RentDetails.builder()
+                        .currentRent("")
+                        .frequency(RentPaymentFrequency.WEEKLY)
                         .build())
                 .build();
 
@@ -195,5 +143,117 @@ class RentDetailsTest extends BasePageTest {
 
         // Then
         assertThat(caseData.getShowRentArrearsPage()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldCalculateDailyRentForWeeklyFrequency() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(RentDetails.builder()
+                        .currentRent("30000") // £300.00 in pence
+                        .frequency(RentPaymentFrequency.WEEKLY)
+                        .build())
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        // 30000 / 7 = 4285.71 pence, rounded to 4286 pence = £42.86
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("4286");
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£42.86");
+    }
+
+    @Test
+    void shouldCalculateDailyRentForMonthlyFrequency() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(RentDetails.builder()
+                        .currentRent("30000") // £300.00 in pence
+                        .frequency(RentPaymentFrequency.MONTHLY)
+                        .build())
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        // 30000 / 30.44 = 985.55 pence, rounded to 986 pence = £9.86
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("986");
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£9.86");
+    }
+
+    @Test
+    void shouldCalculateDailyRentForFortnightlyFrequency() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(RentDetails.builder()
+                        .currentRent("30000") // £300.00 in pence
+                        .frequency(RentPaymentFrequency.FORTNIGHTLY)
+                        .build())
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        // 30000 / 14 = 2142.86 pence, rounded to 2143 pence = £21.43
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("2143");
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£21.43");
+    }
+
+    @Test
+    void shouldSetFormattedCurrencyWhenCalculatingDailyRent() {
+        // Given - rent that results in whole pounds (no pence)
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(RentDetails.builder()
+                        .currentRent("7000") // £70.00 in pence
+                        .frequency(RentPaymentFrequency.WEEKLY)
+                        .build())
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        // 7000 / 7 = 1000 pence = £10.00, formatted should strip trailing zeros to "£10"
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo("1000");
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£10");
+    }
+
+    @Test
+    void shouldNotCalculateDailyRentWhenCurrentRentIsNull() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(RentDetails.builder()
+                        .currentRent(null)
+                        .frequency(RentPaymentFrequency.WEEKLY)
+                        .build())
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isNull();
+    }
+
+    @Test
+    void shouldNotCalculateDailyRentWhenCurrentRentIsEmpty() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .rentDetails(RentDetails.builder()
+                        .currentRent("")
+                        .frequency(RentPaymentFrequency.WEEKLY)
+                        .build())
+                .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isNull();
     }
 }
