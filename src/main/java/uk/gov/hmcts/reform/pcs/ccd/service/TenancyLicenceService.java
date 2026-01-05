@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 
 import java.math.BigDecimal;
 
@@ -27,14 +28,12 @@ public class TenancyLicenceService {
             .supportingDocuments(ListValueUtils.unwrapListItems(
                     tenancyDetails != null ? tenancyDetails.getTenancyLicenceDocuments() : null))
             .rentStatementDocuments(ListValueUtils.unwrapListItems(pcsCase.getRentStatementDocuments()))
-            .rentAmount(penceToPounds(pcsCase.getCurrentRent()))
-            .rentPaymentFrequency(pcsCase.getRentFrequency())
-            .otherRentFrequency(pcsCase.getOtherRentFrequency())
-            .dailyRentChargeAmount(getDailyRentAmount(pcsCase))
-            .totalRentArrears(penceToPounds(pcsCase.getTotalRentArrears()))
+            .totalRentArrears(pcsCase.getTotalRentArrears())
             .thirdPartyPaymentSources(pcsCase.getThirdPartyPaymentSources())
             .thirdPartyPaymentSourceOther(pcsCase.getThirdPartyPaymentSourceOther())
             .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
+
+        buildRentSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
 
         tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
 
@@ -49,11 +48,25 @@ public class TenancyLicenceService {
         return tenancyLicenceBuilder.build();
     }
 
-    private BigDecimal getDailyRentAmount(PCSCase pcsCase) {
+    private void buildRentSection(RentDetails rentDetails,
+                                  TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
+        if (rentDetails != null) {
+            tenancyLicenceBuilder
+                    .rentAmount(penceToPounds(rentDetails.getCurrentRent()))
+                    .rentPaymentFrequency(rentDetails.getFrequency())
+                    .otherRentFrequency(rentDetails.getOtherFrequency())
+                    .dailyRentChargeAmount(getDailyRentAmount(rentDetails));
+        }
+    }
+
+    private BigDecimal getDailyRentAmount(RentDetails rentDetails) {
+        if (rentDetails == null) {
+            return null;
+        }
         String[] fieldValues = {
-            pcsCase.getAmendedDailyRentChargeAmount(),
-            pcsCase.getCalculatedDailyRentChargeAmount(),
-            pcsCase.getDailyRentChargeAmount()
+            rentDetails.getAmendedDailyCharge(),
+            rentDetails.getCalculatedDailyCharge(),
+            rentDetails.getDailyCharge()
         };
         for (String value : fieldValues) {
             if (value != null && !value.trim().isEmpty()) {
@@ -127,7 +140,7 @@ public class TenancyLicenceService {
     }
 
     private static BigDecimal penceToPounds(String pence) {
-        if (pence == null || pence.trim().isEmpty()) {
+        if (pence == null || pence.isBlank()) {
             return null;
         }
         return new BigDecimal(pence).movePointLeft(2);
