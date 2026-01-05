@@ -60,7 +60,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundF
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsOrBreachOfTenancyGround;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
@@ -207,7 +207,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(checkingNotice)
             .add(walesCheckingNotice)
             .add(noticeDetails)
-            .add(new RentDetails())
+            .add(new RentDetailsPage())
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())

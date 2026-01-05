@@ -282,9 +282,11 @@ public class PCSCase {
     @CCD
     private PeriodicContractTermsWales periodicContractTermsWales;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "rentDetails_")
     @CCD
-    private RentDetailsSection rentDetails;
+    private RentDetails rentDetails;
+
+    private RentPaymentFrequency rentSectionPaymentFrequency;
 
     @CCD(searchable = false)
     private YesOrNo showPostcodeNotAssignedToCourt;
