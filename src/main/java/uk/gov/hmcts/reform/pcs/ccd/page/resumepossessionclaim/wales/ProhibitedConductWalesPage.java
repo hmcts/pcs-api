@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -37,13 +38,15 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
                 </p>
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
-            .mandatory(PCSCase::getProhibitedConductWalesClaim)
-            .complex(PCSCase::getProhibitedConductWales,
-                     "prohibitedConductWalesClaim=\"YES\"")
-            .mandatory(ProhibitedConductWales::getAgreedTermsOfPeriodicContractOption)
-            .mandatory(ProhibitedConductWales::getDetailsOfTermsText,
-                    "prohibitedConductWales.agreedTermsOfPeriodicContractOption=\"YES\"")
-            .mandatory(ProhibitedConductWales::getProhibitedConductWalesWhyMakingClaim)
+            .complex(PCSCase::getProhibitedConductWales)
+            .mandatory(ProhibitedConductWales::getProhibitedConductWalesClaim)
+            .complex(ProhibitedConductWales::getPeriodicContractTermsWales, "wales_ProhibitedConductWalesClaim=\"YES\"")
+                .mandatory(PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract)
+                .mandatory(PeriodicContractTermsWales::getDetailsOfTerms,
+                "wales_PeriodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
+                .done()
+            .mandatory(ProhibitedConductWales::getProhibitedConductWalesWhyMakingClaim,
+                "wales_ProhibitedConductWalesClaim=\"YES\"")
             .done()
             .label("prohibitedConductWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -57,18 +60,18 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
         ProhibitedConductWales prohibitedConductWales =
             caseData.getProhibitedConductWales();
 
-        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES
-            && prohibitedConductWales != null
-            && prohibitedConductWales.getAgreedTermsOfPeriodicContractOption() == VerticalYesNo.YES) {
+        if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES
+            && prohibitedConductWales.getPeriodicContractTermsWales().getAgreedTermsOfPeriodicContract() ==
+            VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
-                prohibitedConductWales.getDetailsOfTermsText(),
+                prohibitedConductWales.getPeriodicContractTermsWales().getDetailsOfTerms(),
                 "Give details of the terms you’ve agreed",
                 TextAreaValidationService.SHORT_TEXT_LIMIT,
                 validationErrors
             );
         }
 
-        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
+        if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
                 prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim(),
                 "Why are you making this claim?",

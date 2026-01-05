@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,18 +17,11 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProhibitedConductWales {
 
-    @CCD(
-        label = "Have you and the contract holder agreed terms of the periodic standard contract "
-            + "in addition to those incorporated by statute?"
-    )
-    private VerticalYesNo agreedTermsOfPeriodicContractOption;
+    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
+    private VerticalYesNo prohibitedConductWalesClaim;
 
-    @CCD(
-        label = "Give details of the terms you’ve agreed",
-        hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
-    )
-    private String detailsOfTermsText;
+    @CCD
+    private PeriodicContractTermsWales periodicContractTermsWales;
 
     @CCD(
         label = "Why are you making this claim?",
