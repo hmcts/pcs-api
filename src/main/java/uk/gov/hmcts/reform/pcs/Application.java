@@ -38,6 +38,6 @@ public class Application {
     public static void main(final String[] args) {
         SpringApplication application = new SpringApplication(Application.class);
         application.addListeners(new ProfileFeatureActivation());
-        application.run(Application.class, args);
+        application.run(args);
     }
 }
