@@ -37,13 +37,13 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
                 </p>
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
-            .complex(PCSCase::getProhibitedConductWales, "prohibitedConductWalesClaim=\"YES\"")
-            .mandatory(ProhibitedConductWales::getProhibitedConductWalesClaim)
-                .mandatory(ProhibitedConductWales::getAgreedTermsOfPeriodicContractOption)
-                .mandatory(ProhibitedConductWales::getDetailsOfTermsText,
-                    "wales_AgreedTermsOfPeriodicContractOption=\"YES\"")
-            .mandatory(ProhibitedConductWales::getProhibitedConductWalesWhyMakingClaim,
-                       "wales_ProhibitedConductWalesClaim=\"YES\"")
+            .mandatory(PCSCase::getProhibitedConductWalesClaim)
+            .complex(PCSCase::getProhibitedConductWales,
+                     "prohibitedConductWalesClaim=\"YES\"")
+            .mandatory(ProhibitedConductWales::getAgreedTermsOfPeriodicContractOption)
+            .mandatory(ProhibitedConductWales::getDetailsOfTermsText,
+                    "prohibitedConductWales.agreedTermsOfPeriodicContractOption=\"YES\"")
+            .mandatory(ProhibitedConductWales::getProhibitedConductWalesWhyMakingClaim)
             .done()
             .label("prohibitedConductWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -57,7 +57,7 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
         ProhibitedConductWales prohibitedConductWales =
             caseData.getProhibitedConductWales();
 
-        if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES
+        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES
             && prohibitedConductWales != null
             && prohibitedConductWales.getAgreedTermsOfPeriodicContractOption() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
@@ -68,7 +68,7 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
             );
         }
 
-        if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
+        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
                 prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim(),
                 "Why are you making this claim?",

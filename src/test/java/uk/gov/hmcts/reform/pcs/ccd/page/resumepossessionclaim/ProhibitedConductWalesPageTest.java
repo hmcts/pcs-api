@@ -66,9 +66,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
     void shouldHandleNullCaseDataGracefully() {
         // Given
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(null)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(null)
                 .prohibitedConductWalesWhyMakingClaim(null)
                     .build()
             )
@@ -86,9 +86,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
     void shouldHandleEmptyCaseDataGracefully() {
         // Given
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(VerticalYesNo.NO)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(VerticalYesNo.NO)
                 .prohibitedConductWalesWhyMakingClaim("")
                     .build()
             )
@@ -99,7 +99,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
 
         // Then - Should not throw any exceptions
         assertThat(caseData).isNotNull();
-        assertThat(caseData.getProhibitedConductWales().getProhibitedConductWalesClaim()).isEqualTo(VerticalYesNo.NO);
+        assertThat(caseData.getProhibitedConductWalesClaim()).isEqualTo(VerticalYesNo.NO);
     }
 
     @ParameterizedTest
@@ -114,9 +114,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
 
         // Given
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(claimForProhibitedConductContract)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(claimForProhibitedConductContract)
                 .prohibitedConductWalesWhyMakingClaim(whyMakingClaim)
                 .agreedTermsOfPeriodicContractOption(agreedTermsOfPeriodicContract)
                 .detailsOfTermsText(detailsOfTerms)
@@ -128,7 +128,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getProhibitedConductWales().getProhibitedConductWalesClaim())
+        assertThat(caseData.getProhibitedConductWalesClaim())
             .isEqualTo(claimForProhibitedConductContract);
         assertThat(caseData.getProhibitedConductWales().getProhibitedConductWalesWhyMakingClaim())
             .isEqualTo(whyMakingClaim);
@@ -147,9 +147,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         String expectedWhyMakingClaim = "The tenant has repeatedly violated the terms of the contract";
 
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(VerticalYesNo.YES)
                 .prohibitedConductWalesWhyMakingClaim(expectedWhyMakingClaim)
                 .agreedTermsOfPeriodicContractOption(VerticalYesNo.YES)
                 .detailsOfTermsText(expectedDetailsOfTerms)
@@ -161,7 +161,7 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getProhibitedConductWales().getProhibitedConductWalesClaim())
+        assertThat(caseData.getProhibitedConductWalesClaim())
             .isEqualTo(VerticalYesNo.YES);
         assertThat(caseData.getProhibitedConductWales().getProhibitedConductWalesWhyMakingClaim())
             .isEqualTo(expectedWhyMakingClaim);
@@ -177,9 +177,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
     void shouldHandleWrappedQuestionWithNullValues() {
         // Given
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(VerticalYesNo.YES)
                 .prohibitedConductWalesWhyMakingClaim("Some reason")
                 .agreedTermsOfPeriodicContractOption(null)
                 .detailsOfTermsText(null)
@@ -235,9 +235,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         // Given
         String longText = "a".repeat(251); // Exceeds 250 character limit
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(VerticalYesNo.YES)
                 .prohibitedConductWalesWhyMakingClaim(longText)
                 .agreedTermsOfPeriodicContractOption(VerticalYesNo.YES)
                 .detailsOfTermsText(longText)
@@ -278,9 +278,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         // Given
         String validText = "a".repeat(250); // Exactly 250 characters
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(VerticalYesNo.YES)
                 .prohibitedConductWalesWhyMakingClaim(validText)
                 .agreedTermsOfPeriodicContractOption(VerticalYesNo.YES)
                 .detailsOfTermsText(validText)
@@ -310,9 +310,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
         // Given
         String longText = "a".repeat(251); // Exceeds 250 character limit
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(VerticalYesNo.YES)
                 .prohibitedConductWalesWhyMakingClaim(longText)
                 .agreedTermsOfPeriodicContractOption(VerticalYesNo.NO)
                 .detailsOfTermsText(longText)
@@ -352,9 +352,9 @@ class ProhibitedConductWalesPageTest extends BasePageTest {
     void shouldHandleNullWrappedQuestionGracefullyDuringValidation() {
         // Given
         PCSCase caseData = PCSCase.builder()
+            .prohibitedConductWalesClaim(VerticalYesNo.YES)
             .prohibitedConductWales(
                 ProhibitedConductWales.builder()
-                .prohibitedConductWalesClaim(VerticalYesNo.YES)
                 .prohibitedConductWalesWhyMakingClaim("Valid reason")
                     .build()
             )

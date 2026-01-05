@@ -261,7 +261,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(prohibitedConductWales.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
         when(prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim())
             .thenReturn(expectedWhyMakingClaim);
         when(prohibitedConductWales.getAgreedTermsOfPeriodicContractOption()).thenReturn(VerticalYesNo.YES);
@@ -298,7 +298,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(prohibitedConductWales.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
         when(prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim())
             .thenReturn(expectedWhyMakingClaim);
 
@@ -333,7 +333,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(prohibitedConductWales.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
         when(prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim())
             .thenReturn(expectedWhyMakingClaim);
         when(prohibitedConductWales.getAgreedTermsOfPeriodicContractOption()).thenReturn(null);
@@ -370,7 +370,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(prohibitedConductWales.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
         when(prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim())
             .thenReturn(expectedWhyMakingClaim);
         when(prohibitedConductWales.getAgreedTermsOfPeriodicContractOption()).thenReturn(VerticalYesNo.NO);
@@ -405,7 +405,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(prohibitedConductWales.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.NO);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.NO);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -433,7 +433,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(prohibitedConductWales.getProhibitedConductWalesClaim()).thenReturn(null);
+        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(null);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);

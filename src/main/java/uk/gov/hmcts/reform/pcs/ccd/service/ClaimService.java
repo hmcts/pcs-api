@@ -102,9 +102,9 @@ public class ClaimService {
     private ProhibitedConductWales buildProhibitedConduct(PCSCase pcsCase) {
 
         return Optional.ofNullable(pcsCase.getProhibitedConductWales())
-            .filter(pc -> pc.getProhibitedConductWalesClaim() != null)
+            .filter(pc -> pcsCase.getProhibitedConductWalesClaim() != null)
             .map(pc -> ProhibitedConductWales.builder()
-                .claimForProhibitedConductContract(pc.getProhibitedConductWalesClaim())
+                .claimForProhibitedConductContract(pcsCase.getProhibitedConductWalesClaim())
                 .agreedTermsOfPeriodicContract(pc.getAgreedTermsOfPeriodicContractOption())
                 .detailsOfTerms(pc.getDetailsOfTermsText())
                 .whyMakingClaim(pc.getProhibitedConductWalesWhyMakingClaim())

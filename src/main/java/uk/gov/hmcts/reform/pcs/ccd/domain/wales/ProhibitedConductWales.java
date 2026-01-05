@@ -17,7 +17,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class ProhibitedConductWales {
 
     @CCD(
@@ -32,9 +31,6 @@ public class ProhibitedConductWales {
         typeOverride = TextArea
     )
     private String detailsOfTermsText;
-
-    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
-    private VerticalYesNo prohibitedConductWalesClaim;
 
     @CCD(
         label = "Why are you making this claim?",

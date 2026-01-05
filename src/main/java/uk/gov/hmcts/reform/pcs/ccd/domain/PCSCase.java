@@ -268,10 +268,10 @@ public class PCSCase {
     @CCD
     private WalesHousingAct walesHousingAct;
 
+    @CCD(label = "Are you also making a claim for an order imposing a prohibited conduct standard contract?")
+    private VerticalYesNo prohibitedConductWalesClaim;
 
-
-
-    @JsonUnwrapped(prefix = "wales_")
+    @CCD
     private ProhibitedConductWales prohibitedConductWales;
 
     @JsonUnwrapped
