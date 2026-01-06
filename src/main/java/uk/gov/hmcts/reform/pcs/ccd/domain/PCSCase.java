@@ -273,9 +273,11 @@ public class PCSCase {
     private ProhibitedConductWales prohibitedConductWales;
 
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "rentDetails_")
     @CCD
-    private RentDetailsSection rentDetails;
+    private RentDetails rentDetails;
+
+    private RentPaymentFrequency rentSectionPaymentFrequency;
 
     @CCD(searchable = false)
     private YesOrNo showPostcodeNotAssignedToCourt;
@@ -297,7 +299,8 @@ public class PCSCase {
      */
     @CCD(
         label = "Add additional defendant",
-        hint = "Add an additional defendant to the case"
+        hint = "Add an additional defendant to the case",
+        min = 1
     )
     private List<ListValue<DefendantDetails>> additionalDefendants;
 
@@ -504,7 +507,8 @@ public class PCSCase {
 
     @CCD(
         label = "Add underlessee or mortgagee",
-        hint = "Add an underlessee or mortgagee to the case"
+        hint = "Add an underlessee or mortgagee to the case",
+        min = 1
     )
     private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
 
