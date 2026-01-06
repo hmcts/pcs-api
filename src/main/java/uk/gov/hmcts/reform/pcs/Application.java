@@ -34,10 +34,7 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
 @EnableScheduling
 public class Application {
 
-    @SuppressWarnings("static-access")
     public static void main(final String[] args) {
-        SpringApplication application = new SpringApplication(Application.class);
-        application.addListeners(new ProfileFeatureActivation());
-        application.run(args);
+        SpringApplication.run(Application.class, args);
     }
 }
