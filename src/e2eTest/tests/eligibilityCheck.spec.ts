@@ -157,6 +157,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.privateLandlordRadioOption);
+    await performValidation('text', {"text": userIneligible.thisServiceIsCurrentlyOnlyAvailableParagraph, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
