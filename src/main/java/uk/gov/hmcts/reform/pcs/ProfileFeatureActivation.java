@@ -10,8 +10,6 @@ import java.util.Arrays;
 @Slf4j
 public class ProfileFeatureActivation implements ApplicationListener<ApplicationEnvironmentPreparedEvent> {
 
-    public static final String ENABLE_TESTING_SUPPORT = "ENABLE_TESTING_SUPPORT";
-
     @Override
     public void onApplicationEvent(ApplicationEnvironmentPreparedEvent event) {
         ConfigurableEnvironment env = event.getEnvironment();
