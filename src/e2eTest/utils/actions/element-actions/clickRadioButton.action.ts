@@ -6,7 +6,7 @@ export class ClickRadioButtonAction implements IAction {
     const idx = params.index !== undefined ? Number(params.index) : 0;
     const question = params.question as string;
     const option = params.option as string;
-
+    await page.waitForTimeout(500);
     if (await this.clickRadioButton(page, this.radioPattern1(page, question, option, idx))) return;
     if (await this.clickRadioButton(page, this.radioPattern2(page, question, option, idx))) return;
     if (await this.clickRadioButton(page, this.radioPattern3(page, question, option, idx))) return;
@@ -15,7 +15,6 @@ export class ClickRadioButtonAction implements IAction {
   private async clickRadioButton(page: Page, locator: Locator): Promise<boolean> {
     const count = await locator.count();
     if (count === 1 && await locator.isVisible()) {
-      await page.waitForTimeout(500);
       await locator.click();
       return true;
     }
