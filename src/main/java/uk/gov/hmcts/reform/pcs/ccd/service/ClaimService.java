@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
@@ -102,16 +103,27 @@ public class ClaimService {
     private ProhibitedConductWales buildProhibitedConduct(PCSCase pcsCase) {
 
         return Optional.ofNullable(pcsCase.getProhibitedConductWales())
-            .filter(pc -> pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim()
-                != null)
-            .map(pc -> ProhibitedConductWales.builder()
-                .claimForProhibitedConductContract(pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim())
-                .agreedTermsOfPeriodicContract(pc.getPeriodicContractTermsWales().getAgreedTermsOfPeriodicContract())
-                .detailsOfTerms(pc.getPeriodicContractTermsWales().getDetailsOfTerms())
-                .whyMakingClaim(pc.getProhibitedConductWalesWhyMakingClaim())
-                .build()
-            )
-            // If no prohibited conduct or claim flag is null
+            .filter(pc -> pc.getProhibitedConductWalesClaim() != null)
+            .map(pc -> {
+
+                PeriodicContractTermsWales periodicTerms =
+                    Optional.ofNullable(pc.getPeriodicContractTermsWales())
+                        .map(t -> PeriodicContractTermsWales.builder()
+                            .agreedTermsOfPeriodicContract(t.getAgreedTermsOfPeriodicContract())
+                            .detailsOfTerms(t.getDetailsOfTerms())
+                            .build())
+                        .orElse(null);
+
+                return ProhibitedConductWales.builder()
+                    .claimForProhibitedConductContract(pc.getProhibitedConductWalesClaim())
+                    .periodicContractTermsWales(periodicTerms)
+                    .agreedTermsOfPeriodicContract(
+                        periodicTerms != null ? periodicTerms.getAgreedTermsOfPeriodicContract() : null)
+                    .detailsOfTerms(
+                        periodicTerms != null ? periodicTerms.getDetailsOfTerms() : null)
+                    .whyMakingClaim(pc.getProhibitedConductWalesWhyMakingClaim())
+                    .build();
+            })
             .orElse(null);
     }
 

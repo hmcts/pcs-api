@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -260,12 +261,14 @@ class ClaimServiceTest {
         String expectedDetailsOfTerms = "Some details of terms";
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
+        PeriodicContractTermsWales periodicContractTermsWales = mock(PeriodicContractTermsWales.class);
+        when(prohibitedConductWales.getPeriodicContractTermsWales()).thenReturn(periodicContractTermsWales);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
         when(prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim())
             .thenReturn(expectedWhyMakingClaim);
-        when(prohibitedConductWales.getAgreedTermsOfPeriodicContractOption()).thenReturn(VerticalYesNo.YES);
-        when(prohibitedConductWales.getDetailsOfTermsText()).thenReturn(expectedDetailsOfTerms);
+        when(periodicContractTermsWales.getAgreedTermsOfPeriodicContract()).thenReturn(VerticalYesNo.YES);
+        when(periodicContractTermsWales.getDetailsOfTerms()).thenReturn(expectedDetailsOfTerms);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -298,7 +301,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
         when(prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim())
             .thenReturn(expectedWhyMakingClaim);
 
@@ -332,12 +335,14 @@ class ClaimServiceTest {
         String expectedWhyMakingClaim = "Some reason for making the claim";
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
+        PeriodicContractTermsWales terms = mock(PeriodicContractTermsWales.class);
+        when(prohibitedConductWales.getPeriodicContractTermsWales()).thenReturn(terms);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
         when(prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim())
             .thenReturn(expectedWhyMakingClaim);
-        when(prohibitedConductWales.getAgreedTermsOfPeriodicContractOption()).thenReturn(null);
-        when(prohibitedConductWales.getDetailsOfTermsText()).thenReturn("Some details");
+        when(terms.getAgreedTermsOfPeriodicContract()).thenReturn(null);
+        when(terms.getDetailsOfTerms()).thenReturn("Some details");
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -369,12 +374,14 @@ class ClaimServiceTest {
         String expectedWhyMakingClaim = "Some reason for making the claim";
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
+        PeriodicContractTermsWales periodicContractTermsWales = mock(PeriodicContractTermsWales.class);
+        when(prohibitedConductWales.getPeriodicContractTermsWales()).thenReturn(periodicContractTermsWales);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
+        when(pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.YES);
         when(prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim())
             .thenReturn(expectedWhyMakingClaim);
-        when(prohibitedConductWales.getAgreedTermsOfPeriodicContractOption()).thenReturn(VerticalYesNo.NO);
-        when(prohibitedConductWales.getDetailsOfTermsText()).thenReturn(null);
+        when(periodicContractTermsWales.getAgreedTermsOfPeriodicContract()).thenReturn(VerticalYesNo.NO);
+        when(periodicContractTermsWales.getDetailsOfTerms()).thenReturn(null);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -405,7 +412,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.NO);
+        when(pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.NO);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -433,7 +440,7 @@ class ClaimServiceTest {
 
         ProhibitedConductWales prohibitedConductWales = mock(ProhibitedConductWales.class);
         when(pcsCase.getProhibitedConductWales()).thenReturn(prohibitedConductWales);
-        when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(null);
+        when(pcsCase.getProhibitedConductWales().getProhibitedConductWalesClaim()).thenReturn(null);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);

@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @AllArgsConstructor
@@ -60,16 +61,18 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
         ProhibitedConductWales prohibitedConductWales =
             caseData.getProhibitedConductWales();
 
-        if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES
-            && prohibitedConductWales.getPeriodicContractTermsWales().getAgreedTermsOfPeriodicContract() ==
-            VerticalYesNo.YES) {
-            textAreaValidationService.validateTextArea(
-                prohibitedConductWales.getPeriodicContractTermsWales().getDetailsOfTerms(),
-                "Give details of the terms you’ve agreed",
-                TextAreaValidationService.SHORT_TEXT_LIMIT,
-                validationErrors
+        Optional.ofNullable(prohibitedConductWales)
+            .filter(pc -> pc.getProhibitedConductWalesClaim() == VerticalYesNo.YES)
+            .map(ProhibitedConductWales::getPeriodicContractTermsWales)
+            .filter(terms -> terms.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES)
+            .ifPresent(terms ->
+                           textAreaValidationService.validateTextArea(
+                               terms.getDetailsOfTerms(),
+                               "Give details of the terms you’ve agreed",
+                               TextAreaValidationService.SHORT_TEXT_LIMIT,
+                               validationErrors
+                           )
             );
-        }
 
         if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(

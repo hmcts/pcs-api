@@ -21,7 +21,7 @@ public class ProhibitedConductWales {
     private VerticalYesNo prohibitedConductWalesClaim;
 
     @CCD
-    private PeriodicContractTermsWales periodicContractTermsWales;
+    public PeriodicContractTermsWales periodicContractTermsWales;
 
     @CCD(
         label = "Why are you making this claim?",

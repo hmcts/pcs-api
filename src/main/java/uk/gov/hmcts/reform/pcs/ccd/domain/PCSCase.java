@@ -272,6 +272,7 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales_")
     private ProhibitedConductWales prohibitedConductWales;
 
+
     @JsonUnwrapped
     @CCD
     private RentDetailsSection rentDetails;
