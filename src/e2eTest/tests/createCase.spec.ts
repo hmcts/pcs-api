@@ -144,7 +144,7 @@ test.describe('[Create Case - England]', async () => {
        howDidYouServeNotice: noticeDetails.byFirstClassPost,
        day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
      await performValidation('mainHeader', rentDetails.mainHeader);
-     await performAction('provideRentDetails', {rentFrequencyOption:'weekly', rentAmount:'800'});
+     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
      await performValidation('mainHeader', dailyRentAmount.mainHeader);
      await performAction('selectDailyRentAmount', {
        calculateRentAmount: '£114.29',
