@@ -2,6 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.Document;
@@ -9,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
@@ -27,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -119,7 +124,10 @@ class TenancyLicenceServiceTest {
                 .value(Document.builder().filename("certificate_service.pdf").build()).build()
         );
         assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getNoticeServedDetails().getNoticeDocuments()).thenReturn(noticeDocs),
+            pcsCase -> {
+                when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+                when(noticeServedDetails.getNoticeDocuments()).thenReturn(noticeDocs);
+            },
             expected -> {
                 assertThat(expected.getNoticeDocuments()).hasSize(2);
                 assertThat(expected.getNoticeDocuments())
@@ -138,30 +146,38 @@ class TenancyLicenceServiceTest {
 
         // Test rent amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getCurrentRent()).thenReturn("120000"), // value in pence
+                pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
+                        .currentRent("120000") // value in pence
+                        .build()),
                 expected -> assertThat(expected.getRentAmount())
-                        .isEqualTo(new BigDecimal("1200.00")));// value in pounds
+                        .isEqualTo(new BigDecimal("1200.00")));
 
         // Test rent payment frequency field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY),
+                pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
+                        .frequency(RentPaymentFrequency.MONTHLY)
+                        .build()),
                 expected -> assertThat(expected.getRentPaymentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY));
 
         // Test other rent frequency field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getOtherRentFrequency()).thenReturn("Bi-weekly"),
+                pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
+                        .otherFrequency("Bi-weekly")
+                        .build()),
                 expected -> assertThat(expected.getOtherRentFrequency()).isEqualTo("Bi-weekly"));
 
         // Test daily rent charge amount field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getDailyRentChargeAmount()).thenReturn("4000"),
+                pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
+                        .dailyCharge("4000")
+                        .build()),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
 
         // Test total rent arrears field
         assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn("150000"), // value in pence
+                pcsCase -> when(pcsCase.getTotalRentArrears()).thenReturn(new BigDecimal("1500.00")),
                 expected -> assertThat(expected.getTotalRentArrears())
-                        .isEqualTo(new BigDecimal("1500.00"))); // value in pounds
+                        .isEqualTo(new BigDecimal("1500.00")));
 
         // Test third party payment sources field
         assertTenancyLicenceField(
@@ -196,49 +212,21 @@ class TenancyLicenceServiceTest {
         assertions.accept(actual);
     }
 
-    @Test
-    void shouldUseAmendedDailyRentAmountWhenAvailable() {
-        // Given
+    @ParameterizedTest(name = "amended={0}, calculated={1}, daily={2} -> expected={3}")
+    @MethodSource("dailyRentChargeScenarios")
+    void shouldPreferDailyRentCharge(String amendedDailyRent, String calculatedDailyRent, String dailyRent,
+                                     String expectedAmount) {
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getAmendedDailyRentChargeAmount()).thenReturn("5000");
-        when(pcsCaseMock.getCalculatedDailyRentChargeAmount()).thenReturn("4000");
-        when(pcsCaseMock.getDailyRentChargeAmount()).thenReturn("3500");
-        when(pcsCaseMock.getCurrentRent()).thenReturn("120000");
-        when(pcsCaseMock.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
-        // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
-        // Then
-        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("50.00"));
-    }
+        when(pcsCaseMock.getRentDetails()).thenReturn(RentDetails.builder()
+                .amendedDailyCharge(amendedDailyRent)
+                .calculatedDailyCharge(calculatedDailyRent)
+                .dailyCharge(dailyRent)
+                .currentRent("120000")
+                .frequency(RentPaymentFrequency.MONTHLY)
+                .build());
 
-    @Test
-    void shouldUseCalculatedDailyRentAmountWhenAmendedNotAvailable() {
-        // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getAmendedDailyRentChargeAmount()).thenReturn(null);
-        when(pcsCaseMock.getCalculatedDailyRentChargeAmount()).thenReturn("4000");
-        when(pcsCaseMock.getDailyRentChargeAmount()).thenReturn("3500");
-        when(pcsCaseMock.getCurrentRent()).thenReturn("120000");
-        when(pcsCaseMock.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
-        // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
-        // Then
-        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00"));
-    }
-
-    @Test
-    void shouldUseDailyRentChargeAmountWhenOthersNotAvailable() {
-        // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getAmendedDailyRentChargeAmount()).thenReturn(null);
-        when(pcsCaseMock.getCalculatedDailyRentChargeAmount()).thenReturn(null);
-        when(pcsCaseMock.getDailyRentChargeAmount()).thenReturn("3500");
-        when(pcsCaseMock.getCurrentRent()).thenReturn("120000");
-        when(pcsCaseMock.getRentFrequency()).thenReturn(RentPaymentFrequency.MONTHLY);
-        // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
-        // Then
-        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("35.00"));
+        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal(expectedAmount));
     }
 
     @Test
@@ -322,7 +310,7 @@ class TenancyLicenceServiceTest {
     void shouldHandleNullNoticeDocuments() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getNoticeServedDetails().getNoticeDocuments()).thenReturn(null);
+        when(noticeServedDetails.getNoticeDocuments()).thenReturn(null);
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -333,7 +321,7 @@ class TenancyLicenceServiceTest {
     void shouldHandleEmptyNoticeDocuments() {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getNoticeServedDetails().getNoticeDocuments()).thenReturn(Collections.emptyList());
+        when(noticeServedDetails.getNoticeDocuments()).thenReturn(Collections.emptyList());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
         // Then
@@ -564,5 +552,13 @@ class TenancyLicenceServiceTest {
         assertThat(result.getOccupationLicenceTypeWales()).isNull();
         assertThat(result.getWalesLicenceStartDate()).isNull();
         assertThat(result.getWalesLicenceDocuments()).isNull();
+    }
+
+    static Stream<Arguments> dailyRentChargeScenarios() {
+        return Stream.of(
+                Arguments.of("5000", "4000", "3500", "50.00"),
+                Arguments.of(null, "4000", "3500", "40.00"),
+                Arguments.of(null, null, "3500", "35.00")
+        );
     }
 }
