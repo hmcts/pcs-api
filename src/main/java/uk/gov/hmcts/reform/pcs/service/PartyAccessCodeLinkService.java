@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.service;
 
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,8 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
-import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 
 import java.util.UUID;
 
@@ -61,25 +58,10 @@ public class PartyAccessCodeLinkService {
 
         try {
             caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());
-        } catch (FeignException e) {
-            if (e.status() == 409) {
-                log.error("User already has defendant role assigned for case {} and user {}: {}",
-                        caseReference, idamUserId, e.getMessage(), e);
-                throw new AccessCodeAlreadyUsedException("This access code is already linked to a user.");
-            }
-            log.error("Failed to assign defendant role for case {} and user {}: Status {}, Message: {}",
-                    caseReference, idamUserId, e.status(), e.getMessage(), e);
-            throw new CaseAssignmentException(
-                String.format("Failed to establish case access for case %d", caseReference),
-                e
-            );
         } catch (Exception e) {
-            log.error("Failed to assign defendant role for case {} and user {}: {}",
+            // Log error but don't fail the transaction - case assignment is not critical for linking
+            log.warn("Failed to assign defendant role for case {} and user {}: {}", 
                     caseReference, idamUserId, e.getMessage(), e);
-            throw new CaseAssignmentException(
-                String.format("Failed to establish case access for case %d", caseReference),
-                e
-            );
         }
     }
 
