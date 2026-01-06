@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 
 import java.util.UUID;
 
@@ -59,9 +60,12 @@ public class PartyAccessCodeLinkService {
         try {
             caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());
         } catch (Exception e) {
-            // Log error but don't fail the transaction - case assignment is not critical for linking
-            log.warn("Failed to assign defendant role for case {} and user {}: {}", 
+            log.error("Failed to assign defendant role for case {} and user {}: {}",
                     caseReference, idamUserId, e.getMessage(), e);
+            throw new CaseAssignmentException(
+                String.format("Failed to establish case access for case %d", caseReference),
+                e
+            );
         }
     }
 

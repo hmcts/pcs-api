@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
 
@@ -249,6 +250,46 @@ class PartyAccessCodeLinkServiceTest {
 
         // THEN
         assertThat(defendant2.getIdamUserId()).isEqualTo(USER_ID);
+        verify(pcsCaseService).save(caseEntity);
+    }
+
+    @Test
+    void shouldThrowCaseAssignmentException_WhenCaseAssignmentFails() {
+        // GIVEN
+        UUID caseId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(caseId);
+        caseEntity.setCaseReference(CASE_REFERENCE);
+
+        Defendant defendant = createDefendant(partyId, null);
+        caseEntity.setDefendants(List.of(defendant));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(partyId)
+            .code(ACCESS_CODE)
+            .build();
+
+        RuntimeException caseAssignmentError = new RuntimeException("CCD assignment API failure");
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyBelongsToCase(caseEntity.getDefendants(), partyId))
+            .thenReturn(defendant);
+        doNothing().when(validator).validatePartyNotAlreadyLinked(defendant);
+        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
+            caseEntity.getDefendants(), partyId, USER_ID);
+        when(caseAssignmentService.assignDefendantRole(CASE_REFERENCE, USER_ID.toString()))
+            .thenThrow(caseAssignmentError);
+
+        // WHEN + THEN
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
+            .isInstanceOf(CaseAssignmentException.class)
+            .hasMessageContaining("Failed to establish case access for case " + CASE_REFERENCE)
+            .hasCause(caseAssignmentError);
+
+        // Verify that save was called before the exception (though transaction will roll back)
         verify(pcsCaseService).save(caseEntity);
     }
 }
