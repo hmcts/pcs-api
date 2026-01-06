@@ -74,7 +74,8 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
                            )
             );
 
-        if (prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
+        if (prohibitedConductWales != null
+            && prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
                 prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim(),
                 "Why are you making this claim?",
