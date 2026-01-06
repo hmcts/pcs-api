@@ -1,5 +1,8 @@
 package uk.gov.hmcts.reform.pcs.service;
 
+import feign.FeignException;
+import feign.Request;
+import feign.RequestTemplate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
+
+import java.util.HashMap;
 
 import java.util.List;
 import java.util.UUID;
@@ -288,6 +293,48 @@ class PartyAccessCodeLinkServiceTest {
             .isInstanceOf(CaseAssignmentException.class)
             .hasMessageContaining("Failed to establish case access for case " + CASE_REFERENCE)
             .hasCause(caseAssignmentError);
+
+        // Verify that save was called before the exception (though transaction will roll back)
+        verify(pcsCaseService).save(caseEntity);
+    }
+
+    @Test
+    void shouldThrowAccessCodeAlreadyUsedException_WhenCaseAssignmentReturns409() {
+        // GIVEN
+        UUID caseId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(caseId);
+        caseEntity.setCaseReference(CASE_REFERENCE);
+
+        Defendant defendant = createDefendant(partyId, null);
+        caseEntity.setDefendants(List.of(defendant));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(partyId)
+            .code(ACCESS_CODE)
+            .build();
+
+        Request request = Request.create(Request.HttpMethod.POST, "/test",
+            new HashMap<>(), null, new RequestTemplate());
+        FeignException conflictException = new FeignException.Conflict(
+            "Role already assigned", request, null, null);
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyBelongsToCase(caseEntity.getDefendants(), partyId))
+            .thenReturn(defendant);
+        doNothing().when(validator).validatePartyNotAlreadyLinked(defendant);
+        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
+            caseEntity.getDefendants(), partyId, USER_ID);
+        when(caseAssignmentService.assignDefendantRole(CASE_REFERENCE, USER_ID.toString()))
+            .thenThrow(conflictException);
+
+        // WHEN + THEN
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
+            .isInstanceOf(AccessCodeAlreadyUsedException.class)
+            .hasMessageContaining("This access code is already linked to a user");
 
         // Verify that save was called before the exception (though transaction will roll back)
         verify(pcsCaseService).save(caseEntity);
