@@ -37,16 +37,20 @@ public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
         log.info("Configuring non-production support event: {}", EVENT_NAME);
         if (Boolean.parseBoolean(System.getenv().get("ENABLE_TESTING_SUPPORT"))) {
             log.info("Test support enabled, configuring event: {}", EVENT_NAME);
-            Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
-                configBuilder
-                    .decentralisedEvent(createTestCase.name(), this::submit, this::start)
-                    .initialState(AWAITING_SUBMISSION_TO_HMCTS)
-                    .showSummary()
-                    .name(EVENT_NAME)
-                    .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
-
-            new PageBuilder(eventBuilder).add(new NonProdSupportPage());
+            configure(configBuilder);
         }
+    }
+
+    void configure(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
+            configBuilder
+                .decentralisedEvent(createTestCase.name(), this::submit, this::start)
+                .initialState(AWAITING_SUBMISSION_TO_HMCTS)
+                .showSummary()
+                .name(EVENT_NAME)
+                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+
+        new PageBuilder(eventBuilder).add(new NonProdSupportPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
