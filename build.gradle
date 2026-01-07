@@ -296,7 +296,7 @@ ext {
   testcontainersVersion = "1.21.3"
   springFrameworkBootVersion = "3.5.8"
   lombokVersion = "1.18.42"
-  springSecurityVersion = "7.0.0"
+  springSecurityVersion = "7.0.2"
   pactVersion = "4.6.19"
   tomcatEmbedVersion = "11.0.15"
   nettyVersion = "4.1.130.Final"
@@ -317,7 +317,7 @@ dependencies {
   runtimeOnly group: 'org.flywaydb', name: 'flyway-database-postgresql', version: flywayVersion
 
   implementation group: 'org.flywaydb', name: 'flyway-core', version: flywayVersion
-  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.14'
+  implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.15'
   implementation group: 'uk.gov.service.notify', name: 'notifications-java-client', version: '5.2.1-RELEASE'
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'6.0.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
