@@ -14,13 +14,17 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -110,6 +114,148 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             eq(result),
+            eq(EventId.submitDefendantResponse)
+        );
+    }
+
+    @Test
+    void shouldThrowCaseAccessExceptionWhenNoDefendantsFound() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .defendants(Collections.emptyList())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        // When/Then
+        assertThatThrownBy(() -> callStartHandler(caseData))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("No defendants associated with this case");
+    }
+
+    @Test
+    void shouldThrowCaseAccessExceptionWhenDefendantsIsNull() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .defendants(null)
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        // When/Then
+        assertThatThrownBy(() -> callStartHandler(caseData))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("No defendants associated with this case");
+    }
+
+    @Test
+    void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+        UUID differentUserId = UUID.randomUUID();
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(differentUserId.toString())
+            .build();
+
+        Defendant matchingDefendant = Defendant.builder()
+            .idamUserId(defendantUserId)
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .defendants(List.of(matchingDefendant))
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        // When/Then
+        assertThatThrownBy(() -> callStartHandler(caseData))
+            .isInstanceOf(CaseAccessException.class)
+            .hasMessage("User is not linked as a defendant on this case");
+    }
+
+    @Test
+    void shouldNotSaveDraftWhenSubmitDraftIsYes() {
+        // Given Defendant response
+        DefendantResponse defendantResponse = DefendantResponse.builder()
+            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .defendantResponse(defendantResponse)
+            .submitDraftAnswers(YesOrNo.YES)
+            .build();
+
+        // When
+        callSubmitHandler(caseData);
+
+        //Then
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            eq(defendantResponse),
+            eq(EventId.submitDefendantResponse)
+        );
+    }
+
+    @Test
+    void shouldNotSaveDraftWhenDefendantResponseIsNull() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .defendantResponse(null)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When
+        callSubmitHandler(caseData);
+
+        //Then
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            eq(null),
+            eq(EventId.submitDefendantResponse)
+        );
+    }
+
+    @Test
+    void shouldNotSaveDraftWhenSubmitDraftIsNull() {
+        // Given Defendant response
+        DefendantResponse defendantResponse = DefendantResponse.builder()
+            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .defendantResponse(defendantResponse)
+            .submitDraftAnswers(null)
+            .build();
+
+        // When
+        callSubmitHandler(caseData);
+
+        //Then
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            eq(defendantResponse),
             eq(EventId.submitDefendantResponse)
         );
     }

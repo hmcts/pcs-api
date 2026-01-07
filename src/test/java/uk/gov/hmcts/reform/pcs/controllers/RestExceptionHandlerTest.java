@@ -11,6 +11,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.WebRequest;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -291,6 +292,39 @@ class RestExceptionHandlerTest {
 
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleCaseAccessException() {
+        // Given
+        String expectedErrorMessage = "User is not linked as a defendant on this case";
+        CaseAccessException exception = new CaseAccessException(expectedErrorMessage);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleCaseAccess(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleCaseAccessExceptionWithCause() {
+        // Given
+        String expectedErrorMessage = "No defendants associated with this case";
+        Throwable cause = new RuntimeException("Root cause");
+        CaseAccessException exception = new CaseAccessException(expectedErrorMessage, cause);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleCaseAccess(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
     }
