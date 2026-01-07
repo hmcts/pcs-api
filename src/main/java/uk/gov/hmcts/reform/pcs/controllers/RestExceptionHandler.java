@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
+import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 
 @Slf4j
 @ControllerAdvice
@@ -67,6 +68,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Error> handleAccessCodeAlreadyUsed(AccessCodeAlreadyUsedException ex) {
         log.error("Access code already used", ex);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new Error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(CaseAssignmentException.class)
+    public ResponseEntity<Error> handleCaseAssignmentException(CaseAssignmentException ex) {
+        log.error("Case assignment failed", ex);
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new Error(ex.getMessage()));
     }
 
     @Override
