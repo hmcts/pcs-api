@@ -23,5 +23,4 @@ public class LandRegistryFees {
         min = 1
     )
     private String amountOfLandRegistryFees;
-
 }
