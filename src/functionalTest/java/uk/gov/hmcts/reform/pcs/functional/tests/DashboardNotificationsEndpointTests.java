@@ -61,7 +61,7 @@ class DashboardNotificationsEndpointTests extends BaseApi {
         apiSteps.checkStatusCode(403);
     }
 
-    @Title("Dashboard notifications endpoint - return 401 Unauthorised when the request uses an invalid service token")
+    @Title("Dashboard notifications endpoint - return 401 Unauthorised when the request uses an invalid s2s token")
     @Test
     void dashboardNotifications401UnauthorisedScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();

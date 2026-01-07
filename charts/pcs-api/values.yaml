@@ -42,6 +42,7 @@ java:
     PAYMENT_API_URL: "http://payment-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     FLYWAY_NOOP_STRATEGY: "false"
     SPRING_FLYWAY_ENABLED: "true"
+    CCD_DATA_STORE_URL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
 servicebus:
   enabled: false
 ccd:
