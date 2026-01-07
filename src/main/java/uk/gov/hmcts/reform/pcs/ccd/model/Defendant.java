@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+
+import java.util.UUID;
 
 
 @Builder
@@ -15,12 +18,16 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Defendant {
 
-    private String id;
+    private UUID partyId;
+
+    private UUID idamUserId;
 
     private Boolean nameKnown;
 
+    @CCD
     private String firstName;
 
+    @CCD
     private String lastName;
 
     private Boolean addressKnown;
@@ -29,7 +36,6 @@ public class Defendant {
 
     private AddressUK correspondenceAddress;
 
-    private Boolean emailKnown;
+    private Boolean additionalDefendantsAdded; // Only used for auditing
 
-    private String email;
 }

@@ -13,14 +13,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -28,7 +25,6 @@ import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -220,38 +216,6 @@ class PcsCaseServiceTest {
         verify(pcsCaseRepository).save(pcsCaseEntity);
     }
 
-    @Test
-    void shouldMapDefendantPojoToDefendantDetails() {
-        // Given
-        Defendant defendant = Defendant.builder()
-            .id("456")
-            .nameKnown(true)
-            .firstName("Jane")
-            .lastName("Smith")
-            .addressKnown(false)
-            .addressSameAsPossession(false)
-            .emailKnown(true)
-            .email("jane.smith@email.com")
-            .build();
-
-        // When
-        List<ListValue<DefendantDetails>> result = underTest.mapToDefendantDetails(List.of(defendant));
-
-        // Then
-        ListValue<DefendantDetails> listValue = result.getFirst();
-        DefendantDetails mappedDefendantDetails = listValue.getValue();
-
-        assertThat(result).hasSize(1);
-        assertThat(listValue.getId()).isEqualTo("456");
-        assertThat(mappedDefendantDetails.getNameKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(mappedDefendantDetails.getFirstName()).isEqualTo("Jane");
-        assertThat(mappedDefendantDetails.getLastName()).isEqualTo("Smith");
-        assertThat(mappedDefendantDetails.getAddressKnown()).isEqualTo(VerticalYesNo.NO);
-        assertThat(mappedDefendantDetails.getAddressSameAsPossession()).isEqualTo(VerticalYesNo.NO);
-        assertThat(mappedDefendantDetails.getEmailKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(mappedDefendantDetails.getEmail()).isEqualTo("jane.smith@email.com");
-    }
-
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
         AddressEntity addressEntity = mock(AddressEntity.class);
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
@@ -263,7 +227,6 @@ class PcsCaseServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
-        stubAddressUKModelMapper(propertyAddress);
 
         DynamicStringList claimantTypeList = DynamicStringList.builder()
             .value(DynamicStringListElement.builder()
@@ -290,7 +253,6 @@ class PcsCaseServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
-        stubAddressUKModelMapper(propertyAddress);
 
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
         when(pcsCase.getClaimantType()).thenReturn(null);
@@ -310,7 +272,6 @@ class PcsCaseServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
-        stubAddressUKModelMapper(propertyAddress);
 
         DynamicStringList claimantTypeList = mock(DynamicStringList.class);
         when(claimantTypeList.getValueCode()).thenReturn(null);
@@ -333,7 +294,6 @@ class PcsCaseServiceTest {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
-        stubAddressUKModelMapper(propertyAddress);
 
         DynamicStringList claimantTypeList = DynamicStringList.builder()
             .value(DynamicStringListElement.builder()

@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -38,12 +39,15 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
             boolean expectError,
             YesOrNo expectedShowReasonsPage) {
 
+        SecureOrFlexiblePossessionGrounds secureOrFlexibleGrounds = SecureOrFlexiblePossessionGrounds.builder()
+            .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
+            .secureOrFlexibleDiscretionaryGroundsAlt(discretionaryGroundsAlt)
+            .secureOrFlexibleMandatoryGrounds(mandatoryGrounds)
+            .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
+            .build();
         // Given
         PCSCase caseData = PCSCase.builder()
-                .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
-                .secureOrFlexibleDiscretionaryGroundsAlt(discretionaryGroundsAlt)
-                .secureOrFlexibleMandatoryGrounds(mandatoryGrounds)
-                .secureOrFlexibleMandatoryGroundsAlt(mandatoryGroundsAlt)
+                .secureOrFlexiblePossessionGrounds(secureOrFlexibleGrounds)
                 .build();
 
         // When
@@ -114,47 +118,4 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
         );
     }
 
-    @ParameterizedTest
-    @MethodSource("provideShowRentDetailsPageScenarios")
-    void shouldSetCorrectShowRentDetailsPageFlagBasedOnGroundSelection(
-            Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds,
-            YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-                .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
-                .secureOrFlexibleMandatoryGrounds(Set.of())
-                .secureOrFlexibleDiscretionaryGroundsAlt(Set.of())
-                .secureOrFlexibleMandatoryGroundsAlt(Set.of())
-                .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        if (discretionaryGrounds.isEmpty()) {
-            // When no grounds are selected, the midEvent returns an error response
-            assertThat(response.getErrors()).containsExactly("Please select at least one ground");
-            assertThat(response.getData()).isNull();
-        } else {
-            PCSCase updatedCaseData = response.getData();
-            assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
-        }
-    }
-
-    private static Stream<Arguments> provideShowRentDetailsPageScenarios() {
-        return Stream.of(
-                // Ground 1 selected - Initially set to No (will be updated by RentArrearsOrBreachOfTenancyGround)
-                arguments(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY), YesOrNo.NO),
-                
-                // Ground 1 not selected - Set to No
-                arguments(Set.of(SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE), YesOrNo.NO),
-                
-                // Multiple grounds including Ground 1 - Initially set to No
-                arguments(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY, 
-                                SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE), YesOrNo.NO),
-                
-                // No grounds selected - Set to No
-                arguments(Set.of(), YesOrNo.NO)
-        );
-    }
 }

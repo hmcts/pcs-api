@@ -18,7 +18,9 @@ def secrets = [
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
     secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
     secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
-    secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD')
+    secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD'),
+    secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),
+    secret('s2s-expired-service-token', 'S2S_EXPIRED_TOKEN'),
   ]
 ]
 
@@ -50,6 +52,12 @@ withPipeline(type, product, component) {
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
+    if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
+      env.E2E_SUITE = "chrome"
+    }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
+      env.E2E_SUITE = "regression"
+    }
   }
 
   onMaster() {
@@ -59,6 +67,7 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
+//    enableE2eTest() TODO: Re-enable when the AAT environment pattern is configured
   }
 
   onDemo {
@@ -94,16 +103,22 @@ withPipeline(type, product, component) {
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
   }
+
+  afterAlways('e2eTest:aat') {
+    archiveE2eTestReports()
+  }
 }
 
 def setPreviewEnvVars() {
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
+  env.E2E_SUITE= "pr"
 }
 
 def setAatEnvVars() {
-  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net/"
+  env.MANAGE_CASE_BASE_URL = "https://manage-case.aat.platform.hmcts.net"
   env.ENVIRONMENT= "aat"
+  env.E2E_SUITE= "regression"
 }
 
 def setDemoEnvVars() {
@@ -135,6 +150,19 @@ def archiveFunctionalTestReports() {
   ])
 
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
+}
+
+def archiveE2eTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "e2e-output",
+    reportFiles: 'index.html',
+    reportName: 'E2E Test Report'
+  ])
+
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
 

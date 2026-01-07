@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 /**
  * CCD page configuration for the Occupation contract or licence details screen.
@@ -34,6 +35,7 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
         "Occupation contract or licence start date cannot be in the future";
 
     private final Clock ukClock;
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -86,24 +88,21 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         OccupationLicenceDetailsWales occupationLicenceDetailsWales = caseData.getOccupationLicenceDetailsWales();
         
-        if (occupationLicenceDetailsWales == null) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .build();
-        }
-
-        List<String> errors = validateOccupationLicenceDetailsWales(occupationLicenceDetailsWales);
+        List<String> validationErrors = new ArrayList<>();
         
-        if (!errors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(errors)
-                .build();
+        if (occupationLicenceDetailsWales != null) {
+            // Validate text area field
+            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+                occupationLicenceDetailsWales.getOtherLicenceTypeDetails(),
+                "Give details about what type of occupation contract or licence is in place",
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ));
+            
+            // Validate date fields
+            validationErrors.addAll(validateOccupationLicenceDetailsWales(occupationLicenceDetailsWales));
         }
-
-        return AboutToStartOrSubmitResponse
-            .<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 
     /**

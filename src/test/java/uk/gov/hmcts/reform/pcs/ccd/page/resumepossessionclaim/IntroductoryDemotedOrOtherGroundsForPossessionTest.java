@@ -13,13 +13,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,16 +30,12 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
     @Mock
     private TextAreaValidationService textAreaValidationService;
-
-    @Mock
-    private RentDetailsRoutingService rentDetailsRoutingService;
 
     @BeforeEach
     void setUp() {
@@ -57,69 +52,24 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         }).when(textAreaValidationService).createValidationResponse(any(), any());
 
         setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession(
-            textAreaValidationService,
-            rentDetailsRoutingService
+            textAreaValidationService
         ));
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideRentDetailsPageScenarios")
-    @DisplayName("Should set rent details page flag based on grounds selection")
-    void shouldSetRentDetailsPageFlagForGroundsSelection(
-        TenancyLicenceType tenancyType,
-        Set<IntroductoryDemotedOrOtherGrounds> grounds,
-        YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-            .introductoryDemotedOrOtherGrounds(grounds)
-            .build();
-
-        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
-            .thenReturn(expectedShowRentDetailsPage);
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideNoGroundsForPossessionScenarios")
-    @DisplayName("Should set rent details page flag when no grounds for possession")
-    void shouldSetRentDetailsPageFlagWhenNoGroundsSelected(
-        TenancyLicenceType tenancyType,
-        YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
-            .introductoryDemotedOrOtherGrounds(null) // No grounds selected
-            .build();
-
-        when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
-            .thenReturn(expectedShowRentDetailsPage);
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        PCSCase updatedCaseData = response.getData();
-        assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
     }
 
     @Test
     void shouldNotShowReasonsPageIfRentArrearsGround() {
         // Given
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(
+                    Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS))
+                .build();
+
         PCSCase caseData =
             PCSCase.builder()
-              .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-              .introductoryDemotedOrOtherGrounds(
-                  Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS))
-              .build();
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -134,11 +84,16 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     void shouldShowReasonsPageIfOtherGroundThanRentArrearsSelected(
         Set<IntroductoryDemotedOrOtherGrounds> grounds) {
         // Given
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(grounds)
+                .build();
+
         PCSCase caseData =
             PCSCase.builder()
-              .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-              .introductoryDemotedOrOtherGrounds(grounds)
-              .build();
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
+                .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -151,10 +106,15 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     @Test
     void shouldShowReasonsPageWhenUserDoesntHaveGroundsForPossession() {
         // Given
-        PCSCase caseData =
-            PCSCase.builder()
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
                 .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
                 .introductoryDemotedOrOtherGrounds(null)
+                .build();
+
+        PCSCase caseData =
+            PCSCase.builder()
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
         // When
@@ -168,65 +128,46 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
     @Test
     void shouldShowGroundsOptionsWhenGroundsForPossessionIsYes() {
         // Given
-        PCSCase caseData =
-            PCSCase.builder()
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
                 .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
                 .introductoryDemotedOrOtherGrounds(
                     IntroductoryDemotedOrOtherGroundsForPossessionTest
-                        .buildIntroductoryDemotedOrOtherGrounds())
+                        .buildIntroductoryDemotedOrOtherGrounds()
+                )
+                .build();
+
+        PCSCase caseData =
+            PCSCase.builder()
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isNotEmpty();
+        assertThat(response.getData().getIntroductoryDemotedOrOtherGroundsForPossession()
+                    .getIntroductoryDemotedOrOtherGrounds()).isNotEmpty();
     }
 
     @Test
     void shouldNotShowGroundsOptionsWhenGroundsForPossessionIsNo() {
         // Given
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                .build();
+
         PCSCase caseData =
-            PCSCase.builder().hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO).build();
+            PCSCase.builder()
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession).build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getData().getIntroductoryDemotedOrOtherGrounds()).isNull();
-    }
-
-    private static Stream<Arguments> provideRentDetailsPageScenarios() {
-        return Stream.of(
-            // Rent arrears selected → show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, rentArrearsOnly(), YesOrNo.YES),
-            arguments(TenancyLicenceType.DEMOTED_TENANCY, rentArrearsOnly(), YesOrNo.YES),
-            arguments(TenancyLicenceType.OTHER, rentArrearsOnly(), YesOrNo.YES),
-
-            // Other grounds (not rent arrears) → don't show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, antiSocialOnly(), YesOrNo.NO),
-            arguments(TenancyLicenceType.DEMOTED_TENANCY, breachOfTenancyOnly(), YesOrNo.NO),
-            arguments(TenancyLicenceType.OTHER, absoluteGroundsOnly(), YesOrNo.NO),
-
-            // Multiple grounds including rent arrears → show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, rentArrearsWithAntiSocial(), YesOrNo.YES),
-
-            // No grounds selected → don't show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, noGrounds(), YesOrNo.NO),
-
-            // Multiple grounds without rent arrears → don't show rent details
-            arguments(TenancyLicenceType.DEMOTED_TENANCY, antiSocialWithBreach(), YesOrNo.NO),
-            arguments(TenancyLicenceType.OTHER, absoluteGroundsWithAntiSocial(), YesOrNo.NO)
-        );
-    }
-
-    private static Stream<Arguments> provideNoGroundsForPossessionScenarios() {
-        return Stream.of(
-            // No grounds for possession → don't show rent details
-            arguments(TenancyLicenceType.INTRODUCTORY_TENANCY, YesOrNo.NO),
-            arguments(TenancyLicenceType.DEMOTED_TENANCY, YesOrNo.NO),
-            arguments(TenancyLicenceType.OTHER, YesOrNo.NO)
-        );
+        assertThat(response.getData().getIntroductoryDemotedOrOtherGroundsForPossession()
+                        .getIntroductoryDemotedOrOtherGrounds()).isNull();
     }
 
     private static Stream<Arguments> testGroundsOtherThanRentArrearsScenarios() {
@@ -243,42 +184,6 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
                         Set.of(
                                 IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
                                 IntroductoryDemotedOrOtherGrounds.OTHER)));
-    }
-
-    // Helper methods for common ground combinations
-    private static Set<IntroductoryDemotedOrOtherGrounds> rentArrearsOnly() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> antiSocialOnly() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> breachOfTenancyOnly() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> absoluteGroundsOnly() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> rentArrearsWithAntiSocial() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.RENT_ARREARS,
-                      IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> antiSocialWithBreach() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL,
-                      IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> absoluteGroundsWithAntiSocial() {
-        return Set.of(IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS,
-                      IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL);
-    }
-
-    private static Set<IntroductoryDemotedOrOtherGrounds> noGrounds() {
-        return Set.of();
     }
 
     private static Set<IntroductoryDemotedOrOtherGrounds> buildIntroductoryDemotedOrOtherGrounds() {
@@ -298,8 +203,13 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         @DisplayName("Should validate otherGroundDescription when provided")
         void shouldValidateOtherGroundDescriptionWhenProvided() {
             // Given
+            IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .otherGroundDescription("Valid ground description")
+                    .build();
+
             PCSCase caseData = PCSCase.builder()
-                .otherGroundDescription("Valid ground description")
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
             // When
@@ -314,8 +224,13 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
         @DisplayName("Should handle null otherGroundDescription gracefully")
         void shouldHandleNullOtherGroundDescriptionGracefully() {
             // Given
+            IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .otherGroundDescription(null)
+                    .build();
+
             PCSCase caseData = PCSCase.builder()
-                .otherGroundDescription(null)
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
             // When
@@ -332,12 +247,17 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
             // Given
             String longText = "a".repeat(501); // Exceeds MEDIUM_TEXT_LIMIT (500)
             List<String> validationErrors = List.of("Error message");
-            
+
             lenient().doReturn(validationErrors).when(textAreaValidationService)
                 .validateSingleTextArea(any(), any(), anyInt());
-            
+
+            IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+                IntroductoryDemotedOtherGroundsForPossession.builder()
+                    .otherGroundDescription(longText)
+                    .build();
+
             PCSCase caseData = PCSCase.builder()
-                .otherGroundDescription(longText)
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
                 .build();
 
             // When

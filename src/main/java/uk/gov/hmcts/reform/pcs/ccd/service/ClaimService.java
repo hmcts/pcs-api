@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
@@ -34,6 +35,7 @@ public class ClaimService {
         SuspensionOfRightToBuy suspensionOrder = resolveSuspensionOfRightToBuy(pcsCase);
         DemotionOfTenancy demotionOrder = resolveDemotionOfTenancy(pcsCase);
         ProhibitedConductWales prohibitedConduct = buildProhibitedConduct(pcsCase);
+        ASBQuestionsWales asbQuestions = buildAsbQuestions(pcsCase);
 
         ClaimEntity claimEntity = ClaimEntity.builder()
             .summary("Main Claim")
@@ -54,12 +56,14 @@ public class ClaimService {
             .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
             .languageUsed(pcsCase.getLanguageUsed())
             .prohibitedConduct(prohibitedConduct)
+            .asbQuestions(asbQuestions)
             .build();
 
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
         claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
+
         claimRepository.save(claimEntity);
 
         return claimEntity;
@@ -110,5 +114,22 @@ public class ClaimService {
             .build();
     }
 
+    private ASBQuestionsWales buildAsbQuestions(PCSCase pcsCase) {
+        if (pcsCase.getAsbQuestionsWales() == null) {
+            return null;
+        }
+
+        return ASBQuestionsWales.builder()
+            .antisocialBehaviour(YesOrNoToBoolean.convert(
+                pcsCase.getAsbQuestionsWales().getAntisocialBehaviour()))
+            .antisocialBehaviourDetails(pcsCase.getAsbQuestionsWales().getAntisocialBehaviourDetails())
+            .illegalPurposesUse(YesOrNoToBoolean.convert(
+                pcsCase.getAsbQuestionsWales().getIllegalPurposesUse()))
+            .illegalPurposesUseDetails(pcsCase.getAsbQuestionsWales().getIllegalPurposesUseDetails())
+            .otherProhibitedConduct(YesOrNoToBoolean.convert(
+                pcsCase.getAsbQuestionsWales().getOtherProhibitedConduct()))
+            .otherProhibitedConductDetails(pcsCase.getAsbQuestionsWales().getOtherProhibitedConductDetails())
+            .build();
+    }
 
 }

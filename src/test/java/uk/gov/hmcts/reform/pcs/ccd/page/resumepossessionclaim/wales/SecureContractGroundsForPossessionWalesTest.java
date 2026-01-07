@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -16,18 +15,16 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.wales.WalesRentDetailsRoutingService;
 
 public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new SecureContractGroundsForPossessionWales(
-            new WalesRentDetailsRoutingService(List.of())
-        ));
+        setPageUnderTest(new SecureContractGroundsForPossessionWalesPage());
     }
 
     @ParameterizedTest
@@ -42,10 +39,14 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
     ) {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .secureContractDiscretionaryGroundsWales(discretionaryGrounds)
-                .secureContractMandatoryGroundsWales(mandatoryGrounds)
-                .secureContractEstateManagementGroundsWales(estateGrounds)
-                .build();
+            .secureContractGroundsForPossessionWales(
+                SecureContractGroundsForPossessionWales.builder()
+                .discretionaryGroundsWales(discretionaryGrounds)
+                .mandatoryGroundsWales(mandatoryGrounds)
+                .estateManagementGroundsWales(estateGrounds)
+                .build()
+            )
+            .build();
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -53,7 +54,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
         // Then
         if (expectEstateError) {
             assertThat(response.getErrors()).containsExactly(
-                "Please select at least one ground in 'Estate management grounds (section 160)'.");
+                "Please select at least one ground in ‘Estate management grounds (section 160)’.");
         } else if (expectGroundsError) {
             assertThat(response.getErrors()).containsExactly("Please select at least one ground");
         } else if (expectValid) {
@@ -68,7 +69,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                         Set.of(), Set.of(), Set.of(),
                         false, true, false
                 ),
-                // ESTATE_MANAGEMENT_GROUNDS selected with no estate details 
+                // ESTATE_MANAGEMENT_GROUNDS selected with no estate details
                 // - should error on missing estate management grounds
                 arguments(
                         Set.of(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
@@ -125,9 +126,13 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
 
         // Given
         PCSCase caseData = PCSCase.builder()
-                .secureContractDiscretionaryGroundsWales(discretionaryGrounds)
-                .secureContractEstateManagementGroundsWales(estateManagementGrounds)
-                .secureContractMandatoryGroundsWales(mandatoryGrounds)
+            .secureContractGroundsForPossessionWales(
+                SecureContractGroundsForPossessionWales.builder()
+                    .discretionaryGroundsWales(discretionaryGrounds)
+                    .estateManagementGroundsWales(estateManagementGrounds)
+                    .mandatoryGroundsWales(mandatoryGrounds)
+                    .build()
+                )
                 .build();
 
         // When

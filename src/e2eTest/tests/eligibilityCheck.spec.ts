@@ -1,7 +1,25 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation} from '@utils/controller';
-import {borderPostcode, addressDetails, canNotUseOnlineService, propertyIneligible, userIneligible, provideMoreDetailsOfClaim,
-  claimantType, claimType, user, home, signInOrCreateAnAccount, addressCheckYourAnswers} from '@data/page-data';
+import { test } from '@playwright/test';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  borderPostcode,
+  canNotUseOnlineService,
+  home,
+  propertyIneligible,
+  signInOrCreateAnAccount,
+  user,
+  userIneligible
+} from '@data/page-data';
+import{
+  claimantType,
+  claimType,
+} from '@data/page-data-figma';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation
+} from '@utils/controller';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -19,7 +37,11 @@ test.beforeEach(async ({page}) => {
   await performAction('housingPossessionClaim');
 });
 
-test.describe('[Eligibility Check - Create Case] @regression', async () => {
+test.afterEach(async () => {
+  PageContentValidation.finaliseTest();
+});
+
+test.describe('[Eligibility Check - Create Case]', async () => {
   test('Cross border - Verify postcode eligibility check redirection and content for England and Wales', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandWalesPostcode,
@@ -31,7 +53,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
       "elementType": "paragraph"
     });
     await performValidation('text', {
-      "text": borderPostcode.englandWalesInlineContent,
+      "text": borderPostcode.isProtpertyLocatedInEnglandOrWalesQuestion,
       "elementType": "inlineText"
     });
     await performAction('selectBorderPostcode', borderPostcode.countryOptions.england);
@@ -40,7 +62,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Cross border - Verify postcode page for England and Scotland content', async () => {
+  test('Cross border - Verify postcode page for England and Scotland content @regression', async () => {
     await performAction('selectAddress', {
       postcode: borderPostcode.englandScotlandPostcode,
       addressIndex: addressDetails.addressIndex
@@ -68,7 +90,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
   });
 
-  test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR', async () => {
+  test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandWalesNoCourtCrossBorderPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -105,7 +127,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     })
   });
 
-  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only', async () => {
+  test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -114,7 +136,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.mortgageLender);
+    await performAction('selectClaimantType', claimantType.mortgageLenderRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
@@ -134,7 +156,8 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.privateLandlord);
+    await performAction('selectClaimantType', claimantType.privateLandlordRadioOption);
+    await performValidation('text', {"text": userIneligible.thisServiceIsCurrentlyOnlyAvailableParagraph, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
@@ -147,7 +170,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('clickButton', userIneligible.cancel);
   });
 
-  test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test('Wales - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.walesCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -157,7 +180,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.yes);
+    await performAction('selectClaimType', claimType.yesRadioOption);
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
@@ -170,7 +193,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('clickButton', userIneligible.cancel);
   });
 
-  test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only', async () => {
+  test('England - Unsuccessful case creation journey due to claim type not in scope of Release1 @R1only @regression', async () => {
     await performAction('selectAddress', {
       postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
@@ -180,7 +203,7 @@ test.describe('[Eligibility Check - Create Case] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
-    await performAction('selectClaimType', claimType.yes);
+    await performAction('selectClaimType', claimType.yesRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
       header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed

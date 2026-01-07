@@ -49,9 +49,8 @@ withNightlyPipeline(type, product, component) {
   handleEnvironmentSetting()
   enableFortifyScan()
 
-  //Skipping e2e tests as the decentralisation is not currently supported in aat
-  //enableE2eTest()
-  
+  enableE2eTest()
+
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
   }
@@ -69,5 +68,13 @@ def validateInputs() {
 def handleEnvironmentSetting() {
   env.MANAGE_CASE_BASE_URL = (params.ENVIRONMENT == 'preview')
     ? "https://xui-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
-    : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net/"
+    : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net"
+
+  env.DATA_STORE_URL_BASE = (params.ENVIRONMENT == 'preview')
+    ? "https://ccd-data-store-api-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
+    : "http://ccd-data-store-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
+
+  env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
+    ? "pr"
+    : "chrome"
 }

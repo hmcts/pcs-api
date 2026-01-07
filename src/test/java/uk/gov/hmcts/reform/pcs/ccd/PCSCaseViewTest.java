@@ -13,8 +13,8 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -22,10 +22,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -36,7 +37,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -56,11 +57,11 @@ class PCSCaseViewTest {
     @Mock
     private ModelMapper modelMapper;
     @Mock
-    private PcsCaseService pcsCaseService;
-    @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private CaseTitleService caseTitleService;
+    @Mock
+    private DefendantService defendantService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
 
@@ -71,7 +72,7 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                modelMapper, pcsCaseService, draftCaseDataService, caseTitleService);
+                modelMapper, draftCaseDataService, caseTitleService, defendantService);
     }
 
     @Test
@@ -80,33 +81,12 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When
-        Throwable throwable = catchThrowable(() -> underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE)));
+        CaseViewRequest<State> request = request(CASE_REFERENCE, DEFAULT_STATE);
 
         // Then
-        assertThat(throwable)
+        assertThatThrownBy(() -> underTest.getCase(request))
                 .isInstanceOf(CaseNotFoundException.class)
                 .hasMessage("No case found with reference %s", CASE_REFERENCE);
-    }
-
-    @ParameterizedTest
-    @MethodSource("unsubmittedDataFlagScenarios")
-    void shouldSetFlagForUnsubmittedData(boolean hasUnsubmittedData, YesOrNo expectedCaseDataValue) {
-        // Given
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE)).thenReturn(hasUnsubmittedData);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, State.AWAITING_FURTHER_CLAIM_DETAILS));
-
-        // Then
-        assertThat(pcsCase.getHasUnsubmittedCaseData()).isEqualTo(expectedCaseDataValue);
-    }
-
-    private static Stream<Arguments> unsubmittedDataFlagScenarios() {
-        return Stream.of(
-            // unsubmitted case data available, expected case data value
-            arguments(false, YesOrNo.NO),
-            arguments(true, YesOrNo.YES)
-        );
     }
 
     @Test
@@ -262,6 +242,26 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getClaimantType()).isNotNull();
         assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(claimantType.name());
         assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(claimantType.getLabel());
+    }
+
+    @Test
+    void shouldMapDefendants() {
+        // Given
+        List<Defendant> defendantList = List.of(mock(Defendant.class), mock(Defendant.class));
+        DefendantDetails defendantDetails1 = mock(DefendantDetails.class);
+        DefendantDetails defendantDetails2 = mock(DefendantDetails.class);
+
+        when(pcsCaseEntity.getDefendants()).thenReturn(defendantList);
+        when(defendantService.mapToDefendantDetails(defendantList))
+            .thenReturn(List.of(defendantDetails1, defendantDetails2));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getAllDefendants())
+            .map(ListValue::getValue)
+            .containsExactly(defendantDetails1, defendantDetails2);
     }
 
     private static Stream<Arguments> claimantTypeMappingScenarios() {

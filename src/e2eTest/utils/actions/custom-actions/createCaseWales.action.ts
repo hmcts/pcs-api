@@ -5,13 +5,15 @@ import {claimantDetailsWales} from '@data/page-data/claimantDetailsWales.page.da
 import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
 import {prohibitedConductStandardContractWales} from '@data/page-data/prohibitedConductStandardContractWales.page.data';
 import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
+import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
 
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
-      ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)]
+      ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
+      ['selectAsb', () => this.selectAsb(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -77,5 +79,35 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       }
     }
     await performAction('clickButton', claimantDetailsWales.continue);
+  }
+
+  private async selectAsb(asbQuestions: actionRecord) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    await performValidation('text', {
+      elementType: 'paragraph',
+      text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}`
+    });
+    await performAction('clickRadioButton', {
+      question: asbQuestionsWales.isThereActualOrThreatenedAsbQuestion,
+      option: asbQuestions.asbChoice
+    });
+    if (asbQuestions.asbChoice == asbQuestionsWales.yesRadioOption) {
+      await performAction('inputText', asbQuestionsWales.giveDetailsOfAsbHiddenTextLabel, asbQuestions.giveDetailsOfAsb);
+    }
+    await performAction('clickRadioButton', {
+      question: asbQuestionsWales.isThereActualIllegalPurposesQuestion,
+      option: asbQuestions.illegalPurposesChoice
+    });
+    if (asbQuestions.illegalPurposesChoice === asbQuestionsWales.yesRadioOption) {
+      await performAction('inputText', asbQuestionsWales.giveDetailsOfIllegalHiddenTextLabel, asbQuestions.giveDetailsOfIllegal);
+    }
+    await performAction('clickRadioButton', {
+      question: asbQuestionsWales.hasThereBeenOtherProhibitedQuestion,
+      option: asbQuestions.prohibitedConductChoice
+    });
+    if (asbQuestions.prohibitedConductChoice === asbQuestionsWales.yesRadioOption) {
+      await performAction('inputText', asbQuestionsWales.giveDetailsOfTheOtherHiddenTextLabel, asbQuestions.giveDetailsOfTheOther);
+    }
+    await performAction('clickButton', asbQuestionsWales.continueButton);
   }
 }

@@ -12,21 +12,22 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantValidator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
 @Component
 public class DefendantsDetails implements CcdPageConfiguration {
 
-    private final AddressValidator addressValidator;
+    private final DefendantValidator defendantValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("defendantsDetails", this::midEvent)
-            .pageLabel("Defendant 1 details")
+            .pageLabel("Defendant details")
             .complex(PCSCase::getDefendant1)
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)
@@ -45,37 +46,56 @@ public class DefendantsDetails implements CcdPageConfiguration {
                     .optional(AddressUK::getCountry)
                     .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
                 .done()
-                .mandatory(DefendantDetails::getCorrespondenceAddress)
-
-                .readonly(DefendantDetails::getEmailSectionLabel)
-                .mandatory(DefendantDetails::getEmailKnown)
-                .mandatory(DefendantDetails::getEmail)
+            .done()
+            .label("defendantsDetails-additionalDefendants", """
+                ---
+                <h2>Additional defendants</h2>""")
+            .mandatory(PCSCase::getAddAnotherDefendant)
+            .list(PCSCase::getAdditionalDefendants, "addAnotherDefendant=\"YES\"")
+                .readonly(DefendantDetails::getNameSectionLabel)
+                .mandatory(DefendantDetails::getNameKnown)
+                .mandatory(DefendantDetails::getFirstName)
+                .mandatory(DefendantDetails::getLastName)
+                .readonly(DefendantDetails::getAddressSectionLabel)
+                .mandatory(DefendantDetails::getAddressKnown)
+                .mandatory(DefendantDetails::getAddressSameAsPossession)
+                .complex(DefendantDetails::getCorrespondenceAddress)
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+                .done()
             .done()
             .label("defendantsDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
+
+        boolean additionalDefendantsProvided = caseData.getAddAnotherDefendant() == VerticalYesNo.YES;
+
         DefendantDetails defendantDetails = caseData.getDefendant1();
+        List<String> validationErrors
+            = new ArrayList<>(defendantValidator.validateDefendant1(defendantDetails, additionalDefendantsProvided));
 
-        if (defendantDetails.getAddressSameAsPossession() == VerticalYesNo.NO
-            && defendantDetails.getAddressKnown() == VerticalYesNo.YES) {
-
-            AddressUK correspondenceAddress = defendantDetails.getCorrespondenceAddress();
-            List<String> validationErrors = addressValidator.validateAddressFields(correspondenceAddress);
-            if (!validationErrors.isEmpty()) {
-                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(validationErrors)
-                    .build();
-            }
+        if (additionalDefendantsProvided) {
+            validationErrors
+                .addAll(defendantValidator.validateAdditionalDefendants(caseData.getAdditionalDefendants()));
         }
 
-        // TODO: Update this once multiple defendant support is implemented.
-        //  Set the text dynamically for one/multiple defendants.
-        caseData.getDefendantCircumstances().setDefendantTermPossessive("defendants'");
+        if (!validationErrors.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errors(validationErrors)
+                .build();
+        }
+
+        caseData.getDefendantCircumstances()
+            .setDefendantTermPossessive(additionalDefendantsProvided ? "defendants’" : "defendant’s");
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

@@ -7,10 +7,9 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
@@ -19,7 +18,6 @@ import org.springframework.cloud.openfeign.FeignClientsConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestConstructor;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.hmcts.reform.authorisation.ServiceAuthorisationApi;
@@ -28,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 
 @ImportAutoConfiguration({FeignAutoConfiguration.class, FeignClientsConfiguration.class,
     HttpMessageConvertersAutoConfiguration.class})
@@ -37,17 +34,16 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 @ExtendWith(PactConsumerTestExt.class)
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "s2s_auth", port = "5050")
-@RequiredArgsConstructor
-@TestConstructor(autowireMode = ALL)
 
-@Disabled("Temporarily disabled until  DTSPO-27978 is done")
+// @Disabled("Temporarily disabled until  DTSPO-27978 is done")
 public class ServiceAuthorisationConsumerTest {
 
     private static final String AUTHORISATION_TOKEN = "Bearer someAuthorisationToken";
     public static final String MICRO_SERVICE_NAME = "someMicroServiceName";
     public static final String MICRO_SERVICE_TOKEN = "someMicroServiceToken";
 
-    private final ServiceAuthorisationApi serviceAuthorisationApi;
+    @Autowired
+    private ServiceAuthorisationApi serviceAuthorisationApi;
 
     @Pact(provider = "s2s_auth", consumer = "pcs_api")
     public V4Pact executeLease(PactDslWithProvider builder) throws JsonProcessingException {

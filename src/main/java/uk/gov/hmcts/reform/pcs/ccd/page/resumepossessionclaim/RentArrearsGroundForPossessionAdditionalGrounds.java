@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -15,8 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,10 +29,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageConfiguration {
-
-    private final RentDetailsRoutingService rentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -41,20 +37,25 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .page("groundForPossessionAdditionalGrounds", this::midEvent)
             .pageLabel("What are your additional grounds for possession?")
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
-                           + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                           + " AND groundsForPossession=\"Yes\""
+                           + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
+                           + " AND claimDueToRentArrears=\"Yes\""
                            + " AND legislativeCountry=\"England\"")
             .readonly(PCSCase::getShowRentArrearsGroundReasonPage, NEVER_SHOW)
             .label("groundForPossessionAdditionalGrounds-info", """
             ---
             <p class="govuk-body">You may have already given the defendants notice of your intention to begin
-                possession proceedings. If you have, you should have written the grounds you're making your
-                claim under. You should select these grounds here and any extra grounds you'd like to add to
+                possession proceedings. If you have, you should have written the grounds you’re making your
+                claim under. You should select these grounds here and any extra grounds you’d like to add to
                 your claim, if you need to.</p>
+            <p class="govuk-body">
+              <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
+            </p>
             """)
             // Keep canonical sets present in the event for showCondition references
-            .readonly(PCSCase::getRentArrearsMandatoryGrounds, NEVER_SHOW)
-            .readonly(PCSCase::getRentArrearsDiscretionaryGrounds, NEVER_SHOW)
+            .complex(PCSCase::getRentArrearsGroundsForPossession)
+            .readonly(RentArrearsGroundsForPossession::getMandatoryGrounds, NEVER_SHOW)
+            .readonly(RentArrearsGroundsForPossession::getDiscretionaryGrounds, NEVER_SHOW)
+            .done()
             .optional(PCSCase::getAssuredAdditionalMandatoryGrounds)
             .optional(PCSCase::getAssuredAdditionalDiscretionaryGrounds)
             .label("groundForPossessionAdditionalGrounds-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -65,14 +66,12 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         PCSCase caseData = details.getData();
 
-        log.warn("=== RentArrearsGroundForPossessionAdditionalGrounds midEvent START ===");
-
         // Rebuild canonical sets from rent arrears grounds selection
         Set<RentArrearsMandatoryGrounds> mergedMandatory = new HashSet<>();
         Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new HashSet<>();
-        Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
-        log.warn("rentArrearsGrounds: {}", rentArrearsGrounds);
-        
+        Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGroundsForPossession()
+            .getRentArrearsGrounds();
+
         if (rentArrearsGrounds != null) {
             if (rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {
                 mergedMandatory.add(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
@@ -91,8 +90,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 caseData.getAssuredAdditionalMandatoryGrounds(),
                 Set.of()
             );
-        log.warn("addMandatory: {}", addMandatory);
-        
+
         for (AssuredAdditionalMandatoryGrounds add : addMandatory) {
             mergedMandatory.add(RentArrearsMandatoryGrounds.valueOf(add.name()));
         }
@@ -102,8 +100,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                 caseData.getAssuredAdditionalDiscretionaryGrounds(),
                 Set.of()
             );
-        log.warn("addDiscretionary: {}", addDiscretionary);
-        
+
         for (AssuredAdditionalDiscretionaryGrounds add : addDiscretionary) {
             mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.valueOf(add.name()));
         }
@@ -118,16 +115,11 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         boolean requireAdditionalSelection = hasRentArrearsGrounds;
         boolean hasAnyAdditional = hasAdditionalMandatory || hasAdditionalDiscretionary;
 
-        log.warn("requireAdditionalSelection: {}, hasAnyAdditional: {}", requireAdditionalSelection, hasAnyAdditional);
-
         if (requireAdditionalSelection && !hasAnyAdditional) {
-            log.warn("VALIDATION FAILED: Rent arrears selected earlier, but no additional grounds selected.");
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .errors(List.of("Please select at least one ground"))
                 .build();
         }
-
-        log.warn("Validation passed (conditional additional requirement).");
 
         // Backward compatibility: if no rent arrears grounds or additional-only input present,
         // use existing canonical sets
@@ -139,14 +131,14 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         if (noRentArrearsGrounds && noAdditional) {
             effectiveMandatory = Objects.requireNonNullElse(
-                caseData.getRentArrearsMandatoryGrounds(), new HashSet<>()
+                caseData.getRentArrearsGroundsForPossession().getMandatoryGrounds(), new HashSet<>()
             );
             effectiveDiscretionary = Objects.requireNonNullElse(
-                caseData.getRentArrearsDiscretionaryGrounds(), new HashSet<>()
+                caseData.getRentArrearsGroundsForPossession().getDiscretionaryGrounds(), new HashSet<>()
             );
         } else {
-            caseData.setRentArrearsMandatoryGrounds(mergedMandatory);
-            caseData.setRentArrearsDiscretionaryGrounds(mergedDiscretionary);
+            caseData.getRentArrearsGroundsForPossession().setMandatoryGrounds(mergedMandatory);
+            caseData.getRentArrearsGroundsForPossession().setDiscretionaryGrounds(mergedDiscretionary);
         }
 
         boolean hasOtherMandatoryGrounds = effectiveMandatory.stream()
@@ -160,12 +152,6 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             YesOrNo.from(hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds)
         );
 
-        // This handles the case when user unchecks rent arrears grounds
-        YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
-        caseData.setShowRentDetailsPage(showRentDetails);
-
-        log.warn("=== RentArrearsGroundForPossessionAdditionalGrounds midEvent END ===");
-        
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();

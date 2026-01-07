@@ -7,12 +7,13 @@ export const caseList = {
   caseNumberLabel: 'Case Number',
   possessionsJurisdiction: 'Possessions',
   caseType:
-  {
-    civilPossessions: process.env.CHANGE_ID
-      ? `Civil Possessions ${process.env.CHANGE_ID}`
-      : 'Civil Possessions'
-  },
+    {
+      civilPossessions: process.env.CHANGE_ID
+        ? `Civil Possessions ${process.env.CHANGE_ID}`
+        : 'Civil Possessions'
+    },
   stateLabel: 'State',
   stateAwaitingSubmission: 'Awaiting Submission to HMCTS',
+  stateAny: 'Any',
   apply: 'Apply'
 }

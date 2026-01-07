@@ -1,11 +1,11 @@
 export const addressDetails = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
-  mainHeader: 'What is the address of the property you\'re claiming possession of?',
+  mainHeader: 'What is the address of the property you’re claiming possession of?',
   sectionTitle: 'Property address',
   enterUKPostcodeTextLabel : 'Enter a UK postcode',
   findAddressButton: 'Find address',
   addressSelectLabel: 'Select an address',
-  cantEnterUKPostcodeLink: 'I can\'t enter a UK postcode',
+  cantEnterUKPostcodeLink: `I can't enter a UK postcode`,//As this is controlled by exui, it still be using ' instead of ’ Ref HDPI-3258
   buildingAndStreetTextLabel: 'Building and Street',
   addressLine2TextLabel: 'Address Line 2 (Optional)',
   addressLine3TextLabel: 'Address Line 3 (Optional)',
@@ -18,7 +18,8 @@ export const addressDetails = {
   addressLine3TextInput: 'address3',
   englandBuildingAndStreetTextInput: '1 Second Avenue',
   englandTownOrCityTextInput: 'London',
-  englandCountyTextInput: 'London',
+  englandCountyTextInput: 'Greater London',
+  englandCountryTextInput: 'United Kingdom',
   walesBuildingAndStreetTextInput: '2 Pentre Street',
   walesTownOrCityTextInput: 'Caerdydd',
   walesCountyTextInput: 'Cardiff',

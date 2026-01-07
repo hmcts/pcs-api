@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
@@ -39,6 +40,8 @@ class ResumeClaimTest extends BasePageTest {
     @Mock
     private ModelMapper modelMapper;
 
+    private final EventId eventId = EventId.resumePossessionClaim;
+
     @BeforeEach
     void setUp() {
         setPageUnderTest(new ResumeClaim(draftCaseDataService, modelMapper));
@@ -50,7 +53,7 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE))
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId))
             .thenReturn(Optional.ofNullable(unsubmittedCaseData));
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(keepAnswers);
@@ -83,7 +86,7 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId)).thenReturn(Optional.empty());
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(YesOrNo.YES);
 

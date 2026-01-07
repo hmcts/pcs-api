@@ -31,7 +31,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
     @ParameterizedTest
     @MethodSource("characterLimitScenarios")
     void shouldValidateCharacterLimit(
-            YesNoNotSure vulnerablePeopleYesNo,
+            YesNoNotSure vulnerablePeoplePresent,
             VulnerableCategory vulnerableCategory,
             String vulnerableReasonText,
             boolean expectsError) {
@@ -42,7 +42,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .vulnerablePeopleYesNo(vulnerablePeopleYesNo)
+                .vulnerablePeoplePresent(vulnerablePeoplePresent)
                 .vulnerableAdultsChildren(vulnerableAdultsChildren)
                 .build();
 
@@ -57,7 +57,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
         if (expectsError) {
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors().getFirst())
-                    .contains("In 'How are they vulnerable?', you have entered more than the maximum number "
+                    .contains("In ‘How are they vulnerable?’, you have entered more than the maximum number "
                             + "of characters")
                     .contains("6,800");
         } else {
@@ -107,7 +107,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
     @ParameterizedTest
     @MethodSource("dataPreservationScenarios")
     void shouldPreserveCaseDataWhenValidationPasses(
-            YesNoNotSure vulnerablePeopleYesNo,
+            YesNoNotSure vulnerablePeoplePresent,
             VulnerableCategory vulnerableCategory,
             String vulnerableReasonText) {
         // Given
@@ -117,7 +117,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .vulnerablePeopleYesNo(vulnerablePeopleYesNo)
+                .vulnerablePeoplePresent(vulnerablePeoplePresent)
                 .vulnerableAdultsChildren(vulnerableAdultsChildren)
                 .build();
 
@@ -134,8 +134,8 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 .getVulnerableAdultsChildren().getVulnerableReasonText())
                 .isEqualTo(vulnerableReasonText);
         assertThat(response.getData().getEnforcementOrder()
-                .getVulnerablePeopleYesNo())
-                .isEqualTo(vulnerablePeopleYesNo);
+                .getVulnerablePeoplePresent())
+                .isEqualTo(vulnerablePeoplePresent);
         assertThat(response.getData().getEnforcementOrder()
                 .getVulnerableAdultsChildren().getVulnerableCategory())
                 .isEqualTo(vulnerableCategory);

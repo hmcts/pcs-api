@@ -11,7 +11,7 @@ public enum YesNoNotSure implements HasLabel {
 
     YES("Yes"),
     NO("No"),
-    NOT_SURE("I'm not sure");
+    NOT_SURE("I’m not sure");
 
     private final String label;
 }

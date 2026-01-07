@@ -12,7 +12,7 @@ public class MoneyJudgment implements CcdPageConfiguration {
         pageBuilder
                 .page("moneyJudgment")
                 .pageLabel("Money judgment")
-                .showCondition("showRentDetailsPage=\"Yes\"")
+                .showCondition("showRentSectionPage=\"Yes\"")
                 .label("moneyJudgment-separator", "---")
                 .mandatory(PCSCase::getArrearsJudgmentWanted)
                 .label("moneyJudgment-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

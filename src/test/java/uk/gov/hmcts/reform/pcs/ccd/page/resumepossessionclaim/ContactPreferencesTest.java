@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -34,9 +35,12 @@ class ContactPreferencesTest extends BasePageTest {
     void shouldReturnValidationErrorsWhenAddressInvalid() {
         // Given
         AddressUK contactAddress = mock(AddressUK.class);
-        PCSCase caseData = PCSCase.builder()
+        ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
             .isCorrectClaimantContactAddress(VerticalYesNo.NO)
             .overriddenClaimantContactAddress(contactAddress)
+            .build();
+        PCSCase caseData = PCSCase.builder()
+            .claimantContactPreferences(contactPreferences)
             .build();
 
         List<String> expectedValidationErrors = List.of("error 1", "error 2");

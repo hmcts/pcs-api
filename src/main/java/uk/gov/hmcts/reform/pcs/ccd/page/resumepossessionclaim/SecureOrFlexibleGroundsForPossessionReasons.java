@@ -35,8 +35,8 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
             .page("secureOrFlexibleGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
             .showCondition(
-                    "typeOfTenancyLicence=\"SECURE_TENANCY\""
-                            + " OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
+                    "tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
+                            + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                             + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
                             + " AND legislativeCountry=\"England\""
             )
@@ -198,7 +198,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
 
             .label("possessionReasons-landlordWorks-label",
                    """
-                 <h2 class="govuk-heading-l" tabindex="0">Landlord's works (ground 10)</h2>
+                 <h2 class="govuk-heading-l" tabindex="0">Landlord’s works (ground 10)</h2>
                  <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                  </h3>
@@ -305,14 +305,14 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         SecureOrFlexibleGroundsReasons secureOrFlexibleGrounds = caseData.getSecureOrFlexibleGroundsReasons();
         if (secureOrFlexibleGrounds != null) {
             validationErrors.addAll(validateSecureOrFlexibleGrounds(secureOrFlexibleGrounds));
         }
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 
@@ -322,7 +322,7 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
         allValidations.addAll(List.of(buildMandatoryGroundValidations(grounds)));
         allValidations.addAll(List.of(buildMandatoryGroundsAlternativeAccommValidations(grounds)));
         allValidations.addAll(List.of(buildDiscretionaryGroundsAlternativeAccommValidations(grounds)));
-        
+
         return textAreaValidationService.validateMultipleTextAreas(
             allValidations.toArray(new TextAreaValidationService.FieldValidation[0])
         );

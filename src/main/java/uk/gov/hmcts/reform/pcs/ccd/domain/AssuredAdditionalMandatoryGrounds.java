@@ -10,7 +10,7 @@ public enum AssuredAdditionalMandatoryGrounds {
     @CCD(label = "Owner occupier (ground 1)")
     OWNER_OCCUPIER_GROUND1,
 
-    @CCD(label = "Repossession by the landlord's mortgage lender (ground 2)")
+    @CCD(label = "Repossession by the landlord’s mortgage lender (ground 2)")
     REPOSSESSION_GROUND2,
 
     @CCD(label = "Holiday let (ground 3)")

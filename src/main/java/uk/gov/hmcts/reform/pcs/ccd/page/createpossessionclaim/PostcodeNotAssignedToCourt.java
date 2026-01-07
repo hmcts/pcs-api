@@ -135,7 +135,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                 <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                    <span id="warning-message">To exit back to the case list, select 'Cancel'</span>
+                    <span id="warning-message">To exit back to the case list, select ‘Cancel’</span>
                 </strong>
             </div>
             </section>

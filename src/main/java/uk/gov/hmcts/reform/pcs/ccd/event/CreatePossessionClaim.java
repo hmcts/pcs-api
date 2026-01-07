@@ -19,9 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssigne
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.StartTheService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
-
-import java.math.BigDecimal;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 
@@ -32,20 +31,17 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-    private final FeesAndPayService feesAndPayService;
+    private final FeeApplier feeApplier;
     private final EnterPropertyAddress enterPropertyAddress;
     private final CrossBorderPostcodeSelection crossBorderPostcodeSelection;
     private final PropertyNotEligible propertyNotEligible;
-
-    private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
-    private static final String FEE = "Unable to retrieve";
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(createPossessionClaim.name(), this::submit, this::start)
-                .initialState(State.AWAITING_FURTHER_CLAIM_DETAILS)
+                .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
@@ -62,17 +58,16 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
 
-        try {
-            caseData.setFeeAmount(formatAsCurrency(
-                feesAndPayService.getFee(CASE_ISSUED_FEE_TYPE).getFeeAmount()
-            ));
-        } catch (Exception e) {
-            // Fallback to default fee if API is unavailable (during config generation)
-            log.error("Error while getting fee", e);
-            caseData.setFeeAmount(FEE);
-        }
-
+        applyCaseIssueFeeAmount(caseData);
         return caseData;
+    }
+
+    private void applyCaseIssueFeeAmount(PCSCase pcsCase) {
+        feeApplier.applyFeeAmount(
+            pcsCase,
+            FeeType.CASE_ISSUE_FEE,
+            PCSCase::setFeeAmount
+        );
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -82,12 +77,5 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
 
         return SubmitResponse.defaultResponse();
-    }
-
-    private String formatAsCurrency(BigDecimal amount) {
-        if (amount == null) {
-            return FEE;
-        }
-        return "£" + amount.stripTrailingZeros().toPlainString();
     }
 }

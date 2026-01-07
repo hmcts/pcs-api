@@ -20,6 +20,7 @@ public class PartyService {
     public PartyEntity createPartyEntity(UUID userId,
                                          String forename,
                                          String surname,
+                                         String organisationName,
                                          String contactEmail,
                                          AddressUK contactAddress,
                                          String contactPhoneNumber) {
@@ -31,6 +32,7 @@ public class PartyService {
             .idamId(userId)
             .forename(forename)
             .surname(surname)
+            .orgName(organisationName)
             .active(true)
             .contactEmail(contactEmail)
             .contactAddress(addressEntity)

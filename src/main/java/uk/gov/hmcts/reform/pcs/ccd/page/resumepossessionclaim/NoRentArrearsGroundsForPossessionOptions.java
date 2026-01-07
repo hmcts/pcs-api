@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -12,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.List;
 import java.util.Set;
@@ -23,40 +22,43 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfiguration {
-
-    private final RentDetailsRoutingService rentDetailsRoutingService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("noRentArrearsGroundsForPossessionOptions", this::midEvent)
-            .pageLabel("What are your additional grounds for possession?")
-            .showCondition("groundsForPossession=\"No\" AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
+            .pageLabel("What are your grounds for possession?")
+            .showCondition("claimDueToRentArrears=\"No\" AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                              + " AND legislativeCountry=\"England\""
             )
-            .readonly(PCSCase::getShowNoRentArrearsGroundReasonPage, NEVER_SHOW)
-            .readonly(PCSCase::getShowRentDetailsPage, NEVER_SHOW)
+            .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)
+            .complex(PCSCase::getNoRentArrearsGroundsOptions)
+            .readonly(NoRentArrearsGroundsOptions::getShowGroundReasonPage, NEVER_SHOW)
             .label(
-                "NoRentArrearsGroundsForPossessionOptions-information", """
+                "noRentArrearsGroundsForPossessionOptions-information", """
                     ---
                     <p>You may have already given the defendants notice of your intention to begin possession
                     proceedings. If you have, you should have written the grounds you’re making your claim under.
                     You should select these grounds here and any extra grounds you’d like to add to your claim,
-                    if you need to.</p>"""
+                    if you need to.</p>
+                    <p class="govuk-body">
+                      <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
+                    </p>"""
             )
-            .optional(PCSCase::getNoRentArrearsMandatoryGroundsOptions)
-            .optional(PCSCase::getNoRentArrearsDiscretionaryGroundsOptions)
+            .optional(NoRentArrearsGroundsOptions::getMandatoryGrounds)
+            .optional(NoRentArrearsGroundsOptions::getDiscretionaryGrounds)
+            .done()
             .label("noRentArrearsGroundsForPossessionOptions-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getNoRentArrearsMandatoryGroundsOptions();
+        Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds =
+            caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
         Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds =
-            caseData.getNoRentArrearsDiscretionaryGroundsOptions();
+            caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
 
         if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
@@ -73,10 +75,8 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                 && ground != NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY);
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
-        caseData.setShowNoRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
-
-        YesOrNo showRentDetails = rentDetailsRoutingService.shouldShowRentDetails(caseData);
-        caseData.setShowRentDetailsPage(showRentDetails);
+        caseData.getNoRentArrearsGroundsOptions()
+            .setShowGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

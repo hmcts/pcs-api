@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.Set;
@@ -26,9 +27,14 @@ class GroundsForPossessionTest extends BasePageTest {
         // Given: One mandatory and one discretionary is selected
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
-            .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
-            .groundsForPossession(YesOrNo.YES)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+                    .discretionaryGrounds(
+                        Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
+                    .build()
+            )
+            .claimDueToRentArrears(YesOrNo.YES)
             .build();
 
         caseDetails.setData(caseData);
@@ -37,8 +43,10 @@ class GroundsForPossessionTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then: Sets should be cleared
-        assertThat(caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions()).isEmpty();
-        assertThat(caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions()).isEmpty();
+        assertThat(caseDetails.getData().getNoRentArrearsGroundsOptions()
+                       .getMandatoryGrounds()).isEmpty();
+        assertThat(caseDetails.getData().getNoRentArrearsGroundsOptions()
+                       .getDiscretionaryGrounds()).isEmpty();
 
     }
 
@@ -47,9 +55,14 @@ class GroundsForPossessionTest extends BasePageTest {
         // Given: One mandatory and one discretionary is selected
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
-            .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
-            .groundsForPossession(YesOrNo.NO)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+                    .discretionaryGrounds(
+                        Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
+                    .build()
+            )
+            .claimDueToRentArrears(YesOrNo.NO)
             .build();
 
         caseDetails.setData(caseData);
@@ -59,7 +72,9 @@ class GroundsForPossessionTest extends BasePageTest {
 
 
         // Then: Sets should not be cleared
-        assertThat(caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions()).isNotEmpty();
-        assertThat(caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions()).isNotEmpty();
+        assertThat(caseDetails.getData().getNoRentArrearsGroundsOptions()
+                       .getMandatoryGrounds()).isNotEmpty();
+        assertThat(caseDetails.getData().getNoRentArrearsGroundsOptions()
+                       .getDiscretionaryGrounds()).isNotEmpty();
     }
 }

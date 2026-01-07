@@ -9,7 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -33,10 +36,20 @@ public class RentDetailsRoutingIntegrationTest {
 
         // Given
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(tenancyType)
-            .noRentArrearsMandatoryGroundsOptions(noRentArrearsMandatory)
-            .noRentArrearsDiscretionaryGroundsOptions(noRentArrearsDiscretionary)
-            .secureOrFlexibleDiscretionaryGrounds(secureFlexibleDiscretionary)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(tenancyType)
+                    .build()
+            )
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(noRentArrearsMandatory)
+                    .discretionaryGrounds(noRentArrearsDiscretionary)
+                    .build()
+            )
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds
+                    .builder().secureOrFlexibleDiscretionaryGrounds(secureFlexibleDiscretionary).build())
             .rentArrearsOrBreachOfTenancy(rentArrearsOrBreach)
             .build();
 
@@ -132,30 +145,51 @@ public class RentDetailsRoutingIntegrationTest {
         return Stream.of(
             // Null tenancy type
             arguments(PCSCase.builder()
-                     .typeOfTenancyLicence(null)
-                     .noRentArrearsMandatoryGroundsOptions(Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
-                     .build(),
-                     YesOrNo.NO, "Edge Case: Null tenancy type"),
+                          .tenancyLicenceDetails(
+                              TenancyLicenceDetails.builder()
+                                  .typeOfTenancyLicence(null)
+                                  .build()
+                          )
+                          .noRentArrearsGroundsOptions(NoRentArrearsGroundsOptions.builder()
+                                                           .mandatoryGrounds(
+                                                               Set.of(
+                                                                   NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
+                                                           .build()
+                          )
+                          .build(), YesOrNo.NO, "Edge Case: Null tenancy type"),
 
             // Empty sets
             arguments(PCSCase.builder()
-                     .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-                     .noRentArrearsMandatoryGroundsOptions(Set.of())
-                     .noRentArrearsDiscretionaryGroundsOptions(Set.of())
-                     .secureOrFlexibleDiscretionaryGrounds(Set.of())
-                     .rentArrearsOrBreachOfTenancy(Set.of())
-                     .build(),
-                     YesOrNo.NO, "Edge Case: All empty sets"),
+                          .tenancyLicenceDetails(
+                              TenancyLicenceDetails.builder()
+                                  .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                  .build()
+                          )
+                          .noRentArrearsGroundsOptions(
+                              NoRentArrearsGroundsOptions.builder()
+                                  .mandatoryGrounds(Set.of())
+                                  .discretionaryGrounds(Set.of())
+                                  .build()
+                          )
+                          .rentArrearsOrBreachOfTenancy(Set.of())
+                          .build(), YesOrNo.NO, "Edge Case: All empty sets"),
 
             // Mixed grounds (should show Rent Details if any rent-related ground is selected)
             arguments(PCSCase.builder()
-                     .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-                     .noRentArrearsMandatoryGroundsOptions(
-                         Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
-                     .noRentArrearsDiscretionaryGroundsOptions(
-                         Set.of(NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE))
-                     .build(),
-                     YesOrNo.YES, "Edge Case: Mixed grounds with rent-related ground")
+                          .tenancyLicenceDetails(
+                              TenancyLicenceDetails.builder()
+                                  .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                                  .build()
+                          )
+                          .noRentArrearsGroundsOptions(
+                              NoRentArrearsGroundsOptions.builder()
+                                  .mandatoryGrounds(
+                                      Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
+                                  .discretionaryGrounds(
+                                      Set.of(NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE))
+                                  .build()
+                          )
+                          .build(), YesOrNo.YES, "Edge Case: Mixed grounds with rent-related ground")
         );
     }
 
@@ -163,28 +197,35 @@ public class RentDetailsRoutingIntegrationTest {
      * Simulates the complete routing logic by applying the same logic as the midEvent handlers.
      */
     private YesOrNo simulateRoutingLogic(PCSCase caseData) {
+        TenancyLicenceDetails tenancyDetails =
+            caseData.getTenancyLicenceDetails();
+        TenancyLicenceType tenancyType = tenancyDetails != null
+            ? tenancyDetails.getTypeOfTenancyLicence() : null;
+
         // For Assured Tenancy - check if grounds 8, 10, or 11 are selected
-        if (TenancyLicenceType.ASSURED_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
-            boolean hasRentRelatedGrounds = 
-                (caseData.getNoRentArrearsMandatoryGroundsOptions() != null 
-                 && caseData.getNoRentArrearsMandatoryGroundsOptions()
+        if (TenancyLicenceType.ASSURED_TENANCY.equals(tenancyType)) {
+            boolean hasRentRelatedGrounds =
+                (caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds() != null
+                 && caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds()
                      .contains(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS))
-                || (caseData.getNoRentArrearsDiscretionaryGroundsOptions() != null 
-                    && (caseData.getNoRentArrearsDiscretionaryGroundsOptions()
+                || (caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds() != null
+                    && (caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds()
                         .contains(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS)
-                        || caseData.getNoRentArrearsDiscretionaryGroundsOptions()
+                        || caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds()
                             .contains(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY)));
             return YesOrNo.from(hasRentRelatedGrounds);
         }
-        
+
         // For Secure/Flexible Tenancy - check if Ground 1 is selected and Rent Arrears is chosen
-        if (TenancyLicenceType.SECURE_TENANCY.equals(caseData.getTypeOfTenancyLicence())
-            || TenancyLicenceType.FLEXIBLE_TENANCY.equals(caseData.getTypeOfTenancyLicence())) {
-            
-            boolean hasGround1 = caseData.getSecureOrFlexibleDiscretionaryGrounds() != null
-                                && caseData.getSecureOrFlexibleDiscretionaryGrounds()
+        if (TenancyLicenceType.SECURE_TENANCY.equals(tenancyType)
+            || TenancyLicenceType.FLEXIBLE_TENANCY.equals(tenancyType)) {
+
+            boolean hasGround1 = caseData.getSecureOrFlexiblePossessionGrounds()
+                .getSecureOrFlexibleDiscretionaryGrounds() != null
+                                && caseData.getSecureOrFlexiblePossessionGrounds()
+                .getSecureOrFlexibleDiscretionaryGrounds()
                                     .contains(RENT_ARREARS_OR_BREACH_OF_TENANCY);
-            
+
             if (hasGround1) {
                 boolean hasRentArrears = caseData.getRentArrearsOrBreachOfTenancy() != null
                                         && caseData.getRentArrearsOrBreachOfTenancy()
@@ -192,7 +233,7 @@ public class RentDetailsRoutingIntegrationTest {
                 return YesOrNo.from(hasRentArrears);
             }
         }
-        
+
         return YesOrNo.NO;
     }
 }

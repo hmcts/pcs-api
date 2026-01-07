@@ -7,10 +7,12 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.mapper.DefendantMapper;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -28,7 +30,9 @@ public class PcsCaseMergeService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
-    private final DefendantMapper defendantMapper;
+    private final DefendantService defendantService;
+    private final StatementOfTruthService statementOfTruthService;
+    private final UnderlesseeMortgageeService underlesseeMortgageService;
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
 
@@ -56,9 +60,17 @@ public class PcsCaseMergeService {
             pcsCaseEntity.setClaimantType(claimantType);
         }
 
+        if (pcsCase.getDefendant1() != null) {
+            pcsCaseEntity.setDefendants(defendantService.buildDefendantsList(pcsCase));
+        }
+
+        if (pcsCase.getUnderlesseeOrMortgagee1() != null) {
+            pcsCaseEntity.setUnderlesseesMortgagees(underlesseeMortgageService.buildUnderlesseeMortgageeList(pcsCase));
+        }
+
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
-        pcsCaseEntity.setDefendants(defendantMapper.mapFromDefendantDetails(pcsCase.getDefendants()));
+        pcsCaseEntity.setStatementOfTruth(statementOfTruthService.buildStatementOfTruth(pcsCase));
     }
 
     private void setPcqIdForCurrentUser(UUID pcqId, PcsCaseEntity pcsCaseEntity) {
@@ -85,24 +97,40 @@ public class PcsCaseMergeService {
     }
 
     private PossessionGrounds buildPossessionGrounds(PCSCase pcsCase) {
+
+        SecureContractGroundsForPossessionWales secureContractGroundsWales =
+            Optional.ofNullable(pcsCase.getSecureContractGroundsForPossessionWales())
+                .orElse(SecureContractGroundsForPossessionWales.builder().build());
+
         SecureOrFlexibleReasonsForGrounds reasons = Optional.ofNullable(pcsCase.getSecureOrFlexibleGroundsReasons())
-            .map(grounds -> modelMapper.map(grounds, SecureOrFlexibleReasonsForGrounds.class))
+            .map(grounds -> modelMapper
+                .map(grounds, SecureOrFlexibleReasonsForGrounds.class))
             .orElse(SecureOrFlexibleReasonsForGrounds.builder().build());
 
+        SecureOrFlexiblePossessionGrounds secureOrFlexiblePossessionGrounds = Optional.ofNullable(
+            pcsCase.getSecureOrFlexiblePossessionGrounds()).orElse(SecureOrFlexiblePossessionGrounds.builder().build());
+
+        GroundsForPossessionWales groundsForPossessionWales =
+            Optional.ofNullable(pcsCase.getGroundsForPossessionWales())
+                .orElse(GroundsForPossessionWales.builder().build());
+
         return PossessionGrounds.builder()
-            .discretionaryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleDiscretionaryGrounds()))
-            .mandatoryGrounds(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGrounds()))
-            .discretionaryGroundsAlternativeAccommodation(mapToLabels(
-                pcsCase.getSecureOrFlexibleDiscretionaryGroundsAlt())
-            )
-            .mandatoryGroundsAlternativeAccommodation(mapToLabels(pcsCase.getSecureOrFlexibleMandatoryGroundsAlt()))
-            .walesDiscretionaryGrounds(mapToLabels(pcsCase.getDiscretionaryGroundsWales()))
-            .walesMandatoryGrounds(mapToLabels(pcsCase.getMandatoryGroundsWales()))
-            .walesEstateManagementGrounds(mapToLabels(pcsCase.getEstateManagementGroundsWales()))
-            .walesSecureContractDiscretionaryGrounds(mapToLabels(pcsCase.getSecureContractDiscretionaryGroundsWales()))
-            .walesSecureContractMandatoryGrounds(mapToLabels(pcsCase.getSecureContractMandatoryGroundsWales()))
-            .walesSecureContractEstateManagementGrounds(
-                mapToLabels(pcsCase.getSecureContractEstateManagementGroundsWales()))
+            .discretionaryGrounds(
+                mapToLabels(secureOrFlexiblePossessionGrounds.getSecureOrFlexibleDiscretionaryGrounds()))
+            .mandatoryGrounds(mapToLabels(secureOrFlexiblePossessionGrounds.getSecureOrFlexibleMandatoryGrounds()))
+            .discretionaryGroundsAlternativeAccommodation(
+                mapToLabels(secureOrFlexiblePossessionGrounds.getSecureOrFlexibleDiscretionaryGroundsAlt()))
+            .mandatoryGroundsAlternativeAccommodation(
+                mapToLabels(secureOrFlexiblePossessionGrounds.getSecureOrFlexibleMandatoryGroundsAlt()))
+            .walesDiscretionaryGrounds(mapToLabels(groundsForPossessionWales.getDiscretionaryGroundsWales()))
+            .walesMandatoryGrounds(mapToLabels(groundsForPossessionWales.getMandatoryGroundsWales()))
+            .walesEstateManagementGrounds(mapToLabels(groundsForPossessionWales.getEstateManagementGroundsWales()))
+            .walesSecureContractDiscretionaryGrounds(mapToLabels(secureContractGroundsWales
+                                                                     .getDiscretionaryGroundsWales()))
+            .walesSecureContractMandatoryGrounds(mapToLabels(secureContractGroundsWales
+                                                                 .getMandatoryGroundsWales()))
+            .walesSecureContractEstateManagementGrounds(mapToLabels(secureContractGroundsWales
+                                .getEstateManagementGroundsWales()))
             .secureOrFlexibleReasonsForGrounds(reasons)
             .build();
     }

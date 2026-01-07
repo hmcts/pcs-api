@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
@@ -15,25 +14,20 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentDetailsRoutingService;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
-    @Mock
-    private RentDetailsRoutingService rentDetailsRoutingService;
-
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new NoRentArrearsGroundsForPossessionOptions(rentDetailsRoutingService));
+        setPageUnderTest(new NoRentArrearsGroundsForPossessionOptions());
     }
 
     @Test
@@ -49,8 +43,12 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
             NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
 
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
-            .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(expectedMandatory)
+                    .discretionaryGrounds(expectedDiscretionary)
+                    .build()
+            )
             .build();
 
         // When: Mid event is executed
@@ -58,9 +56,9 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         // Then: Mandatory and Discretionary enum should exist in each set
         PCSCase updated = response.getData();
-        assertThat(updated.getNoRentArrearsMandatoryGroundsOptions())
+        assertThat(updated.getNoRentArrearsGroundsOptions().getMandatoryGrounds())
             .containsExactlyInAnyOrderElementsOf(expectedMandatory);
-        assertThat(updated.getNoRentArrearsDiscretionaryGroundsOptions())
+        assertThat(updated.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds())
             .containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
     }
 
@@ -77,8 +75,12 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
             NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE,
             NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(expectedDiscretionary)
-            .noRentArrearsMandatoryGroundsOptions(expectedMandatory)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(expectedMandatory)
+                    .discretionaryGrounds(expectedDiscretionary)
+                    .build()
+            )
             .build();
 
         caseDetails.setData(caseData);
@@ -88,9 +90,9 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         // Then: Mandatory and Discretionary enum should exist in each set
         Set<NoRentArrearsMandatoryGrounds> selectedMandatory =
-            caseDetails.getData().getNoRentArrearsMandatoryGroundsOptions();
+            caseDetails.getData().getNoRentArrearsGroundsOptions().getMandatoryGrounds();
         Set<NoRentArrearsDiscretionaryGrounds> selectedDiscretionary =
-            caseDetails.getData().getNoRentArrearsDiscretionaryGroundsOptions();
+            caseDetails.getData().getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
 
         assertThat(selectedMandatory).containsExactlyInAnyOrderElementsOf(expectedMandatory);
         assertThat(selectedDiscretionary).containsExactlyInAnyOrderElementsOf(expectedDiscretionary);
@@ -104,9 +106,12 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         YesOrNo expectedShowFlag) {
         // Given
         PCSCase caseData = PCSCase.builder()
-
-            .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
-            .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(mandatoryGrounds)
+                    .discretionaryGrounds(discretionaryGrounds)
+                    .build()
+            )
             .build();
 
         // When
@@ -114,38 +119,8 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         PCSCase updatedCaseData = response.getData();
 
-        assertThat(updatedCaseData.getShowNoRentArrearsGroundReasonPage()).isEqualTo(expectedShowFlag);
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideRentDetailsPageScenarios")
-    void shouldSetCorrectShowRentDetailsPageFlagForAssuredTenancy(
-        Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds,
-        Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds, YesOrNo expectedShowRentDetailsPage) {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .noRentArrearsMandatoryGroundsOptions(mandatoryGrounds)
-            .noRentArrearsDiscretionaryGroundsOptions(discretionaryGrounds)
-            .build();
-
-        // Explicitly stub the routing decision (do not rely on case data)
-        if (!(mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty())) {
-            when(rentDetailsRoutingService.shouldShowRentDetails(any(PCSCase.class)))
-                .thenReturn(expectedShowRentDetailsPage);
-        }
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
-            // When no grounds are selected, the midEvent returns an error response
-            assertThat(response.getErrors()).containsExactly("Please select at least one ground");
-            assertThat(response.getData()).isNull();
-        } else {
-            PCSCase updatedCaseData = response.getData();
-            assertThat(updatedCaseData.getShowRentDetailsPage()).isEqualTo(expectedShowRentDetailsPage);
-        }
+        assertThat(updatedCaseData.getNoRentArrearsGroundsOptions().getShowGroundReasonPage())
+            .isEqualTo(expectedShowFlag);
     }
 
     private static Stream<Arguments> provideRentArrearsScenarios() {
@@ -163,32 +138,6 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
             Arguments.of(Set.of(),
                          Set.of(NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT),
                          YesOrNo.YES)
-        );
-    }
-
-    private static Stream<Arguments> provideRentDetailsPageScenarios() {
-        return Stream.of(
-            // Ground 8 (SERIOUS_RENT_ARREARS) - Should show Rent Details
-            Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS), Set.of(), YesOrNo.YES),
-
-            // Ground 10 (RENT_ARREARS) - Should show Rent Details
-            Arguments.of(Set.of(), Set.of(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS), YesOrNo.YES),
-
-            // Ground 11 (RENT_PAYMENT_DELAY) - Should show Rent Details
-            Arguments.of(Set.of(), Set.of(NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY), YesOrNo.YES),
-
-            // Ground 9 (SUITABLE_ACCOM) - Should NOT show Rent Details
-            Arguments.of(Set.of(), Set.of(NoRentArrearsDiscretionaryGrounds.SUITABLE_ACCOM), YesOrNo.NO),
-
-            // Other grounds - Should NOT show Rent Details
-            Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR), Set.of(), YesOrNo.NO),
-
-            // Multiple grounds including rent-related - Should show Rent Details
-            Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS),
-                         Set.of(NoRentArrearsDiscretionaryGrounds.NUISANCE_OR_ILLEGAL_USE), YesOrNo.YES),
-
-            // No grounds selected - Should NOT show Rent Details
-            Arguments.of(Set.of(), Set.of(), YesOrNo.NO)
         );
     }
 }

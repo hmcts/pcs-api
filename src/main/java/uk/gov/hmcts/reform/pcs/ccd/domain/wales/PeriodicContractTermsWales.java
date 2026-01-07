@@ -18,7 +18,7 @@ public class PeriodicContractTermsWales {
     private VerticalYesNo agreedTermsOfPeriodicContract;
 
     @CCD(
-        label = "Give details of the terms you've agreed",
+        label = "Give details of the terms you’ve agreed",
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
