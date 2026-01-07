@@ -57,7 +57,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsOrBreachOfTenancyGround;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetailsPage;
@@ -83,6 +83,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
@@ -154,7 +155,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     private final ReasonsForPossessionWales reasonsForPossessionWales;
     private final AddressFormatter addressFormatter;
-    private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private final RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
     private final CheckingNotice checkingNotice;
@@ -163,6 +164,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
+    private final CaseAssignmentService caseAssignmentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -199,7 +201,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(introductoryDemotedOrOtherGroundsForPossession)
             .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
-            .add(rentArrearsGroundsForPossession)
+            .add(rentArrearsGroundsForPossessionPage)
             .add(rentArrearsGroundForPossessionAdditionalGrounds)
             .add(rentArrearsGroundsForPossessionReasons)
             .add(noRentArrearsGroundsForPossessionOptions)
