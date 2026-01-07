@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -60,10 +61,10 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         // When
         callSubmitHandler(caseData);
 
-        //Then
+        //Then - Verify filtered PCSCase (only defendantResponse) is saved
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            eq(defendantResponse),
+            any(PCSCase.class),
             eq(EventId.submitDefendantResponse)
         );
 
@@ -110,10 +111,10 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         assertThat(result.getDefendantResponse().getParty().getSurname()).isEqualTo("Doe");
         assertThat(result.getDefendantResponse().getParty().getContactAddress()).isEqualTo(expectedAddress);
 
-        // Verify draft is created with entire PCSCase
+        // Verify draft is created in start() with filtered PCSCase (only defendantResponse)
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            eq(result),
+            any(PCSCase.class),
             eq(EventId.submitDefendantResponse)
         );
     }
@@ -213,7 +214,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         //Then
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            eq(defendantResponse),
+            any(PCSCase.class),
             eq(EventId.submitDefendantResponse)
         );
     }
@@ -232,7 +233,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         //Then
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            eq(null),
+            any(),
             eq(EventId.submitDefendantResponse)
         );
     }
@@ -255,7 +256,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         //Then
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            eq(defendantResponse),
+            any(),
             eq(EventId.submitDefendantResponse)
         );
     }

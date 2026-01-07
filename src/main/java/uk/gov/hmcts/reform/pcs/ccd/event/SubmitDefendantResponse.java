@@ -84,9 +84,14 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         PCSCase caseData = eventPayload.caseData();
         caseData.setDefendantResponse(defendantResponse);
 
-        // Create initial draft with entire PCSCase
+        // Create filtered PCSCase with ONLY defendantResponse for draft storage
+        PCSCase filteredDraft = PCSCase.builder()
+            .defendantResponse(defendantResponse)
+            .build();
+
+        // Save filtered draft (not full case data)
         draftCaseDataService.patchUnsubmittedEventData(
-            caseReference, caseData, EventId.submitDefendantResponse);
+            caseReference, filteredDraft, EventId.submitDefendantResponse);
 
         return caseData;
     }
@@ -104,8 +109,14 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
                 //This will be implemented in a future ticket.
                 //Note that defendants will be stored in a list
             } else {
+                // Create filtered PCSCase with ONLY defendantResponse for draft storage
+                PCSCase filteredDraft = PCSCase.builder()
+                    .defendantResponse(defendantResponse)
+                    .build();
+
+                // Update draft with filtered data
                 draftCaseDataService.patchUnsubmittedEventData(
-                    caseReference, defendantResponse, EventId.submitDefendantResponse);
+                    caseReference, filteredDraft, submitDefendantResponse);
             }
         }
         return SubmitResponse.defaultResponse();
