@@ -4,8 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -15,10 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper;
-import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.NonProdSupportService;
 
-import static org.mockito.Answers.RETURNS_SELF;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,7 +21,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.ccd.sdk.api.Permission.CRUD;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 import static uk.gov.hmcts.reform.pcs.ccd.event.NonProdSupport.EVENT_NAME;
@@ -37,27 +31,19 @@ class NonProdSupportTest {
     @InjectMocks
     private NonProdSupport underTest;
 
-    @Mock
-    private NonProdSupportService nonProdSupportService;
-    @Mock
-    private CaseSupportHelper caseSupportHelper;
-
     @Test
     @SuppressWarnings("unchecked")
-    void shouldSuccessfullyConfigureDecentralisedEventWithCorrectEventName() {
+    void shouldSuccessfullyConfigureDecentralisedEvent() {
         // Given
         DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder = mock(DecentralisedConfigBuilder.class);
         EventTypeBuilder<PCSCase, UserRole, State> typeBuilder = mock(EventTypeBuilder.class);
-        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = mock(Event.EventBuilder.class, Answers.RETURNS_SELF);
-
-        FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>> fieldCollectionBuilder =
+        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = mock(Event.EventBuilder.class,
+                                                                         Answers.RETURNS_SELF);
+        FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>> f =
             mock(FieldCollection.FieldCollectionBuilder.class, Answers.RETURNS_SELF);
-
         doReturn(typeBuilder).when(configBuilder).decentralisedEvent(anyString(), any(), any());
         when(typeBuilder.initialState(any())).thenReturn(eventBuilder);
-
-        // Mock the fields() call and the subsequent page() call
-        when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
+        when(eventBuilder.fields()).thenReturn(f);
 
         // When
         underTest.configure(configBuilder);
