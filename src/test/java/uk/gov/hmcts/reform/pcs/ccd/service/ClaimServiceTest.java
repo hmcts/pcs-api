@@ -10,12 +10,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
@@ -58,7 +58,7 @@ class ClaimServiceTest {
         String expectedAdditionalReasons = "some additional reasons";
         String claimantCircumstancesDetails = UUID.randomUUID().toString();
         String asbDetails = "Some antisocial behaviour details";
-        String prohibitedConductDetails = "Some other prohibited conduct details"; 
+        String prohibitedConductDetails = "Some other prohibited conduct details";
 
         PCSCase pcsCase = mock(PCSCase.class);
         PartyEntity claimantPartyEntity = new PartyEntity();
@@ -102,7 +102,7 @@ class ClaimServiceTest {
         // Then
         assertThat(createdClaimEntity.getSummary()).isEqualTo(expectedClaimName);
         assertThat(createdClaimEntity.getAdditionalReasons()).isEqualTo(expectedAdditionalReasons);
-        assertThat(createdClaimEntity.getCostsClaimed()).isTrue();
+        assertThat(createdClaimEntity.getClaimCosts()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getApplicationWithClaim()).isTrue();
         assertThat(createdClaimEntity.getClaimantCircumstances())
                 .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());

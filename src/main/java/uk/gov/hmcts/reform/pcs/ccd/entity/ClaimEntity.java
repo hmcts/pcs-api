@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,11 +19,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementOrderEntity;
 
 import java.util.HashSet;
@@ -51,28 +51,87 @@ public class ClaimEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    private Integer version;
+
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
-    @Builder.Default
-    @JsonManagedReference
-    private Set<ClaimPartyEntity> claimParties = new HashSet<>();
+    private String claimantType;
 
-    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
-    @Builder.Default
-    @JsonManagedReference
-    private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo againstTrespassers;
 
-    private String summary;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo dueToRentArrears;
 
-    private Boolean applicationWithClaim;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo claimCosts;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo preActionProtocolFollowed;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo mediationAttempted;
+
+    private String mediationDetails;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo settlementAttempted;
+
+    private String settlementDetails;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo claimantCircumstancesProvided;
+
+    private String claimantCircumstances;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo additionalDefendants;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo defendantCircumstancesProvided;
 
     private String defendantCircumstances;
 
-    private Boolean costsClaimed;
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo additionalReasonsProvided;
+
+    private String additionalReasons;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo underlesseeOrMortgagee;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo additionalUnderlesseesOrMortgagees;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo additionalDocsProvided;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo genAppExpected;
+
+    private String languageUsed;
+
+    private String summary;
+
+    // Columns to remove later when possession_alternatives table is implemented
+    private Boolean applicationWithClaim;
 
     @Enumerated(EnumType.STRING)
     private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct;
@@ -86,18 +145,21 @@ public class ClaimEntity {
 
     private String statementOfExpressTermsDetails;
 
-    private String additionalReasons;
-
-    private String claimantCircumstances;
-
-    @Enumerated(EnumType.STRING)
-    private LanguageUsed languageUsed;
-
     @JdbcTypeCode(SqlTypes.JSON)
     private ProhibitedConductWales prohibitedConduct;
 
     @JdbcTypeCode(SqlTypes.JSON)
     private ASBQuestionsWales asbQuestions;
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private Set<ClaimPartyEntity> claimParties = new HashSet<>();
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
@@ -110,7 +172,6 @@ public class ClaimEntity {
             .party(party)
             .role(partyRole)
             .build();
-
         claimParties.add(claimPartyEntity);
         party.getClaimParties().add(claimPartyEntity);
     }

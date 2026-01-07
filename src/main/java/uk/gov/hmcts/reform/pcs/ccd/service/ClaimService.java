@@ -3,13 +3,15 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
@@ -28,9 +30,10 @@ public class ClaimService {
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase, PartyEntity claimantPartyEntity) {
 
-        String additionalReasons = pcsCase.getAdditionalReasonsForPossession().getReasons();
+        AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
 
         List<ClaimGroundEntity> claimGrounds = claimGroundService.getGroundsWithReason(pcsCase);
+        ClaimantCircumstances claimantCircumstances = pcsCase.getClaimantCircumstances();
         DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
         SuspensionOfRightToBuy suspensionOrder = resolveSuspensionOfRightToBuy(pcsCase);
         DemotionOfTenancy demotionOrder = resolveDemotionOfTenancy(pcsCase);
@@ -38,9 +41,37 @@ public class ClaimService {
         ASBQuestionsWales asbQuestions = buildAsbQuestions(pcsCase);
 
         ClaimEntity claimEntity = ClaimEntity.builder()
-            .summary("Main Claim")
+            .summary("Main claim")
+            .claimantType(pcsCase.getClaimantType().getValueCode())
+            .againstTrespassers(pcsCase.getClaimAgainstTrespassers())
+            .dueToRentArrears(pcsCase.getClaimDueToRentArrears())
+            .claimCosts(pcsCase.getClaimingCostsWanted())
+            .preActionProtocolFollowed(pcsCase.getPreActionProtocolCompleted())
+            .mediationAttempted(pcsCase.getMediationAttempted())
+            .mediationDetails(pcsCase.getMediationAttemptedDetails())
+            .settlementAttempted(pcsCase.getSettlementAttempted())
+            .settlementDetails(pcsCase.getSettlementAttemptedDetails())
+            .claimantCircumstancesProvided(claimantCircumstances.getClaimantCircumstancesSelect() != null ?
+                claimantCircumstances.getClaimantCircumstancesSelect() : null)
+            .claimantCircumstances(claimantCircumstances.getClaimantCircumstancesDetails() != null ?
+                                       claimantCircumstances.getClaimantCircumstancesDetails() : null)
+            .additionalDefendants(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
+            .defendantCircumstancesProvided(defendantCircumstances!= null ?
+                                                defendantCircumstances.getHasDefendantCircumstancesInfo()
+                                                : null)
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
+            .additionalReasonsProvided(additionalReasons.getHasReasons() != null ?
+                                           additionalReasons.getHasReasons() : null)
+            .additionalReasons(additionalReasons.getReasons() != null ?
+                                   additionalReasons.getReasons() : null)
+            .underlesseeOrMortgagee(pcsCase.getHasUnderlesseeOrMortgagee())
+            .additionalUnderlesseesOrMortgagees(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
+            .additionalDocsProvided(pcsCase.getWantToUploadDocuments())
+            .genAppExpected(pcsCase.getApplicationWithClaim())
+            .languageUsed(pcsCase.getLanguageUsed().getLabel())
+
+            //fields to remove when implementing new possession_alternatives table
             .suspensionOfRightToBuyHousingAct(suspensionOrder != null
                                                   ? suspensionOrder.getSuspensionOfRightToBuyHousingActs() : null)
             .suspensionOfRightToBuyReason(suspensionOrder != null
@@ -51,14 +82,9 @@ public class ClaimService {
                                          ? demotionOrder.getDemotionOfTenancyReason() : null)
             .statementOfExpressTermsDetails(demotionOrder != null
                                                 ? demotionOrder.getStatementOfExpressTermsDetails() : null)
-            .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
-            .additionalReasons(additionalReasons)
-            .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
-            .languageUsed(pcsCase.getLanguageUsed())
             .prohibitedConduct(prohibitedConduct)
             .asbQuestions(asbQuestions)
             .build();
-
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
