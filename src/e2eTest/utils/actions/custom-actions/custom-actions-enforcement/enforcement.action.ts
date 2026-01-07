@@ -30,6 +30,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
+  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
   townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
   engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
 };
@@ -92,7 +93,7 @@ export class EnforcementAction implements IAction {
   private async selectApplicationType(applicationType: actionRecord) {
     await this.addFieldsToMap(applicationType);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
     await performAction('clickButton', yourApplication.continueButton);
   }
@@ -118,11 +119,11 @@ export class EnforcementAction implements IAction {
   private async selectNameAndAddressForEviction(nameAndAddress: actionRecord) {
     await this.addFieldsToMap(nameAndAddress);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
       await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
     }
-    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
+    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.addressLine2}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
   }
@@ -130,7 +131,7 @@ export class EnforcementAction implements IAction {
   private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord) {
     await this.addFieldsToMap(evictPeople);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: evictPeople.question, option: evictPeople.option });
     await performAction('clickButton', peopleWillBeEvicted.continueButton);
   }
@@ -138,14 +139,14 @@ export class EnforcementAction implements IAction {
   private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord) {
     await this.addFieldsToMap(peopleYouWantEvicted);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('check', { question: peopleYouWantEvicted.question, option: peopleYouWantEvicted.option });
     await performAction('clickButton', peopleYouWantToEvict.continueButton);
   }
 
   private async selectPermissionFromJudge(page: Page) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     const [generalApplicationPage] = await Promise.all([
       page.waitForEvent('popup'),
       await performAction('clickButton', youNeedPermission.askTheJudgeLink)
@@ -162,7 +163,7 @@ export class EnforcementAction implements IAction {
   private async selectEveryoneLivingAtTheProperty(riskToBailiff: actionRecord) {
     await this.addFieldsToMap(riskToBailiff);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: riskToBailiff.question, option: riskToBailiff.option });
     await performAction('clickButton', everyoneLivingAtTheProperty.continueButton);
   }
@@ -170,7 +171,7 @@ export class EnforcementAction implements IAction {
   private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord) {
     await this.addFieldsToMap(riskCategory);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('check', riskCategory.riskTypes);
     await performAction('clickButton', riskPosedByEveryoneAtProperty.continueButton);
   }
@@ -179,7 +180,7 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(violentAggressiveBehaviour);
     await performValidation('mainHeader', violentOrAggressiveBehaviour.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', violentAggressiveBehaviour.label, violentAggressiveBehaviour.input);
     await performAction('clickButton', violentOrAggressiveBehaviour.continueButton);
   }
@@ -188,7 +189,7 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(firearm);
     await performValidation('mainHeader', firearmPossession.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', firearm.label, firearm.input);
     await performAction('clickButton', firearmPossession.continue);
   }
@@ -197,7 +198,7 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(criminalAntisocialBehaviour);
     await performValidation('mainHeader', criminalOrAntisocialBehaviour.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', criminalAntisocialBehaviour.label, criminalAntisocialBehaviour.input);
     await performAction('clickButton', criminalOrAntisocialBehaviour.continue);
   }
@@ -206,7 +207,7 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(verbalWritten);
     await performValidation('mainHeader', verbalOrWrittenThreats.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', verbalWritten.label, verbalWritten.input);
     await performAction('clickButton', verbalOrWrittenThreats.continue);
   }
@@ -215,7 +216,7 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(protestGroup);
     await performValidation('mainHeader', groupProtestsEviction.mainHeader);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', protestGroup.label, protestGroup.input);
     await performAction('clickButton', groupProtestsEviction.continue);
   }
@@ -224,7 +225,7 @@ export class EnforcementAction implements IAction {
     await performValidation('mainHeader', policeOrSocialServiceVisit.mainHeader);
     await this.addFieldsToMap(policeOrSSVisit);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', policeOrSSVisit.label, policeOrSSVisit.input);
     await performAction('clickButton', policeOrSocialServiceVisit.continue);
   }
@@ -233,7 +234,7 @@ export class EnforcementAction implements IAction {
     await performValidation('mainHeader', animalsAtTheProperty.mainHeader);
     await this.addFieldsToMap(theAnimalsAtTheProperty);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', theAnimalsAtTheProperty.label, theAnimalsAtTheProperty.input);
     await performAction('clickButton', animalsAtTheProperty.continue);
   }
@@ -241,7 +242,7 @@ export class EnforcementAction implements IAction {
   private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord) {
     await this.addFieldsToMap(vulnerablePeople);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: vulnerablePeople.question, option: vulnerablePeople.option });
     if (vulnerablePeople.option === vulnerableAdultsAndChildren.yesRadioOption) {
       await performAction('clickRadioButton', { question: vulnerablePeople.confirm, option: vulnerablePeople.peopleOption });
@@ -250,9 +251,9 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', vulnerableAdultsAndChildren.continueButton);
   }
   private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
-    await this.addFieldsToMap(accessToTheProperty);
+    await this.addFieldsToMap(anythingElse);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
     if (anythingElse.option === anythingElseHelpWithEviction.yesRadioOption) {
       await performAction('inputText', anythingElse.label, anythingElse.input);
@@ -262,7 +263,7 @@ export class EnforcementAction implements IAction {
   private async accessToProperty(accessToProperty: actionRecord) {
     await this.addFieldsToMap(accessToTheProperty);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: accessToProperty.question, option: accessToProperty.option });
     if (accessToProperty.option === accessToTheProperty.yesRadioOption) {
       await performAction('inputText', accessToProperty.label, accessToProperty.input);
@@ -273,7 +274,7 @@ export class EnforcementAction implements IAction {
   private async provideMoneyOwed(totalMoneyOwed: actionRecord) {
     await this.addFieldsToMap(totalMoneyOwed);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
     const moneyOwedAmt = await this.retrieveAmountFromString(totalMoneyOwed.input as string);
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
@@ -283,7 +284,7 @@ export class EnforcementAction implements IAction {
   private async provideLegalCosts(legalCost: actionRecord) {
     await this.addFieldsToMap(legalCost);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: legalCost.question, option: legalCost.option });
     if (legalCost.option === accessToTheProperty.yesRadioOption) {
       await performAction('inputText', legalCost.label, legalCost.input);
@@ -298,7 +299,7 @@ export class EnforcementAction implements IAction {
   private async provideLandRegistryFees(langRegistry: actionRecord) {
     await this.addFieldsToMap(langRegistry);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: langRegistry.question, option: langRegistry.option });
     if (langRegistry.option === accessToTheProperty.yesRadioOption) {
       await performAction('inputText', langRegistry.label, langRegistry.input);
@@ -321,7 +322,7 @@ export class EnforcementAction implements IAction {
   private async provideAmountToRePay(amtToPay: actionRecord) {
     await this.addFieldsToMap(amtToPay);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: amtToPay.question, option: amtToPay.option });
     if (amtToPay.option === rePayments.rePaymentRadioOptions.some) {
       await performAction('inputText', amtToPay.label, amtToPay.input);
@@ -332,7 +333,7 @@ export class EnforcementAction implements IAction {
   private async selectLanguageUsed(languageDetails: actionRecord) {
     await this.addFieldsToMap(languageDetails);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.addressLine2}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: languageDetails.question, option: languageDetails.option });
     await performAction('clickButton', languageUsed.continueButton);
   }
