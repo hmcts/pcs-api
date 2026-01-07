@@ -55,14 +55,8 @@ public class PartyAccessCodeLinkService {
         party.setIdamUserId(idamUserId);
         caseEntity.setDefendants(caseEntity.getDefendants());
         pcsCaseService.save(caseEntity);
+        caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());
 
-        try {
-            caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());
-        } catch (Exception e) {
-            // Log error but don't fail the transaction - case assignment is not critical for linking
-            log.warn("Failed to assign defendant role for case {} and user {}: {}", 
-                    caseReference, idamUserId, e.getMessage(), e);
-        }
     }
 
 }
