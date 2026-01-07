@@ -500,6 +500,75 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
+        void shouldSetFormattedAddressFromMissingAddressWhenFormattedIsNull() {
+            // Given
+            stubPartyCreation();
+            stubClaimCreation();
+            stubFeeService();
+
+            AddressUK propertyAddress = mock(AddressUK.class);
+            AddressUK missingAddress = mock(AddressUK.class);
+
+            ClaimantContactPreferences prefs = ClaimantContactPreferences.builder()
+                .claimantContactEmail("claimant@test.com")
+                .formattedClaimantContactAddress(null)
+                .missingClaimantAddress(missingAddress)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(propertyAddress)
+                .legislativeCountry(WALES)
+                .claimantInformation(ClaimantInformation.builder().claimantName("Test Claimant").build())
+                .claimantContactPreferences(prefs)
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .build();
+
+            when(addressFormatter.formatMediumAddress(eq(missingAddress), eq(AddressFormatter.BR_DELIMITER)))
+                .thenReturn("formatted missing address");
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            assertThat(caseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
+                .isEqualTo("formatted missing address");
+            verify(addressFormatter).formatMediumAddress(missingAddress, AddressFormatter.BR_DELIMITER);
+        }
+
+        @Test
+        void shouldNotOverrideFormattedAddressWhenAlreadySet() {
+            // Given
+            stubPartyCreation();
+            stubClaimCreation();
+            stubFeeService();
+
+            AddressUK propertyAddress = mock(AddressUK.class);
+            AddressUK missingAddress = mock(AddressUK.class);
+
+            ClaimantContactPreferences prefs = ClaimantContactPreferences.builder()
+                .claimantContactEmail("claimant@test.com")
+                .formattedClaimantContactAddress("already formatted")
+                .missingClaimantAddress(missingAddress)
+                .build();
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(propertyAddress)
+                .legislativeCountry(WALES)
+                .claimantInformation(ClaimantInformation.builder().claimantName("Test Claimant").build())
+                .claimantContactPreferences(prefs)
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            assertThat(caseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
+                .isEqualTo("already formatted");
+            verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), any());
+        }
+
+        @Test
         void shouldCreateMainClaim() {
             // Given
             stubClaimCreation();

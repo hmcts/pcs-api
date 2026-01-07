@@ -365,6 +365,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         ClaimantContactPreferences contactPreferences = getContactPreferences(pcsCase);
 
+        if (contactPreferences.getFormattedClaimantContactAddress() == null
+            && contactPreferences.getMissingClaimantAddress() != null) {
+            contactPreferences.setFormattedClaimantContactAddress(
+                addressFormatter.formatMediumAddress(
+                    contactPreferences.getMissingClaimantAddress(),
+                    BR_DELIMITER
+                )
+            );
+        }
+
         AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
             ? contactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
 
