@@ -127,4 +127,8 @@ public class EnforcementOrder {
     )
     @External
     private String writFeeAmount;
+
+    @JsonUnwrapped(prefix = "repayment")
+    @CCD
+    private RepaymentCosts repaymentCosts;
 }

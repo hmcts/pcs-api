@@ -49,7 +49,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroun
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
@@ -187,7 +187,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private AddressFormatter addressFormatter;
     @Mock
-    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     @Mock
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     @Mock
@@ -229,7 +229,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             demotionOfTenancyOrderReason, organisationService, claimantDetailsWalesPage, prohibitedConductWalesPage,
             schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage, groundsForPossessionWales,
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
-            rentArrearsGroundsForPossession, rentArrearsGroundForPossessionAdditionalGrounds,
+            rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
             underlesseeOrMortgageePage, feeService, feeFormatter, caseAssignmentService, claimantPartyFactory
         );
