@@ -12,6 +12,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.ccd.client.CaseAssignmentApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesRequest;
+import uk.gov.hmcts.reform.ccd.client.model.CaseAssignmentUserRolesResponse;
 import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
@@ -31,6 +34,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -76,6 +80,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     @MockitoBean
     private IdamClient idamClient;
 
+    @MockitoBean
+    private CaseAssignmentApi caseAssignmentApi;
+
     @BeforeEach
     void setUp() {
         idamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
@@ -84,6 +91,15 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         UserInfo userInfo = mock(UserInfo.class);
         when(userInfo.getUid()).thenReturn(USER_ID.toString());
         when(idamClient.getUserInfo(anyString())).thenReturn(userInfo);
+
+        // Mock CaseAssignmentApi for all tests
+        CaseAssignmentUserRolesResponse mockedResponse = CaseAssignmentUserRolesResponse.builder()
+                .statusMessage("Case-User-Role assignments created successfully").build();
+        when(caseAssignmentApi.addCaseUserRoles(
+                anyString(),
+                anyString(),
+                any(CaseAssignmentUserRolesRequest.class)
+        )).thenReturn(mockedResponse);
     }
 
     @Test
