@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -35,7 +34,9 @@ public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
+        log.info("Configuring non-production support event: {}", EVENT_NAME);
         if (Boolean.parseBoolean(System.getenv().get("ENABLE_TESTING_SUPPORT"))) {
+            log.info("Test support enabled, configuring event: {}", EVENT_NAME);
             Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
                 configBuilder
                     .decentralisedEvent(createTestCase.name(), this::submit, this::start)
