@@ -24,16 +24,26 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
+import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
+import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
+import uk.gov.hmcts.reform.ccd.client.model.Event;
+import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.idam.IdamService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
@@ -68,6 +78,9 @@ public class TestingSupportController {
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
+    private final CoreCaseDataApi coreCaseDataApi;
+    private final IdamService idamService;
+    private final AuthTokenGenerator authTokenGenerator;
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
@@ -77,7 +90,10 @@ public class TestingSupportController {
         PcsCaseRepository pcsCaseRepository,
         PartyAccessCodeRepository partyAccessCodeRepository,
         PcsCaseService pcsCaseService,
-        AccessCodeGenerationService accessCodeGenerationService
+        AccessCodeGenerationService accessCodeGenerationService,
+        CoreCaseDataApi coreCaseDataApi,
+        IdamService idamService,
+        AuthTokenGenerator authTokenGenerator
     ) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
@@ -87,6 +103,9 @@ public class TestingSupportController {
         this.partyAccessCodeRepository = partyAccessCodeRepository;
         this.pcsCaseService = pcsCaseService;
         this.accessCodeGenerationService = accessCodeGenerationService;
+        this.coreCaseDataApi = coreCaseDataApi;
+        this.idamService = idamService;
+        this.authTokenGenerator = authTokenGenerator;
     }
 
     @Operation(
@@ -337,20 +356,49 @@ public class TestingSupportController {
         @RequestBody CreateTestCaseRequest request
     ) {
         try {
-            // Generate case reference if not provided (expand to 16 digits)
-            Long caseReference = Optional.ofNullable(request.getCaseReference())
-                .orElseGet(this::generateCaseReference);
+            // Step 1: Create case in CCD first (like the real application does)
+            String userToken = authorization.startsWith("Bearer ")
+                ? authorization.substring(7)
+                : authorization;
+            String s2sToken = authTokenGenerator.generate();
 
-            // Create case using PcsCaseService
-            pcsCaseService.createCase(
-                caseReference,
-                request.getPropertyAddress(),
-                request.getLegislativeCountry()
+            // Build PCSCase data for CCD
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(request.getPropertyAddress())
+                .legislativeCountry(request.getLegislativeCountry())
+                .build();
+
+            // Start CCD case creation event
+            StartEventResponse startEventResponse = coreCaseDataApi.startCase(
+                userToken,
+                s2sToken,
+                CaseType.getCaseType(),
+                EventId.createPossessionClaim.name()
             );
 
-            // Load the created case entity
+            // Submit case creation to CCD
+            CaseDataContent content = CaseDataContent.builder()
+                .data(caseData)
+                .event(Event.builder()
+                    .id(EventId.createPossessionClaim.name())
+                    .build())
+                .eventToken(startEventResponse.getToken())
+                .build();
+
+            CaseDetails ccdCase = coreCaseDataApi.submitCaseCreation(
+                userToken,
+                s2sToken,
+                CaseType.getCaseType(),
+                content
+            );
+
+            // Step 2: Get CCD-generated case reference (16-digit format)
+            Long caseReference = ccdCase.getId();
+            log.info("Created case in CCD with reference: {}", caseReference);
+
+            // Step 3: Load the case entity from PCS database (should have been created by CCD callback)
             PcsCaseEntity caseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow(() -> new RuntimeException("Failed to create case"));
+                .orElseThrow(() -> new RuntimeException("Failed to find case entity after CCD creation"));
 
             // Create defendants and party entities
             List<Defendant> defendants = new ArrayList<>();
