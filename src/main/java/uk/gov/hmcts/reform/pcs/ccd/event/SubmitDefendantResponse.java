@@ -83,10 +83,16 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
 
         PCSCase caseData = eventPayload.caseData();
         caseData.setDefendantResponse(defendantResponse);
+
+        // Create initial draft with entire PCSCase
+        draftCaseDataService.patchUnsubmittedEventData(
+            caseReference, caseData, EventId.submitDefendantResponse);
+
         return caseData;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+        log.info("Update Draft Data for Defendant Response, Case Reference: {}", eventPayload.caseReference());
 
         long caseReference = eventPayload.caseReference();
         DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();

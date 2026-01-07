@@ -38,11 +38,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new SubmitDefendantResponse(
-            draftCaseDataService,
-            pcsCaseService,
-            securityContextService
-        ));
+        setEventUnderTest(new SubmitDefendantResponse(draftCaseDataService, pcsCaseService, securityContextService));
     }
 
     @Test
@@ -109,6 +105,13 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         assertThat(result.getDefendantResponse().getParty().getForename()).isEqualTo("John");
         assertThat(result.getDefendantResponse().getParty().getSurname()).isEqualTo("Doe");
         assertThat(result.getDefendantResponse().getParty().getContactAddress()).isEqualTo(expectedAddress);
+
+        // Verify draft is created with entire PCSCase
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            eq(result),
+            eq(EventId.submitDefendantResponse)
+        );
     }
 
 }
