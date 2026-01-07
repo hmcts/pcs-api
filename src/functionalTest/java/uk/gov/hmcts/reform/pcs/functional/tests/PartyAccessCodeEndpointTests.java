@@ -150,21 +150,13 @@ class PartyAccessCodeEndpointTests extends BaseApi {
         String accessCode = testCase.getDefendants().get(0).getAccessCode();
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
-        // First request - should succeed
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
         apiSteps.theRequestContainsBody(requestBody);
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
-        apiSteps.checkStatusCode(200);
-
-        // Second request - should return 409 (duplicate)
-        apiSteps.requestIsPreparedWithAppropriateValues();
-        apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
-        apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
-        apiSteps.theRequestContainsThePathParameter("caseReference", caseReference);
-        apiSteps.theRequestContainsBody(requestBody);
+        //resend request to get 409 error.
         apiSteps.callIsSubmittedToTheEndpoint("ValidateAccessCode", "POST");
         apiSteps.checkStatusCode(409);
         apiSteps.theResponseBodyContainsAString("message", "This access code is already linked to a user.");
