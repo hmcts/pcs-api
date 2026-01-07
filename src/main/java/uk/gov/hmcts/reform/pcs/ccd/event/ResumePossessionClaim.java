@@ -83,6 +83,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -109,7 +110,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_P
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
-import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
@@ -160,6 +160,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
+    private final CaseAssignmentService caseAssignmentService;
     private final ClaimantPartyFactory claimantPartyFactory;
 
     @Override
