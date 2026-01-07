@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -23,6 +24,9 @@ public class RentArrearsGroundsReasons {
     )
     private String ownerOccupierReason;
 
+    @CCD
+    private YesOrNo showOwnerOccupierReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Repossession by the landlord’s"
             + " mortgage lender (ground 2))",
@@ -32,6 +36,9 @@ public class RentArrearsGroundsReasons {
     )
     private String repossessionByLenderReason;
 
+    @CCD
+    private YesOrNo showRepossessionByLenderReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Holiday let (ground 3))",
         hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
@@ -40,6 +47,9 @@ public class RentArrearsGroundsReasons {
     )
     private String holidayLetReason;
 
+    @CCD
+    private YesOrNo showHolidayLetReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Student let (ground 4))",
         hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
@@ -47,6 +57,9 @@ public class RentArrearsGroundsReasons {
         typeOverride = TextArea
     )
     private String studentLetReason;
+
+    @CCD
+    private YesOrNo showStudentLetReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Property required for minister of"
@@ -57,6 +70,9 @@ public class RentArrearsGroundsReasons {
     )
     private String ministerOfReligionReason;
 
+    @CCD
+    private YesOrNo showMinisterOfReligionReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Property required for "
             + "redevelopment (ground 6))",
@@ -66,6 +82,9 @@ public class RentArrearsGroundsReasons {
     )
     private String redevelopmentReason;
 
+    @CCD
+    private YesOrNo showRedevelopmentReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Death of the tenant (ground 7))",
         hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
@@ -73,6 +92,9 @@ public class RentArrearsGroundsReasons {
         typeOverride = TextArea
     )
     private String deathOfTenantReason;
+
+    @CCD
+    private YesOrNo showDeathOfTenantReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Antisocial behaviour (ground 7A))",
@@ -82,6 +104,9 @@ public class RentArrearsGroundsReasons {
     )
     private String antisocialBehaviourReason;
 
+    @CCD
+    private YesOrNo showAntisocialBehaviourReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Tenant does not have a right "
             + "to rent (ground 7B))",
@@ -90,6 +115,9 @@ public class RentArrearsGroundsReasons {
         typeOverride = TextArea
     )
     private String noRightToRentReason;
+
+    @CCD
+    private YesOrNo showNoRightToRentReason;
 
     // ---------- Discretionary grounds ----------
     @CCD(
@@ -101,6 +129,9 @@ public class RentArrearsGroundsReasons {
     )
     private String suitableAltAccommodationReason;
 
+    @CCD
+    private YesOrNo showSuitableAltAccommodationReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Breach of tenancy conditions (ground 12))",
         hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
@@ -108,6 +139,9 @@ public class RentArrearsGroundsReasons {
         typeOverride = TextArea
     )
     private String breachOfTenancyConditionsReason;
+
+    @CCD
+    private YesOrNo showBreachOfTenancyConditionsReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Deterioration in the condition "
@@ -118,6 +152,9 @@ public class RentArrearsGroundsReasons {
     )
     private String propertyDeteriorationReason;
 
+    @CCD
+    private YesOrNo showPropertyDeteriorationReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Nuisance, annoyance, illegal or "
             + "immoral use of the property (ground 14))",
@@ -127,6 +164,9 @@ public class RentArrearsGroundsReasons {
     )
     private String nuisanceAnnoyanceReason;
 
+    @CCD
+    private YesOrNo showNuisanceAnnoyanceReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Domestic violence (ground 14A))",
         hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
@@ -134,6 +174,9 @@ public class RentArrearsGroundsReasons {
         typeOverride = TextArea
     )
     private String domesticViolenceReason;
+
+    @CCD
+    private YesOrNo showDomesticViolenceReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Offence during a riot (ground 14ZA))",
@@ -143,6 +186,9 @@ public class RentArrearsGroundsReasons {
     )
     private String offenceDuringRiotReason;
 
+    @CCD
+    private YesOrNo showOffenceDuringRiotReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Deterioration of furniture (ground 15))",
         hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
@@ -150,6 +196,9 @@ public class RentArrearsGroundsReasons {
         typeOverride = TextArea
     )
     private String furnitureDeteriorationReason;
+
+    @CCD
+    private YesOrNo showFurnitureDeteriorationReason;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Employee of the landlord (ground 16))",
@@ -159,6 +208,9 @@ public class RentArrearsGroundsReasons {
     )
     private String employeeOfLandlordReason;
 
+    @CCD
+    private YesOrNo showEmployeeOfLandlordReason;
+
     @CCD(
         label = "Give details about your reasons for claiming possession (Tenancy obtained by false "
             + "statement (ground 17))",
@@ -167,4 +219,7 @@ public class RentArrearsGroundsReasons {
         typeOverride = TextArea
     )
     private String tenancyByFalseStatementReason;
+
+    @CCD
+    private YesOrNo showTenancyByFalseStatementReason;
 }

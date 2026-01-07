@@ -168,39 +168,8 @@ public class PCSCase {
     )
     private YesOrNo hasOtherAdditionalGrounds;
 
-    // Additional grounds checkboxes - Mandatory
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsMandatoryGrounds"
-    )
-    private Set<RentArrearsMandatoryGrounds> rentArrearsMandatoryGrounds;
-
-    // Additional grounds checkboxes - Discretionary
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsDiscretionaryGrounds"
-    )
-    private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
-    )
-    private Set<AssuredAdditionalMandatoryGrounds> assuredAdditionalMandatoryGrounds;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
-    )
-    private Set<AssuredAdditionalDiscretionaryGrounds> assuredAdditionalDiscretionaryGrounds;
+    @JsonUnwrapped(prefix = "rentArrears_")
+    private RentArrearsAdditionalGrounds rentArrearsAdditionalGrounds;
 
     @JsonUnwrapped
     private RentArrearsGroundsReasons rentArrearsGroundsReasons;

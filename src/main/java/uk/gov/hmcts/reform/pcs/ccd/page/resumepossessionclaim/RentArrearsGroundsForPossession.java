@@ -70,13 +70,15 @@ public class RentArrearsGroundsForPossession implements CcdPageConfiguration {
         Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
 
         // Initialize sets if they don't exist
-        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsMandatoryGrounds();
+        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsAdditionalGrounds()
+            .getMandatoryGrounds();
 
         if (mandatoryGrounds == null) {
             mandatoryGrounds = new HashSet<>();
         }
 
-        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsDiscretionaryGrounds();
+        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsAdditionalGrounds()
+            .getDiscretionaryGrounds();
 
         if (discretionaryGrounds == null) {
             discretionaryGrounds = new HashSet<>();
@@ -106,8 +108,8 @@ public class RentArrearsGroundsForPossession implements CcdPageConfiguration {
         // Update grounds only when the rent arrears options have changed as this will override them
         if (rentArrearsGrounds != null && !rentArrearsGrounds.equals(caseData.getCopyOfRentArrearsGrounds())
             || caseData.getOverrideResumedGrounds() == YesOrNo.YES) {
-            caseData.setRentArrearsMandatoryGrounds(mandatoryGrounds);
-            caseData.setRentArrearsDiscretionaryGrounds(discretionaryGrounds);
+            caseData.getRentArrearsAdditionalGrounds().setMandatoryGrounds(mandatoryGrounds);
+            caseData.getRentArrearsAdditionalGrounds().setDiscretionaryGrounds(discretionaryGrounds);
             caseData.setOverrideResumedGrounds(YesOrNo.NO);
         }
         caseData.setCopyOfRentArrearsGrounds(rentArrearsGrounds);

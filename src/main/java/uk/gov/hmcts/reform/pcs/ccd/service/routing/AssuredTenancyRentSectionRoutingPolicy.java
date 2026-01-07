@@ -38,8 +38,10 @@ public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutin
     }
 
     private YesOrNo checkRentArrearsGrounds(PCSCase caseData) {
-        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsMandatoryGrounds();
-        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsDiscretionaryGrounds();
+        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsAdditionalGrounds()
+            .getMandatoryGrounds();
+        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsAdditionalGrounds()
+            .getDiscretionaryGrounds();
 
         // First check the canonical sets (mandatory/discretionary grounds)
         boolean hasRentRelatedGrounds =

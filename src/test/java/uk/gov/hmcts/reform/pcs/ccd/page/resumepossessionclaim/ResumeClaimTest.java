@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -53,6 +54,9 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
+        when(caseData.getRentArrearsAdditionalGrounds())
+            .thenReturn(RentArrearsAdditionalGrounds.builder().build());
+
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId))
             .thenReturn(Optional.ofNullable(unsubmittedCaseData));
 
@@ -72,6 +76,9 @@ class ResumeClaimTest extends BasePageTest {
 
     private static Stream<Arguments> unsubmittedDataScenarios() {
         PCSCase unsubmittedCaseData = mock(PCSCase.class);
+
+        when(unsubmittedCaseData.getRentArrearsAdditionalGrounds())
+            .thenReturn(RentArrearsAdditionalGrounds.builder().build());
 
         return Stream.of(
             // Existing unsubmitted data, Keep answers selection, Should merge data

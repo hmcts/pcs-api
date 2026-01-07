@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsAdditionalGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
@@ -36,26 +37,30 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .page("groundForPossessionAdditionalGrounds", this::midEvent)
             .pageLabel("What are your additional grounds for possession?")
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
-                           + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                           + " AND claimDueToRentArrears=\"Yes\""
-                           + " AND legislativeCountry=\"England\"")
+                               + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
+                               + " AND claimDueToRentArrears=\"Yes\""
+                               + " AND legislativeCountry=\"England\"")
             .readonly(PCSCase::getShowRentArrearsGroundReasonPage, NEVER_SHOW)
             .label("groundForPossessionAdditionalGrounds-info", """
-            ---
-            <p class="govuk-body">You may have already given the defendants notice of your intention to begin
-                possession proceedings. If you have, you should have written the grounds you’re making your
-                claim under. You should select these grounds here and any extra grounds you’d like to add to
-                your claim, if you need to.</p>
-            <p class="govuk-body">
-              <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
-            </p>
-            """)
+                ---
+                <p class="govuk-body">You may have already given the defendants notice of your intention to begin
+                    possession proceedings. If you have, you should have written the grounds you’re making your
+                    claim under. You should select these grounds here and any extra grounds you’d like to add to
+                    your claim, if you need to.</p>
+                <p class="govuk-body">
+                  <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
+                </p>
+                """)
             // Keep canonical sets present in the event for showCondition references
-            .readonly(PCSCase::getRentArrearsMandatoryGrounds, NEVER_SHOW)
-            .readonly(PCSCase::getRentArrearsDiscretionaryGrounds, NEVER_SHOW)
-            .optional(PCSCase::getAssuredAdditionalMandatoryGrounds)
-            .optional(PCSCase::getAssuredAdditionalDiscretionaryGrounds)
-            .label("groundForPossessionAdditionalGrounds-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .complex(PCSCase::getRentArrearsAdditionalGrounds, NEVER_SHOW)
+            .readonly(RentArrearsAdditionalGrounds::getMandatoryGrounds, NEVER_SHOW)
+            .readonly(RentArrearsAdditionalGrounds::getDiscretionaryGrounds, NEVER_SHOW)
+
+            .optional(RentArrearsAdditionalGrounds::getAssuredAdditionalMandatoryGrounds)
+            .optional(RentArrearsAdditionalGrounds::getAssuredAdditionalDiscretionaryGrounds)
+
+            .label("groundForPossessionAdditionalGrounds-saveAndReturn",
+                   CommonPageContent.SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -83,7 +88,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         // Union additional-only selections (mapped to canonical enums)
         Set<AssuredAdditionalMandatoryGrounds> addMandatory =
             Objects.requireNonNullElse(
-                caseData.getAssuredAdditionalMandatoryGrounds(),
+                caseData.getRentArrearsAdditionalGrounds().getAssuredAdditionalMandatoryGrounds(),
                 Set.of()
             );
 
@@ -93,7 +98,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         Set<AssuredAdditionalDiscretionaryGrounds> addDiscretionary =
             Objects.requireNonNullElse(
-                caseData.getAssuredAdditionalDiscretionaryGrounds(),
+                caseData.getRentArrearsAdditionalGrounds().getAssuredAdditionalDiscretionaryGrounds(),
                 Set.of()
             );
 
@@ -127,14 +132,14 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         if (noRentArrearsGrounds && noAdditional) {
             effectiveMandatory = Objects.requireNonNullElse(
-                caseData.getRentArrearsMandatoryGrounds(), new HashSet<>()
+                caseData.getRentArrearsAdditionalGrounds().getMandatoryGrounds(), new HashSet<>()
             );
             effectiveDiscretionary = Objects.requireNonNullElse(
-                caseData.getRentArrearsDiscretionaryGrounds(), new HashSet<>()
+                caseData.getRentArrearsAdditionalGrounds().getDiscretionaryGrounds(), new HashSet<>()
             );
         } else {
-            caseData.setRentArrearsMandatoryGrounds(mergedMandatory);
-            caseData.setRentArrearsDiscretionaryGrounds(mergedDiscretionary);
+            caseData.getRentArrearsAdditionalGrounds().setMandatoryGrounds(mergedMandatory);
+            caseData.getRentArrearsAdditionalGrounds().setDiscretionaryGrounds(mergedDiscretionary);
         }
 
         boolean hasOtherMandatoryGrounds = effectiveMandatory.stream()

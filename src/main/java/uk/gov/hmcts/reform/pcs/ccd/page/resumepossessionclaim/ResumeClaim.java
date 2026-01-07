@@ -71,8 +71,8 @@ public class ResumeClaim implements CcdPageConfiguration {
                 );
         }
 
-        if (caseData.getRentArrearsMandatoryGrounds() == null
-            && caseData.getRentArrearsDiscretionaryGrounds() == null) {
+        if (caseData.getRentArrearsAdditionalGrounds().getMandatoryGrounds() == null
+            && caseData.getRentArrearsAdditionalGrounds().getDiscretionaryGrounds() == null) {
             caseData.setOverrideResumedGrounds(YesOrNo.YES);
         } else {
             caseData.setOverrideResumedGrounds(YesOrNo.NO);

@@ -70,9 +70,9 @@ public class ClaimGroundService {
 
         Set<RentArrearsGround> rentArrearsGrounds = pcsCase.getRentArrearsGrounds();
         Set<RentArrearsMandatoryGrounds> rentArrearsMandatoryGrounds = pcsCase
-            .getRentArrearsMandatoryGrounds();
+            .getRentArrearsAdditionalGrounds().getMandatoryGrounds();
         Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds = pcsCase
-            .getRentArrearsDiscretionaryGrounds();
+            .getRentArrearsAdditionalGrounds().getDiscretionaryGrounds();
         RentArrearsGroundsReasons grounds = pcsCase.getRentArrearsGroundsReasons();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
