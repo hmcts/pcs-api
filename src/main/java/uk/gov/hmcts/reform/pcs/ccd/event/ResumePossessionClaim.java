@@ -290,6 +290,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
 
+        if (contactPreferences.getFormattedClaimantContactAddress() != null) {
+            contactPreferences.setOrgAddressFound(YesOrNo.YES);
+        } else {
+            contactPreferences.setOrgAddressFound(YesOrNo.NO);
+        }
+
         caseData.setClaimantContactPreferences(contactPreferences);
 
         return caseData;

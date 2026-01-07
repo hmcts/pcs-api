@@ -7,12 +7,15 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClaimantContactPreferences {
+
+    private YesOrNo orgAddressFound;
 
     @CCD(typeOverride = FieldType.Email)
     private String claimantContactEmail;

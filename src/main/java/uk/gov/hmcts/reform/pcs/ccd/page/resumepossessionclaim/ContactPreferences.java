@@ -65,7 +65,15 @@ public class ContactPreferences implements CcdPageConfiguration {
                         You can change this correspondence address if, for example, you work in a different office from
                         the address registered with My HMCTS.
                     </p>
-                    """)
+                    """, "orgAddressFound=\"YES\"")
+                .label("contactPreferences-address-info", """
+                    ----
+                    <h2 class="govuk-heading-m">Correspondence address</h2>
+                    <p class="govuk-body-m">
+                        Court documents like orders and notices will be sent by post to the address registered with
+                        My HMCTS.
+                    </p>
+                    """, "orgAddressFound=\"NO\"")
                 .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
                 .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
@@ -74,8 +82,8 @@ public class ContactPreferences implements CcdPageConfiguration {
                     <p class="govuk-body-s govuk-!-margin-top-1">
                         ${formattedClaimantContactAddress}
                     </p>
-                    """)
-                .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress)
+                    """, "orgAddressFound=\"YES\"")
+                .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, "orgAddressFound=\"YES\"")
                 .complex(
                     ClaimantContactPreferences::getOverriddenClaimantContactAddress,
                     "isCorrectClaimantContactAddress=\"NO\""
