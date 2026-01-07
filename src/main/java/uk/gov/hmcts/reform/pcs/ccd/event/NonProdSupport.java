@@ -1,8 +1,8 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -25,8 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 
 @Component
 @Slf4j
-@AllArgsConstructor
-@ConditionalOnProperty(name = "enable.testing.support", havingValue = "true")
+@RequiredArgsConstructor
 public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
 
     static final String EVENT_NAME = "Test Support Case Creation";
@@ -34,18 +33,22 @@ public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
     private final NonProdSupportService nonProdSupportService;
     private final CaseSupportHelper caseSupportHelper;
 
+    @Value("${enable.testing.support:false}")
+    private boolean enableTestingSupport;
+
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
-            configBuilder
-                .decentralisedEvent(createTestCase.name(), this::submit, this::start)
-                .initialState(AWAITING_SUBMISSION_TO_HMCTS)
-                .showSummary()
-                .name(EVENT_NAME)
-                .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
+        if (enableTestingSupport) {
+            Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
+                configBuilder
+                    .decentralisedEvent(createTestCase.name(), this::submit, this::start)
+                    .initialState(AWAITING_SUBMISSION_TO_HMCTS)
+                    .showSummary()
+                    .name(EVENT_NAME)
+                    .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
-        new PageBuilder(eventBuilder)
-            .add(new NonProdSupportPage());
+            new PageBuilder(eventBuilder).add(new NonProdSupportPage());
+        }
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
