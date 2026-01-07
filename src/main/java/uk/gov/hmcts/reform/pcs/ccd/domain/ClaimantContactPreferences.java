@@ -16,6 +16,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 public class ClaimantContactPreferences {
 
     @CCD
+    private AddressUK organisationAddress;
+
+    @CCD
     private YesOrNo orgAddressFound;
 
     @CCD(typeOverride = FieldType.Email)

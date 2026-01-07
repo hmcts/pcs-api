@@ -287,8 +287,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
+        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
-            .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
+            .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
 
         if (contactPreferences.getFormattedClaimantContactAddress() != null) {
             contactPreferences.setOrgAddressFound(YesOrNo.YES);
@@ -365,18 +367,11 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         ClaimantContactPreferences contactPreferences = getContactPreferences(pcsCase);
 
-        if (contactPreferences.getFormattedClaimantContactAddress() == null
-            && contactPreferences.getMissingClaimantAddress() != null) {
-            contactPreferences.setFormattedClaimantContactAddress(
-                addressFormatter.formatMediumAddress(
-                    contactPreferences.getMissingClaimantAddress(),
-                    BR_DELIMITER
-                )
-            );
-        }
-
         AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
-            ? contactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+            ? contactPreferences.getOverriddenClaimantContactAddress()
+            : (contactPreferences.getMissingClaimantAddress() != null
+            ? contactPreferences.getMissingClaimantAddress()
+            : contactPreferences.getOrganisationAddress());
 
         String contactEmail = isNotBlank(contactPreferences.getOverriddenClaimantContactEmail())
             ? contactPreferences.getOverriddenClaimantContactEmail() : contactPreferences.getClaimantContactEmail();

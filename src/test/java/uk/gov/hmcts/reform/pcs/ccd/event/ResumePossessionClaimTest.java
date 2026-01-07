@@ -456,6 +456,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         void shouldCreateClaimantParty() {
             // Given
             AddressUK propertyAddress = mock(AddressUK.class);
+            AddressUK organisationAddress = mock(AddressUK.class);
+
             String claimantName = "Test Claimant";
             String claimantContactEmail = "claimant@test.com";
             String claimantContactPhoneNumber = "01234 567890";
@@ -475,6 +477,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
                     ClaimantContactPreferences.builder()
                         .claimantContactEmail(claimantContactEmail)
                         .claimantContactPhoneNumber(claimantContactPhoneNumber)
+                        .organisationAddress(organisationAddress)
                         .build()
                 )
                 .claimantCircumstances(ClaimantCircumstances.builder()
@@ -494,68 +497,75 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 null,
                 claimantName,
                 claimantContactEmail,
-                propertyAddress,
+                organisationAddress,
                 claimantContactPhoneNumber
             );
         }
 
         @Test
-        void shouldSetFormattedAddressFromMissingAddressWhenFormattedIsNull() {
+        void shouldUseOrganisationAddressWhenOverriddenAndMissingAreNull() {
             // Given
-            stubPartyCreation();
-            stubClaimCreation();
-            stubFeeService();
-
             AddressUK propertyAddress = mock(AddressUK.class);
-            AddressUK missingAddress = mock(AddressUK.class);
+            AddressUK organisationAddress = mock(AddressUK.class);
 
-            ClaimantContactPreferences prefs = ClaimantContactPreferences.builder()
-                .claimantContactEmail("claimant@test.com")
-                .formattedClaimantContactAddress(null)
-                .missingClaimantAddress(missingAddress)
-                .build();
+            stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(propertyAddress)
                 .legislativeCountry(WALES)
-                .claimantInformation(ClaimantInformation.builder().claimantName("Test Claimant").build())
-                .claimantContactPreferences(prefs)
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .claimantName("Test Claimant")
+                        .build()
+                )
+                .claimantContactPreferences(
+                    ClaimantContactPreferences.builder()
+                        .claimantContactEmail("claimant@test.com")
+                        .claimantContactPhoneNumber("01234 567890")
+                        .organisationAddress(organisationAddress)
+                        .build()
+                )
                 .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
                 .build();
-
-            when(addressFormatter.formatMediumAddress(eq(missingAddress), eq(AddressFormatter.BR_DELIMITER)))
-                .thenReturn("formatted missing address");
 
             // When
             callSubmitHandler(caseData);
 
             // Then
-            assertThat(caseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
-                .isEqualTo("formatted missing address");
-            verify(addressFormatter).formatMediumAddress(missingAddress, AddressFormatter.BR_DELIMITER);
+            verify(partyService).createPartyEntity(
+                eq(USER_ID),
+                eq("Test Claimant"),
+                eq(null),
+                eq("Test Claimant"),
+                eq("claimant@test.com"),
+                eq(organisationAddress),
+                eq("01234 567890")
+            );
         }
 
         @Test
-        void shouldNotOverrideFormattedAddressWhenAlreadySet() {
+        void shouldUseMissingClaimantAddressWhenOverriddenContactAddressIsNull() {
             // Given
-            stubPartyCreation();
-            stubClaimCreation();
-            stubFeeService();
-
             AddressUK propertyAddress = mock(AddressUK.class);
             AddressUK missingAddress = mock(AddressUK.class);
 
-            ClaimantContactPreferences prefs = ClaimantContactPreferences.builder()
-                .claimantContactEmail("claimant@test.com")
-                .formattedClaimantContactAddress("already formatted")
-                .missingClaimantAddress(missingAddress)
-                .build();
+            stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(propertyAddress)
                 .legislativeCountry(WALES)
-                .claimantInformation(ClaimantInformation.builder().claimantName("Test Claimant").build())
-                .claimantContactPreferences(prefs)
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .claimantName("Test Claimant")
+                        .build()
+                )
+                .claimantContactPreferences(
+                    ClaimantContactPreferences.builder()
+                        .claimantContactEmail("claimant@test.com")
+                        .claimantContactPhoneNumber("01234 567890")
+                        .missingClaimantAddress(missingAddress)
+                        .build()
+                )
                 .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
                 .build();
 
@@ -563,9 +573,15 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            assertThat(caseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
-                .isEqualTo("already formatted");
-            verify(addressFormatter, never()).formatMediumAddress(any(AddressUK.class), any());
+            verify(partyService).createPartyEntity(
+                eq(USER_ID),
+                eq("Test Claimant"),
+                eq(null),
+                eq("Test Claimant"),
+                eq("claimant@test.com"),
+                eq(missingAddress),
+                eq("01234 567890")
+            );
         }
 
         @Test
