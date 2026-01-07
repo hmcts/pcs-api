@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.api.EventTypeBuilder;
+import uk.gov.hmcts.ccd.sdk.api.FieldCollection;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -46,24 +47,27 @@ class NonProdSupportTest {
     void shouldSuccessfullyConfigureDecentralisedEventWithCorrectEventName() {
         // Given
         DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder = mock(DecentralisedConfigBuilder.class);
-
         EventTypeBuilder<PCSCase, UserRole, State> typeBuilder = mock(EventTypeBuilder.class);
         Event.EventBuilder<PCSCase, UserRole, State> eventBuilder = mock(Event.EventBuilder.class, Answers.RETURNS_SELF);
 
-        when(configBuilder.decentralisedEvent(anyString(), any(), any())).thenReturn(typeBuilder);
-        when(typeBuilder.forState(any())).thenReturn(eventBuilder);
-        when(typeBuilder.forAllStates()).thenReturn(eventBuilder);
+        FieldCollection.FieldCollectionBuilder<PCSCase, State, Event.EventBuilder<PCSCase, UserRole, State>> fieldCollectionBuilder =
+            mock(FieldCollection.FieldCollectionBuilder.class, Answers.RETURNS_SELF);
 
-        doReturn(eventBuilder).when(configBuilder).decentralisedEvent(anyString(), any(), any());
+        doReturn(typeBuilder).when(configBuilder).decentralisedEvent(anyString(), any(), any());
+        when(typeBuilder.initialState(any())).thenReturn(eventBuilder);
+
+        // Mock the fields() call and the subsequent page() call
+        when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
 
         // When
         underTest.configure(configBuilder);
 
         // Then
         verify(configBuilder).decentralisedEvent(eq(createTestCase.name()), any(), any());
+        verify(typeBuilder).initialState(AWAITING_SUBMISSION_TO_HMCTS);
         verify(eventBuilder).showSummary();
         verify(eventBuilder).name(EVENT_NAME);
-        verify(eventBuilder).grant(CRUD, UserRole.PCS_SOLICITOR);
+        verify(eventBuilder).grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
     }
 
 }
