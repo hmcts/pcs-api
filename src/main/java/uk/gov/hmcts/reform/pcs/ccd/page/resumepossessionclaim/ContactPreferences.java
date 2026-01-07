@@ -24,6 +24,9 @@ public class ContactPreferences implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
 
+    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
+    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
+
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
@@ -67,7 +70,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                         You can change this correspondence address if, for example, you work in a different office from
                         the address registered with My HMCTS.
                     </p>
-                    """, "orgAddressFound=\"Yes\"")
+                    """, ORG_ADDRESS_FOUND)
             .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
             .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
@@ -76,8 +79,8 @@ public class ContactPreferences implements CcdPageConfiguration {
                     <p class="govuk-body-s govuk-!-margin-top-1">
                         ${formattedClaimantContactAddress}
                     </p>
-                    """, "orgAddressFound=\"Yes\"")
-            .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, "orgAddressFound=\"Yes\"")
+                    """, ORG_ADDRESS_FOUND)
+            .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, ORG_ADDRESS_FOUND)
             .complex(
                 ClaimantContactPreferences::getOverriddenClaimantContactAddress,
                 "isCorrectClaimantContactAddress=\"NO\" AND orgAddressFound=\"Yes\""
@@ -99,7 +102,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     Court documents like orders and notices will be sent by post to the address registered with
                     My HMCTS.
                 </p>
-                """, "orgAddressFound=\"No\"")
+                """, ORG_ADDRESS_NOT_FOUND)
             .label("contactPreferences-address-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         We could not retrieve your organisation's correspondence address that's linked to your My
@@ -108,10 +111,10 @@ public class ContactPreferences implements CcdPageConfiguration {
                     <p class="govuk-hint govuk-!-margin-top-1">
                         You must enter the correspondence address you'd like to receive documents to
                     </p>
-                    """, "orgAddressFound=\"No\"")
+                    """, ORG_ADDRESS_NOT_FOUND)
             .complex(
                 ClaimantContactPreferences::getMissingClaimantAddress,
-                "orgAddressFound=\"No\""
+                ORG_ADDRESS_NOT_FOUND
             )
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)

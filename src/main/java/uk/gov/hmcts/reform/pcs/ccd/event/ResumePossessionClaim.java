@@ -367,11 +367,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         ClaimantContactPreferences contactPreferences = getContactPreferences(pcsCase);
 
-        AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
-            ? contactPreferences.getOverriddenClaimantContactAddress()
-            : (contactPreferences.getMissingClaimantAddress() != null
-            ? contactPreferences.getMissingClaimantAddress()
-            : contactPreferences.getOrganisationAddress());
+        AddressUK contactAddress = resolveContactAddress(contactPreferences);
 
         String contactEmail = isNotBlank(contactPreferences.getOverriddenClaimantContactEmail())
             ? contactPreferences.getOverriddenClaimantContactEmail() : contactPreferences.getClaimantContactEmail();
@@ -476,6 +472,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             <li>Select the ‘Pay the claim fee’ link on the confirmation screen.</li>
             </ol>
             """;
+    }
+
+    private AddressUK resolveContactAddress(ClaimantContactPreferences prefs) {
+        if (prefs.getOverriddenClaimantContactAddress() != null) {
+            return prefs.getOverriddenClaimantContactAddress();
+        }
+        if (prefs.getMissingClaimantAddress() != null) {
+            return prefs.getMissingClaimantAddress();
+        }
+        return prefs.getOrganisationAddress();
     }
 
 }

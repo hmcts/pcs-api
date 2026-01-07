@@ -533,13 +533,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             verify(partyService).createPartyEntity(
-                eq(USER_ID),
-                eq("Test Claimant"),
-                eq(null),
-                eq("Test Claimant"),
-                eq("claimant@test.com"),
-                eq(organisationAddress),
-                eq("01234 567890")
+                USER_ID,
+                "Test Claimant",
+                null,
+                "Test Claimant",
+                "claimant@test.com",
+                organisationAddress,
+                "01234 567890"
             );
         }
 
@@ -574,13 +574,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             verify(partyService).createPartyEntity(
-                eq(USER_ID),
-                eq("Test Claimant"),
-                eq(null),
-                eq("Test Claimant"),
-                eq("claimant@test.com"),
-                eq(missingAddress),
-                eq("01234 567890")
+                USER_ID,
+                "Test Claimant",
+                null,
+                "Test Claimant",
+                "claimant@test.com",
+                missingAddress,
+                "01234 567890"
             );
         }
 
