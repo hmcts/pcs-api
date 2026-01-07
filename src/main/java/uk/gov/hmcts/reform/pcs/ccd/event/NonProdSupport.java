@@ -33,12 +33,9 @@ public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
     private final NonProdSupportService nonProdSupportService;
     private final CaseSupportHelper caseSupportHelper;
 
-    @Value("${enable.testing.support:false}")
-    private boolean enableTestingSupport;
-
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        if (enableTestingSupport) {
+        if (Boolean.parseBoolean(System.getenv().get("ENABLE_TESTING_SUPPORT"))) {
             Event.EventBuilder<PCSCase, UserRole, State> eventBuilder =
                 configBuilder
                     .decentralisedEvent(createTestCase.name(), this::submit, this::start)
