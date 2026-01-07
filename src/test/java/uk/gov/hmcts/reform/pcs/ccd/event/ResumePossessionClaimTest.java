@@ -275,6 +275,58 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
+        void shouldSetOrganisationNameFromOrganisationServiceWhenAvailable() {
+            // Given
+            String userEmail = "user@test.com";
+            String orgName = "ACME Org Ltd";
+
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(orgName);
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn("formatted org address");
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(orgName);
+        }
+
+        @Test
+        void shouldCreateContactPreferencesWhenNull() {
+            // Given
+            String userEmail = "user@test.com";
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn("formatted org address");
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .claimantContactPreferences(null)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantContactPreferences()).isNotNull();
+            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail()).isEqualTo(userEmail);
+        }
+
+        @Test
         void shouldSetClaimantDetails() {
             // Given
             String expectedClaimantEmail = "user@test.com";
@@ -499,6 +551,129 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 claimantContactEmail,
                 organisationAddress,
                 claimantContactPhoneNumber
+            );
+        }
+
+        @Test
+        void shouldUseOverriddenClaimantNameWhenProvided() {
+            // Given
+            stubFeeService();
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+
+            PCSCase caseData = PCSCase.builder()
+                .legislativeCountry(WALES)
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .claimantName("Original Name")
+                        .overriddenClaimantName("Overridden Name")
+                        .build()
+                )
+                .claimantContactPreferences(
+                    ClaimantContactPreferences.builder()
+                        .claimantContactEmail("claimant@test.com")
+                        .claimantContactPhoneNumber("01234 567890")
+                        .organisationAddress(organisationAddress)
+                        .build()
+                )
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(partyService).createPartyEntity(
+                USER_ID,
+                "Overridden Name",
+                null,
+                "Overridden Name",
+                "claimant@test.com",
+                organisationAddress,
+                "01234 567890"
+            );
+        }
+
+        @Test
+        void shouldUseOverriddenClaimantContactEmailWhenProvided() {
+            // Given
+            stubFeeService();
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+
+            PCSCase caseData = PCSCase.builder()
+                .legislativeCountry(WALES)
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .claimantName("Test Claimant")
+                        .build()
+                )
+                .claimantContactPreferences(
+                    ClaimantContactPreferences.builder()
+                        .claimantContactEmail("original@test.com")
+                        .overriddenClaimantContactEmail("override@test.com")
+                        .claimantContactPhoneNumber("01234 567890")
+                        .organisationAddress(organisationAddress)
+                        .build()
+                )
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(partyService).createPartyEntity(
+                USER_ID,
+                "Test Claimant",
+                null,
+                "Test Claimant",
+                "override@test.com",
+                organisationAddress,
+                "01234 567890"
+            );
+        }
+
+        @Test
+        void shouldUseOverriddenContactAddressWhenProvided() {
+            // Given
+            stubFeeService();
+
+            AddressUK overriddenAddress = mock(AddressUK.class);
+            AddressUK missingAddress = mock(AddressUK.class);
+            AddressUK organisationAddress = mock(AddressUK.class);
+
+            PCSCase caseData = PCSCase.builder()
+                .legislativeCountry(WALES)
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .claimantName("Test Claimant")
+                        .build()
+                )
+                .claimantContactPreferences(
+                    ClaimantContactPreferences.builder()
+                        .claimantContactEmail("claimant@test.com")
+                        .claimantContactPhoneNumber("01234 567890")
+                        .overriddenClaimantContactAddress(overriddenAddress)
+                        .missingClaimantAddress(missingAddress)
+                        .organisationAddress(organisationAddress)
+                        .build()
+                )
+                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(partyService).createPartyEntity(
+                USER_ID,
+                "Test Claimant",
+                null,
+                "Test Claimant",
+                "claimant@test.com",
+                overriddenAddress,
+                "01234 567890"
             );
         }
 

@@ -439,6 +439,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         );
     }
 
+    private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {
+        if (contactPreferences.getOverriddenClaimantContactAddress() != null) {
+            return contactPreferences.getOverriddenClaimantContactAddress();
+        }
+        if (contactPreferences.getMissingClaimantAddress() != null) {
+            return contactPreferences.getMissingClaimantAddress();
+        }
+        return contactPreferences.getOrganisationAddress();
+    }
+
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {
         return """
             ---
@@ -472,16 +482,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             <li>Select the ‘Pay the claim fee’ link on the confirmation screen.</li>
             </ol>
             """;
-    }
-
-    private AddressUK resolveContactAddress(ClaimantContactPreferences prefs) {
-        if (prefs.getOverriddenClaimantContactAddress() != null) {
-            return prefs.getOverriddenClaimantContactAddress();
-        }
-        if (prefs.getMissingClaimantAddress() != null) {
-            return prefs.getMissingClaimantAddress();
-        }
-        return prefs.getOrganisationAddress();
     }
 
 }
