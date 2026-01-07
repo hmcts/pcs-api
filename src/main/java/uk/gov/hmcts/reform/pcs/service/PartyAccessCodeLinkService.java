@@ -59,8 +59,8 @@ public class PartyAccessCodeLinkService {
         try {
             caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());
         } catch (Exception e) {
-            // Log error but don't fail the transaction - case assignment is not critical for linking
-            log.warn("Failed to assign defendant role for case {} and user {}: {}", 
+            // TODO: Remove this try-catch block once the functional test controller stores test data in CCD.
+            log.error("Failed to assign defendant role for case {} and user {}: {}",
                     caseReference, idamUserId, e.getMessage(), e);
         }
     }
