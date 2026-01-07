@@ -33,7 +33,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             // Email section
             .complex(PCSCase::getClaimantContactPreferences)
                 .readonly(ClaimantContactPreferences::getClaimantContactEmail, NEVER_SHOW)
-                .label("contactPreferences-email", """
+            .label("contactPreferences-email", """
                     ---
                     <h2 class="govuk-heading-m">Notifications</h2>
                     <p class="govuk-body-m govuk-!-margin-bottom-1">
@@ -47,16 +47,18 @@ public class ContactPreferences implements CcdPageConfiguration {
                         ${claimantContactEmail}
                     </p>
                     """)
-                .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactEmail)
-                .mandatory(
-                    ClaimantContactPreferences::getOverriddenClaimantContactEmail,
-                    "isCorrectClaimantContactEmail=\"NO\""
-                )
+            .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactEmail)
+            .mandatory(ClaimantContactPreferences::getOverriddenClaimantContactEmail,
+        "isCorrectClaimantContactEmail=\"NO\""
+            )
             .done()
 
             // Address section
             .complex(PCSCase::getClaimantContactPreferences)
-                .label("contactPreferences-address-info", """
+            .readonly(ClaimantContactPreferences::getOrgAddressFound, NEVER_SHOW)
+            // Address found
+            .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
+            .label("contactPreferences-address-info-yes", """
                     ----
                     <h2 class="govuk-heading-m">Correspondence address</h2>
                     <p class="govuk-body-m">
@@ -65,37 +67,60 @@ public class ContactPreferences implements CcdPageConfiguration {
                         You can change this correspondence address if, for example, you work in a different office from
                         the address registered with My HMCTS.
                     </p>
-                    """, "orgAddressFound=\"YES\"")
-                .label("contactPreferences-address-info", """
-                    ----
-                    <h2 class="govuk-heading-m">Correspondence address</h2>
-                    <p class="govuk-body-m">
-                        Court documents like orders and notices will be sent by post to the address registered with
-                        My HMCTS.
-                    </p>
-                    """, "orgAddressFound=\"NO\"")
-                .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
-                .label("contactPreferences-address-registered", """
+                    """, "orgAddressFound=\"Yes\"")
+            .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
+            .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         Your My HMCTS registered address is:
                     </h3>
                     <p class="govuk-body-s govuk-!-margin-top-1">
                         ${formattedClaimantContactAddress}
                     </p>
-                    """, "orgAddressFound=\"YES\"")
-                .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, "orgAddressFound=\"YES\"")
-                .complex(
-                    ClaimantContactPreferences::getOverriddenClaimantContactAddress,
-                    "isCorrectClaimantContactAddress=\"NO\""
-                )
-                    .mandatory(AddressUK::getAddressLine1)
-                    .optional(AddressUK::getAddressLine2)
-                    .optional(AddressUK::getAddressLine3)
-                    .mandatory(AddressUK::getPostTown)
-                    .optional(AddressUK::getCounty)
-                    .optional(AddressUK::getCountry)
-                    .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
-                .done()
+                    """, "orgAddressFound=\"Yes\"")
+            .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, "orgAddressFound=\"Yes\"")
+            .complex(
+                ClaimantContactPreferences::getOverriddenClaimantContactAddress,
+                "isCorrectClaimantContactAddress=\"NO\" AND orgAddressFound=\"Yes\""
+            )
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+            .done()
+
+            // Address not found
+            .label("contactPreferences-address-info-no", """
+                ----
+                <h2 class="govuk-heading-m">Correspondence address</h2>
+                <p class="govuk-body-m">
+                    Court documents like orders and notices will be sent by post to the address registered with
+                    My HMCTS.
+                </p>
+                """, "orgAddressFound=\"No\"")
+            .label("contactPreferences-address-missing", """
+                    <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
+                        We could not retrieve your organisation's correspondence address that's linked to your My
+                        HMCTS account
+                    </h3>
+                    <p class="govuk-hint govuk-!-margin-top-1">
+                        You must enter the correspondence address you'd like to receive documents to
+                    </p>
+                    """, "orgAddressFound=\"No\"")
+            .complex(
+                ClaimantContactPreferences::getMissingClaimantAddress,
+                "orgAddressFound=\"No\""
+            )
+                .mandatory(AddressUK::getAddressLine1)
+                .optional(AddressUK::getAddressLine2)
+                .optional(AddressUK::getAddressLine3)
+                .mandatory(AddressUK::getPostTown)
+                .optional(AddressUK::getCounty)
+                .optional(AddressUK::getCountry)
+                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
+            .done()
             .done()
 
             // Phone section

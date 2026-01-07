@@ -15,6 +15,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 @AllArgsConstructor
 public class ClaimantContactPreferences {
 
+    @CCD
     private YesOrNo orgAddressFound;
 
     @CCD(typeOverride = FieldType.Email)
@@ -33,6 +34,9 @@ public class ClaimantContactPreferences {
 
     @CCD(label = "Enter address details")
     private AddressUK overriddenClaimantContactAddress;
+
+    @CCD
+    private AddressUK missingClaimantAddress;
 
     @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo claimantProvidePhoneNumber;
