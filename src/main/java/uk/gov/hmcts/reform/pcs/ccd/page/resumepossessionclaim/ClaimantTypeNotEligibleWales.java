@@ -39,7 +39,7 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-warning-text__assistive">Warning</span>
                     <span id="warning-message">
-                      To exit back to the case overview, select ‘Cancel’.
+                      To exit back to the case overview, select ‘Cancel’
                     </span>
                   </strong>
                 </div>
