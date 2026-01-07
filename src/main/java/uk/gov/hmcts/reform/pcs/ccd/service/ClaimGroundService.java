@@ -11,11 +11,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
@@ -42,7 +44,10 @@ public class ClaimGroundService {
             return getWalesGroundsWithReason(pcsCase);
         }
 
-        TenancyLicenceType tenancyLicenceType = pcsCase.getTypeOfTenancyLicence();
+        TenancyLicenceDetails tenancyDetails =
+            pcsCase.getTenancyLicenceDetails();
+        TenancyLicenceType tenancyLicenceType = tenancyDetails != null
+            ? tenancyDetails.getTypeOfTenancyLicence() : null;
 
         if (tenancyLicenceType == null) {
             return Collections.emptyList();
@@ -135,9 +140,9 @@ public class ClaimGroundService {
     private List<ClaimGroundEntity> assuredTenancyNoRentArrearsGroundsWithReason(PCSCase pcsCase) {
 
         Set<NoRentArrearsMandatoryGrounds> noRentArrearsMandatoryGrounds = pcsCase
-                .getNoRentArrearsMandatoryGroundsOptions();
+                .getNoRentArrearsGroundsOptions().getMandatoryGrounds();
         Set<NoRentArrearsDiscretionaryGrounds> noRentArrearsDiscretionaryGrounds = pcsCase
-                .getNoRentArrearsDiscretionaryGroundsOptions();
+                .getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
         NoRentArrearsReasonForGrounds grounds = pcsCase.getNoRentArrearsReasonForGrounds();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
@@ -192,7 +197,7 @@ public class ClaimGroundService {
     private List<ClaimGroundEntity> getIntroductoryDemotedOtherTenancyGroundsWithReason(
         PCSCase pcsCase) {
         Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds =
-            pcsCase.getIntroductoryDemotedOrOtherGrounds();
+            pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds();
 
         IntroductoryDemotedOtherGroundReason reasons = pcsCase.getIntroductoryDemotedOtherGroundReason();
 
@@ -208,7 +213,7 @@ public class ClaimGroundService {
                 };
 
                 String groundDescription = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
-                    ? pcsCase.getOtherGroundDescription() : null;
+                    ? pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription() : null;
 
                 entities.add(
                     ClaimGroundEntity.builder()
@@ -218,7 +223,8 @@ public class ClaimGroundService {
                         .build());
             }
         }
-        if (pcsCase.getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO
+        if (pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession()
+            .getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO
             && isNotBlank(reasons.getNoGrounds())) {
 
             entities.add(
@@ -246,9 +252,13 @@ public class ClaimGroundService {
                             .estateManagementGroundsWales(Set.of())
                             .build());
 
-        Set<MandatoryGroundWales> mandatoryGrounds = pcsCase.getMandatoryGroundsWales();
-        Set<DiscretionaryGroundWales> discretionaryGrounds = pcsCase.getDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> estateGrounds = pcsCase.getEstateManagementGroundsWales();
+        GroundsForPossessionWales groundsForPossessionWales =
+            Optional.ofNullable(pcsCase.getGroundsForPossessionWales())
+                .orElse(GroundsForPossessionWales.builder().build());
+
+        Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGroundsWales();
+        Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGroundsWales();
+        Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGroundsWales();
         Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds =
             secureGrounds.getMandatoryGroundsWales();
         Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds =

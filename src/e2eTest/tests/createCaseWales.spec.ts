@@ -10,21 +10,15 @@ import {
   addressDetails,
   claimantCircumstances,
   claimantDetailsWales,
-  claimantName,
-  claimantType,
   claimingCosts,
-  claimType,
-  contactPreferences,
   dailyRentAmount,
   defendantCircumstances,
-  defendantDetails,
   detailsOfRentArrears,
   home,
   mediationAndSettlement,
   moneyJudgment,
   noticeOfYourIntention,
   occupationContractOrLicenceDetailsWales,
-  preActionProtocol,
   prohibitedConductStandardContractWales,
   rentDetails,
   reasonsForPossession,
@@ -42,8 +36,16 @@ import {
   checkYourAnswers,
   propertyDetails,
   underlesseeOrMortgageeDetails,
-  statementOfTruth
+  statementOfTruth, borderPostcode
 } from '@data/page-data';
+import{
+  claimantType,
+  claimType,
+  claimantInformation,
+  defendantDetails,
+  contactPreferences,
+  preactionProtocol
+} from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
 test.beforeEach(async ({page}) => {
@@ -66,8 +68,8 @@ test.afterEach(async () => {
   PageContentValidation.finaliseTest();
 });
 
-test.describe('[Create Case - Wales] @regression', async () => {
-  test('Wales - Secure contract - Rent arrears only @PR', async () => {
+test.describe('[Create Case - Wales]', async () => {
+  test('Wales - Secure contract - Rent arrears only @PR @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -81,20 +83,20 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
          question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
          question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.no,
-      phoneNumber: contactPreferences.yes
+      notifications: contactPreferences.noRadioOption,
+      correspondenceAddress: contactPreferences.noRadioOption,
+      phoneNumber: contactPreferences.yesRadioOption
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -111,14 +113,15 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
     });
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performValidation('text', {"text": preactionProtocol.communityLandlordsDynamicParagraph, "elementType": "paragraph"})
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -170,7 +173,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + ASB + other options', async () => {
+  test('Wales - Secure contract - Rent arrears + ASB + other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -184,20 +187,20 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.no,
-      phoneNumber: contactPreferences.yes
+      notifications: contactPreferences.noRadioOption,
+      correspondenceAddress: contactPreferences.noRadioOption,
+      phoneNumber: contactPreferences.yesRadioOption
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -219,14 +222,14 @@ test.describe('[Create Case - Wales] @regression', async () => {
       illegalPurposesChoice: asbQuestionsWales.noRadioOption,
       prohibitedConductChoice: asbQuestionsWales.noRadioOption
     });
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -304,20 +307,20 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.no,
          question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.no,
          question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.no});
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.yes,
-      correspondenceAddress: contactPreferences.yes,
-      phoneNumber: contactPreferences.no
+      notifications: contactPreferences.yesRadioOption,
+      correspondenceAddress: contactPreferences.yesRadioOption,
+      phoneNumber: contactPreferences.noRadioOption
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -337,15 +340,14 @@ test.describe('[Create Case - Wales] @regression', async () => {
       illegalPurposesChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfIllegal: asbQuestionsWales.giveDetailsOfIllegalHiddenTextInput,
       prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
     });
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -415,20 +417,20 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.no);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.noRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
         {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.notApplicable,
          question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.notApplicable,
          question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.notApplicable});
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.no,
-      phoneNumber: contactPreferences.yes
+      notifications: contactPreferences.noRadioOption,
+      correspondenceAddress: contactPreferences.noRadioOption,
+      phoneNumber: contactPreferences.yesRadioOption
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -450,8 +452,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
       illegalPurposesChoice: asbQuestionsWales.noRadioOption,
       prohibitedConductChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfTheOther: asbQuestionsWales.giveDetailsOfTheOtherHiddenTextInput
     });
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
@@ -459,7 +460,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.yes,
       typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
     });
@@ -500,7 +501,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + other options', async () => {
+  test('Wales - Secure contract - Rent arrears + other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -514,21 +515,21 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.no,
-      phoneNumber: contactPreferences.yes
+      notifications: contactPreferences.noRadioOption,
+      correspondenceAddress: contactPreferences.noRadioOption,
+      phoneNumber: contactPreferences.yesRadioOption
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
-      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.defendantPostcodeTextInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
       addAdditionalDefendantsOption: defendantDetails.yesRadioOption, numberOfDefendants: 2,
       name1Option: defendantDetails.yesRadioOption,
       correspondenceAddress1Option: defendantDetails.yesRadioOption, correspondenceAddressSame1Option: defendantDetails.yesRadioOption,
@@ -552,14 +553,14 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession',
       [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession, whatAreYourGroundsForPossessionWales.discretionary.buildingWorks]);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
@@ -647,20 +648,20 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.no,
-      phoneNumber: contactPreferences.yes
+      notifications: contactPreferences.noRadioOption,
+      correspondenceAddress: contactPreferences.noRadioOption,
+      phoneNumber: contactPreferences.yesRadioOption
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -675,14 +676,14 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('enterReasonForPossession',
         [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract]);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
@@ -728,7 +729,7 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + Other options', async () => {
+  test('Wales - Secure contract - Rent arrears + Other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -742,20 +743,20 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.wales.communityLandlord);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, claimantDetailsWales.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
       {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.no,
-      correspondenceAddress: contactPreferences.no,
-      phoneNumber: contactPreferences.yes
+      notifications: contactPreferences.noRadioOption,
+      correspondenceAddress: contactPreferences.noRadioOption,
+      phoneNumber: contactPreferences.yesRadioOption
     });
     await performAction('addDefendantDetails', {
-      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.firstNameTextInput, lastName: defendantDetails.lastNameTextInput,
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
@@ -770,14 +771,14 @@ test.describe('[Create Case - Wales] @regression', async () => {
     await performAction('enterReasonForPossession',
       [whatAreYourGroundsForPossessionWales.discretionary.otherBreachOfContract]);
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
       settlementWithDefendantsOption: mediationAndSettlement.no,
     });
     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
+      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
       option: noticeOfYourIntention.no
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});

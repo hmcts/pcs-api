@@ -97,6 +97,8 @@ The following environment variables are needed to run the tests:
 - IDAM_SYSTEM_USERNAME
 - IDAM_SYSTEM_USER_PASSWORD
 - PCS_API_IDAM_SECRET
+- IDAM_EXPIRED_USER_TOKEN
+- S2S_EXPIRED_TOKEN
 
 To run the tests, use:
 ```bash
@@ -165,7 +167,64 @@ During test execution, temporary users are automatically created and tracked in 
 Update ./config/global-setup.config with list of roles for which temporary users needs to be created along with the key/name to
 identify them.
 
+### Running with Wiremock in Preview environment
+
+To enable a Wiremock pod in the Preview environment for a PR, add the label `pr-values:wiremock` to the PR. This
+will deploy a Wiremock instance pre-configured to respond to health/liveness checks, and proxy any requests
+for certain APIs to their AAT origin.
+
+Those API requests can then have mappings added for them to change the response. For example to update the Fee Register
+response for the possession claim fee:
+
+**POST** https://wiremock-pcs-api-pr-NNNN.preview.platform.hmcts.net/__admin/mappings
+
+**Headers**: Content-Type:application/json
+
+**Body**:
+```json
+{
+    "request": {
+        "method": "GET",
+        "urlPath": "/fees-register/fees/lookup",
+        "queryParameters": {
+            "service": {
+                "equalTo": "possession claim"
+            },
+            "jurisdiction1": {
+                "equalTo": "civil"
+            },
+            "jurisdiction2": {
+                "equalTo": "county court"
+            },
+            "channel": {
+                "equalTo": "default"
+            },
+            "event": {
+                "equalTo": "issue"
+            },
+            "amount_or_volume": {
+                "equalTo": "1"
+            },
+            "keyword": {
+                "equalTo": "PossessionCC"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "jsonBody": {
+            "code": "FEE0412",
+            "description": "Recovery of Land - County Court (Test)",
+            "version": 1,
+            "fee_amount": 1234.56
+        },
+        "headers": {
+            "Content-Type": "application/json"
+        }
+    }
+}
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
-
