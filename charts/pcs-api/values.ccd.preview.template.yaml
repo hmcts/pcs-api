@@ -180,9 +180,9 @@ xui-webapp:
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
     image: hmctspublic.azurecr.io/xui/webapp:latest
     ingressHost: xui-${SERVICE_FQDN}
-    devmemoryRequests: 1Gi
+    devmemoryRequests: 2Gi
     devcpuRequests: 500m
-    devmemoryLimits: 1.5Gi
+    devmemoryLimits: 4Gi
     devcpuLimits: 1
     environment:
       HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
