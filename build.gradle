@@ -24,7 +24,7 @@ plugins {
   id 'hmcts.ccd.sdk' version '6.6.1'
   id 'com.github.hmcts.rse-cft-lib' version '0.19.1956'
   id 'io.freefair.lombok' version '9.1.0'
-  id 'au.com.dius.pact' version '4.6.18'
+  id 'au.com.dius.pact' version '4.6.19'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
     See https://github.com/hmcts/gradle-java-plugin
@@ -292,7 +292,7 @@ repositories {
 
 ext {
   log4JVersion = "2.25.3"
-  logbackVersion = "1.5.22"
+  logbackVersion = "1.5.24"
   testcontainersVersion = "1.21.3"
   springFrameworkBootVersion = "3.5.8"
   lombokVersion = "1.18.42"
