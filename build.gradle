@@ -293,7 +293,8 @@ repositories {
 ext {
   log4JVersion = "2.25.3"
   logbackVersion = "1.5.24"
-  testcontainersVersion = "1.21.3"
+  testcontainersVersion = "2.0.3"
+  testcontainersAdditionsVersion = "1.21.4"
   springFrameworkBootVersion = "3.5.9"
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.2"
@@ -386,8 +387,8 @@ dependencies {
   }
   testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
   testImplementation group: 'org.testcontainers', name: 'testcontainers', version: testcontainersVersion
-  testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersVersion
-  testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersVersion
+  testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: testcontainersAdditionsVersion
+  testImplementation group: 'org.testcontainers', name: 'postgresql', version: testcontainersAdditionsVersion
 
   integrationTestImplementation group: 'org.springframework.cloud', name: 'spring-cloud-starter-contract-stub-runner', version: '4.3.1'
 
