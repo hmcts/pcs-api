@@ -11,6 +11,5 @@ export default {
   'resumePossessionClaimtenancyLicenceDetails':'tenancyLicenceDetails',
   'resumePossessionClaimgroundForPossessionRentArrears':'groundForPossessionRentArrears',
   'resumePossessionClaimintroductoryDemotedOrOtherGroundsForPossession':'introductoryDemotedOrOtherGroundsForPossession',
-  'resumePossessionClaimpreActionProtocol':'preactionProtocol',
-  'understanding-the-possession-action-process-a-guide-for-private-landlords-in-england-and-wales': 'guideForPrivateLandlords'
+  'resumePossessionClaimpreActionProtocol':'preactionProtocol'
 };
