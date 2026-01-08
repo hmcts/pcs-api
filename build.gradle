@@ -293,7 +293,7 @@ repositories {
 ext {
   log4JVersion = "2.25.3"
   logbackVersion = "1.5.24"
-  testcontainersVersion = "1.21.3"
+  testcontainersVersion = "2.0.3"
   springFrameworkBootVersion = "3.5.9"
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.2"
