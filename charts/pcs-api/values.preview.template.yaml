@@ -38,6 +38,7 @@ java:
     IDAM_S2S_AUTH_URL: http://rpe-service-auth-provider-aat.service.core-compute-aat.internal
     CCD_SDK_DECENTRALISED: "true"
     CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
+  secrets:  
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
       key: password
