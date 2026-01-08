@@ -292,7 +292,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
 
-        if (contactPreferences.getFormattedClaimantContactAddress() != null) {
+        if (contactPreferences.getOrganisationAddress() != null) {
             contactPreferences.setOrgAddressFound(YesOrNo.YES);
         } else {
             contactPreferences.setOrgAddressFound(YesOrNo.NO);
@@ -442,9 +442,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {
         if (contactPreferences.getOverriddenClaimantContactAddress() != null) {
             return contactPreferences.getOverriddenClaimantContactAddress();
-        }
-        if (contactPreferences.getMissingClaimantAddress() != null) {
-            return contactPreferences.getMissingClaimantAddress();
         }
         return contactPreferences.getOrganisationAddress();
     }

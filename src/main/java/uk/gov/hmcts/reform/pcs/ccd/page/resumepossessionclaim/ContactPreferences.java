@@ -71,7 +71,6 @@ public class ContactPreferences implements CcdPageConfiguration {
                         the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
             .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         Your My HMCTS registered address is:
@@ -81,18 +80,6 @@ public class ContactPreferences implements CcdPageConfiguration {
                     </p>
                     """, ORG_ADDRESS_FOUND)
             .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, ORG_ADDRESS_FOUND)
-            .complex(
-                ClaimantContactPreferences::getOverriddenClaimantContactAddress,
-                "isCorrectClaimantContactAddress=\"NO\" AND orgAddressFound=\"Yes\""
-            )
-                .mandatory(AddressUK::getAddressLine1)
-                .optional(AddressUK::getAddressLine2)
-                .optional(AddressUK::getAddressLine3)
-                .mandatory(AddressUK::getPostTown)
-                .optional(AddressUK::getCounty)
-                .optional(AddressUK::getCountry)
-                .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
-            .done()
 
             // Address not found
             .label("contactPreferences-address-info-no", """
@@ -112,9 +99,11 @@ public class ContactPreferences implements CcdPageConfiguration {
                         You must enter the correspondence address you'd like to receive documents to
                     </p>
                     """, ORG_ADDRESS_NOT_FOUND)
+
+            // Rest of address
             .complex(
-                ClaimantContactPreferences::getMissingClaimantAddress,
-                ORG_ADDRESS_NOT_FOUND
+                ClaimantContactPreferences::getOverriddenClaimantContactAddress,
+                "isCorrectClaimantContactAddress=\"NO\" OR orgAddressFound=\"No\""
             )
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)

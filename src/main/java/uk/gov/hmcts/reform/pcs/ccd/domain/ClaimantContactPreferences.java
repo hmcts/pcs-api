@@ -38,9 +38,6 @@ public class ClaimantContactPreferences {
     @CCD(label = "Enter address details")
     private AddressUK overriddenClaimantContactAddress;
 
-    @CCD(label = "Enter address details")
-    private AddressUK missingClaimantAddress;
-
     @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo claimantProvidePhoneNumber;
 

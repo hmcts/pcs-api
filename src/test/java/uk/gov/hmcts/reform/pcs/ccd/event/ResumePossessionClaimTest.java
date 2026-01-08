@@ -640,7 +640,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
             stubFeeService();
 
             AddressUK overriddenAddress = mock(AddressUK.class);
-            AddressUK missingAddress = mock(AddressUK.class);
             AddressUK organisationAddress = mock(AddressUK.class);
 
             PCSCase caseData = PCSCase.builder()
@@ -655,7 +654,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                         .claimantContactEmail("claimant@test.com")
                         .claimantContactPhoneNumber("01234 567890")
                         .overriddenClaimantContactAddress(overriddenAddress)
-                        .missingClaimantAddress(missingAddress)
                         .organisationAddress(organisationAddress)
                         .build()
                 )
@@ -714,47 +712,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 "Test Claimant",
                 "claimant@test.com",
                 organisationAddress,
-                "01234 567890"
-            );
-        }
-
-        @Test
-        void shouldUseMissingClaimantAddressWhenOverriddenContactAddressIsNull() {
-            // Given
-            AddressUK propertyAddress = mock(AddressUK.class);
-            AddressUK missingAddress = mock(AddressUK.class);
-
-            stubFeeService();
-
-            PCSCase caseData = PCSCase.builder()
-                .propertyAddress(propertyAddress)
-                .legislativeCountry(WALES)
-                .claimantInformation(
-                    ClaimantInformation.builder()
-                        .claimantName("Test Claimant")
-                        .build()
-                )
-                .claimantContactPreferences(
-                    ClaimantContactPreferences.builder()
-                        .claimantContactEmail("claimant@test.com")
-                        .claimantContactPhoneNumber("01234 567890")
-                        .missingClaimantAddress(missingAddress)
-                        .build()
-                )
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
-                .build();
-
-            // When
-            callSubmitHandler(caseData);
-
-            // Then
-            verify(partyService).createPartyEntity(
-                USER_ID,
-                "Test Claimant",
-                null,
-                "Test Claimant",
-                "claimant@test.com",
-                missingAddress,
                 "01234 567890"
             );
         }
