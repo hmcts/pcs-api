@@ -58,11 +58,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .warrantFeeAmount(warrantFeeAmount)
             .warrantDetails(WarrantDetails.builder()
                 .repaymentCosts(RepaymentCosts.builder().build())
                 .landRegistryFees(landRegistryFees)
                 .legalCosts(legalCosts)
-                .warrantFeeAmount(warrantFeeAmount)
                 .moneyOwedByDefendants(moneyOwedByDefendants)
                 .build())
             .build();

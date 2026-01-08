@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -102,18 +101,6 @@ public class WarrantDetails {
     @JsonUnwrapped(prefix = "warrant")
     @CCD
     private LandRegistryFees landRegistryFees;
-
-    @CCD(
-        searchable = false
-    )
-    @External
-    private String warrantFeeAmount;
-
-    @CCD(
-        searchable = false
-    )
-    @External
-    private String writFeeAmount;
 
     @JsonUnwrapped(prefix = "repayment")
     @CCD
