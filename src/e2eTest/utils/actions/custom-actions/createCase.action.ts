@@ -1,5 +1,5 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {Page} from '@playwright/test';
+import {expect, Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {
   createCase,
@@ -51,6 +51,7 @@ import{
   groundsForPossessionRentArrears,
   preactionProtocol
 } from '@data/page-data-figma';
+import {LONG_TIMEOUT} from 'playwright.config';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -734,6 +735,11 @@ export class CreateCaseAction implements IAction {
   private async provideMoreDetailsOfClaim(page: Page) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await expect(async () => {
+        await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Next%20steps`);
+      }).toPass({
+        timeout: LONG_TIMEOUT + LONG_TIMEOUT,
+      });
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
   }
 
