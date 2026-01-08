@@ -28,7 +28,8 @@ import {
   rePayments,
   peopleWillBeEvicted,
   youNeedPermission,
-  languageUsed
+  languageUsed,
+  peopleYouWantToEvict
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -77,6 +78,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         newPage: yourApplication.hceoPageTitle
       });
       await performAction('expandSummary', yourApplication.summarySaveApplication);
+      await performAction('inputErrorValidation', {
+        validationReq: yourApplication.errorValidation,
+        validationType: yourApplication.errorValidationType.three,
+        inputArray: yourApplication.errorValidationField.errorRadioOption,
+        question: yourApplication.typeOfApplicationQuestion,
+        option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
+        button: yourApplication.continueButton
+      });
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -98,6 +107,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: everyoneLivingAtTheProperty.yesRadioOption,
       });
       await performValidation('mainHeader', riskPosedByEveryoneAtProperty.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: riskPosedByEveryoneAtProperty.errorValidation,
+        validationType: riskPosedByEveryoneAtProperty.errorValidationType.four,
+        inputArray: riskPosedByEveryoneAtProperty.errorValidationField.errorCheckBoxOption,
+        label: riskPosedByEveryoneAtProperty.kindOfRiskQuestion,
+        button: riskPosedByEveryoneAtProperty.continueButton
+      });
       await performAction('selectRiskPosedByEveryoneAtProperty', {
         riskTypes: [
           riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
@@ -108,6 +124,15 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
           riskPosedByEveryoneAtProperty.policeOrSocialServiceCheckbox,
           riskPosedByEveryoneAtProperty.aggressiveAnimalsCheckbox,
         ],
+      });
+      await performValidation('mainHeader', violentOrAggressiveBehaviour.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: violentOrAggressiveBehaviour.errorValidation,
+        validationType: violentOrAggressiveBehaviour.errorValidationType.two,
+        inputArray: violentOrAggressiveBehaviour.errorValidationField.errorTextField,
+        header: violentOrAggressiveBehaviour.errors,
+        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
+        button: violentOrAggressiveBehaviour.continueButton
       });
       await performAction('provideDetailsViolentOrAggressiveBehaviour', {
         label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
@@ -138,6 +163,30 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput,
       });
       await performValidation('mainHeader', vulnerableAdultsAndChildren.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: vulnerableAdultsAndChildren.errorValidation,
+        validationType: vulnerableAdultsAndChildren.errorValidationType.three,
+        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorRadioOption1,
+        question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
+        option: vulnerableAdultsAndChildren.yesRadioOption,
+        button: vulnerableAdultsAndChildren.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: vulnerableAdultsAndChildren.errorValidation,
+        validationType: vulnerableAdultsAndChildren.errorValidationType.three,
+        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorRadioOption2,
+        question: vulnerableAdultsAndChildren.confirmVulnerablePeopleQuestion,
+        option: vulnerableAdultsAndChildren.vulnerableAdultsRadioOption,
+        button: vulnerableAdultsAndChildren.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: vulnerableAdultsAndChildren.errorValidation,
+        validationType: vulnerableAdultsAndChildren.errorValidationType.two,
+        inputArray: vulnerableAdultsAndChildren.errorValidationField.errorTextField,
+        header: vulnerableAdultsAndChildren.errors,
+        label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
+        button: vulnerableAdultsAndChildren.continueButton
+      });
       await performAction('selectVulnerablePeopleInTheProperty', {
         question: vulnerableAdultsAndChildren.IsAnyOneLivingAtThePropertyQuestion,
         option: vulnerableAdultsAndChildren.yesRadioOption,
@@ -173,6 +222,24 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: moneyOwed.totalAmountOwedTextInput
       });
       await performValidation('mainHeader', legalCosts.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.three,
+        inputArray: legalCosts.errorValidationField.errorRadioOption,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        button: legalCosts.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.five,
+        inputArray: legalCosts.errorValidationField.errorMoneyField,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        option2: legalCosts.noRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        button: legalCosts.continueButton
+      });
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.yesRadioOption,
@@ -182,10 +249,19 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', landRegistryFees.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: landRegistryFees.errorValidation,
+        validationType: landRegistryFees.errorValidationType.three,
+        inputArray: landRegistryFees.errorValidationField.errorRadioOption,
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        button: landRegistryFees.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: landRegistryFees.errorValidation,
         validationType: landRegistryFees.errorValidationType.five,
         inputArray: landRegistryFees.errorValidationField.errorMoneyField,
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.yesRadioOption,
+        option2: landRegistryFees.noRadioOption,
         label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
         button: landRegistryFees.continueButton
       });
@@ -196,7 +272,31 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
       });
       await performValidation('mainHeader', rePayments.mainHeader);
-      await performAction('clickButton', rePayments.continueButton);
+      await performAction('validateAmountToRePayTable');
+      await performAction('inputErrorValidation', {
+        validationReq: rePayments.errorValidation,
+        validationType: rePayments.errorValidationType.three,
+        inputArray: rePayments.errorValidationField.errorRadioOption,
+        question: rePayments.rePaymentQuestion,
+        option: rePayments.rePaymentRadioOptions.some,
+        button: rePayments.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: rePayments.errorValidation,
+        validationType: rePayments.errorValidationType.five,
+        inputArray: rePayments.errorValidationField.errorMoneyField,
+        question: rePayments.rePaymentQuestion,
+        option: rePayments.rePaymentRadioOptions.some,
+        option2: rePayments.rePaymentRadioOptions.none,
+        label: rePayments.enterTheAmountTextLabel,
+        button: rePayments.continueButton
+      });
+      await performAction('provideAmountToRePay', {
+        question: rePayments.rePaymentQuestion,
+        option: rePayments.rePaymentRadioOptions.some,
+        label: rePayments.enterTheAmountTextLabel,
+        input: rePayments.enterTheAmountTextInput
+      });
       await performValidation('mainHeader', languageUsed.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: languageUsed.errorValidation,
@@ -204,7 +304,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         inputArray: languageUsed.errorValidationField.errorRadioOption,
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.languageUsedRadioOptions.englishRadioOption,
-        label: languageUsed.whichLanguageUsedQuestion,
         button: languageUsed.continueButton
       });
       await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
@@ -213,6 +312,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -228,8 +334,17 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       question: peopleWillBeEvicted.evictEveryOneQuestion,
       option: peopleWillBeEvicted.noRadioOption,
     });
+    await performValidation('mainHeader', peopleYouWantToEvict.mainHeader);
+    await performAction('inputErrorValidation', {
+      validationReq: peopleYouWantToEvict.errorValidation,
+      validationType: peopleYouWantToEvict.errorValidationType.four,
+      inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
+      label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+      button: peopleYouWantToEvict.continueButton
+    });
     await performAction('selectPeopleYouWantToEvict', {
-      defendants: defendantDetails,
+      question: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+      option: defendantDetails,
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
@@ -277,7 +392,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('clickButton', rePayments.continueButton);
+    await performAction('validateAmountToRePayTable');
+    await performAction('provideAmountToRePay', {
+      question: rePayments.rePaymentQuestion,
+      option: rePayments.rePaymentRadioOptions.none,
+      label: rePayments.enterTheAmountTextLabel,
+      input: rePayments.enterTheAmountTextInput
+    });
     await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
   });
@@ -285,6 +406,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -301,7 +429,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: peopleWillBeEvicted.noRadioOption,
     });
     await performAction('selectPeopleYouWantToEvict', {
-      defendants: defendantDetails[0],
+      question: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+      option: defendantDetails[0]
     });
     await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
     await performAction('selectEveryoneLivingAtTheProperty', {
@@ -353,6 +482,15 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('validateAmountToRePayTable');
+    await performAction('provideAmountToRePay', {
+      question: rePayments.rePaymentQuestion,
+      option: rePayments.rePaymentRadioOptions.all,
+      label: rePayments.enterTheAmountTextLabel,
+      input: rePayments.enterTheAmountTextInput
+    });
+    await performValidation('mainHeader', languageUsed.mainHeader);
+    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
