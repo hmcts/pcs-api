@@ -60,6 +60,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             .complex(PCSCase::getClaimantContactPreferences)
             .readonly(ClaimantContactPreferences::getOrgAddressFound, NEVER_SHOW)
             // Address found
+            .readonly(ClaimantContactPreferences::getOrganisationAddress, NEVER_SHOW, true)
             .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
             .label("contactPreferences-address-info-yes", """
                     ----
