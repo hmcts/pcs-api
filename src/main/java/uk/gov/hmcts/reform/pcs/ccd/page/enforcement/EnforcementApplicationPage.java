@@ -115,6 +115,4 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
     }
 
-
-
 }

@@ -35,7 +35,28 @@ public enum State {
         access = {CaseworkerReadAccess.class, ClaimantAccess.class, DefendantAccess.class},
         hint = "${caseTitleMarkdown}"
     )
-    CASE_ISSUED
+    CASE_ISSUED,
+
+    @CCD(
+        label = "Case Closed",
+        access = {CaseworkerReadAccess.class, ClaimantAccess.class},
+        hint = "${pageHeadingMarkdown}"
+    )
+    CASE_CLOSED,
+
+    @CCD(
+        label = "Draft",
+        access = {ClaimantAccess.class},
+        hint = "${pageHeadingMarkdown}"
+    )
+    DRAFT,
+
+    @CCD(
+        label = "Test Case",
+        access = {ClaimantAccess.class},
+        hint = "${pageHeadingMarkdown}"
+    )
+    TEST_CASE
 
 }
 
