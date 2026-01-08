@@ -112,7 +112,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         long totalPence = 0;
         for (String penceStr : pennies) {
             if (penceStr != null) {
-                long pence = Long.valueOf(penceStr);
+                long pence = Long.parseLong(penceStr);
                 totalPence += pence;
             }
         }
