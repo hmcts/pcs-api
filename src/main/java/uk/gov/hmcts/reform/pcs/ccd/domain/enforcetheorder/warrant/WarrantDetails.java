@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
+import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
-
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
@@ -33,57 +33,57 @@ public class WarrantDetails {
     private PeopleToEvict peopleToEvict;
 
     @CCD(
-            label = "Who do you want to evict?",
-            typeOverride = DynamicMultiSelectList
+        label = "Who do you want to evict?",
+        typeOverride = DynamicMultiSelectList
     )
     private DynamicMultiSelectStringList selectedDefendants;
 
     @CCD(
-            label = "Does anyone living at the property pose a risk to the bailiff?"
+        label = "Does anyone living at the property pose a risk to the bailiff?"
     )
     private YesNoNotSure anyRiskToBailiff;
 
     @CCD(
-            label = "What kind of risks do they pose to the bailiff?",
-            hint = "Include any risks posed by the defendants and also anyone else living at the property",
-            typeOverride = FieldType.MultiSelectList,
-            typeParameterOverride = "RiskCategory"
+        label = "What kind of risks do they pose to the bailiff?",
+        hint = "Include any risks posed by the defendants and also anyone else living at the property",
+        typeOverride = FieldType.MultiSelectList,
+        typeParameterOverride = "RiskCategory"
     )
     private Set<RiskCategory> enforcementRiskCategories;
 
     @CCD(
-            searchable = false
+        searchable = false
     )
     private VerticalYesNo showChangeNameAddressPage;
 
     @CCD(
-            searchable = false
+        searchable = false
     )
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
 
     @CCD(
-            searchable = false
+        searchable = false
     )
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
     @JsonUnwrapped(prefix = "warrant")
     @CCD(
-            label = "Risk details"
+        label = "Risk details"
     )
     private EnforcementRiskDetails riskDetails;
 
     @CCD(
-            label = "Is anyone living at the property vulnerable?"
+        label = "Is anyone living at the property vulnerable?"
     )
     private YesNoNotSure vulnerablePeoplePresent;
 
     private VulnerableAdultsChildren vulnerableAdultsChildren;
 
     @CCD(
-            label = "Which language did you use to complete this service?",
-            hint = "If someone else helped you to answer a question in this service, "
-                    + "ask them if they answered any questions in Welsh. We’ll use this to "
-                    + "make sure your claim is processed correctly"
+        label = "Which language did you use to complete this service?",
+        hint = "If someone else helped you to answer a question in this service, "
+            + "ask them if they answered any questions in Welsh. We’ll use this to "
+            + "make sure your claim is processed correctly"
     )
     private LanguageUsed enforcementLanguageUsed;
 
@@ -102,4 +102,20 @@ public class WarrantDetails {
     @JsonUnwrapped(prefix = "warrant")
     @CCD
     private LandRegistryFees landRegistryFees;
+
+    @CCD(
+        searchable = false
+    )
+    @External
+    private String warrantFeeAmount;
+
+    @CCD(
+        searchable = false
+    )
+    @External
+    private String writFeeAmount;
+
+    @JsonUnwrapped(prefix = "repayment")
+    @CCD
+    private RepaymentCosts repaymentCosts;
 }
