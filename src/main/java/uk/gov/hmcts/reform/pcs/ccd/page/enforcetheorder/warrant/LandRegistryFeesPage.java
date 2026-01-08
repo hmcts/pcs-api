@@ -64,7 +64,8 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             totalFees
         );
 
-        caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts().setRepaymentSummaryMarkdown(repaymentTableHtml);
+        caseData.getEnforcementOrder().getWarrantDetails()
+                .getRepaymentCosts().setRepaymentSummaryMarkdown(repaymentTableHtml);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
