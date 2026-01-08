@@ -203,6 +203,7 @@ xui-webapp:
       PROTOCOL: http
       PREVIEW_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
       LAUNCH_DARKLY_CLIENT_ID: 645baeea2787d812993d9d70
+      CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
     keyVaults:
       rpx:
         resourceGroup: rpx
