@@ -289,86 +289,95 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
             Set<RentArrearsDiscretionaryGrounds> discretionary =
                 additional.getDiscretionaryGrounds();
 
-
             reasons.setShowOwnerOccupierReason(
-                YesOrNo.from(mandatory.contains(
-                    RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1)));
+                YesOrNo.from(mandatory != null
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1)));
+
             reasons.setShowRepossessionByLenderReason(
-                YesOrNo.from(mandatory.contains(
-                    RentArrearsMandatoryGrounds.REPOSSESSION_GROUND2
-                ))
-            );
+                YesOrNo.from(mandatory != null
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.REPOSSESSION_GROUND2)));
 
             reasons.setShowHolidayLetReason(
                 YesOrNo.from(mandatory != null
-                                 && mandatory.contains(RentArrearsMandatoryGrounds.HOLIDAY_LET_GROUND3)));
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.HOLIDAY_LET_GROUND3)));
 
             reasons.setShowStudentLetReason(
                 YesOrNo.from(mandatory != null
-                                 && mandatory.contains(RentArrearsMandatoryGrounds.STUDENT_LET_GROUND4)));
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.STUDENT_LET_GROUND4)));
 
             reasons.setShowMinisterOfReligionReason(
                 YesOrNo.from(mandatory != null
-                                 && mandatory.contains(RentArrearsMandatoryGrounds.MINISTER_RELIGION_GROUND5)));
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.MINISTER_RELIGION_GROUND5)));
 
             reasons.setShowRedevelopmentReason(
                 YesOrNo.from(mandatory != null
-                                 && mandatory.contains(RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6)));
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6)));
 
             reasons.setShowDeathOfTenantReason(
                 YesOrNo.from(mandatory != null
-                                 && mandatory.contains(RentArrearsMandatoryGrounds.DEATH_OF_TENANT_GROUND7)));
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.DEATH_OF_TENANT_GROUND7)));
 
             reasons.setShowAntisocialBehaviourReason(
                 YesOrNo.from(mandatory != null
-                                 && mandatory.contains(RentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR_GROUND7A)));
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR_GROUND7A)));
 
             reasons.setShowNoRightToRentReason(
                 YesOrNo.from(mandatory != null
-                                 && mandatory.contains(RentArrearsMandatoryGrounds.NO_RIGHT_TO_RENT_GROUND7B)));
+                                 && mandatory.contains(
+                                     RentArrearsMandatoryGrounds.NO_RIGHT_TO_RENT_GROUND7B)));
 
-            // ---------- Discretionary grounds ----------
             reasons.setShowSuitableAltAccommodationReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds
-                                                               .ALTERNATIVE_ACCOMMODATION_GROUND9)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.ALTERNATIVE_ACCOMMODATION_GROUND9)));
 
             reasons.setShowBreachOfTenancyConditionsReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12)));
 
             reasons.setShowPropertyDeteriorationReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds
-                                                               .DETERIORATION_PROPERTY_GROUND13)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.DETERIORATION_PROPERTY_GROUND13)));
 
             reasons.setShowNuisanceAnnoyanceReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds
-                                                               .NUISANCE_ANNOYANCE_GROUND14)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14)));
 
             reasons.setShowDomesticViolenceReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds
-                                                               .DOMESTIC_VIOLENCE_GROUND14A)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE_GROUND14A)));
 
             reasons.setShowOffenceDuringRiotReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds.OFFENCE_RIOT_GROUND14ZA)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.OFFENCE_RIOT_GROUND14ZA)));
 
             reasons.setShowFurnitureDeteriorationReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds
-                                                               .DETERIORATION_FURNITURE_GROUND15)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.DETERIORATION_FURNITURE_GROUND15)));
 
             reasons.setShowEmployeeOfLandlordReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds
-                                                               .EMPLOYEE_LANDLORD_GROUND16)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.EMPLOYEE_LANDLORD_GROUND16)));
 
             reasons.setShowTenancyByFalseStatementReason(
                 YesOrNo.from(discretionary != null
-                                 && discretionary.contains(RentArrearsDiscretionaryGrounds.FALSE_STATEMENT_GROUND17)));
+                                 && discretionary.contains(
+                                     RentArrearsDiscretionaryGrounds.FALSE_STATEMENT_GROUND17)));
 
         }
 
