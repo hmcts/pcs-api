@@ -51,7 +51,7 @@ import{
   groundsForPossessionRentArrears,
   preactionProtocol
 } from '@data/page-data-figma';
-import {LONG_TIMEOUT} from 'playwright.config';
+import {VERY_LONG_TIMEOUT} from 'playwright.config';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -738,7 +738,7 @@ export class CreateCaseAction implements IAction {
     await expect(async () => {
         await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Next%20steps`);
       }).toPass({
-        timeout: LONG_TIMEOUT + LONG_TIMEOUT,
+        timeout: VERY_LONG_TIMEOUT,
       });
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
   }
