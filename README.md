@@ -97,6 +97,8 @@ The following environment variables are needed to run the tests:
 - IDAM_SYSTEM_USERNAME
 - IDAM_SYSTEM_USER_PASSWORD
 - PCS_API_IDAM_SECRET
+- IDAM_EXPIRED_USER_TOKEN
+- S2S_EXPIRED_TOKEN
 
 To run the tests, use:
 ```bash
