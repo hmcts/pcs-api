@@ -402,24 +402,24 @@ public class TestingSupportController {
             try {
                 accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference));
                 log.info("Generated access codes for case {}", caseReference);
-                
+
                 // Load access codes from database and populate in response
                 List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository
                     .findAllByPcsCase_Id(caseEntity.getId());
-                
+
                 // Create map of partyId -> accessCode
                 Map<UUID, String> partyIdToCode = accessCodes.stream()
                     .collect(Collectors.toMap(
                         PartyAccessCodeEntity::getPartyId,
                         PartyAccessCodeEntity::getCode
                     ));
-                
+
                 // Update defendantInfos with access codes
                 defendantInfos.forEach(info -> {
                     String code = partyIdToCode.get(info.getPartyId());
                     info.setAccessCode(code);
                 });
-                
+
             } catch (Exception e) {
                 log.warn("Failed to generate access codes for case {}: {}", caseReference, e.getMessage());
                 // Don't fail the request - codes can be generated later if needed
