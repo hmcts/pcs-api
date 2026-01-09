@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
@@ -13,6 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD;
@@ -26,6 +30,7 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 public class SelectClaimantType implements CcdPageConfiguration {
 
     private final DraftCaseDataService draftCaseDataService;
+    private final SecurityContextService securityContextService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -48,7 +53,9 @@ public class SelectClaimantType implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         if (caseData.getResumeClaimKeepAnswers() == YesOrNo.NO) {
-            draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
+            UserInfo userInfo = securityContextService.getCurrentUserDetails();
+            UUID userId = UUID.fromString(userInfo.getUid());
+            draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim, userId);
             caseData.setHasUnsubmittedCaseData(YesOrNo.NO); // To hide the ResumeClaim page if navigating backwards
         }
 

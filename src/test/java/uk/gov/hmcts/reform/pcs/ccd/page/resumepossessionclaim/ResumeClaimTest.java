@@ -11,14 +11,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,8 +38,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ResumeClaimTest extends BasePageTest {
 
+    private static final UUID USER_ID = UUID.randomUUID();
+
     @Mock(strictness = LENIENT)
     private DraftCaseDataService draftCaseDataService;
+    @Mock(strictness = LENIENT)
+    private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
 
@@ -44,7 +51,12 @@ class ResumeClaimTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ResumeClaim(draftCaseDataService, modelMapper));
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
+        setPageUnderTest(new ResumeClaim(draftCaseDataService, securityContextService, modelMapper));
     }
 
     @ParameterizedTest
@@ -53,7 +65,7 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId))
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.ofNullable(unsubmittedCaseData));
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(keepAnswers);
@@ -86,7 +98,8 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId)).thenReturn(Optional.empty());
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.empty());
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(YesOrNo.YES);
 

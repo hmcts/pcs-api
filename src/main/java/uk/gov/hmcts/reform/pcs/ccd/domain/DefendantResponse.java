@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Builder
@@ -11,5 +12,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DefendantResponse {
+    @CCD
     private YesOrNo contactByPhone;
+
+    @CCD
+    private Party party;
 }

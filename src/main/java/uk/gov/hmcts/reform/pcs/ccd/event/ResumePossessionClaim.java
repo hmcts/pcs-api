@@ -296,8 +296,17 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private void setUnsubmittedCaseDataFlag(long caseReference, PCSCase caseData) {
+        UserInfo userInfo = securityContextService.getCurrentUserDetails();
+        UUID userId = UUID.fromString(userInfo.getUid());
+
+        log.info("Checking for unsubmitted draft data: caseReference={}, eventId={}, userId={}",
+            caseReference, resumePossessionClaim, userId);
+
         boolean hasUnsubmittedCaseData = draftCaseDataService
-            .hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
+            .hasUnsubmittedCaseData(caseReference, resumePossessionClaim, userId);
+
+        log.info("Draft data check result: caseReference={}, userId={}, hasUnsubmittedData={}",
+            caseReference, userId, hasUnsubmittedCaseData);
 
         caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
     }
@@ -328,12 +337,18 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
+        UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
+
+        log.info("Deleting draft data after claim submission: caseReference={}, eventId={}, userId={}",
+            caseReference, resumePossessionClaim, userId);
+
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim, userId);
+
+        log.info("Draft data deleted successfully for userId={}", userId);
+
         String responsibleParty = getClaimantInfo(pcsCase).getOrganisationName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
         String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
-
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
-
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
