@@ -12,7 +12,6 @@ import {
   applications,
   checkYourAnswers,
   completeYourClaim,
-  detailsOfRentArrears,
   home,
   housingAct,
   languageUsed,
@@ -30,7 +29,8 @@ import {
   uploadAdditionalDocs,
   user,
   wantToUploadDocuments,
-  whatAreYourGroundsForPossession
+  whatAreYourGroundsForPossession,
+  detailsOfRentArrears
 } from '@data/page-data';
 import{
   claimantType,
