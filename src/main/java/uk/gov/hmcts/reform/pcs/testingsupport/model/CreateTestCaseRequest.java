@@ -35,7 +35,6 @@ public class CreateTestCaseRequest {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class DefendantRequest {
-        private UUID partyId;
         private UUID idamUserId;
         private String firstName;
         private String lastName;
