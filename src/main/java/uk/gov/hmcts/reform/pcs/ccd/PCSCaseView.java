@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -25,16 +26,14 @@ import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
-
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils.wrapListItems;
 
 /**
  * Invoked by CCD to load PCS cases under the decentralised model.
@@ -61,15 +60,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         PCSCase pcsCase = getSubmittedCase(caseReference);
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
-        pcsCase.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
 
-        setMarkdownFields(pcsCase);
+        setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
 
         return pcsCase;
     }
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
-        if (State.AWAITING_FURTHER_CLAIM_DETAILS == state) {
+        if (State.AWAITING_SUBMISSION_TO_HMCTS == state) {
             return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
         } else {
             return false;
@@ -93,16 +91,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
                 ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
                 : null)
-            .currentRent(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
-            .rentFrequency(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency() : null)
-            .otherRentFrequency(pcsCaseEntity.getTenancyLicence() != null
-                ? pcsCaseEntity.getTenancyLicence().getOtherRentFrequency() : null)
-            .dailyRentChargeAmount(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
@@ -110,6 +98,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
+        setRentDetails(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -124,10 +113,23 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
-    private void setMarkdownFields(PCSCase pcsCase) {
+    private void setRentDetails(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        if (pcsCaseEntity.getTenancyLicence() != null) {
+            pcsCase.setRentDetails(RentDetails.builder()
+                .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount() != null
+                    ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
+                .frequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
+                .otherFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
+                .dailyCharge(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
+                    ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
+                .build());
+        }
+    }
+
+    private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
 
-        if (pcsCase.getHasUnsubmittedCaseData() == YesOrNo.YES) {
+        if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Resume claim</h2>
                                              You've already answered some questions about this claim.
@@ -192,7 +194,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
     }
 
-    private static String poundsToPence(BigDecimal pounds) {
+    private static String poundsToPence(java.math.BigDecimal pounds) {
+        if (pounds == null) {
+            return null;
+        }
         return pounds.movePointRight(2).toPlainString();
     }
 }

@@ -120,8 +120,8 @@ class UnderlesseeMortgageeValidatorTest {
 
     private static UnderlesseeMortgageeDetails buildUnderlesseeMortgageeDetails(AddressUK address) {
         return UnderlesseeMortgageeDetails.builder()
-            .underlesseeOrMortgageeAddressKnown(VerticalYesNo.YES)
-            .underlesseeOrMortgageeAddress(address)
+            .addressKnown(VerticalYesNo.YES)
+            .address(address)
             .build();
     }
 

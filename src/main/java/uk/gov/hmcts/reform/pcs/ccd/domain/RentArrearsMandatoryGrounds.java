@@ -15,8 +15,8 @@ public enum RentArrearsMandatoryGrounds implements HasLabel {
     @CCD(label = "Owner occupier (ground 1)")
     OWNER_OCCUPIER_GROUND1("Owner occupier (ground 1)"),
 
-    @CCD(label = "Repossession by the landlord's mortgage lender (ground 2)")
-    REPOSSESSION_GROUND2("Repossession by the landlord's mortgage lender (ground 2)"),
+    @CCD(label = "Repossession by the landlord’s mortgage lender (ground 2)")
+    REPOSSESSION_GROUND2("Repossession by the landlord’s mortgage lender (ground 2)"),
 
     @CCD(label = "Holiday let (ground 3)")
     HOLIDAY_LET_GROUND3("Holiday let (ground 3)"),

@@ -13,8 +13,9 @@ import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWal
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
 import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
-import {clickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
+import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
+import {ExpandSummaryAction} from '@utils/actions/element-actions';
 
 export class ActionRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -26,6 +27,7 @@ export class ActionRegistry {
     ['inputText', new InputTextAction()],
     ['check', new CheckAction()],
     ['select', new SelectAction()],
+    ['expandSummary', new ExpandSummaryAction()],
     ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
@@ -88,9 +90,11 @@ export class ActionRegistry {
     ['selectProhibitedConductStandardContract', new CreateCaseWalesAction()],
     ['selectOccupationContractOrLicenceDetails', new CreateCaseWalesAction()],
     ['provideMoreDetailsOfClaim', new CreateCaseAction()],
-    ['clickLinkAndVerifyNewTabTitle', new clickLinkAndVerifyNewTabTitleAction()],
+    ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
     ['selectStatementOfTruth', new CreateCaseAction()],
-    ['selectAsbQuestions', new CreateCaseWalesAction()]
+    ['selectAsb', new CreateCaseWalesAction()],
+    ['payClaimFee', new CreateCaseAction()],
+    ['claimSaved', new CreateCaseAction()]
   ]);
 
   static getAction(actionName: string): IAction {

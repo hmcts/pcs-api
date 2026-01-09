@@ -1,14 +1,57 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
-import {Page} from '@playwright/test';
+import {expect, Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {createCase, addressDetails, housingPossessionClaim, defendantDetails, claimantName, contactPreferences, mediationAndSettlement,
-        tenancyLicenceDetails, resumeClaimOptions, rentDetails, dailyRentAmount, reasonsForPossession, detailsOfRentArrears, claimantType, claimType,
-        groundsForPossession, preActionProtocol, noticeOfYourIntention, borderPostcode, rentArrearsPossessionGrounds, rentArrearsOrBreachOfTenancy,
-        noticeDetails, moneyJudgment, whatAreYourGroundsForPossession, languageUsed, defendantCircumstances, applications, claimantCircumstances,
-        claimingCosts, alternativesToPossession, reasonsForRequestingADemotionOrder, statementOfExpressTerms, reasonsForRequestingASuspensionOrder,
-        uploadAdditionalDocs, additionalReasonsForPossession, completeYourClaim, userIneligible, whatAreYourGroundsForPossessionWales,
-        underlesseeOrMortgageeDetails, reasonsForRequestingASuspensionAndDemotionOrder, provideMoreDetailsOfClaim, addressCheckYourAnswers, statementOfTruth} from '@data/page-data';
-
+import {
+  createCase,
+  addressDetails,
+  housingPossessionClaim,
+  mediationAndSettlement,
+  resumeClaimOptions,
+  rentDetails,
+  dailyRentAmount,
+  reasonsForPossession,
+  detailsOfRentArrears,
+  noticeOfYourIntention,
+  borderPostcode,
+  rentArrearsOrBreachOfTenancy,
+  noticeDetails,
+  moneyJudgment,
+  whatAreYourGroundsForPossession,
+  languageUsed,
+  defendantCircumstances,
+  applications,
+  claimantCircumstances,
+  claimingCosts,
+  alternativesToPossession,
+  reasonsForRequestingADemotionOrder,
+  statementOfExpressTerms,
+  reasonsForRequestingASuspensionOrder,
+  uploadAdditionalDocs,
+  additionalReasonsForPossession,
+  completeYourClaim,
+  userIneligible,
+  whatAreYourGroundsForPossessionWales,
+  underlesseeOrMortgageeDetails,
+  reasonsForRequestingASuspensionAndDemotionOrder,
+  provideMoreDetailsOfClaim,
+  addressCheckYourAnswers,
+  statementOfTruth,
+  claimSaved,
+  payClaimFee
+} from '@data/page-data';
+import{
+  claimantType,
+  claimType,
+  claimantInformation,
+  defendantDetails,
+  contactPreferences,
+  tenancyLicenceDetails,
+  groundsForPossession,
+  introductoryDemotedOrOtherGroundsForPossession,
+  groundsForPossessionRentArrears,
+  preactionProtocol
+} from '@data/page-data-figma';
+import {VERY_LONG_TIMEOUT} from 'playwright.config';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -63,7 +106,9 @@ export class CreateCaseAction implements IAction {
       ['selectUnderlesseeOrMortgageeDetails', () => this.selectUnderlesseeOrMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
-      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)]
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
+      ['claimSaved', () => this.claimSaved()],
+      ['payClaimFee', () => this.payClaimFee()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -83,6 +128,14 @@ export class CreateCaseAction implements IAction {
       'elementType': 'paragraph'
     });
     await performAction('clickButton', housingPossessionClaim.continue);
+  }
+
+  private async selectJurisdictionCaseTypeEvent() {
+    await performActions('Case option selection'
+      , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
+      , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
+      , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
+    await performAction('clickButton', createCase.start);
   }
 
   private async selectAddress(page: Page, caseData: actionData) {
@@ -116,31 +169,31 @@ export class CreateCaseAction implements IAction {
   private async selectResumeClaimOption(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', caseData);
+    await performAction('clickRadioButton', {question:resumeClaimOptions.resumeClaimQuestion, option: caseData});
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaimOptions.continue, claimantType.mainHeader);
   }
 
   private async selectClaimantType(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', caseData);
+    await performAction('clickRadioButton', {question:claimantType.whoIsTheClaimantQuestion, option: caseData});
     if(caseData === claimantType.england.registeredProviderForSocialHousing || caseData === claimantType.wales.communityLandlord){
-      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, claimType.mainHeader);
+      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continueButton, claimType.mainHeader);
     }
     else{
-      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, userIneligible.mainHeader);
+      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continueButton, userIneligible.mainHeader);
     }
   }
 
   private async selectClaimType(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', caseData);
-    if(caseData === claimType.no){
-      await performAction('clickButtonAndVerifyPageNavigation', claimType.continue, claimantName.mainHeader);
+    await performAction('clickRadioButton', {question:claimType.isThisAClaimAgainstQuestion, option: caseData});
+    if(caseData === claimType.noRadioOption){
+      await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, claimantInformation.mainHeader);
     }
     else{
-      await performAction('clickButtonAndVerifyPageNavigation', claimantType.continue, userIneligible.mainHeader);
+      await performAction('clickButtonAndVerifyPageNavigation', claimType.continueButton, userIneligible.mainHeader);
     }
   }
 
@@ -154,29 +207,33 @@ export class CreateCaseAction implements IAction {
   private async selectGroundsForPossession(possessionGrounds: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', possessionGrounds.groundsRadioInput);
-    if (possessionGrounds.groundsRadioInput == groundsForPossession.yes) {
+    let groundsForPossessionQuestion = groundsForPossession.areYouClaimingPossessionQuestion;
+    if (possessionGrounds.rentArrears == groundsForPossession.noRadioOption) {
+      groundsForPossessionQuestion = introductoryDemotedOrOtherGroundsForPossession.doYouHaveGroundsForPossessionQuestion;
+    }
+    await performAction('clickRadioButton', {question:groundsForPossessionQuestion, option: possessionGrounds.groundsRadioInput});
+    if (possessionGrounds.groundsRadioInput == groundsForPossession.yesRadioOption) {
       if (possessionGrounds.grounds) {
-        await performAction('check', possessionGrounds.grounds);
-        if ((possessionGrounds.grounds as Array<string>).includes(groundsForPossession.other)) {
-          await performAction('inputText', groundsForPossession.enterGroundsForPossessionLabel, groundsForPossession.enterYourGroundsForPossessionInput);
+        await performAction('check', {question: groundsForPossessionRentArrears.whatAreYourGroundsForPossessionQuestion, option: possessionGrounds.grounds});
+        if ((possessionGrounds.grounds as Array<string>).includes(introductoryDemotedOrOtherGroundsForPossession.otherHiddenCheckbox)) {
+          await performAction('inputText', introductoryDemotedOrOtherGroundsForPossession.enterYourGroundsHiddenTextLabel, introductoryDemotedOrOtherGroundsForPossession.enterYourGroundsInput);
         }
       }
     }
-    await performAction('clickButton', groundsForPossession.continue);
+    await performAction('clickButton', groundsForPossession.continueButton);
   }
 
   private async selectPreActionProtocol(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', caseData);
-    await performAction('clickButton', preActionProtocol.continue);
+    await performAction('clickRadioButton', {question:preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData});
+    await performAction('clickButton', preactionProtocol.continueButton);
   }
 
   private async selectNoticeOfYourIntention(caseData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', caseData);
+    await performAction('clickRadioButton', {question:caseData.question, option: caseData.option});
     if ( caseData.option === noticeOfYourIntention.yes && caseData.typeOfNotice) {
       await performAction('inputText', noticeOfYourIntention.typeOfNotice, noticeOfYourIntention.typeOfNoticeInput);
     }
@@ -184,18 +241,18 @@ export class CreateCaseAction implements IAction {
   }
 
   private async selectBorderPostcode(option: actionData) {
-    await performAction('clickRadioButton', option);
+    await performAction('clickRadioButton', {question:borderPostcode.isProtpertyLocatedInEnglandOrWalesQuestion, option: option});
     await performAction('clickButton', borderPostcode.continueButton);
   }
 
   private async selectClaimantName(page: Page, caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', caseData);
-    if(caseData == claimantName.no){
-      await performAction('inputText', claimantName.whatIsCorrectClaimantName, claimantName.correctClaimantNameInput);
+    await performAction('clickRadioButton', {question:claimantInformation.IsCorrectClaimantNameQuestion, option: caseData});
+    if(caseData == claimantInformation.noRadioOption){
+      await performAction('inputText', claimantInformation.whatIsCorrectClaimantNameHiddenQuestion, claimantInformation.ClaimantNameTextInput);
     }
-    claimantsName = caseData == "No" ? claimantName.correctClaimantNameInput : await this.extractClaimantName(page, claimantName.yourClaimantNameRegisteredWithHMCTS);
+    claimantsName = caseData == "No" ? claimantInformation.ClaimantNameTextInput : await this.extractClaimantName(page, claimantInformation.yourClaimantNameRegisteredParagraph);
   }
 
   private async selectContactPreferences(preferences: actionRecord) {
@@ -207,17 +264,17 @@ export class CreateCaseAction implements IAction {
       phoneNumber?: string;
     };
     await performAction('clickRadioButton', {
-      question: contactPreferences.emailAddressForNotifications,
+      question: contactPreferences.doYouWantToUseQuestion,
       option: preferences.notifications
     });
-    if (preferences.notifications === contactPreferences.no) {
-      await performAction('inputText', contactPreferences.enterEmailAddressLabel, contactPreferences.emailIdInput);
+    if (preferences.notifications === contactPreferences.noRadioOption) {
+      await performAction('inputText', contactPreferences.enterEmailAddressHiddenTextLabel, contactPreferences.enterEmailAddressTextInput);
     }
     await performAction('clickRadioButton', {
-      question: contactPreferences.doYouWantDocumentsToBeSentToAddress,
+      question: contactPreferences.doYouWantDocumentsToQuestion,
       option: preferences.correspondenceAddress
     });
-    if (preferences.correspondenceAddress === contactPreferences.no) {
+    if (preferences.correspondenceAddress === contactPreferences.noRadioOption) {
       await performActions(
         'Find Address based on postcode',
         ['inputText', addressDetails.enterUKPostcodeTextLabel, addressDetails.englandCourtAssignedPostcodeTextInput],
@@ -227,34 +284,34 @@ export class CreateCaseAction implements IAction {
     }
     if(prefData.phoneNumber) {
       await performAction('clickRadioButton', {
-        question: contactPreferences.provideContactPhoneNumber,
+        question: contactPreferences.doYouWantToProvideQuestion,
         option: prefData.phoneNumber
       });
-      if (prefData.phoneNumber === contactPreferences.yes) {
-        await performAction('inputText', contactPreferences.enterPhoneNumberLabel, contactPreferences.phoneNumberInput);
+      if (prefData.phoneNumber === contactPreferences.yesRadioOption) {
+        await performAction('inputText', contactPreferences.enterPhoneNumberHiddenTextLabel, contactPreferences.enterPhoneNumberTextInput);
       }
     }
-    await performAction('clickButton', contactPreferences.continue);
+    await performAction('clickButton', contactPreferences.continueButton);
   }
 
   private async addDefendantDetails(defendantData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
-      question: defendantDetails.doYouKnowTheDefendantNameQuestion,
+      question: defendantDetails.doYouKnowTheDefendantsNameQuestion,
       option: defendantData.nameOption,
     });
     if (defendantData.nameOption === defendantDetails.yesRadioOption) {
-      await performAction('inputText', defendantDetails.defendantFirstNameTextLabel, defendantData.firstName);
-      await performAction('inputText', defendantDetails.defendantLastNameTextLabel, defendantData.lastName);
+      await performAction('inputText', defendantDetails.defendantsFirstNameHiddenTextLabel, defendantData.firstName);
+      await performAction('inputText', defendantDetails.defendantsLastNameHiddenTextLabel, defendantData.lastName);
     }
     await performAction('clickRadioButton', {
-      question: defendantDetails.defendantCorrespondenceAddressQuestion,
+      question: defendantDetails.doYouKnowTheDefendantsQuestion,
       option: defendantData.correspondenceAddressOption,
     });
     if (defendantData.correspondenceAddressOption === defendantDetails.yesRadioOption) {
       await performAction('clickRadioButton', {
-        question: defendantDetails.isCorrespondenceAddressSameQuestion,
+        question: defendantDetails.isTheDefendantsCorrespondenceAddressHiddenQuestion,
         option: defendantData.correspondenceAddressSameOption,
       });
       if (defendantData.correspondenceAddressSameOption === defendantDetails.noRadioOption) {
@@ -268,14 +325,14 @@ export class CreateCaseAction implements IAction {
     }
     const numAdditionalDefendants = Number(defendantData.numberOfDefendants) || 0;
     await performAction('clickRadioButton', {
-      question: defendantDetails.additionalDefendantsQuestion,
+      question: defendantDetails.doYouNeedToAddQuestion,
       option: defendantData.addAdditionalDefendantsOption,
     });
     if (defendantData.addAdditionalDefendantsOption === defendantDetails.yesRadioOption && numAdditionalDefendants > 0) {
       for (let i = 0; i < numAdditionalDefendants; i++) {
-        await performAction('clickButton', defendantDetails.addNewButton);
+        await performAction('clickButton', defendantDetails.addNewHiddenButton);
         const index = i + 1;
-        const nameQuestion = defendantDetails.doYouKnowTheDefendantNameQuestion;
+        const nameQuestion = defendantDetails.doYouKnowTheDefendantsNameQuestion;
         const nameOption = defendantData[`name${index}Option`] || defendantDetails.noRadioOption;
         await performAction('clickRadioButton', {
           question: nameQuestion,
@@ -288,11 +345,11 @@ export class CreateCaseAction implements IAction {
           index,
         });
         if (nameOption === defendantDetails.yesRadioOption) {
-          await performAction('inputText', {text: defendantDetails.defendantFirstNameTextLabel, index: index}, `${defendantData.firstName}${index}`);
-          await performAction('inputText', {text: defendantDetails.defendantLastNameTextLabel, index:index}, `${defendantData.lastName}${index}`
+          await performAction('inputText', {text: defendantDetails.defendantsFirstNameHiddenTextLabel, index: index}, `${defendantData.firstName}${index}`);
+          await performAction('inputText', {text: defendantDetails.defendantsLastNameHiddenTextLabel, index:index}, `${defendantData.lastName}${index}`
           );
         }
-        const addressQuestion = defendantDetails.defendantCorrespondenceAddressQuestion;
+        const addressQuestion = defendantDetails.doYouKnowTheDefendantsQuestion;
         const correspondenceAddressOption =
           defendantData[`correspondenceAddress${index}Option`] || defendantDetails.noRadioOption;
         await performAction('clickRadioButton', {
@@ -304,7 +361,7 @@ export class CreateCaseAction implements IAction {
           defendantData[`correspondenceAddressSame${index}Option`] || defendantDetails.noRadioOption;
         if (correspondenceAddressOption === defendantDetails.yesRadioOption) {
           await performAction('clickRadioButton', {
-            question: defendantDetails.isCorrespondenceAddressSameQuestion,
+            question: defendantDetails.isTheDefendantsCorrespondenceAddressHiddenQuestion,
             option: correspondenceAddressSameOption,
             index,
           });
@@ -317,29 +374,29 @@ export class CreateCaseAction implements IAction {
   private async selectRentArrearsPossessionGround(rentArrearsPossession: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('check', rentArrearsPossession.rentArrears);
-    await performAction('clickRadioButton', rentArrearsPossession.otherGrounds);
-    await performAction('clickButton', rentArrearsPossessionGrounds.continue);
+    await performAction('check', {question: groundsForPossessionRentArrears.whatAreYourGroundsForPossessionQuestion, option: rentArrearsPossession.rentArrears});
+    await performAction('clickRadioButton', {question: groundsForPossessionRentArrears.doYouHaveAnyOtherAdditionalDynamicQuestion, option: rentArrearsPossession.otherGrounds});
+    await performAction('clickButton', groundsForPossessionRentArrears.continueButton);
   }
 
   private async selectTenancyOrLicenceDetails(tenancyData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', tenancyData.tenancyOrLicenceType);
-    if (tenancyData.tenancyOrLicenceType === tenancyLicenceDetails.other) {
-      await performAction('inputText', tenancyLicenceDetails.giveDetailsOfTypeOfTenancyOrLicenceAgreement, tenancyLicenceDetails.detailsOfLicence);
+     await performAction('clickRadioButton', {question: tenancyLicenceDetails.whatTypeOfTenancyOrQuestion, option: tenancyData.tenancyOrLicenceType});
+    if (tenancyData.tenancyOrLicenceType === tenancyLicenceDetails.otherRadioOption) {
+      await performAction('inputText', tenancyLicenceDetails.giveDetailsOfTheTypeHiddenTextLabel, tenancyLicenceDetails.detailsOfLicenceTextInput);
     }
     if (tenancyData.day && tenancyData.month && tenancyData.year) {
       await performActions(
         'Enter Date',
-        ['inputText', tenancyLicenceDetails.dayLabel, tenancyData.day],
-        ['inputText', tenancyLicenceDetails.monthLabel, tenancyData.month],
-        ['inputText', tenancyLicenceDetails.yearLabel, tenancyData.year]);
+        ['inputText', tenancyLicenceDetails.dayTextLabel, tenancyData.day],
+        ['inputText', tenancyLicenceDetails.monthTextLabel, tenancyData.month],
+        ['inputText', tenancyLicenceDetails.yearTextLabel, tenancyData.year]);
     }
     if (tenancyData.files) {
-        await performAction('uploadFile', tenancyData.files);
+      await performAction('uploadFile', tenancyData.files);
     }
-    await performAction('clickButton', tenancyLicenceDetails.continue);
+    await performAction('clickButton', tenancyLicenceDetails.continueButton);
   }
 
   private async selectYourPossessionGrounds(possessionGrounds: actionRecord) {
@@ -352,23 +409,23 @@ export class CreateCaseAction implements IAction {
     for (const key of Object.keys(possessionGrounds)) {
       switch (key) {
         case 'discretionary':
-          await performAction('check', possessionGrounds.discretionary);
+          await performAction('check', {question: whatAreYourGroundsForPossession.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionary});
           if (
             (possessionGrounds.discretionary as Array<string>).includes(
               whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds
             )
           ) {
-            await performAction('check', possessionGrounds.discretionaryEstateGrounds);
+              await performAction('check', {question: whatAreYourGroundsForPossessionWales.discretionary.discretionaryGroundsCategoryQuestion, option: possessionGrounds.discretionaryEstateGrounds});
           }
           break;
         case 'mandatory':
-          await performAction('check', possessionGrounds.mandatory);
+          await performAction('check', {question: whatAreYourGroundsForPossession.mandatory.mandatoryGroundsCategoryQuestion, option: possessionGrounds.mandatory});
           break;
         case 'mandatoryAccommodation':
-          await performAction('check', possessionGrounds.mandatoryAccommodation);
+          await performAction('check', {question: whatAreYourGroundsForPossession.mandatoryWithAccommodation.mandatoryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.mandatoryAccommodation});
           break;
         case 'discretionaryAccommodation':
-          await performAction('check', possessionGrounds.discretionaryAccommodation);
+          await performAction('check', {question: whatAreYourGroundsForPossession.discretionaryWithAccommodation.discretionaryWithAccommodationGroundsCategoryQuestion, option: possessionGrounds.discretionaryAccommodation});
           break;
       }
     }
@@ -392,7 +449,7 @@ export class CreateCaseAction implements IAction {
       throw new Error(`EnterReasonForPossession expected an array, but received ${typeof reasons}`);
     }
     for (let n = 0; n < reasons.length; n++) {
-      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason);
+      await performAction('inputText',  {text:reasons[n],index: n}, reasonsForPossession.detailsAboutYourReason+"-"+reasons[n]);
     }
     await performAction('clickButton', reasonsForPossession.continue);
   }
@@ -420,7 +477,7 @@ export class CreateCaseAction implements IAction {
   private async selectNoticeDetails(noticeData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', noticeData.howDidYouServeNotice);
+    await performAction('clickRadioButton', {question: noticeDetails.howDidYouServeNoticeQuestion, option: noticeData.howDidYouServeNotice});
     if (noticeData.explanationLabel && noticeData.explanation) {
       await performAction('inputText', noticeData.explanationLabel, noticeData.explanation);
     }
@@ -446,7 +503,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('inputText', rentDetails.HowMuchRentLabel, rentFrequency.rentAmount);
-    await performAction('clickRadioButton', rentFrequency.rentFrequencyOption);
+    await performAction('clickRadioButton', {question: rentDetails.rentFrequencyQuestion, option: rentFrequency.rentFrequencyOption});
     if(rentFrequency.rentFrequencyOption == rentDetails.other){
       await performAction('inputText', rentDetails.rentFrequencyLabel, rentFrequency.inputFrequency);
       await performAction('inputText', rentDetails.amountPerDayInputLabel, rentFrequency.unpaidRentAmountPerDay);
@@ -461,7 +518,7 @@ export class CreateCaseAction implements IAction {
       text: dailyRentAmount.basedOnPreviousAnswers + `${dailyRentAmountData.calculateRentAmount}`,
       elementType: 'paragraph'
     });
-    await performAction('clickRadioButton', dailyRentAmountData.unpaidRentInteractiveOption);
+    await performAction('clickRadioButton', {question: dailyRentAmount.amountPerDayQuestion, option: dailyRentAmountData.unpaidRentInteractiveOption});
     if(dailyRentAmountData.unpaidRentInteractiveOption == dailyRentAmount.no){
       await performAction('inputText', dailyRentAmount.enterAmountPerDayLabel, dailyRentAmountData.unpaidRentAmountPerDay);
     }
@@ -471,21 +528,36 @@ export class CreateCaseAction implements IAction {
   private async selectClaimantCircumstances(claimantCircumstance: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    //As discussed with pod1 team, part of HDPI-2011, Below steps will be enabled back when dynamic organisation name handled in new ticket on claimant circumstances page.
-    //const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}'` : `${claimantsName}'s`;
-    const claimOption = claimantCircumstance.circumstanceOption;
-    /*await performAction('clickRadioButton', {
-     // question: claimantCircumstances.claimantCircumstanceInfo.replace("Claimants", nameClaimant),
-      question: claimantCircumstances.claimantCircumstanceInfo,
-      option: claimOption
+    const nameClaimant = claimantsName.substring(claimantsName.length - 1) == 's' ? `${claimantsName}’` : `${claimantsName}’s`;
+    await performAction('clickRadioButton', {
+      question: claimantCircumstances.isThereAnyInformationYouWouldLikeToProvideQuestion.replace("Claimants", nameClaimant),
+      option: claimantCircumstance.circumstanceOption
     }
-    );*/
-    await performAction('clickRadioButton', claimantCircumstance.circumstanceOption);
-    if (claimOption == claimantCircumstances.yes) {
-      //await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimData.claimantInput);
-      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel, claimantCircumstance.claimantInput);
+    );
+    if (claimantCircumstance.circumstanceOption == claimantCircumstances.yes) {
+      await performAction('inputText', claimantCircumstances.claimantCircumstanceInfoTextAreaLabel.replace("Claimants", nameClaimant), claimantCircumstance.claimantInput);
     }
     await performAction('clickButton', claimantCircumstances.continue);
+  }
+
+  private async selectDefendantCircumstances(
+    defendantDetails: actionRecord
+  ) {
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    let defendantCircumstancesQuestion = defendantCircumstances.singleDefendantCircumstancesQuestion;
+    if (defendantDetails.additionalDefendants == true) {
+      defendantCircumstancesQuestion = defendantCircumstances.multipleDefendantsCircumstancesQuestion;
+    }
+    await performAction('clickRadioButton', {question: defendantCircumstancesQuestion, option: defendantDetails.defendantCircumstance});
+    if (defendantDetails.defendantCircumstance == defendantCircumstances.yesRadioOption) {
+      if (defendantDetails.additionalDefendants == true) {
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
+      } else {
+        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
+      }
+    }
+    await performAction('clickButton', defendantCircumstances.continueButton);
   }
 
   private async provideDetailsOfRentArrears(rentArrears: actionRecord) {
@@ -498,7 +570,7 @@ export class CreateCaseAction implements IAction {
       option: rentArrears.rentPaidByOthersOption
     });
     if (rentArrears.rentPaidByOthersOption == detailsOfRentArrears.yes) {
-      await performAction('check', rentArrears.paymentOptions);
+      await performAction('check', {question: detailsOfRentArrears.whereHaveThePaymentsComeQuestion, option: rentArrears.paymentOptions});
       if ((rentArrears.paymentOptions as Array<string>).includes(detailsOfRentArrears.other)) {
         await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
       }
@@ -509,14 +581,14 @@ export class CreateCaseAction implements IAction {
   private async selectMoneyJudgment(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', option);
+    await performAction('clickRadioButton', {question: moneyJudgment.courtMakeJudgementQuestion, option: option});
     await performAction('clickButton', moneyJudgment.continue);
   }
 
   private async selectClaimingCosts(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', option);
+    await performAction('clickRadioButton', {question: claimingCosts.doYouWantToAskForYourCostsBackQuestion, option: option});
     await performAction('clickButton', claimingCosts.continue);
   }
 
@@ -578,7 +650,7 @@ export class CreateCaseAction implements IAction {
   private async selectApplications(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', option);
+    await performAction('clickRadioButton', {question: applications.areYouPlanningToMakeAnApplicationQuestion, option: option});
     await performAction('clickButton', applications.continue);
   }
 
@@ -612,16 +684,8 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performAction('clickRadioButton', option);
+    await performAction('clickRadioButton', {question: completeYourClaim.whatWouldYouLikeToDoNextQuestion, option: option});
     await performAction('clickButton', completeYourClaim.continue);
-  }
-
-  private async selectJurisdictionCaseTypeEvent() {
-    await performActions('Case option selection'
-      , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
-      , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
-      , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
-    await performAction('clickButton', createCase.start);
   }
 
   private async selectLanguageUsed(languageDetails: actionRecord) {
@@ -631,20 +695,21 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', languageUsed.continue);
   }
 
-  private async selectDefendantCircumstances(
-    defendantDetails: actionRecord
-  ) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+  private async claimSaved() {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', defendantDetails.defendantCircumstance);
-    if (defendantDetails.defendantCircumstance == defendantCircumstances.yesRadioOption) {
-      if (defendantDetails.additionalDefendants == true) {
-        await performAction('inputText', defendantCircumstances.defendantCircumstancesPluralTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
-      } else {
-        await performAction('inputText', defendantCircumstances.defendantCircumstancesSingularTextLabel, defendantCircumstances.defendantCircumstancesTextInput);
-      }
+    await performValidation('text', {elementType: 'span', text: claimSaved.claimSavedBanner});
+    await performAction('clickButton', claimSaved.closeAndReturnButton);
+  }
+
+  private async payClaimFee(params?: { clickLink?: boolean }) {
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
+    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeBanner});
+    if (params?.clickLink === true) {
+      await performAction('clickButton', payClaimFee.payClaimFeeLink);
     }
-    await performAction('clickButton', defendantCircumstances.continueButton);
+    await performAction('clickButton', payClaimFee.closeAndReturnButton);
   }
 
   private async enterTestAddressManually(page: Page, address: actionRecord) {
@@ -668,17 +733,20 @@ export class CreateCaseAction implements IAction {
   }
 
   private async provideMoreDetailsOfClaim(page: Page) {
-    // Reloading to reset session/UI state before performing next step
-    await page.reload();
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await expect(async () => {
+        await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Next%20steps`);
+      }).toPass({
+        timeout: VERY_LONG_TIMEOUT,
+      });
     await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
   }
 
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', reasons);
+    await performAction('clickRadioButton', {question: additionalReasonsForPossession.isThereAnyOtherInformationQuestion, option: reasons});
     if(reasons == additionalReasonsForPossession.yes){
       await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
     }
@@ -710,12 +778,12 @@ export class CreateCaseAction implements IAction {
       option: underlesseeOrMortgageeDetail.addressOption
     });
     if (underlesseeOrMortgageeDetail.addressOption === underlesseeOrMortgageeDetails.yesRadioOption) {
-        await performActions(
-          'Find Address based on postcode',
-          ['inputText', addressDetails.enterUKPostcodeTextLabel, underlesseeOrMortgageeDetail.address],
-          ['clickButton', addressDetails.findAddressButton],
-          ['select', addressDetails.addressSelectLabel, addressDetails.addressIndex]
-        );
+      await performActions(
+        'Find Address based on postcode',
+        ['inputText', addressDetails.enterUKPostcodeTextLabel, underlesseeOrMortgageeDetail.address],
+        ['clickButton', addressDetails.findAddressButton],
+        ['select', addressDetails.addressSelectLabel, addressDetails.addressIndex]
+      );
     }
     await performAction('clickRadioButton', {
       question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgageeQuestion,
@@ -752,7 +820,7 @@ export class CreateCaseAction implements IAction {
       }
     }
     await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
-    }
+  }
 
   private async selectStatementOfTruth(claimantDetails: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});

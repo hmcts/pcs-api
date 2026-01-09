@@ -10,7 +10,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
+import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -19,10 +21,21 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -40,6 +53,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGroun
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.RENT_ARREARS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimGroundServiceTest {
@@ -54,11 +68,20 @@ class ClaimGroundServiceTest {
         // Given
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
 
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(grounds)
+                .build();
+
         PCSCase caseData =
             PCSCase.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
-                .introductoryDemotedOrOtherGrounds(grounds)
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
+                .tenancyLicenceDetails(
+                    TenancyLicenceDetails.builder()
+                        .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                        .build()
+                )
                 .introductoryDemotedOtherGroundReason(getReasonForGround(grounds))
                 .build();
 
@@ -76,11 +99,20 @@ class ClaimGroundServiceTest {
         // Given
         Set<IntroductoryDemotedOrOtherGrounds> grounds = Set.of(RENT_ARREARS);
 
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(grounds)
+                .build();
+
         PCSCase caseData =
             PCSCase.builder()
-                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-                .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
-                .introductoryDemotedOrOtherGrounds(grounds)
+                .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
+                .tenancyLicenceDetails(
+                    TenancyLicenceDetails.builder()
+                        .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                        .build()
+                )
                 .introductoryDemotedOtherGroundReason(getReasonForGround(grounds))
                 .build();
 
@@ -94,15 +126,25 @@ class ClaimGroundServiceTest {
     @Test
     void shouldSaveNoGroundsIfReasonIsPresent_WhenIntroDemotionOrOtherTenancy() {
         // Given
+
+        IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =
+            IntroductoryDemotedOtherGroundsForPossession.builder()
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
+                .introductoryDemotedOrOtherGrounds(null)
+                .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
+                .build();
+
         PCSCase caseData = PCSCase.builder()
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.YES)
-            .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
-            .introductoryDemotedOrOtherGrounds(null)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.INTRODUCTORY_TENANCY)
+                    .build()
+            )
+            .introductoryDemotedOrOtherGroundsForPossession(introductoryDemotedOtherGroundsForPossession)
             .introductoryDemotedOtherGroundReason(
                 IntroductoryDemotedOtherGroundReason.builder()
                     .noGrounds("No ground reason")
                     .build())
-            .hasIntroductoryDemotedOtherGroundsForPossession(VerticalYesNo.NO)
             .build();
 
         // When
@@ -141,10 +183,18 @@ class ClaimGroundServiceTest {
         Set<NoRentArrearsDiscretionaryGrounds> discretionary = EnumSet.allOf(NoRentArrearsDiscretionaryGrounds.class);
 
         PCSCase caseData = PCSCase.builder()
-            .noRentArrearsDiscretionaryGroundsOptions(discretionary)
-            .noRentArrearsMandatoryGroundsOptions(mandatory)
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(mandatory)
+                    .discretionaryGrounds(discretionary)
+                    .build()
+            )
             .noRentArrearsReasonForGrounds(grounds)
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .build();
 
         List<ClaimGroundEntity> entities = claimGroundService.getGroundsWithReason(
@@ -187,7 +237,17 @@ class ClaimGroundServiceTest {
     void shouldIgnoreNullGrounds_WhenAssuredTenancyNoRentArrears() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(ASSURED_TENANCY)
+                    .build()
+            )
+            .noRentArrearsGroundsOptions(
+                NoRentArrearsGroundsOptions.builder()
+                    .mandatoryGrounds(null)
+                    .discretionaryGrounds(null)
+                    .build()
+            )
             .build();
 
         // When
@@ -218,10 +278,18 @@ class ClaimGroundServiceTest {
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .claimDueToRentArrears(YesOrNo.YES)
-            .rentArrearsMandatoryGrounds(mandatoryGrounds)
-            .rentArrearsDiscretionaryGrounds(discretionaryGrounds)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                .mandatoryGrounds(mandatoryGrounds)
+                .discretionaryGrounds(discretionaryGrounds)
+                    .build()
+            )
             .rentArrearsGroundsReasons(reasons)
             .build();
 
@@ -251,9 +319,17 @@ class ClaimGroundServiceTest {
         );
 
         PCSCase caseData = PCSCase.builder()
-            .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
+                    .build()
+            )
             .claimDueToRentArrears(YesOrNo.YES)
-            .rentArrearsGrounds(rentArrearsGrounds)
+            .rentArrearsGroundsForPossession(
+                RentArrearsGroundsForPossession.builder()
+                .rentArrearsGrounds(rentArrearsGrounds)
+                    .build()
+            )
             .build();
 
         // When
@@ -307,5 +383,155 @@ class ClaimGroundServiceTest {
             arguments(Set.of(IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY)),
             arguments(Set.of(IntroductoryDemotedOrOtherGrounds.OTHER))
         );
+    }
+
+    @Test
+    void shouldReturnClaimGroundEntities_WhenWalesGrounds() {
+        // Given
+        Set<MandatoryGroundWales> mandatoryGrounds = Set.of(
+            MandatoryGroundWales.FAIL_TO_GIVE_UP_S170,
+            MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178,
+            MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181,
+            MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186,
+            MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187,
+            MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191,
+            MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199,
+            MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2
+        );
+        Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
+            DiscretionaryGroundWales.OTHER_BREACH_SECTION_157
+        );
+        Set<EstateManagementGroundsWales> estateGrounds = Set.of(
+            EstateManagementGroundsWales.BUILDING_WORKS,
+            EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES,
+            EstateManagementGroundsWales.CHARITIES,
+            EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING,
+            EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS,
+            EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS,
+            EstateManagementGroundsWales.RESERVE_SUCCESSORS,
+            EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS,
+            EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
+        );
+        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = Set.of(
+            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170,
+            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186,
+            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191,
+            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_199
+        );
+        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds = Set.of(
+            SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
+        );
+
+        GroundsReasonsWales reasons = GroundsReasonsWales.builder()
+            .failToGiveUpS170Reason("Failure to give up S170")
+            .landlordNoticePeriodicS178Reason("Landlord notice periodic S178")
+            .seriousArrearsPeriodicS181Reason("Serious arrears periodic S181")
+            .landlordNoticeFtEndS186Reason("Landlord notice FT end S186")
+            .seriousArrearsFixedTermS187Reason("Serious arrears fixed term S187")
+            .failToGiveUpBreakNoticeS191Reason("Fail to give up break notice S191")
+            .landlordBreakClauseS199Reason("Landlord break clause S199")
+            .convertedFixedTermSch1225B2Reason("Converted fixed term Sch12 25B2")
+            .otherBreachSection157Reason("Other breach section 157")
+            .buildingWorksReason("Building works")
+            .redevelopmentSchemesReason("Redevelopment schemes")
+            .charitiesReason("Charities")
+            .disabledSuitableDwellingReason("Disabled suitable dwelling")
+            .housingAssociationsAndTrustsReason("Housing associations and trusts")
+            .specialNeedsDwellingsReason("Special needs dwellings")
+            .reserveSuccessorsReason("Reserve successors")
+            .jointContractHoldersReason("Joint contract holders")
+            .otherEstateManagementReasonsReason("Other estate management reasons")
+            .secureFailureToGiveUpPossessionSection170Reason("Secure failure S170")
+            .secureLandlordNoticeSection186Reason("Secure landlord notice S186")
+            .secureFailureToGiveUpPossessionSection191Reason("Secure failure S191")
+            .secureLandlordNoticeSection199Reason("Secure landlord notice S199")
+            .secureOtherBreachOfContractReason("Secure other breach")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .mandatoryGroundsWales(mandatoryGrounds)
+                .discretionaryGroundsWales(discretionaryGrounds)
+                .estateManagementGroundsWales(estateGrounds)
+                .build())
+            .secureContractGroundsForPossessionWales(
+                SecureContractGroundsForPossessionWales.builder()
+                    .mandatoryGroundsWales(secureMandatoryGrounds)
+                    .discretionaryGroundsWales(secureDiscretionaryGrounds)
+                    .build()
+            )
+
+            .groundsReasonsWales(reasons)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = claimGroundService.getGroundsWithReason(caseData);
+
+        // Then
+        int expectedSize = mandatoryGrounds.size() + discretionaryGrounds.size() + estateGrounds.size()
+            + secureMandatoryGrounds.size() + secureDiscretionaryGrounds.size();
+        assertThat(result).hasSize(expectedSize);
+
+        Map<String, String> groundAndReason = result.stream()
+            .collect(Collectors.toMap(ClaimGroundEntity::getGroundId, ClaimGroundEntity::getGroundReason));
+
+        assertThat(groundAndReason)
+            .containsEntry("FAIL_TO_GIVE_UP_S170", "Failure to give up S170")
+            .containsEntry("LANDLORD_NOTICE_PERIODIC_S178", "Landlord notice periodic S178")
+            .containsEntry("SERIOUS_ARREARS_PERIODIC_S181", "Serious arrears periodic S181")
+            .containsEntry("LANDLORD_NOTICE_FT_END_S186", "Landlord notice FT end S186")
+            .containsEntry("SERIOUS_ARREARS_FIXED_TERM_S187", "Serious arrears fixed term S187")
+            .containsEntry("FAIL_TO_GIVE_UP_BREAK_NOTICE_S191", "Fail to give up break notice S191")
+            .containsEntry("LANDLORD_BREAK_CLAUSE_S199", "Landlord break clause S199")
+            .containsEntry("CONVERTED_FIXED_TERM_SCH12_25B2", "Converted fixed term Sch12 25B2")
+            .containsEntry("OTHER_BREACH_SECTION_157", "Other breach section 157")
+            .containsEntry("BUILDING_WORKS", "Building works")
+            .containsEntry("REDEVELOPMENT_SCHEMES", "Redevelopment schemes")
+            .containsEntry("CHARITIES", "Charities")
+            .containsEntry("DISABLED_SUITABLE_DWELLING", "Disabled suitable dwelling")
+            .containsEntry("HOUSING_ASSOCIATIONS_AND_TRUSTS", "Housing associations and trusts")
+            .containsEntry("SPECIAL_NEEDS_DWELLINGS", "Special needs dwellings")
+            .containsEntry("RESERVE_SUCCESSORS", "Reserve successors")
+            .containsEntry("JOINT_CONTRACT_HOLDERS", "Joint contract holders")
+            .containsEntry("OTHER_ESTATE_MANAGEMENT_REASONS", "Other estate management reasons")
+            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170", "Secure failure S170")
+            .containsEntry("LANDLORD_NOTICE_SECTION_186", "Secure landlord notice S186")
+            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191", "Secure failure S191")
+            .containsEntry("LANDLORD_NOTICE_SECTION_199", "Secure landlord notice S199")
+            .containsEntry("OTHER_BREACH_OF_CONTRACT", "Secure other breach");
+    }
+
+    @Test
+    void shouldHandleWalesBeforeTenancyTypeCheck() {
+        // Given
+        Set<MandatoryGroundWales> mandatoryGrounds = Set.of(
+            MandatoryGroundWales.FAIL_TO_GIVE_UP_S170
+        );
+
+        GroundsReasonsWales reasons = GroundsReasonsWales.builder()
+            .failToGiveUpS170Reason("Test reason")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .legislativeCountry(LegislativeCountry.WALES)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(null)
+                    .build()
+            )
+            .groundsForPossessionWales(GroundsForPossessionWales.builder()
+                .mandatoryGroundsWales(mandatoryGrounds)
+                .build())
+            .groundsReasonsWales(reasons)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = claimGroundService.getGroundsWithReason(caseData);
+
+        // Then
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getGroundId()).isEqualTo("FAIL_TO_GIVE_UP_S170");
+        assertThat(result.getFirst().getGroundReason()).isEqualTo("Test reason");
     }
 }

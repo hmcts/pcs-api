@@ -43,22 +43,22 @@ public class UnderlesseeMortgageeService {
     private UnderlesseeMortgagee buildUnderlesseeMortgagee(UnderlesseeMortgageeDetails underlesseeOrMortgagee1) {
         UnderlesseeMortgagee underlesseeOrMortgagee = new UnderlesseeMortgagee();
 
-        boolean nameKnown = underlesseeOrMortgagee1.getUnderlesseeOrMortgageeNameKnown() != null
-            && underlesseeOrMortgagee1.getUnderlesseeOrMortgageeNameKnown().toBoolean();
+        boolean nameKnown = underlesseeOrMortgagee1.getNameKnown() != null
+            && underlesseeOrMortgagee1.getNameKnown().toBoolean();
 
         underlesseeOrMortgagee.setUnderlesseeOrMortgageeNameKnown(nameKnown);
         if (nameKnown) {
             underlesseeOrMortgagee.setUnderlesseeOrMortgageeName(underlesseeOrMortgagee1
-                                                                   .getUnderlesseeOrMortgageeName());
+                                                                   .getName());
         }
 
-        boolean addressKnown = underlesseeOrMortgagee1.getUnderlesseeOrMortgageeAddressKnown() != null
-            && underlesseeOrMortgagee1.getUnderlesseeOrMortgageeAddressKnown().toBoolean();
+        boolean addressKnown = underlesseeOrMortgagee1.getAddressKnown() != null
+            && underlesseeOrMortgagee1.getAddressKnown().toBoolean();
 
         underlesseeOrMortgagee.setUnderlesseeOrMortgageeAddressKnown(addressKnown);
         if (addressKnown) {
             underlesseeOrMortgagee.setUnderlesseeOrMortgageeAddress(underlesseeOrMortgagee1
-                                                                      .getUnderlesseeOrMortgageeAddress());
+                                                                      .getAddress());
         }
 
         return underlesseeOrMortgagee;

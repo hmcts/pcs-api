@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.HashSet;
@@ -36,23 +37,25 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             .page("groundForPossessionAdditionalGrounds", this::midEvent)
             .pageLabel("What are your additional grounds for possession?")
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
-                           + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
+                           + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                            + " AND claimDueToRentArrears=\"Yes\""
                            + " AND legislativeCountry=\"England\"")
             .readonly(PCSCase::getShowRentArrearsGroundReasonPage, NEVER_SHOW)
             .label("groundForPossessionAdditionalGrounds-info", """
             ---
             <p class="govuk-body">You may have already given the defendants notice of your intention to begin
-                possession proceedings. If you have, you should have written the grounds you're making your
-                claim under. You should select these grounds here and any extra grounds you'd like to add to
+                possession proceedings. If you have, you should have written the grounds you’re making your
+                claim under. You should select these grounds here and any extra grounds you’d like to add to
                 your claim, if you need to.</p>
             <p class="govuk-body">
               <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
             </p>
             """)
             // Keep canonical sets present in the event for showCondition references
-            .readonly(PCSCase::getRentArrearsMandatoryGrounds, NEVER_SHOW)
-            .readonly(PCSCase::getRentArrearsDiscretionaryGrounds, NEVER_SHOW)
+            .complex(PCSCase::getRentArrearsGroundsForPossession)
+            .readonly(RentArrearsGroundsForPossession::getMandatoryGrounds, NEVER_SHOW)
+            .readonly(RentArrearsGroundsForPossession::getDiscretionaryGrounds, NEVER_SHOW)
+            .done()
             .optional(PCSCase::getAssuredAdditionalMandatoryGrounds)
             .optional(PCSCase::getAssuredAdditionalDiscretionaryGrounds)
             .label("groundForPossessionAdditionalGrounds-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -66,7 +69,8 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         // Rebuild canonical sets from rent arrears grounds selection
         Set<RentArrearsMandatoryGrounds> mergedMandatory = new HashSet<>();
         Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new HashSet<>();
-        Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGrounds();
+        Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGroundsForPossession()
+            .getRentArrearsGrounds();
 
         if (rentArrearsGrounds != null) {
             if (rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {
@@ -127,14 +131,14 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
 
         if (noRentArrearsGrounds && noAdditional) {
             effectiveMandatory = Objects.requireNonNullElse(
-                caseData.getRentArrearsMandatoryGrounds(), new HashSet<>()
+                caseData.getRentArrearsGroundsForPossession().getMandatoryGrounds(), new HashSet<>()
             );
             effectiveDiscretionary = Objects.requireNonNullElse(
-                caseData.getRentArrearsDiscretionaryGrounds(), new HashSet<>()
+                caseData.getRentArrearsGroundsForPossession().getDiscretionaryGrounds(), new HashSet<>()
             );
         } else {
-            caseData.setRentArrearsMandatoryGrounds(mergedMandatory);
-            caseData.setRentArrearsDiscretionaryGrounds(mergedDiscretionary);
+            caseData.getRentArrearsGroundsForPossession().setMandatoryGrounds(mergedMandatory);
+            caseData.getRentArrearsGroundsForPossession().setDiscretionaryGrounds(mergedDiscretionary);
         }
 
         boolean hasOtherMandatoryGrounds = effectiveMandatory.stream()

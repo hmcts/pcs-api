@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
 
 export class ClickRadioButtonAction implements IAction {
@@ -10,11 +10,23 @@ export class ClickRadioButtonAction implements IAction {
     }
     const { question, option, index } = params as actionRecord;
     const idx = index !== undefined ? Number(index) : 0;
-    const questionLocators = page.locator(`legend:has-text("${question}")`);
-    const targetQuestion = questionLocators.nth(idx);
-    const radioButton = targetQuestion
+
+    const radioPattern1 = page.locator(`legend:has-text("${question}")`)
+      .nth(idx)
       .locator('..')
       .getByRole('radio', { name: option as string, exact: true });
-    await radioButton.click();
+
+    try {
+      await radioPattern1.waitFor({ state: 'visible', timeout: 1000 });
+      await radioPattern1.click();
+    } catch {
+      const radioPattern2 = page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
+      const count = await radioPattern2.count();
+      if (count > 1) {
+        await radioPattern2.nth(count - 1).click();
+      } else {
+        await radioPattern2.click();
+      }
+    }
   }
 }
