@@ -108,8 +108,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         if (defendants != null && !defendants.isEmpty()) {
             pcsCase.setAllDefendants(defendants);
             pcsCase.setFormattedDefendantNames(defendants.stream()
-                .map(defendant -> ""
-                    + defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
+                .map(defendant ->
+                    defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
                     + "<br>")
                 .collect(Collectors.joining("\n")));
         }

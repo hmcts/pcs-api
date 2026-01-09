@@ -44,7 +44,7 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
 
             // Then
             assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().get(0))
+            assertThat(response.getErrors().getFirst())
                 .contains("Please select whether you want to evict everyone or specific people");
         }
 

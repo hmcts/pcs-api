@@ -37,7 +37,7 @@ class ChangeNameAddressPageTest extends BasePageTest {
 
             // Then
             assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().get(0))
+            assertThat(response.getErrors().getFirst())
                 .contains("You cannot continue with this application until you ask the judge for permission");
         }
 
@@ -54,7 +54,7 @@ class ChangeNameAddressPageTest extends BasePageTest {
 
             // Then
             assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().get(0))
+            assertThat(response.getErrors().getFirst())
                 .contains("You cannot continue with this application until you ask the judge for permission");
         }
     }
