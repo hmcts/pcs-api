@@ -30,20 +30,20 @@ import {
   whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
 import{
-  claimantCircumstances,
-  claimantInformation,
   claimantType,
-  claimingCosts,
   claimType,
+  claimantInformation,
+  defendantDetails,
   contactPreferences,
+  preactionProtocol,
+  claimantCircumstances,
+  claimingCosts,
   dailyRentAmount,
   defendantCircumstances,
-  defendantDetails,
   mediationAndSettlement,
   moneyJudgment,
-  noticeDetails,
-  preactionProtocol,
   rentDetails,
+  noticeDetails,
   checkingNotice
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
