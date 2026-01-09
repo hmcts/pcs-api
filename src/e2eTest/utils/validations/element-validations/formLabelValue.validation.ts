@@ -4,7 +4,7 @@ import { IValidation, validationData } from '../../interfaces/validation.interfa
 export class FormLabelValueValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data?: validationData): Promise<void> {
     const valueLocator = await this.findFieldValueLocator(page, fieldName);
-
+    
     if (data !== undefined) {
       await expect(valueLocator).toHaveText(String(data));
     } else {
