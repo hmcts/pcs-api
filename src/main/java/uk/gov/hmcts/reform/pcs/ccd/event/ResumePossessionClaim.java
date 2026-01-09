@@ -337,9 +337,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        String responsibleParty = getClaimantInfo(pcsCase).getOrganisationName();
-        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
-        String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
         UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
         log.info("Deleting draft data after claim submission: caseReference={}, eventId={}, userId={}",
@@ -349,6 +346,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         log.info("Draft data deleted successfully for userId={}", userId);
 
+        String responsibleParty = getClaimantInfo(pcsCase).getOrganisationName();
+        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
+        String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
