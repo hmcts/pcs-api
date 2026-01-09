@@ -110,7 +110,7 @@ export class PageContentValidation implements IValidation {
 
     const pageResults: ValidationResult[] = [];
     for (const [key, value] of Object.entries(pageData)) {
-      if (key.includes('Input') || key.includes('Hidden')||key.includes('Dynamic')) continue;
+      if (key.includes('Input') || key.includes('Hidden') || key.includes('Dynamic') || key.includes('NewTab')) continue;
       if (typeof value === 'string' && value.trim() !== '') {
         const elementType = this.getElementType(key);
         const isVisible = await this.isElementVisible(page, value as string, elementType);
