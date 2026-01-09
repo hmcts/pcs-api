@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.KnownDefendantsDOBInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -95,6 +96,8 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private EnforcementOrderService enforcementOrderService;
     @Mock
     private LanguageUsedPage languageUsedPage;
+    @Mock
+    private KnownDefendantsDOBInformationPage knownDefendantsDOBInformationPage;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
@@ -361,6 +364,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
                                          firearmsPossessionRiskPage, criminalAntisocialRiskPage,
                                          aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
                                          vulnerableAdultsChildrenPage, additionalInformationPage,
-                                         savingPageBuilderFactory);
+                                         savingPageBuilderFactory, knownDefendantsDOBInformationPage);
     }
 }

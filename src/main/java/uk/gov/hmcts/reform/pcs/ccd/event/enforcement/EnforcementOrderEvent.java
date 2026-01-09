@@ -19,11 +19,13 @@ import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ChangeNameAddressPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ConfirmIfDOBKnownPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EnforcementApplicationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionDelayWarningPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.EvictionRisksPosedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.KnownDefendantsDOBInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LegalCostsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LivingInThePropertyPage;
@@ -74,6 +76,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
+    private final KnownDefendantsDOBInformationPage knownDefendantsDOBInformationPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -93,6 +96,8 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(new EnforcementApplicationPage())
                 .add(new NameAndAddressForEvictionPage())
                 .add(new ChangeNameAddressPage())
+                .add(new ConfirmIfDOBKnownPage())
+                .add(knownDefendantsDOBInformationPage)
                 .add(new PeopleWhoWillBeEvictedPage())
                 .add(new PeopleYouWantToEvictPage())
                 .add(new LivingInThePropertyPage())
