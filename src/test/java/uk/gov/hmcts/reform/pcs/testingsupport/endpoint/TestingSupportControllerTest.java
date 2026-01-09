@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1164,6 +1165,40 @@ class TestingSupportControllerTest {
             response.getBody().get(accessCodeString).getFirstName().equals(firstName)
                 &&
             response.getBody().get(accessCodeString).getLastName().equals(lastName));
+    }
+
+    @Test
+    void shouldHandleInvalidCaseWhenReturnPins() {
+        // Given
+        long caseReference = 8888888888888888L;
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<Map<String, Defendant>> response = underTest.getPins(
+            "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(HttpStatus.NOT_FOUND.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void shouldHandleServerError() {
+        // Given
+        long caseReference = 1111111111111111L;
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenThrow(new RuntimeException());
+
+        // When
+        ResponseEntity<Map<String, Defendant>> response = underTest.getPins(
+            "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode()));
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName, String caseNumber) {
