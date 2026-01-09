@@ -44,11 +44,13 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.security.SecureRandom;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -489,6 +491,75 @@ public class TestingSupportController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             log.error("Failed to delete test case {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(
+        summary = "Get all pins associated with a case"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pins Returned"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/pins/{caseReference}")
+    public ResponseEntity<Map<String, Defendant>> getPins(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "Case reference to find pins for", required = true)
+        @PathVariable long caseReference
+    ) {
+        try {
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+                pcsCaseEntity.getId()
+            );
+
+            //map partyId to defendant
+            Map<UUID, Defendant> defendantByPartyId = pcsCaseEntity.getDefendants().stream()
+                .collect(Collectors.toMap(
+                    Defendant::getPartyId,
+                    Function.identity(),
+                    (existing, incoming) -> {
+                        throw new IllegalStateException("Duplicate partyId: " + existing.getPartyId());
+                    }
+                ));
+
+            Map<String, Defendant> minimalDefendantMap = new HashMap<>();
+
+            for (var accessCodeObject : accessCodes) {
+                String accessCode = accessCodeObject.getCode();
+                UUID partyId = accessCodeObject.getPartyId();
+
+                Defendant matched = defendantByPartyId.get(partyId);
+                if (matched == null) {
+                    throw new IllegalStateException("No defendant found for partyId=" + partyId);
+                }
+
+                Defendant minimal = Defendant.builder()
+                    .firstName(matched.getFirstName())
+                    .lastName(matched.getLastName())
+                    .correspondenceAddress(matched.getCorrespondenceAddress())
+                    .build();
+
+                minimalDefendantMap.put(accessCode, minimal);
+            }
+
+            return ResponseEntity.ok(minimalDefendantMap);
+        } catch (Exception e) {
+            log.error("Failed to get Access codes / Pins {}", caseReference, e);
             return ResponseEntity.internalServerError().build();
         }
     }
