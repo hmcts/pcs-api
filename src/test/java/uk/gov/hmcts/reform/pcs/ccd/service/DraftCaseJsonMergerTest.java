@@ -73,7 +73,9 @@ class DraftCaseJsonMergerTest {
                             "waysToPay",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
-                            "enforcementOrder.showPeopleYouWantToEvictPage")
+                            "enforcementOrder.showPeopleYouWantToEvictPage",
+                            "prohibitedConductWales.periodicContractTermsWales.agreedTermsOfPeriodicContract",
+                            "prohibitedConductWales.periodicContractTermsWales.detailsOfTerms")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()

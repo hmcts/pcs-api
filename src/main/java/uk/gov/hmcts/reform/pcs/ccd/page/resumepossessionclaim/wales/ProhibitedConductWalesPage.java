@@ -10,15 +10,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @AllArgsConstructor
-public class ProhibitedConductWales implements CcdPageConfiguration {
+public class ProhibitedConductWalesPage implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
 
@@ -37,13 +39,16 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
                 </p>
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
-            .mandatory(PCSCase::getProhibitedConductWalesClaim)
-            .complex(PCSCase::getPeriodicContractTermsWales, "prohibitedConductWalesClaim=\"YES\"")
+            .complex(PCSCase::getProhibitedConductWales)
+            .mandatory(ProhibitedConductWales::getProhibitedConductWalesClaim)
+            .complex(ProhibitedConductWales::getPeriodicContractTermsWales, "wales_ProhibitedConductWalesClaim=\"YES\"")
                 .mandatory(PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract)
                 .mandatory(PeriodicContractTermsWales::getDetailsOfTerms,
-                    "periodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
+                "wales_PeriodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
+                .done()
+            .mandatory(ProhibitedConductWales::getProhibitedConductWalesWhyMakingClaim,
+                "wales_ProhibitedConductWalesClaim=\"YES\"")
             .done()
-            .mandatory(PCSCase::getProhibitedConductWalesWhyMakingClaim, "prohibitedConductWalesClaim=\"YES\"")
             .label("prohibitedConductWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -53,23 +58,26 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
 
         List<String> validationErrors = new ArrayList<>();
 
-        PeriodicContractTermsWales periodicContractTermsWales =
-            caseData.getPeriodicContractTermsWales();
+        ProhibitedConductWales prohibitedConductWales =
+            caseData.getProhibitedConductWales();
 
-        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES
-            && periodicContractTermsWales != null
-            && periodicContractTermsWales.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES) {
-            textAreaValidationService.validateTextArea(
-                periodicContractTermsWales.getDetailsOfTerms(),
-                "Give details of the terms you’ve agreed",
-                TextAreaValidationService.SHORT_TEXT_LIMIT,
-                validationErrors
+        Optional.ofNullable(prohibitedConductWales)
+            .filter(pc -> pc.getProhibitedConductWalesClaim() == VerticalYesNo.YES)
+            .map(ProhibitedConductWales::getPeriodicContractTermsWales)
+            .filter(terms -> terms.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES)
+            .ifPresent(terms ->
+                           textAreaValidationService.validateTextArea(
+                               terms.getDetailsOfTerms(),
+                               "Give details of the terms you’ve agreed",
+                               TextAreaValidationService.SHORT_TEXT_LIMIT,
+                               validationErrors
+                           )
             );
-        }
 
-        if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
+        if (prohibitedConductWales != null
+            && prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
             textAreaValidationService.validateTextArea(
-                caseData.getProhibitedConductWalesWhyMakingClaim(),
+                prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim(),
                 "Why are you making this claim?",
                 TextAreaValidationService.SHORT_TEXT_LIMIT,
                 validationErrors
