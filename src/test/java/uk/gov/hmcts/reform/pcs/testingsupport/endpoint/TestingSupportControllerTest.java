@@ -140,6 +140,7 @@ class TestingSupportControllerTest {
         TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
         when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
 
+        Instant testStartTime = Instant.now();
         ResponseEntity<String> response = underTest.scheduleHelloWorldTask(1,
                                                                            "Bearer token",
                                                                            "ServiceAuthToken");
@@ -152,8 +153,9 @@ class TestingSupportControllerTest {
         verify(schedulerClient).scheduleIfNotExists(any(TaskInstance.class), instantCaptor.capture());
 
         Instant scheduledInstant = instantCaptor.getValue();
-        assertThat(scheduledInstant).isAfterOrEqualTo(Instant.now());
-        assertThat(scheduledInstant).isBeforeOrEqualTo(Instant.now().plusSeconds(2));
+        assertThat(scheduledInstant)
+            .isAfterOrEqualTo(testStartTime)
+            .isBeforeOrEqualTo(testStartTime.plusSeconds(2));
     }
 
     @SuppressWarnings("unchecked")
@@ -174,7 +176,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WithBasicCaseInformation() {
-        final JsonNode formPayload = createJsonNodeFormPayload("John Smith", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("John Smith");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
@@ -215,7 +217,7 @@ class TestingSupportControllerTest {
     @Test
     void testGenerateDocument_WithCustomTemplateId() {
         // Note: Controller uses hardcoded template, but keeping test pattern for consistency
-        final JsonNode formPayload = createJsonNodeFormPayload("Jane Doe", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Jane Doe");
 
         String expectedDocumentUrl = "http://dm-store/documents/456";
         when(docAssemblyService.generateDocument(
@@ -250,7 +252,7 @@ class TestingSupportControllerTest {
     @Test
     void testGenerateDocument_WithEmptyTemplateId() {
         // Keeping test pattern
-        final JsonNode formPayload = createJsonNodeFormPayload("Test User", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test User");
 
         String expectedDocumentUrl = "http://dm-store/documents/789";
         when(docAssemblyService.generateDocument(
@@ -283,7 +285,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_Success() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test Case", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test Case");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
@@ -309,7 +311,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_Failure() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -335,7 +337,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WhitespaceAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
@@ -354,7 +356,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_NullAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
@@ -373,7 +375,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_EmptyAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
@@ -393,7 +395,7 @@ class TestingSupportControllerTest {
     // Similar fixes for service authorization tests
     @Test
     void testGenerateDocument_NullServiceAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
@@ -412,7 +414,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_EmptyServiceAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
@@ -431,7 +433,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_WhitespaceServiceAuthorization() {
-        final JsonNode formPayload = createJsonNodeFormPayload("Test", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("Test");
 
         String expectedDocumentUrl = "http://dm-store/documents/123";
         when(docAssemblyService.generateDocument(
@@ -450,7 +452,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyBadRequestException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -469,7 +471,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyAuthorizationException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -489,7 +491,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyNotFoundException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -509,7 +511,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyServiceUnavailableException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -530,7 +532,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyServiceErrorException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -549,7 +551,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyServiceErrorOnly() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -568,7 +570,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_DocAssemblyGenericException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -586,7 +588,7 @@ class TestingSupportControllerTest {
 
     @Test
     void testGenerateDocument_IllegalArgumentException() {
-        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+        final JsonNode formPayload = createJsonNodeFormPayload("value1");
 
         when(docAssemblyService.generateDocument(
             any(JsonNode.class),
@@ -1063,7 +1065,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldHandleDeleteCaseFailure() {
         // Given
-        Long caseReference = 7777777777777777L;
+        long caseReference = 7777777777777777L;
         UUID caseId = UUID.randomUUID();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .id(caseId)
@@ -1125,10 +1127,11 @@ class TestingSupportControllerTest {
         assertThat(response.getBody()).isNull();
     }
 
-    private JsonNode createJsonNodeFormPayload(String applicantName, String caseNumber) {
+    private JsonNode createJsonNodeFormPayload(String applicantName) {
         try {
             String json = String.format("{\"applicantName\":\"%s\",\"caseNumber\":\"%s\"}",
-                                      applicantName, caseNumber);
+                                        applicantName, "PCS-123456789"
+            );
             return objectMapper.readTree(json);
         } catch (Exception e) {
             throw new RuntimeException("Failed to create JsonNode", e);
