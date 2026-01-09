@@ -9,7 +9,7 @@ export const claimantCircumstances = {
   noRadioOption: `No`,
   giveDetailsAboutHiddenDynamicParagraph: 'Give details about claimant circumstances',
   youCanEnterHiddenHintText: 'You can enter up to 950 characters',
-  giveDetailsAboutCircumstancesIsRequiredTextInput: ``,
+  giveDetailsAboutCircumstancesIsRequiredTextInput: `Sample Claimant circumstances input data`,
   iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
   ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
   chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
