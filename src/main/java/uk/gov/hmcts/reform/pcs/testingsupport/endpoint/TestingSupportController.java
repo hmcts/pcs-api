@@ -44,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -503,7 +504,7 @@ public class TestingSupportController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/pins/{caseReference}")
-    public ResponseEntity<List<PartyAccessCodeEntity>> getPins(
+    public ResponseEntity<Map<String, Defendant>> getPins(
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             required = true,
@@ -525,7 +526,37 @@ public class TestingSupportController {
                 pcsCaseEntity.getId()
             );
 
-            return ResponseEntity.status(200).body(accessCodes);
+            //map partyId to defendant
+            Map<UUID, Defendant> defendantByPartyId = pcsCaseEntity.getDefendants().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                    Defendant::getPartyId,
+                    d -> d,
+                    (existing, incoming) -> {
+                        throw new IllegalStateException("Duplicate partyId: " + existing.getPartyId());
+                    }
+                ));
+
+            Map<String, Defendant> minimalDefendantMap = new HashMap<>();
+
+            for (var accessCodeObject : accessCodes) {
+                String accessCode = accessCodeObject.getCode();
+                UUID partyId = accessCodeObject.getPartyId();
+
+                Defendant matched = defendantByPartyId.get(partyId);
+                if (matched == null) {
+                    throw new IllegalStateException("No defendant found for partyId=" + partyId);
+                }
+
+                Defendant minimal = Defendant.builder()
+                    .firstName(matched.getFirstName())
+                    .lastName(matched.getLastName())
+                    .correspondenceAddress(matched.getCorrespondenceAddress())
+                    .build();
+
+                minimalDefendantMap.put(accessCode, minimal);
+            }
+
+            return ResponseEntity.ok(minimalDefendantMap);
         } catch (Exception e) {
             log.error("Failed to get Access codes / Pins {}", caseReference, e);
             return ResponseEntity.internalServerError().build();

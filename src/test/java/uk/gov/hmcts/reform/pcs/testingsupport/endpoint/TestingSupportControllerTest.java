@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -32,6 +33,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -1081,7 +1083,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldHandleDeleteAccessCodesFailure() {
         // Given
-        Long caseReference = 8888888888888888L;
+        long caseReference = 8888888888888888L;
         UUID caseId = UUID.randomUUID();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .id(caseId)
@@ -1112,6 +1114,56 @@ class TestingSupportControllerTest {
         // Then
         assertThat(response.getStatusCode().value()).isEqualTo(500);
         assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldReturnPins(){
+        // Given
+        long caseReference = 8888888888888888L;
+        UUID caseId = UUID.randomUUID();
+        String accessCodeString = "CODE123";
+        UUID partyCode = UUID.randomUUID();
+        String firstName = "firstname";
+        String lastName = "lastname";
+
+        Defendant defendant = Defendant.builder()
+            .partyId(partyCode)
+            .firstName(firstName)
+            .lastName(lastName).build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .defendants(List.of(defendant))
+            .build();
+
+        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
+        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
+            .id(UUID.randomUUID())
+            .code(accessCodeString)
+            .partyId(partyCode)
+            .build();
+        accessCodes.add(accessCode1);
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(accessCodes);
+
+        // When
+        ResponseEntity<Map<String, Defendant>> response = underTest.getPins(
+            "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()!=null
+            && response.getBody().get(accessCodeString)!=null);
+        assertThat(
+            response.getBody().get(accessCodeString).getFirstName().equals(firstName)
+                &&
+            response.getBody().get(accessCodeString).getLastName().equals(lastName));
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName, String caseNumber) {
