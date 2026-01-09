@@ -1,8 +1,11 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,23 +13,40 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 
+import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +61,16 @@ class TestingSupportControllerTest {
     private DocAssemblyService docAssemblyService;
     @Mock
     private EligibilityService eligibilityService;
+    @Mock
+    private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private ClaimRepository claimRepository;
+    @Mock
+    private PartyAccessCodeRepository partyAccessCodeRepository;
+    @Mock
+    private PcsCaseService pcsCaseService;
+    @Mock
+    private AccessCodeGenerationService accessCodeGenerationService;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -48,7 +78,10 @@ class TestingSupportControllerTest {
     @BeforeEach
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
-                                                 docAssemblyService, eligibilityService
+                                                 docAssemblyService, eligibilityService,
+                                                 pcsCaseRepository, claimRepository,
+                                                 partyAccessCodeRepository, pcsCaseService,
+                                                 accessCodeGenerationService
         );
     }
 
@@ -63,6 +96,7 @@ class TestingSupportControllerTest {
                                                                            "ServiceAuthToken");
 
         assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.OK);
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
         assertThat(response.getBody()).contains("execution time:");
@@ -93,9 +127,48 @@ class TestingSupportControllerTest {
                                                                            "ServiceAuthToken");
 
         assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getStatusCode().is5xxServerError()).isTrue();
         assertThat(response.getBody()).contains("Failed to schedule Hello World task");
         assertThat(response.getBody()).contains("Scheduler failure");
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testScheduleHelloWorldTask_WithDefaultDelaySeconds() {
+        TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
+        when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
+
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(1,
+                                                                           "Bearer token",
+                                                                           "ServiceAuthToken");
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
+
+        ArgumentCaptor<Instant> instantCaptor = ArgumentCaptor.forClass(Instant.class);
+        verify(schedulerClient).scheduleIfNotExists(any(TaskInstance.class), instantCaptor.capture());
+
+        Instant scheduledInstant = instantCaptor.getValue();
+        assertThat(scheduledInstant).isAfterOrEqualTo(Instant.now());
+        assertThat(scheduledInstant).isBeforeOrEqualTo(Instant.now().plusSeconds(2));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testScheduleHelloWorldTask_WithDefaultAuthorization() {
+        TaskInstance<Void> mockTaskInstance = mock(TaskInstance.class);
+        when(helloWorldTask.instance(anyString())).thenReturn(mockTaskInstance);
+
+        ResponseEntity<String> response = underTest.scheduleHelloWorldTask(3,
+                                                                           "DummyId",
+                                                                           "ServiceAuthToken");
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(response.getBody()).contains("Hello World task scheduled successfully with ID:");
+        verify(schedulerClient).scheduleIfNotExists(any(TaskInstance.class), any(Instant.class));
     }
 
     @Test
@@ -115,7 +188,7 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
+        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly
         ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -156,7 +229,7 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
+        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly with hardcoded template
         ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -191,7 +264,7 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
+        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
 
         // Verify the request was passed correctly with hardcoded template
         ArgumentCaptor<JsonNode> formPayloadCaptor = ArgumentCaptor.forClass(JsonNode.class);
@@ -224,7 +297,7 @@ class TestingSupportControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isEqualTo(expectedDocumentUrl);
-        assertThat(response.getHeaders().getLocation()).isEqualTo(java.net.URI.create(expectedDocumentUrl));
+        assertThat(response.getHeaders().getLocation()).isEqualTo(URI.create(expectedDocumentUrl));
         verify(docAssemblyService).generateDocument(
             eq(formPayload),
             eq("CV-SPC-CLM-ENG-01356.docx"),
@@ -474,6 +547,25 @@ class TestingSupportControllerTest {
     }
 
     @Test
+    void testGenerateDocument_DocAssemblyServiceErrorOnly() {
+        final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
+
+        when(docAssemblyService.generateDocument(
+            any(JsonNode.class),
+            eq("CV-SPC-CLM-ENG-01356.docx"),
+            eq(OutputType.PDF),
+            eq("generated-document.pdf")
+        )).thenThrow(new DocAssemblyException("service error occurred"));
+
+        ResponseEntity<String> response = underTest.generateDocument("test-auth", "test-s2s", formPayload);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode().value()).isEqualTo(503);
+        assertThat(response.getBody()).contains(
+            "Doc Assembly service is temporarily unavailable: service error occurred");
+    }
+
+    @Test
     void testGenerateDocument_DocAssemblyGenericException() {
         final JsonNode formPayload = createJsonNodeFormPayload("value1", "PCS-123456789");
 
@@ -556,12 +648,480 @@ class TestingSupportControllerTest {
         when(eligibilityService.checkEligibility(postcode, null)).thenThrow(serviceException);
 
         // When/Then
-        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+        Assertions.assertThatThrownBy(() ->
             underTest.getPostcodeEligibility(serviceAuth, postcode, null)
         ).isInstanceOf(RuntimeException.class)
             .hasMessageContaining("Service error");
 
         verify(eligibilityService).checkEligibility(postcode, null);
+    }
+
+    @Test
+    void shouldReturnEligibilityResultWithWalesCountry() {
+        // Given
+        String serviceAuth = "Bearer serviceToken";
+        String postcode = "CF10 1AA";
+        LegislativeCountry country = LegislativeCountry.WALES;
+
+        EligibilityResult expectedResult = mock(EligibilityResult.class);
+        when(eligibilityService.checkEligibility(postcode, country)).thenReturn(expectedResult);
+
+        // When
+        EligibilityResult result = underTest.getPostcodeEligibility(serviceAuth, postcode, country);
+
+        // Then
+        assertThat(result).isSameAs(expectedResult);
+        verify(eligibilityService).checkEligibility(postcode, country);
+    }
+
+    @Test
+    void shouldCreateTestCaseSuccessfully() {
+        // Given
+        long caseReference = 1234567890123456L;
+        final UUID caseId = UUID.randomUUID();
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postCode("SW1A 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        final UUID partyId1 = UUID.randomUUID();
+        final UUID partyId2 = UUID.randomUUID();
+        final UUID idamUserId1 = UUID.randomUUID();
+        final UUID idamUserId2 = UUID.randomUUID();
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            idamUserId1, "John", "Doe"
+        );
+        CreateTestCaseRequest.DefendantRequest defendant2 = new CreateTestCaseRequest.DefendantRequest(
+            idamUserId2, "Jane", "Smith"
+        );
+        request.setDefendants(List.of(defendant1, defendant2));
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseService.createCase(caseReference, propertyAddress, legislativeCountry))
+            .thenReturn(caseEntity);
+
+        Map<UUID, UUID> idamIdToPartyIdMap = Map.of(
+            idamUserId1, partyId1,
+            idamUserId2, partyId2
+        );
+
+        stubEntityFlush(caseEntity, idamIdToPartyIdMap);
+
+        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
+        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
+            .partyId(partyId1)
+            .code("ABC123")
+            .build();
+        PartyAccessCodeEntity accessCode2 = PartyAccessCodeEntity.builder()
+            .partyId(partyId2)
+            .code("XYZ789")
+            .build();
+        accessCodes.add(accessCode1);
+        accessCodes.add(accessCode2);
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(accessCodes);
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getCaseId()).isEqualTo(caseId);
+        assertThat(response.getBody().getCaseReference()).isEqualTo(caseReference);
+        assertThat(response.getBody().getDefendants()).hasSize(2);
+        assertThat(response.getBody().getDefendants().get(0).getPartyId()).isEqualTo(partyId1);
+        assertThat(response.getBody().getDefendants().get(0).getAccessCode()).isEqualTo("ABC123");
+        assertThat(response.getBody().getDefendants().get(1).getPartyId()).isEqualTo(partyId2);
+        assertThat(response.getBody().getDefendants().get(1).getAccessCode()).isEqualTo("XYZ789");
+
+        verify(pcsCaseService).createCase(caseReference, propertyAddress, legislativeCountry);
+        verify(pcsCaseRepository).save(caseEntity);
+        verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference));
+    }
+
+    @Test
+    void shouldCreateTestCaseWithAutoGeneratedCaseReference() {
+        // Given
+        final UUID caseId = UUID.randomUUID();
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("456 Test Avenue")
+            .postTown("Manchester")
+            .postCode("M1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(null); // Will be auto-generated
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            UUID.randomUUID(), "Bob", "Johnson" // partyId will be auto-generated
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(1234567890123456L)
+            .build();
+
+        when(pcsCaseService.createCase(anyLong(), eq(propertyAddress), eq(legislativeCountry)))
+            .thenReturn(caseEntity);
+
+        stubEntityFlush(caseEntity);
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(new ArrayList<>());
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getCaseId()).isEqualTo(caseId);
+        assertThat(response.getBody().getDefendants()).hasSize(1);
+        assertThat(response.getBody().getDefendants().getFirst().getPartyId()).isNotNull();
+        assertThat(response.getBody().getDefendants().getFirst().getFirstName()).isEqualTo("Bob");
+
+        verify(pcsCaseService).createCase(anyLong(), eq(propertyAddress), eq(legislativeCountry));
+    }
+
+    @Test
+    void shouldCreateTestCaseWithAutoGeneratedPartyIds() {
+        // Given
+        long caseReference = 9876543210987654L;
+        final UUID caseId = UUID.randomUUID();
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("789 Test Road")
+            .postTown("Birmingham")
+            .postCode("B1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.WALES;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            null, "Alice", "Williams" // partyId and idamUserId will be auto-generated
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseService.createCase(caseReference, propertyAddress, legislativeCountry))
+            .thenReturn(caseEntity);
+
+        stubEntityFlush(caseEntity);
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(new ArrayList<>());
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getDefendants()).hasSize(1);
+        assertThat(response.getBody().getDefendants().getFirst().getPartyId()).isNotNull();
+        assertThat(response.getBody().getDefendants().getFirst().getFirstName()).isEqualTo("Alice");
+    }
+
+    @Test
+    void shouldHandleAccessCodeGenerationFailure() {
+        // Given
+        long caseReference = 1111111111111111L;
+        final UUID caseId = UUID.randomUUID();
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("999 Test Lane")
+            .postTown("Leeds")
+            .postCode("LS1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            UUID.randomUUID(), "Test", "User"
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseService.createCase(caseReference, propertyAddress, legislativeCountry))
+            .thenReturn(caseEntity);
+
+        doThrow(new RuntimeException("Access code generation failed"))
+            .when(accessCodeGenerationService).createAccessCodesForParties(anyString());
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(201);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getDefendants()).hasSize(1);
+        assertThat(response.getBody().getDefendants().getFirst().getAccessCode()).isNull();
+    }
+
+    @Test
+    void shouldHandleCaseCreationFailure() {
+        // Given
+        long caseReference = 2222222222222222L;
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("111 Test Drive")
+            .postTown("Liverpool")
+            .postCode("L1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            UUID.randomUUID(), "Error", "Test"
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        doThrow(new RuntimeException("Database error"))
+            .when(pcsCaseService).createCase(anyLong(), any(AddressUK.class), any(LegislativeCountry.class));
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldHandleCaseNotFoundAfterCreation() {
+        // Given
+        long caseReference = 3333333333333333L;
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("222 Test Way")
+            .postTown("Sheffield")
+            .postCode("S1 1AA")
+            .build();
+        LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
+
+        CreateTestCaseRequest request = new CreateTestCaseRequest();
+        request.setCaseReference(caseReference);
+        request.setPropertyAddress(propertyAddress);
+        request.setLegislativeCountry(legislativeCountry);
+
+        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
+        CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
+            UUID.randomUUID(), "NotFound", "Test"
+        );
+        defendants.add(defendant1);
+        request.setDefendants(defendants);
+
+        // When
+        ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
+            "Bearer token", "ServiceAuthToken", request
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldDeleteCaseSuccessfully() {
+        // Given
+        long caseReference = 4444444444444444L;
+        UUID caseId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
+        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
+            .id(UUID.randomUUID())
+            .code("TEST123")
+            .build();
+        accessCodes.add(accessCode1);
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(accessCodes);
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+        assertThat(response.getBody()).isNull();
+
+        verify(partyAccessCodeRepository).deleteAll(accessCodes);
+        verify(pcsCaseRepository).delete(caseEntity);
+    }
+
+    @Test
+    void shouldDeleteCaseWithNoAccessCodes() {
+        // Given
+        long caseReference = 5555555555555555L;
+        UUID caseId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(new ArrayList<>());
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(204);
+        assertThat(response.getBody()).isNull();
+
+        verify(partyAccessCodeRepository, never()).deleteAll(any());
+        verify(pcsCaseRepository).delete(caseEntity);
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenDeletingNonExistentCase() {
+        // Given
+        long caseReference = 6666666666666666L;
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(404);
+        assertThat(response.getBody()).isNull();
+
+        verify(pcsCaseRepository, never()).delete(any());
+        verify(partyAccessCodeRepository, never()).deleteAll(any());
+    }
+
+    @Test
+    void shouldHandleDeleteCaseFailure() {
+        // Given
+        Long caseReference = 7777777777777777L;
+        UUID caseId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(new ArrayList<>());
+
+        doThrow(new RuntimeException("Database error"))
+            .when(pcsCaseRepository).delete(any(PcsCaseEntity.class));
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldHandleDeleteAccessCodesFailure() {
+        // Given
+        long caseReference = 8888888888888888L;
+        UUID caseId = UUID.randomUUID();
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .build();
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.of(caseEntity));
+
+        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
+        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
+            .id(UUID.randomUUID())
+            .code("FAIL123")
+            .build();
+        accessCodes.add(accessCode1);
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(accessCodes);
+
+        doThrow(new RuntimeException("Delete failed"))
+            .when(partyAccessCodeRepository).deleteAll(any());
+
+        // When
+        ResponseEntity<Void> response = underTest.deleteCase(
+            "Bearer token", "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(500);
+        assertThat(response.getBody()).isNull();
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName, String caseNumber) {
@@ -572,5 +1132,34 @@ class TestingSupportControllerTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create JsonNode", e);
         }
+    }
+
+    /**
+     * Stub the assigning of entity IDs on the repo flush, as would be done by the DB.
+     * @param caseEntity The case entity
+     */
+    private void stubEntityFlush(PcsCaseEntity caseEntity) {
+        stubEntityFlush(caseEntity, Map.of());
+    }
+
+    /**
+     * Stub the assigning of entity IDs on the repo flus, with the option to specify
+     * what party IDs should be assigned based on the IDAM ID, otherwise a random UUID
+     * will be assigned.
+     * @param caseEntity The case entity
+     * @param idamIdToPartyIdMap Map from IDAM ID to Party ID to assign
+     */
+    private void stubEntityFlush(PcsCaseEntity caseEntity, Map<UUID, UUID> idamIdToPartyIdMap) {
+        doAnswer(invocationOnMock -> {
+            caseEntity.getParties()
+                .forEach(party -> {
+                    if (party.getIdamId() != null) {
+                        party.setId(idamIdToPartyIdMap.getOrDefault(party.getIdamId(), UUID.randomUUID()));
+                    } else {
+                        party.setId(UUID.randomUUID());
+                    }
+                });
+            return null;
+        }).when(pcsCaseRepository).flush();
     }
 }

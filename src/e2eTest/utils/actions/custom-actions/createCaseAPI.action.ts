@@ -49,7 +49,7 @@ export class CreateCaseAPIAction implements IAction {
       if (status === 404) {
         console.error(submitCaseApiData.submitCasePayload);
         throw new Error(`Submission failed: endpoint not found (404).please check the payload above \n ${error}`);
-        
+
       }
       if (!status) {
         throw new Error('Submission failed: no response from server.');

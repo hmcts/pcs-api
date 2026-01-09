@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AdditionalInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.AggressiveAnimalsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.CriminalAntisocialRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.FirearmsPossessionRiskPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LandRegistryFeesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PoliceOrSocialServicesRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
@@ -88,6 +89,8 @@ class EnforcementOrderEventTest extends BaseEventTest {
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
     private EnforcementOrderService enforcementOrderService;
+    @Mock
+    private LandRegistryFeesPage landRegistryFeesPage;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
@@ -351,6 +354,6 @@ class EnforcementOrderEventTest extends BaseEventTest {
                                          firearmsPossessionRiskPage, criminalAntisocialRiskPage,
                                          aggressiveAnimalsRiskPage, propertyAccessDetailsPage,
                                          vulnerableAdultsChildrenPage, additionalInformationPage,
-                                         savingPageBuilderFactory);
+                                         savingPageBuilderFactory, landRegistryFeesPage);
     }
 }

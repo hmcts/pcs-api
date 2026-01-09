@@ -73,6 +73,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
+    private final LandRegistryFeesPage landRegistryFeesPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -109,7 +110,7 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(additionalInformationPage)
                 .add(new MoneyOwedPage())
                 .add(new LegalCostsPage())
-                .add(new LandRegistryFeesPage())
+                .add(landRegistryFeesPage)
                 .add(new RepaymentsPage())
                 .add(new LanguageUsedPage())
                 .add(new StatementOfTruthPlaceHolder());
