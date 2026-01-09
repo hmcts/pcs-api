@@ -68,7 +68,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private boolean caseHasUnsubmittedData(long caseReference, State state) {
         if (State.AWAITING_SUBMISSION_TO_HMCTS == state) {
-            return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
+            UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
+            return draftCaseDataService.hasUnsubmittedCaseData(caseReference, resumePossessionClaim, userId);
         } else {
             return false;
         }

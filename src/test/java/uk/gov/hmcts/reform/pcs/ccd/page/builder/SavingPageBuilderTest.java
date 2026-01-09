@@ -14,11 +14,15 @@ import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,9 +36,12 @@ class SavingPageBuilderTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final String TEST_PAGE_ID = "test-page";
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
+    @Mock
+    private SecurityContextService securityContextService;
     @Mock
     private EventBuilder<PCSCase, UserRole, State> eventBuilder;
     @Mock
@@ -48,8 +55,12 @@ class SavingPageBuilderTest {
 
     @BeforeEach
     void setUp() {
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
-        underTest = new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId);
+        underTest = new SavingPageBuilder(draftCaseDataService, securityContextService, eventBuilder, eventId);
     }
 
     @Test
@@ -71,7 +82,7 @@ class SavingPageBuilderTest {
             .handle(caseDetails, caseDetailsBefore);
 
         // Then
-        verify(draftCaseDataService).patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
+        verify(draftCaseDataService).patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, USER_ID);
         assertThat(response.getData()).isEqualTo(caseData);
     }
 
@@ -101,7 +112,7 @@ class SavingPageBuilderTest {
         // Then
         InOrder inOrder = Mockito.inOrder(pageMidEvent, draftCaseDataService);
         inOrder.verify(pageMidEvent).handle(caseDetails, caseDetailsBefore);
-        inOrder.verify(draftCaseDataService).patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
+        inOrder.verify(draftCaseDataService).patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, USER_ID);
         assertThat(response).isEqualTo(pageMidEventResponse);
     }
 

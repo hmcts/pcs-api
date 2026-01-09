@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -14,10 +15,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -28,6 +31,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 public class ResumeClaim implements CcdPageConfiguration {
 
     private final DraftCaseDataService draftCaseDataService;
+    private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
     @Override
@@ -67,7 +71,10 @@ public class ResumeClaim implements CcdPageConfiguration {
         log.debug("Resuming claim - keep existing answers = " + caseData.getResumeClaimKeepAnswers());
 
         if (caseData.getResumeClaimKeepAnswers() == YesOrNo.YES) {
-            draftCaseDataService.getUnsubmittedCaseData(caseReference, resumePossessionClaim)
+            UserInfo userInfo = securityContextService.getCurrentUserDetails();
+            UUID userId = UUID.fromString(userInfo.getUid());
+
+            draftCaseDataService.getUnsubmittedCaseData(caseReference, resumePossessionClaim, userId)
                 .ifPresentOrElse(
                     unsubmittedCaseData -> modelMapper.map(unsubmittedCaseData, caseData),
                     () -> {

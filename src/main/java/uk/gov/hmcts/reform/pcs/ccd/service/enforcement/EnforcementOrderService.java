@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -16,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +30,7 @@ public class EnforcementOrderService {
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
+    private final SecurityContextService securityContextService;
 
     public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
         return enforcementOrderRepository.findById(id)
@@ -37,7 +40,9 @@ public class EnforcementOrderService {
     @Transactional
     public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
         createEnforcementOrder(caseReference, enforcementOrder);
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
+        UserInfo userInfo = securityContextService.getCurrentUserDetails();
+        UUID userId = UUID.fromString(userInfo.getUid());
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder, userId);
     }
 
     private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {

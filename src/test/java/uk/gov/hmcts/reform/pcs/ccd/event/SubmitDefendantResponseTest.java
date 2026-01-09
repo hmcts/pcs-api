@@ -58,6 +58,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
+        UserInfo userInfo = UserInfo.builder()
+            .uid(UUID.randomUUID().toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
         // When
         callSubmitHandler(caseData);
 
@@ -65,7 +71,8 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.submitDefendantResponse)
+            eq(EventId.submitDefendantResponse),
+            any(UUID.class)
         );
 
     }
@@ -115,7 +122,8 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.submitDefendantResponse)
+            eq(EventId.submitDefendantResponse),
+            eq(defendantUserId)
         );
     }
 
@@ -208,6 +216,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
+        UserInfo userInfo = UserInfo.builder()
+            .uid(UUID.randomUUID().toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
         // When
         callSubmitHandler(caseData);
 
@@ -215,7 +229,8 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.submitDefendantResponse)
+            eq(EventId.submitDefendantResponse),
+            any(UUID.class)
         );
     }
 
@@ -227,6 +242,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
+        UserInfo userInfo = UserInfo.builder()
+            .uid(UUID.randomUUID().toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
         // When
         callSubmitHandler(caseData);
 
@@ -234,7 +255,8 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
-            eq(EventId.submitDefendantResponse)
+            eq(EventId.submitDefendantResponse),
+            any(UUID.class)
         );
     }
 
@@ -250,6 +272,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .submitDraftAnswers(null)
             .build();
 
+        UserInfo userInfo = UserInfo.builder()
+            .uid(UUID.randomUUID().toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
         // When
         callSubmitHandler(caseData);
 
@@ -257,7 +285,8 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
-            eq(EventId.submitDefendantResponse)
+            eq(EventId.submitDefendantResponse),
+            any(UUID.class)
         );
     }
 

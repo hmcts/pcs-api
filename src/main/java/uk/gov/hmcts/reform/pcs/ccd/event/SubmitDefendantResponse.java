@@ -75,6 +75,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
             .forename(matchedDefendant.getFirstName())
             .surname(matchedDefendant.getLastName())
             .contactAddress(matchedDefendant.getCorrespondenceAddress())
+            .idamId(matchedDefendant.getIdamUserId())
             .build();
 
         DefendantResponse defendantResponse = DefendantResponse.builder()
@@ -91,7 +92,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
 
         // Save filtered draft (not full case data)
         draftCaseDataService.patchUnsubmittedEventData(
-            caseReference, filteredDraft, EventId.submitDefendantResponse);
+            caseReference, filteredDraft, EventId.submitDefendantResponse, authenticatedUserId);
 
         return caseData;
     }
@@ -102,6 +103,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         long caseReference = eventPayload.caseReference();
         DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
         YesOrNo submitDraft = eventPayload.caseData().getSubmitDraftAnswers();
+        UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
         if (defendantResponse != null && submitDraft != null) {
             if (submitDraft.toBoolean()) {
@@ -116,7 +118,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
 
                 // Update draft with filtered data
                 draftCaseDataService.patchUnsubmittedEventData(
-                    caseReference, filteredDraft, submitDefendantResponse);
+                    caseReference, filteredDraft, submitDefendantResponse, userId);
             }
         }
         return SubmitResponse.defaultResponse();

@@ -11,19 +11,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public class SavingPageBuilder extends PageBuilder {
 
     private final DraftCaseDataService draftCaseDataService;
+    private final SecurityContextService securityContextService;
     private final EventId eventId;
 
     public SavingPageBuilder(DraftCaseDataService draftCaseDataService,
+                             SecurityContextService securityContextService,
                              EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId) {
 
         super(eventBuilder);
         this.draftCaseDataService = draftCaseDataService;
+        this.securityContextService = securityContextService;
         this.eventId = eventId;
     }
 
@@ -76,8 +81,9 @@ public class SavingPageBuilder extends PageBuilder {
         private void patchUnsubmittedData(CaseDetails<PCSCase, State> details) {
             long caseReference = details.getId();
             PCSCase caseData = details.getData();
+            UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
-            draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
+            draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId, userId);
         }
 
     }
