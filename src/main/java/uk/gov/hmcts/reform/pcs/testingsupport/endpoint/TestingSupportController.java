@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,14 +30,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -49,6 +46,7 @@ import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,7 +68,7 @@ public class TestingSupportController {
     private final DocAssemblyService docAssemblyService;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
-    private final ClaimRepository claimRepository;
+    private final PartyRepository partyRepository;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
@@ -81,7 +79,7 @@ public class TestingSupportController {
         DocAssemblyService docAssemblyService,
         EligibilityService eligibilityService,
         PcsCaseRepository pcsCaseRepository,
-        ClaimRepository claimRepository,
+        PartyRepository partyRepository,
         PartyAccessCodeRepository partyAccessCodeRepository,
         PcsCaseService pcsCaseService,
         AccessCodeGenerationService accessCodeGenerationService
@@ -91,7 +89,7 @@ public class TestingSupportController {
         this.docAssemblyService = docAssemblyService;
         this.eligibilityService = eligibilityService;
         this.pcsCaseRepository = pcsCaseRepository;
-        this.claimRepository = claimRepository;
+        this.partyRepository = partyRepository;
         this.partyAccessCodeRepository = partyAccessCodeRepository;
         this.pcsCaseService = pcsCaseService;
         this.accessCodeGenerationService = accessCodeGenerationService;
@@ -358,11 +356,13 @@ public class TestingSupportController {
 
             ClaimEntity mainClaim = ClaimEntity.builder()
                 .pcsCase(caseEntity)
+                .costsClaimed(false)
                 .build();
 
-            claimRepository.save(mainClaim);
+            caseEntity.addClaim(mainClaim);
 
             // Create defendants
+            List<PartyEntity> createdPartyEntities = new ArrayList<>();
             for (CreateTestCaseRequest.DefendantRequest defendantRequest : request.getDefendants()) {
                 // Create PartyEntity
                 PartyEntity partyEntity = PartyEntity.builder()
@@ -372,13 +372,17 @@ public class TestingSupportController {
                     .idamId(defendantRequest.getIdamUserId())
                     .build();
 
+                createdPartyEntities.add(partyEntity);
+
                 caseEntity.addParty(partyEntity);
                 mainClaim.addParty(partyEntity, DEFENDANT);
             }
 
             // Save to DB to generate party IDs
+            partyRepository.saveAllAndFlush(createdPartyEntities);
+
+            // Save case with parties and defendants
             pcsCaseRepository.save(caseEntity);
-            pcsCaseRepository.flush();
 
             log.info("Created test case {} with {} defendants", caseReference, request.getDefendants().size());
 

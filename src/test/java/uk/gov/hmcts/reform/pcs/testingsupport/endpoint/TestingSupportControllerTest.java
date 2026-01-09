@@ -17,17 +17,14 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
@@ -68,7 +65,7 @@ class TestingSupportControllerTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
-    private ClaimRepository claimRepository;
+    private PartyRepository partyRepository;
     @Mock
     private PartyAccessCodeRepository partyAccessCodeRepository;
     @Mock
@@ -83,7 +80,7 @@ class TestingSupportControllerTest {
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  docAssemblyService, eligibilityService,
-                                                 pcsCaseRepository, claimRepository,
+                                                 pcsCaseRepository, partyRepository,
                                                  partyAccessCodeRepository, pcsCaseService,
                                                  accessCodeGenerationService
         );
@@ -721,7 +718,7 @@ class TestingSupportControllerTest {
             idamUserId2, partyId2
         );
 
-        stubEntityFlush(caseEntity, idamIdToPartyIdMap);
+        stubPartyEntityFlush(idamIdToPartyIdMap);
 
         List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
         PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
@@ -790,7 +787,7 @@ class TestingSupportControllerTest {
         when(pcsCaseService.createCase(anyLong(), eq(propertyAddress), eq(legislativeCountry)))
             .thenReturn(caseEntity);
 
-        stubEntityFlush(caseEntity);
+        stubPartyEntityFlush();
 
         when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
             .thenReturn(new ArrayList<>());
@@ -843,7 +840,7 @@ class TestingSupportControllerTest {
         when(pcsCaseService.createCase(caseReference, propertyAddress, legislativeCountry))
             .thenReturn(caseEntity);
 
-        stubEntityFlush(caseEntity);
+        stubPartyEntityFlush();
 
         when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
             .thenReturn(new ArrayList<>());
@@ -1140,30 +1137,28 @@ class TestingSupportControllerTest {
 
     /**
      * Stub the assigning of entity IDs on the repo flush, as would be done by the DB.
-     * @param caseEntity The case entity
      */
-    private void stubEntityFlush(PcsCaseEntity caseEntity) {
-        stubEntityFlush(caseEntity, Map.of());
+    private void stubPartyEntityFlush() {
+        stubPartyEntityFlush(Map.of());
     }
 
     /**
      * Stub the assigning of entity IDs on the repo flus, with the option to specify
      * what party IDs should be assigned based on the IDAM ID, otherwise a random UUID
      * will be assigned.
-     * @param caseEntity The case entity
      * @param idamIdToPartyIdMap Map from IDAM ID to Party ID to assign
      */
-    private void stubEntityFlush(PcsCaseEntity caseEntity, Map<UUID, UUID> idamIdToPartyIdMap) {
+    private void stubPartyEntityFlush(Map<UUID, UUID> idamIdToPartyIdMap) {
         doAnswer(invocationOnMock -> {
-            caseEntity.getParties()
-                .forEach(party -> {
-                    if (party.getIdamId() != null) {
-                        party.setId(idamIdToPartyIdMap.getOrDefault(party.getIdamId(), UUID.randomUUID()));
-                    } else {
-                        party.setId(UUID.randomUUID());
-                    }
-                });
+            List<PartyEntity> parties = invocationOnMock.getArgument(0);
+            parties.forEach(party -> {
+                if (party.getIdamId() != null) {
+                    party.setId(idamIdToPartyIdMap.getOrDefault(party.getIdamId(), UUID.randomUUID()));
+                } else {
+                    party.setId(UUID.randomUUID());
+                }
+            });
             return null;
-        }).when(pcsCaseRepository).flush();
+        }).when(partyRepository).saveAllAndFlush(any());
     }
 }
