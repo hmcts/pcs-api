@@ -49,18 +49,20 @@ public class DraftCaseDataService {
     }
 
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
+        String patchCaseDataJson = writeCaseDataJson(eventData);
+        patchUnsubmittedCaseData(caseReference, eventId, patchCaseDataJson);
+    }
 
-        String patchEventDataJson = writeCaseDataJson(eventData);
-
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchCaseDataJson) {
         DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository.findByCaseReferenceAndEventId(
                 caseReference, eventId)
             .map(existingDraft -> {
-                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson));
+                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchCaseDataJson));
                 return existingDraft;
             }).orElseGet(() -> {
                 DraftCaseDataEntity newDraft = new DraftCaseDataEntity();
                 newDraft.setCaseReference(caseReference);
-                newDraft.setCaseData(patchEventDataJson);
+                newDraft.setCaseData(patchCaseDataJson);
                 newDraft.setEventId(eventId);
                 return newDraft;
             });
@@ -82,7 +84,7 @@ public class DraftCaseDataService {
         draftCaseDataRepository.deleteByCaseReferenceAndEventId(caseReference, eventId);
     }
 
-    private PCSCase parseCaseDataJson(String caseDataJson) {
+    public PCSCase parseCaseDataJson(String caseDataJson) {
         try {
             return objectMapper.readValue(caseDataJson, PCSCase.class);
         } catch (JsonProcessingException e) {
