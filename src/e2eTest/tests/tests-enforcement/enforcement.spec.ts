@@ -29,7 +29,10 @@ import {
   peopleWillBeEvicted,
   youNeedPermission,
   languageUsed,
-  peopleYouWantToEvict
+  peopleYouWantToEvict,
+  suspendedOrder,
+  statementOfTruthOne,
+  statementOfTruthTwo
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -306,7 +309,24 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: languageUsed.languageUsedRadioOptions.englishRadioOption,
         button: languageUsed.continueButton
       });
-      await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
+      await performAction('selectLanguageUsed', {
+        question: languageUsed.whichLanguageUsedQuestion,
+        option: languageUsed.languageUsedRadioOptions.englishRadioOption
+      });
+      await performValidation('mainHeader', suspendedOrder.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: suspendedOrder.errorValidation,
+        validationType: suspendedOrder.errorValidationType.three,
+        inputArray: suspendedOrder.errorValidationField.errorRadioOption,
+        question: suspendedOrder.suspendedOrderQuestion,
+        option: suspendedOrder.yesRadioOption,
+        button: suspendedOrder.continueButton
+      });
+      await performAction('confirmSuspendedOrder', {
+        question: suspendedOrder.suspendedOrderQuestion,
+        option: suspendedOrder.yesRadioOption
+      });
+      await performValidation('mainHeader', statementOfTruthOne.mainHeader);
     });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -400,7 +420,16 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: rePayments.enterTheAmountTextInput
     });
     await performValidation('mainHeader', languageUsed.mainHeader);
-    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
+    await performAction('selectLanguageUsed', {
+      question: languageUsed.whichLanguageUsedQuestion,
+      option: languageUsed.languageUsedRadioOptions.englishRadioOption
+    });
+    await performValidation('mainHeader', suspendedOrder.mainHeader);
+    await performAction('confirmSuspendedOrder', {
+      question: suspendedOrder.suspendedOrderQuestion,
+      option: suspendedOrder.noRadioOption
+    });
+    await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -490,7 +519,16 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: rePayments.enterTheAmountTextInput
     });
     await performValidation('mainHeader', languageUsed.mainHeader);
-    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
+    await performAction('selectLanguageUsed', {
+      question: languageUsed.whichLanguageUsedQuestion,
+      option: languageUsed.languageUsedRadioOptions.englishRadioOption
+    });
+    await performValidation('mainHeader', suspendedOrder.mainHeader);
+    await performAction('confirmSuspendedOrder', {
+      question: suspendedOrder.suspendedOrderQuestion,
+      option: suspendedOrder.yesRadioOption
+    });
+    await performValidation('mainHeader', statementOfTruthOne.mainHeader);
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
