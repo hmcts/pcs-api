@@ -20,6 +20,7 @@ public class SuspendedOrderPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWarrantDetails)
             .mandatory(WarrantDetails::getIsSuspendedOrder)
             .done()
+            .done()
             .label("suspendedOrder-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
