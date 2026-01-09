@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
@@ -143,7 +144,8 @@ public class ContactPreferences implements CcdPageConfiguration {
         ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
         if (contactPreferences != null) {
             VerticalYesNo isCorrectClaimantContactAddress = contactPreferences.getIsCorrectClaimantContactAddress();
-            if (isCorrectClaimantContactAddress == VerticalYesNo.NO) {
+            if (isCorrectClaimantContactAddress == VerticalYesNo.NO
+                || contactPreferences.getOrgAddressFound() == YesOrNo.NO) {
                 AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress();
                 List<String> validationErrors = addressValidator.validateAddressFields(contactAddress);
                 if (!validationErrors.isEmpty()) {
