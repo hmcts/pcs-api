@@ -33,27 +33,27 @@ import {
   whatAreYourGroundsForPossession
 } from '@data/page-data';
 import{
+  claimantType,
+  claimType,
+  claimantInformation,
+  defendantDetails,
+  contactPreferences,
+  tenancyLicenceDetails,
+  groundsForPossession,
+  introductoryDemotedOrOtherGroundsForPossession,
+  groundsForPossessionRentArrears,
+  preactionProtocol,
   alternativesToPossession,
   claimantCircumstances,
-  claimantInformation,
-  claimantType,
   claimingCosts,
-  claimType,
-  contactPreferences,
   dailyRentAmount,
   defendantCircumstances,
-  defendantDetails,
-  groundsForPossession,
-  groundsForPossessionRentArrears,
-  introductoryDemotedOrOtherGroundsForPossession,
   mediationAndSettlement,
   moneyJudgment,
   noticeDetails,
-  preactionProtocol,
-  provideMoreDetailsOfClaim,
   rentDetails,
-  tenancyLicenceDetails,
-  checkingNotice
+  checkingNotice,
+  provideMoreDetailsOfClaim
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 

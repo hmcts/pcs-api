@@ -29,26 +29,27 @@ import {
   whatAreYourGroundsForPossessionWales
 } from '@data/page-data';
 import {
-  alternativesToPossession,
-  claimantCircumstances,
-  claimantInformation,
   claimantType,
   claimType,
-  contactPreferences,
-  dailyRentAmount,
-  defendantCircumstances,
+  claimantInformation,
   defendantDetails,
-  groundsForPossession,
-  groundsForPossessionRentArrears,
-  introductoryDemotedOrOtherGroundsForPossession,
-  mediationAndSettlement,
-  moneyJudgment,
-  noticeDetails,
-  preactionProtocol,
-  provideMoreDetailsOfClaim,
-  rentDetails,
+  contactPreferences,
   tenancyLicenceDetails,
-  checkingNotice, claimingCosts
+  groundsForPossession,
+  introductoryDemotedOrOtherGroundsForPossession,
+  groundsForPossessionRentArrears,
+  preactionProtocol,
+  mediationAndSettlement,
+  rentDetails,
+  dailyRentAmount,
+  noticeDetails,
+  moneyJudgment,
+  defendantCircumstances,
+  claimantCircumstances,
+  claimingCosts,
+  alternativesToPossession,
+  provideMoreDetailsOfClaim,
+  checkingNotice
 } from '@data/page-data-figma';
 import {VERY_LONG_TIMEOUT} from 'playwright.config';
 export let caseNumber: string;
