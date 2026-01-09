@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.security.SecureRandom;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -528,9 +529,9 @@ public class TestingSupportController {
 
             //map partyId to defendant
             Map<UUID, Defendant> defendantByPartyId = pcsCaseEntity.getDefendants().stream()
-                .collect(java.util.stream.Collectors.toMap(
+                .collect(Collectors.toMap(
                     Defendant::getPartyId,
-                    d -> d,
+                    Function.identity(),
                     (existing, incoming) -> {
                         throw new IllegalStateException("Duplicate partyId: " + existing.getPartyId());
                     }
