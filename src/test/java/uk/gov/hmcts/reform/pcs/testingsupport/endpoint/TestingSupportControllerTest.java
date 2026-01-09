@@ -1117,7 +1117,7 @@ class TestingSupportControllerTest {
     }
 
     @Test
-    void shouldReturnPins(){
+    void shouldReturnPins() {
         // Given
         long caseReference = 8888888888888888L;
         UUID caseId = UUID.randomUUID();
@@ -1158,8 +1158,8 @@ class TestingSupportControllerTest {
 
         // Then
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        assertThat(response.getBody()!=null
-            && response.getBody().get(accessCodeString)!=null);
+        assertThat(response.getBody() != null
+            && response.getBody().get(accessCodeString) != null);
         assertThat(
             response.getBody().get(accessCodeString).getFirstName().equals(firstName)
                 &&
