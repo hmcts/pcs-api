@@ -1,8 +1,11 @@
 package uk.gov.hmcts.reform.pcs.testingsupport.endpoint;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kagkarlsson.scheduler.SchedulerClient;
 import com.github.kagkarlsson.scheduler.task.Task;
 import com.github.kagkarlsson.scheduler.task.TaskInstance;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,38 +13,38 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
-import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
-import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
+import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import org.assertj.core.api.Assertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -62,6 +65,8 @@ class TestingSupportControllerTest {
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
+    private PartyRepository partyRepository;
+    @Mock
     private PartyAccessCodeRepository partyAccessCodeRepository;
     @Mock
     private PcsCaseService pcsCaseService;
@@ -75,7 +80,8 @@ class TestingSupportControllerTest {
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  docAssemblyService, eligibilityService,
-                                                 pcsCaseRepository, partyAccessCodeRepository, pcsCaseService,
+                                                 pcsCaseRepository, partyRepository,
+                                                 partyAccessCodeRepository, pcsCaseService,
                                                  accessCodeGenerationService
         );
     }
@@ -672,7 +678,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldCreateTestCaseSuccessfully() {
         // Given
-        Long caseReference = 1234567890123456L;
+        long caseReference = 1234567890123456L;
         final UUID caseId = UUID.randomUUID();
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("123 Test Street")
@@ -680,34 +686,39 @@ class TestingSupportControllerTest {
             .postCode("SW1A 1AA")
             .build();
         LegislativeCountry legislativeCountry = LegislativeCountry.ENGLAND;
-        UUID partyId1 = UUID.randomUUID();
-        UUID partyId2 = UUID.randomUUID();
-        UUID idamUserId1 = UUID.randomUUID();
-        UUID idamUserId2 = UUID.randomUUID();
+
+        final UUID partyId1 = UUID.randomUUID();
+        final UUID partyId2 = UUID.randomUUID();
+        final UUID idamUserId1 = UUID.randomUUID();
+        final UUID idamUserId2 = UUID.randomUUID();
 
         CreateTestCaseRequest request = new CreateTestCaseRequest();
         request.setCaseReference(caseReference);
         request.setPropertyAddress(propertyAddress);
         request.setLegislativeCountry(legislativeCountry);
 
-        List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
         CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
-            partyId1, idamUserId1, "John", "Doe"
+            idamUserId1, "John", "Doe"
         );
         CreateTestCaseRequest.DefendantRequest defendant2 = new CreateTestCaseRequest.DefendantRequest(
-            partyId2, idamUserId2, "Jane", "Smith"
+            idamUserId2, "Jane", "Smith"
         );
-        defendants.add(defendant1);
-        defendants.add(defendant2);
-        request.setDefendants(defendants);
+        request.setDefendants(List.of(defendant1, defendant2));
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .id(caseId)
             .caseReference(caseReference)
             .build();
 
-        when(pcsCaseRepository.findByCaseReference(caseReference))
-            .thenReturn(Optional.of(caseEntity));
+        when(pcsCaseService.createCase(caseReference, propertyAddress, legislativeCountry))
+            .thenReturn(caseEntity);
+
+        Map<UUID, UUID> idamIdToPartyIdMap = Map.of(
+            idamUserId1, partyId1,
+            idamUserId2, partyId2
+        );
+
+        stubPartyEntityFlush(idamIdToPartyIdMap);
 
         List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
         PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
@@ -741,7 +752,6 @@ class TestingSupportControllerTest {
         assertThat(response.getBody().getDefendants().get(1).getAccessCode()).isEqualTo("XYZ789");
 
         verify(pcsCaseService).createCase(caseReference, propertyAddress, legislativeCountry);
-        verify(pcsCaseRepository).findByCaseReference(caseReference);
         verify(pcsCaseRepository).save(caseEntity);
         verify(accessCodeGenerationService).createAccessCodesForParties(String.valueOf(caseReference));
     }
@@ -764,7 +774,7 @@ class TestingSupportControllerTest {
 
         List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
         CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
-            null, UUID.randomUUID(), "Bob", "Johnson" // partyId will be auto-generated
+            UUID.randomUUID(), "Bob", "Johnson" // partyId will be auto-generated
         );
         defendants.add(defendant1);
         request.setDefendants(defendants);
@@ -774,8 +784,10 @@ class TestingSupportControllerTest {
             .caseReference(1234567890123456L)
             .build();
 
-        when(pcsCaseRepository.findByCaseReference(anyLong()))
-            .thenReturn(Optional.of(caseEntity));
+        when(pcsCaseService.createCase(anyLong(), eq(propertyAddress), eq(legislativeCountry)))
+            .thenReturn(caseEntity);
+
+        stubPartyEntityFlush();
 
         when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
             .thenReturn(new ArrayList<>());
@@ -790,8 +802,8 @@ class TestingSupportControllerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getCaseId()).isEqualTo(caseId);
         assertThat(response.getBody().getDefendants()).hasSize(1);
-        assertThat(response.getBody().getDefendants().get(0).getPartyId()).isNotNull();
-        assertThat(response.getBody().getDefendants().get(0).getFirstName()).isEqualTo("Bob");
+        assertThat(response.getBody().getDefendants().getFirst().getPartyId()).isNotNull();
+        assertThat(response.getBody().getDefendants().getFirst().getFirstName()).isEqualTo("Bob");
 
         verify(pcsCaseService).createCase(anyLong(), eq(propertyAddress), eq(legislativeCountry));
     }
@@ -799,7 +811,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldCreateTestCaseWithAutoGeneratedPartyIds() {
         // Given
-        Long caseReference = 9876543210987654L;
+        long caseReference = 9876543210987654L;
         final UUID caseId = UUID.randomUUID();
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("789 Test Road")
@@ -815,7 +827,7 @@ class TestingSupportControllerTest {
 
         List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
         CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
-            null, null, "Alice", "Williams" // partyId and idamUserId will be auto-generated
+            null, "Alice", "Williams" // partyId and idamUserId will be auto-generated
         );
         defendants.add(defendant1);
         request.setDefendants(defendants);
@@ -825,8 +837,10 @@ class TestingSupportControllerTest {
             .caseReference(caseReference)
             .build();
 
-        when(pcsCaseRepository.findByCaseReference(caseReference))
-            .thenReturn(Optional.of(caseEntity));
+        when(pcsCaseService.createCase(caseReference, propertyAddress, legislativeCountry))
+            .thenReturn(caseEntity);
+
+        stubPartyEntityFlush();
 
         when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
             .thenReturn(new ArrayList<>());
@@ -840,14 +854,14 @@ class TestingSupportControllerTest {
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getDefendants()).hasSize(1);
-        assertThat(response.getBody().getDefendants().get(0).getPartyId()).isNotNull();
-        assertThat(response.getBody().getDefendants().get(0).getFirstName()).isEqualTo("Alice");
+        assertThat(response.getBody().getDefendants().getFirst().getPartyId()).isNotNull();
+        assertThat(response.getBody().getDefendants().getFirst().getFirstName()).isEqualTo("Alice");
     }
 
     @Test
     void shouldHandleAccessCodeGenerationFailure() {
         // Given
-        Long caseReference = 1111111111111111L;
+        long caseReference = 1111111111111111L;
         final UUID caseId = UUID.randomUUID();
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("999 Test Lane")
@@ -863,7 +877,7 @@ class TestingSupportControllerTest {
 
         List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
         CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
-            UUID.randomUUID(), UUID.randomUUID(), "Test", "User"
+            UUID.randomUUID(), "Test", "User"
         );
         defendants.add(defendant1);
         request.setDefendants(defendants);
@@ -873,8 +887,8 @@ class TestingSupportControllerTest {
             .caseReference(caseReference)
             .build();
 
-        when(pcsCaseRepository.findByCaseReference(caseReference))
-            .thenReturn(Optional.of(caseEntity));
+        when(pcsCaseService.createCase(caseReference, propertyAddress, legislativeCountry))
+            .thenReturn(caseEntity);
 
         doThrow(new RuntimeException("Access code generation failed"))
             .when(accessCodeGenerationService).createAccessCodesForParties(anyString());
@@ -888,13 +902,13 @@ class TestingSupportControllerTest {
         assertThat(response.getStatusCode().value()).isEqualTo(201);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getDefendants()).hasSize(1);
-        assertThat(response.getBody().getDefendants().get(0).getAccessCode()).isNull();
+        assertThat(response.getBody().getDefendants().getFirst().getAccessCode()).isNull();
     }
 
     @Test
     void shouldHandleCaseCreationFailure() {
         // Given
-        Long caseReference = 2222222222222222L;
+        long caseReference = 2222222222222222L;
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("111 Test Drive")
             .postTown("Liverpool")
@@ -909,7 +923,7 @@ class TestingSupportControllerTest {
 
         List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
         CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
-            UUID.randomUUID(), UUID.randomUUID(), "Error", "Test"
+            UUID.randomUUID(), "Error", "Test"
         );
         defendants.add(defendant1);
         request.setDefendants(defendants);
@@ -930,7 +944,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldHandleCaseNotFoundAfterCreation() {
         // Given
-        Long caseReference = 3333333333333333L;
+        long caseReference = 3333333333333333L;
         AddressUK propertyAddress = AddressUK.builder()
             .addressLine1("222 Test Way")
             .postTown("Sheffield")
@@ -945,13 +959,10 @@ class TestingSupportControllerTest {
 
         List<CreateTestCaseRequest.DefendantRequest> defendants = new ArrayList<>();
         CreateTestCaseRequest.DefendantRequest defendant1 = new CreateTestCaseRequest.DefendantRequest(
-            UUID.randomUUID(), UUID.randomUUID(), "NotFound", "Test"
+            UUID.randomUUID(), "NotFound", "Test"
         );
         defendants.add(defendant1);
         request.setDefendants(defendants);
-
-        when(pcsCaseRepository.findByCaseReference(caseReference))
-            .thenReturn(Optional.empty());
 
         // When
         ResponseEntity<CreateTestCaseResponse> response = underTest.createTestCase(
@@ -966,7 +977,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldDeleteCaseSuccessfully() {
         // Given
-        Long caseReference = 4444444444444444L;
+        long caseReference = 4444444444444444L;
         UUID caseId = UUID.randomUUID();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .id(caseId)
@@ -1002,7 +1013,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldDeleteCaseWithNoAccessCodes() {
         // Given
-        Long caseReference = 5555555555555555L;
+        long caseReference = 5555555555555555L;
         UUID caseId = UUID.randomUUID();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .id(caseId)
@@ -1031,7 +1042,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldReturnNotFoundWhenDeletingNonExistentCase() {
         // Given
-        Long caseReference = 6666666666666666L;
+        long caseReference = 6666666666666666L;
 
         when(pcsCaseRepository.findByCaseReference(caseReference))
             .thenReturn(Optional.empty());
@@ -1081,7 +1092,7 @@ class TestingSupportControllerTest {
     @Test
     void shouldHandleDeleteAccessCodesFailure() {
         // Given
-        Long caseReference = 8888888888888888L;
+        long caseReference = 8888888888888888L;
         UUID caseId = UUID.randomUUID();
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .id(caseId)
@@ -1122,5 +1133,32 @@ class TestingSupportControllerTest {
         } catch (Exception e) {
             throw new RuntimeException("Failed to create JsonNode", e);
         }
+    }
+
+    /**
+     * Stub the assigning of entity IDs on the repo flush, as would be done by the DB.
+     */
+    private void stubPartyEntityFlush() {
+        stubPartyEntityFlush(Map.of());
+    }
+
+    /**
+     * Stub the assigning of entity IDs on the repo flus, with the option to specify
+     * what party IDs should be assigned based on the IDAM ID, otherwise a random UUID
+     * will be assigned.
+     * @param idamIdToPartyIdMap Map from IDAM ID to Party ID to assign
+     */
+    private void stubPartyEntityFlush(Map<UUID, UUID> idamIdToPartyIdMap) {
+        doAnswer(invocationOnMock -> {
+            List<PartyEntity> parties = invocationOnMock.getArgument(0);
+            parties.forEach(party -> {
+                if (party.getIdamId() != null) {
+                    party.setId(idamIdToPartyIdMap.getOrDefault(party.getIdamId(), UUID.randomUUID()));
+                } else {
+                    party.setId(UUID.randomUUID());
+                }
+            });
+            return null;
+        }).when(partyRepository).saveAllAndFlush(any());
     }
 }
