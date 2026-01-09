@@ -30,6 +30,7 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
+  addressLine2: createCaseApiData.createCasePayload.propertyAddress.AddressLine2,
   townCity: createCaseApiData.createCasePayload.propertyAddress.PostTown,
   engOrWalPostcode: createCaseApiData.createCasePayload.propertyAddress.PostCode
 };
@@ -122,7 +123,7 @@ export class EnforcementAction implements IAction {
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
       await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
     }
-    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
+    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.addressLine2}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
   }
@@ -250,7 +251,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', vulnerableAdultsAndChildren.continueButton);
   }
   private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
-    await this.addFieldsToMap(accessToTheProperty);
+    await this.addFieldsToMap(anythingElse);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
