@@ -33,7 +33,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
-import { LONG_TIMEOUT } from 'playwright.config';
+import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -56,7 +56,7 @@ test.beforeEach(async ({ page }) => {
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
-    timeout: LONG_TIMEOUT + LONG_TIMEOUT,
+    timeout: VERY_LONG_TIMEOUT,
   });
 });
 
