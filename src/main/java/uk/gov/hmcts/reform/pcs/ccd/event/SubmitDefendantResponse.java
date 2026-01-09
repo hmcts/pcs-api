@@ -94,7 +94,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         draftCaseDataService.patchUnsubmittedEventData(
             caseReference, filteredDraft, EventId.submitDefendantResponse, authenticatedUserId);
 
-        return caseData;
+        return filteredDraft;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -102,11 +102,13 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
 
         long caseReference = eventPayload.caseReference();
         DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
-        YesOrNo submitDraft = eventPayload.caseData().getSubmitDraftAnswers();
+        YesOrNo isFinalSubmit = eventPayload.caseData().getSubmitDraftAnswers();
         UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
-        if (defendantResponse != null && submitDraft != null) {
-            if (submitDraft.toBoolean()) {
+        if (defendantResponse != null && isFinalSubmit != null) {
+            if (isFinalSubmit.toBoolean()) {
+                //find draft data using idam user and case referecce and event
+
                 //Store defendant response to database
                 //This will be implemented in a future ticket.
                 //Note that defendants will be stored in a list
