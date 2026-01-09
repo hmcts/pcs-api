@@ -27,13 +27,6 @@ public class AddressFormatter {
             return null;
         }
 
-<<<<<<< HEAD
-    private static String formatAddressWithDelimiter(AddressUK address, String delimiter) {
-        if (address == null) {
-            return "";
-        }
-=======
->>>>>>> 88d23464c3c49f3f58887fe0f0d05926df71a6c4
         return Stream.of(address.getAddressLine1(), address.getPostTown(), address.getPostCode())
             .filter(StringUtils::isNotBlank)
             .collect(Collectors.joining(delimiter));

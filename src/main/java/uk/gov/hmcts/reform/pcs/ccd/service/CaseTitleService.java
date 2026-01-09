@@ -20,20 +20,14 @@ public class CaseTitleService {
      * @return A markdown string for the case title
      */
     public String buildCaseTitle(PCSCase pcsCase) {
-        String formattedAddress = addressFormatter.formatAddressWithCommas(pcsCase.getPropertyAddress());
-        String addressDisplay = formattedAddress != null ? formattedAddress : "";
-
         return """
                 <p class="govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-1">
                     Case number: ${[CASE_REFERENCE]}
                 </p>
                 <p class="govuk-!-font-size-24 govuk-!-margin-bottom-0">
                     Property address: %s
-<<<<<<< HEAD
-                </p>""".formatted(addressDisplay);
-=======
                 </p>""".formatted(addressFormatter.formatShortAddress(pcsCase.getPropertyAddress(), COMMA_DELIMITER));
->>>>>>> 88d23464c3c49f3f58887fe0f0d05926df71a6c4
+
     }
 
 }
