@@ -16,7 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -82,12 +84,13 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
             ));
         }
 
-        boolean hasOtherDiscretionaryGrounds = caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
-                .getIntroductoryDemotedOrOtherGrounds() == null ? false
-            : caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds()
-            .stream()
-            .anyMatch(ground -> ground != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS
-            );
+        boolean hasOtherDiscretionaryGrounds =
+            Optional.ofNullable(caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
+                                    .getIntroductoryDemotedOrOtherGrounds())
+                .stream()
+                .flatMap(Collection::stream)
+                .anyMatch(grounds -> grounds
+                    != IntroductoryDemotedOrOtherGrounds.RENT_ARREARS);
 
         if (hasOtherDiscretionaryGrounds
             || caseData.getIntroductoryDemotedOrOtherGroundsForPossession()
