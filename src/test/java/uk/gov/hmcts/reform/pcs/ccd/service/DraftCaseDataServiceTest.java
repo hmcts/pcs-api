@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -106,6 +107,8 @@ class DraftCaseDataServiceTest {
         when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.empty());
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId, USER_ID);
@@ -136,6 +139,8 @@ class DraftCaseDataServiceTest {
 
         when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         underTest.patchUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId, USER_ID);
