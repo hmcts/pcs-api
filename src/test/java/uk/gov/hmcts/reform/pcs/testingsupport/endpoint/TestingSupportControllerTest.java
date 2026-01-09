@@ -1185,7 +1185,7 @@ class TestingSupportControllerTest {
     }
 
     @Test
-    void shouldHandleServerError() {
+    void shouldHandleServerErrorWhenReturnPins() {
         // Given
         long caseReference = 1111111111111111L;
 
