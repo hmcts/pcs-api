@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -41,35 +42,34 @@ public class ClaimService {
         ASBQuestionsWales asbQuestions = buildAsbQuestions(pcsCase);
 
         ClaimEntity claimEntity = ClaimEntity.builder()
-            .summary("Main claim")
-            .claimantType(pcsCase.getClaimantType().getValueCode())
+            .claimantType(pcsCase.getClaimantType() != null ? ClaimantType.valueOf(pcsCase.getClaimantType()
+                                                                                        .getValueCode()) : null)
             .againstTrespassers(pcsCase.getClaimAgainstTrespassers())
             .dueToRentArrears(pcsCase.getClaimDueToRentArrears())
-            .claimCosts(pcsCase.getClaimingCostsWanted())
+            .claimCosts(pcsCase.getClaimingCostsWanted())//
             .preActionProtocolFollowed(pcsCase.getPreActionProtocolCompleted())
             .mediationAttempted(pcsCase.getMediationAttempted())
             .mediationDetails(pcsCase.getMediationAttemptedDetails())
             .settlementAttempted(pcsCase.getSettlementAttempted())
             .settlementDetails(pcsCase.getSettlementAttemptedDetails())
-            .claimantCircumstancesProvided(claimantCircumstances.getClaimantCircumstancesSelect() != null ?
-                claimantCircumstances.getClaimantCircumstancesSelect() : null)
-            .claimantCircumstances(claimantCircumstances.getClaimantCircumstancesDetails() != null ?
-                                       claimantCircumstances.getClaimantCircumstancesDetails() : null)
+            .claimantCircumstancesProvided(claimantCircumstances.getClaimantCircumstancesSelect() != null
+                                               ? claimantCircumstances.getClaimantCircumstancesSelect() : null)
+            .claimantCircumstances(claimantCircumstances.getClaimantCircumstancesDetails() != null
+                                       ? claimantCircumstances.getClaimantCircumstancesDetails() : null)
             .additionalDefendants(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
-            .defendantCircumstancesProvided(defendantCircumstances!= null ?
-                                                defendantCircumstances.getHasDefendantCircumstancesInfo()
-                                                : null)
+            .defendantCircumstancesProvided(defendantCircumstances != null
+                                                ? defendantCircumstances.getHasDefendantCircumstancesInfo() : null)//
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
-            .additionalReasonsProvided(additionalReasons.getHasReasons() != null ?
-                                           additionalReasons.getHasReasons() : null)
-            .additionalReasons(additionalReasons.getReasons() != null ?
-                                   additionalReasons.getReasons() : null)
+            .additionalReasonsProvided(additionalReasons.getHasReasons() != null
+                                           ? additionalReasons.getHasReasons() : null)
+            .additionalReasons(additionalReasons.getReasons() != null
+                                   ? additionalReasons.getReasons() : null)//
             .underlesseeOrMortgagee(pcsCase.getHasUnderlesseeOrMortgagee())
             .additionalUnderlesseesOrMortgagees(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
             .additionalDocsProvided(pcsCase.getWantToUploadDocuments())
-            .genAppExpected(pcsCase.getApplicationWithClaim())
-            .languageUsed(pcsCase.getLanguageUsed().getLabel())
+            .genAppExpected(pcsCase.getApplicationWithClaim())//
+            .languageUsed(pcsCase.getLanguageUsed())//
 
             //fields to remove when implementing new possession_alternatives table
             .suspensionOfRightToBuyHousingAct(suspensionOrder != null

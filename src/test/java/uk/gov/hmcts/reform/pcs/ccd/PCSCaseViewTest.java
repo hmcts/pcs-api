@@ -3,9 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,13 +10,12 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
@@ -34,11 +30,9 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -64,6 +58,8 @@ class PCSCaseViewTest {
     private DefendantService defendantService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private ClaimEntity claimEntity;
 
     private PCSCaseView underTest;
 
@@ -153,43 +149,6 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldMapPreActionProtocolCompletedWhenYes() {
-        // Given
-        pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(true);
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @ParameterizedTest
-    @MethodSource("preActionProtocolScenarios")
-    void shouldMapPreActionProtocolCompleted(Boolean databaseFlag,
-                                             VerticalYesNo expectedCaseDataValue) {
-        // Given
-        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(databaseFlag);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(expectedCaseDataValue);
-    }
-
-    private static Stream<Arguments> preActionProtocolScenarios() {
-        return Stream.of(
-            // DB value, expected case data value
-            arguments(false, VerticalYesNo.NO),
-            arguments(true, VerticalYesNo.YES),
-            arguments(null, null)
-        );
-    }
-
-    @Test
     void shouldMapLegislativeCountry() {
         // Given
         LegislativeCountry expectedLegislativeCountry = LegislativeCountry.SCOTLAND;
@@ -200,48 +159,6 @@ class PCSCaseViewTest {
 
         // Then
         assertThat(pcsCase.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
-    }
-
-    @Test
-    void shouldMapClaimantTypeFromDatabaseToCCD() {
-        // Given
-        ClaimantType expectedClaimantType = ClaimantType.COMMUNITY_LANDLORD;
-        when(pcsCaseEntity.getClaimantType()).thenReturn(expectedClaimantType);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getClaimantType()).isNotNull();
-        assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(expectedClaimantType.name());
-        assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(expectedClaimantType.getLabel());
-    }
-
-    @Test
-    void shouldHandleNullClaimantType() {
-        // Given
-        when(pcsCaseEntity.getClaimantType()).thenReturn(null);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getClaimantType()).isNull();
-    }
-
-    @ParameterizedTest
-    @MethodSource("claimantTypeMappingScenarios")
-    void shouldMapAllClaimantTypes(ClaimantType claimantType) {
-        // Given
-        when(pcsCaseEntity.getClaimantType()).thenReturn(claimantType);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getClaimantType()).isNotNull();
-        assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(claimantType.name());
-        assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(claimantType.getLabel());
     }
 
     @Test
@@ -262,16 +179,6 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getAllDefendants())
             .map(ListValue::getValue)
             .containsExactly(defendantDetails1, defendantDetails2);
-    }
-
-    private static Stream<Arguments> claimantTypeMappingScenarios() {
-        return Stream.of(
-            arguments(ClaimantType.PRIVATE_LANDLORD),
-            arguments(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING),
-            arguments(ClaimantType.COMMUNITY_LANDLORD),
-            arguments(ClaimantType.MORTGAGE_LENDER),
-            arguments(ClaimantType.OTHER)
-        );
     }
 
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {

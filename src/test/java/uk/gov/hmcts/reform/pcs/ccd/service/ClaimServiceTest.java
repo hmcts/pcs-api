@@ -100,10 +100,9 @@ class ClaimServiceTest {
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
-        assertThat(createdClaimEntity.getSummary()).isEqualTo(expectedClaimName);
         assertThat(createdClaimEntity.getAdditionalReasons()).isEqualTo(expectedAdditionalReasons);
         assertThat(createdClaimEntity.getClaimCosts()).isEqualTo(VerticalYesNo.YES);
-        assertThat(createdClaimEntity.getApplicationWithClaim()).isTrue();
+        assertThat(createdClaimEntity.getGenAppExpected()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getClaimantCircumstances())
                 .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
         assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
@@ -128,11 +127,13 @@ class ClaimServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
         PartyEntity claimantPartyEntity = new PartyEntity();
 
+        VerticalYesNo defendantInfoProvided = VerticalYesNo.YES;
         String circumstancesInfo = "Some circumstance Info";
 
         DefendantCircumstances defendantCircumstances = mock(DefendantCircumstances.class);
         when(pcsCase.getDefendantCircumstances()).thenReturn(defendantCircumstances);
         when(defendantCircumstances.getDefendantCircumstancesInfo()).thenReturn(circumstancesInfo);
+        when(defendantCircumstances.getHasDefendantCircumstancesInfo()).thenReturn(defendantInfoProvided);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -146,6 +147,35 @@ class ClaimServiceTest {
 
         // Then
         assertThat(createdClaimEntity.getDefendantCircumstances()).isEqualTo(circumstancesInfo);
+        assertThat(createdClaimEntity.getDefendantCircumstancesProvided()).isEqualTo(defendantInfoProvided);
+    }
+
+    @Test
+    void shouldCreateMainClaim_WithClaimantCircumstancesDetails() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
+
+        VerticalYesNo claimantInfoProvided = VerticalYesNo.NO;
+        String circumstancesInfo = "example circumstance Info";
+
+        ClaimantCircumstances claimantCircumstances = mock(ClaimantCircumstances.class);
+        when(pcsCase.getClaimantCircumstances()).thenReturn(claimantCircumstances);
+        when(claimantCircumstances.getClaimantCircumstancesSelect()).thenReturn(claimantInfoProvided);
+        when(claimantCircumstances.getClaimantCircumstancesDetails()).thenReturn(circumstancesInfo);
+
+        AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
+        when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
+        when(additionalReasons.getReasons()).thenReturn("example reasons");
+        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.NO);
+        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(List.of());
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+
+        // Then
+        assertThat(createdClaimEntity.getClaimantCircumstances()).isEqualTo(circumstancesInfo);
+        assertThat(createdClaimEntity.getClaimantCircumstancesProvided()).isEqualTo(claimantInfoProvided);
     }
 
     @Test

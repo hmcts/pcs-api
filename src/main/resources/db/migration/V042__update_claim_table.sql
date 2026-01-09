@@ -1,4 +1,4 @@
--- 1. Drop FK constraints
+-- Drop FK constraints
 ALTER TABLE claim_party
 DROP CONSTRAINT IF EXISTS claim_party_claim_id_fkey;
 
@@ -8,16 +8,16 @@ DROP CONSTRAINT IF EXISTS claim_ground_claim_id_fkey;
 ALTER TABLE enforcement.enf_case
 DROP CONSTRAINT IF EXISTS enf_case_claim_id_fkey;
 
--- 2. Drop old claim table
+-- Drop old claim table
 DROP TABLE IF EXISTS claim;
 
--- 3. Create YES_NO type
+-- Create YES_NO type
 CREATE TYPE YES_NO AS ENUM ('YES', 'NO');
 
--- 4. Recreate claim table
+-- Recreate claim table
 CREATE TABLE claim (
                      id UUID PRIMARY KEY,
-                     version INT NOT NULL,
+                     version INT,
                      case_id uuid references public.pcs_case (id),
                      claimant_type TEXT,
                      against_trespassers YES_NO,
@@ -40,10 +40,8 @@ CREATE TABLE claim (
                      additional_docs_provided YES_NO,
                      gen_app_expected YES_NO,
                      language_used TEXT,
-                     summary TEXT,
 
                      --columns to remove when implementing new possession_alternatives table
-                     application_with_claim BOOLEAN,
                      suspension_of_right_to_buy_housing_act VARCHAR(30),
                      suspension_of_right_to_buy_reason VARCHAR(250),
                      demotion_of_tenancy_housing_act VARCHAR(30),
@@ -53,7 +51,7 @@ CREATE TABLE claim (
                      asb_questions JSONB
 );
 
--- 5. Re-add FK constraints
+-- Re-add FK constraints
 ALTER TABLE claim_party
   ADD CONSTRAINT claim_party_claim_id_fkey
     FOREIGN KEY (claim_id) REFERENCES claim(id);
@@ -66,7 +64,7 @@ ALTER TABLE enforcement.enf_case
   ADD CONSTRAINT enf_case_claim_id_fkey
     FOREIGN KEY (claim_id) REFERENCES claim(id);
 
--- 6. Drop columns from pcs_case
+-- Drop columns from pcs_case
 ALTER TABLE pcs_case
     DROP COLUMN mediation_attempted,
     DROP COLUMN mediation_attempted_details,

@@ -20,7 +20,9 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
@@ -51,14 +53,13 @@ public class ClaimEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private Integer version;
-
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "case_id")
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
-    private String claimantType;
+    @Enumerated(EnumType.STRING)
+    private ClaimantType claimantType;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -126,12 +127,10 @@ public class ClaimEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo genAppExpected;
 
-    private String languageUsed;
-
-    private String summary;
+    @Enumerated(EnumType.STRING)
+    private LanguageUsed languageUsed;
 
     // Columns to remove later when possession_alternatives table is implemented
-    private Boolean applicationWithClaim;
 
     @Enumerated(EnumType.STRING)
     private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct;

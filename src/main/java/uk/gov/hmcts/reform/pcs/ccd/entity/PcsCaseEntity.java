@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,7 +79,7 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimEntity> claims = new HashSet<>();
+    private List<ClaimEntity> claims = new ArrayList<>();
 
     @Column(name = "defendant_details")
     @JdbcTypeCode(SqlTypes.JSON)
