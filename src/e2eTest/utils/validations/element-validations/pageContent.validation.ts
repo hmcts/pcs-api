@@ -97,6 +97,7 @@ export class PageContentValidation implements IValidation {
   }
 
   async validateCurrentPage(page: Page): Promise<void> {
+    await page.waitForLoadState('load');
     const pageUrl = page.url();
 
     if (PageContentValidation.isCYAPage(pageUrl)) {
