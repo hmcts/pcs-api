@@ -1,0 +1,21 @@
+export const defendantCircumstances = {
+  makeAClaimCaption: 'Make a claim',
+  mainHeader: `Defendants’ circumstances`,
+  caseNumberParagraph: 'Case number:',
+  propertyAddressParagraph: 'Property address',
+  youCanUseThisSectionParagraph: `You can use this section to tell us anything relevant about the defendants’ financial or personal situation.`,
+  isThereAnyInformationQuestion: `Is there any information you’d like to provide about the defendants’ circumstances?`,
+  thisCanBeAnyKnownHintText: `This can be any known details or any attempts made to obtain details`,
+  yesRadioOption: 'Yes',
+  noRadioOption: `No`,
+  giveDetailsHiddenTextLabel: `Give details about the defendants’ circumstances`,
+  giveDetailsHiddenTextInput: ``,
+  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
+  chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
+  onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,
+  thisWillSaveYourProgressHiddenParagraph: `This will save your progress and take you to the case overview.`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`
+};

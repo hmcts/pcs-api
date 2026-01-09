@@ -1,0 +1,17 @@
+export const moneyJudgment = {
+  makeAClaimCaption: `Make a claim`,
+  mainHeader: `Money judgment`,
+  caseNumberParagraph: `Case number: `,
+  PropertyAddressParagraph: 'Property address',
+  doYouWantTheCourtQuestion: `Do you want the court to make a judgment for the outstanding arrears?`,
+  yesRadioOption: `Yes`,
+  noRadioOption: `No`,
+  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
+  chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
+  onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,
+  thisWillSaveYourProgressHiddenParagraph: `This will save your progress and take you to the case overview.`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`,
+};
