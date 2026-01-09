@@ -1,0 +1,23 @@
+export const mediationAndSettlement = {
+  makeAClaimCaption: `Make a claim`,
+  mainHeader: `Mediation and settlement`,
+  caseNumberParagraph: `Case number:`,
+  PropertyAddressParagraph: `Property address:`,
+  mediationIsWhenAnImpartialParagraph: `Mediation is when an impartial professional (the mediator) helps both sides work out an agreement.`,
+  haveYouAttemptedMediationWithQuestion: `Have you attempted mediation with the defendants?`,
+  yesRadioOption: `Yes`,
+  noRadioOption: `No`,
+  giveDetailsAboutTheAttemptedHiddenTextLabel: `Give details about the attempted mediation and what the outcome was`,
+  youCanEnterUpToHiddenHintText: `You can enter up to 250 characters`,
+  ifYourClaimIsOnParagraph: `If your claim is on the grounds of rent arrears, this includes any steps you’ve taken to recover the arrears or to agree a repayment plan.`,
+  haveYouTriedToReachQuestion: `Have you tried to reach a settlement with the defendants?`,
+  explainWhatStepsYouHaveTakenHiddenTextLabel: `Explain what steps you’ve taken to reach a settlement`,
+  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
+  chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
+  onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,
+  thisWillSaveYourProgressHiddenParagraph: `This will save your progress and take you to the case overview.`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`
+};

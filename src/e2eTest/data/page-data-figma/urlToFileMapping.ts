@@ -1,4 +1,3 @@
-
 export default {
   'createPossessionClaimstartTheService': 'startTheService',
   'createPossessionClaimenterPropertyAddress': 'enterPropertyAddress',
@@ -11,5 +10,15 @@ export default {
   'resumePossessionClaimtenancyLicenceDetails':'tenancyLicenceDetails',
   'resumePossessionClaimgroundForPossessionRentArrears':'groundForPossessionRentArrears',
   'resumePossessionClaimintroductoryDemotedOrOtherGroundsForPossession':'introductoryDemotedOrOtherGroundsForPossession',
-  'resumePossessionClaimpreActionProtocol':'preactionProtocol'
+  'resumePossessionClaimpreActionProtocol':'preactionProtocol',
+  'resumePossessionClaimmediationAndSettlement': 'mediationAndSettlement',
+  'resumePossessionClaimcheckingNotice': 'checkingNotice',
+  'resumePossessionClaimnoticeDetails': 'noticeDetails',
+  'resumePossessionClaimclaimantCircumstances': 'claimantCircumstances',
+  'resumePossessionClaimdefendantCircumstances': 'defendantCircumstances',
+  'resumePossessionClaimalternativesToPossession': 'alternativesToPossession',
+  'resumePossessionClaimclaimingCosts': 'claimingCosts',
+  'resumePossessionClaimrentDetails': 'rentDetails',
+  'resumePossessionClaimdailyRentAmount': 'dailyRentAmount',
+  'resumePossessionClaimmoneyJudgment': 'moneyJudgment'
 };
