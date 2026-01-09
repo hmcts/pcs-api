@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -18,6 +19,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,5 +54,62 @@ class ContactPreferencesTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+    }
+
+    @Test
+    void shouldReturnValidationErrorsWhenOrgAddressNotFoundAndOverrideAddressInvalid() {
+        // Given
+        ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            .orgAddressFound(YesOrNo.NO)
+            .overriddenClaimantContactAddress(null)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantContactPreferences(contactPreferences)
+            .build();
+
+        List<String> expectedErrors = List.of("addressLine1 missing");
+        when(addressValidator.validateAddressFields(null)).thenReturn(expectedErrors);
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isEqualTo(expectedErrors);
+        verify(addressValidator).validateAddressFields(null);
+    }
+
+    @Test
+    void shouldNotValidateOverrideAddressWhenOrgAddressFoundAndUserSaysAddressCorrect() {
+        // Given
+        ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            .orgAddressFound(YesOrNo.YES)
+            .isCorrectClaimantContactAddress(VerticalYesNo.YES)
+            .overriddenClaimantContactAddress(null)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantContactPreferences(contactPreferences)
+            .build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+        verifyNoInteractions(addressValidator);
+    }
+
+    @Test
+    void shouldNotErrorWhenContactPreferencesNull() {
+        // Given
+        PCSCase caseData = PCSCase.builder().claimantContactPreferences(null).build();
+
+        // When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        // Then
+        assertThat(response.getErrors()).isNull();
+        verifyNoInteractions(addressValidator);
     }
 }
