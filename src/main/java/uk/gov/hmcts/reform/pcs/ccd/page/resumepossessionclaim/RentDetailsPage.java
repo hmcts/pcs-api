@@ -36,6 +36,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
                     .mandatory(RentDetails::getOtherFrequency, "rentDetails_Frequency=\"OTHER\"")
                     .mandatory(RentDetails::getDailyCharge, "rentDetails_Frequency=\"OTHER\"")
                     .readonly(RentDetails::getCalculatedDailyCharge, NEVER_SHOW)
+                    .readonly(RentDetails::getFormattedCalculatedDailyCharge, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
