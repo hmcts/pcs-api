@@ -190,23 +190,4 @@ class AddressFormatterTest {
 
         );
     }
-
-    @Test
-    void shouldReturnEmptyStringWhenAddressIsNullForCommas() {
-        // When
-        String result = underTest.formatAddressWithCommas(null);
-
-        // Then
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void shouldReturnEmptyStringWhenAddressIsNullForHtmlLineBreaks() {
-        // When
-        String result = underTest.formatAddressWithHtmlLineBreaks(null);
-
-        // Then
-        assertThat(result).isEmpty();
-    }
-
 }

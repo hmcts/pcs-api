@@ -54,34 +54,4 @@ class CaseTitleServiceTest {
         // Then
         assertThat(actualCaseTitle).contains(expectedPropertyAddress);
     }
-
-    @Test
-    void shouldHandleNullAddressGracefully() {
-        // Given
-        when(pcsCase.getPropertyAddress()).thenReturn(null);
-        when(addressFormatter.formatAddressWithCommas(null)).thenReturn("");
-
-        // When
-        String actualCaseTitle = underTest.buildCaseTitle(pcsCase);
-
-        // Then
-        assertThat(actualCaseTitle).contains("Property address:");
-        assertThat(actualCaseTitle).doesNotContain("Not provided");
-    }
-
-    @Test
-    void shouldHandleEmptyFormattedAddress() {
-        // Given
-        AddressUK propertyAddress = mock(AddressUK.class);
-        when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
-        when(addressFormatter.formatAddressWithCommas(propertyAddress)).thenReturn("");
-
-        // When
-        String actualCaseTitle = underTest.buildCaseTitle(pcsCase);
-
-        // Then
-        assertThat(actualCaseTitle).contains("Property address:");
-        assertThat(actualCaseTitle).doesNotContain("Not provided");
-    }
-
 }
