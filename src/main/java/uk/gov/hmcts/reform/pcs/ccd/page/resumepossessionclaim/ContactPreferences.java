@@ -74,7 +74,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     """, ORG_ADDRESS_FOUND)
             .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
-                        Your My HMCTS registered address is:
+                        Your organisation's My HMCTS registered address is:
                     </h3>
                     <p class="govuk-body-s govuk-!-margin-top-1">
                         ${formattedClaimantContactAddress}
