@@ -14,7 +14,7 @@ export class ClickRadioButtonAction implements IAction {
 
   private async clickRadioButton(locator: any): Promise<boolean> {
     const count = await locator.count();
-    if (count === 1) {
+    if (count === 1 && await locator.isVisible()) {
       await locator.click();
       return true;
     }
@@ -25,7 +25,7 @@ export class ClickRadioButtonAction implements IAction {
     const questionSpan = page.locator(`span.form-label:has-text("${question}")`).nth(idx);
     return questionSpan.locator('xpath=ancestor::div[contains(@class, "form-group")][1]')
       .locator('div.multiple-choice')
-      .filter({ has: page.getByRole('radio', { name: option, exact: true }) })
+      .filter({ has: page.locator('label.form-label').filter({ hasText: new RegExp(`^${this.escapeRegex(option)}$`) }) })
       .locator('input[type="radio"]');
   }
 
