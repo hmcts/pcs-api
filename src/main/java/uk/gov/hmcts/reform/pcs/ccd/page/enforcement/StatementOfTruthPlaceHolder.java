@@ -11,6 +11,7 @@ public class StatementOfTruthPlaceHolder implements CcdPageConfiguration {
         pageBuilder
                 .page("statementOfTruthPlaceHolder")
                 .pageLabel("Statement of truth (place holder)")
+                .showCondition("isSuspendedOrder=\"YES\"")
                 .label("statementOfTruthPlaceHolder-content", "---")
                 .label("statementOfTruthPlaceHolder-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

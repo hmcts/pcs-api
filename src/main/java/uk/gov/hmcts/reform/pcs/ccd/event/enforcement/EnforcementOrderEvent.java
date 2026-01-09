@@ -37,6 +37,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.PropertyAccessDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ProtestorGroupRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.LanguageUsedPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.RepaymentsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.StatementOfTruthPlaceHolder2;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.SuspendedOrderPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VerbalOrWrittenThreatsRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.ViolentAggressiveRiskPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcement.VulnerableAdultsChildrenPage;
@@ -114,7 +116,9 @@ public class EnforcementOrderEvent implements CCDConfig<PCSCase, State, UserRole
                 .add(landRegistryFeesPage)
                 .add(new RepaymentsPage())
                 .add(new LanguageUsedPage())
-                .add(new StatementOfTruthPlaceHolder());
+                .add(new SuspendedOrderPage())
+                .add(new StatementOfTruthPlaceHolder())
+                .add(new StatementOfTruthPlaceHolder2());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
