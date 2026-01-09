@@ -1,6 +1,6 @@
 export const moneyJudgment = {
   makeAClaimCaption: `Make a claim`,
-  mainHeaderCaption: `Money judgment`,
+  mainHeader: `Money judgment`,
   caseNumberParagraph: `Case number: `,
   PropertyAddressParagraph: 'Property address',
   doYouWantTheCourtQuestion: `Do you want the court to make a judgment for the outstanding arrears?`,

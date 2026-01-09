@@ -1,4 +1,4 @@
-export const claimingCostsPageData = {
+export const claimingCosts = {
   makeAClaimCaption: 'Make a claim',
   mainHeader: `Claiming costs`,
   caseNumberParagraph: 'Case number:',
