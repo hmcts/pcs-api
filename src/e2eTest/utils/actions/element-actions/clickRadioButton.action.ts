@@ -25,7 +25,7 @@ export class ClickRadioButtonAction implements IAction {
     const questionSpan = page.locator(`span.form-label:has-text("${question}")`).nth(idx);
     return questionSpan.locator('xpath=ancestor::div[contains(@class, "form-group")][1]')
       .locator('div.multiple-choice')
-      .filter({ has: page.locator('label.form-label').filter({ hasText: new RegExp(`^${this.escapeRegex(option)}$`) }) })
+      .filter({ has: page.getByRole('radio', { name: option, exact: true }) })
       .locator('input[type="radio"]');
   }
 
