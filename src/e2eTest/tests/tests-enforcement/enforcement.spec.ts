@@ -29,7 +29,9 @@ import {
   peopleWillBeEvicted,
   youNeedPermission,
   languageUsed,
-  peopleYouWantToEvict
+  peopleYouWantToEvict,
+  confirmDefendantsDOB,
+  enterDefendantsDOB
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -96,11 +98,29 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
       });
+      await performValidation('mainHeader', confirmDefendantsDOB.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: confirmDefendantsDOB.errorValidation,
+        validationType: confirmDefendantsDOB.errorValidationType.three,
+        inputArray: confirmDefendantsDOB.errorValidationField.errorRadioOption,
+        question: confirmDefendantsDOB.defendantsDOBQuestion,
+        option: confirmDefendantsDOB.yesRadioOption,
+        button: confirmDefendantsDOB.continueButton
+      });
+      await performAction('confirmDefendantsDOB', {
+        question: confirmDefendantsDOB.defendantsDOBQuestion,
+        option: confirmDefendantsDOB.yesRadioOption,
+      });
+      await performValidation('mainHeader', enterDefendantsDOB.mainHeader);
+      await performAction('defendantsDOB', {
+        label: enterDefendantsDOB.defendantsDOBTextLabel,
+        input: defendantDetails,
+      });
       await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
       await performAction('selectPeopleWhoWillBeEvicted', {
         question: peopleWillBeEvicted.evictEveryOneQuestion,
         option: peopleWillBeEvicted.yesRadioOption,
-      })
+      });
       await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
       await performAction('selectEveryoneLivingAtTheProperty', {
         question: everyoneLivingAtTheProperty.riskToBailiffQuestion,

@@ -4,6 +4,7 @@ import { IAction, actionData, actionRecord, actionTuple } from '@utils/interface
 import {
   yourApplication,
   nameAndAddressForEviction,
+  confirmDefendantsDOB,
   everyoneLivingAtTheProperty,
   vulnerableAdultsAndChildren,
   violentOrAggressiveBehaviour,
@@ -23,7 +24,8 @@ import {
   rePayments,
   peopleYouWantToEvict,
   moneyOwed,
-  languageUsed
+  languageUsed,
+  enterDefendantsDOB
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -46,6 +48,8 @@ export class EnforcementAction implements IAction {
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord)],
+      ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord)],
+      ['defendantsDOB', () => this.enterDefendantsDOB(page, fieldName as actionRecord)],
       ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
       ['selectPermissionFromJudge', () => this.selectPermissionFromJudge(page)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
@@ -126,6 +130,23 @@ export class EnforcementAction implements IAction {
     await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.addressLine2}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
+  }
+
+  private async confirmDefendantsDOB(confirmDefendantsDOB: actionRecord) {
+    await this.addFieldsToMap(confirmDefendantsDOB);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: confirmDefendantsDOB.question, option: confirmDefendantsDOB.option });
+    await performAction('clickButton', confirmDefendantsDOB.continueButton);
+  }
+
+  private async enterDefendantsDOB(page: Page, defendantsDOB: actionRecord) {
+    await this.addFieldsToMap(defendantsDOB);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('inputText', defendantsDOB.label, await this.inputDOB(defendantsDOB.input as Array<string>));
+    fieldsMap.set(defendantsDOB.label as string, await page.getByLabel(enterDefendantsDOB.defendantsDOBTextLabel).inputValue());
+
   }
 
   private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord) {
@@ -441,5 +462,24 @@ export class EnforcementAction implements IAction {
     setIfKeyExists(fields.question as string, fields.option as string);
     setIfKeyExists(fields.label as string, fields.input as string);
     setIfKeyExists(fields.confirm as string, fields.peopleOption as string);
+  }
+
+  private async inputDOB(inputArray: string[]): Promise<string> {
+    return inputArray.map(async item => item + "-" + await this.getRandomDOBFromPast()).join('\n');
+  }
+
+  private async getRandomDOBFromPast(): Promise<string> {
+    const today = new Date();
+    const randomDOB = new Date(
+      today.getFullYear() - Math.floor(Math.random() * (50 - 18 + 1)) + 18,
+      today.getMonth(),
+      today.getDate()
+    );
+
+    const day = String(randomDOB.getDate()).padStart(2, '0');
+    const month = String(randomDOB.getMonth() + 1).padStart(2, '0');
+    const year = randomDOB.getFullYear();
+
+    return `${day} ${month} ${year}`;
   }
 }
