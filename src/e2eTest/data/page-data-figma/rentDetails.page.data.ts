@@ -22,19 +22,5 @@ export const rentDetails = {
   thisWillSaveYourProgressHiddenParagraph: `This will save your progress and take you to the case overview.`,
   previousButton: `Previous`,
   continueButton: `Continue`,
-  cancelLink: `Cancel`,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  cancelLink: `Cancel`
 };
