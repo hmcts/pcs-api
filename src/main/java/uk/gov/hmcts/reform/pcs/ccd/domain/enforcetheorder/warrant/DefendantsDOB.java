@@ -27,9 +27,9 @@ public class DefendantsDOB {
 
     @CCD(
         label = "What are the defendants' dates of birth?",
-        hint = " For example, Billy Wright - 16 4 1991." +
-            "Brian Springford - 16 4 1983." +
-            "You can enter up to 6,800 characters.",
+        hint = " For example, Billy Wright - 16 4 1991."
+            + "Brian Springford - 16 4 1983."
+            + "You can enter up to 6,800 characters.",
         typeOverride = TextArea
     )
     private String defendantsDOBDetails;

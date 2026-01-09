@@ -28,6 +28,6 @@ class WarrantPageConfigurerTest {
         warrantPageConfigurer.configurePages(pageBuilder);
 
         // Then
-        verify(pageBuilder, times(24)).add(any());
+        verify(pageBuilder, times(26)).add(any());
     }
 }
