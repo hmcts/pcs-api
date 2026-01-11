@@ -194,48 +194,59 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return pounds.movePointRight(2).toPlainString();
     }
 
-    private void setClaimFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+    private void mapBasicClaimFields(PCSCase pcsCase, ClaimEntity claim) {
+        pcsCase.setClaimAgainstTrespassers(claim.getAgainstTrespassers());
+        pcsCase.setClaimDueToRentArrears(claim.getDueToRentArrears());
+        pcsCase.setClaimingCostsWanted(claim.getClaimCosts());
+        pcsCase.setPreActionProtocolCompleted(claim.getPreActionProtocolFollowed());
+        pcsCase.setMediationAttempted(claim.getMediationAttempted());
+        pcsCase.setMediationAttemptedDetails(claim.getMediationDetails());
+        pcsCase.setSettlementAttempted(claim.getSettlementAttempted());
+        pcsCase.setSettlementAttemptedDetails(claim.getSettlementDetails());
+        pcsCase.setAddAnotherDefendant(claim.getAdditionalDefendants());
+        pcsCase.setHasUnderlesseeOrMortgagee(claim.getUnderlesseeOrMortgagee());
+        pcsCase.setAddAdditionalUnderlesseeOrMortgagee(claim.getAdditionalUnderlesseesOrMortgagees());
+        pcsCase.setApplicationWithClaim(claim.getGenAppExpected());
+        pcsCase.setLanguageUsed(claim.getLanguageUsed());
+    }
 
+    private void mapComplexClaimFields(PCSCase pcsCase, ClaimEntity claim) {
+        pcsCase.setClaimantCircumstances(
+            ClaimantCircumstances.builder()
+                .claimantCircumstancesSelect(claim.getClaimantCircumstancesProvided())
+                .claimantCircumstancesDetails(claim.getClaimantCircumstances())
+                .build()
+        );
+
+        pcsCase.setDefendantCircumstances(
+            DefendantCircumstances.builder()
+                .hasDefendantCircumstancesInfo(claim.getDefendantCircumstancesProvided())
+                .defendantCircumstancesInfo(claim.getDefendantCircumstances())
+                .build()
+        );
+
+        pcsCase.setAdditionalReasonsForPossession(
+            AdditionalReasons.builder()
+                .hasReasons(claim.getAdditionalReasonsProvided())
+                .reasons(claim.getAdditionalReasons())
+                .build()
+        );
+
+        pcsCase.setClaimantType(claim.getClaimantType() != null ? DynamicStringList.builder()
+            .value(DynamicStringListElement.builder().code(claim.getClaimantType().name())
+                       .label(claim.getClaimantType().getLabel())
+                       .build())
+            .build() : null);
+    }
+
+    private void setClaimFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (!pcsCaseEntity.getClaims().isEmpty()) {
             ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-
-            DefendantCircumstances defendantCircumstances = DefendantCircumstances.builder()
-                .defendantCircumstancesInfo(mainClaim.getDefendantCircumstances())
-                .hasDefendantCircumstancesInfo(mainClaim.getDefendantCircumstancesProvided())
-                .build();
-
-            AdditionalReasons additionalReasons = AdditionalReasons.builder()
-                .hasReasons(mainClaim.getAdditionalReasonsProvided())
-                .reasons(mainClaim.getAdditionalReasons())
-                .build();
-
-            ClaimantCircumstances claimantCircumstance = ClaimantCircumstances.builder()
-                .claimantCircumstancesSelect(mainClaim.getClaimantCircumstancesProvided())
-                .claimantCircumstancesDetails(mainClaim.getClaimantCircumstances())
-                .build();
-
-            pcsCase.setClaimantType(mainClaim.getClaimantType() != null ? DynamicStringList.builder()
-                .value(DynamicStringListElement.builder().code(mainClaim.getClaimantType().name())
-                           .label(mainClaim.getClaimantType().getLabel())
-                           .build())
-                .build() : null);
-
-            pcsCase.setClaimAgainstTrespassers(mainClaim.getAgainstTrespassers());
-            pcsCase.setClaimDueToRentArrears(mainClaim.getDueToRentArrears());
-            pcsCase.setClaimingCostsWanted(mainClaim.getClaimCosts());
-            pcsCase.setPreActionProtocolCompleted(mainClaim.getPreActionProtocolFollowed());
-            pcsCase.setMediationAttempted(mainClaim.getMediationAttempted());
-            pcsCase.setMediationAttemptedDetails(mainClaim.getMediationDetails());
-            pcsCase.setSettlementAttempted(mainClaim.getSettlementAttempted());
-            pcsCase.setSettlementAttemptedDetails(mainClaim.getSettlementDetails());
-            pcsCase.setClaimantCircumstances(claimantCircumstance);
-            pcsCase.setAddAnotherDefendant(mainClaim.getAdditionalDefendants());
-            pcsCase.setDefendantCircumstances(defendantCircumstances);
-            pcsCase.setAdditionalReasonsForPossession(additionalReasons);
-            pcsCase.setHasUnderlesseeOrMortgagee(mainClaim.getUnderlesseeOrMortgagee());
-            pcsCase.setAddAdditionalUnderlesseeOrMortgagee(mainClaim.getAdditionalUnderlesseesOrMortgagees());
-            pcsCase.setApplicationWithClaim(mainClaim.getGenAppExpected());
-            pcsCase.setLanguageUsed(mainClaim.getLanguageUsed());
+            mapBasicClaimFields(pcsCase, mainClaim);
+            mapComplexClaimFields(pcsCase, mainClaim);
         }
     }
+
+
+
 }

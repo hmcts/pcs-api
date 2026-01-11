@@ -42,8 +42,8 @@ public class ClaimService {
         ASBQuestionsWales asbQuestions = buildAsbQuestions(pcsCase);
 
         ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimantType(pcsCase.getClaimantType() != null ? ClaimantType.valueOf(pcsCase.getClaimantType()
-                                                                                        .getValueCode()) : null)
+            .claimantType(pcsCase.getClaimantType() != null && pcsCase.getClaimantType().getValueCode() != null
+                              ? ClaimantType.valueOf(pcsCase.getClaimantType().getValueCode()) : null)
             .againstTrespassers(pcsCase.getClaimAgainstTrespassers())
             .dueToRentArrears(pcsCase.getClaimDueToRentArrears())
             .claimCosts(pcsCase.getClaimingCostsWanted())//
@@ -52,18 +52,18 @@ public class ClaimService {
             .mediationDetails(pcsCase.getMediationAttemptedDetails())
             .settlementAttempted(pcsCase.getSettlementAttempted())
             .settlementDetails(pcsCase.getSettlementAttemptedDetails())
-            .claimantCircumstancesProvided(claimantCircumstances.getClaimantCircumstancesSelect() != null
+            .claimantCircumstancesProvided(claimantCircumstances != null
                                                ? claimantCircumstances.getClaimantCircumstancesSelect() : null)
-            .claimantCircumstances(claimantCircumstances.getClaimantCircumstancesDetails() != null
+            .claimantCircumstances(claimantCircumstances != null
                                        ? claimantCircumstances.getClaimantCircumstancesDetails() : null)
             .additionalDefendants(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
             .defendantCircumstancesProvided(defendantCircumstances != null
                                                 ? defendantCircumstances.getHasDefendantCircumstancesInfo() : null)//
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
-            .additionalReasonsProvided(additionalReasons.getHasReasons() != null
+            .additionalReasonsProvided(additionalReasons != null
                                            ? additionalReasons.getHasReasons() : null)
-            .additionalReasons(additionalReasons.getReasons() != null
+            .additionalReasons(additionalReasons != null
                                    ? additionalReasons.getReasons() : null)//
             .underlesseeOrMortgagee(pcsCase.getHasUnderlesseeOrMortgagee())
             .additionalUnderlesseesOrMortgagees(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
@@ -88,7 +88,6 @@ public class ClaimService {
 
         claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
-        claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
 
         claimRepository.save(claimEntity);
 
