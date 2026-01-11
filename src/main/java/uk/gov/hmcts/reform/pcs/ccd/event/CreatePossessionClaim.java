@@ -30,6 +30,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createPossessionClaim;
 @AllArgsConstructor
 public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
+
     private final PcsCaseService pcsCaseService;
     private final FeeApplier feeApplier;
     private final EnterPropertyAddress enterPropertyAddress;
