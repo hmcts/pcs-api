@@ -4,7 +4,7 @@ export const createCaseApiData = {
     feeAmount: '£404',
     propertyAddress: {
       AddressLine1: '2 Second Avenue',
-      AddressLine2: '',
+      AddressLine2: 'Oxford Street',
       AddressLine3: '',
       PostTown: 'London',
       County: '',
