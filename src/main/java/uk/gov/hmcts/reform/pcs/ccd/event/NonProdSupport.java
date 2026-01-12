@@ -27,6 +27,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 @RequiredArgsConstructor
 public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
 
+    static final String TEST_FEE_AMOUNT = "123.45";
     static final String EVENT_NAME = "Test Support Case Creation";
 
     private final NonProdSupportService nonProdSupportService;
@@ -56,7 +57,7 @@ public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        caseData.setFeeAmount("123.45");
+        caseData.setFeeAmount(TEST_FEE_AMOUNT);
         DynamicList nonProdFilesList = caseSupportHelper.getNonProdFilesList();
         caseData.setNonProdSupportFileList(nonProdFilesList);
         return caseData;

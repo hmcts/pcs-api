@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 public class NonProdSupportService {
 
-    static final String NO_NON_PROD_CASE_AVALIABLE = "No non-prod case json avaliable.";
+    static final String NO_NON_PROD_CASE_AVAILABLE = "No non-prod case json available.";
     static final String TEST_CASE_CREATION_NOT_SUPPORTED = "Strategy not supported : ";
     static final String FAILED_TO_GENERATE_TEST_CASE = "Failed to generate Test Case";
 
@@ -26,7 +26,7 @@ public class NonProdSupportService {
         try {
             DynamicList dynamicList = fromEvent.getNonProdSupportFileList();
             if (dynamicList == null) {
-                throw new IllegalArgumentException(NO_NON_PROD_CASE_AVALIABLE);
+                throw new IllegalArgumentException(NO_NON_PROD_CASE_AVAILABLE);
             }
             DynamicListElement selectedValue = dynamicList.getValue();
             return testCaseGenerationStrategies.stream()
