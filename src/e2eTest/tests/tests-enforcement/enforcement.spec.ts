@@ -112,7 +112,15 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: confirmDefendantsDOB.yesRadioOption,
       });
       await performValidation('mainHeader', enterDefendantsDOB.mainHeader);
-      await performAction('defendantsDOB', {
+      await performAction('inputErrorValidation', {
+        validationReq: enterDefendantsDOB.errorValidation,
+        validationType: enterDefendantsDOB.errorValidationType.two,
+        inputArray: enterDefendantsDOB.errorValidationField.errorTextField,
+        header: enterDefendantsDOB.errors,
+        label: enterDefendantsDOB.defendantsDOBTextLabel,
+        button: enterDefendantsDOB.continueButton
+      });
+      await performAction('enterDefendantsDOB', {
         label: enterDefendantsDOB.defendantsDOBTextLabel,
         input: defendantDetails,
       });
@@ -349,6 +357,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
     });
+    await performValidation('mainHeader', confirmDefendantsDOB.mainHeader);
+    await performAction('confirmDefendantsDOB', {
+      question: confirmDefendantsDOB.defendantsDOBQuestion,
+      option: confirmDefendantsDOB.noRadioOption,
+    });
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {
       question: peopleWillBeEvicted.evictEveryOneQuestion,
@@ -442,6 +455,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+    });
+    await performValidation('mainHeader', confirmDefendantsDOB.mainHeader);
+    await performAction('confirmDefendantsDOB', {
+      question: confirmDefendantsDOB.defendantsDOBQuestion,
+      option: confirmDefendantsDOB.noRadioOption,
     });
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {

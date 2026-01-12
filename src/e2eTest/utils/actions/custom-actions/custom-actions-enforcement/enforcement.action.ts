@@ -49,7 +49,7 @@ export class EnforcementAction implements IAction {
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord)],
       ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord)],
-      ['defendantsDOB', () => this.enterDefendantsDOB(page, fieldName as actionRecord)],
+      ['enterDefendantsDOB', () => this.enterDefendantsDOB(page, fieldName as actionRecord)],
       ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
       ['selectPermissionFromJudge', () => this.selectPermissionFromJudge(page)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
@@ -132,11 +132,11 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
   }
 
-  private async confirmDefendantsDOB(confirmDefendantsDOB: actionRecord) {
-    await this.addFieldsToMap(confirmDefendantsDOB);
+  private async confirmDefendantsDOB(confirmDefendantsDateOfBirth: actionRecord) {
+    await this.addFieldsToMap(confirmDefendantsDateOfBirth);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: confirmDefendantsDOB.question, option: confirmDefendantsDOB.option });
+    await performAction('clickRadioButton', { question: confirmDefendantsDateOfBirth.question, option: confirmDefendantsDateOfBirth.option });
     await performAction('clickButton', confirmDefendantsDOB.continueButton);
   }
 
@@ -146,6 +146,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', defendantsDOB.label, await this.inputDOB(defendantsDOB.input as Array<string>));
     fieldsMap.set(defendantsDOB.label as string, await page.getByLabel(enterDefendantsDOB.defendantsDOBTextLabel).inputValue());
+    await performAction('clickButton', enterDefendantsDOB.continueButton);
 
   }
 
@@ -433,8 +434,8 @@ export class EnforcementAction implements IAction {
   }
 
   private async retrieveAmountFromString(input: string): Promise<number> {
-
-    const charLimitInfo = input.match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
+    const getCharCount = input.split('You can enter').map(str => str.trim()).filter(str => str.length > 0);
+    const charLimitInfo = getCharCount[getCharCount.length - 1].match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
     const amount = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : 0;
     return amount;
   }
@@ -465,20 +466,28 @@ export class EnforcementAction implements IAction {
   }
 
   private async inputDOB(inputArray: string[]): Promise<string> {
-    return inputArray.map(async item => item + "-" + await this.getRandomDOBFromPast()).join('\n');
+    return inputArray.map((item) => item + " - " + this.getRandomDOBFromPast(18, 30)).join('\n');
   }
 
-  private async getRandomDOBFromPast(): Promise<string> {
+  private getRandomDOBFromPast(date1: number, date2: number): string {
     const today = new Date();
-    const randomDOB = new Date(
-      today.getFullYear() - Math.floor(Math.random() * (50 - 18 + 1)) + 18,
+    const maxDate = new Date(
+      today.getFullYear() - date1,
       today.getMonth(),
       today.getDate()
     );
 
-    const day = String(randomDOB.getDate()).padStart(2, '0');
-    const month = String(randomDOB.getMonth() + 1).padStart(2, '0');
-    const year = randomDOB.getFullYear();
+    const minDate = new Date(
+      today.getFullYear() - date2,
+      today.getMonth(),
+      today.getDate()
+    );
+    const randomTime = minDate.getTime() + Math.random() * (maxDate.getTime() - minDate.getTime());
+    const randomDate = new Date(randomTime);
+
+    const day = String(randomDate.getDate()).padStart(2, '0');
+    const month = String(randomDate.getMonth() + 1).padStart(2, '0');
+    const year = randomDate.getFullYear();
 
     return `${day} ${month} ${year}`;
   }
