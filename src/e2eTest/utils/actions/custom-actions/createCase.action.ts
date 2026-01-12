@@ -546,9 +546,17 @@ export class CreateCaseAction implements IAction {
   ) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: defendantCircumstances.isThereAnyInformationQuestion, option: defendantDetails.defendantCircumstance});
+    let defendantCircumstancesQuestion = defendantCircumstances.isThereAnyInformationSingleDefendantCircumstancesDynamicQuestion;
+    if (defendantDetails.additionalDefendants == true) {
+      defendantCircumstancesQuestion = defendantCircumstances.isThereAnyInformationMultipleDefendantsCircumstancesDynamicQuestion;
+    }
+    await performAction('clickRadioButton', {question: defendantCircumstancesQuestion, option: defendantDetails.defendantCircumstance});
     if (defendantDetails.defendantCircumstance == defendantCircumstances.yesRadioOption) {
-      await performAction('inputText', defendantCircumstances.giveDetailsHiddenTextLabel, defendantDetails.defendantCircumstanceInput || defendantCircumstances.giveDetailsHiddenTextInput);
+      if (defendantDetails.additionalDefendants == true) {
+        await performAction('inputText', defendantCircumstances.giveDetailsDefendantCircumstancesPluralHiddenTextLabel, defendantCircumstances.giveDetailsDefendantCircumstancesHiddenTextInput);
+      } else {
+        await performAction('inputText', defendantCircumstances.giveDetailsDefendantCircumstancesSingularHiddenTextLabel, defendantCircumstances.giveDetailsDefendantCircumstancesHiddenTextInput);
+      }
     }
     await performAction('clickButton', defendantCircumstances.continueButton);
   }

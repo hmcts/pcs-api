@@ -4,12 +4,14 @@ export const defendantCircumstances = {
   caseNumberParagraph: 'Case number:',
   propertyAddressParagraph: 'Property address',
   youCanUseThisSectionParagraph: `You can use this section to tell us anything relevant about the defendants’ financial or personal situation.`,
-  isThereAnyInformationQuestion: `Is there any information you’d like to provide about the defendants’ circumstances?`,
+  isThereAnyInformationMultipleDefendantsCircumstancesDynamicQuestion: `Is there any information you’d like to provide about the defendants’ circumstances?`,
+  isThereAnyInformationSingleDefendantCircumstancesDynamicQuestion: 'Is there any information you’d like to provide about the defendant’s circumstances?',
   thisCanBeAnyKnownHintText: `This can be any known details or any attempts made to obtain details`,
   yesRadioOption: 'Yes',
   noRadioOption: `No`,
-  giveDetailsHiddenTextLabel: `Give details about the defendants’ circumstances`,
-  giveDetailsHiddenTextInput: ``,
+  giveDetailsDefendantCircumstancesSingularHiddenTextLabel: `Give details about the defendants’ circumstances`,
+  giveDetailsDefendantCircumstancesPluralHiddenTextLabel: `Give details about the defendants’ circumstances`,
+  giveDetailsDefendantCircumstancesHiddenTextInput: `Defendant circumstances sample test input data`,
   iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
   ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
   chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
@@ -19,3 +21,4 @@ export const defendantCircumstances = {
   continueButton: `Continue`,
   cancelLink: `Cancel`
 };
+
