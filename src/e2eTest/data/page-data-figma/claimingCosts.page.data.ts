@@ -3,7 +3,7 @@ export const claimingCosts = {
   mainHeader: `Claiming costs`,
   caseNumberParagraph: 'Case number:',
   propertyAddressParagraph: 'Property address',
-  doYouWantToAskQuestion: `Do you want to ask for your costs back?`,
+  doYouWantToAskForYourCostBackQuestion: `Do you want to ask for your costs back?`,
   youDoNotNeedToHintText: `You do not need to provide the exact amount at this stage, but a judge will request a schedule of costs at the hearing`,
   yesRadioOption: 'Yes',
   noRadioOption: `No`,

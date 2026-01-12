@@ -581,7 +581,7 @@ export class CreateCaseAction implements IAction {
   private async selectClaimingCosts(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: claimingCosts.doYouWantToAskQuestion, option: option});
+    await performAction('clickRadioButton', {question: claimingCosts.doYouWantToAskForYourCostBackQuestion, option: option});
     await performAction('clickButton', claimingCosts.continueButton);
   }
 
