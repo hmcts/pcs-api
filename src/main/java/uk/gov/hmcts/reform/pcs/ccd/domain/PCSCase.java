@@ -296,8 +296,14 @@ public class PCSCase {
     @CCD
     private TenancyLicenceDetails tenancyLicenceDetails;
 
+    @CCD
+    private YesOrNo showThisTab;
+
     @CCD(searchable = false)
     private String nextStepsMarkdown;
+
+    @CCD(searchable = false)
+    private String summaryMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD
