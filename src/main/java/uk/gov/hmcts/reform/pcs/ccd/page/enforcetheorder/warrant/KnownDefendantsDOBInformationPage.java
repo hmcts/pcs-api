@@ -27,7 +27,7 @@ public class KnownDefendantsDOBInformationPage implements CcdPageConfiguration {
         pageBuilder
             .page("knownDefendantsDOBInformation", this::midEvent)
             .pageLabel("Enter the defendants’ dates of birth")
-            .showCondition("warrantDefendantsDOBKnown=\"YES\"")
+            .showCondition("selectEnforcementType=\"WARRANT\" AND warrantDefendantsDOBKnown=\"YES\"")
             .label("knownDefendantsDOBInformation-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
