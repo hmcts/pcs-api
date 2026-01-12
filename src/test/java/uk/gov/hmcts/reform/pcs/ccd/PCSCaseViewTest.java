@@ -228,7 +228,7 @@ class PCSCaseViewTest {
 
     @ParameterizedTest
     @MethodSource("complexClaimFieldsScenarios")
-    void shouldMapComplexClaimFieldsParameterized(
+    void shouldMapComplexClaimFields(
         VerticalYesNo claimantSelect,
         String claimantDetails,
         VerticalYesNo defendantSelect,

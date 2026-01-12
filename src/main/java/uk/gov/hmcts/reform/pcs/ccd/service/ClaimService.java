@@ -32,8 +32,8 @@ public class ClaimService {
         DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
 
         ClaimEntity claimEntity = ClaimEntity.builder()
-            .claimantType(pcsCase.getClaimantType() != null && pcsCase.getClaimantType().getValueCode() != null
-                              ? ClaimantType.valueOf(pcsCase.getClaimantType().getValueCode()) : null)
+            .claimantType(pcsCase.getClaimantType() != null
+                              ? ClaimantType.fromName(pcsCase.getClaimantType().getValueCode()) : null)
             .againstTrespassers(pcsCase.getClaimAgainstTrespassers())
             .dueToRentArrears(pcsCase.getClaimDueToRentArrears())
             .claimCosts(pcsCase.getClaimingCostsWanted())
@@ -46,7 +46,7 @@ public class ClaimService {
                                                ? claimantCircumstances.getClaimantCircumstancesSelect() : null)
             .claimantCircumstances(claimantCircumstances != null
                                        ? claimantCircumstances.getClaimantCircumstancesDetails() : null)
-            .additionalDefendants(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
+            .additionalDefendants(pcsCase.getAddAnotherDefendant())
             .defendantCircumstancesProvided(defendantCircumstances != null
                                                 ? defendantCircumstances.getHasDefendantCircumstancesInfo() : null)
             .defendantCircumstances(defendantCircumstances != null

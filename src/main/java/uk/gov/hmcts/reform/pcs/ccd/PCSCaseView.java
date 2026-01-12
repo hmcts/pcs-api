@@ -232,11 +232,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .build()
         );
 
-        pcsCase.setClaimantType(claim.getClaimantType() != null ? DynamicStringList.builder()
-            .value(DynamicStringListElement.builder().code(claim.getClaimantType().name())
-                       .label(claim.getClaimantType().getLabel())
-                       .build())
-            .build() : null);
+        if (claim.getClaimantType() != null) {
+            pcsCase.setClaimantType(DynamicStringList.builder()
+                .value(DynamicStringListElement.builder().code(claim.getClaimantType().name())
+                           .label(claim.getClaimantType().getLabel())
+                           .build())
+                .build());
+        }
+
     }
 
     private void setClaimFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
