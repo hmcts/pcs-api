@@ -137,9 +137,6 @@ def setIthcEnvVars() {
 
 def setPerftestEnvVars() {
   env.ENVIRONMENT= "perftest"
-  env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
-  env.CASE_API_URL = "http://pcs-api-perftest.service.core-compute-perftest.internal"
-  env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
 }
 
 def generateDefinitions(builder) {
