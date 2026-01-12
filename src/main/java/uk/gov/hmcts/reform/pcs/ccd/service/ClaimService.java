@@ -33,7 +33,7 @@ public class ClaimService {
 
         ClaimEntity claimEntity = ClaimEntity.builder()
             .claimantType(pcsCase.getClaimantType() != null
-                              ? ClaimantType.fromCode(pcsCase.getClaimantType().getValueCode()) : null)
+                              ? ClaimantType.fromName(pcsCase.getClaimantType().getValueCode()) : null)
             .againstTrespassers(pcsCase.getClaimAgainstTrespassers())
             .dueToRentArrears(pcsCase.getClaimDueToRentArrears())
             .claimCosts(pcsCase.getClaimingCostsWanted())

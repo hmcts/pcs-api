@@ -32,7 +32,7 @@ public enum ClaimantType implements HasLabel {
         return legislativeCountries.contains(legislativeCountry);
     }
 
-    public static ClaimantType fromCode(String code) {
+    public static ClaimantType fromName(String code) {
 
         return Arrays.stream(values())
             .filter(type -> type.name().equals(code))
