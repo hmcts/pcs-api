@@ -24,9 +24,6 @@ import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,7 +51,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new SubmitDefendantResponse(draftCaseDataService, pcsCaseService, securityContextService, modelMapper));
+        setEventUnderTest(new SubmitDefendantResponse(
+            draftCaseDataService,
+            pcsCaseService,
+            securityContextService,
+            modelMapper
+        ));
     }
 
     @Test
@@ -102,7 +104,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         AddressEntity addressEntity = AddressEntity.builder()
             .addressLine1("123 Test Street")
             .postTown("London")
-            .postCode("SW1A 1AA")
+            .postcode("SW1A 1AA")
             .build();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
@@ -190,7 +192,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .claims(Collections.emptySet())
+            .claims(Collections.emptyList())
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
