@@ -44,11 +44,11 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   onPR() {
+    setPreviewEnvVars()
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
     ])
-    setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
       enableHighLevelDataSetup()
     }
