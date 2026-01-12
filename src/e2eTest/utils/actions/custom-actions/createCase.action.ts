@@ -463,14 +463,14 @@ export class CreateCaseAction implements IAction {
       option: mediationSettlement.attemptedMediationWithDefendantsOption
     });
     if (mediationSettlement.attemptedMediationWithDefendantsOption == mediationAndSettlement.yesRadioOption) {
-      await performAction('inputText', mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextLabel, mediationSettlement.attemptedMediationInputData);
+      await performAction('inputText', mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextLabel, mediationAndSettlement.giveDetailsAboutTheAttemptedHiddenTextInput);
     }
     await performAction('clickRadioButton', {
       question: mediationAndSettlement.haveYouTriedToReachQuestion,
       option: mediationSettlement.settlementWithDefendantsOption
     });
     if (mediationSettlement.settlementWithDefendantsOption == mediationAndSettlement.yesRadioOption) {
-      await performAction('inputText', mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextLabel, mediationSettlement.settlementWithDefendantsInputData);
+      await performAction('inputText', mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextLabel, mediationAndSettlement.explainWhatStepsYouHaveTakenHiddenTextInput);
     }
     await performAction('clickButton', mediationAndSettlement.continueButton);
   }
