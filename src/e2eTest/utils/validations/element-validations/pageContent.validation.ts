@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import { IValidation } from '../../interfaces/validation.interface';
 import * as fs from 'fs';
 import * as path from 'path';
+import { cyaValidation, CYAStore } from '../custom-validations/CYA/cyaPage.validation';
 
 const ELEMENT_TYPES = [
   'Button', 'Link', 'Header', 'Caption', 'Checkbox', 'Question',
@@ -17,7 +18,7 @@ export class PageContentValidation implements IValidation {
   private static missingDataFiles = new Set<string>();
   private static testCounter = 0;
   private static pageToFileNameMap = new Map<string, string>();
-  private static pageToHeaderTextMap = new Map<string, string>(); // Track header text for logging
+  private static pageToHeaderTextMap = new Map<string, string>();
 
   private readonly locatorPatterns = {
     Button: (page: Page, value: string) => page.locator(`
@@ -32,7 +33,8 @@ export class PageContentValidation implements IValidation {
                     a.govuk-link:text("${value}"),
                     button.govuk-js-link:text("${value}"),
                     [role="link"]:text("${value}"),
-                    [aria-label*="${value}"]:text("${value}")`),
+                    [aria-label*="${value}"]:text("${value}"),
+                    summary>span:text("${value}")`),
     Header: (page: Page, value: string) => page.locator(`
                     h1:text("${value}"),
                     h2:text("${value}"),
@@ -49,13 +51,13 @@ export class PageContentValidation implements IValidation {
                     label:text("${value}") + input[type="checkbox"],
                     .checkbox:text("${value}") ~ input[type="checkbox"],
                     label >> text=${value} >> xpath=..//input[@type="checkbox"]`),
-    Question: (page: Page, value: string) => page.locator(`
-                    label:text("${value}") ~ input[type="radio"],
-                    label:text("${value}") + input[type="radio"],
-                    .radio:text("${value}") ~ input[type="radio"],
-                    legend:text("${value}") ~ input[type="radio"],
-                    .question:text("${value}") ~ input[type="radio"],
-                    label >> text=${value} >> xpath=..//input[@type="radio"]`),
+    Question: (page: Page, value: string) => page.locator(`span:has-text("${value}")`)
+      .or(page.locator(`label:text("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`label:text("${value}") + input[type="radio"]`))
+      .or(page.locator(`.radio:text("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`legend:text("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`.question:text("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`label >> text=${value} >> xpath=..//input[@type="radio"]`)),
     RadioOption: (page: Page, value: string) => page.locator(`
                     label:text("${value}") ~ input[type="radio"],
                     label:text("${value}") + input[type="radio"],
@@ -68,19 +70,24 @@ export class PageContentValidation implements IValidation {
                     option:text("${value}"),
                     select option:text("${value}")`),
     HintText: (page: Page, value: string) => page.locator(`
-                    .hint:text("${value}")`),
+                    .hint:text("${value}"),
+                    span:text-is("${value}")`),
     TextLabel: (page: Page, value: string) => page.locator(`
                     label:has-text("${value}"),
-                    .label:has-text("${value}")`),
+                    .label:has-text("${value}"),
+                    span:text-is("${value}")`),
     Paragraph: (page: Page, value: string) => page.locator(`
-                    .paragraph:text("${value}"),
-                    p:text("${value}"),
-                    markdown:text("${value}"),
+                     p:text("${value}"),
+                     .paragraph:text("${value}"),
+                     markdown:text("${value}"),
                     .content:text("${value}"),
                     .body:text("${value}"),
                     .text-content:text("${value}"),
                     .govuk-body:text("${value}"),
-                    .govuk-list:text("${value}")`),
+                    .govuk-list:text("${value}"),
+                    span:text-is("${value}"),
+                    dl:has-text("${value}") > dt,
+                    strong:text("${value}")`),
     Text: (page: Page, value: string) => page.locator(`:text("${value}")`),
     Tab: (page: Page, value: string) => page.getByRole('tab', { name: value }),
   };
@@ -91,13 +98,19 @@ export class PageContentValidation implements IValidation {
 
   async validateCurrentPage(page: Page): Promise<void> {
     const pageUrl = page.url();
-    const pageResults: ValidationResult[] = [];
+
+    if (PageContentValidation.isCYAPage(pageUrl)) {
+      await cyaValidation.validateCYAPage(page);
+      return;
+    }
+
     const pageData = await this.getPageData(page);
 
     if (!pageData) return;
 
+    const pageResults: ValidationResult[] = [];
     for (const [key, value] of Object.entries(pageData)) {
-      if (key.includes('Input') || key.includes('Hidden')) continue;
+      if (key.includes('Input') || key.includes('Hidden')||key.includes('Dynamic')) continue;
       if (typeof value === 'string' && value.trim() !== '') {
         const elementType = this.getElementType(key);
         const isVisible = await this.isElementVisible(page, value as string, elementType);
@@ -106,6 +119,19 @@ export class PageContentValidation implements IValidation {
     }
 
     PageContentValidation.validationResults.set(pageUrl, pageResults);
+  }
+
+  private static isCYAPage(url: string): boolean {
+    try {
+      const urlObj = new URL(url);
+      const segments = urlObj.pathname.split('/').filter(Boolean);
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment === 'submit';
+    } catch {
+      const segments = url.split('/').filter(Boolean);
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment === 'submit';
+    }
   }
 
   private async getPageData(page: Page): Promise<any> {
@@ -146,7 +172,6 @@ export class PageContentValidation implements IValidation {
       if (/^\d+$/.test(urlSegment)) {
         const headerText = await this.getHeaderText(page);
         if (headerText && mapping[headerText]) {
-          // Store header text for logging
           PageContentValidation.pageToHeaderTextMap.set(page.url(), headerText);
           return mapping[headerText];
         }
@@ -227,6 +252,8 @@ export class PageContentValidation implements IValidation {
     const validatedPages = new Set<string>();
 
     for (const [pageUrl, results] of Array.from(this.validationResults.entries())) {
+      if (this.isCYAPage(pageUrl)) continue;
+
       const pageName = this.getPageNameForLogging(pageUrl);
       validatedPages.add(pageName);
 
@@ -252,7 +279,7 @@ export class PageContentValidation implements IValidation {
     const missingFilesCount = this.missingDataFiles.size;
 
     console.log(`\n📊 PAGE CONTENT VALIDATION SUMMARY (Test #${this.testCounter}):`);
-    console.log(`   Total pages validated: ${totalValidated}`);
+    console.log(`   Total regular pages validated: ${totalValidated}`);
     console.log(`   Number of pages passed: ${passedCount}`);
     console.log(`   Number of pages failed: ${failedCount}`);
     console.log(`   Missing data files: ${missingFilesCount}`);
@@ -261,9 +288,11 @@ export class PageContentValidation implements IValidation {
     if (failedCount > 0) console.log(`   Failed pages: ${Array.from(failedPages.keys()).join(', ') || 'None'}`);
     if (missingFilesCount > 0) console.log(`   Page files not found: ${Array.from(this.missingDataFiles).join(', ') || 'None'}`);
 
-    process.stdout.write('');
+    let shouldThrowError = false;
+    let errorMessages: string[] = [];
 
     if (failedPages.size > 0) {
+      shouldThrowError = true;
       console.log(`\n❌ VALIDATION FAILED:\n`);
       for (const [pageName, pageFailures] of failedPages) {
         console.log(`   Page: ${pageName}`);
@@ -275,17 +304,27 @@ export class PageContentValidation implements IValidation {
         }
         console.log(`     Total missing on this page: ${pageFailureCount}\n`);
       }
-      process.stdout.write('');
-      throw new Error(`Page content validation failed: ${failedPages.size} pages have missing elements`);
-    } else if (totalValidated > 0) {
+      errorMessages.push(`Page content validation failed: ${failedPages.size} pages have missing elements`);
+    }
+
+    const cyaFailed = cyaValidation.hasValidationFailed();
+    if (cyaFailed) {
+      shouldThrowError = true;
+      errorMessages.push(`CYA page validation failed`);
+    }
+
+    if (totalValidated > 0 && failedPages.size === 0 && !cyaFailed) {
       console.log(`\n✅ VALIDATION PASSED: All intended pages validated successfully!`);
-      process.stdout.write('');
-    } else if (missingFilesCount > 0) {
+    } else if (missingFilesCount > 0 && totalValidated === 0) {
       console.log(`\n⚠️  NO VALIDATION: Missing data files for all pages`);
-      process.stdout.write('');
     }
 
     this.clearValidationResults();
+    CYAStore.getInstance().clearAll();
+
+    if (shouldThrowError) {
+      throw new Error(errorMessages.join(' | '));
+    }
   }
 
   private static getPageNameForLogging(url: string): string {
