@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.RiskAssessmentRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
@@ -48,6 +49,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final DraftCaseDataService draftCaseDataService;
     private final CaseTitleService caseTitleService;
     private final DefendantService defendantService;
+    private final RiskAssessmentRenderer riskAssessmentRenderer;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -128,6 +130,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
+
+        pcsCase.setRiskAssessmentMarkdown(riskAssessmentRenderer.render());
 
         if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""

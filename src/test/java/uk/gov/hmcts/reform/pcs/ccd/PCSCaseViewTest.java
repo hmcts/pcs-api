@@ -23,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.RiskAssessmentRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
@@ -64,6 +65,8 @@ class PCSCaseViewTest {
     private DefendantService defendantService;
     @Mock
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private RiskAssessmentRenderer riskAssessmentRenderer;
 
     private PCSCaseView underTest;
 
@@ -72,7 +75,7 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                modelMapper, draftCaseDataService, caseTitleService, defendantService);
+                modelMapper, draftCaseDataService, caseTitleService, defendantService, riskAssessmentRenderer);
     }
 
     @Test
