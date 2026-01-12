@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -40,15 +40,15 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
     private Clock ukClock;
 
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     @BeforeEach
     void setUp() {
         lenient().when(ukClock.instant()).thenReturn(FIXED_CURRENT_DATE.atTime(10, 20).atZone(UK_ZONE_ID).toInstant());
         lenient().when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
-        // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+        // Configure TextValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textValidationService)
             .validateSingleTextArea(any(), any(), anyInt());
         doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
@@ -57,9 +57,9 @@ class OccupationLicenceDetailsWalesPageTest extends BasePageTest {
                 .data((PCSCase) caseData)
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
-        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
+        }).when(textValidationService).createValidationResponse(any(), anyList());
 
-        setPageUnderTest(new OccupationLicenceDetailsWalesPage(ukClock, textAreaValidationService));
+        setPageUnderTest(new OccupationLicenceDetailsWalesPage(ukClock, textValidationService));
     }
 
     @Test

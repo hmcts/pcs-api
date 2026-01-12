@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class ClaimantCircumstancesPage implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     private static final String YOU_CAN_ENTER_UP_TO_950_CHARACTERS = "You can enter up to 950 characters";
     private static final String SHOW_CONDITION = "claimantCircumstancesSelect=\"YES\"";
@@ -64,13 +64,13 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
                 + claimantCircumstances.getClaimantNamePossessiveForm()
                 + "’s circumstances";
 
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textValidationService.validateSingleTextArea(
                 claimantCircumstances.getClaimantCircumstancesDetails(),
                 dynamicLabel,
-                TextAreaValidationService.LONG_TEXT_LIMIT
+                TextValidationService.LONG_TEXT_LIMIT
             ));
         }
 
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

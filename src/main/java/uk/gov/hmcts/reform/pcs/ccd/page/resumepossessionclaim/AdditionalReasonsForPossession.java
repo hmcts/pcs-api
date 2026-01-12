@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 @Component
 public class AdditionalReasonsForPossession implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -42,19 +42,19 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         AdditionalReasons additionalReasons = caseData.getAdditionalReasonsForPossession();
         if (additionalReasons != null) {
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textValidationService.validateSingleTextArea(
                 additionalReasons.getReasons(),
                 "Additional reasons for possession",
-                TextAreaValidationService.EXTRA_LONG_TEXT_LIMIT
+                TextValidationService.EXTRA_LONG_TEXT_LIMIT
             ));
         }
-        
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 
 }

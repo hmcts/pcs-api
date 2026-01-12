@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.List;
 
@@ -22,7 +22,7 @@ import java.util.List;
 @Component
 public class MediationAndSettlement implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -61,19 +61,19 @@ public class MediationAndSettlement implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         // Validate text area fields for character limit - ultra simple approach
-        List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
-            TextAreaValidationService.FieldValidation.of(
+        List<String> validationErrors = textValidationService.validateMultipleTextAreas(
+            TextValidationService.FieldValidation.of(
                 caseData.getMediationAttemptedDetails(),
                 "Give details about the attempted mediation and what the outcome was",
-                TextAreaValidationService.SHORT_TEXT_LIMIT
+                TextValidationService.SHORT_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 caseData.getSettlementAttemptedDetails(),
                 "Explain what steps you’ve taken to reach a settlement",
-                TextAreaValidationService.SHORT_TEXT_LIMIT
+                TextValidationService.SHORT_TEXT_LIMIT
             )
         );
 
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

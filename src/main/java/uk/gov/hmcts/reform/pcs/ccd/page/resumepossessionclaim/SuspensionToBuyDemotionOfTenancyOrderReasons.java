@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.List;
 @Component
 public class SuspensionToBuyDemotionOfTenancyOrderReasons implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -46,21 +46,21 @@ public class SuspensionToBuyDemotionOfTenancyOrderReasons implements CcdPageConf
         SuspensionOfRightToBuyDemotionOfTenancy suspensionOfRightToBuyDemotionOfTenancy =
             caseData.getSuspensionOfRightToBuyDemotionOfTenancy();
         if (suspensionOfRightToBuyDemotionOfTenancy != null) {
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textValidationService.validateSingleTextArea(
                 suspensionOfRightToBuyDemotionOfTenancy.getSuspensionOrderReason(),
                 SuspensionOfRightToBuy.SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL,
-                TextAreaValidationService.SHORT_TEXT_LIMIT
+                TextValidationService.SHORT_TEXT_LIMIT
             ));
 
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textValidationService.validateSingleTextArea(
                 suspensionOfRightToBuyDemotionOfTenancy.getDemotionOrderReason(),
                 DemotionOfTenancy.DEMOTION_OF_TENANCY_REASON_LABEL,
-                TextAreaValidationService.SHORT_TEXT_LIMIT
+                TextValidationService.SHORT_TEXT_LIMIT
             ));
         }
 
         if (!validationErrors.isEmpty()) {
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            return textValidationService.createValidationResponse(caseData, validationErrors);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

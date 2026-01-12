@@ -19,9 +19,9 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class NoticeDetailsService {
-    
-    private final TextAreaValidationService textAreaValidationService;
-    
+
+    private final TextValidationService textValidationService;
+
     // Error message constants
     private static final String INVALID_DATETIME_ERROR = "Enter a valid date and time in the format DD MM YYYY HH MM";
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
@@ -75,16 +75,16 @@ public class NoticeDetailsService {
         }
 
         // Validate textarea fields for character limits
-        errors.addAll(textAreaValidationService.validateMultipleTextAreas(
-            TextAreaValidationService.FieldValidation.of(
+        errors.addAll(textValidationService.validateMultipleTextAreas(
+            TextValidationService.FieldValidation.of(
                 noticeServedDetails.getNoticeEmailExplanation(),
                 NOTICE_EMAIL_EXPLANATION_LABEL,
-                TextAreaValidationService.SHORT_TEXT_LIMIT
+                TextValidationService.SHORT_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 noticeServedDetails.getNoticeOtherExplanation(),
                 NOTICE_OTHER_EXPLANATION_LABEL,
-                TextAreaValidationService.SHORT_TEXT_LIMIT
+                TextValidationService.SHORT_TEXT_LIMIT
             )
         ));
 
@@ -126,7 +126,7 @@ public class NoticeDetailsService {
         if (date == null) {
             return false;
         }
-        
+
         LocalDate today = LocalDate.now();
         return date.isEqual(today) || date.isAfter(today);
     }
@@ -144,7 +144,7 @@ public class NoticeDetailsService {
         if (dateTime == null) {
             return false;
         }
-        
+
         LocalDateTime now = LocalDateTime.now();
         return dateTime.toLocalDate().isEqual(now.toLocalDate()) || dateTime.isAfter(now);
     }

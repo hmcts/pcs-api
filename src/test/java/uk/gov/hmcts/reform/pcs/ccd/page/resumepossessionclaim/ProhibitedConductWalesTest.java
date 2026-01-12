@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,11 +36,11 @@ class ProhibitedConductWalesTest extends BasePageTest {
     private ProhibitedConductWales pageUnderTest;
 
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     @BeforeEach
     void setUp() {
-        lenient().when(textAreaValidationService.createValidationResponse(any(), any()))
+        lenient().when(textValidationService.createValidationResponse(any(), any()))
             .thenAnswer(invocation -> {
                 PCSCase caseData = invocation.getArgument(0);
                 List<String> errors = invocation.getArgument(1);
@@ -50,7 +50,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
                     .build();
             });
 
-        pageUnderTest = new ProhibitedConductWales(textAreaValidationService);
+        pageUnderTest = new ProhibitedConductWales(textValidationService);
         setPageUnderTest(pageUnderTest);
     }
 
@@ -236,7 +236,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
             errors.add("In ‘" + invocation.getArgument(1) + "’, you have entered more than the maximum number of "
                 + invocation.getArgument(2) + " characters");
             return null;
-        }).when(textAreaValidationService).validateTextArea(any(), any(), anyInt(), any());
+        }).when(textValidationService).validateTextArea(any(), any(), anyInt(), any());
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = pageUnderTest.midEvent(caseDetails, caseDetails);
@@ -272,7 +272,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
             .data(caseData)
             .build();
 
-        lenient().when(textAreaValidationService.validateMultipleTextAreas(any()))
+        lenient().when(textValidationService.validateMultipleTextAreas(any()))
             .thenReturn(new ArrayList<>());
 
         // When
@@ -307,7 +307,7 @@ class ProhibitedConductWalesTest extends BasePageTest {
             errors.add("In ‘" + invocation.getArgument(1) + "’, you have entered more than the maximum number of "
                 + invocation.getArgument(2) + " characters");
             return null;
-        }).when(textAreaValidationService).validateTextArea(any(), any(), anyInt(), any());
+        }).when(textValidationService).validateTextArea(any(), any(), anyInt(), any());
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = pageUnderTest.midEvent(caseDetails, caseDetails);

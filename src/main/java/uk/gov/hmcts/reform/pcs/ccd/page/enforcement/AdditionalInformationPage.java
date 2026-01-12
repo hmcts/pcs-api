@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 @Component
 public class AdditionalInformationPage implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
     private static final String SHOW_CONDITION = "additionalInformationSelect=\"YES\"";
 
     @Override
@@ -59,10 +59,10 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
         AdditionalInformation additionalInformation = data.getEnforcementOrder().getAdditionalInformation();
         if (additionalInformation.getAdditionalInformationSelect().toBoolean()) {
             String txt = data.getEnforcementOrder().getAdditionalInformation().getAdditionalInformationDetails();
-            errors.addAll(textAreaValidationService.validateSingleTextArea(
+            errors.addAll(textValidationService.validateSingleTextArea(
                 txt,
                 ADDITIONAL_INFORMATION_DETAILS_LABEL,
-                TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
+                TextValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
             ));
         }
         return errors;

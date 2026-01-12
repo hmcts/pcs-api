@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -37,18 +37,18 @@ public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         SuspensionOfRightToBuy suspensionOfRightToBuy = caseData.getSuspensionOfRightToBuy();
         if (suspensionOfRightToBuy != null) {
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textValidationService.validateSingleTextArea(
                 suspensionOfRightToBuy.getSuspensionOfRightToBuyReason(),
                 SuspensionOfRightToBuy.SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL,
-                TextAreaValidationService.SHORT_TEXT_LIMIT
+                TextValidationService.SHORT_TEXT_LIMIT
             ));
         }
-        
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

@@ -9,18 +9,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.AdditionalInformation.ADDITIONAL_INFORMATION_DETAILS_LABEL;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 class AdditionalInformationPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new AdditionalInformationPage(textAreaValidationService));
+        TextValidationService textValidationService = new TextValidationService();
+        setPageUnderTest(new AdditionalInformationPage(textValidationService));
     }
 
     @Test

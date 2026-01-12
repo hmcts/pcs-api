@@ -12,21 +12,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.EXTRA_LONG_TEXT_LIMIT;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.LONG_TEXT_LIMIT;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.MEDIUM_TEXT_LIMIT;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.SHORT_TEXT_LIMIT;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService.EXTRA_LONG_TEXT_LIMIT;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService.LONG_TEXT_LIMIT;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService.MEDIUM_TEXT_LIMIT;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService.SHORT_TEXT_LIMIT;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TextAreaValidationService Tests")
-class TextAreaValidationServiceTest {
+@DisplayName("TextValidationService Tests")
+class TextValidationServiceTest {
 
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     @BeforeEach
     void setUp() {
-        textAreaValidationService = new TextAreaValidationService();
+        textValidationService = new TextValidationService();
     }
 
     @Nested
@@ -40,7 +40,7 @@ class TextAreaValidationServiceTest {
             List<String> errors = new ArrayList<>();
 
             // When
-            textAreaValidationService.validateTextArea(null, "Test Field", 100, errors);
+            textValidationService.validateTextArea(null, "Test Field", 100, errors);
 
             // Then
             assertThat(errors).isEmpty();
@@ -53,7 +53,7 @@ class TextAreaValidationServiceTest {
             List<String> errors = new ArrayList<>();
 
             // When
-            textAreaValidationService.validateTextArea("", "Test Field", 100, errors);
+            textValidationService.validateTextArea("", "Test Field", 100, errors);
 
             // Then
             assertThat(errors).isEmpty();
@@ -67,7 +67,7 @@ class TextAreaValidationServiceTest {
             String fieldValue = "a".repeat(100);
 
             // When
-            textAreaValidationService.validateTextArea(fieldValue, "Test Field", 100, errors);
+            textValidationService.validateTextArea(fieldValue, "Test Field", 100, errors);
 
             // Then
             assertThat(errors).isEmpty();
@@ -83,7 +83,7 @@ class TextAreaValidationServiceTest {
             int maxCharacters = 100;
 
             // When
-            textAreaValidationService.validateTextArea(fieldValue, fieldLabel, maxCharacters, errors);
+            textValidationService.validateTextArea(fieldValue, fieldLabel, maxCharacters, errors);
 
             // Then
             assertThat(errors).hasSize(1);
@@ -99,8 +99,8 @@ class TextAreaValidationServiceTest {
             List<String> errors = new ArrayList<>();
 
             // When
-            textAreaValidationService.validateTextArea("a".repeat(101), "Field 1", 100, errors);
-            textAreaValidationService.validateTextArea("b".repeat(201), "Field 2", 200, errors);
+            textValidationService.validateTextArea("a".repeat(101), "Field 1", 100, errors);
+            textValidationService.validateTextArea("b".repeat(201), "Field 2", 200, errors);
 
             // Then
             assertThat(errors).hasSize(2);
@@ -121,7 +121,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should return empty list when field value is null")
         void shouldReturnEmptyListWhenFieldValueIsNull() {
             // When
-            List<String> errors = textAreaValidationService.validateSingleTextArea(null, "Test Field", 100);
+            List<String> errors = textValidationService.validateSingleTextArea(null, "Test Field", 100);
 
             // Then
             assertThat(errors).isEmpty();
@@ -134,7 +134,7 @@ class TextAreaValidationServiceTest {
             String fieldValue = "a".repeat(100);
 
             // When
-            List<String> errors = textAreaValidationService.validateSingleTextArea(fieldValue, "Test Field", 100);
+            List<String> errors = textValidationService.validateSingleTextArea(fieldValue, "Test Field", 100);
 
             // Then
             assertThat(errors).isEmpty();
@@ -149,7 +149,7 @@ class TextAreaValidationServiceTest {
             int maxCharacters = 100;
 
             // When
-            List<String> errors = textAreaValidationService.validateSingleTextArea(
+            List<String> errors = textValidationService.validateSingleTextArea(
                 fieldValue, fieldLabel, maxCharacters);
 
             // Then
@@ -168,15 +168,15 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should return empty list when all fields are valid")
         void shouldReturnEmptyListWhenAllFieldsAreValid() {
             // Given
-            TextAreaValidationService.FieldValidation validation1 = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation validation1 = TextValidationService.FieldValidation.of(
                 "valid text", "Field 1", 100
             );
-            TextAreaValidationService.FieldValidation validation2 = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation validation2 = TextValidationService.FieldValidation.of(
                 "another valid text", "Field 2", 200
             );
 
             // When
-            List<String> errors = textAreaValidationService.validateMultipleTextAreas(validation1, validation2);
+            List<String> errors = textValidationService.validateMultipleTextAreas(validation1, validation2);
 
             // Then
             assertThat(errors).isEmpty();
@@ -186,18 +186,18 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should return errors for invalid fields")
         void shouldReturnErrorsForInvalidFields() {
             // Given
-            TextAreaValidationService.FieldValidation validation1 = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation validation1 = TextValidationService.FieldValidation.of(
                 "a".repeat(101), "Field 1", 100
             );
-            TextAreaValidationService.FieldValidation validation2 = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation validation2 = TextValidationService.FieldValidation.of(
                 "valid text", "Field 2", 200
             );
-            TextAreaValidationService.FieldValidation validation3 = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation validation3 = TextValidationService.FieldValidation.of(
                 "b".repeat(201), "Field 3", 200
             );
 
             // When
-            List<String> errors = textAreaValidationService.validateMultipleTextAreas(
+            List<String> errors = textValidationService.validateMultipleTextAreas(
                 validation1, validation2, validation3);
 
             // Then
@@ -214,7 +214,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should handle empty validation array")
         void shouldHandleEmptyValidationArray() {
             // When
-            List<String> errors = textAreaValidationService.validateMultipleTextAreas();
+            List<String> errors = textValidationService.validateMultipleTextAreas();
 
             // Then
             assertThat(errors).isEmpty();
@@ -229,7 +229,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should return empty list when object is null")
         void shouldReturnEmptyListWhenObjectIsNull() {
             // When
-            List<String> errors = textAreaValidationService.validateSingleField(
+            List<String> errors = textValidationService.validateSingleField(
                 null, obj -> obj.toString(), "Test Field", 100
             );
 
@@ -244,7 +244,7 @@ class TextAreaValidationServiceTest {
             String testObject = "valid text";
 
             // When
-            List<String> errors = textAreaValidationService.validateSingleField(
+            List<String> errors = textValidationService.validateSingleField(
                 testObject, String::toString, "Test Field", 100
             );
 
@@ -259,7 +259,7 @@ class TextAreaValidationServiceTest {
             String testObject = "a".repeat(101);
 
             // When
-            List<String> errors = textAreaValidationService.validateSingleField(
+            List<String> errors = textValidationService.validateSingleField(
                 testObject, String::toString, "Test Field", 100
             );
 
@@ -284,7 +284,7 @@ class TextAreaValidationServiceTest {
 
             // When
             AboutToStartOrSubmitResponse<String, String> response =
-                textAreaValidationService.createValidationResponse(testData, errors);
+                textValidationService.createValidationResponse(testData, errors);
 
             // Then
             assertThat(response.getData()).isEqualTo(testData);
@@ -300,7 +300,7 @@ class TextAreaValidationServiceTest {
 
             // When
             AboutToStartOrSubmitResponse<String, String> response =
-                textAreaValidationService.createValidationResponse(testData, errors);
+                textValidationService.createValidationResponse(testData, errors);
 
             // Then
             assertThat(response.getData()).isEqualTo(testData);
@@ -315,7 +315,7 @@ class TextAreaValidationServiceTest {
 
             // When
             AboutToStartOrSubmitResponse<String, String> response =
-                textAreaValidationService.createValidationResponse(testData, null);
+                textValidationService.createValidationResponse(testData, null);
 
             // Then
             assertThat(response.getData()).isEqualTo(testData);
@@ -373,7 +373,7 @@ class TextAreaValidationServiceTest {
             int maxCharacters = 100;
 
             // When
-            TextAreaValidationService.FieldValidation validation = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation validation = TextValidationService.FieldValidation.of(
                 fieldValue, fieldLabel, maxCharacters
             );
 
@@ -387,7 +387,7 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should create FieldValidation with null field value")
         void shouldCreateFieldValidationWithNullFieldValue() {
             // When
-            TextAreaValidationService.FieldValidation validation = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation validation = TextValidationService.FieldValidation.of(
                 null, "Test Field", 100
             );
 
@@ -406,18 +406,18 @@ class TextAreaValidationServiceTest {
         @DisplayName("Should validate multiple fields with different limits using constants")
         void shouldValidateMultipleFieldsWithDifferentLimitsUsingConstants() {
             // Given
-            TextAreaValidationService.FieldValidation shortField = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation shortField = TextValidationService.FieldValidation.of(
                 "a".repeat(251), "Short Field", SHORT_TEXT_LIMIT
             );
-            TextAreaValidationService.FieldValidation mediumField = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation mediumField = TextValidationService.FieldValidation.of(
                 "valid medium text", "Medium Field", MEDIUM_TEXT_LIMIT
             );
-            TextAreaValidationService.FieldValidation longField = TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation longField = TextValidationService.FieldValidation.of(
                 "b".repeat(951), "Long Field", LONG_TEXT_LIMIT
             );
 
             // When
-            List<String> errors = textAreaValidationService.validateMultipleTextAreas(
+            List<String> errors = textValidationService.validateMultipleTextAreas(
                 shortField, mediumField, longField);
 
             // Then
@@ -435,14 +435,14 @@ class TextAreaValidationServiceTest {
         void shouldCreateCompleteValidationResponseWithErrors() {
             // Given
             String testData = "test case data";
-            List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
-                TextAreaValidationService.FieldValidation.of("a".repeat(101), "Field 1", 100),
-                TextAreaValidationService.FieldValidation.of("b".repeat(201), "Field 2", 200)
+            List<String> validationErrors = textValidationService.validateMultipleTextAreas(
+                TextValidationService.FieldValidation.of("a".repeat(101), "Field 1", 100),
+                TextValidationService.FieldValidation.of("b".repeat(201), "Field 2", 200)
             );
 
             // When
             AboutToStartOrSubmitResponse<String, String> response =
-                textAreaValidationService.createValidationResponse(testData, validationErrors);
+                textValidationService.createValidationResponse(testData, validationErrors);
 
             // Then
             assertThat(response.getData()).isEqualTo(testData);

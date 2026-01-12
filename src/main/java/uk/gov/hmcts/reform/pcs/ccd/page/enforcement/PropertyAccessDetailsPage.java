@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
     private static final String CLARIFICATION_PROPERTY_ACCESS_LABEL =
             "Explain why it’s difficult to access the property";
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -59,10 +59,10 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
 
         if (data.getEnforcementOrder().getPropertyAccessDetails().getIsDifficultToAccessProperty()
             .equals(VerticalYesNo.YES)) {
-            errors.addAll(textAreaValidationService.validateSingleTextArea(
+            errors.addAll(textValidationService.validateSingleTextArea(
                 txt,
                 CLARIFICATION_PROPERTY_ACCESS_LABEL,
-                TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
+                TextValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
             ));
         }
         return errors;

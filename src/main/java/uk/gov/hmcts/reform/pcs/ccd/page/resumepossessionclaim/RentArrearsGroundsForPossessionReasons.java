@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,7 @@ import java.util.List;
 @Component
 public class RentArrearsGroundsForPossessionReasons implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -251,117 +251,117 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
             validationErrors.addAll(validateRentArrearsGrounds(rentArrearsGrounds));
         }
 
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 
     private List<String> validateRentArrearsGrounds(RentArrearsGroundsReasons grounds) {
-        List<TextAreaValidationService.FieldValidation> allValidations = new ArrayList<>();
+        List<TextValidationService.FieldValidation> allValidations = new ArrayList<>();
         allValidations.addAll(List.of(buildMandatoryGroundValidations(grounds)));
         allValidations.addAll(List.of(buildDiscretionaryGroundValidations(grounds)));
 
-        return textAreaValidationService.validateMultipleTextAreas(
-            allValidations.toArray(new TextAreaValidationService.FieldValidation[0])
+        return textValidationService.validateMultipleTextAreas(
+            allValidations.toArray(new TextValidationService.FieldValidation[0])
         );
     }
 
-    private TextAreaValidationService.FieldValidation[] buildMandatoryGroundValidations(
+    private TextValidationService.FieldValidation[] buildMandatoryGroundValidations(
             RentArrearsGroundsReasons grounds) {
-        return new TextAreaValidationService.FieldValidation[] {
-            TextAreaValidationService.FieldValidation.of(
+        return new TextValidationService.FieldValidation[] {
+            TextValidationService.FieldValidation.of(
                 grounds.getOwnerOccupierReason(),
                 RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getRepossessionByLenderReason(),
                 RentArrearsMandatoryGrounds.REPOSSESSION_GROUND2.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getHolidayLetReason(),
                 RentArrearsMandatoryGrounds.HOLIDAY_LET_GROUND3.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getStudentLetReason(),
                 RentArrearsMandatoryGrounds.STUDENT_LET_GROUND4.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getMinisterOfReligionReason(),
                 RentArrearsMandatoryGrounds.MINISTER_RELIGION_GROUND5.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getRedevelopmentReason(),
                 RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getDeathOfTenantReason(),
                 RentArrearsMandatoryGrounds.DEATH_OF_TENANT_GROUND7.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getAntisocialBehaviourReason(),
                 RentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR_GROUND7A.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getNoRightToRentReason(),
                 RentArrearsMandatoryGrounds.NO_RIGHT_TO_RENT_GROUND7B.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             )
         };
     }
 
-    private TextAreaValidationService.FieldValidation[] buildDiscretionaryGroundValidations(
+    private TextValidationService.FieldValidation[] buildDiscretionaryGroundValidations(
             RentArrearsGroundsReasons grounds) {
-        return new TextAreaValidationService.FieldValidation[] {
-            TextAreaValidationService.FieldValidation.of(
+        return new TextValidationService.FieldValidation[] {
+            TextValidationService.FieldValidation.of(
                 grounds.getSuitableAltAccommodationReason(),
                 RentArrearsDiscretionaryGrounds.ALTERNATIVE_ACCOMMODATION_GROUND9.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getBreachOfTenancyConditionsReason(),
                 RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getPropertyDeteriorationReason(),
                 RentArrearsDiscretionaryGrounds.DETERIORATION_PROPERTY_GROUND13.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getNuisanceAnnoyanceReason(),
                 RentArrearsDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getDomesticViolenceReason(),
                 RentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE_GROUND14A.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getOffenceDuringRiotReason(),
                 RentArrearsDiscretionaryGrounds.OFFENCE_RIOT_GROUND14ZA.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getFurnitureDeteriorationReason(),
                 RentArrearsDiscretionaryGrounds.DETERIORATION_FURNITURE_GROUND15.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getEmployeeOfLandlordReason(),
                 RentArrearsDiscretionaryGrounds.EMPLOYEE_LANDLORD_GROUND16.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ),
-            TextAreaValidationService.FieldValidation.of(
+            TextValidationService.FieldValidation.of(
                 grounds.getTenancyByFalseStatementReason(),
                 RentArrearsDiscretionaryGrounds.FALSE_STATEMENT_GROUND17.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             )
         };
     }

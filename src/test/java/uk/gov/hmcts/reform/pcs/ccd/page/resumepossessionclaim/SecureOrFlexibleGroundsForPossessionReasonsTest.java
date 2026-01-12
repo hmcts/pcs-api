@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,12 +28,12 @@ import static org.mockito.Mockito.doAnswer;
 class SecureOrFlexibleGroundsForPossessionReasonsTest extends BasePageTest {
 
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     @BeforeEach
     void setUp() {
-        // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+        // Configure TextValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textValidationService)
             .validateMultipleTextAreas(any(), any());
         doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
@@ -42,9 +42,9 @@ class SecureOrFlexibleGroundsForPossessionReasonsTest extends BasePageTest {
                 .data((PCSCase) caseData)
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
-        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
-        setPageUnderTest(new SecureOrFlexibleGroundsForPossessionReasons(textAreaValidationService));
+        }).when(textValidationService).createValidationResponse(any(), anyList());
+
+        setPageUnderTest(new SecureOrFlexibleGroundsForPossessionReasons(textValidationService));
     }
 
     @Nested

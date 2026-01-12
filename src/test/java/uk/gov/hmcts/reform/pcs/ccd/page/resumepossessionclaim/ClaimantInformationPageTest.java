@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.stream.Stream;
 
@@ -19,7 +20,7 @@ class ClaimantInformationPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ClaimantInformationPage());
+        setPageUnderTest(new ClaimantInformationPage(new TextValidationService()));
     }
 
     @Test

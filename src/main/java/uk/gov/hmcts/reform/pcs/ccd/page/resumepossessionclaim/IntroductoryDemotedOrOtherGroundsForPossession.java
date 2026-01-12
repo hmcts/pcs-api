@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -75,10 +75,10 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
         List<String> validationErrors = new ArrayList<>();
 
         if (caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription() != null) {
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textValidationService.validateSingleTextArea(
                 caseData.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription(),
                 PCSCase.OTHER_GROUND_DESCRIPTION_LABEL,
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ));
         }
 
@@ -99,7 +99,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
         }
 
         if (!validationErrors.isEmpty()) {
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            return textValidationService.createValidationResponse(caseData, validationErrors);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

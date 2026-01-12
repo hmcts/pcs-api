@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +30,12 @@ import static org.mockito.Mockito.eq;
 class SuspensionToBuyDemotionOfTenancyOrderReasonsTest extends BasePageTest {
 
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     @BeforeEach
     void setUp() {
-        // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+        // Configure TextValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textValidationService)
             .validateSingleTextArea(any(), any(), anyInt());
         lenient().doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
@@ -44,9 +44,9 @@ class SuspensionToBuyDemotionOfTenancyOrderReasonsTest extends BasePageTest {
                 .data((PCSCase) caseData)
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
-        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
-        setPageUnderTest(new SuspensionToBuyDemotionOfTenancyOrderReasons(textAreaValidationService));
+        }).when(textValidationService).createValidationResponse(any(), anyList());
+
+        setPageUnderTest(new SuspensionToBuyDemotionOfTenancyOrderReasons(textValidationService));
     }
 
     @Nested
@@ -70,12 +70,12 @@ class SuspensionToBuyDemotionOfTenancyOrderReasonsTest extends BasePageTest {
             // Then
             assertThat(response.getData()).isEqualTo(caseData);
             assertThat(response.getErrors()).isNullOrEmpty();
-            verify(textAreaValidationService).validateSingleTextArea(
+            verify(textValidationService).validateSingleTextArea(
                 eq("Suspension order reason"),
                 any(),
                 anyInt()
             );
-            verify(textAreaValidationService).validateSingleTextArea(
+            verify(textValidationService).validateSingleTextArea(
                 eq("Demotion order reason"),
                 any(),
                 anyInt()
@@ -142,10 +142,10 @@ class SuspensionToBuyDemotionOfTenancyOrderReasonsTest extends BasePageTest {
             // Given
             String longText = "a".repeat(251); // Exceeds SHORT_TEXT_LIMIT (250)
             List<String> validationErrors = List.of("Error message");
-            
-            lenient().doReturn(validationErrors).when(textAreaValidationService)
+
+            lenient().doReturn(validationErrors).when(textValidationService)
                 .validateSingleTextArea(any(), any(), anyInt());
-            
+
             PCSCase caseData = PCSCase.builder()
                 .suspensionOfRightToBuyDemotionOfTenancy(SuspensionOfRightToBuyDemotionOfTenancy.builder()
                     .suspensionOrderReason(longText)

@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class StatementOfExpressTerms implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -40,18 +40,18 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         DemotionOfTenancy demotionOfTenancy = caseData.getDemotionOfTenancy();
         if (demotionOfTenancy != null) {
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textValidationService.validateSingleTextArea(
                 demotionOfTenancy.getStatementOfExpressTermsDetails(),
                 DemotionOfTenancy.STATEMENT_OF_EXPRESS_TERMS_DETAILS_LABEL,
-                TextAreaValidationService.LONG_TEXT_LIMIT
+                TextValidationService.LONG_TEXT_LIMIT
             ));
         }
-        
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

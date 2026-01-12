@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ProhibitedConductWales implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -59,24 +59,24 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
         if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES
             && periodicContractTermsWales != null
             && periodicContractTermsWales.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES) {
-            textAreaValidationService.validateTextArea(
+            textValidationService.validateTextArea(
                 periodicContractTermsWales.getDetailsOfTerms(),
                 "Give details of the terms you’ve agreed",
-                TextAreaValidationService.SHORT_TEXT_LIMIT,
+                TextValidationService.SHORT_TEXT_LIMIT,
                 validationErrors
             );
         }
 
         if (caseData.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
-            textAreaValidationService.validateTextArea(
+            textValidationService.validateTextArea(
                 caseData.getProhibitedConductWalesWhyMakingClaim(),
                 "Why are you making this claim?",
-                TextAreaValidationService.SHORT_TEXT_LIMIT,
+                TextValidationService.SHORT_TEXT_LIMIT,
                 validationErrors
             );
         }
 
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
 

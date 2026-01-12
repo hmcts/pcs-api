@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ import java.util.List;
 public class NoticeDetails implements CcdPageConfiguration {
 
     private final NoticeDetailsService noticeDetailsService;
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     private static final String NOTICE_SERVICE_METHOD_CONDITION = "engNoticeServiceMethod=\"";
 
@@ -126,6 +126,6 @@ public class NoticeDetails implements CcdPageConfiguration {
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
 
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

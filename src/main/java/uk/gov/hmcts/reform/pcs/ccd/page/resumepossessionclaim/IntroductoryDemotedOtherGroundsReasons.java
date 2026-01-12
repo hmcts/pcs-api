@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -99,35 +99,35 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
         IntroductoryDemotedOtherGroundReason introductoryDemotedOtherGroundReason =
             caseData.getIntroductoryDemotedOtherGroundReason();
         if (introductoryDemotedOtherGroundReason != null) {
-            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
-                TextAreaValidationService.FieldValidation.of(
+            validationErrors.addAll(textValidationService.validateMultipleTextAreas(
+                TextValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getAntiSocialBehaviourGround(),
                     "Antisocial behaviour",
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                    TextValidationService.MEDIUM_TEXT_LIMIT
                 ),
-                TextAreaValidationService.FieldValidation.of(
+                TextValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getBreachOfTheTenancyGround(),
                     "Breach of the tenancy",
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                    TextValidationService.MEDIUM_TEXT_LIMIT
                 ),
-                TextAreaValidationService.FieldValidation.of(
+                TextValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getAbsoluteGrounds(),
                     "Absolute grounds",
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                    TextValidationService.MEDIUM_TEXT_LIMIT
                 ),
-                TextAreaValidationService.FieldValidation.of(
+                TextValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getOtherGround(),
                     "Other grounds",
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                    TextValidationService.MEDIUM_TEXT_LIMIT
                 ),
-                TextAreaValidationService.FieldValidation.of(
+                TextValidationService.FieldValidation.of(
                     introductoryDemotedOtherGroundReason.getNoGrounds(),
                     "No grounds",
-                    TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                    TextValidationService.MEDIUM_TEXT_LIMIT
                 )
             ));
         }
 
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

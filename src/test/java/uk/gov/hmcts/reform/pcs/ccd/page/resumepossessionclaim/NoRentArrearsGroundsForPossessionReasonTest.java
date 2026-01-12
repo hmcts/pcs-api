@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,14 +27,14 @@ import static org.mockito.Mockito.lenient;
 class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
 
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     private NoRentArrearsGroundsForPossessionReason pageUnderTest;
 
     @BeforeEach
     void setUp() {
-        // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+        // Configure TextValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textValidationService)
             .validateMultipleTextAreas(any(), any());
         lenient().doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
@@ -43,9 +43,9 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
                 .data((PCSCase) caseData)
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
-        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
-        pageUnderTest = new NoRentArrearsGroundsForPossessionReason(textAreaValidationService);
+        }).when(textValidationService).createValidationResponse(any(), anyList());
+
+        pageUnderTest = new NoRentArrearsGroundsForPossessionReason(textValidationService);
         setPageUnderTest(pageUnderTest);
     }
 

@@ -9,10 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService.CHARACTER_LIMIT_ERROR_TEMPLATE;
 
 class PropertyAccessDetailsPageTest extends BasePageTest {
 
@@ -20,8 +20,8 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new PropertyAccessDetailsPage(textAreaValidationService));
+        TextValidationService textValidationService = new TextValidationService();
+        setPageUnderTest(new PropertyAccessDetailsPage(textValidationService));
     }
 
     @Test

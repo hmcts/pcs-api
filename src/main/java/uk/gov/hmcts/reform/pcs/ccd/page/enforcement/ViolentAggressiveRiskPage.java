@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @Component
 public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
 
     @Override
@@ -43,16 +43,16 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
 
         List<String> validationErrors = getValidationErrors(caseData);
 
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder().getRiskDetails().getEnforcementViolentDetails();
 
-        return textAreaValidationService.validateSingleTextArea(
+        return textValidationService.validateSingleTextArea(
             txt,
             RiskCategory.VIOLENT_OR_AGGRESSIVE.getText(),
-            TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
+            TextValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
         );
     }
 

@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 /**
  * CCD page configuration for the Occupation contract or licence details screen.
@@ -29,13 +29,13 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
     private static final String SHOW_OTHER_DETAILS_CONDITION = "occupationLicenceTypeWales=\"OTHER\"";
     private static final String OCCUPATION_CONTRACT_DETAILS = "OccupationLicenceDetailsWales";
     private static final String OCCUPATION_CONTRACT_DETAILS_LABEL = "Occupation contract or licence details";
-    private static final String DATE_NOT_TODAY_ERROR_MESSAGE = 
+    private static final String DATE_NOT_TODAY_ERROR_MESSAGE =
         "Occupation contract or licence start date cannot be today";
-    private static final String DATE_NOT_FUTURE_ERROR_MESSAGE = 
+    private static final String DATE_NOT_FUTURE_ERROR_MESSAGE =
         "Occupation contract or licence start date cannot be in the future";
 
     private final Clock ukClock;
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -87,22 +87,22 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
         OccupationLicenceDetailsWales occupationLicenceDetailsWales = caseData.getOccupationLicenceDetailsWales();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         if (occupationLicenceDetailsWales != null) {
             // Validate text area field
-            validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+            validationErrors.addAll(textValidationService.validateSingleTextArea(
                 occupationLicenceDetailsWales.getOtherLicenceTypeDetails(),
                 "Give details about what type of occupation contract or licence is in place",
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+                TextValidationService.MEDIUM_TEXT_LIMIT
             ));
-            
+
             // Validate date fields
             validationErrors.addAll(validateOccupationLicenceDetailsWales(occupationLicenceDetailsWales));
         }
-        
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+
+        return textValidationService.createValidationResponse(caseData, validationErrors);
     }
 
     /**
@@ -116,7 +116,7 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
         LocalDate contractStartDate = details.getLicenceStartDate();
         if (contractStartDate != null) {
             LocalDate currentDate = LocalDate.now(ukClock);
-            
+
             // Date cannot be current date
             if (contractStartDate.isEqual(currentDate)) {
                 errors.add(DATE_NOT_TODAY_ERROR_MESSAGE);

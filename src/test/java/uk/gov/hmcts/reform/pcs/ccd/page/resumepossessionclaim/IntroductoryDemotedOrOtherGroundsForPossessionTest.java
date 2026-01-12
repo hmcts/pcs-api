@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,12 +35,12 @@ import static org.mockito.Mockito.lenient;
 class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
 
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     @BeforeEach
     void setUp() {
-        // Configure TextAreaValidationService mocks
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+        // Configure TextValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textValidationService)
             .validateSingleTextArea(any(), any(), anyInt());
         lenient().doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
@@ -49,10 +49,10 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
                 .data((PCSCase) caseData)
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
-        }).when(textAreaValidationService).createValidationResponse(any(), any());
+        }).when(textValidationService).createValidationResponse(any(), any());
 
         setPageUnderTest(new IntroductoryDemotedOrOtherGroundsForPossession(
-            textAreaValidationService
+                textValidationService
         ));
     }
 
@@ -248,7 +248,7 @@ class IntroductoryDemotedOrOtherGroundsForPossessionTest extends BasePageTest {
             String longText = "a".repeat(501); // Exceeds MEDIUM_TEXT_LIMIT (500)
             List<String> validationErrors = List.of("Error message");
 
-            lenient().doReturn(validationErrors).when(textAreaValidationService)
+            lenient().doReturn(validationErrors).when(textValidationService)
                 .validateSingleTextArea(any(), any(), anyInt());
 
             IntroductoryDemotedOtherGroundsForPossession introductoryDemotedOtherGroundsForPossession =

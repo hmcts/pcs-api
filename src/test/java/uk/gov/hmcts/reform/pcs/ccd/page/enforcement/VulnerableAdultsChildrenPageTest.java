@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.stream.Stream;
 
@@ -24,8 +24,8 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new VulnerableAdultsChildrenPage(textAreaValidationService));
+        TextValidationService textValidationService = new TextValidationService();
+        setPageUnderTest(new VulnerableAdultsChildrenPage(textValidationService));
     }
 
     @ParameterizedTest
@@ -66,7 +66,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
     }
 
     private static Stream<Arguments> characterLimitScenarios() {
-        int limit = TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
+        int limit = TextValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
         return Stream.of(
                 // Exceeds limit - all categories
                 arguments(
@@ -177,7 +177,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
                 arguments(
                         YesNoNotSure.YES,
                         VulnerableCategory.VULNERABLE_ADULTS,
-                        "a".repeat(TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT)
+                        "a".repeat(TextValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT)
                 )
         );
     }

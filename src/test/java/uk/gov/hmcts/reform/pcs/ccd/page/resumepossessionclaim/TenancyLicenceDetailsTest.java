@@ -13,8 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetailsPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -35,14 +34,14 @@ class TenancyLicenceDetailsTest extends BasePageTest {
     @Mock
     private Clock ukClock;
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     @BeforeEach
     void setUp() {
         when(ukClock.instant()).thenReturn(FIXED_CURRENT_DATE.atTime(10, 20).atZone(UK_ZONE_ID).toInstant());
         when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
-        setPageUnderTest(new TenancyLicenceDetailsPage(ukClock, textAreaValidationService));
+        setPageUnderTest(new TenancyLicenceDetailsPage(ukClock, textValidationService));
     }
 
     @ParameterizedTest

@@ -20,7 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +38,11 @@ import static org.mockito.Mockito.lenient;
 class ReasonsForPossessionWalesTest extends BasePageTest {
 
     @Mock
-    private TextAreaValidationService textAreaValidationService;
+    private TextValidationService textValidationService;
 
     @BeforeEach
     void setUp() {
-        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+        lenient().doReturn(new ArrayList<>()).when(textValidationService)
             .validateMultipleTextAreas(any(), any());
         doAnswer(invocation -> {
             Object caseData = invocation.getArgument(0);
@@ -51,9 +51,9 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
                 .data((PCSCase) caseData)
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
-        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
+        }).when(textValidationService).createValidationResponse(any(), anyList());
 
-        setPageUnderTest(new ReasonsForPossessionWales(textAreaValidationService));
+        setPageUnderTest(new ReasonsForPossessionWales(textValidationService));
     }
 
     @ParameterizedTest

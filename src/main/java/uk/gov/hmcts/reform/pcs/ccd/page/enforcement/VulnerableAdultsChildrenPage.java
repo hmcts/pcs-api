@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @Component
 public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -74,10 +74,10 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
 
         if (data.getEnforcementOrder().getVulnerablePeoplePresent() == YesNoNotSure.YES) {
             String txt = data.getEnforcementOrder().getVulnerableAdultsChildren().getVulnerableReasonText();
-            errors.addAll(textAreaValidationService.validateSingleTextArea(
+            errors.addAll(textValidationService.validateSingleTextArea(
                 txt,
                 "How are they vulnerable?",
-                TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
+                TextValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
             ));
         }
         return errors;

@@ -13,9 +13,10 @@ import java.util.function.Function;
  * Service for validating text area fields with character limits.
  */
 @Service
-public class TextAreaValidationService {
+public class TextValidationService {
 
     // Common character limits used across the application
+    public static final int TEXT_FIELD_LIMIT = 60;
     public static final int SHORT_TEXT_LIMIT = 250;
     public static final int MEDIUM_TEXT_LIMIT = 500;
     public static final int LONG_TEXT_LIMIT = 950;
@@ -38,11 +39,29 @@ public class TextAreaValidationService {
         }
     }
 
+    public void validateTextField(String fieldValue, String fieldLabel, int maxCharacters, List<String> errors) {
+        if (fieldValue != null && fieldValue.length() > maxCharacters) {
+            String formattedMaxCharacters = formatNumberWithCommas(maxCharacters);
+            String errorMessage = String.format(
+                CHARACTER_LIMIT_ERROR_TEMPLATE,
+                fieldLabel,
+                formattedMaxCharacters
+            );
+            errors.add(errorMessage);
+        }
+    }
+
     private String formatNumberWithCommas(int number) {
         if (number >= 1000) {
             return NumberFormat.getNumberInstance(Locale.UK).format(number);
         }
         return String.valueOf(number);
+    }
+
+    public List<String> validateSingleTextField(String fieldValue, String fieldLabel, int maxCharacters) {
+        List<String> errors = new ArrayList<>();
+        validateTextField(fieldValue, fieldLabel, maxCharacters, errors);
+        return errors;
     }
 
     public List<String> validateSingleTextArea(String fieldValue, String fieldLabel, int maxCharacters) {
@@ -76,7 +95,7 @@ public class TextAreaValidationService {
         }
 
         String fieldValue = fieldExtractor.apply(object);
-        return validateSingleTextArea(fieldValue, fieldLabel, maxCharacters);
+        return validateSingleTextField(fieldValue, fieldLabel, maxCharacters);
     }
 
     /**

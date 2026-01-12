@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextValidationService;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -21,12 +21,12 @@ import java.util.List;
 public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
 
     private final Clock ukClock;
-    private final TextAreaValidationService textAreaValidationService;
+    private final TextValidationService textValidationService;
 
     public TenancyLicenceDetailsPage(@Qualifier("ukClock") Clock ukClock,
-                                TextAreaValidationService textAreaValidationService) {
+                                TextValidationService textValidationService) {
         this.ukClock = ukClock;
-        this.textAreaValidationService = textAreaValidationService;
+        this.textValidationService = textValidationService;
     }
 
     @Override
@@ -87,15 +87,15 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
         }
 
         // Validate details of other type of tenancy licence character limit
-        List<String> validationErrors = textAreaValidationService.validateSingleTextArea(
+        List<String> validationErrors = textValidationService.validateSingleTextArea(
             caseData.getTenancyLicenceDetails() != null
                     ? caseData.getTenancyLicenceDetails().getDetailsOfOtherTypeOfTenancyLicence() : null,
             TenancyLicenceDetails.DETAILS_OF_OTHER_TYPE_OF_TENANCY_LICENCE_LABEL,
-            TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            TextValidationService.MEDIUM_TEXT_LIMIT
         );
 
         if (!validationErrors.isEmpty()) {
-            return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+            return textValidationService.createValidationResponse(caseData, validationErrors);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
