@@ -18,12 +18,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.CHAR
 import static uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT;
 
 @ExtendWith(MockitoExtension.class)
-class KnownDefendantsDOBInformationPageTest extends BasePageTest {
+class DefendantsDOBPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
         TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
-        setPageUnderTest(new KnownDefendantsDOBInformationPage(textAreaValidationService));
+        setPageUnderTest(new DefendantsDOBPage(textAreaValidationService));
     }
 
     @Test

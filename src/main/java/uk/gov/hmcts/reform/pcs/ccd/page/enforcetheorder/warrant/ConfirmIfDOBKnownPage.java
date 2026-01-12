@@ -18,7 +18,7 @@ public class ConfirmIfDOBKnownPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("confirmDefendantsDOB")
-            .pageLabel("Confirm if you know the defendants' dates of birth")
+            .pageLabel("Confirm if you know the defendants’ dates of birth")
             .showCondition("selectEnforcementType=\"WARRANT\"")
             .label("confirmDefendantsDOB-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)

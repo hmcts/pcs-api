@@ -18,7 +18,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Component
-public class KnownDefendantsDOBInformationPage implements CcdPageConfiguration {
+public class DefendantsDOBPage implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
 

@@ -22,7 +22,7 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
     private final LandRegistryFeesPage landRegistryFeesPage;
-    private final KnownDefendantsDOBInformationPage knownDefendantsDOBInformationPage;
+    private final DefendantsDOBPage defendantsDOBPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -31,7 +31,7 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
             .add(new NameAndAddressForEvictionPage())
             .add(new ChangeNameAddressPage())
             .add(new ConfirmIfDOBKnownPage())
-            .add(knownDefendantsDOBInformationPage)
+            .add(defendantsDOBPage)
             .add(new PeopleWhoWillBeEvictedPage())
             .add(new PeopleYouWantToEvictPage())
             .add(new LivingInThePropertyPage())
