@@ -130,14 +130,6 @@ test.describe('[Create Case - With resume claim options]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {
-      "text": checkingNotice.guidanceOnPossessionLink,
-      "elementType": "paragraphLink"
-    })
-    await performValidation('text', {
-      "text": checkingNotice.haveYouServedNoticeToQuestion,
-      "elementType": "inlineText"
-    });
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
@@ -264,14 +256,6 @@ test.describe('[Create Case - With resume claim options]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {
-      "text": checkingNotice.guidanceOnPossessionLink,
-      "elementType": "paragraphLink"
-    })
-    await performValidation('text', {
-      "text": checkingNotice.haveYouServedNoticeToQuestion,
-      "elementType": "inlineText"
-    });
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption

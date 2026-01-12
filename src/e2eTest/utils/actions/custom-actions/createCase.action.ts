@@ -234,10 +234,6 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:caseData.question, option: caseData.option});
-    if ( caseData.option === checkingNotice.yesRadioOption && caseData.typeOfNotice) {
-      // Note: typeOfNotice and typeOfNoticeInput may need to be added to checkingNotice
-      await performAction('inputText', caseData.typeOfNotice, caseData.typeOfNoticeInput || 'RWH20');
-    }
     await performAction('clickButton', checkingNotice.continueButton);
   }
 
