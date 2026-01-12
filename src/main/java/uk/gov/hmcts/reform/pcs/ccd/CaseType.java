@@ -68,11 +68,6 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
-        builder.tab("caseSummary", "Case Summary")
-            .forRoles(UserRole.PCS_SOLICITOR)
-            .label("summaryMarkdownLabel", null, "${summaryMarkdown}")
-            .field("summaryMarkdown", NEVER_SHOW);
-
         builder.tab("summary", "Summary")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getPropertyAddress);
