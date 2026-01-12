@@ -39,16 +39,7 @@ CREATE TABLE claim (
                      additional_underlessees_or_mortgagees YES_NO,
                      additional_docs_provided YES_NO,
                      gen_app_expected YES_NO,
-                     language_used TEXT,
-
-                     --columns to remove when implementing new possession_alternatives table
-                     suspension_of_right_to_buy_housing_act VARCHAR(30),
-                     suspension_of_right_to_buy_reason VARCHAR(250),
-                     demotion_of_tenancy_housing_act VARCHAR(30),
-                     demotion_of_tenancy_reason VARCHAR(250),
-                     statement_of_express_terms_details VARCHAR(950),
-                     prohibited_conduct JSONB,
-                     asb_questions JSONB
+                     language_used TEXT
 );
 
 -- Re-add FK constraints

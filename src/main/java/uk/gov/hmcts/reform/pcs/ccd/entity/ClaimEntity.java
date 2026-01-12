@@ -21,12 +21,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 
 import java.util.HashSet;
@@ -129,26 +125,6 @@ public class ClaimEntity {
 
     @Enumerated(EnumType.STRING)
     private LanguageUsed languageUsed;
-
-    // Columns to remove later when possession_alternatives table is implemented
-
-    @Enumerated(EnumType.STRING)
-    private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct;
-
-    private String suspensionOfRightToBuyReason;
-
-    @Enumerated(EnumType.STRING)
-    private DemotionOfTenancyHousingAct demotionOfTenancyHousingAct;
-
-    private String demotionOfTenancyReason;
-
-    private String statementOfExpressTermsDetails;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private ProhibitedConductWales prohibitedConduct;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private ASBQuestionsWales asbQuestions;
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
