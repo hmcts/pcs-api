@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
 
 export class ClickRadioButtonAction implements IAction {
@@ -7,14 +7,16 @@ export class ClickRadioButtonAction implements IAction {
     const question = params.question as string;
     const option = params.option as string;
 
-    if (await this.clickRadioButton(this.radioPattern1(page, question, option, idx))) return;
-    if (await this.clickRadioButton(this.radioPattern2(page, question, option, idx))) return;
-    if (await this.clickRadioButton(this.radioPattern3(page, question, option, idx))) return;
+    if (await this.clickRadioButton(page, this.radioPattern1(page, question, option, idx))) return;
+    if (await this.clickRadioButton(page, this.radioPattern2(page, question, option, idx))) return;
+    if (await this.clickRadioButton(page, this.radioPattern3(page, question, option, idx))) return;
   }
 
-  private async clickRadioButton(locator: any): Promise<boolean> {
+  private async clickRadioButton(page: Page, locator: Locator): Promise<boolean> {
     const count = await locator.count();
     if (count === 1 && await locator.isVisible()) {
+      await page.waitForLoadState('load');
+      await page.waitForTimeout(500);
       await locator.click();
       return true;
     }
@@ -49,3 +51,5 @@ export class ClickRadioButtonAction implements IAction {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 }
+
+
