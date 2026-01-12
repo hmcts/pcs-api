@@ -120,6 +120,7 @@ test.describe('[Create Case - Wales]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderWalesNewTab);
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption

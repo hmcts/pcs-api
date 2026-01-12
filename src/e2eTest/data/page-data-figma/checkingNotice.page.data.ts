@@ -5,6 +5,8 @@ export const checkingNotice = {
   PropertyAddressParagraph: `Property address:`,
   youMayHaveAlreadyServedParagraph: `You may have already served the defendants with notice of your intention to begin possession proceedings. Each ground has a different notice period and some do not require any notice to be served. You should read the`,
   guidanceOnPossessionLink: `guidance on possession notice periods (opens in a new tab)`,
+  mainHeaderEnglandNewTab: 'Understanding the possession action process: A guide for private landlords in England',
+  mainHeaderWalesNewTab: 'Understanding the possession process: guidance for private landlords | GOV.WALES',
   toMakeSureParagraph: ` to make sure your claim is valid.`,
   aJudgeMightNotGrantLabel: `A judge might not grant a possession order if you have not followed the correct notice procedure`,
   haveYouServedNoticeToQuestion: `Have you served notice to the defendants?`,

@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { IValidation } from '../../interfaces/validation.interface';
+import { IValidation } from '@utils/interfaces';
 import * as fs from 'fs';
 import * as path from 'path';
 import { cyaValidation, CYAStore } from '../custom-validations/CYA/cyaPage.validation';
@@ -110,7 +110,7 @@ export class PageContentValidation implements IValidation {
 
     const pageResults: ValidationResult[] = [];
     for (const [key, value] of Object.entries(pageData)) {
-      if (key.includes('Input') || key.includes('Hidden')||key.includes('Dynamic')) continue;
+      if (key.includes('Input') || key.includes('Hidden') || key.includes('Dynamic') || key.includes('NewTab')) continue;
       if (typeof value === 'string' && value.trim() !== '') {
         const elementType = this.getElementType(key);
         const isVisible = await this.isElementVisible(page, value as string, elementType);
