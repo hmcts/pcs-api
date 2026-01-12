@@ -1,5 +1,6 @@
-import { Page, Locator } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
+import { actionRetries } from '../../../playwright.config';
 
 export class ClickRadioButtonAction implements IAction {
   async execute(page: Page, action: string, params: actionRecord): Promise<void> {
@@ -7,20 +8,36 @@ export class ClickRadioButtonAction implements IAction {
     const question = params.question as string;
     const option = params.option as string;
 
-    if (await this.clickRadioButton(page, this.radioPattern1(page, question, option, idx))) return;
-    if (await this.clickRadioButton(page, this.radioPattern2(page, question, option, idx))) return;
-    if (await this.clickRadioButton(page, this.radioPattern3(page, question, option, idx))) return;
+    const patterns = [
+      () => this.radioPattern1(page, question, option, idx),
+      () => this.radioPattern2(page, question, option, idx),
+      () => this.radioPattern3(page, question, option, idx)
+    ];
+
+    for (const getLocator of patterns) {
+      const locator = getLocator();
+      if (await this.clickWithRetry(locator)) {
+        return;
+      }
+    }
   }
 
-  private async clickRadioButton(page: Page, locator: Locator): Promise<boolean> {
-    const count = await locator.count();
-    if (count === 1 && await locator.isVisible()) {
-      await page.waitForLoadState('load');
-      await page.waitForTimeout(500);
-      await locator.click();
-      return true;
+  private async clickWithRetry(locator: any): Promise<boolean> {
+    if ((await locator.count()) !== 1) {
+      return false;
     }
-    return false;
+
+    let attempt = 0;
+    let radioIsChecked = false;
+
+    do {
+      attempt++;
+      await locator.click({ timeout: 2000, force: attempt > 1 });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      radioIsChecked = await locator.isChecked();
+    } while (!radioIsChecked && attempt < actionRetries);
+
+    return radioIsChecked;
   }
 
   private radioPattern1(page: Page, question: string, option: string, idx: number) {
@@ -51,5 +68,4 @@ export class ClickRadioButtonAction implements IAction {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 }
-
 
