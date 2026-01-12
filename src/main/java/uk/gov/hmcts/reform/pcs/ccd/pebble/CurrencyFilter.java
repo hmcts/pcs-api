@@ -5,6 +5,7 @@ import io.pebbletemplates.pebble.template.EvaluationContext;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +16,7 @@ public class CurrencyFilter implements Filter {
 
     @Override
     public List<String> getArgumentNames() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override

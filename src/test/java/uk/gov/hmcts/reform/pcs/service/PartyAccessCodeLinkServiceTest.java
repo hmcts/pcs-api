@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -47,6 +48,13 @@ class PartyAccessCodeLinkServiceTest {
     private static final String ACCESS_CODE = "ABCD1234";
     private static final UUID USER_ID = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
+    private UserInfo testUser;
+
+    @BeforeEach
+    void setUp() {
+        testUser = createUser();
+    }
+
     private UserInfo createUser() {
         return new UserInfo(null, USER_ID.toString(), null, null, null, List.of());
     }
@@ -88,7 +96,7 @@ class PartyAccessCodeLinkServiceTest {
             caseEntity.getDefendants(), partyId, USER_ID);
 
         // WHEN
-        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser());
+        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser);
 
         // THEN
         assertThat(defendant.getIdamUserId()).isEqualTo(USER_ID);
@@ -108,7 +116,7 @@ class PartyAccessCodeLinkServiceTest {
             .thenThrow(new InvalidAccessCodeException("Invalid access code for this case."));
 
         // WHEN + THEN
-        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(InvalidAccessCodeException.class)
             .hasMessageContaining("Invalid access code");
     }
@@ -136,7 +144,7 @@ class PartyAccessCodeLinkServiceTest {
             .thenThrow(new InvalidPartyForCaseException("Party does not belong to this case."));
 
         // WHEN + THEN
-        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(InvalidPartyForCaseException.class)
             .hasMessageContaining("Party does not belong to this case");
     }
@@ -168,7 +176,7 @@ class PartyAccessCodeLinkServiceTest {
             .when(validator).validatePartyNotAlreadyLinked(defendant);
 
         // WHEN + THEN
-        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
             .hasMessageContaining("already linked");
     }
@@ -208,7 +216,7 @@ class PartyAccessCodeLinkServiceTest {
                 caseEntity.getDefendants(), partyId2, USER_ID);
 
         // WHEN + THEN
-        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser()))
+        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
             .hasMessageContaining("already linked to another");
     }
@@ -245,11 +253,10 @@ class PartyAccessCodeLinkServiceTest {
             caseEntity.getDefendants(), partyId2, USER_ID);
 
         // WHEN
-        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, createUser());
+        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser);
 
         // THEN
         assertThat(defendant2.getIdamUserId()).isEqualTo(USER_ID);
         verify(pcsCaseService).save(caseEntity);
     }
 }
-
