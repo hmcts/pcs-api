@@ -41,18 +41,14 @@ export class ClickRadioButtonAction implements IAction {
   }
 
   private radioPattern1(page: Page, question: string, option: string, idx: number) {
-    const questionSpan = page.locator(`span.form-label:has-text("${question}")`).nth(idx);
-    return questionSpan.locator('xpath=ancestor::div[contains(@class, "form-group")][1]')
-      .locator('div.multiple-choice')
-      .filter({ has: page.locator('label.form-label').filter({ hasText: new RegExp(`^${this.escapeRegex(option)}$`) }) })
-      .locator('input[type="radio"]');
+    return page.locator(`legend:has-text("${question}")`)
+      .nth(idx)
+      .locator('..')
+      .getByRole('radio', { name: option as string, exact: true });
   }
 
   private radioPattern2(page: Page, question: string, option: string, idx: number) {
-    const escapedOption = option.replace(/'/g, "', \"'\", '");
-    return page.locator(`span.form-label:has-text("${question}")`)
-      .nth(idx)
-      .locator(`xpath=ancestor::fieldset[1]//div.multiple-choice[.//label.form-label[normalize-space()='${escapedOption}']]/input[@type='radio']`);
+    return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
   }
 
   private radioPattern3(page: Page, question: string, option: string, idx: number) {
