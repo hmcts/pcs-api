@@ -46,7 +46,7 @@ public class ClaimService {
                                                ? claimantCircumstances.getClaimantCircumstancesSelect() : null)
             .claimantCircumstances(claimantCircumstances != null
                                        ? claimantCircumstances.getClaimantCircumstancesDetails() : null)
-            .additionalDefendants(pcsCase.getAddAdditionalUnderlesseeOrMortgagee())
+            .additionalDefendants(pcsCase.getAddAnotherDefendant())
             .defendantCircumstancesProvided(defendantCircumstances != null
                                                 ? defendantCircumstances.getHasDefendantCircumstancesInfo() : null)
             .defendantCircumstances(defendantCircumstances != null

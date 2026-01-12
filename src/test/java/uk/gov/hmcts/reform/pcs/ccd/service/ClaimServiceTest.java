@@ -64,12 +64,12 @@ class ClaimServiceTest {
         when(pcsCase.getMediationAttemptedDetails()).thenReturn("mediation details");
         when(pcsCase.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getSettlementAttemptedDetails()).thenReturn("settlement details");
+        when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getWantToUploadDocuments()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getApplicationWithClaim()).thenReturn(VerticalYesNo.NO);
         when(pcsCase.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
-        when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
 
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
