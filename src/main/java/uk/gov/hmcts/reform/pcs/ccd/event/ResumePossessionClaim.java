@@ -287,8 +287,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
+        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
-            .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
+            .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
+
+        if (contactPreferences.getOrganisationAddress() != null) {
+            contactPreferences.setOrgAddressFound(YesOrNo.YES);
+        } else {
+            contactPreferences.setOrgAddressFound(YesOrNo.NO);
+        }
 
         caseData.setClaimantContactPreferences(contactPreferences);
 
@@ -359,8 +367,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         ClaimantContactPreferences contactPreferences = getContactPreferences(pcsCase);
 
-        AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
-            ? contactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+        AddressUK contactAddress = resolveContactAddress(contactPreferences);
 
         String contactEmail = isNotBlank(contactPreferences.getOverriddenClaimantContactEmail())
             ? contactPreferences.getOverriddenClaimantContactEmail() : contactPreferences.getClaimantContactEmail();
@@ -430,6 +437,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
+    }
+
+    private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {
+        if (contactPreferences.getOverriddenClaimantContactAddress() != null) {
+            return contactPreferences.getOverriddenClaimantContactAddress();
+        }
+        return contactPreferences.getOrganisationAddress();
     }
 
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {
