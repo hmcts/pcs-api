@@ -12,15 +12,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.util.StreamUtils;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcement.EnforcementOrderService;
-import uk.gov.hmcts.reform.pcs.factory.ClaimantPartyFactory;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.ByteArrayInputStream;
@@ -45,12 +41,8 @@ class EnforcementWarrantSupportTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private ClaimantPartyFactory claimantPartyFactory;
     @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
-    @Mock
-    private ClaimService claimService;
     @Mock
     private CaseSupportHelper caseSupportHelper;
     @Mock
@@ -66,9 +58,8 @@ class EnforcementWarrantSupportTest {
         when(userDetails.getUid()).thenReturn(UUID.randomUUID().toString());
         when(userDetails.getSub()).thenReturn("test@example.com");
 
-        underTest = new EnforcementWarrantSupport(draftCaseDataService, pcsCaseService, claimantPartyFactory,
-                                                  securityContextService, claimService, caseSupportHelper,
-                                                  enforcementOrderService, objectMapper);
+        underTest = new EnforcementWarrantSupport(draftCaseDataService, pcsCaseService,securityContextService,
+                                                  caseSupportHelper, enforcementOrderService, objectMapper);
     }
 
     @Test
@@ -85,13 +76,9 @@ class EnforcementWarrantSupportTest {
         ByteArrayInputStream stream2 = new ByteArrayInputStream(enforcementDataJson.getBytes(StandardCharsets.UTF_8));
         when(resource.getInputStream()).thenReturn(stream1).thenReturn(stream2);
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        PartyEntity claimantPartyEntity = mock(PartyEntity.class);
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
         when(caseSupportHelper.getNonProdResource(MakeAClaimCaseGenerationSupport.CASE_GENERATOR)).thenReturn(resource);
         when(draftCaseDataService.parseCaseDataJson(caseDataJson)).thenReturn(caseData);
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(claimantPartyFactory.createAndPersistClaimantParty(any(), any())).thenReturn(claimantPartyEntity);
-        when(claimService.createMainClaimEntity(caseData, claimantPartyEntity)).thenReturn(claimEntity);
 
         // When
         underTest.generate(caseReference, caseData, resource);

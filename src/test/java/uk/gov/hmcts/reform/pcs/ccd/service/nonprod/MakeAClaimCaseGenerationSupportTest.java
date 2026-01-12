@@ -13,13 +13,9 @@ import org.springframework.core.io.Resource;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.factory.ClaimantPartyFactory;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.ByteArrayInputStream;
@@ -48,12 +44,8 @@ class MakeAClaimCaseGenerationSupportTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private PcsCaseService pcsCaseService;
-    @Mock
-    private ClaimantPartyFactory claimantPartyFactory;
     @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
-    @Mock
-    private ClaimService claimService;
     @Mock(strictness = LENIENT)
     private UserInfo userDetails;
 
@@ -75,16 +67,12 @@ class MakeAClaimCaseGenerationSupportTest {
 
         String jsonString = objectMapper.writeValueAsString(caseData);
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-        PartyEntity claimantPartyEntity = mock(PartyEntity.class);
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
 
         when(nonProdResource.getInputStream()).thenReturn(
             new ByteArrayInputStream(jsonString.getBytes(StandardCharsets.UTF_8))
         );
         when(draftCaseDataService.parseCaseDataJson(jsonString)).thenReturn(caseData);
         when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
-        when(claimantPartyFactory.createAndPersistClaimantParty(any(), any())).thenReturn(claimantPartyEntity);
-        when(claimService.createMainClaimEntity(caseData, claimantPartyEntity)).thenReturn(claimEntity);
 
         // When
         CaseSupportGenerationResponse result = underTest.generate(caseReference, caseData, nonProdResource);
@@ -98,11 +86,7 @@ class MakeAClaimCaseGenerationSupportTest {
         verify(pcsCaseService).loadCase(caseReference);
         verify(pcsCaseService).mergeCaseData(pcsCaseEntity, caseData);
         verify(securityContextService).getCurrentUserDetails();
-        verify(claimantPartyFactory).createAndPersistClaimantParty(eq(caseData), any());
-        verify(pcsCaseEntity).addParty(claimantPartyEntity);
-        verify(claimService).createMainClaimEntity(caseData, claimantPartyEntity);
-        verify(pcsCaseEntity).addClaim(claimEntity);
-        verify(pcsCaseService).save(pcsCaseEntity);
+        verify(pcsCaseService).addClaimantPartyAndClaim(any(PcsCaseEntity.class), eq(caseData), eq(userDetails));
     }
 
     @Test
@@ -115,7 +99,7 @@ class MakeAClaimCaseGenerationSupportTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.generate(caseReference, caseData, nonProdResource))
-            .isInstanceOf(SupportException.class)
+            .isInstanceOf(NonProdSupportException.class)
             .hasCauseInstanceOf(IOException.class)
             .hasRootCauseMessage("Cannot read input stream");
 

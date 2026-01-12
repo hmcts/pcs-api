@@ -3,16 +3,22 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
+import uk.gov.hmcts.reform.pcs.factory.ClaimantPartyFactory;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -23,6 +29,8 @@ public class PcsCaseService {
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
     private final PartyDocumentsService partyDocumentsService;
+    private final ClaimantPartyFactory claimantPartyFactory;
+    private final ClaimService claimService;
 
     public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
@@ -81,6 +89,23 @@ public class PcsCaseService {
 
     public void save(PcsCaseEntity pcsCaseEntity) {
         pcsCaseRepository.save(pcsCaseEntity);
+    }
+
+    @Transactional
+    public void addClaimantPartyAndClaim(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase,
+                                         UserInfo userDetails) {
+        PartyEntity claimantPartyEntity = claimantPartyFactory
+            .createAndPersistClaimantParty(pcsCase,
+                                           new ClaimantPartyFactory.ClaimantPartyContext(
+                                               UUID.fromString(userDetails.getUid()),
+                                               userDetails.getSub()
+                                           ));
+        pcsCaseEntity.addParty(claimantPartyEntity);
+
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        pcsCaseEntity.addClaim(claimEntity);
+
+        save(pcsCaseEntity);
     }
 
 }

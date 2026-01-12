@@ -20,8 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -83,15 +81,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
-import uk.gov.hmcts.reform.pcs.factory.ClaimantPartyFactory;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -120,7 +115,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
-    private final ClaimService claimService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final SelectClaimantType selectClaimantType;
@@ -161,8 +155,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
-    private final CaseAssignmentService caseAssignmentService;
-    private final ClaimantPartyFactory claimantPartyFactory;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -257,12 +249,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
-        ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
-        if (contactPreferences == null) {
-            contactPreferences = ClaimantContactPreferences.builder().build();
+        ClaimantContactPreferences caseContactPreferences = caseData.getClaimantContactPreferences();
+        if (caseContactPreferences == null) {
+            caseContactPreferences = ClaimantContactPreferences.builder().build();
         }
-        contactPreferences.setClaimantContactEmail(userEmail);
-        caseData.setClaimantContactPreferences(contactPreferences);
+        caseContactPreferences.setClaimantContactEmail(userEmail);
+        caseData.setClaimantContactPreferences(caseContactPreferences);
         caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {
@@ -285,10 +277,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
-        contactPreferences.setFormattedClaimantContactAddress(addressFormatter
+        caseContactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
 
-        caseData.setClaimantContactPreferences(contactPreferences);
+        caseData.setClaimantContactPreferences(caseContactPreferences);
 
         return caseData;
     }
@@ -317,18 +309,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
         UserInfo userDetails = securityContextService.getCurrentUserDetails();
-        PartyEntity claimantPartyEntity = claimantPartyFactory
-            .createAndPersistClaimantParty(pcsCase,
-                 new ClaimantPartyFactory.ClaimantPartyContext(
-                     UUID.fromString(userDetails.getUid()),
-                     userDetails.getSub()
-                 ));
-        pcsCaseEntity.addParty(claimantPartyEntity);
-
-        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
-        pcsCaseEntity.addClaim(claimEntity);
-
-        pcsCaseService.save(pcsCaseEntity);
+        pcsCaseService.addClaimantPartyAndClaim(pcsCaseEntity, pcsCase, userDetails);
 
         schedulePartyAccessCodeGeneration(caseReference);
 

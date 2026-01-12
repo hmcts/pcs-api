@@ -37,13 +37,13 @@ public class NonProdSupportService {
                         return strategy.generate(caseReference, fromEvent,
                                                  caseSupportHelper.getNonProdResource(selectedValue.getLabel()));
                     } catch (IOException e) {
-                        throw new SupportException(e);
+                        throw new NonProdSupportException(e);
                     }
                 })
                 .orElseThrow(() -> new RuntimeException(TEST_CASE_CREATION_NOT_SUPPORTED
                                                             + selectedValue.getLabel()));
         } catch (Exception e) {
-            throw new SupportException(FAILED_TO_GENERATE_TEST_CASE, e);
+            throw new NonProdSupportException(FAILED_TO_GENERATE_TEST_CASE, e);
         }
     }
 

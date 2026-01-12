@@ -83,12 +83,12 @@ class NonProdSupportServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.caseGenerator(1L, fromEvent))
-            .isInstanceOf(SupportException.class)
+            .isInstanceOf(NonProdSupportException.class)
             .hasMessage(NonProdSupportService.FAILED_TO_GENERATE_TEST_CASE)
             .hasCauseInstanceOf(IllegalArgumentException.class)
             .rootCause()
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage(NonProdSupportService.NO_NON_PROD_CASE_AVALIABLE);
+            .hasMessage(NonProdSupportService.NO_NON_PROD_CASE_AVAILABLE);
 
         verify(caseSupportHelper, never()).getNonProdResource(any());
         verify(strategy1, never()).supports(any());
@@ -116,7 +116,7 @@ class NonProdSupportServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.caseGenerator(caseReference, fromEvent))
-            .isInstanceOf(SupportException.class)
+            .isInstanceOf(NonProdSupportException.class)
             .hasMessage(FAILED_TO_GENERATE_TEST_CASE)
             .hasCauseInstanceOf(RuntimeException.class)
             .hasRootCauseMessage(TEST_CASE_CREATION_NOT_SUPPORTED + label);
@@ -149,9 +149,9 @@ class NonProdSupportServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.caseGenerator(caseReference, fromEvent))
-            .isInstanceOf(SupportException.class)
+            .isInstanceOf(NonProdSupportException.class)
             .hasMessage(FAILED_TO_GENERATE_TEST_CASE)
-            .hasCauseInstanceOf(SupportException.class)
+            .hasCauseInstanceOf(NonProdSupportException.class)
             .extracting(Throwable::getCause)
             .satisfies(cause -> assertThat(cause.getCause()).isInstanceOf(IOException.class));
 
@@ -184,7 +184,7 @@ class NonProdSupportServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.caseGenerator(caseReference, fromEvent))
-            .isInstanceOf(SupportException.class)
+            .isInstanceOf(NonProdSupportException.class)
             .hasMessage(FAILED_TO_GENERATE_TEST_CASE)
             .hasCauseInstanceOf(RuntimeException.class);
 
