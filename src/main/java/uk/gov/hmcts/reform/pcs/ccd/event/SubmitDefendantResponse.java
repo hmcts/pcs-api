@@ -94,7 +94,14 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         draftCaseDataService.patchUnsubmittedEventData(
             caseReference, filteredDraft, EventId.submitDefendantResponse, authenticatedUserId);
 
-        return filteredDraft;
+        // Return case data with defendantResponse pre-populated
+        // Include submitDraftAnswers field so CCD knows about it for validation
+        PCSCase caseDataForCcd = PCSCase.builder()
+            .defendantResponse(defendantResponse)
+            .submitDraftAnswers(YesOrNo.NO)  // Default to draft mode
+            .build();
+
+        return caseDataForCcd;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
