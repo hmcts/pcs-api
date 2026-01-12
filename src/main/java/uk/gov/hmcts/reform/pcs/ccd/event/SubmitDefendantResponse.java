@@ -2,12 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
@@ -17,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -35,6 +39,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
+    private final ModelMapper modelMapper;
 
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -55,15 +60,21 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         UserInfo userInfo = securityContextService.getCurrentUserDetails();
         UUID authenticatedUserId = UUID.fromString(userInfo.getUid());
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        List<Defendant> defendants = pcsCaseEntity.getDefendants();
 
-        if (defendants == null || defendants.isEmpty()) {
+        // Get defendants from claims using new party structure
+        List<PartyEntity> defendants = pcsCaseEntity.getClaims().stream()
+            .flatMap(claim -> claim.getClaimParties().stream())
+            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
+            .map(ClaimPartyEntity::getParty)
+            .toList();
+
+        if (defendants.isEmpty()) {
             log.error("No defendants found for case {}", caseReference);
             throw new CaseAccessException("No defendants associated with this case");
         }
 
-        Defendant matchedDefendant = defendants.stream()
-            .filter(defendant -> authenticatedUserId.equals(defendant.getIdamUserId()))
+        PartyEntity matchedDefendant = defendants.stream()
+            .filter(defendant -> authenticatedUserId.equals(defendant.getIdamId()))
             .findFirst()
             .orElseThrow(() -> {
                 log.error("Access denied: User {} is not linked as a defendant on case {}",
@@ -71,11 +82,15 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
                 return new CaseAccessException("User is not linked as a defendant on this case");
             });
 
+        // Convert AddressEntity to AddressUK
+        AddressUK contactAddress = matchedDefendant.getAddress() != null
+            ? modelMapper.map(matchedDefendant.getAddress(), AddressUK.class)
+            : null;
+
         Party party = Party.builder()
-            .forename(matchedDefendant.getFirstName())
-            .surname(matchedDefendant.getLastName())
-            .contactAddress(matchedDefendant.getCorrespondenceAddress())
-            .idamId(matchedDefendant.getIdamUserId())
+            .firstName(matchedDefendant.getFirstName())
+            .lastName(matchedDefendant.getLastName())
+            .address(contactAddress)
             .build();
 
         DefendantResponse defendantResponse = DefendantResponse.builder()

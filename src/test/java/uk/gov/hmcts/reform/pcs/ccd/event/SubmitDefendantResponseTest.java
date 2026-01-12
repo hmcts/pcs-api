@@ -8,18 +8,25 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,9 +49,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
     @Mock
     private SecurityContextService securityContextService;
 
+    @Mock
+    private ModelMapper modelMapper;
+
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new SubmitDefendantResponse(draftCaseDataService, pcsCaseService, securityContextService));
+        setEventUnderTest(new SubmitDefendantResponse(draftCaseDataService, pcsCaseService, securityContextService, modelMapper));
     }
 
     @Test
@@ -89,16 +99,32 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .postCode("SW1A 1AA")
             .build();
 
-        Defendant matchingDefendant = Defendant.builder()
-            .idamUserId(defendantUserId)
-            .firstName("John")
-            .lastName("Doe")
-            .correspondenceAddress(expectedAddress)
+        AddressEntity addressEntity = AddressEntity.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postCode("SW1A 1AA")
             .build();
 
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .defendants(List.of(matchingDefendant))
+        PartyEntity matchingDefendant = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("John")
+            .lastName("Doe")
+            .address(addressEntity)
             .build();
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .build();
+
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
+            .party(matchingDefendant)
+            .role(PartyRole.DEFENDANT)
+            .build();
+        claimEntity.getClaimParties().add(claimPartyEntity);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .build();
+        pcsCaseEntity.getClaims().add(claimEntity);
+        pcsCaseEntity.getParties().add(matchingDefendant);
 
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
@@ -106,6 +132,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(expectedAddress);
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -115,9 +142,9 @@ class SubmitDefendantResponseTest extends BaseEventTest {
         // Then
         assertThat(result.getDefendantResponse()).isNotNull();
         assertThat(result.getDefendantResponse().getParty()).isNotNull();
-        assertThat(result.getDefendantResponse().getParty().getForename()).isEqualTo("John");
-        assertThat(result.getDefendantResponse().getParty().getSurname()).isEqualTo("Doe");
-        assertThat(result.getDefendantResponse().getParty().getContactAddress()).isEqualTo(expectedAddress);
+        assertThat(result.getDefendantResponse().getParty().getFirstName()).isEqualTo("John");
+        assertThat(result.getDefendantResponse().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(result.getDefendantResponse().getParty().getAddress()).isEqualTo(expectedAddress);
 
         // Verify draft is created in start() with filtered PCSCase (only defendantResponse)
         verify(draftCaseDataService).patchUnsubmittedEventData(
@@ -136,9 +163,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .uid(defendantUserId.toString())
             .build();
 
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .defendants(Collections.emptyList())
+        ClaimEntity claimEntity = ClaimEntity.builder()
             .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .build();
+        pcsCaseEntity.getClaims().add(claimEntity);
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
@@ -160,7 +190,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .defendants(null)
+            .claims(Collections.emptySet())
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
@@ -184,15 +214,25 @@ class SubmitDefendantResponseTest extends BaseEventTest {
             .uid(differentUserId.toString())
             .build();
 
-        Defendant matchingDefendant = Defendant.builder()
-            .idamUserId(defendantUserId)
+        PartyEntity matchingDefendant = PartyEntity.builder()
+            .idamId(defendantUserId)
             .firstName("John")
             .lastName("Doe")
             .build();
 
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .defendants(List.of(matchingDefendant))
+        ClaimEntity claimEntity = ClaimEntity.builder()
             .build();
+
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
+            .party(matchingDefendant)
+            .role(PartyRole.DEFENDANT)
+            .build();
+        claimEntity.getClaimParties().add(claimPartyEntity);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .build();
+        pcsCaseEntity.getClaims().add(claimEntity);
+        pcsCaseEntity.getParties().add(matchingDefendant);
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
