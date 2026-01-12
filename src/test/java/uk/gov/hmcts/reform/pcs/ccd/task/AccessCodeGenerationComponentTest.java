@@ -47,7 +47,7 @@ class AccessCodeGenerationComponentTest {
     private final int maxRetries = 5;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         accessCodeGenerationComponent = new AccessCodeGenerationComponent(
             accessCodeGenerationService,
             maxRetries,
