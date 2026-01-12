@@ -7,7 +7,7 @@ export const alternativesToPossession = {
   suspensionOfRightToBuySubHeader: `Suspension of right to buy`,
   demotionOfTenancySubHeader: `Demotion of tenancy`,
   aSuspensionOrderParagraph: `A suspension order means that the defendants will not have a right to buy the premises during the suspension.`,
-  aDemotionOrderPagragraph: `A demotion order means that the defendants’ current tenancy will be replaced with a demoted tenancy. During this period (usually 12 months) they will lose some rights they currently have. The claimant is able to propose a new set of terms that will be put in place by the demotion order.`,
+  aDemotionOrderParagraph: `A demotion order means that the defendants’ current tenancy will be replaced with a demoted tenancy. During this period (usually 12 months) they will lose some rights they currently have. The claimant is able to propose a new set of terms that will be put in place by the demotion order.`,
   inTheAlternativeToPossessionQuestion: `In the alternative to possession, would you like to claim suspension of right to buy or demotion of tenancy? (Optional)`,
   selectAllThatApplyHintText: `Select all that apply`,
   suspensionOfRightToBuyCheckBox: `Suspension of right to buy`,
