@@ -11,10 +11,11 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DefendantResponse {
+public class PossessionClaimResponse {
     @CCD
     private YesOrNo contactByPhone;
 
     @CCD
     private Party party;
 }
+

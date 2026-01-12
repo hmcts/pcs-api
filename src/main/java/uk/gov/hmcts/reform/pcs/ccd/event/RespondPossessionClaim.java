@@ -14,10 +14,11 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -30,12 +31,12 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.List;
 import java.util.UUID;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.submitDefendantResponse;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRole> {
+public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
@@ -44,7 +45,7 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(submitDefendantResponse.name(), this::submit, this::start)
+            .decentralisedEvent(respondPossessionClaim.name(), this::submit, this::start)
             // TODO: HDPI-3580 - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
             // Temporarily enabled for all states to allow testing before case submission/payment
             .forAllStates()
@@ -61,7 +62,6 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         UUID authenticatedUserId = UUID.fromString(userInfo.getUid());
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        // Get defendants from claims using new party structure
         List<PartyEntity> defendants = pcsCaseEntity.getClaims().stream()
             .flatMap(claim -> claim.getClaimParties().stream())
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
@@ -82,38 +82,41 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
                 return new CaseAccessException("User is not linked as a defendant on this case");
             });
 
-        // Convert AddressEntity to AddressUK
-        AddressUK contactAddress = matchedDefendant.getAddress() != null
-            ? modelMapper.map(matchedDefendant.getAddress(), AddressUK.class)
-            : null;
+        AddressUK contactAddress;
+        if (matchedDefendant.getAddressSameAsProperty() == VerticalYesNo.YES) {
+            contactAddress = pcsCaseEntity.getPropertyAddress() != null
+                ? modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class)
+                : null;
+        } else {
+            contactAddress = matchedDefendant.getAddress() != null
+                ? modelMapper.map(matchedDefendant.getAddress(), AddressUK.class)
+                : null;
+        }
 
         Party party = Party.builder()
             .firstName(matchedDefendant.getFirstName())
             .lastName(matchedDefendant.getLastName())
             .address(contactAddress)
+            .addressSameAsProperty(matchedDefendant.getAddressSameAsProperty())
             .build();
 
-        DefendantResponse defendantResponse = DefendantResponse.builder()
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .party(party)
             .build();
 
         PCSCase caseData = eventPayload.caseData();
-        caseData.setDefendantResponse(defendantResponse);
+        caseData.setPossessionClaimResponse(possessionClaimResponse);
 
-        // Create filtered PCSCase with ONLY defendantResponse for draft storage
         PCSCase filteredDraft = PCSCase.builder()
-            .defendantResponse(defendantResponse)
+            .possessionClaimResponse(possessionClaimResponse)
             .build();
 
-        // Save filtered draft (not full case data)
         draftCaseDataService.patchUnsubmittedEventData(
-            caseReference, filteredDraft, EventId.submitDefendantResponse, authenticatedUserId);
+            caseReference, filteredDraft, EventId.respondPossessionClaim, authenticatedUserId);
 
-        // Return case data with defendantResponse pre-populated
-        // Include submitDraftAnswers field so CCD knows about it for validation
         PCSCase caseDataForCcd = PCSCase.builder()
-            .defendantResponse(defendantResponse)
-            .submitDraftAnswers(YesOrNo.NO)  // Default to draft mode
+            .possessionClaimResponse(possessionClaimResponse)
+            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         return caseDataForCcd;
@@ -123,28 +126,27 @@ public class SubmitDefendantResponse implements CCDConfig<PCSCase, State, UserRo
         log.info("Update Draft Data for Defendant Response, Case Reference: {}", eventPayload.caseReference());
 
         long caseReference = eventPayload.caseReference();
-        DefendantResponse defendantResponse = eventPayload.caseData().getDefendantResponse();
+        PossessionClaimResponse possessionClaimResponse = eventPayload.caseData().getPossessionClaimResponse();
         YesOrNo isFinalSubmit = eventPayload.caseData().getSubmitDraftAnswers();
         UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
-        if (defendantResponse != null && isFinalSubmit != null) {
+        if (possessionClaimResponse != null && isFinalSubmit != null) {
             if (isFinalSubmit.toBoolean()) {
-                //find draft data using idam user and case referecce and event
+                //find draft data using idam user and case reference and event
 
                 //Store defendant response to database
                 //This will be implemented in a future ticket.
                 //Note that defendants will be stored in a list
             } else {
-                // Create filtered PCSCase with ONLY defendantResponse for draft storage
                 PCSCase filteredDraft = PCSCase.builder()
-                    .defendantResponse(defendantResponse)
+                    .possessionClaimResponse(possessionClaimResponse)
                     .build();
 
-                // Update draft with filtered data
                 draftCaseDataService.patchUnsubmittedEventData(
-                    caseReference, filteredDraft, submitDefendantResponse, userId);
+                    caseReference, filteredDraft, respondPossessionClaim, userId);
             }
         }
         return SubmitResponse.defaultResponse();
     }
 }
+

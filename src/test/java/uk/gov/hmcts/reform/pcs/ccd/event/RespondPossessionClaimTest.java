@@ -9,8 +9,9 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import org.modelmapper.ModelMapper;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class SubmitDefendantResponseTest extends BaseEventTest {
+class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
@@ -51,7 +52,7 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new SubmitDefendantResponse(
+        setEventUnderTest(new RespondPossessionClaim(
             draftCaseDataService,
             pcsCaseService,
             securityContextService,
@@ -61,13 +62,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
     @Test
     void shouldPatchUnsubmittedEventData() {
-        // Given Defendant response
-        DefendantResponse defendantResponse = DefendantResponse.builder()
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .contactByPhone(YesOrNo.YES)
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .defendantResponse(defendantResponse)
+            .possessionClaimResponse(possessionClaimResponse)
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
@@ -77,22 +77,19 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
-        // When
         callSubmitHandler(caseData);
 
-        //Then - Verify filtered PCSCase (only defendantResponse) is saved
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.submitDefendantResponse),
+            eq(EventId.respondPossessionClaim),
             any(UUID.class)
         );
 
     }
 
     @Test
-    void shouldPopulateDefendantResponseWhenUserIsMatchingDefendant() {
-        // Given
+    void shouldPopulatePossessionClaimResponseWhenUserIsMatchingDefendant() {
         UUID defendantUserId = UUID.randomUUID();
 
         AddressUK expectedAddress = AddressUK.builder()
@@ -138,28 +135,24 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder().build();
 
-        // When
         PCSCase result = callStartHandler(caseData);
 
-        // Then
-        assertThat(result.getDefendantResponse()).isNotNull();
-        assertThat(result.getDefendantResponse().getParty()).isNotNull();
-        assertThat(result.getDefendantResponse().getParty().getFirstName()).isEqualTo("John");
-        assertThat(result.getDefendantResponse().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(result.getDefendantResponse().getParty().getAddress()).isEqualTo(expectedAddress);
+        assertThat(result.getPossessionClaimResponse()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
+        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(expectedAddress);
 
-        // Verify draft is created in start() with filtered PCSCase (only defendantResponse)
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.submitDefendantResponse),
+            eq(EventId.respondPossessionClaim),
             eq(defendantUserId)
         );
     }
 
     @Test
     void shouldThrowCaseAccessExceptionWhenNoDefendantsFound() {
-        // Given
         UUID defendantUserId = UUID.randomUUID();
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
@@ -177,7 +170,6 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder().build();
 
-        // When/Then
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("No defendants associated with this case");
@@ -185,7 +177,6 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
     @Test
     void shouldThrowCaseAccessExceptionWhenDefendantsIsNull() {
-        // Given
         UUID defendantUserId = UUID.randomUUID();
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
@@ -200,7 +191,6 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder().build();
 
-        // When/Then
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("No defendants associated with this case");
@@ -208,7 +198,6 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
     @Test
     void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant() {
-        // Given
         UUID defendantUserId = UUID.randomUUID();
         UUID differentUserId = UUID.randomUUID();
 
@@ -241,7 +230,6 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         PCSCase caseData = PCSCase.builder().build();
 
-        // When/Then
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant on this case");
@@ -249,13 +237,12 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
     @Test
     void shouldNotSaveDraftWhenSubmitDraftIsYes() {
-        // Given Defendant response
-        DefendantResponse defendantResponse = DefendantResponse.builder()
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .contactByPhone(YesOrNo.YES)
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .defendantResponse(defendantResponse)
+            .possessionClaimResponse(possessionClaimResponse)
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
@@ -265,23 +252,20 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
-        // When
         callSubmitHandler(caseData);
 
-        //Then
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.submitDefendantResponse),
+            eq(EventId.respondPossessionClaim),
             any(UUID.class)
         );
     }
 
     @Test
-    void shouldNotSaveDraftWhenDefendantResponseIsNull() {
-        // Given
+    void shouldNotSaveDraftWhenPossessionClaimResponseIsNull() {
         PCSCase caseData = PCSCase.builder()
-            .defendantResponse(null)
+            .possessionClaimResponse(null)
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
@@ -291,27 +275,24 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
-        // When
         callSubmitHandler(caseData);
 
-        //Then
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
-            eq(EventId.submitDefendantResponse),
+            eq(EventId.respondPossessionClaim),
             any(UUID.class)
         );
     }
 
     @Test
     void shouldNotSaveDraftWhenSubmitDraftIsNull() {
-        // Given Defendant response
-        DefendantResponse defendantResponse = DefendantResponse.builder()
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .contactByPhone(YesOrNo.YES)
             .build();
 
         PCSCase caseData = PCSCase.builder()
-            .defendantResponse(defendantResponse)
+            .possessionClaimResponse(possessionClaimResponse)
             .submitDraftAnswers(null)
             .build();
 
@@ -321,16 +302,75 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
-        // When
         callSubmitHandler(caseData);
 
-        //Then
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
-            eq(EventId.submitDefendantResponse),
+            eq(EventId.respondPossessionClaim),
             any(UUID.class)
         );
     }
 
+    @Test
+    void shouldUsePropertyAddressWhenAddressSameAsPropertyIsYes() {
+        UUID defendantUserId = UUID.randomUUID();
+
+        AddressUK propertyAddress = AddressUK.builder()
+            .addressLine1("456 Property Street")
+            .postTown("Manchester")
+            .postCode("M1 1AA")
+            .build();
+
+        AddressEntity propertyAddressEntity = AddressEntity.builder()
+            .addressLine1("456 Property Street")
+            .postTown("Manchester")
+            .postcode("M1 1AA")
+            .build();
+
+        PartyEntity matchingDefendant = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("Jane")
+            .lastName("Smith")
+            .address(null)
+            .addressSameAsProperty(VerticalYesNo.YES)
+            .build();
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .build();
+
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
+            .party(matchingDefendant)
+            .role(PartyRole.DEFENDANT)
+            .build();
+        claimEntity.getClaimParties().add(claimPartyEntity);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .propertyAddress(propertyAddressEntity)
+            .build();
+        pcsCaseEntity.getClaims().add(claimEntity);
+        pcsCaseEntity.getParties().add(matchingDefendant);
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(modelMapper.map(propertyAddressEntity, AddressUK.class)).thenReturn(propertyAddress);
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getPossessionClaimResponse()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("Jane");
+        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Smith");
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(propertyAddress);
+        assertThat(result.getPossessionClaimResponse().getParty().getAddressSameAsProperty())
+            .isEqualTo(VerticalYesNo.YES);
+    }
+
 }
+
