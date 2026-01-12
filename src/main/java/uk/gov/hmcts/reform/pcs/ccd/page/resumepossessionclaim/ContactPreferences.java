@@ -41,7 +41,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     ---
                     <h2 class="govuk-heading-m">Notifications</h2>
                     <p class="govuk-body-m govuk-!-margin-bottom-1">
-                        You'll receive updates about your claim by email. For example, when a hearing
+                        You’ll receive updates about your claim by email. For example, when a hearing
                         has been scheduled or when a document is ready to view.
                     </p>
                       <h3 class="govuk-heading-m govuk-!-margin-top-1 govuk-!-margin-bottom-1">
@@ -75,7 +75,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     """, ORG_ADDRESS_FOUND)
             .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
-                        Your organisation's My HMCTS registered address is:
+                        Your organisation’s My HMCTS registered address is:
                     </h3>
                     <p class="govuk-body-s govuk-!-margin-top-1">
                         ${formattedClaimantContactAddress}
@@ -94,11 +94,11 @@ public class ContactPreferences implements CcdPageConfiguration {
                 """, ORG_ADDRESS_NOT_FOUND)
             .label("contactPreferences-address-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
-                        We could not retrieve your organisation's correspondence address that's linked to your My
+                        We could not retrieve your organisation’s correspondence address that’s linked to your My
                         HMCTS account
                     </h3>
                     <p class="govuk-hint govuk-!-margin-top-1">
-                        You must enter the correspondence address you'd like to receive documents to
+                        You must enter the correspondence address you’d like to receive documents to
                     </p>
                     """, ORG_ADDRESS_NOT_FOUND)
 
