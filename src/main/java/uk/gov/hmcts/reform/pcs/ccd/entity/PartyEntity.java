@@ -1,10 +1,9 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.party;
+package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,12 +17,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -58,41 +51,24 @@ public class PartyEntity {
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
 
-    private UUID idamId;
+    private String forename;
 
-    private String firstName;
+    private String surname;
 
-    private String lastName;
-
+    @Column(name = "org_name")
     private String orgName;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo nameKnown;
+    private String contactEmail;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo nameOverridden;
+    @OneToOne(cascade = ALL,orphanRemoval = true)
+    private AddressEntity contactAddress;
 
-    @OneToOne(cascade = ALL)
-    private AddressEntity address;
+    private String contactPhoneNumber;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo addressKnown;
+    private UUID idamId;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo addressSameAsProperty;
+    private UUID pcqId;
 
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo phoneNumberProvided;
-
-    private String phoneNumber;
-
-    private String emailAddress;
-
-    private String pcqId;
+    private Boolean active;
 
 }

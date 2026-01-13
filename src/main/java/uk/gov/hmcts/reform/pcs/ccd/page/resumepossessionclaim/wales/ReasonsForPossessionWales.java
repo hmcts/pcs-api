@@ -432,7 +432,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
     }
 
     private boolean hasASBSelected(PCSCase caseData) {
-
+        
         GroundsForPossessionWales groundsForPossessionWales =
             Optional.ofNullable(caseData.getGroundsForPossessionWales())
                 .orElse(GroundsForPossessionWales.builder()

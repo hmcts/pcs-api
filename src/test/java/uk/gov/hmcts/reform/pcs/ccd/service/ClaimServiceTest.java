@@ -10,21 +10,25 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
-import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,9 +58,10 @@ class ClaimServiceTest {
         String expectedAdditionalReasons = "some additional reasons";
         String claimantCircumstancesDetails = UUID.randomUUID().toString();
         String asbDetails = "Some antisocial behaviour details";
-        String prohibitedConductDetails = "Some other prohibited conduct details";
+        String prohibitedConductDetails = "Some other prohibited conduct details"; 
 
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -92,7 +97,7 @@ class ClaimServiceTest {
             .build();
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         assertThat(createdClaimEntity.getSummary()).isEqualTo(expectedClaimName);
@@ -102,6 +107,13 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getClaimantCircumstances())
                 .isEqualTo(claimantCircumstances.getClaimantCircumstancesDetails());
         assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
+
+        Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
+        assertThat(claimParties).hasSize(1);
+
+        ClaimPartyEntity claimParty = claimParties.iterator().next();
+        assertThat(claimParty.getParty()).isEqualTo(claimantPartyEntity);
+        assertThat(claimParty.getRole()).isEqualTo(PartyRole.CLAIMANT);
 
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
         assertThat(createdClaimEntity.getAsbQuestions()).isEqualTo(expectedASBQuestions);
@@ -114,6 +126,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithDefendantCircumstancesDetails() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         String circumstancesInfo = "Some circumstance Info";
 
@@ -129,7 +142,7 @@ class ClaimServiceTest {
         when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         assertThat(createdClaimEntity.getDefendantCircumstances()).isEqualTo(circumstancesInfo);
@@ -139,6 +152,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithSuspensionOfRightToBuyDetails() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedSuspensionReason = "some suspension reason";
         SuspensionOfRightToBuyHousingAct expectedSuspensionAct = SuspensionOfRightToBuyHousingAct.SECTION_6A_2;
@@ -156,7 +170,7 @@ class ClaimServiceTest {
         when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         assertThat(createdClaimEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(expectedSuspensionAct);
@@ -167,6 +181,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithDemotionOfTenancyDetails() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedDemotionReason = "some demotion reason";
         String expectedStatementDetails = "some statement details";
@@ -187,7 +202,7 @@ class ClaimServiceTest {
         when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(mock(SuspensionOfRightToBuy.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         assertThat(createdClaimEntity.getDemotionOfTenancyHousingAct()).isEqualTo(expectedDemotionAct);
@@ -199,6 +214,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithSuspensionAndDemotionDetails() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedSuspensionReason = "some suspension reason";
         String expectedDemotionReason = "some demotion reason";
@@ -225,7 +241,7 @@ class ClaimServiceTest {
         when(pcsCase.getClaimantCircumstances()).thenReturn(mock(ClaimantCircumstances.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         assertThat(createdClaimEntity.getSuspensionOfRightToBuyHousingAct()).isEqualTo(expectedSuspensionAct);
@@ -239,6 +255,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithProhibitedConductWales_WhenProhibitedConductClaimIsYes_WithAllFields() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedWhyMakingClaim = "Some reason for making the claim";
         String expectedDetailsOfTerms = "Some details of terms";
@@ -260,7 +277,7 @@ class ClaimServiceTest {
         when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
@@ -275,6 +292,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_ProhibitedConductYes_WithoutPeriodicContractTerms() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedWhyMakingClaim = "Some reason for making the claim";
 
@@ -292,7 +310,7 @@ class ClaimServiceTest {
         when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
@@ -307,6 +325,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_ProhibitedConductYes_PeriodicContractButAgreedTermsNull() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedWhyMakingClaim = "Some reason for making the claim";
 
@@ -327,7 +346,7 @@ class ClaimServiceTest {
         when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
@@ -342,6 +361,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithProhibitedConductWales_WhenProhibitedConductClaimIsYes_WithAgreedTermsNo() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         String expectedWhyMakingClaim = "Some reason for making the claim";
 
@@ -362,7 +382,7 @@ class ClaimServiceTest {
         when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
@@ -377,6 +397,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithProhibitedConductWales_WhenProhibitedConductClaimIsNo() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(VerticalYesNo.NO);
 
@@ -390,7 +411,7 @@ class ClaimServiceTest {
         when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();
@@ -402,6 +423,7 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithoutProhibitedConductWales_WhenProhibitedConductClaimIsNull() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
+        PartyEntity claimantPartyEntity = new PartyEntity();
 
         when(pcsCase.getProhibitedConductWalesClaim()).thenReturn(null);
 
@@ -415,7 +437,7 @@ class ClaimServiceTest {
         when(pcsCase.getDemotionOfTenancy()).thenReturn(mock(DemotionOfTenancy.class));
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
 
         // Then
         ProhibitedConductWales prohibitedConduct = createdClaimEntity.getProhibitedConduct();

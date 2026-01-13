@@ -6,7 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -34,11 +34,11 @@ class PartyAccessCodeLinkValidatorTest {
     private static final UUID PARTY_ID = UUID.randomUUID();
     private static final UUID USER_ID = UUID.randomUUID();
 
-    private PartyEntity createParty(UUID partyId, UUID idamUserId) {
-        PartyEntity partyEntity = new PartyEntity();
-        partyEntity.setId(partyId);
-        partyEntity.setIdamId(idamUserId);
-        return partyEntity;
+    private Defendant createDefendant(UUID partyId, UUID idamUserId) {
+        Defendant defendant = new Defendant();
+        defendant.setPartyId(partyId);
+        defendant.setIdamUserId(idamUserId);
+        return defendant;
     }
 
     @Test
@@ -74,28 +74,28 @@ class PartyAccessCodeLinkValidatorTest {
     }
 
     @Test
-    void shouldReturnParty_WhenPartyBelongsToCase() {
+    void shouldReturnDefendant_WhenPartyBelongsToCase() {
         // GIVEN
-        PartyEntity partyEntity = createParty(PARTY_ID, null);
-        List<PartyEntity> partyEntities = List.of(partyEntity);
+        Defendant defendant = createDefendant(PARTY_ID, null);
+        List<Defendant> defendants = List.of(defendant);
 
         // WHEN
-        PartyEntity result = validator.validatePartyBelongsToCase(partyEntities, PARTY_ID);
+        Defendant result = validator.validatePartyBelongsToCase(defendants, PARTY_ID);
 
         // THEN
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(PARTY_ID);
+        assertThat(result.getPartyId()).isEqualTo(PARTY_ID);
     }
 
     @Test
     void shouldThrowInvalidPartyForCaseException_WhenPartyNotInCase() {
         // GIVEN
         UUID differentPartyId = UUID.randomUUID();
-        PartyEntity partyEntity = createParty(differentPartyId, null);
-        List<PartyEntity> partyEntities = List.of(partyEntity);
+        Defendant defendant = createDefendant(differentPartyId, null);
+        List<Defendant> defendants = List.of(defendant);
 
         // WHEN + THEN
-        assertThatThrownBy(() -> validator.validatePartyBelongsToCase(partyEntities, PARTY_ID))
+        assertThatThrownBy(() -> validator.validatePartyBelongsToCase(defendants, PARTY_ID))
             .isInstanceOf(InvalidPartyForCaseException.class)
             .hasMessageContaining("Invalid data");
     }
@@ -103,19 +103,19 @@ class PartyAccessCodeLinkValidatorTest {
     @Test
     void shouldNotThrow_WhenPartyNotLinked() {
         // GIVEN
-        PartyEntity partyEntity = createParty(PARTY_ID, null);
+        Defendant defendant = createDefendant(PARTY_ID, null);
 
         // WHEN + THEN - Should not throw
-        validator.validatePartyNotAlreadyLinked(partyEntity);
+        validator.validatePartyNotAlreadyLinked(defendant);
     }
 
     @Test
     void shouldThrowAccessCodeAlreadyUsedException_WhenPartyAlreadyLinked() {
         // GIVEN
-        PartyEntity partyEntity = createParty(PARTY_ID, USER_ID);
+        Defendant defendant = createDefendant(PARTY_ID, USER_ID);
 
         // WHEN + THEN
-        assertThatThrownBy(() -> validator.validatePartyNotAlreadyLinked(partyEntity))
+        assertThatThrownBy(() -> validator.validatePartyNotAlreadyLinked(defendant))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
             .hasMessageContaining("already linked to a user");
     }
@@ -125,12 +125,12 @@ class PartyAccessCodeLinkValidatorTest {
         // GIVEN
         UUID partyId1 = UUID.randomUUID();
         UUID partyId2 = UUID.randomUUID();
-        PartyEntity partyEntity1 = createParty(partyId1, UUID.randomUUID());
-        PartyEntity partyEntity2 = createParty(partyId2, null);
-        List<PartyEntity> partyEntities = List.of(partyEntity1, partyEntity2);
+        Defendant party1 = createDefendant(partyId1, UUID.randomUUID());
+        Defendant party2 = createDefendant(partyId2, null);
+        List<Defendant> parties = List.of(party1, party2);
 
         // WHEN + THEN - Should not throw
-        validator.validateUserNotLinkedToAnotherParty(partyEntities, partyId2, USER_ID);
+        validator.validateUserNotLinkedToAnotherParty(parties, partyId2, USER_ID);
     }
 
     @Test
@@ -138,13 +138,13 @@ class PartyAccessCodeLinkValidatorTest {
         // GIVEN
         UUID partyId1 = UUID.randomUUID();
         UUID partyId2 = UUID.randomUUID();
-        PartyEntity partyEntity1 = createParty(partyId1, USER_ID);
-        PartyEntity partyEntity2 = createParty(partyId2, null);
-        List<PartyEntity> partyEntities = List.of(partyEntity1, partyEntity2);
+        Defendant party1 = createDefendant(partyId1, USER_ID);
+        Defendant party2 = createDefendant(partyId2, null);
+        List<Defendant> parties = List.of(party1, party2);
 
         // WHEN + THEN
         assertThatThrownBy(() -> validator.validateUserNotLinkedToAnotherParty(
-            partyEntities, partyId2, USER_ID))
+            parties, partyId2, USER_ID))
             .isInstanceOf(AccessCodeAlreadyUsedException.class)
             .hasMessageContaining("already linked to another party");
     }

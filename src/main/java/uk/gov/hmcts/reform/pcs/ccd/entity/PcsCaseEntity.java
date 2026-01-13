@@ -20,13 +20,13 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
+import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,7 +78,11 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
-    private List<ClaimEntity> claims = new ArrayList<>();
+    private Set<ClaimEntity> claims = new HashSet<>();
+
+    @Column(name = "defendant_details")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<Defendant> defendants;
 
     @Column(name = "party_documents")
     @JdbcTypeCode(SqlTypes.JSON)
@@ -87,6 +91,10 @@ public class PcsCaseEntity {
     @Column(name = "statement_of_truth")
     @JdbcTypeCode(SqlTypes.JSON)
     private StatementOfTruth statementOfTruth;
+
+    @Column(name = "underlessee_mortgagee_details")
+    @JdbcTypeCode(SqlTypes.JSON)
+    private List<UnderlesseeMortgagee> underlesseesMortgagees;
 
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);

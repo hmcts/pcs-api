@@ -1,10 +1,9 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import lombok.Builder;
 import lombok.Data;
-import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -15,29 +14,20 @@ import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 
-/**
- * The main domain model representing an enforcement order.
- */
-
 @Builder
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EnforcementOrder {
+public class WarrantDetails {
 
-    @CCD(
-        label = "What do you want to apply for?"
-    )
-    private SelectEnforcementType selectEnforcementType;
-
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private AdditionalInformation additionalInformation;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private PeopleToEvict peopleToEvict;
 
@@ -75,7 +65,7 @@ public class EnforcementOrder {
     )
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD(
         label = "Risk details"
     )
@@ -96,33 +86,21 @@ public class EnforcementOrder {
     )
     private LanguageUsed enforcementLanguageUsed;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private LegalCosts legalCosts;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private MoneyOwedByDefendants moneyOwedByDefendants;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private LandRegistryFees landRegistryFees;
-
-    @CCD(
-        searchable = false
-    )
-    @External
-    private String warrantFeeAmount;
-
-    @CCD(
-        searchable = false
-    )
-    @External
-    private String writFeeAmount;
 
     @JsonUnwrapped(prefix = "repayment")
     @CCD

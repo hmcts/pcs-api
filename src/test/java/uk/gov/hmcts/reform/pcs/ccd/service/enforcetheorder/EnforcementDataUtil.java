@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,7 +21,7 @@ final class EnforcementDataUtil {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setId(pcsId);
         pcsCaseEntity.setCaseReference(1234L);
-        pcsCaseEntity.setClaims(List.of(buildClaimEntity(claimId, pcsCaseEntity)));
+        pcsCaseEntity.setClaims(Set.of(buildClaimEntity(claimId, pcsCaseEntity)));
         return pcsCaseEntity;
     }
 

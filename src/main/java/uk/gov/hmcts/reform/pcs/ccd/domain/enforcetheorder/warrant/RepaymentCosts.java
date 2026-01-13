@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcement;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;

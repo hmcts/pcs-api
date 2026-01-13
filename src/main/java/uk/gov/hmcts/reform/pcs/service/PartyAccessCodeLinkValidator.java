@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
@@ -30,43 +30,43 @@ public class PartyAccessCodeLinkValidator {
             });
     }
 
-    public PartyEntity validatePartyBelongsToCase(
-        List<PartyEntity> partyEntities,
+    public Defendant validatePartyBelongsToCase(
+        List<Defendant> defendants,
         UUID partyId
     ) {
-        return partyEntities.stream()
-            .filter(partyEntity -> partyId.equals(partyEntity.getId()))
+        return defendants.stream()
+            .filter(defendant -> partyId.equals(defendant.getPartyId()))
             .findFirst()
             .orElseThrow(() -> {
                 log.error(
                     "Party does not belong to case - partyId: {}, totalDefendants: {}, availablePartyIds: {}",
-                    partyId, partyEntities.size(), partyEntities.stream().map(PartyEntity::getId).toList());
+                    partyId, defendants.size(), defendants.stream().map(Defendant::getPartyId).toList());
                 return new InvalidPartyForCaseException("Invalid data");
             });
     }
 
-    public void validatePartyNotAlreadyLinked(PartyEntity partyEntity) {
-        if (partyEntity.getIdamId() != null) {
+    public void validatePartyNotAlreadyLinked(Defendant defendant) {
+        if (defendant.getIdamUserId() != null) {
             log.error("Access code already linked to user - partyId: {}, existingIdamUserId: {}",
-                partyEntity.getId(), partyEntity.getIdamId());
+                defendant.getPartyId(), defendant.getIdamUserId());
             throw new AccessCodeAlreadyUsedException("This access code is already linked to a user.");
         }
     }
 
     public void validateUserNotLinkedToAnotherParty(
-        List<PartyEntity> partyEntities,
+        List<Defendant> defendants,
         UUID currentPartyId,
         UUID idamUserId
     ) {
-        boolean userIdAlreadyLinked = partyEntities.stream()
-            .filter(party -> !party.getId().equals(currentPartyId))
-            .anyMatch(party -> idamUserId.equals(party.getIdamId()));
+        boolean userIdAlreadyLinked = defendants.stream()
+            .filter(defendant -> !defendant.getPartyId().equals(currentPartyId))
+            .anyMatch(defendant -> idamUserId.equals(defendant.getIdamUserId()));
 
         if (userIdAlreadyLinked) {
-            UUID conflictingPartyId = partyEntities.stream()
-                .filter(party -> !party.getId().equals(currentPartyId))
-                .filter(party -> idamUserId.equals(party.getIdamId()))
-                .map(PartyEntity::getId)
+            UUID conflictingPartyId = defendants.stream()
+                .filter(defendant -> !defendant.getPartyId().equals(currentPartyId))
+                .filter(defendant -> idamUserId.equals(defendant.getIdamUserId()))
+                .map(Defendant::getPartyId)
                 .findFirst()
                 .orElse(null);
             log.error(

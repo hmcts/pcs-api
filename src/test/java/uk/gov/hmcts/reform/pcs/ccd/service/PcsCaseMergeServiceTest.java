@@ -9,23 +9,28 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.UnderlesseeMortgageeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -46,7 +51,11 @@ class PcsCaseMergeServiceTest {
     @Mock
     private TenancyLicenceService tenancyLicenceService;
     @Mock
+    private DefendantService defendantService;
+    @Mock
     private StatementOfTruthService statementOfTruthService;
+    @Mock
+    private UnderlesseeMortgageeService underlesseeMortgageService;
 
     private PcsCaseMergeService underTest;
 
@@ -55,7 +64,9 @@ class PcsCaseMergeServiceTest {
         underTest = new PcsCaseMergeService(securityContextService,
                                             modelMapper,
                                             tenancyLicenceService,
-                                            statementOfTruthService);
+                                            defendantService,
+                                            statementOfTruthService,
+                                            underlesseeMortgageService);
     }
 
     @Test
@@ -93,20 +104,37 @@ class PcsCaseMergeServiceTest {
     }
 
     @Test
+    void shouldUpdateDefendantsWhenDefendant1NotNull() {
+        // Given
+        List<Defendant> expectedDefendants = List.of(mock(Defendant.class), mock(Defendant.class));
+        PCSCase pcsCase = mock(PCSCase.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        when(pcsCase.getDefendant1()).thenReturn(mock(DefendantDetails.class));
+        when(defendantService.buildDefendantsList(pcsCase)).thenReturn(expectedDefendants);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity).setDefendants(expectedDefendants);
+    }
+
+    @Test
     void shouldCreatePartyWithPcqIdForCurrentUser() {
         PCSCase pcsCase = mock(PCSCase.class);
 
         UUID userId = UUID.randomUUID();
-        String expectedPcqId = UUID.randomUUID().toString();
-        String expectedFirstName = "some first name";
-        String expectedLastName = "some last name";
+        UUID expectedPcqId = UUID.randomUUID();
+        String expectedForename = "some forename";
+        String expectedSurname = "some surname";
 
-        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId);
+        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId.toString());
 
         UserInfo userDetails = mock(UserInfo.class);
         when(userDetails.getUid()).thenReturn(userId.toString());
-        when(userDetails.getGivenName()).thenReturn(expectedFirstName);
-        when(userDetails.getFamilyName()).thenReturn(expectedLastName);
+        when(userDetails.getGivenName()).thenReturn(expectedForename);
+        when(userDetails.getFamilyName()).thenReturn(expectedSurname);
         when(securityContextService.getCurrentUserDetails()).thenReturn(userDetails);
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
@@ -120,8 +148,8 @@ class PcsCaseMergeServiceTest {
             .allSatisfy(party -> {
                 assertThat(party.getIdamId()).isEqualTo(userId);
                 assertThat(party.getPcqId()).isEqualTo(expectedPcqId);
-                assertThat(party.getFirstName()).isEqualTo(expectedFirstName);
-                assertThat(party.getLastName()).isEqualTo(expectedLastName);
+                assertThat(party.getForename()).isEqualTo(expectedForename);
+                assertThat(party.getSurname()).isEqualTo(expectedSurname);
             });
 
     }
@@ -131,10 +159,10 @@ class PcsCaseMergeServiceTest {
         PCSCase pcsCase = mock(PCSCase.class);
 
         final UUID userId = UUID.randomUUID();
-        final String expectedPcqId = UUID.randomUUID().toString();
+        final UUID expectedPcqId = UUID.randomUUID();
         final UUID existingPartyId = UUID.randomUUID();
 
-        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId);
+        when(pcsCase.getUserPcqId()).thenReturn(expectedPcqId.toString());
 
         UserInfo userDetails = mock(UserInfo.class);
         when(userDetails.getUid()).thenReturn(userId.toString());
@@ -257,13 +285,33 @@ class PcsCaseMergeServiceTest {
     }
 
     @Test
+    void shouldUpdateUnderlesseesOrMortgageesWhenUnderlesseeOrMortgagee1NotNull() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
+
+        List<UnderlesseeMortgagee> expectedUnderlesseesOrMortgagees = List.of(mock(UnderlesseeMortgagee.class),
+                                                                              mock(UnderlesseeMortgagee.class));
+
+        when(pcsCase.getUnderlesseeOrMortgagee1()).thenReturn(mock(UnderlesseeMortgageeDetails.class));
+        when(underlesseeMortgageService.buildUnderlesseeMortgageeList(pcsCase))
+            .thenReturn(expectedUnderlesseesOrMortgagees);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        // Then
+        verify(pcsCaseEntity).setUnderlesseesMortgagees(expectedUnderlesseesOrMortgagees);
+    }
+
+    @Test
     void shouldMapWalesStandardContractGroundsToPossessionGrounds() {
         PCSCase pcsCase = mock(PCSCase.class);
 
         SecureContractGroundsForPossessionWales secureContractGroundsWales =
             mock(SecureContractGroundsForPossessionWales.class);
         when(pcsCase.getSecureContractGroundsForPossessionWales()).thenReturn(secureContractGroundsWales);
-
+        
 
         Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
                 DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,

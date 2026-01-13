@@ -16,11 +16,17 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 public class ClaimantInformation {
 
     @CCD(
-        label = "Your claimant name registered with My HMCTS is:",
+        label = "Claimant Name",
         access = {CitizenAccess.class}
     )
     @External
     private String claimantName;
+
+    @CCD(
+        label = "Your claimant name registered with My HMCTS is:"
+    )
+    @External
+    private String organisationName;
 
     @CCD(
         label = "Is this the correct claimant name?",

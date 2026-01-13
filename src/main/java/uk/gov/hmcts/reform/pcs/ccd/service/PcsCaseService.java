@@ -24,9 +24,7 @@ public class PcsCaseService {
     private final TenancyLicenceService tenancyLicenceService;
     private final PartyDocumentsService partyDocumentsService;
 
-    public PcsCaseEntity createCase(long caseReference,
-                                    AddressUK propertyAddress,
-                                    LegislativeCountry legislativeCountry) {
+    public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
         Objects.requireNonNull(propertyAddress, "Property address must be provided to create a case");
         Objects.requireNonNull(legislativeCountry, "Legislative country must be provided to create a case");
@@ -36,7 +34,7 @@ public class PcsCaseService {
         pcsCaseEntity.setPropertyAddress(modelMapper.map(propertyAddress, AddressEntity.class));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
 
-        return pcsCaseRepository.save(pcsCaseEntity);
+        pcsCaseRepository.save(pcsCaseEntity);
     }
 
     public void createCase(long caseReference, PCSCase pcsCase) {

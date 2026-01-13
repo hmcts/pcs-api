@@ -18,7 +18,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
 import java.time.Instant;
 import java.util.UUID;

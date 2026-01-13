@@ -7,13 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -42,27 +39,22 @@ public class PartyAccessCodeLinkService {
 
         UUID partyId = pac.getPartyId();
 
-        List<PartyEntity> defendantPartyEntities = caseEntity.getClaims().getFirst()
-            .getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
-            .map(ClaimPartyEntity::getParty)
-            .toList();
-
-
-        PartyEntity partyEntity = validator.validatePartyBelongsToCase(
-            defendantPartyEntities,
+        Defendant party = validator.validatePartyBelongsToCase(
+            caseEntity.getDefendants(),
             partyId
         );
 
-        validator.validatePartyNotAlreadyLinked(partyEntity);
+        validator.validatePartyNotAlreadyLinked(party);
 
         validator.validateUserNotLinkedToAnotherParty(
-            defendantPartyEntities,
+            caseEntity.getDefendants(),
             partyId,
             idamUserId
         );
 
-        partyEntity.setIdamId(idamUserId);
+        party.setIdamUserId(idamUserId);
+        caseEntity.setDefendants(caseEntity.getDefendants());
+        pcsCaseService.save(caseEntity);
 
         try {
             caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());

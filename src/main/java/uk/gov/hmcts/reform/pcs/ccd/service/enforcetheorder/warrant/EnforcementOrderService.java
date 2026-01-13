@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
 
-import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -44,7 +44,7 @@ public class EnforcementOrderService {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
                 .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
-        List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
+        Set<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
         // This should never happen
         if (CollectionUtils.isEmpty(claimEntities)) {
             log.error("No claim found for case reference {}", caseReference);
@@ -52,7 +52,7 @@ public class EnforcementOrderService {
         }
 
         // Assuming 1 claim per PcsCase
-        ClaimEntity claimEntity = claimEntities.getFirst();
+        ClaimEntity claimEntity = claimEntities.iterator().next();
 
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);

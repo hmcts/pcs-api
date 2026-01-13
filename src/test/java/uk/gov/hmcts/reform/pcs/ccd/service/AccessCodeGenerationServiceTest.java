@@ -7,18 +7,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,7 +71,9 @@ class AccessCodeGenerationServiceTest {
     void shouldCreateAccessCodeForSingleParty() {
         // Given
         UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(UUID.randomUUID());
+        caseEntity.setDefendants(List.of(Defendant.builder().partyId(partyId).build()));
 
         when(pcsCaseService.loadCase(1L)).thenReturn(caseEntity);
         when(partyAccessCodeRepo.findAllByPcsCase_Id(caseEntity.getId())).thenReturn(List.of());
@@ -90,7 +89,7 @@ class AccessCodeGenerationServiceTest {
 
         assertThat(savedEntities).hasSize(1);
 
-        PartyAccessCodeEntity savedEntity = savedEntities.getFirst();
+        PartyAccessCodeEntity savedEntity = savedEntities.get(0);
         assertThat(savedEntity.getPartyId()).isEqualTo(partyId);
         assertThat(savedEntity.getRole()).isEqualTo(PartyRole.DEFENDANT);
         assertThat(savedEntity.getCode()).isNotNull()
@@ -113,7 +112,9 @@ class AccessCodeGenerationServiceTest {
     void shouldNotCreateAccessCodeIfPartyAlreadyHasCode() {
         // Given
         UUID partyId = UUID.randomUUID();
-        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId);
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(UUID.randomUUID());
+        caseEntity.setDefendants(List.of(Defendant.builder().partyId(partyId).build()));
         PartyAccessCodeEntity existingCodeEntity = mock(PartyAccessCodeEntity.class);
 
         when(pcsCaseService.loadCase(2L)).thenReturn(caseEntity);
@@ -135,7 +136,13 @@ class AccessCodeGenerationServiceTest {
         UUID partyId2 = UUID.randomUUID();
         UUID partyId3 = UUID.randomUUID();
 
-        PcsCaseEntity caseEntity = createCaseWithDefendants(partyId1, partyId2, partyId3);
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(UUID.randomUUID());
+        caseEntity.setDefendants(List.of(
+            Defendant.builder().partyId(partyId1).build(),
+            Defendant.builder().partyId(partyId2).build(),
+            Defendant.builder().partyId(partyId3).build()
+        ));
 
         PartyAccessCodeEntity existingCode = mock(PartyAccessCodeEntity.class);
         when(existingCode.getPartyId()).thenReturn(partyId1);
@@ -162,23 +169,6 @@ class AccessCodeGenerationServiceTest {
                 .hasSize(12)
                 .matches("[ABCDEFGHJKLMNPRSTVWXYZ23456789]{12}");
         });
-    }
-
-    private static PcsCaseEntity createCaseWithDefendants(UUID... partyIds) {
-
-        List<ClaimPartyEntity> claimPartyList = Arrays.stream(partyIds)
-            .map(partyId -> PartyEntity.builder().id(partyId).build())
-            .map(party -> ClaimPartyEntity.builder().party(party).role(PartyRole.DEFENDANT).build())
-            .toList();
-
-        ClaimEntity mainClaim = ClaimEntity.builder()
-            .claimParties(claimPartyList)
-            .build();
-
-        return PcsCaseEntity.builder()
-            .id(UUID.randomUUID())
-            .claims(List.of(mainClaim))
-            .build();
     }
 
 }
