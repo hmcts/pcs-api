@@ -17,6 +17,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
         pageBuilder
             .page("repayments")
             .pageLabel("Repayments")
+            .showCondition("selectEnforcementType=\"WARRANT\"")
             .label("repayments-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
