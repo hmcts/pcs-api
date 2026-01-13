@@ -41,7 +41,7 @@ public class MakeAClaimCaseGenerationSupport implements TestCaseGenerationStrate
             PCSCase pcsCase = draftCaseDataService.parseCaseDataJson(jsonString);
             generateMakeAClaim(caseReference, pcsCase);
         } catch (IOException e) {
-            throw new NonProdSupportException(e);
+            throw new TestCaseSupportException(e);
         }
     }
 

@@ -22,11 +22,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.service.nonprod.NonProdSupportService.FAILED_TO_GENERATE_TEST_CASE;
-import static uk.gov.hmcts.reform.pcs.ccd.service.nonprod.NonProdSupportService.TEST_CASE_CREATION_NOT_SUPPORTED;
+import static uk.gov.hmcts.reform.pcs.ccd.service.nonprod.TestCaseGenerationService.FAILED_TO_GENERATE_TEST_CASE;
+import static uk.gov.hmcts.reform.pcs.ccd.service.nonprod.TestCaseGenerationService.TEST_CASE_CREATION_NOT_SUPPORTED;
 
 @ExtendWith(MockitoExtension.class)
-class NonProdSupportServiceTest {
+class TestCaseGenerationServiceTest {
 
     @Mock
     private CaseSupportHelper caseSupportHelper;
@@ -36,7 +36,7 @@ class NonProdSupportServiceTest {
     private TestCaseGenerationStrategy strategy2;
 
     @InjectMocks
-    private NonProdSupportService underTest;
+    private TestCaseGenerationService underTest;
 
     @Test
     void shouldGenerateCaseUsingFirstSupportingStrategy() throws Exception {
@@ -83,12 +83,12 @@ class NonProdSupportServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.caseGenerator(1L, fromEvent))
-            .isInstanceOf(NonProdSupportException.class)
-            .hasMessage(NonProdSupportService.FAILED_TO_GENERATE_TEST_CASE)
+            .isInstanceOf(TestCaseSupportException.class)
+            .hasMessage(TestCaseGenerationService.FAILED_TO_GENERATE_TEST_CASE)
             .hasCauseInstanceOf(IllegalArgumentException.class)
             .rootCause()
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage(NonProdSupportService.NO_NON_PROD_CASE_AVAILABLE);
+            .hasMessage(TestCaseGenerationService.NO_NON_PROD_CASE_AVAILABLE);
 
         verify(caseSupportHelper, never()).getNonProdResource(any());
         verify(strategy1, never()).supports(any());
@@ -98,7 +98,7 @@ class NonProdSupportServiceTest {
     @Test
     void shouldThrowSupportExceptionWhenNoStrategyFoundForLabel() throws IOException {
         // Given
-        underTest = new NonProdSupportService(caseSupportHelper, List.of(strategy1, strategy2));
+        underTest = new TestCaseGenerationService(caseSupportHelper, List.of(strategy1, strategy2));
 
         long caseReference = 55L;
         String label = "Some Unknown Label";
@@ -116,7 +116,7 @@ class NonProdSupportServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.caseGenerator(caseReference, fromEvent))
-            .isInstanceOf(NonProdSupportException.class)
+            .isInstanceOf(TestCaseSupportException.class)
             .hasMessage(FAILED_TO_GENERATE_TEST_CASE)
             .hasCauseInstanceOf(RuntimeException.class)
             .hasRootCauseMessage(TEST_CASE_CREATION_NOT_SUPPORTED + label);
@@ -131,7 +131,7 @@ class NonProdSupportServiceTest {
     @Test
     void shouldWrapIOExceptionFromCaseSupportHelperInSupportException() throws Exception {
         // Given
-        underTest = new NonProdSupportService(caseSupportHelper, List.of(strategy1));
+        underTest = new TestCaseGenerationService(caseSupportHelper, List.of(strategy1));
 
         long caseReference = 9L;
         String label = "Create Something";
@@ -149,9 +149,9 @@ class NonProdSupportServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.caseGenerator(caseReference, fromEvent))
-            .isInstanceOf(NonProdSupportException.class)
+            .isInstanceOf(TestCaseSupportException.class)
             .hasMessage(FAILED_TO_GENERATE_TEST_CASE)
-            .hasCauseInstanceOf(NonProdSupportException.class)
+            .hasCauseInstanceOf(TestCaseSupportException.class)
             .extracting(Throwable::getCause)
             .satisfies(cause -> assertThat(cause.getCause()).isInstanceOf(IOException.class));
 
@@ -163,7 +163,7 @@ class NonProdSupportServiceTest {
     @Test
     void shouldWrapRuntimeExceptionThrownByStrategyGenerateInSupportException() throws Exception {
         // Given
-        underTest = new NonProdSupportService(caseSupportHelper, List.of(strategy1));
+        underTest = new TestCaseGenerationService(caseSupportHelper, List.of(strategy1));
 
         long caseReference = 77L;
         String label = "Create Something";
@@ -184,7 +184,7 @@ class NonProdSupportServiceTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.caseGenerator(caseReference, fromEvent))
-            .isInstanceOf(NonProdSupportException.class)
+            .isInstanceOf(TestCaseSupportException.class)
             .hasMessage(FAILED_TO_GENERATE_TEST_CASE)
             .hasCauseInstanceOf(RuntimeException.class);
 

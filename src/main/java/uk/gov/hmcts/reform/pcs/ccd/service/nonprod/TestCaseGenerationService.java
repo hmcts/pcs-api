@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class NonProdSupportService {
+public class TestCaseGenerationService {
 
     static final String NO_NON_PROD_CASE_AVAILABLE = "No non-prod case json available.";
     static final String TEST_CASE_CREATION_NOT_SUPPORTED = "Strategy not supported : ";
@@ -30,7 +30,7 @@ public class NonProdSupportService {
             }
             return getCaseSupportGenerationResponse(caseReference, fromEvent, dynamicList.getValue());
         } catch (Exception e) {
-            throw new NonProdSupportException(FAILED_TO_GENERATE_TEST_CASE, e);
+            throw new TestCaseSupportException(FAILED_TO_GENERATE_TEST_CASE, e);
         }
     }
 
@@ -46,7 +46,7 @@ public class NonProdSupportService {
                         caseSupportHelper.getNonProdResource(selectedValue.getLabel())
                     );
                 } catch (IOException e) {
-                    throw new NonProdSupportException(e);
+                    throw new TestCaseSupportException(e);
                 }
             })
             .orElseThrow(() -> new RuntimeException(TEST_CASE_CREATION_NOT_SUPPORTED + selectedValue.getLabel()));

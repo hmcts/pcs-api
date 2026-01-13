@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.nonprod.NonProdSupportPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper;
-import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.NonProdSupportService;
+import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.TestCaseGenerationService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
@@ -25,12 +25,12 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
+public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     static final String TEST_FEE_AMOUNT = "123.45";
     static final String EVENT_NAME = "Test Support Case Creation";
 
-    private final NonProdSupportService nonProdSupportService;
+    private final TestCaseGenerationService testCaseGenerationService;
     private final CaseSupportHelper caseSupportHelper;
 
     @Override
@@ -65,7 +65,7 @@ public class NonProdSupport implements CCDConfig<PCSCase, State, UserRole> {
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
-        nonProdSupportService.caseGenerator(caseReference, eventPayload.caseData());
+        testCaseGenerationService.caseGenerator(caseReference, eventPayload.caseData());
         return SubmitResponse.<State>builder()
             .state(CASE_ISSUED)
             .build();

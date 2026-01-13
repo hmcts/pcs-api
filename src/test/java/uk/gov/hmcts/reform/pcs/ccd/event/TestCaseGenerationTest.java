@@ -23,13 +23,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
-import static uk.gov.hmcts.reform.pcs.ccd.event.NonProdSupport.EVENT_NAME;
+import static uk.gov.hmcts.reform.pcs.ccd.event.TestCaseGeneration.EVENT_NAME;
 
 @ExtendWith(MockitoExtension.class)
-class NonProdSupportTest {
+class TestCaseGenerationTest {
 
     @InjectMocks
-    private NonProdSupport underTest;
+    private TestCaseGeneration underTest;
 
     @Test
     @SuppressWarnings("unchecked")

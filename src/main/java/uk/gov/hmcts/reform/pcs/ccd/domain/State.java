@@ -51,12 +51,5 @@ public enum State {
     )
     DRAFT,
 
-    @CCD(
-        label = "Test Case",
-        access = {ClaimantAccess.class},
-        hint = "${pageHeadingMarkdown}"
-    )
-    TEST_CASE
-
 }
 

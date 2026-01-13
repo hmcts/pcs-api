@@ -56,7 +56,7 @@ public class EnforcementWarrantSupport extends MakeAClaimCaseGenerationSupport {
             }
         } catch (IOException e) {
             log.error("Failure on Enforcement generation: {}", nonProdResource.getFilename(), e);
-            throw new NonProdSupportException("Failed to generate case reference: " + caseReference, e);
+            throw new TestCaseSupportException("Failed to generate case reference: " + caseReference, e);
         }
         return new CaseSupportGenerationResponse(State.PENDING_CASE_ISSUED, List.of());
     }

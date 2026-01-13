@@ -99,7 +99,7 @@ class MakeAClaimCaseGenerationSupportTest {
 
         // When / Then
         assertThatThrownBy(() -> underTest.generate(caseReference, caseData, nonProdResource))
-            .isInstanceOf(NonProdSupportException.class)
+            .isInstanceOf(TestCaseSupportException.class)
             .hasCauseInstanceOf(IOException.class)
             .hasRootCauseMessage("Cannot read input stream");
 
