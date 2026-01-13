@@ -43,7 +43,13 @@ public class EnforcementOrder {
     @External
     private String writFeeAmount;
 
+    @CCD(
+        searchable = false
+    )
     private String formattedDefendantNames;
 
+    @CCD(
+        searchable = false
+    )
     private String formattedPropertyAddress;
 }

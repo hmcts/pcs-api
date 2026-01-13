@@ -23,9 +23,8 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
             .pageLabel("The name and address for the eviction")
             .showCondition("selectEnforcementType=\"WRIT\"")
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getWritDetails)
-            .readonly(WritDetails::getFormattedDefendantNames, NEVER_SHOW)
-            .readonly(WritDetails::getFormattedPropertyAddress, NEVER_SHOW)
+            .readonly(EnforcementOrder::getFormattedDefendantNames, NEVER_SHOW)
+            .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW)
             .label(
                 "nameAndAddressForEvictionWrit-defendants-check",
                 """
@@ -46,6 +45,7 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
                     </table>
                 """
             )
+            .complex(EnforcementOrder::getWritDetails)
             .complex(WritDetails::getNameAndAddressForEviction)
             .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
             .done()

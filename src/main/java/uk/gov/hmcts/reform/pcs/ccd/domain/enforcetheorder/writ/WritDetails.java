@@ -33,7 +33,4 @@ public class WritDetails {
     )
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
 
-    private String formattedDefendantNames;
-
-    private String formattedPropertyAddress;
 }
