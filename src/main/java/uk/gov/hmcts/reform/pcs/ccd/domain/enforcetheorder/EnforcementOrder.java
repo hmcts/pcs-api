@@ -7,6 +7,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
 /**
  * The main domain model representing an enforcement order.
@@ -25,6 +26,10 @@ public class EnforcementOrder {
     @JsonUnwrapped(prefix = "warrant")
     @CCD
     private WarrantDetails warrantDetails;
+
+    @JsonUnwrapped(prefix = "writ")
+    @CCD
+    private WritDetails writDetails;
 
     @CCD(
         searchable = false

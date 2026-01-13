@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -39,6 +40,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     // Business requirements to be agreed on for the conditions when this event can be triggered
     private final WarrantPageConfigurer warrantPagesConfigurer;
+    private final WritPageConfigurer writPageConfigurer;
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
     private final DefendantService defendantService;
@@ -56,6 +58,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
         warrantPagesConfigurer.configurePages(pageBuilder);
+        writPageConfigurer.configurePages(pageBuilder);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

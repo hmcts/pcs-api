@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -64,6 +65,8 @@ class EnforceTheOrderTest extends BaseEventTest {
     @Mock
     private WarrantPageConfigurer warrantPageConfigurer;
     @Mock
+    private WritPageConfigurer writPageConfigurer;
+    @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
     private SavingPageBuilder savingPageBuilder;
@@ -90,6 +93,7 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         //Then
         verify(warrantPageConfigurer, times(1)).configurePages(savingPageBuilder);
+        verify(writPageConfigurer, times(1)).configurePages(savingPageBuilder);
     }
 
     @Test
