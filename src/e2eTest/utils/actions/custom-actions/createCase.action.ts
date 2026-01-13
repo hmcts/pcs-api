@@ -540,19 +540,26 @@ export class CreateCaseAction implements IAction {
   private async selectDefendantCircumstances(
     defendantDetails: actionRecord
   ) {
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    const hasAdditionalDefendants = defendantDetails.additionalDefendants === true;
+
+    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    let defendantCircumstancesQuestion = defendantCircumstances.isThereAnyInformationSingleDefendantCircumstancesDynamicQuestion;
-    if (defendantDetails.additionalDefendants == true) {
-      defendantCircumstancesQuestion = defendantCircumstances.isThereAnyInformationMultipleDefendantsCircumstancesDynamicQuestion;
-    }
-    await performAction('clickRadioButton', {question: defendantCircumstancesQuestion, option: defendantDetails.defendantCircumstance});
-    if (defendantDetails.defendantCircumstance == defendantCircumstances.yesRadioOption) {
-      if (defendantDetails.additionalDefendants == true) {
-        await performAction('inputText', defendantCircumstances.giveDetailsDefendantCircumstancesPluralHiddenTextLabel, defendantCircumstances.giveDetailsDefendantCircumstancesHiddenTextInput);
-      } else {
-        await performAction('inputText', defendantCircumstances.giveDetailsDefendantCircumstancesSingularHiddenTextLabel, defendantCircumstances.giveDetailsDefendantCircumstancesHiddenTextInput);
-      }
+
+    const config = hasAdditionalDefendants
+      ? {question: defendantCircumstances.isThereAnyInformationMultipleDefendantsCircumstancesDynamicQuestion,
+        guidance: defendantCircumstances.youCanUseThisSectionMultipleDynamicParagraph,
+        hiddenLabel: defendantCircumstances.giveDetailsDefendantCircumstancesPluralHiddenTextLabel}
+      : {question: defendantCircumstances.isThereAnyInformationSingleDefendantCircumstancesDynamicQuestion,
+        guidance: defendantCircumstances.youCanUseThisSectionSingleDynamicParagraph,
+        hiddenLabel: defendantCircumstances.giveDetailsDefendantCircumstancesSingularHiddenTextLabel
+      };
+
+    await performValidation('text', {elementType: 'paragraph', text: config.guidance});
+
+    await performAction('clickRadioButton', {question: config.question, option: defendantDetails.defendantCircumstance});
+
+    if (defendantDetails.defendantCircumstance === defendantCircumstances.yesRadioOption) {
+      await performAction('inputText', config.hiddenLabel, defendantCircumstances.giveDetailsDefendantCircumstancesHiddenTextInput);
     }
     await performAction('clickButton', defendantCircumstances.continueButton);
   }
