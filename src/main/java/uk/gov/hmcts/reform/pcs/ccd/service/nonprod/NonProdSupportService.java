@@ -28,23 +28,28 @@ public class NonProdSupportService {
             if (dynamicList == null) {
                 throw new IllegalArgumentException(NO_NON_PROD_CASE_AVAILABLE);
             }
-            DynamicListElement selectedValue = dynamicList.getValue();
-            return testCaseGenerationStrategies.stream()
-                .filter(strategy -> strategy.supports(selectedValue.getLabel()))
-                .findFirst()
-                .map(strategy -> {
-                    try {
-                        return strategy.generate(caseReference, fromEvent,
-                                                 caseSupportHelper.getNonProdResource(selectedValue.getLabel()));
-                    } catch (IOException e) {
-                        throw new NonProdSupportException(e);
-                    }
-                })
-                .orElseThrow(() -> new RuntimeException(TEST_CASE_CREATION_NOT_SUPPORTED
-                                                            + selectedValue.getLabel()));
+            return getCaseSupportGenerationResponse(caseReference, fromEvent, dynamicList.getValue());
         } catch (Exception e) {
             throw new NonProdSupportException(FAILED_TO_GENERATE_TEST_CASE, e);
         }
+    }
+
+    private CaseSupportGenerationResponse getCaseSupportGenerationResponse(long caseReference, PCSCase fromEvent,
+                                                                           DynamicListElement selectedValue) {
+        return testCaseGenerationStrategies.stream()
+            .filter(strategy -> strategy.supports(selectedValue.getLabel()))
+            .findFirst()
+            .map(strategy -> {
+                try {
+                    return strategy.generate(
+                        caseReference, fromEvent,
+                        caseSupportHelper.getNonProdResource(selectedValue.getLabel())
+                    );
+                } catch (IOException e) {
+                    throw new NonProdSupportException(e);
+                }
+            })
+            .orElseThrow(() -> new RuntimeException(TEST_CASE_CREATION_NOT_SUPPORTED + selectedValue.getLabel()));
     }
 
 }

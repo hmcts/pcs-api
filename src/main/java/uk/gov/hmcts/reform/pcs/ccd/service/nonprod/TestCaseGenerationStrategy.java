@@ -5,7 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 public interface TestCaseGenerationStrategy {
 
-    // The label must be devisible from the file name removing the "-" and the ".json" extension
+    // The label must be derivable from the file name removing the "-" and the ".json" extension
     boolean supports(String label);
 
     String getLabel();

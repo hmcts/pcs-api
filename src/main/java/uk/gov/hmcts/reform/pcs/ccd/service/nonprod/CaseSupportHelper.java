@@ -36,7 +36,7 @@ public class CaseSupportHelper {
                 .toList();
             return DynamicList.builder()
                 .listItems(listItems)
-                .value(DynamicListElement.builder().label("Please select ...").build())
+                .value(DynamicListElement.builder().label("Please select ...").code(UUID.randomUUID()).build())
                 .build();
         } catch (IOException e) {
             log.error("Error reading nonprod files", e);
@@ -50,8 +50,11 @@ public class CaseSupportHelper {
 
     public Resource getNonProdResource(String label) throws IOException {
         String name = generateNameFromLabel(label);
-        return Arrays.stream(resourcePatternResolver.getResources(LOCATION_PATTERN + name + JSON))
-            .findFirst().orElseThrow();
+        Resource[] resources = resourcePatternResolver.getResources(LOCATION_PATTERN + name + JSON);
+        if (resources == null || resources.length == 0) {
+            throw new IOException("No resource found for label: " + label);
+        }
+        return resources[0];
     }
 
     public String generateNameFromLabel(String label) {

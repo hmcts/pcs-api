@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper.JSON;
 import static uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper.LOCATION_PATTERN;
@@ -170,7 +171,8 @@ class CaseSupportHelperTest {
     }
 
     @Test
-    void shouldThrowNoSuchElementExceptionWhenGetNonProdResourceCannotFindMatchingResource() throws IOException {
+    void shouldThrowExceptionWhenGetNonProdResourceCannotFindMatchingResource()
+        throws IOException {
         // Given
         String label = "non existent file";
         String expectedName = "non-existent-file";
@@ -179,9 +181,7 @@ class CaseSupportHelperTest {
         when(resourcePatternResolver.getResources(resourcePath)).thenReturn(new Resource[]{});
 
         // When/Then
-        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
-            underTest.getNonProdResource(label)
-        ).isInstanceOf(java.util.NoSuchElementException.class);
+        assertThatThrownBy(() -> underTest.getNonProdResource(label)).isInstanceOf(IOException.class);
     }
 
     @Test

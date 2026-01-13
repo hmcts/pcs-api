@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 
 import java.util.Optional;
 
+import static org.apache.commons.lang3.StringUtils.firstNonBlank;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -22,13 +23,10 @@ public class ClaimantPartyFactory {
 
     public PartyEntity createAndPersistClaimantParty(PCSCase pcsCase, ClaimantPartyContext context) {
         ClaimantInformation claimantInfo = getClaimantInfo(pcsCase);
-
         String claimantName = isNotBlank(claimantInfo.getOverriddenClaimantName())
             ? claimantInfo.getOverriddenClaimantName()
             : claimantInfo.getClaimantName();
-
         ClaimantContactPreferences contactPreferences = getContactPreferences(pcsCase);
-
         AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
             ? contactPreferences.getOverriddenClaimantContactAddress()
             : pcsCase.getPropertyAddress();
@@ -64,10 +62,6 @@ public class ClaimantPartyFactory {
     private ClaimantContactPreferences getContactPreferences(PCSCase caseData) {
         return Optional.ofNullable(caseData.getClaimantContactPreferences())
             .orElse(ClaimantContactPreferences.builder().build());
-    }
-
-    private static String firstNonBlank(String a, String b) {
-        return isNotBlank(a) ? a : b;
     }
 
     public record ClaimantPartyContext(java.util.UUID userId, String userEmail) { }

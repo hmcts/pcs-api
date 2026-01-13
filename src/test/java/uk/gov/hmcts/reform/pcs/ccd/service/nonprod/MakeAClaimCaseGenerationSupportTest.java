@@ -79,8 +79,8 @@ class MakeAClaimCaseGenerationSupportTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getState()).isEqualTo(State.PENDING_CASE_ISSUED);
-
+        assertThat(result.state()).isEqualTo(State.PENDING_CASE_ISSUED);
+        assertThat(result.errors()).isEmpty();
         verify(draftCaseDataService).parseCaseDataJson(jsonString);
         verify(pcsCaseService).createCase(eq(caseReference), any(), any());
         verify(pcsCaseService).loadCase(caseReference);

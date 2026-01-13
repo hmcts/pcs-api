@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 @Slf4j
@@ -49,14 +50,15 @@ public class EnforcementWarrantSupport extends MakeAClaimCaseGenerationSupport {
             CaseSupportGenerationResponse generated = super.generate(caseReference, caseData,
                 caseSupportHelper.getNonProdResource(super.getLabel()));
             log.info("Generated response from {}: {}", CASE_GENERATOR, generated);
-            if ((generated.getErrors() == null || generated.getErrors().isEmpty())
-                && generated.getState() == State.PENDING_CASE_ISSUED) {
+            if ((generated.errors() == null || generated.errors().isEmpty())
+                && generated.state() == State.PENDING_CASE_ISSUED) {
                 return generateEnforcementWarrant(caseReference, nonProdResource);
             }
         } catch (IOException e) {
+            log.error("Failure on Enforcement generation: {}", nonProdResource.getFilename(), e);
             throw new NonProdSupportException("Failed to generate case reference: " + caseReference, e);
         }
-        return CaseSupportGenerationResponse.builder().state(State.PENDING_CASE_ISSUED).build();
+        return new CaseSupportGenerationResponse(State.PENDING_CASE_ISSUED, List.of());
     }
 
     private CaseSupportGenerationResponse generateEnforcementWarrant(long caseReference, Resource nonProdResource)
@@ -65,7 +67,7 @@ public class EnforcementWarrantSupport extends MakeAClaimCaseGenerationSupport {
         String jsonString = StreamUtils.copyToString(nonProdResource.getInputStream(), StandardCharsets.UTF_8);
         EnforcementOrder enforcementOrder = parseCaseDataJson(jsonString);
         enforcementOrderService.saveAndClearDraftData(caseReference, enforcementOrder);
-        return CaseSupportGenerationResponse.builder().state(State.PENDING_CASE_ISSUED).build();
+        return new CaseSupportGenerationResponse(State.PENDING_CASE_ISSUED, List.of());
     }
 
     @Override

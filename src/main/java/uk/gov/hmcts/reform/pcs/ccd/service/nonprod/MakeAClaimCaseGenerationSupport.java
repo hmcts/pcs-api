@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -31,7 +32,7 @@ public class MakeAClaimCaseGenerationSupport implements TestCaseGenerationStrate
     public CaseSupportGenerationResponse generate(long caseReference, PCSCase caseData, Resource nonProdResource) {
         log.info("Running : {}", CASE_GENERATOR);
         generateMakeAClaim(caseReference, nonProdResource);
-        return CaseSupportGenerationResponse.builder().state(State.PENDING_CASE_ISSUED).build();
+        return new CaseSupportGenerationResponse(State.PENDING_CASE_ISSUED, List.of());
     }
 
     private void generateMakeAClaim(long caseReference, Resource nonProdResource) {
