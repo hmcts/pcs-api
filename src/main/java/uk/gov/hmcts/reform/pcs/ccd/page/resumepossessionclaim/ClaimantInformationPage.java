@@ -1,9 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import io.micrometer.common.util.StringUtils;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -11,19 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
-@Component
-@AllArgsConstructor
 public class ClaimantInformationPage implements CcdPageConfiguration {
 
-    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -48,23 +38,9 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         setClaimantNamePossessiveForm(details);
 
-        List<String> validationErrors = new ArrayList<>();
-
-        ClaimantInformation claimantInfo = caseData.getClaimantInformation();
-        if (claimantInfo != null
-            && claimantInfo.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
-
-            validationErrors.addAll(
-                textAreaValidationService.validateSingleField(
-                    claimantInfo,
-                    ClaimantInformation::getOverriddenClaimantName,
-                    "Overridden claimant name",
-                    TextAreaValidationService.TEXT_FIELD_LIMIT
-                )
-            );
-        }
-
-        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .data(caseData)
+            .build();
     }
 
     private void setClaimantNamePossessiveForm(CaseDetails<PCSCase, State> details) {

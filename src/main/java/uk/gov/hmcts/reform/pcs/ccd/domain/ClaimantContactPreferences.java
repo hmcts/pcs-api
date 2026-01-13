@@ -20,7 +20,11 @@ public class ClaimantContactPreferences {
     @CCD(label = "Do you want to use this email address for notifications?")
     private VerticalYesNo isCorrectClaimantContactEmail;
 
-    @CCD(label = "Enter email address", typeOverride = FieldType.Email)
+    @CCD(
+        label = "Enter email address",
+        typeOverride = FieldType.Email,
+        max = 60
+    )
     private String overriddenClaimantContactEmail;
 
     private String formattedClaimantContactAddress;

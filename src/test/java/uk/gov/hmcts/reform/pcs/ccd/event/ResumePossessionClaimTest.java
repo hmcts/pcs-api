@@ -61,7 +61,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDeta
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
@@ -115,8 +114,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private static final UUID USER_ID = UUID.randomUUID();
     private static final BigDecimal CLAIM_FEE_AMOUNT = new BigDecimal("123.40");
 
-    @Mock
-    private ClaimantInformationPage claimantInformationPage;
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock(strictness = LENIENT)
@@ -235,7 +232,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, caseAssignmentService, claimantInformationPage
+            underlesseeOrMortgageePage, feeService, feeFormatter, caseAssignmentService
         );
 
         setEventUnderTest(underTest);

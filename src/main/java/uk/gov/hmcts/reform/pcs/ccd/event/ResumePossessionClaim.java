@@ -165,7 +165,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
     private final CaseAssignmentService caseAssignmentService;
-    private final ClaimantInformationPage claimantInformationPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -186,7 +185,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(claimantInformationPage)
+            .add(new ClaimantInformationPage())
             .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
