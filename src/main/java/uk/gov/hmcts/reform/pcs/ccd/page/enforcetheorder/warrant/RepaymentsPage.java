@@ -15,20 +15,20 @@ public class RepaymentsPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("repaymentsPage")
+            .page("repayments")
             .pageLabel("Repayments")
-            .label("repaymentsPage-content", "---")
+            .label("repayments-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getRepaymentCosts)
             .readonly(RepaymentCosts::getRepaymentSummaryMarkdown, NEVER_SHOW, true)
-            .label("repayments-table-content", "${repaymentRepaymentSummaryMarkdown}")
+            .label("repayments-table-content", "${warrantRepaymentSummaryMarkdown}")
             .mandatory(RepaymentCosts::getRepaymentChoice)
-            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "repaymentRepaymentChoice=\"SOME\"")
+            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "warrantRepaymentChoice=\"SOME\"")
             .done()
             .done()
-            .label("repaymentsPage-save-and-return", SAVE_AND_RETURN);
+            .label("repayments-save-and-return", SAVE_AND_RETURN);
     }
 
 }

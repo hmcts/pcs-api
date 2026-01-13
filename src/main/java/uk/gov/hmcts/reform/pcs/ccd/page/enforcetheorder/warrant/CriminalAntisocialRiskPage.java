@@ -28,7 +28,8 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("criminalAntisocialRisk", this::midEvent)
             .pageLabel("Their history of criminal or antisocial behaviour")
-            .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\""
+            .showCondition("warrantAnyRiskToBailiff=\"YES\""
+                + " AND warrantEnforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\""
                 + " AND selectEnforcementType=\"WARRANT\"")
             .label("criminalAntisocialRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)

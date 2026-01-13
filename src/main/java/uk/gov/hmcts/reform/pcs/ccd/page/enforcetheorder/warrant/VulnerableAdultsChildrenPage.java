@@ -49,13 +49,13 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWarrantDetails)
             .mandatory(WarrantDetails::getVulnerablePeoplePresent)
             .complex(WarrantDetails::getVulnerableAdultsChildren,
-                    "vulnerablePeoplePresent=\"YES\"")
+                    "warrantVulnerablePeoplePresent=\"YES\"")
                     .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
                     .mandatory(
                         VulnerableAdultsChildren::getVulnerableReasonText,
-                        "vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
+                        "warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                            + "OR warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                            + "OR warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
                     )
                 .done()
             .done()

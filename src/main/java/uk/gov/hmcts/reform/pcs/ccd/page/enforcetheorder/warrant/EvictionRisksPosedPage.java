@@ -19,7 +19,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         pageBuilder
             .page("evictionRisksPosed", this::midEvent)
             .pageLabel("The risks posed by everyone at the property")
-            .showCondition("anyRiskToBailiff=\"YES\" AND selectEnforcementType=\"WARRANT\"")
+            .showCondition("warrantAnyRiskToBailiff=\"YES\" AND selectEnforcementType=\"WARRANT\"")
             .label("evictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

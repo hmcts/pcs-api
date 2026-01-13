@@ -22,7 +22,7 @@ public class EnforcementOrder {
     )
     private SelectEnforcementType selectEnforcementType;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "warrant")
     @CCD
     private WarrantDetails warrantDetails;
 

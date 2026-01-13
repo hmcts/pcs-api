@@ -29,10 +29,10 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("additionalInformationPage", this::midEvent)
+            .page("additionalInformation", this::midEvent)
             .pageLabel("Anything else that could help with the eviction ")
             .showCondition("selectEnforcementType=\"WARRANT\"")
-            .label("additionalInformationPage-separator", "---")
+            .label("additionalInformation-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getAdditionalInformation)
@@ -42,7 +42,7 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
             )
             .mandatory(AdditionalInformation::getAdditionalInformationDetails, SHOW_CONDITION)
             .done()
-            .label("additionalInformationPage-details-save-and-return", SAVE_AND_RETURN);
+            .label("additionalInformation-details-save-and-return", SAVE_AND_RETURN);
 
     }
 
