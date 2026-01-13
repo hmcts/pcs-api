@@ -27,7 +27,7 @@ plugins {
   id 'au.com.dius.pact' version '4.6.18'
   /*
     Applies analysis tools including checkstyle and OWASP Dependency checker.
-    See https://github.com/hmcts/gradle-java-pluginå
+    See https://github.com/hmcts/gradle-java-plugin
  */
   id 'uk.gov.hmcts.java' version '0.12.67'
 }
