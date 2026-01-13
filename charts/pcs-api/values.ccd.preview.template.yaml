@@ -19,6 +19,7 @@ java:
     PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
     PCS_DB_USER_NAME: "{{ .Values.global.postgresUsername}}"
     ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
+    CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
   secrets:
     PCS_DB_PASSWORD:
       secretRef: "{{ .Values.global.postgresSecret }}"
@@ -203,7 +204,6 @@ xui-webapp:
       PROTOCOL: http
       PREVIEW_DEPLOYMENT_ID: "pcs-${CHANGE_ID}"
       LAUNCH_DARKLY_CLIENT_ID: 645baeea2787d812993d9d70
-      CCD_DATA_STORE_URL: http://${SERVICE_NAME}-ccd-data-store-api
     keyVaults:
       rpx:
         resourceGroup: rpx
