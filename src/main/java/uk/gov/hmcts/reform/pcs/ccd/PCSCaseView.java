@@ -109,12 +109,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private void setRentDetails(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
         if (pcsCaseEntity.getTenancyLicence() != null) {
             pcsCase.setRentDetails(RentDetails.builder()
-                .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount() != null
-                    ? poundsToPence(pcsCaseEntity.getTenancyLicence().getRentAmount()) : null)
+                .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount())
                 .frequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
                 .otherFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
-                .dailyCharge(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount() != null
-                    ? poundsToPence(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount()) : null)
+                .dailyCharge(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount())
                 .build());
         }
     }
@@ -185,13 +183,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         return partyEntities.stream()
             .map(entity -> modelMapper.map(entity, Party.class))
             .collect(Collectors.collectingAndThen(Collectors.toList(), ListValueUtils::wrapListItems));
-    }
-
-    private static String poundsToPence(java.math.BigDecimal pounds) {
-        if (pounds == null) {
-            return null;
-        }
-        return pounds.movePointRight(2).toPlainString();
     }
 
     private void mapBasicClaimFields(PCSCase pcsCase, ClaimEntity claim) {
