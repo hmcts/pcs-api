@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import org.modelmapper.ModelMapper;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -68,7 +69,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .postCode("SW1A 1AA")
             .build();
 
-        uk.gov.hmcts.reform.pcs.ccd.domain.Party party = uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder()
+        Party party = Party.builder()
             .firstName("John")
             .lastName("Doe")
             .address(address)
