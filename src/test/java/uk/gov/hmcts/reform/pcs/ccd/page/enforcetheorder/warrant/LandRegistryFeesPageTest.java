@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,12 +8,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LandRegistryFees;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LegalCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.MoneyOwedByDefendants;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LandRegistryFees;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
@@ -58,13 +57,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .repaymentCosts(RepaymentCosts.builder().build())
+            .landRegistryFees(landRegistryFees)
+            .legalCosts(legalCosts)
             .warrantFeeAmount(warrantFeeAmount)
-            .warrantDetails(WarrantDetails.builder()
-                .repaymentCosts(RepaymentCosts.builder().build())
-                .landRegistryFees(landRegistryFees)
-                .legalCosts(legalCosts)
-                .moneyOwedByDefendants(moneyOwedByDefendants)
-                .build())
+            .moneyOwedByDefendants(moneyOwedByDefendants)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -91,7 +88,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
             expectedTotalFees
         );
 
-        assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())
+        assertThat(caseData.getEnforcementOrder().getRepaymentCosts().getRepaymentSummaryMarkdown())
             .isEqualTo("<table>Mock Repayment Table</table>");
     }
 
