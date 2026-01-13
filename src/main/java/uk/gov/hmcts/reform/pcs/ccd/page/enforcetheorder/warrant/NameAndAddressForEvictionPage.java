@@ -21,8 +21,6 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             .page("nameAndAddressForEviction", this::midEvent)
             .pageLabel("The name and address for the eviction")
             .showCondition("selectEnforcementType=\"WARRANT\"")
-            .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW)
-            .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW)
             .label(
                 "nameAndAddressForEviction-defendants-check",
                 """
@@ -44,9 +42,12 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getWarrantDetails)
-            .complex(WarrantDetails::getNameAndAddressForEviction)
-            .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
+              .complex(EnforcementOrder::getWarrantDetails)
+                .complex(WarrantDetails::getNameAndAddressForEviction)
+                  .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
+                .done()
+              .done()
+            .done()
             .label("nameAndAddressForEviction-save-and-return", SAVE_AND_RETURN);
 
     }
