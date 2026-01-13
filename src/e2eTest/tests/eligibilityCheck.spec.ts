@@ -144,6 +144,10 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
+    await performValidation('text', {
+      "text": userIneligible.exitBackHintText,
+      "elementType": "inlineText"
+    });
     await performAction('clickButton', userIneligible.cancel);
   });
 
@@ -166,6 +170,10 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     });
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performValidation('text', {
+      "text": userIneligible.exitBackHintText,
+      "elementType": "inlineText"
     });
     await performAction('clickButton', userIneligible.cancel);
   });
@@ -190,6 +198,10 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
+    await performValidation('text', {
+      "text": userIneligible.exitBackHintText,
+      "elementType": "inlineText"
+    });
     await performAction('clickButton', userIneligible.cancel);
   });
 
@@ -210,6 +222,10 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     });
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performValidation('text', {
+      "text": userIneligible.exitBackHintText,
+      "elementType": "inlineText"
     });
     await performAction('clickButton', userIneligible.cancel);
   });
