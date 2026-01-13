@@ -66,7 +66,8 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    locations: ${SPRING_FLYWAY_LOCATIONS:classpath:db/migration,classpath:db/testdata}
+    baseline-on-migrate: true
   jms:
     servicebus:
       enabled: ${HEARINGS_SERVICEBUS_ENABLED:false}
@@ -190,3 +191,6 @@ payments:
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
     hmctsOrgId: AAA3
+core_case_data:
+  api:
+    url: ${CCD_DATA_STORE_URL:localhost:4452}

@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 @Slf4j
 public class ClaimantInformationPage implements CcdPageConfiguration {
 
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
