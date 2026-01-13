@@ -28,7 +28,7 @@ export const submitCaseApiData = {
       valueCode: 'PROVIDER_OF_SOCIAL_HOUSING'
     },
     claimAgainstTrespassers: 'NO',
-    organisationName: 'Possession Claims Solicitor Org',
+    claimantName: 'Possession Claims Solicitor Org',
     isClaimantNameCorrect: 'YES',
     claimantContactEmail: 'pcs-solicitor1@test.com',
     isCorrectClaimantContactEmail: 'YES',
