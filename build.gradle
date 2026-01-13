@@ -291,7 +291,7 @@ repositories {
 }
 
 ext {
-  log4JVersion = "2.25.3"
+  log4JVersion = "2.25.2"
   logbackVersion = "1.5.22"
   testcontainersVersion = "1.21.3"
   springFrameworkBootVersion = "3.5.8"
@@ -336,7 +336,6 @@ dependencies {
   }
 
   implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: log4JVersion
-  implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: log4JVersion
   implementation group: 'org.apache.logging.log4j', name: 'log4j-to-slf4j', version: log4JVersion
   implementation group: 'ch.qos.logback', name: 'logback-classic', version: logbackVersion
   implementation group: 'ch.qos.logback', name: 'logback-core', version: logbackVersion
