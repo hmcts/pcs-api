@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,13 +19,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementOrderEntity;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -65,6 +65,11 @@ public class ClaimEntity {
     @Builder.Default
     @JsonManagedReference
     private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
 
     private String summary;
 
@@ -119,6 +124,19 @@ public class ClaimEntity {
         for (ClaimGroundEntity ground : grounds) {
             ground.setClaim(this);
             this.claimGrounds.add(ground);
+        }
+    }
+
+    public void addClaimDocuments(List<DocumentEntity> documents) {
+
+        for (DocumentEntity document : documents) {
+            ClaimDocumentEntity claimDocument = ClaimDocumentEntity.builder()
+                .claim(this)
+                .document(document)
+                .build();
+
+            claimDocuments.add(claimDocument);
+            document.getClaimDocuments().add(claimDocument);
         }
     }
 }

@@ -27,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -96,6 +97,11 @@ public class PcsCaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<UnderlesseeMortgagee> underlesseesMortgagees;
 
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private List<DocumentEntity> documents = new ArrayList<>();
+
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
         claim.setPcsCase(this);
@@ -105,4 +111,10 @@ public class PcsCaseEntity {
         parties.add(party);
         party.setPcsCase(this);
     }
+
+    public void addDocuments(List<DocumentEntity> documents){
+        for (DocumentEntity document : documents) {
+            document.setPcsCase(this);
+            this.documents.add(document);
+        }}
 }
