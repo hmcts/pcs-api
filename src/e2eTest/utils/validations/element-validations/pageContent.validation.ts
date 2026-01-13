@@ -27,7 +27,9 @@ export class PageContentValidation implements IValidation {
                     :has-text("${value}") + button,
                     [role="link"]:text("${value}"),
                     a:text("${value}"),
-                    :has-text("${value}") ~ button`),
+                    :has-text("${value}") ~ button,
+                    button:has-text("${value}"),
+                    button >> text=${value}`),
     Link: (page: Page, value: string) => page.locator(`
                     a:text("${value}"),
                     a.govuk-link:text("${value}"),
