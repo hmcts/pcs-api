@@ -65,7 +65,8 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase pcsCase = eventPayload.caseData();
         pcsCase.getEnforcementOrder().setFormattedPropertyAddress(addressFormatter
                 .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
-
+        pcsCase.getEnforcementOrder().setFormattedPropertyAddressWrit(
+                pcsCase.getEnforcementOrder().getFormattedPropertyAddress());
         initializeDefendantData(pcsCase);
         populateDefendantSelectionList(pcsCase);
         applyWarrantFeeAmount(pcsCase);

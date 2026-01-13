@@ -32,5 +32,4 @@ public class WritDetails {
             searchable = false
     )
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
-
 }

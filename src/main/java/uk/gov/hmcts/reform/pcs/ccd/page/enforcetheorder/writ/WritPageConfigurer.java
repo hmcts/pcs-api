@@ -13,7 +13,6 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
-        configureInitialPages(pageBuilder);
         pageBuilder
             .add(new NameAndAddressForEvictionWritPage())
             .add(new ChangeNameAddressPage());
