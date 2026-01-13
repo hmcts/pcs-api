@@ -1,32 +1,67 @@
-import { expect, Page } from '@playwright/test';
+import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
+import { actionRetries } from '../../../playwright.config';
 
 export class ClickRadioButtonAction implements IAction {
-  async execute(page: Page, action: string, params: string | actionRecord): Promise<void> {
-    if (typeof params === 'string') {
-      const radioButton = page.locator(`input[type="radio"] + label:has-text("${params}")`);
-      await radioButton.click();
-      return;
-    }
-    const { question, option, index } = params as actionRecord;
-    const idx = index !== undefined ? Number(index) : 0;
+  async execute(page: Page, action: string, params: actionRecord): Promise<void> {
+    const idx = params.index !== undefined ? Number(params.index) : 0;
+    const question = params.question as string;
+    const option = params.option as string;
 
-    const radioPattern1 = page.locator(`legend:has-text("${question}")`)
-      .nth(idx)
-      .locator('..')
-      .getByRole('radio', { name: option as string, exact: true });
+    const patterns = [
+      () => this.radioPattern1(page, question, option, idx),
+      () => this.radioPattern2(page, question, option, idx),
+      () => this.radioPattern3(page, question, option, idx)
+    ];
 
-    try {
-      await radioPattern1.waitFor({ state: 'visible', timeout: 1000 });
-      await radioPattern1.click();
-    } catch {
-      const radioPattern2 = page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
-      const count = await radioPattern2.count();
-      if (count > 1) {
-        await radioPattern2.nth(count - 1).click();
-      } else {
-        await radioPattern2.click();
+    for (const getLocator of patterns) {
+      const locator = getLocator();
+      if (await this.clickWithRetry(locator)) {
+        return;
       }
     }
   }
+
+  private async clickWithRetry(locator: any): Promise<boolean> {
+    if ((await locator.count()) !== 1) {
+      return false;
+    }
+
+    let attempt = 0;
+    let radioIsChecked = false;
+
+    do {
+      attempt++;
+      await locator.click({ timeout: 2000, force: attempt > 1 });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      radioIsChecked = await locator.isChecked();
+    } while (!radioIsChecked && attempt < actionRetries);
+
+    return radioIsChecked;
+  }
+
+  private radioPattern1(page: Page, question: string, option: string, idx: number) {
+    return page.locator(`legend:has-text("${question}")`)
+      .nth(idx)
+      .locator('..')
+      .getByRole('radio', { name: option as string, exact: true });
+  }
+
+  private radioPattern2(page: Page, question: string, option: string, idx: number) {
+    return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
+  }
+
+  private radioPattern3(page: Page, question: string, option: string, idx: number) {
+    return page.locator(`legend:has-text("${question}")`)
+      .nth(idx)
+      .locator('xpath=ancestor::fieldset[1]')
+      .locator('div.multiple-choice')
+      .filter({ has: page.locator('label.form-label').filter({ hasText: option }) })
+      .locator('input[type="radio"]');
+  }
+
+  private escapeRegex(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
 }
+
