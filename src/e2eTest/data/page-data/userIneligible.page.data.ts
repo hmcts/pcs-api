@@ -9,5 +9,6 @@ export const userIneligible = {
   cancel: 'Cancel',
   thisServiceIsCurrentlyOnlyAvailableParagraph: 'This service is currently only available for community landlords.',
   formN5Wales: 'Use form N5 Wales and the correct particulars of claim form.',
-  propertyPossessionsFullListLink: 'View the full list of property possessions forms (opens in a new tab).'
+  propertyPossessionsFullListLink: 'View the full list of property possessions forms (opens in a new tab).',
+  exitBackHintText: 'To exit to the case overview, select ‘Cancel’'
 }
