@@ -60,7 +60,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase pcsCase = eventPayload.caseData();
-        pcsCase.setFormattedPropertyAddress(addressFormatter
+        pcsCase.getEnforcementOrder().setFormattedPropertyAddress(addressFormatter
                 .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
 
         initializeDefendantData(pcsCase);

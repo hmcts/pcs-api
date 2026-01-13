@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowChangeNameAddressPage, NEVER_SHOW)
+            .done()
             .done()
             .label("changeNameAddress-line-separator", "---")
             .label(
@@ -66,7 +68,8 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
                   </strong>
                 </div>
                 """
-            );
+            )
+            .label("changeNameAddress-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(

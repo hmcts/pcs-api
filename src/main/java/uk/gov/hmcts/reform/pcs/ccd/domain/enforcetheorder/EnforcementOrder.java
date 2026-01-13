@@ -37,4 +37,8 @@ public class EnforcementOrder {
     )
     @External
     private String writFeeAmount;
+
+    private String formattedDefendantNames;
+
+    private String formattedPropertyAddress;
 }

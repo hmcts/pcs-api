@@ -65,10 +65,10 @@ class EnforceTheOrderTest extends BaseEventTest {
     private WarrantPageConfigurer warrantPageConfigurer;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
-    @InjectMocks
-    private EnforceTheOrder enforceTheOrder;
     @Mock
     private SavingPageBuilder savingPageBuilder;
+    @InjectMocks
+    private EnforceTheOrder enforceTheOrder;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
@@ -120,7 +120,8 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getFormattedPropertyAddress()).isEqualTo(expectedFormattedPropertyAddress);
+        assertThat(result.getEnforcementOrder().getFormattedPropertyAddress())
+                .isEqualTo(expectedFormattedPropertyAddress);
         assertThat(result.getAllDefendants()).hasSize(1);
         assertThat(result.getDefendant1().getFirstName()).isEqualTo(firstName);
         assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);

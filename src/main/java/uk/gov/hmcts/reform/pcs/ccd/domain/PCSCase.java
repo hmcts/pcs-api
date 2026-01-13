@@ -70,8 +70,6 @@ public class PCSCase {
     @External
     private AddressUK propertyAddress;
 
-    private String formattedPropertyAddress;
-
     @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
 
@@ -479,8 +477,4 @@ public class PCSCase {
         access = {DefendantAccess.class}
     )
     private DefendantResponse defendantResponse;
-
-    @CCD(searchable = false)
-    private String formattedDefendantNames;
-
 }
