@@ -62,7 +62,20 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldPatchUnsubmittedEventData() {
+        AddressUK address = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postCode("SW1A 1AA")
+            .build();
+
+        uk.gov.hmcts.reform.pcs.ccd.domain.Party party = uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .address(address)
+            .build();
+
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .party(party)
             .contactByPhone(YesOrNo.YES)
             .build();
 
@@ -368,8 +381,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("Jane");
         assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Smith");
         assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(propertyAddress);
-        assertThat(result.getPossessionClaimResponse().getParty().getAddressSameAsProperty())
-            .isEqualTo(VerticalYesNo.YES);
     }
 
 }

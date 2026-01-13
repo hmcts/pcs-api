@@ -97,7 +97,6 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .firstName(matchedDefendant.getFirstName())
             .lastName(matchedDefendant.getLastName())
             .address(contactAddress)
-            .addressSameAsProperty(matchedDefendant.getAddressSameAsProperty())
             .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
@@ -138,12 +137,25 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 //This will be implemented in a future ticket.
                 //Note that defendants will be stored in a list
             } else {
-                PCSCase filteredDraft = PCSCase.builder()
-                    .possessionClaimResponse(possessionClaimResponse)
-                    .build();
+                // Filter to only store firstName, lastName, and address in draft
+                if (possessionClaimResponse.getParty() != null) {
+                    Party filteredParty = Party.builder()
+                        .firstName(possessionClaimResponse.getParty().getFirstName())
+                        .lastName(possessionClaimResponse.getParty().getLastName())
+                        .address(possessionClaimResponse.getParty().getAddress())
+                        .build();
 
-                draftCaseDataService.patchUnsubmittedEventData(
-                    caseReference, filteredDraft, respondPossessionClaim, userId);
+                    PossessionClaimResponse filteredResponse = PossessionClaimResponse.builder()
+                        .party(filteredParty)
+                        .build();
+
+                    PCSCase filteredDraft = PCSCase.builder()
+                        .possessionClaimResponse(filteredResponse)
+                        .build();
+
+                    draftCaseDataService.patchUnsubmittedEventData(
+                        caseReference, filteredDraft, respondPossessionClaim, userId);
+                }
             }
         }
         return SubmitResponse.defaultResponse();
