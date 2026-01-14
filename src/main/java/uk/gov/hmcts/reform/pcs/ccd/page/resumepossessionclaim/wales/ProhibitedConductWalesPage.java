@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -41,13 +42,14 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
                 """)
             .complex(PCSCase::getProhibitedConductWales)
             .mandatory(ProhibitedConductWales::getProhibitedConductWalesClaim)
-            .complex(ProhibitedConductWales::getPeriodicContractTermsWales, "wales_ProhibitedConductWalesClaim=\"YES\"")
+            .mandatory(ProhibitedConductWales::getProhibitedConductWalesWhyMakingClaim,
+                       "wales_ProhibitedConductWalesClaim=\"YES\"")
+            .complex(ProhibitedConductWales::getPeriodicContractTermsWales,
+                     "wales_ProhibitedConductWalesClaim=\"YES\"")
                 .mandatory(PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract)
                 .mandatory(PeriodicContractTermsWales::getDetailsOfTerms,
                 "wales_PeriodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
                 .done()
-            .mandatory(ProhibitedConductWales::getProhibitedConductWalesWhyMakingClaim,
-                "wales_ProhibitedConductWalesClaim=\"YES\"")
             .done()
             .label("prohibitedConductWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -58,30 +60,24 @@ public class ProhibitedConductWalesPage implements CcdPageConfiguration {
 
         List<String> validationErrors = new ArrayList<>();
 
-        ProhibitedConductWales prohibitedConductWales =
-            caseData.getProhibitedConductWales();
-
-        Optional.ofNullable(prohibitedConductWales)
-            .filter(pc -> pc.getProhibitedConductWalesClaim() == VerticalYesNo.YES)
-            .map(ProhibitedConductWales::getPeriodicContractTermsWales)
-            .filter(terms -> terms.getAgreedTermsOfPeriodicContract() == VerticalYesNo.YES)
-            .ifPresent(terms ->
-                           textAreaValidationService.validateTextArea(
-                               terms.getDetailsOfTerms(),
-                               "Give details of the terms you’ve agreed",
-                               TextAreaValidationService.SHORT_TEXT_LIMIT,
-                               validationErrors
-                           )
-            );
+        ProhibitedConductWales prohibitedConductWales = caseData.getProhibitedConductWales();
+        PeriodicContractTermsWales periodicContractTermsWales = prohibitedConductWales.getPeriodicContractTermsWales();
 
         if (prohibitedConductWales != null
             && prohibitedConductWales.getProhibitedConductWalesClaim() == VerticalYesNo.YES) {
-            textAreaValidationService.validateTextArea(
+            validationErrors.addAll(textAreaValidationService.validateMultipleTextAreas(
+
+                TextAreaValidationService.FieldValidation.of(
                 prohibitedConductWales.getProhibitedConductWalesWhyMakingClaim(),
                 "Why are you making this claim?",
-                TextAreaValidationService.SHORT_TEXT_LIMIT,
-                validationErrors
-            );
+                TextAreaValidationService.SHORT_TEXT_LIMIT
+                ),
+                TextAreaValidationService.FieldValidation.of(
+                    periodicContractTermsWales.getDetailsOfTerms(),
+                    "Give details of the terms you’ve agreed?",
+                    TextAreaValidationService.SHORT_TEXT_LIMIT
+                )
+            ));
         }
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
