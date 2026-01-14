@@ -25,25 +25,25 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 
 @AllArgsConstructor
 @Component
-public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
+public class StatementOfTruthPage implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("enforcementStatementOfTruth", this::midEvent)
+            .page("statementOfTruth", this::midEvent)
             .pageLabel("Statement of truth")
             .showCondition("selectEnforcementType=\"WARRANT\"")
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
-                    .label("enforcementStatementOfTruth-lineSeparator", "---")
+                    .label("statementOfTruth-lineSeparator", "---")
                     .complex(WarrantDetails::getRepaymentCosts)
                         .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
-                        .mandatory(StatementOfTruthDetails::getEnforcementCertification)
-                        .label("enforcementSOT-cert-suspended",
+                        .mandatory(StatementOfTruthDetails::getCertification)
+                        .label("statementOfTruth-cert-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
                                 <li>the defendant has not vacated the land as ordered (* and that the whole or part of
@@ -57,7 +57,7 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
                             """,
                             "isSuspendedOrder=\"YES\""
                         )
-                        .label("enforcementSOT-cert-not-suspended",
+                        .label("statementOfTruth-cert-not-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
                                 <li>the defendant has not vacated the land as ordered (* and that the whole or part of
@@ -69,7 +69,7 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
                             """,
                             "isSuspendedOrder=\"NO\""
                         )
-                        .label("enforcementSOT-payments-table",
+                        .label("statementOfTruth-payments-table",
                             "${repaymentStatementOfTruthRepaymentSummaryMarkdown}")
                         .mandatory(StatementOfTruthDetails::getCompletedBy)
                         .complex(StatementOfTruthDetails::getClaimantDetails,
@@ -88,7 +88,7 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
                     .done()
                 .done()
             .done()
-            .label("enforcementStatementOfTruth-saveAndReturn", SAVE_AND_RETURN);
+            .label("statementOfTruth-saveAndReturn", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -25,9 +25,9 @@ public class StatementOfTruthDetails {
 
     @CCD(
         typeOverride = MultiSelectList,
-        typeParameterOverride = "EnforcementStatementOfTruthAgreement"
+        typeParameterOverride = "StatementOfTruthAgreement"
     )
-    private List<EnforcementStatementOfTruthAgreement> enforcementCertification;
+    private List<StatementOfTruthAgreement> certification;
 
 }
 

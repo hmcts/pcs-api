@@ -32,14 +32,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EnforcementStatementOfTruthPageTest extends BasePageTest {
+class StatementOfTruthPageTest extends BasePageTest {
 
     @Mock
     private TextAreaValidationService textAreaValidationService;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new EnforcementStatementOfTruthPage(
+        setPageUnderTest(new StatementOfTruthPage(
             textAreaValidationService
         ));
     }
