@@ -551,6 +551,8 @@ public class TestingSupportController {
             Map<String, Party> minimalPartyMap = new HashMap<>();
 
             for (var accessCodeObject : accessCodes) {
+                //for each access code return the matching defendant's name and address
+
                 String accessCode = accessCodeObject.getCode();
                 UUID partyId = accessCodeObject.getPartyId();
 
@@ -559,13 +561,24 @@ public class TestingSupportController {
                     throw new IllegalStateException("No party found for partyId=" + partyId);
                 }
 
+                AddressUK addressUK = new AddressUK();
+
+                if (matched.getAddressSameAsProperty().toBoolean()) {
+                    //party address matches case
+                    addressUK = modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class);
+                } else if (matched.getAddress() != null) {
+                    //party address is different to case but isn't known
+                    modelMapper.map(matched.getAddress(), AddressUK.class);
+                } else {
+                    //party address is different to and isn't known
+                    addressUK = null;
+                }
+
+
                 Party minimalParty = Party.builder()
                     .firstName(matched.getFirstName())
                     .lastName(matched.getLastName())
-                    .address(matched.getAddress() == null
-                        ? null :
-                        modelMapper.map(matched.getAddress(), AddressUK.class)
-                        )
+                    .address(addressUK)
                     .build();
 
                 minimalPartyMap.put(accessCode, minimalParty);
