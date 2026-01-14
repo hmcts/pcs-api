@@ -11,9 +11,6 @@ DROP CONSTRAINT IF EXISTS enf_case_claim_id_fkey;
 -- Drop old claim table
 DROP TABLE IF EXISTS claim;
 
--- Create YES_NO type
-CREATE TYPE YES_NO AS ENUM ('YES', 'NO');
-
 -- Recreate claim table
 CREATE TABLE claim (
                      id UUID PRIMARY KEY,
