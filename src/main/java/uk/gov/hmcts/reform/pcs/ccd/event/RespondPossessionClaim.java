@@ -93,11 +93,19 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 : null;
         }
 
-        Party party = Party.builder()
-            .firstName(matchedDefendant.getFirstName())
-            .lastName(matchedDefendant.getLastName())
-            .address(contactAddress)
-            .build();
+        // Only create Party object if at least one field has a value
+        // This prevents empty party objects {} which cause CCD event token validation to fail
+        Party party = null;
+        if (matchedDefendant.getFirstName() != null
+            || matchedDefendant.getLastName() != null
+            || contactAddress != null) {
+
+            party = Party.builder()
+                .firstName(matchedDefendant.getFirstName())
+                .lastName(matchedDefendant.getLastName())
+                .address(contactAddress)
+                .build();
+        }
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .party(party)
