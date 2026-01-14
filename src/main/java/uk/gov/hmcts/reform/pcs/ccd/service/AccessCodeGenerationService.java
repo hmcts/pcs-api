@@ -4,12 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AccessCodeGenerator;
+import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -36,21 +41,41 @@ public class AccessCodeGenerationService {
 
     @Transactional
     public void createAccessCodesForParties(String caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(Long.valueOf(caseReference));
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(Long.parseLong(caseReference));
 
         Set<UUID> existingPartyIds = partyAccessCodeRepo.findAllByPcsCase_Id(pcsCaseEntity.getId())
             .stream()
             .map(PartyAccessCodeEntity::getPartyId)
             .collect(Collectors.toSet());
 
-        Set<PartyAccessCodeEntity> newCodes = pcsCaseEntity.getDefendants().stream()
-            .filter(d -> !existingPartyIds.contains(d.getPartyId()))
-            .map(d -> createPartyAccessCodeEntity(pcsCaseEntity, d.getPartyId()))
+        List<PartyEntity> defendants = getMainClaimDefendants(pcsCaseEntity);
+
+        Set<PartyAccessCodeEntity> newCodes = defendants.stream()
+            .filter(d -> !existingPartyIds.contains(d.getId()))
+            .map(d -> createPartyAccessCodeEntity(pcsCaseEntity, d.getId()))
             .collect(Collectors.toSet());
 
         if (!newCodes.isEmpty()) {
             partyAccessCodeRepo.saveAll(newCodes);
             log.debug("Created {} new access codes for case {}", newCodes.size(), caseReference);
         }
+    }
+
+    private static List<PartyEntity> getMainClaimDefendants(PcsCaseEntity pcsCaseEntity) {
+        ClaimEntity mainClaim = getMainClaim(pcsCaseEntity);
+
+        return mainClaim.getClaimParties()
+            .stream()
+            .filter(claimPartyEntity -> PartyRole.DEFENDANT == claimPartyEntity.getRole())
+            .map(ClaimPartyEntity::getParty)
+            .toList();
+    }
+
+    // TODO: Will be refactored as part of HDPI-3232
+    private static ClaimEntity getMainClaim(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getClaims()
+            .stream()
+            .findFirst()
+            .orElseThrow(() -> new ClaimNotFoundException(pcsCaseEntity.getCaseReference()));
     }
 }
