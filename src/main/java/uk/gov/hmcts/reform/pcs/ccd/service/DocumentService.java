@@ -4,18 +4,23 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -25,45 +30,80 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
-        List<DocumentEntity> entities = new ArrayList<>();
+        Map<Document, DocumentType> allDocs = new HashMap<>();
 
-        List<Document> additionalDocuments = ListValueUtils.unwrapListItems(pcsCase.getAdditionalDocuments()).stream()
-            .map(additionalDocument -> additionalDocument.getDocument()).toList();
+        allDocs.putAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
-        entities.addAll(mapToDocumentEntity(ListValueUtils.wrapListItems(additionalDocuments),DocumentType.ADDITIONAL));
-        entities.addAll(mapToDocumentEntity(pcsCase.getRentStatementDocuments(),DocumentType.RENT_STATEMENT));
+        allDocs.putAll(mapDocumentsWithType(Optional.ofNullable(pcsCase.getRentArrears())
+                                                .map(RentArrearsSection::getStatementDocuments)
+                                                .orElse(null), DocumentType.RENT_STATEMENT));
+        allDocs.putAll(mapDocumentsWithType(Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
+                                                  .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
+                                                  .orElse(null), DocumentType.TENANCY_AGREEMENT));
+        allDocs.putAll(mapDocumentsWithType(Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
+                                                 .map(OccupationLicenceDetailsWales::getLicenceDocuments)
+                                                 .orElse(null), DocumentType.OCCUPATION_LICENSE));
 
-        entities.addAll(mapToDocumentEntity(
-            Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
-                .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
-                .orElse(null),DocumentType.TENANCY_LICENSE));
-
-        entities.addAll(mapToDocumentEntity(
-            Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
-                .map(OccupationLicenceDetailsWales::getLicenceDocuments)
-                .orElse(null),
-            DocumentType.OCCUPATION_LICENSE
-        ));
+        List<DocumentEntity> entities = mapToDocumentEntities(allDocs);
 
         return documentRepository.saveAll(entities);
     }
 
-    private List<DocumentEntity> mapToDocumentEntity(List<ListValue<Document>> docs, DocumentType type) {
+    private Map<Document, DocumentType> mapDocumentsWithType(
+        List<ListValue<Document>> docs, DocumentType type) {
+
         if (docs == null || docs.isEmpty()) {
-            return List.of();
+            return Map.of();
         }
 
         return docs.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .map(doc -> DocumentEntity.builder()
-                .url(doc.getUrl())
-                .fileName(doc.getFilename())
-                .binaryUrl(doc.getBinaryUrl())
-                .categoryId(doc.getCategoryId())
-                .type(type)
+            .collect(Collectors.toMap(
+                doc -> doc,
+                doc -> type
+            ));
+    }
+
+    private Map<Document, DocumentType> mapAdditionalDocumentsWithType(
+        List<ListValue<AdditionalDocument>> documents) {
+
+        return ListValueUtils.unwrapListItems(documents).stream()
+            .collect(Collectors.toMap(
+                AdditionalDocument::getDocument,
+                ad -> mapAdditionalToDocumentType(ad.getDocumentType())
+            ));
+    }
+
+    private List<DocumentEntity> mapToDocumentEntities(
+        Map<Document, DocumentType> documents) {
+
+        if (documents == null || documents.isEmpty()) {
+            return List.of();
+        }
+
+        return documents.entrySet().stream()
+            .map(e -> DocumentEntity.builder()
+                .url(e.getKey().getUrl())
+                .fileName(e.getKey().getFilename())
+                .binaryUrl(e.getKey().getBinaryUrl())
+                .categoryId(e.getKey().getCategoryId())
+                .type(e.getValue())
                 .build())
             .toList();
     }
 
+    private DocumentType mapAdditionalToDocumentType(
+        AdditionalDocumentType additionalType) {
+
+        return switch (additionalType) {
+            case WITNESS_STATEMENT -> DocumentType.WITNESS_STATEMENT;
+            case RENT_STATEMENT -> DocumentType.RENT_STATEMENT;
+            case TENANCY_AGREEMENT -> DocumentType.TENANCY_AGREEMENT;
+            case LETTER_FROM_CLAIMANT -> DocumentType.LETTER_FROM_CLAIMANT;
+            case STATEMENT_OF_SERVICE -> DocumentType.STATEMENT_OF_SERVICE;
+            case VIDEO_EVIDENCE -> DocumentType.VIDEO_EVIDENCE;
+            case PHOTOGRAPHIC_EVIDENCE -> DocumentType.PHOTOGRAPHIC_EVIDENCE;
+        };
+    }
 }

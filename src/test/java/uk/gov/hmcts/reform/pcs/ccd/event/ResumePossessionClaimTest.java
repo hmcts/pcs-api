@@ -644,9 +644,16 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             stubFeeService();
 
+            ClaimEntity claimEntity = mock(ClaimEntity.class);
+            when(claimService.createMainClaimEntity(any()))
+                .thenReturn(claimEntity);
+
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
+
+            when(documentService.createAllDocuments(any()))
+                .thenReturn(List.of());
 
             // When
             callSubmitHandler(caseData);
