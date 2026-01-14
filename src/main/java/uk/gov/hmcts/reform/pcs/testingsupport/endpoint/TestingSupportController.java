@@ -47,10 +47,12 @@ import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -494,6 +496,75 @@ public class TestingSupportController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             log.error("Failed to delete test case {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(
+        summary = "Get all pins associated with a case"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pins Returned"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/pins/{caseReference}")
+    public ResponseEntity<Map<String, PartyEntity>> getPins(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "Case reference to find pins for", required = true)
+        @PathVariable long caseReference
+    ) {
+        try {
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+                pcsCaseEntity.getId()
+            );
+
+            //map partyId to party
+            Map<UUID, PartyEntity> partyByPartyId = pcsCaseEntity.getParties().stream()
+                .collect(Collectors.toMap(
+                    PartyEntity::getId,
+                    Function.identity(),
+                    (existing, incoming) -> {
+                        throw new IllegalStateException("Duplicate partyId: " + existing.getId());
+                    }
+                ));
+
+            Map<String, PartyEntity> minimalPartyMap = new HashMap<>();
+
+            for (var accessCodeObject : accessCodes) {
+                String accessCode = accessCodeObject.getCode();
+                UUID partyId = accessCodeObject.getPartyId();
+
+                PartyEntity matched = partyByPartyId.get(partyId);
+                if (matched == null) {
+                    throw new IllegalStateException("No party found for partyId=" + partyId);
+                }
+
+                PartyEntity minimal = PartyEntity.builder()
+                    .firstName(matched.getFirstName())
+                    .lastName(matched.getLastName())
+                    .address(matched.getAddress())
+                    .build();
+
+                minimalPartyMap.put(accessCode, minimal);
+            }
+
+            return ResponseEntity.ok(minimalPartyMap);
+        } catch (Exception e) {
+            log.error("Failed to get Access codes / Pins {}", caseReference, e);
             return ResponseEntity.internalServerError().build();
         }
     }
