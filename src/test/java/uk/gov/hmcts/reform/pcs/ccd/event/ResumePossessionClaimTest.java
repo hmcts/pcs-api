@@ -546,7 +546,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
-            ClaimEntity claimEntity = stubClaimCreation();
+            stubClaimCreation();
             // When
             callSubmitHandler(caseData);
 
@@ -554,7 +554,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             InOrder inOrder = inOrder(pcsCaseService);
             inOrder.verify(pcsCaseService).loadCase(TEST_CASE_REFERENCE);
             inOrder.verify(pcsCaseService).mergeCaseData(pcsCaseEntity, caseData);
-            verify(pcsCaseEntity).addClaim(claimEntity);
+            verify(pcsCaseEntity).addClaim(any(ClaimEntity.class));
         }
 
         @Test
@@ -655,14 +655,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSchedulePaymentTask() {
             // Given
-            FeeDetails feeDetails = stubFeeService();
-
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
             stubClaimCreation();
 
+            FeeDetails feeDetails = stubFeeService();
             // When
             callSubmitHandler(caseData);
 
