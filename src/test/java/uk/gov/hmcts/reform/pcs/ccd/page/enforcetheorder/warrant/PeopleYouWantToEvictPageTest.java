@@ -103,8 +103,8 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
                 response.getData().getEnforcementOrder().getWarrantDetails().getSelectedDefendants();
             assertThat(selected).isNotNull();
             assertThat(selected.getValue()).hasSize(1);
-            assertThat(selected.getValue().get(0).getCode()).isEqualTo(defendantCode);
-            assertThat(selected.getValue().get(0).getLabel()).isEqualTo("John Doe");
+            assertThat(selected.getValue().getFirst().getCode()).isEqualTo(defendantCode);
+            assertThat(selected.getValue().getFirst().getLabel()).isEqualTo("John Doe");
         }
 
         @Test

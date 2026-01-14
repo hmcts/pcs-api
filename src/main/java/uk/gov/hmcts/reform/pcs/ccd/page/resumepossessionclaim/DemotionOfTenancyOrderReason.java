@@ -26,10 +26,10 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
         pageBuilder
             .page("demotionOfTenancyOrderReason", this::midEvent)
             .pageLabel("Reasons for requesting a demotion order")
-            .showCondition("showDemotionOfTenancyHousingActsPage=\"Yes\"")
+            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"Yes\"")
             .label("demotionOfTenancyOrderReason-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
-                .mandatory(DemotionOfTenancy::getDemotionOfTenancyReason)
+                .mandatory(DemotionOfTenancy::getReason)
                 .done()
             .label("demotionOfTenancyOrderReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -37,18 +37,18 @@ public class DemotionOfTenancyOrderReason implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         DemotionOfTenancy demotionOfTenancy = caseData.getDemotionOfTenancy();
         if (demotionOfTenancy != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                demotionOfTenancy.getDemotionOfTenancyReason(),
+                demotionOfTenancy.getReason(),
                 DemotionOfTenancy.DEMOTION_OF_TENANCY_REASON_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             ));
         }
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

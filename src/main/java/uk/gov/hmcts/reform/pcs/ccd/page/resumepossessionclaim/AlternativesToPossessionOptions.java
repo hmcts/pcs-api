@@ -30,10 +30,10 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
             .pageLabel("Alternatives to possession")
             .showCondition("legislativeCountry!=\"Wales\"")
             .complex(PCSCase::getSuspensionOfRightToBuy)
-            .readonlyNoSummary(SuspensionOfRightToBuy::getShowSuspensionOfRightToBuyHousingActsPage,NEVER_SHOW)
+            .readonlyNoSummary(SuspensionOfRightToBuy::getShowHousingActsPage, NEVER_SHOW)
             .done()
             .complex(PCSCase::getDemotionOfTenancy)
-            .readonlyNoSummary(DemotionOfTenancy::getShowDemotionOfTenancyHousingActsPage,NEVER_SHOW)
+            .readonlyNoSummary(DemotionOfTenancy::getShowHousingActsPage, NEVER_SHOW)
             .done()
             .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
             .readonlyNoSummary(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionToBuyDemotionOfTenancyPages,
@@ -85,11 +85,11 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
 
         if (caseData.getSuspensionOfRightToBuy() != null) {
             caseData.getSuspensionOfRightToBuy()
-                .setShowSuspensionOfRightToBuyHousingActsPage(YesOrNo.from(showSuspensionPage));
+                .setShowHousingActsPage(YesOrNo.from(showSuspensionPage));
         }
         if (caseData.getDemotionOfTenancy() != null) {
             caseData.getDemotionOfTenancy()
-                .setShowDemotionOfTenancyHousingActsPage(YesOrNo.from(showDemotionPage));
+                .setShowHousingActsPage(YesOrNo.from(showDemotionPage));
         }
 
         if (caseData.getSuspensionOfRightToBuyDemotionOfTenancy() != null) {

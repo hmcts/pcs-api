@@ -44,7 +44,7 @@ class DemotionOfTenancyOrderReasonTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
+
         setPageUnderTest(new DemotionOfTenancyOrderReason(textAreaValidationService));
     }
 
@@ -58,7 +58,7 @@ class DemotionOfTenancyOrderReasonTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .demotionOfTenancy(DemotionOfTenancy.builder()
-                    .demotionOfTenancyReason("Reason for requesting demotion order")
+                    .reason("Reason for requesting demotion order")
                     .build())
                 .build();
 
@@ -92,7 +92,7 @@ class DemotionOfTenancyOrderReasonTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .demotionOfTenancy(DemotionOfTenancy.builder()
-                    .demotionOfTenancyReason(null)
+                    .reason(null)
                     .build())
                 .build();
 
