@@ -93,19 +93,15 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 : null;
         }
 
-        // Only create Party object if at least one field has a value
-        // This prevents empty party objects {} which cause CCD event token validation to fail
-        Party party = null;
-        if (matchedDefendant.getFirstName() != null
-            || matchedDefendant.getLastName() != null
-            || contactAddress != null) {
-
-            party = Party.builder()
-                .firstName(matchedDefendant.getFirstName())
-                .lastName(matchedDefendant.getLastName())
-                .address(contactAddress)
-                .build();
-        }
+        // Always create Party object to maintain consistent structure for CCD event token validation
+        // The party field must exist in the response structure (even with null field values)
+        // If party is null, CCD omits the field entirely, causing "Cannot find matching start trigger"
+        // errors when user later submits with populated party data (field appears to be "added")
+        Party party = Party.builder()
+            .firstName(matchedDefendant.getFirstName())
+            .lastName(matchedDefendant.getLastName())
+            .address(contactAddress)
+            .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .party(party)

@@ -9,7 +9,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import org.modelmapper.ModelMapper;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -69,7 +68,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .postCode("SW1A 1AA")
             .build();
 
-        Party party = Party.builder()
+        uk.gov.hmcts.reform.pcs.ccd.domain.Party party = uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder()
             .firstName("John")
             .lastName("Doe")
             .address(address)
@@ -382,6 +381,56 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("Jane");
         assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Smith");
         assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(propertyAddress);
+    }
+
+    @Test
+    void shouldCreatePartyObjectEvenWhenDefendantHasNoData() {
+        UUID defendantUserId = UUID.randomUUID();
+
+        PartyEntity matchingDefendant = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName(null)
+            .lastName(null)
+            .address(null)
+            .build();
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .build();
+
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
+            .party(matchingDefendant)
+            .role(PartyRole.DEFENDANT)
+            .build();
+        claimEntity.getClaimParties().add(claimPartyEntity);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .build();
+        pcsCaseEntity.getClaims().add(claimEntity);
+        pcsCaseEntity.getParties().add(matchingDefendant);
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        PCSCase result = callStartHandler(caseData);
+
+        assertThat(result.getPossessionClaimResponse()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isNull();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            any(PCSCase.class),
+            eq(EventId.respondPossessionClaim),
+            eq(defendantUserId)
+        );
     }
 
 }
