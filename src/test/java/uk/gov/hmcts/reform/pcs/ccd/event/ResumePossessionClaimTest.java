@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
@@ -70,8 +69,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContra
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
@@ -93,7 +92,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.inOrder;
@@ -101,6 +99,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
@@ -348,7 +347,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedClaimantEmail);
+            assertThat(updatedCaseData.getClaimantInformation().getClaimantName())
+                .isEqualTo(expectedClaimantEmail); // HDPI-3582 will fix this
             assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail())
                 .isEqualTo(expectedClaimantEmail);
             assertThat(updatedCaseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
@@ -483,17 +483,14 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldMergeCaseData() {
             // Given
-            stubPartyCreation();
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
                 .legislativeCountry(WALES)
                 .claimantCircumstances(mock(ClaimantCircumstances.class))
                 .claimingCostsWanted(VerticalYesNo.YES)
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
-
-            when(claimService.createMainClaimEntity(eq(caseData), any())).thenReturn(ClaimEntity.builder().build());
 
             // When
             callSubmitHandler(caseData);
@@ -501,11 +498,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Then
             InOrder inOrder = inOrder(pcsCaseService);
             inOrder.verify(pcsCaseService).mergeCaseData(pcsCaseEntity, caseData);
-            inOrder.verify(pcsCaseService).save(pcsCaseEntity);
         }
 
         @Test
-        void shouldCreateClaimantParty() {
+        void shouldCreatePartiesInSubmitCallback() {
             // Given
             AddressUK propertyAddress = mock(AddressUK.class);
             AddressUK organisationAddress = mock(AddressUK.class);
@@ -520,6 +516,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(propertyAddress)
                 .legislativeCountry(WALES)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .claimantInformation(
                     ClaimantInformation.builder()
                         .claimantName(claimantName)
@@ -536,22 +533,15 @@ class ResumePossessionClaimTest extends BaseEventTest {
                                            .claimantCircumstancesDetails(claimantCircumstances)
                                            .build())
                 .claimingCostsWanted(VerticalYesNo.YES)
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
                 .build();
+
+            ClaimEntity claimEntity = stubClaimCreation();
 
             // When
             callSubmitHandler(caseData);
 
             // Then
-            verify(partyService).createPartyEntity(
-                USER_ID,
-                claimantName,
-                null,
-                claimantName,
-                claimantContactEmail,
-                organisationAddress,
-                claimantContactPhoneNumber
-            );
+            verify(partyService).createAllParties(caseData, pcsCaseEntity, claimEntity);
         }
 
         @Test
@@ -719,35 +709,26 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldCreateMainClaim() {
             // Given
-            stubClaimCreation();
             stubFeeService();
-            PartyEntity partyEntity = stubPartyCreation();
 
             PCSCase caseData = PCSCase.builder()
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
             // When
             callSubmitHandler(caseData);
 
             // Then
-            verify(claimService).createMainClaimEntity(caseData, partyEntity);
+            verify(claimService).createMainClaimEntity(caseData);
         }
 
         @Test
         void shouldSchedulePaymentTask() {
             // Given
-            stubPartyCreation();
-            stubClaimCreation();
             final FeeDetails feeDetails = stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
-                .claimantInformation(
-                    ClaimantInformation.builder()
-                        .organisationName("Org Ltd")
-                        .build()
-                )
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
             // When
@@ -762,12 +743,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldScheduleAccessCodeTask() {
             // Given
-            stubPartyCreation();
             stubClaimCreation();
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
             // When
@@ -778,18 +758,15 @@ class ResumePossessionClaimTest extends BaseEventTest {
             assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
-        private void stubClaimCreation() {
+        private ClaimEntity stubClaimCreation() {
             ClaimEntity claimEntity = mock(ClaimEntity.class);
-            when(claimService.createMainClaimEntity(
-                any(PCSCase.class),
-                any(PartyEntity.class)
-            )).thenReturn(claimEntity);
+            when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
+            return claimEntity;
         }
 
         @Test
         void shouldReturnConfirmationScreen() {
             // Given
-            stubPartyCreation();
             stubClaimCreation();
             stubFeeService();
 
@@ -813,14 +790,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .thenReturn(feeDetails);
 
             return feeDetails;
-        }
-
-        private PartyEntity stubPartyCreation() {
-            PartyEntity partyEntity = mock(PartyEntity.class);
-            when(partyService.createPartyEntity(eq(USER_ID), any(), any(), any(), any(), any(), any()))
-                .thenReturn(partyEntity);
-
-            return partyEntity;
         }
 
         @SuppressWarnings("unchecked")
@@ -848,6 +817,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             return taskDataList.getFirst();
         }
+
+
     }
 
 }
