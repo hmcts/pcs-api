@@ -112,4 +112,12 @@ public class WarrantDetails {
     @JsonUnwrapped
     @CCD
     private RepaymentCosts repaymentCosts;
+
+    @CCD(
+            label = "Is your order a suspended order?",
+            hint = "If your order is suspended, you will see a different version of the statement of truth on the "
+                    + "next page. If you do not know if your order is suspended: save your application as a draft, "
+                    + "return to the case summary page, and then check the tab named ‘Case File View’"
+    )
+    private VerticalYesNo isSuspendedOrder;
 }
