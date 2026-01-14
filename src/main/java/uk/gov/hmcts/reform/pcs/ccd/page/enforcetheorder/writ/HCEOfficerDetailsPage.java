@@ -25,7 +25,7 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("HCEOfficerDetails", this::midEvent)
+            .page("hCEOfficerDetails", this::midEvent)
             .pageLabel("Your High Court enforcement officer")
             .showCondition("selectEnforcementType=\"WRIT\" AND writHasHiredHighCourtEnforcementOfficer=\"YES\"")
             .label("hCEOfficerDetails-line-separator", "---")

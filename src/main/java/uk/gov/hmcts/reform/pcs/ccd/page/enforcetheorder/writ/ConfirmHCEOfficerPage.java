@@ -5,6 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
 
@@ -75,7 +76,7 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("ConfirmHCEOfficer")
+            .page("confirmHCEOfficer")
             .pageLabel("Confirm if you have already hired a High Court enforcement officer")
             .showCondition("selectEnforcementType=\"WRIT\"")
             .label("confirmHCEOfficer-line-separator", "---")
@@ -84,6 +85,7 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
             .mandatory(WritDetails::getHasHiredHighCourtEnforcementOfficer)
             .done()
             .done()
-            .label("confirmHCEOfficer-notice", HCEO_INFORMATION);
+            .label("confirmHCEOfficer-notice", HCEO_INFORMATION)
+            .label("confirmHCEOfficer-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

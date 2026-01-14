@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
 
@@ -34,12 +35,13 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("EnforcementOfficerSelection")
+            .page("enforcementOfficerSelection")
             .pageLabel("The National Information Centre for Enforcement will choose a High Court enforcement officer "
                            + "for you")
             .showCondition("selectEnforcementType=\"WRIT\""
                                + " AND writHasHiredHighCourtEnforcementOfficer=\"NO\"")
             .label("enforcementOfficerSelection-line-separator", "---")
-            .label("enforcementOfficerSelection-notice", APPLICATION_INFORMATION);
+            .label("enforcementOfficerSelection-notice", APPLICATION_INFORMATION)
+            .label("enforcementOfficerSelection-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

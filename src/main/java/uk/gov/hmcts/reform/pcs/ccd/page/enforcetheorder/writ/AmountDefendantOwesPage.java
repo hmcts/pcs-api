@@ -9,7 +9,7 @@ public class AmountDefendantOwesPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("AmountDefendantOwes")
+            .page("amountDefendantOwes")
             .pageLabel("The amount the defendants owe you (placeholder)")
             .showCondition("selectEnforcementType=\"WRIT\"")
             .label("amountDefendantOwes-line-separator", "---")
