@@ -14,7 +14,5 @@ public class AmountDefendantOwesPage implements CcdPageConfiguration {
             .showCondition("selectEnforcementType=\"WRIT\"")
             .label("amountDefendantOwes-line-separator", "---")
             .label("amountDefendantOwes-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-        ;
-
     }
 }
