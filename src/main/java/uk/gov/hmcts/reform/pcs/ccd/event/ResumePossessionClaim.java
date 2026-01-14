@@ -393,13 +393,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         );
     }
 
-    private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {
-        if (contactPreferences.getOverriddenClaimantContactAddress() != null) {
-            return contactPreferences.getOverriddenClaimantContactAddress();
-        }
-        return contactPreferences.getOrganisationAddress();
-    }
-
     private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {
         return """
             ---
