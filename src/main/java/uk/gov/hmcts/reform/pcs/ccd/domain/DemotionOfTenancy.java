@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +15,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class DemotionOfTenancy {
 
     public static final String DEMOTION_OF_TENANCY_REASON_LABEL = "Why are you requesting a demotion order?";
@@ -21,7 +24,7 @@ public class DemotionOfTenancy {
     @CCD(
         label = "Which section of the Housing Act is the claim for demotion of tenancy made under?"
     )
-    private DemotionOfTenancyHousingAct demotionOfTenancyHousingActs;
+    private DemotionOfTenancyHousingAct housingAct;
 
     @CCD(
         label = "Have you served the defendants with a statement of the express terms which will apply "
@@ -42,7 +45,7 @@ public class DemotionOfTenancy {
             + "You can enter up to 250 characters",
         typeOverride = TextArea
     )
-    private String demotionOfTenancyReason;
+    private String reason;
 
-    private YesOrNo showDemotionOfTenancyHousingActsPage;
+    private YesOrNo showHousingActsPage;
 }
