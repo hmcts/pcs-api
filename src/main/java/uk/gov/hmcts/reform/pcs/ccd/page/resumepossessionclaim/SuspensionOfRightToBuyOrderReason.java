@@ -29,7 +29,7 @@ public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
             .showCondition("alternativesToPossession=\"SUSPENSION_OF_RIGHT_TO_BUY\"")
             .label("suspensionOfRightToBuyOrderReason-info", "---")
                 .complex(PCSCase::getSuspensionOfRightToBuy)
-                .mandatory(SuspensionOfRightToBuy::getSuspensionOfRightToBuyReason)
+                .mandatory(SuspensionOfRightToBuy::getReason)
                 .done()
             .label("suspensionOfRightToBuyOrderReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -37,18 +37,18 @@ public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         SuspensionOfRightToBuy suspensionOfRightToBuy = caseData.getSuspensionOfRightToBuy();
         if (suspensionOfRightToBuy != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                suspensionOfRightToBuy.getSuspensionOfRightToBuyReason(),
+                suspensionOfRightToBuy.getReason(),
                 SuspensionOfRightToBuy.SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
             ));
         }
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
