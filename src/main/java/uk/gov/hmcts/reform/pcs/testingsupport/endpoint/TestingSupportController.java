@@ -563,17 +563,13 @@ public class TestingSupportController {
 
                 AddressUK addressUK = new AddressUK();
 
-                if (matched.getAddressSameAsProperty().toBoolean()) {
-                    //party address matches case
-                    addressUK = modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class);
-                } else if (matched.getAddress() != null) {
-                    //party address is different to case but isn't known
-                    modelMapper.map(matched.getAddress(), AddressUK.class);
-                } else {
-                    //party address is different to and isn't known
+                if (!matched.getAddressKnown().toBoolean()) {
                     addressUK = null;
+                } else if (matched.getAddressSameAsProperty().toBoolean()) {
+                    addressUK = modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class);
+                } else {
+                    modelMapper.map(matched.getAddress(), AddressUK.class);
                 }
-
 
                 Party minimalParty = Party.builder()
                     .firstName(matched.getFirstName())
