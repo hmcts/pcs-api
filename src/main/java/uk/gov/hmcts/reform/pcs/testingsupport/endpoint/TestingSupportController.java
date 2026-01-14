@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -24,7 +25,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -74,6 +77,8 @@ public class TestingSupportController {
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
+    private final ModelMapper modelMapper;
+
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
@@ -84,8 +89,8 @@ public class TestingSupportController {
         PartyRepository partyRepository,
         PartyAccessCodeRepository partyAccessCodeRepository,
         PcsCaseService pcsCaseService,
-        AccessCodeGenerationService accessCodeGenerationService
-    ) {
+        AccessCodeGenerationService accessCodeGenerationService,
+        ModelMapper modelMapper) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
         this.docAssemblyService = docAssemblyService;
@@ -95,6 +100,7 @@ public class TestingSupportController {
         this.partyAccessCodeRepository = partyAccessCodeRepository;
         this.pcsCaseService = pcsCaseService;
         this.accessCodeGenerationService = accessCodeGenerationService;
+        this.modelMapper = modelMapper;
     }
 
     @Operation(
@@ -510,7 +516,7 @@ public class TestingSupportController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/pins/{caseReference}")
-    public ResponseEntity<Map<String, PartyEntity>> getPins(
+    public ResponseEntity<Map<String, Party>> getPins(
         @Parameter(
             description = "Service-to-Service (S2S) authorization token",
             required = true,
@@ -542,7 +548,7 @@ public class TestingSupportController {
                     }
                 ));
 
-            Map<String, PartyEntity> minimalPartyMap = new HashMap<>();
+            Map<String, Party> minimalPartyMap = new HashMap<>();
 
             for (var accessCodeObject : accessCodes) {
                 String accessCode = accessCodeObject.getCode();
@@ -553,13 +559,13 @@ public class TestingSupportController {
                     throw new IllegalStateException("No party found for partyId=" + partyId);
                 }
 
-                PartyEntity minimal = PartyEntity.builder()
+                Party minimalParty = Party.builder()
                     .firstName(matched.getFirstName())
                     .lastName(matched.getLastName())
-                    .address(matched.getAddress())
+                    .address(modelMapper.map(matched.getAddress(), AddressUK.class))
                     .build();
 
-                minimalPartyMap.put(accessCode, minimal);
+                minimalPartyMap.put(accessCode, minimalParty);
             }
 
             return ResponseEntity.ok(minimalPartyMap);

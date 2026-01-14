@@ -12,10 +12,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -74,6 +76,8 @@ class TestingSupportControllerTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private AccessCodeGenerationService accessCodeGenerationService;
+    @Mock
+    private ModelMapper modelMapper;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -84,7 +88,7 @@ class TestingSupportControllerTest {
                                                  docAssemblyService, eligibilityService,
                                                  pcsCaseRepository, partyRepository,
                                                  partyAccessCodeRepository, pcsCaseService,
-                                                 accessCodeGenerationService
+                                                 accessCodeGenerationService, modelMapper
         );
     }
 
@@ -1165,7 +1169,7 @@ class TestingSupportControllerTest {
             .thenReturn(accessCodes);
 
         // When
-        ResponseEntity<Map<String, PartyEntity>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getPins(
             "ServiceAuthToken", caseReference
         );
 
@@ -1188,7 +1192,7 @@ class TestingSupportControllerTest {
             .thenReturn(Optional.empty());
 
         // When
-        ResponseEntity<Map<String, PartyEntity>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getPins(
             "ServiceAuthToken", caseReference
         );
 
@@ -1205,7 +1209,7 @@ class TestingSupportControllerTest {
             .thenThrow(new RuntimeException());
 
         // When
-        ResponseEntity<Map<String, PartyEntity>> response = underTest.getPins(
+        ResponseEntity<Map<String, Party>> response = underTest.getPins(
             "ServiceAuthToken", caseReference
         );
 
