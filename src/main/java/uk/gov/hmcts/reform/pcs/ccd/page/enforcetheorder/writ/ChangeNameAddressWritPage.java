@@ -14,7 +14,7 @@ import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-public class ChangeNameAddressPage implements CcdPageConfiguration {
+public class ChangeNameAddressWritPage implements CcdPageConfiguration {
 
     private static final String ERROR_MESSAGE =
             "You cannot continue with this application until you ask the judge for permission "
