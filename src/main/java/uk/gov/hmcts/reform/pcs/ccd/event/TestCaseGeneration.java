@@ -2,7 +2,9 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StreamUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -14,9 +16,17 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.nonprod.NonProdSupportPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper;
-import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.TestCaseGenerationService;
+import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.TestCaseSupportException;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.CASE_ISSUED;
@@ -27,11 +37,19 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.createTestCase;
 @RequiredArgsConstructor
 public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
+    static final String NO_NON_PROD_CASE_AVAILABLE = "No non-prod case json available.";
     static final String TEST_FEE_AMOUNT = "123.45";
     static final String EVENT_NAME = "Test Support Case Creation";
+    static final String MAKE_A_CLAIM_CASE_GENERATOR = "Create Make A Claim Basic Case";
+    static final String ENFORCEMENT_CASE_GENERATOR = "Create Enforcement Warrant Basic Case";
 
-    private final TestCaseGenerationService testCaseGenerationService;
+    private final ResumePossessionClaim resumePossessionClaim;
+    private final EnforceTheOrder enforceTheOrder;
+
     private final CaseSupportHelper caseSupportHelper;
+
+    private final DraftCaseDataService draftCaseDataService;
+    private final PcsCaseService pcsCaseService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -51,7 +69,6 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
                 .showSummary()
                 .name(EVENT_NAME)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
-
         new PageBuilder(eventBuilder).add(new NonProdSupportPage());
     }
 
@@ -65,10 +82,43 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
-        testCaseGenerationService.caseGenerator(caseReference, eventPayload.caseData());
-        return SubmitResponse.<State>builder()
-            .state(CASE_ISSUED)
-            .build();
+        PCSCase pcsCase = eventPayload.caseData();
+        DynamicList testFilesList = getTestFilesList(pcsCase);
+        String label = testFilesList.getValue().getLabel();
+        if (MAKE_A_CLAIM_CASE_GENERATOR.equalsIgnoreCase(label)) {
+            makeAClaimTestCreation(label, caseReference);
+        } else if (ENFORCEMENT_CASE_GENERATOR.equalsIgnoreCase(label)) {
+            makeAClaimTestCreation(MAKE_A_CLAIM_CASE_GENERATOR, caseReference);
+            enforceTheOrder.submitOrder(caseReference, loadTestPcsCase(label));
+        }
+        return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
+    }
+
+    private void makeAClaimTestCreation(String label, Long caseReference) {
+        PCSCase loadedCase = loadTestPcsCase(label);
+        pcsCaseService.createCase(
+            caseReference, loadedCase.getPropertyAddress(),
+            loadedCase.getLegislativeCountry());
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        pcsCaseService.mergeCaseData(pcsCaseEntity, loadedCase);
+        resumePossessionClaim.submitClaim(caseReference, loadedCase);
+    }
+
+    private PCSCase loadTestPcsCase(String label) {
+        PCSCase loadedCase;
+        try {
+            Resource nonProdResource = caseSupportHelper.getTestResource(label);
+            String jsonString = StreamUtils.copyToString(nonProdResource.getInputStream(), StandardCharsets.UTF_8);
+            loadedCase = draftCaseDataService.parseCaseDataJson(jsonString);
+        } catch (IOException e) {
+            throw new TestCaseSupportException(e);
+        }
+        return loadedCase;
+    }
+
+    public DynamicList getTestFilesList(PCSCase fromEvent) {
+        return Optional.ofNullable(fromEvent.getNonProdSupportFileList())
+            .orElseThrow(() -> new IllegalArgumentException(NO_NON_PROD_CASE_AVAILABLE));
     }
 
 }

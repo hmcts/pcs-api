@@ -48,17 +48,13 @@ public class CaseSupportHelper {
         return filename.replace("-", " ").replace(JSON, "");
     }
 
-    public Resource getNonProdResource(String label) throws IOException {
-        String name = generateNameFromLabel(label);
+    public Resource getTestResource(String label) throws IOException {
+        String name = label.replace(" ", "-");
         Resource[] resources = resourcePatternResolver.getResources(LOCATION_PATTERN + name + JSON);
         if (resources == null || resources.length == 0) {
             throw new IOException("No resource found for label: " + label);
         }
         return resources[0];
-    }
-
-    public String generateNameFromLabel(String label) {
-        return label.replace(" ", "-");
     }
 
 }

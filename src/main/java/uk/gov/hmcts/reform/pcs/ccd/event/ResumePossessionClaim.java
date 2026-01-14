@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -117,6 +118,8 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
+    private final PartyService partyService;
+    private final ClaimService claimService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final SelectClaimantType selectClaimantType;
@@ -252,12 +255,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
-        ClaimantContactPreferences claimantContactPreferences = caseData.getClaimantContactPreferences();
-        if (claimantContactPreferences == null) {
-            claimantContactPreferences = ClaimantContactPreferences.builder().build();
+        ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
+        if (contactPreferences == null) {
+            contactPreferences = ClaimantContactPreferences.builder().build();
         }
-        claimantContactPreferences.setClaimantContactEmail(userEmail);
-        caseData.setClaimantContactPreferences(claimantContactPreferences);
+        contactPreferences.setClaimantContactEmail(userEmail);
+        caseData.setClaimantContactPreferences(contactPreferences);
         caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {
@@ -280,10 +283,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
-        claimantContactPreferences.setFormattedClaimantContactAddress(addressFormatter
+        contactPreferences.setFormattedClaimantContactAddress(addressFormatter
             .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
 
-        caseData.setClaimantContactPreferences(claimantContactPreferences);
+        caseData.setClaimantContactPreferences(contactPreferences);
 
         return caseData;
     }
@@ -306,13 +309,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         }
     }
 
-    private SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
+    public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
+        pcsCaseEntity.addClaim(claimEntity);
 
-        UserInfo userDetails = securityContextService.getCurrentUserDetails();
-        pcsCaseService.addClaimantPartyAndClaim(pcsCaseEntity, pcsCase, userDetails);
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
         schedulePartyAccessCodeGeneration(caseReference);
 
@@ -374,7 +379,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulerClient.scheduleIfNotExists(
             ACCESS_CODE_TASK_DESCRIPTOR
-            .instance(taskId)
+                .instance(taskId)
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );

@@ -6,8 +6,4 @@ public class TestCaseSupportException extends RuntimeException  {
         super(cause);
     }
 
-    public TestCaseSupportException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
 }

@@ -13,31 +13,24 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.config.MapperConfig;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.factory.ClaimantPartyFactory;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -56,10 +49,6 @@ class PcsCaseServiceTest {
     private PcsCaseMergeService pcsCaseMergeService;
     @Mock
     private TenancyLicenceService tenancyLicenceService;
-    @Mock
-    private ClaimantPartyFactory claimantPartyFactory;
-    @Mock
-    private ClaimService claimService;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
@@ -78,9 +67,7 @@ class PcsCaseServiceTest {
             pcsCaseMergeService,
             modelMapper,
             tenancyLicenceService,
-            partyDocumentsService,
-            claimantPartyFactory,
-            claimService
+            partyDocumentsService
         );
     }
 
@@ -243,9 +230,9 @@ class PcsCaseServiceTest {
 
         DynamicStringList claimantTypeList = DynamicStringList.builder()
             .value(DynamicStringListElement.builder()
-                .code(ClaimantType.PRIVATE_LANDLORD.name())
-                .label(ClaimantType.PRIVATE_LANDLORD.getLabel())
-                .build())
+                       .code(ClaimantType.PRIVATE_LANDLORD.name())
+                       .label(ClaimantType.PRIVATE_LANDLORD.getLabel())
+                       .build())
             .build();
 
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
@@ -310,9 +297,9 @@ class PcsCaseServiceTest {
 
         DynamicStringList claimantTypeList = DynamicStringList.builder()
             .value(DynamicStringListElement.builder()
-                .code(claimantType.name())
-                .label(claimantType.getLabel())
-                .build())
+                       .code(claimantType.name())
+                       .label(claimantType.getLabel())
+                       .build())
             .build();
 
         when(pcsCase.getPropertyAddress()).thenReturn(propertyAddress);
@@ -326,174 +313,6 @@ class PcsCaseServiceTest {
 
         PcsCaseEntity savedEntity = pcsCaseEntityCaptor.getValue();
         assertThat(savedEntity.getClaimantType()).isEqualTo(claimantType);
-    }
-
-    @Test
-    void shouldAddClaimantPartyAndClaimSuccessfully() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        UserInfo userDetails = mock(UserInfo.class);
-        UUID userId = UUID.randomUUID();
-        String userEmail = "test@example.com";
-
-        PartyEntity claimantPartyEntity = mock(PartyEntity.class);
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-
-        when(userDetails.getUid()).thenReturn(userId.toString());
-        when(userDetails.getSub()).thenReturn(userEmail);
-        when(claimantPartyFactory.createAndPersistClaimantParty(eq(pcsCase),
-                                                                any(ClaimantPartyFactory.ClaimantPartyContext.class)))
-            .thenReturn(claimantPartyEntity);
-        when(claimService.createMainClaimEntity(pcsCase, claimantPartyEntity)).thenReturn(claimEntity);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        // When
-        underTest.addClaimantPartyAndClaim(pcsCaseEntity, pcsCase, userDetails);
-
-        // Then
-        InOrder inOrder = inOrder(claimantPartyFactory, pcsCaseEntity, claimService, pcsCaseRepository);
-        inOrder.verify(claimantPartyFactory).createAndPersistClaimantParty(eq(pcsCase),
-            any(ClaimantPartyFactory.ClaimantPartyContext.class));
-        inOrder.verify(pcsCaseEntity).addParty(claimantPartyEntity);
-        inOrder.verify(claimService).createMainClaimEntity(pcsCase, claimantPartyEntity);
-        inOrder.verify(pcsCaseEntity).addClaim(claimEntity);
-        inOrder.verify(pcsCaseRepository).save(pcsCaseEntity);
-    }
-
-    @Test
-    void shouldCreateClaimantPartyContextWithCorrectUserDetails() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        UserInfo userDetails = mock(UserInfo.class);
-        UUID userId = UUID.randomUUID();
-        String userEmail = "claimant@test.com";
-
-        PartyEntity claimantPartyEntity = mock(PartyEntity.class);
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-
-        when(userDetails.getUid()).thenReturn(userId.toString());
-        when(userDetails.getSub()).thenReturn(userEmail);
-        when(claimantPartyFactory.createAndPersistClaimantParty(eq(pcsCase),
-                                                                any(ClaimantPartyFactory.ClaimantPartyContext.class)))
-            .thenReturn(claimantPartyEntity);
-        when(claimService.createMainClaimEntity(pcsCase, claimantPartyEntity)).thenReturn(claimEntity);
-
-        ArgumentCaptor<ClaimantPartyFactory.ClaimantPartyContext> contextCaptor =
-            ArgumentCaptor.forClass(ClaimantPartyFactory.ClaimantPartyContext.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        // When
-        underTest.addClaimantPartyAndClaim(pcsCaseEntity, pcsCase, userDetails);
-
-        // Then
-        verify(claimantPartyFactory).createAndPersistClaimantParty(eq(pcsCase), contextCaptor.capture());
-        ClaimantPartyFactory.ClaimantPartyContext capturedContext = contextCaptor.getValue();
-        assertThat(capturedContext.userId()).isEqualTo(userId);
-        assertThat(capturedContext.userEmail()).isEqualTo(userEmail);
-    }
-
-    @Test
-    void shouldSavePcsCaseEntityAfterAddingPartyAndClaim() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        UserInfo userDetails = mock(UserInfo.class);
-        UUID userId = UUID.randomUUID();
-
-        PartyEntity claimantPartyEntity = mock(PartyEntity.class);
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-
-        when(userDetails.getUid()).thenReturn(userId.toString());
-        when(userDetails.getSub()).thenReturn("test@example.com");
-        when(claimantPartyFactory.createAndPersistClaimantParty(eq(pcsCase),
-                                                                any(ClaimantPartyFactory.ClaimantPartyContext.class)))
-            .thenReturn(claimantPartyEntity);
-        when(claimService.createMainClaimEntity(pcsCase, claimantPartyEntity)).thenReturn(claimEntity);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        // When
-        underTest.addClaimantPartyAndClaim(pcsCaseEntity, pcsCase, userDetails);
-
-        // Then
-        verify(pcsCaseRepository).save(pcsCaseEntity);
-    }
-
-    @Test
-    void shouldAddPartyBeforeCreatingClaim() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        UserInfo userDetails = mock(UserInfo.class);
-        UUID userId = UUID.randomUUID();
-
-        PartyEntity claimantPartyEntity = mock(PartyEntity.class);
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-
-        when(userDetails.getUid()).thenReturn(userId.toString());
-        when(userDetails.getSub()).thenReturn("test@example.com");
-        when(claimantPartyFactory.createAndPersistClaimantParty(eq(pcsCase),
-                                                                any(ClaimantPartyFactory.ClaimantPartyContext.class)))
-            .thenReturn(claimantPartyEntity);
-        when(claimService.createMainClaimEntity(pcsCase, claimantPartyEntity)).thenReturn(claimEntity);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        // When
-        underTest.addClaimantPartyAndClaim(pcsCaseEntity, pcsCase, userDetails);
-
-        // Then
-        InOrder inOrder = inOrder(pcsCaseEntity, claimService);
-        inOrder.verify(pcsCaseEntity).addParty(claimantPartyEntity);
-        inOrder.verify(claimService).createMainClaimEntity(pcsCase, claimantPartyEntity);
-    }
-
-    @Test
-    void shouldAddClaimAfterCreatingIt() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        UserInfo userDetails = mock(UserInfo.class);
-        UUID userId = UUID.randomUUID();
-
-        PartyEntity claimantPartyEntity = mock(PartyEntity.class);
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-
-        when(userDetails.getUid()).thenReturn(userId.toString());
-        when(userDetails.getSub()).thenReturn("test@example.com");
-        when(claimantPartyFactory.createAndPersistClaimantParty(eq(pcsCase),
-                                                                any(ClaimantPartyFactory.ClaimantPartyContext.class)))
-            .thenReturn(claimantPartyEntity);
-        when(claimService.createMainClaimEntity(pcsCase, claimantPartyEntity)).thenReturn(claimEntity);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        // When
-        underTest.addClaimantPartyAndClaim(pcsCaseEntity, pcsCase, userDetails);
-
-        // Then
-        InOrder inOrder = inOrder(claimService, pcsCaseEntity);
-        inOrder.verify(claimService).createMainClaimEntity(pcsCase, claimantPartyEntity);
-        inOrder.verify(pcsCaseEntity).addClaim(claimEntity);
-    }
-
-    @Test
-    void shouldPassCorrectPcsCaseAndPartyToClaimService() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        UserInfo userDetails = mock(UserInfo.class);
-        UUID userId = UUID.randomUUID();
-
-        PartyEntity claimantPartyEntity = mock(PartyEntity.class);
-        ClaimEntity claimEntity = mock(ClaimEntity.class);
-
-        when(userDetails.getUid()).thenReturn(userId.toString());
-        when(userDetails.getSub()).thenReturn("test@example.com");
-        when(claimantPartyFactory.createAndPersistClaimantParty(eq(pcsCase),
-                                                                any(ClaimantPartyFactory.ClaimantPartyContext.class)))
-            .thenReturn(claimantPartyEntity);
-        when(claimService.createMainClaimEntity(pcsCase, claimantPartyEntity)).thenReturn(claimEntity);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        // When
-        underTest.addClaimantPartyAndClaim(pcsCaseEntity, pcsCase, userDetails);
-
-        // Then
-        verify(claimService).createMainClaimEntity(pcsCase, claimantPartyEntity);
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {

@@ -118,6 +118,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
     @Mock
+    private PartyService partyService;
+    @Mock
+    private ClaimService claimService;
+    @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
     private ResumeClaim resumeClaim;
@@ -199,6 +203,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private FeeFormatter feeFormatter;
+    @Mock
+    private CaseAssignmentService caseAssignmentService;
 
     @BeforeEach
     void setUp() {
@@ -210,7 +216,9 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
-            pcsCaseService, securityContextService, savingPageBuilderFactory, resumeClaim,
+            pcsCaseService, securityContextService,
+            partyService, claimService,
+            savingPageBuilderFactory, resumeClaim,
             selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
             defendantsDetails, noRentArrearsGroundsForPossessionReason, additionalReasonsForPossession,
@@ -223,7 +231,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter
+            underlesseeOrMortgageePage, feeService, feeFormatter, caseAssignmentService
         );
 
         setEventUnderTest(underTest);
@@ -438,7 +446,63 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Then
             InOrder inOrder = inOrder(pcsCaseService);
             inOrder.verify(pcsCaseService).mergeCaseData(pcsCaseEntity, caseData);
-            inOrder.verify(pcsCaseService).addClaimantPartyAndClaim(pcsCaseEntity, caseData, userDetails);
+        }
+
+        @Test
+        void shouldCreatePartiesInSubmitCallback() {
+            // Given
+            AddressUK propertyAddress = mock(AddressUK.class);
+            String claimantName = "Test Claimant";
+            String claimantContactEmail = "claimant@test.com";
+            String claimantContactPhoneNumber = "01234 567890";
+            String claimantCircumstances = "Some circumstances";
+
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(propertyAddress)
+                .legislativeCountry(WALES)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(
+                    ClaimantInformation.builder()
+                        .claimantName(claimantName)
+                        .build()
+                )
+                .claimantContactPreferences(
+                    ClaimantContactPreferences.builder()
+                        .claimantContactEmail(claimantContactEmail)
+                        .claimantContactPhoneNumber(claimantContactPhoneNumber)
+                        .build()
+                )
+                .claimantCircumstances(ClaimantCircumstances.builder()
+                                           .claimantCircumstancesDetails(claimantCircumstances)
+                                           .build())
+                .claimingCostsWanted(VerticalYesNo.YES)
+                .build();
+
+            ClaimEntity claimEntity = stubClaimCreation();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(partyService).createAllParties(caseData, pcsCaseEntity, claimEntity);
+        }
+
+        @Test
+        void shouldCreateMainClaim() {
+            // Given
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(claimService).createMainClaimEntity(caseData);
         }
 
         @Test
@@ -462,6 +526,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldScheduleAccessCodeTask() {
             // Given
+            stubClaimCreation();
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
@@ -476,9 +541,16 @@ class ResumePossessionClaimTest extends BaseEventTest {
             assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
+        private ClaimEntity stubClaimCreation() {
+            ClaimEntity claimEntity = mock(ClaimEntity.class);
+            when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
+            return claimEntity;
+        }
+
         @Test
         void shouldReturnConfirmationScreen() {
             // Given
+            stubClaimCreation();
             stubFeeService();
 
             String formattedFee = "some formatted fee";

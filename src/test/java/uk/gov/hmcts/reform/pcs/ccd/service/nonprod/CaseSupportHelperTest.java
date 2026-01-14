@@ -164,7 +164,7 @@ class CaseSupportHelperTest {
             .thenReturn(new Resource[]{expectedResource});
 
         // When
-        Resource result = underTest.getNonProdResource(label);
+        Resource result = underTest.getTestResource(label);
 
         // Then
         assertThat(result).isSameAs(expectedResource);
@@ -181,19 +181,7 @@ class CaseSupportHelperTest {
         when(resourcePatternResolver.getResources(resourcePath)).thenReturn(new Resource[]{});
 
         // When/Then
-        assertThatThrownBy(() -> underTest.getNonProdResource(label)).isInstanceOf(IOException.class);
-    }
-
-    @Test
-    void shouldGenerateNameFromLabel() {
-        // Given
-        String label = "test file name";
-
-        // When
-        String result = underTest.generateNameFromLabel(label);
-
-        // Then
-        assertThat(result).isEqualTo("test-file-name");
+        assertThatThrownBy(() -> underTest.getTestResource(label)).isInstanceOf(IOException.class);
     }
 
 }
