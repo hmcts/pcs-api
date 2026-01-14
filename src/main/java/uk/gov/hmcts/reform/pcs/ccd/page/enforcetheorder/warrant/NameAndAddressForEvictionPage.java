@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddress
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
 
@@ -21,6 +22,8 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             .page("nameAndAddressForEviction", this::midEvent)
             .pageLabel("The name and address for the eviction")
             .showCondition("selectEnforcementType=\"WARRANT\"")
+            .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW)
+            .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW)
             .label(
                 "nameAndAddressForEviction-defendants-check",
                 """
