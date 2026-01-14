@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,9 +44,9 @@ class SubmitDefendantResponseTest extends BaseEventTest {
 
         //Then
         verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE),
-            eq(defendantResponse),
-            eq(EventId.submitDefendantResponse)
+            TEST_CASE_REFERENCE,
+            defendantResponse,
+            EventId.submitDefendantResponse
         );
 
     }

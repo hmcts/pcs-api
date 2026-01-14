@@ -13,7 +13,7 @@ public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration 
         pageBuilder
             .page("demotionOfTenancyHousingActOptions")
             .pageLabel("Housing Act")
-            .showCondition("showDemotionOfTenancyHousingActsPage=\"Yes\"")
+            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"Yes\"")
             .label("demotionOfTenancyHousingActOptions-info", """
                 ---
                   <ul tabindex="0">
@@ -22,7 +22,7 @@ public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration 
                   </ul>
                 """)
                 .complex(PCSCase::getDemotionOfTenancy)
-                .mandatory(DemotionOfTenancy::getDemotionOfTenancyHousingActs)
+                .mandatory(DemotionOfTenancy::getHousingAct)
                 .done()
             .label("demotionOfTenancyHousingActOptions-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
