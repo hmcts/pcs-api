@@ -13,7 +13,7 @@ public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfigura
         pageBuilder
             .page("suspensionOfRightToBuyHousingActOptions")
             .pageLabel("Housing Act")
-            .showCondition("showSuspensionOfRightToBuyHousingActsPage=\"Yes\"")
+            .showCondition("suspensionOfRTB_ShowHousingActsPage=\"Yes\"")
             .label("suspensionOfRightToBuyHousingActOptions-info", """
                 ---
                   <ul tabindex="0">
@@ -25,7 +25,7 @@ public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfigura
                   </ul>
                 """)
                 .complex(PCSCase::getSuspensionOfRightToBuy)
-                .mandatory(SuspensionOfRightToBuy::getSuspensionOfRightToBuyHousingActs)
+                .mandatory(SuspensionOfRightToBuy::getHousingAct)
                 .done()
             .label("suspensionOfRightToBuyHousingActOptions-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
