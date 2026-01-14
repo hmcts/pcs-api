@@ -377,10 +377,10 @@ public class PCSCase {
     )
     private Set<AlternativesToPossession> alternativesToPossession;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "suspensionOfRTB_")
     private SuspensionOfRightToBuy suspensionOfRightToBuy;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "demotionOfTenancy_")
     private DemotionOfTenancy demotionOfTenancy;
 
     private AdditionalReasons additionalReasonsForPossession;
