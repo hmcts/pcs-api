@@ -61,7 +61,18 @@ wiremock:
           "proxyBaseUrl": "http://fees-register-api-aat.service.core-compute-aat.internal"
         }
       }
+    rd-professional-proxy.json: |
+      {
+        "request": {
+          "method": "GET",
+          "urlPathPattern": "/refdata/internal/v1/organisations/orgDetails/.*"
+        },
+        "response": {
+          "proxyBaseUrl": "http://rd-professional-api-aat.service.core-compute-aat.internal"
+        }
+      }
 
 java:
   environment:
     FEES_REGISTER_API_URL: "https://wiremock-${SERVICE_NAME}.preview.platform.hmcts.net"
+    RD_PROFESSIONAL_API_URL: "https://wiremock-${SERVICE_NAME}.preview.platform.hmcts.net"
