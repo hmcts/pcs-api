@@ -41,7 +41,5 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
                                " AND writHasHiredHighCourtEnforcementOfficer=\"NO\"")
             .label("enforcementOfficerSelection-line-separator", "---")
             .label("enforcementOfficerSelection-notice", APPLICATION_INFORMATION);
-        ;
-
     }
 }
