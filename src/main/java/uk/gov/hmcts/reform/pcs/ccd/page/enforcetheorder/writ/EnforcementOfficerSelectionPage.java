@@ -37,8 +37,8 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
             .page("EnforcementOfficerSelection")
             .pageLabel("The National Information Centre for Enforcement will choose a High Court enforcement officer "
                            + "for you")
-            .showCondition("selectEnforcementType=\"WRIT\"" +
-                               " AND writHasHiredHighCourtEnforcementOfficer=\"NO\"")
+            .showCondition("selectEnforcementType=\"WRIT\""
+                               + " AND writHasHiredHighCourtEnforcementOfficer=\"NO\"")
             .label("enforcementOfficerSelection-line-separator", "---")
             .label("enforcementOfficerSelection-notice", APPLICATION_INFORMATION);
     }
