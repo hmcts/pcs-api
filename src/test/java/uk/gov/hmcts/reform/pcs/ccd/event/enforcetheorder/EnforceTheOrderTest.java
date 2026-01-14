@@ -18,8 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
@@ -68,10 +68,10 @@ class EnforceTheOrderTest extends BaseEventTest {
     private WritPageConfigurer writPageConfigurer;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
-    @Mock
-    private SavingPageBuilder savingPageBuilder;
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
+    @Mock
+    private SavingPageBuilder savingPageBuilder;
 
     @SuppressWarnings("unchecked")
     @BeforeEach
@@ -107,9 +107,9 @@ class EnforceTheOrderTest extends BaseEventTest {
         String firstName = "Test";
         String lastName = "Testing";
 
-        DefendantDetails defendantDetails = DefendantDetails.builder().firstName(firstName).lastName(lastName).build();
-        List<ListValue<DefendantDetails>> allDefendants = List.of(
-            ListValue.<DefendantDetails>builder().value(defendantDetails).build()
+        Party defendantDetails = Party.builder().firstName(firstName).lastName(lastName).build();
+        List<ListValue<Party>> allDefendants = List.of(
+            ListValue.<Party>builder().value(defendantDetails).build()
         );
         when(defendantService.buildDefendantListItems(allDefendants)).thenReturn(new ArrayList<>());
 
@@ -127,8 +127,6 @@ class EnforceTheOrderTest extends BaseEventTest {
         assertThat(result.getEnforcementOrder().getFormattedPropertyAddress())
                 .isEqualTo(expectedFormattedPropertyAddress);
         assertThat(result.getAllDefendants()).hasSize(1);
-        assertThat(result.getDefendant1().getFirstName()).isEqualTo(firstName);
-        assertThat(result.getDefendant1().getLastName()).isEqualTo(lastName);
     }
 
     @Test
@@ -154,12 +152,12 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Given
             String firstName = "John";
             String lastName = "Doe";
-            DefendantDetails defendantDetails = DefendantDetails.builder()
+            Party defendantDetails = Party.builder()
                 .firstName(firstName)
                 .lastName(lastName)
                 .build();
-            List<ListValue<DefendantDetails>> allDefendants = List.of(
-                ListValue.<DefendantDetails>builder().value(defendantDetails).build()
+            List<ListValue<Party>> allDefendants = List.of(
+                ListValue.<Party>builder().value(defendantDetails).build()
             );
 
             DynamicStringListElement listItem = DynamicStringListElement.builder()
@@ -192,7 +190,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         @DisplayName("Should handle empty or null defendants list")
         void shouldHandleEmptyOrNullDefendantsList(
             String scenario,
-            List<ListValue<DefendantDetails>> allDefendants) {
+            List<ListValue<Party>> allDefendants) {
             // Given
             List<DynamicStringListElement> expectedListItems = new ArrayList<>();
             when(defendantService.buildDefendantListItems(allDefendants)).thenReturn(expectedListItems);
@@ -226,17 +224,17 @@ class EnforceTheOrderTest extends BaseEventTest {
         @DisplayName("Should handle multiple defendants")
         void shouldHandleMultipleDefendants() {
             // Given
-            DefendantDetails defendant1 = DefendantDetails.builder()
+            Party defendant1 = Party.builder()
                 .firstName("John")
                 .lastName("Doe")
                 .build();
-            DefendantDetails defendant2 = DefendantDetails.builder()
+            Party defendant2 = Party.builder()
                 .firstName("Jane")
                 .lastName("Smith")
                 .build();
-            List<ListValue<DefendantDetails>> allDefendants = List.of(
-                ListValue.<DefendantDetails>builder().value(defendant1).build(),
-                ListValue.<DefendantDetails>builder().value(defendant2).build()
+            List<ListValue<Party>> allDefendants = List.of(
+                ListValue.<Party>builder().value(defendant1).build(),
+                ListValue.<Party>builder().value(defendant2).build()
             );
 
             DynamicStringListElement listItem1 = DynamicStringListElement.builder()

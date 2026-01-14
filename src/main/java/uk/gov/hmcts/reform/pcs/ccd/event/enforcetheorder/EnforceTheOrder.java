@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.Event;
@@ -67,19 +66,12 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .formatMediumAddress(pcsCase.getPropertyAddress(), BR_DELIMITER));
         pcsCase.getEnforcementOrder().setFormattedPropertyAddressWrit(
                 pcsCase.getEnforcementOrder().getFormattedPropertyAddress());
-        initializeDefendantData(pcsCase);
+
         populateDefendantSelectionList(pcsCase);
         applyWarrantFeeAmount(pcsCase);
         applyWritFeeAmount(pcsCase);
 
         return pcsCase;
-    }
-
-    private void initializeDefendantData(PCSCase caseData) {
-        var allDefendants = caseData.getAllDefendants();
-        if (!CollectionUtils.isEmpty(allDefendants)) {
-            caseData.setDefendant1(allDefendants.getFirst().getValue());
-        }
     }
 
     private void populateDefendantSelectionList(PCSCase caseData) {
