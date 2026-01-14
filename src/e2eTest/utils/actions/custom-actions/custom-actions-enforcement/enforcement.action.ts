@@ -308,7 +308,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: legalCost.question, option: legalCost.option });
-    if (legalCost.option === accessToTheProperty.yesRadioOption) {
+    if (legalCost.option === legalCosts.yesRadioOption) {
       await performAction('inputText', legalCost.label, legalCost.input);
       const legalCostAmt = await this.retrieveAmountFromString(legalCost.input as string);
       moneyMap.set(legalCosts.legalCostsFee, legalCostAmt);
