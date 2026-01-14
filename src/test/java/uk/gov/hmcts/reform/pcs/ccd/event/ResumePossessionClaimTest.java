@@ -21,12 +21,14 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
@@ -64,8 +66,11 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
@@ -94,6 +99,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
@@ -281,7 +287,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getOrganisationName()).isEqualTo(expectedClaimantEmail);
+            assertThat(updatedCaseData.getClaimantInformation().getClaimantName())
+                .isEqualTo(expectedClaimantEmail); // HDPI-3582 will fix this
             assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail())
                 .isEqualTo(expectedClaimantEmail);
             assertThat(updatedCaseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
@@ -422,7 +429,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .legislativeCountry(WALES)
                 .claimantCircumstances(mock(ClaimantCircumstances.class))
                 .claimingCostsWanted(VerticalYesNo.YES)
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
             // When
@@ -440,12 +447,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             final FeeDetails feeDetails = stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
-                .claimantInformation(
-                    ClaimantInformation.builder()
-                        .organisationName("Org Ltd")
-                        .build()
-                )
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
             // When
@@ -463,7 +465,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
-                .completionNextStep(CompletionNextStep.SUBMIT_AND_PAY_NOW)
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
             // When
@@ -526,6 +528,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             return taskDataList.getFirst();
         }
+
+
     }
 
 }

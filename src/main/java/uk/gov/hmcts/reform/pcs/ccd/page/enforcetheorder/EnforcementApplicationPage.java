@@ -5,15 +5,15 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
@@ -104,12 +104,12 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .data(data).build();
     }
 
-    private void setFormattedDefendantNames(List<ListValue<DefendantDetails>> defendants, PCSCase pcsCase) {
+    private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
             pcsCase.setAllDefendants(defendants);
             pcsCase.setFormattedDefendantNames(defendants.stream()
-                .map(defendant -> ""
-                    + defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
+                .map(defendant ->
+                    defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
                     + "<br>")
                 .collect(Collectors.joining("\n")));
         }

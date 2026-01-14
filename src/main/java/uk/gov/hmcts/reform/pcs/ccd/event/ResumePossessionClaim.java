@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
@@ -81,7 +80,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -155,6 +157,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
+    private final CaseAssignmentService caseAssignmentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -242,10 +245,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
-            claimantInfo.setOrganisationName(organisationName);
+            claimantInfo.setClaimantName(organisationName);
         } else {
             // Fallback to user details if organisation name cannot be retrieved
-            claimantInfo.setOrganisationName(userEmail);
+            claimantInfo.setClaimantName(userEmail);  // HDPI-3582 will fix this
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
@@ -313,7 +316,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        String responsibleParty = getClaimantInfo(pcsCase).getOrganisationName();
+        String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
         String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
 
