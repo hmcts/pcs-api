@@ -25,22 +25,32 @@ public class StatementOfTruthService {
             .completedBy(completedBy);
 
         if (completedBy == StatementOfTruthCompletedBy.CLAIMANT) {
-            List<StatementOfTruthAgreementClaimant> agreementClaimantList = details.getAgreementClaimant();
-            builder.agreementClaimant(
-                    agreementClaimantList != null && !agreementClaimantList.isEmpty()
-                        ? agreementClaimantList.getFirst()
-                        : null)
-                .fullNameClaimant(details.getFullNameClaimant())
-                .positionClaimant(details.getPositionClaimant());
+            uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthClaimantDetails claimantDetails =
+                details.getClaimantDetails();
+            if (claimantDetails != null) {
+                List<StatementOfTruthAgreementClaimant> agreementClaimantList =
+                    claimantDetails.getAgreementClaimant();
+                builder.agreementClaimant(
+                        agreementClaimantList != null && !agreementClaimantList.isEmpty()
+                            ? agreementClaimantList.getFirst()
+                            : null)
+                    .fullNameClaimant(claimantDetails.getFullNameClaimant())
+                    .positionClaimant(claimantDetails.getPositionClaimant());
+            }
         } else if (completedBy == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-            List<StatementOfTruthAgreementLegalRep> agreementLegalRepList = details.getAgreementLegalRep();
-            builder.agreementLegalRep(
-                    agreementLegalRepList != null && !agreementLegalRepList.isEmpty()
-                        ? agreementLegalRepList.getFirst()
-                        : null)
-                .fullNameLegalRep(details.getFullNameLegalRep())
-                .firmNameLegalRep(details.getFirmNameLegalRep())
-                .positionLegalRep(details.getPositionLegalRep());
+            uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthLegalRepDetails legalRepDetails =
+                details.getLegalRepDetails();
+            if (legalRepDetails != null) {
+                List<StatementOfTruthAgreementLegalRep> agreementLegalRepList =
+                    legalRepDetails.getAgreementLegalRep();
+                builder.agreementLegalRep(
+                        agreementLegalRepList != null && !agreementLegalRepList.isEmpty()
+                            ? agreementLegalRepList.getFirst()
+                            : null)
+                    .fullNameLegalRep(legalRepDetails.getFullNameLegalRep())
+                    .firmNameLegalRep(legalRepDetails.getFirmNameLegalRep())
+                    .positionLegalRep(legalRepDetails.getPositionLegalRep());
+            }
         }
 
         return builder.build();
