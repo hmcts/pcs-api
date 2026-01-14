@@ -46,13 +46,13 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
                         .label("enforcementSOT-cert-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
-                                <li>the defendant has not vacated the land as ordered (* and that the whole or part of any
-                                instalments due under the judgment or order have not been paid) (and the balance now due is
-                                as shown)</li>
-                                <li>notice has been given in accordance with The Dwelling Houses (Execution of Possession
-                                Order by Mortgagees) Regulations 2010.</li>
-                                <li>a statement of the payments due and made under the judgment or order is attached to this
-                                request</li>
+                                <li>the defendant has not vacated the land as ordered (* and that the whole or part of
+                                any instalments due under the judgment or order have not been paid) (and the balance now
+                                due is as shown)</li>
+                                <li>notice has been given in accordance with The Dwelling Houses (Execution of
+                                Possession Order by Mortgagees) Regulations 2010.</li>
+                                <li>a statement of the payments due and made under the judgment or order is attached to
+                                this request</li>
                             </ul>
                             """,
                             "isSuspendedOrder=\"YES\""
@@ -60,11 +60,11 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
                         .label("enforcementSOT-cert-not-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
-                                <li>the defendant has not vacated the land as ordered (* and that the whole or part of any
-                                instalments due under the judgment or order have not been paid) (and the balance now due is
-                                as shown)</li>
-                                <li>notice has been given in accordance with The Dwelling Houses (Execution of Possession
-                                Order by Mortgagees) Regulations 2010.</li>
+                                <li>the defendant has not vacated the land as ordered (* and that the whole or part of
+                                any instalments due under the judgment or order have not been paid) (and the balance now
+                                due is as shown)</li>
+                                <li>notice has been given in accordance with The Dwelling Houses (Execution of
+                                Possession Order by Mortgagees) Regulations 2010.</li>
                             </ul>
                             """,
                             "isSuspendedOrder=\"NO\""
