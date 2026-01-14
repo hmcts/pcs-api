@@ -80,6 +80,7 @@ withPipeline(type, product, component) {
 
   onPerftest {
     setPerftestEnvVars()
+    enableHighLevelDataSetup()
   }
 
   before('highleveldatasetup') {
@@ -92,6 +93,11 @@ withPipeline(type, product, component) {
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
       env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+    }
+    onPerftest{
+      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
+      env.CASE_API_URL = "http://pcs-api-perftest.service.core-compute-perftest.internal"
+      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
     }
     generateDefinitions(builder)
   }
