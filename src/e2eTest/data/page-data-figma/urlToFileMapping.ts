@@ -13,6 +13,7 @@ export default {
   'resumePossessionClaimpreActionProtocol':'preactionProtocol',
   'resumePossessionClaimmediationAndSettlement': 'mediationAndSettlement',
   'resumePossessionClaimcheckingNotice': 'checkingNotice',
+  'resumePossessionClaimwalesCheckingNotice': 'checkingNotice',
   'resumePossessionClaimnoticeDetails': 'noticeDetails',
   'resumePossessionClaimclaimantCircumstances': 'claimantCircumstances',
   'resumePossessionClaimdefendantCircumstances': 'defendantCircumstances',

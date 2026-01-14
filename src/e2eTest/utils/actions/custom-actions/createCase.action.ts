@@ -226,6 +226,7 @@ export class CreateCaseAction implements IAction {
   private async selectPreActionProtocol(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+    await performValidation('text', {elementType: 'paragraph', text: preactionProtocol.ifYourClaimIsOnDynamicParagraph});
     await performAction('clickRadioButton', {question:preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData});
     await performAction('clickButton', preactionProtocol.continueButton);
   }
@@ -234,6 +235,9 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:caseData.question, option: caseData.option});
+    if ( caseData.option === checkingNotice.yesRadioOption && caseData.typeOfNotice) {
+      await performAction('inputText', checkingNotice.typeOfNoticeHiddenTextLabel, checkingNotice.typeOfNoticeHiddenTextInput);
+    }
     await performAction('clickButton', checkingNotice.continueButton);
   }
 

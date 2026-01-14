@@ -26,7 +26,7 @@ import {
   wantToUploadDocuments,
   whatAreYourGroundsForPossession
 } from '@data/page-data';
-import{
+import {
   claimantType,
   claimType,
   claimantInformation,

@@ -135,7 +135,7 @@ test.describe('[Create Case - England]', async () => {
      });
      await performValidation('mainHeader', checkingNotice.mainHeader);
      await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
-     await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
+     await performValidation('text', {"text": checkingNotice.youMayHaveAlreadyServedEnglandDynamicParagraph, "elementType": "paragraph"});
      await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderEnglandNewTab);
      await performAction('selectNoticeOfYourIntention', {
        question: checkingNotice.haveYouServedNoticeToQuestion,
