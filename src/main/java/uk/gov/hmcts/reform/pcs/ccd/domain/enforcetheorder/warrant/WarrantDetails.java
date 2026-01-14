@@ -58,19 +58,13 @@ public class WarrantDetails {
     )
     private Set<RiskCategory> enforcementRiskCategories;
 
-    @CCD(
-        searchable = false
-    )
+    @CCD(searchable = false)
     private YesOrNo showChangeNameAddressPage;
 
-    @CCD(
-        searchable = false
-    )
+    @CCD(searchable = false)
     private YesOrNo showPeopleWhoWillBeEvictedPage;
 
-    @CCD(
-        searchable = false
-    )
+    @CCD(searchable = false)
     private YesOrNo showPeopleYouWantToEvictPage;
 
     @JsonUnwrapped

@@ -23,13 +23,9 @@ public class WritDetails {
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
-    @CCD(
-            searchable = false
-    )
+    @CCD(searchable = false)
     private YesOrNo showChangeNameAddressPage;
 
-    @CCD(
-            searchable = false
-    )
+    @CCD(searchable = false)
     private YesOrNo showPeopleWhoWillBeEvictedPage;
 }
