@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -44,6 +45,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -1146,7 +1148,9 @@ class TestingSupportControllerTest {
         PartyEntity defendant = PartyEntity.builder()
             .id(partyCode)
             .firstName(firstName)
-            .lastName(lastName).build();
+            .lastName(lastName)
+            .addressSameAsProperty(VerticalYesNo.NO)
+            .build();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .id(caseId)
@@ -1163,7 +1167,7 @@ class TestingSupportControllerTest {
         accessCodes.add(accessCode1);
 
         when(pcsCaseRepository.findByCaseReference(caseReference))
-            .thenReturn(Optional.of(caseEntity));
+            .thenReturn(Optional.ofNullable(caseEntity));
 
         when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
             .thenReturn(accessCodes);
@@ -1175,8 +1179,7 @@ class TestingSupportControllerTest {
 
         // Then
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        assertThat(response.getBody() != null
-            && response.getBody().get(accessCodeString) != null);
+        assertNotNull(response.getBody());
         assertThat(
             response.getBody().get(accessCodeString).getFirstName().equals(firstName)
                 &&
