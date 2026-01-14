@@ -12,7 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
@@ -24,8 +23,6 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
             .pageLabel("The name and address for the eviction")
             .showCondition("selectEnforcementType=\"WRIT\"")
             .complex(PCSCase::getEnforcementOrder)
-            .readonly(EnforcementOrder::getFormattedDefendantNamesWrit, NEVER_SHOW)
-            .readonly(EnforcementOrder::getFormattedPropertyAddressWrit, NEVER_SHOW)
             .label(
                 "nameAndAddressForEvictionWrit-defendants-check",
                 """
@@ -36,11 +33,11 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
                       <tbody class="govuk-table__body">
                         <tr class="govuk-table__row">
                           <th scope="row" class="govuk-table__header">Defendants</th>
-                          <td class="govuk-table__cell">${formattedDefendantNamesWrit}</td>
+                          <td class="govuk-table__cell">${formattedDefendantNames}</td>
                         </tr>
                         <tr class="govuk-table__row">
                           <th scope="row" class="govuk-table__header">Address</th>
-                          <td class="govuk-table__cell">${formattedPropertyAddressWrit}</td>
+                          <td class="govuk-table__cell">${formattedPropertyAddress}</td>
                         </tr>
                       </tbody>
                     </table>

@@ -28,7 +28,7 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         pageBuilder
             .page("peopleWhoWillBeEvicted", this::midEvent)
             .pageLabel("The people who will be evicted")
-            .showCondition("warrantShowPeopleWhoWillBeEvictedPage=\"YES\" AND selectEnforcementType=\"WARRANT\"")
+            .showCondition("warrantShowPeopleWhoWillBeEvictedPage=\"Yes\" AND selectEnforcementType=\"WARRANT\"")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowPeopleWhoWillBeEvictedPage, NEVER_SHOW)

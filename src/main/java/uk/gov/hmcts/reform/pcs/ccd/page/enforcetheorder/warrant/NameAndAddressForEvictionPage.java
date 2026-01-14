@@ -24,8 +24,8 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
             .pageLabel("The name and address for the eviction")
             .showCondition("selectEnforcementType=\"WARRANT\"")
             .complex(PCSCase::getEnforcementOrder)
-            .readonly(EnforcementOrder::getFormattedDefendantNames, NEVER_SHOW)
-            .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW)
+            .readonly(EnforcementOrder::getFormattedDefendantNames, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW, true)
             .label(
                 "nameAndAddressForEviction-defendants-check",
                 """

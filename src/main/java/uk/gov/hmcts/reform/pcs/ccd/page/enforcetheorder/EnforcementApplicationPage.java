@@ -112,8 +112,6 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                     defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
                     + "<br>")
                 .collect(Collectors.joining("\n")));
-            pcsCase.getEnforcementOrder().setFormattedDefendantNamesWrit(
-                    pcsCase.getEnforcementOrder().getFormattedDefendantNames());
         }
     }
 

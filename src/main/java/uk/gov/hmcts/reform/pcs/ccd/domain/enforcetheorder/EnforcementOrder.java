@@ -42,6 +42,4 @@ public class EnforcementOrder {
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
-    private String formattedDefendantNamesWrit;
-    private String formattedPropertyAddressWrit;
 }
