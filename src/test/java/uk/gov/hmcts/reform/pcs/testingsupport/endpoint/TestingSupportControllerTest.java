@@ -1149,7 +1149,7 @@ class TestingSupportControllerTest {
             .id(partyCode)
             .firstName(firstName)
             .lastName(lastName)
-            .addressSameAsProperty(VerticalYesNo.NO)
+            .addressKnown(VerticalYesNo.NO)
             .build();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
