@@ -30,23 +30,29 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
-        Map<Document, DocumentType> allDocs = new HashMap<>();
+        Map<Document, DocumentType> allDocuments = new HashMap<>();
 
-        allDocs.putAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
+        allDocuments.putAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
-        allDocs.putAll(mapDocumentsWithType(Optional.ofNullable(pcsCase.getRentArrears())
-                                                .map(RentArrearsSection::getStatementDocuments)
-                                                .orElse(null), DocumentType.RENT_STATEMENT));
-        allDocs.putAll(mapDocumentsWithType(Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
-                                                  .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
-                                                  .orElse(null), DocumentType.TENANCY_AGREEMENT));
-        allDocs.putAll(mapDocumentsWithType(Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
-                                                 .map(OccupationLicenceDetailsWales::getLicenceDocuments)
-                                                 .orElse(null), DocumentType.OCCUPATION_LICENSE));
+        allDocuments.putAll(
+            mapDocumentsWithType(
+                Optional.ofNullable(pcsCase.getRentArrears())
+                    .map(RentArrearsSection::getStatementDocuments)
+                    .orElse(null), DocumentType.RENT_STATEMENT));
 
-        List<DocumentEntity> entities = mapToDocumentEntities(allDocs);
+        allDocuments.putAll(
+            mapDocumentsWithType(
+                Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
+                    .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
+                    .orElse(null), DocumentType.TENANCY_AGREEMENT));
 
-        return documentRepository.saveAll(entities);
+        allDocuments.putAll(
+            mapDocumentsWithType(
+                Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
+                    .map(OccupationLicenceDetailsWales::getLicenceDocuments)
+                    .orElse(null), DocumentType.OCCUPATION_LICENSE));
+
+        return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
     private Map<Document, DocumentType> mapDocumentsWithType(
@@ -60,8 +66,8 @@ public class DocumentService {
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
             .collect(Collectors.toMap(
-                doc -> doc,
-                doc -> type
+                document -> document,
+                document -> type
             ));
     }
 
@@ -71,11 +77,11 @@ public class DocumentService {
         return ListValueUtils.unwrapListItems(documents).stream()
             .collect(Collectors.toMap(
                 AdditionalDocument::getDocument,
-                ad -> mapAdditionalToDocumentType(ad.getDocumentType())
+                doc -> mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType())
             ));
     }
 
-    private List<DocumentEntity> mapToDocumentEntities(
+    private List<DocumentEntity> createDocumentEntities(
         Map<Document, DocumentType> documents) {
 
         if (documents == null || documents.isEmpty()) {
@@ -83,17 +89,17 @@ public class DocumentService {
         }
 
         return documents.entrySet().stream()
-            .map(e -> DocumentEntity.builder()
-                .url(e.getKey().getUrl())
-                .fileName(e.getKey().getFilename())
-                .binaryUrl(e.getKey().getBinaryUrl())
-                .categoryId(e.getKey().getCategoryId())
-                .type(e.getValue())
+            .map(documentMap -> DocumentEntity.builder()
+                .url(documentMap.getKey().getUrl())
+                .fileName(documentMap.getKey().getFilename())
+                .binaryUrl(documentMap.getKey().getBinaryUrl())
+                .categoryId(documentMap.getKey().getCategoryId())
+                .type(documentMap.getValue())
                 .build())
             .toList();
     }
 
-    private DocumentType mapAdditionalToDocumentType(
+    private DocumentType mapAdditionalDocumentTypeToDocumentType(
         AdditionalDocumentType additionalType) {
 
         return switch (additionalType) {

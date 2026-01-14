@@ -14,7 +14,6 @@ CREATE TABLE claim_document (
   PRIMARY KEY (claim_id, document_id)
 );
 
-
 CREATE INDEX idx_document_case_id ON document(case_id);
 CREATE INDEX idx_claim_document_claim_id ON claim_document(claim_id);
 CREATE INDEX idx_claim_document_document_id ON claim_document(document_id);
