@@ -91,7 +91,7 @@ class EnforcementStatementOfTruthPageTest extends BasePageTest {
                 verify(textAreaValidationService).validateTextArea(
                     eq(value),
                     eq(fieldName),
-                    eq(60),
+                    eq(TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT),
                     any()
                 );
             }

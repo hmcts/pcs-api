@@ -26,8 +26,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 @Component
 public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
 
-    private static final int CHARACTER_LIMIT = 60;
-
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
@@ -119,13 +117,13 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
                     textAreaValidationService.validateTextArea(
                         claimantDetails.getFullNameClaimant(),
                         "Full name",
-                        CHARACTER_LIMIT,
+                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
                         errors
                     );
                     textAreaValidationService.validateTextArea(
                         claimantDetails.getPositionClaimant(),
                         "Position or office held",
-                        CHARACTER_LIMIT,
+                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
                         errors
                     );
                 }
@@ -135,19 +133,19 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
                     textAreaValidationService.validateTextArea(
                         legalRepDetails.getFullNameLegalRep(),
                         "Full name",
-                        CHARACTER_LIMIT,
+                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
                         errors
                     );
                     textAreaValidationService.validateTextArea(
                         legalRepDetails.getFirmNameLegalRep(),
                         "Name of firm",
-                        CHARACTER_LIMIT,
+                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
                         errors
                     );
                     textAreaValidationService.validateTextArea(
                         legalRepDetails.getPositionLegalRep(),
                         "Position or office held",
-                        CHARACTER_LIMIT,
+                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
                         errors
                     );
                 }
