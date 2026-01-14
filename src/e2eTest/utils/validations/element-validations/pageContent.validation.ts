@@ -27,7 +27,9 @@ export class PageContentValidation implements IValidation {
                     :has-text("${value}") + button,
                     [role="link"]:text("${value}"),
                     a:text("${value}"),
-                    :has-text("${value}") ~ button`),
+                    :has-text("${value}") ~ button,
+                    button:has-text("${value}"),
+                    button >> text=${value}`),
     Link: (page: Page, value: string) => page.locator(`
                     a:text("${value}"),
                     a.govuk-link:text("${value}"),
@@ -97,6 +99,7 @@ export class PageContentValidation implements IValidation {
   }
 
   async validateCurrentPage(page: Page): Promise<void> {
+    await page.waitForLoadState('load');
     const pageUrl = page.url();
 
     if (PageContentValidation.isCYAPage(pageUrl)) {
@@ -110,7 +113,7 @@ export class PageContentValidation implements IValidation {
 
     const pageResults: ValidationResult[] = [];
     for (const [key, value] of Object.entries(pageData)) {
-      if (key.includes('Input') || key.includes('Hidden')||key.includes('Dynamic')) continue;
+      if (key.includes('Input') || key.includes('Hidden') || key.includes('Dynamic') || key.includes('NewTab')) continue;
       if (typeof value === 'string' && value.trim() !== '') {
         const elementType = this.getElementType(key);
         const isVisible = await this.isElementVisible(page, value as string, elementType);
