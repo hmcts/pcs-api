@@ -16,6 +16,6 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
         pageBuilder
             .add(new NameAndAddressForEvictionWritPage())
             .add(new ChangeNameAddressWritPage())
-            .add(new EnforcementOfficerPlaceholder());
+            .add(new ConfirmHiringEnforcementOfficerPlaceholder());
     }
 }
