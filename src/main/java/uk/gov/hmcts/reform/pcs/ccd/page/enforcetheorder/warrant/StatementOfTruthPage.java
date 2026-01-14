@@ -97,7 +97,6 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
         List<String> errors = new ArrayList<>();
 
-        // Validate character limits only - CCD's .mandatory() handles checkbox validation
         validateCharacterLimits(caseData, errors);
 
         return textAreaValidationService.createValidationResponse(caseData, errors);
