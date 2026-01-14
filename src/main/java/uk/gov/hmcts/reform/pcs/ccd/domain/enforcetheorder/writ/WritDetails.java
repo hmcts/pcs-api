@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.Text;
+
 @Builder
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -32,4 +34,16 @@ public class WritDetails {
             searchable = false
     )
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
+
+    @CCD(
+        label = "Have you hired a High Court enforcement officer?"
+    )
+    private VerticalYesNo hasHiredHighCourtEnforcementOfficer;
+
+    @CCD(
+        label = "Name of your High Court enforcement officer?",
+        hint = "If you do not know their name, use the name of the organisation they work for",
+        typeOverride = Text
+    )
+    private String highCourtEnforcementOfficerDetails;
 }
