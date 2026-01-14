@@ -40,7 +40,6 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
             .done()
             .done()
             .label("hCEOfficerDetails-saveAndReturn", SAVE_AND_RETURN);
-        ;
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
