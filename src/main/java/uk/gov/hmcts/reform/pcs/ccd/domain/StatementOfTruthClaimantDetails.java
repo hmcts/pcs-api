@@ -20,9 +20,9 @@ public class StatementOfTruthClaimantDetails {
     )
     private List<StatementOfTruthAgreementClaimant> agreementClaimant;
 
-    @CCD(label = "Full name")
+    @CCD(label = "Full name", max = 60)
     private String fullNameClaimant;
 
-    @CCD(label = "Position or office held")
+    @CCD(label = "Position or office held", max = 60)
     private String positionClaimant;
 }

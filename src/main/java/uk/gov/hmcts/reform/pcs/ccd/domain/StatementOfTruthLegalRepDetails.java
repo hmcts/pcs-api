@@ -20,12 +20,12 @@ public class StatementOfTruthLegalRepDetails {
     )
     private List<StatementOfTruthAgreementLegalRep> agreementLegalRep;
 
-    @CCD(label = "Full name")
+    @CCD(label = "Full name", max = 60)
     private String fullNameLegalRep;
 
-    @CCD(label = "Name of firm")
+    @CCD(label = "Name of firm", max = 60)
     private String firmNameLegalRep;
 
-    @CCD(label = "Position or office held")
+    @CCD(label = "Position or office held", max = 60)
     private String positionLegalRep;
 }
