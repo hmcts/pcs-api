@@ -568,7 +568,7 @@ public class TestingSupportController {
                 } else if (matched.getAddressSameAsProperty().toBoolean()) {
                     addressUK = modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class);
                 } else {
-                    modelMapper.map(matched.getAddress(), AddressUK.class);
+                    addressUK = modelMapper.map(matched.getAddress(), AddressUK.class);
                 }
 
                 Party minimalParty = Party.builder()
