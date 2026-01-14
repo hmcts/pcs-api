@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -60,17 +61,17 @@ public class WarrantDetails {
     @CCD(
         searchable = false
     )
-    private VerticalYesNo showChangeNameAddressPage;
+    private YesOrNo showChangeNameAddressPage;
 
     @CCD(
         searchable = false
     )
-    private VerticalYesNo showPeopleWhoWillBeEvictedPage;
+    private YesOrNo showPeopleWhoWillBeEvictedPage;
 
     @CCD(
         searchable = false
     )
-    private VerticalYesNo showPeopleYouWantToEvictPage;
+    private YesOrNo showPeopleYouWantToEvictPage;
 
     @JsonUnwrapped
     @CCD(

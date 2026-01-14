@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -63,10 +64,10 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
         if (peopleToEvict.getEvictEveryone() == VerticalYesNo.NO) {
             // Navigate to PeopleYouWantToEvictPage
-            warrantDetails.setShowPeopleYouWantToEvictPage(VerticalYesNo.YES);
+            warrantDetails.setShowPeopleYouWantToEvictPage(YesOrNo.YES);
         } else if (peopleToEvict.getEvictEveryone() == VerticalYesNo.YES) {
             // Skip PeopleYouWantToEvictPage, go directly to LivingInThePropertyPage
-            warrantDetails.setShowPeopleYouWantToEvictPage(VerticalYesNo.NO);
+            warrantDetails.setShowPeopleYouWantToEvictPage(YesOrNo.NO);
         }
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

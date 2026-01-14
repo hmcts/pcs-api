@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -70,12 +71,12 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
 
         if (correctNameAndAddress == VerticalYesNo.NO) {
             // Navigate to ChangeNameAddressPage
-            writDetails.setShowChangeNameAddressPage(VerticalYesNo.YES);
-            writDetails.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.NO);
+            writDetails.setShowChangeNameAddressPage(YesOrNo.YES);
+            writDetails.setShowPeopleWhoWillBeEvictedPage(YesOrNo.NO);
         } else if (correctNameAndAddress == VerticalYesNo.YES) {
             // Navigate to PeopleWhoWillBeEvictedPage
-            writDetails.setShowChangeNameAddressPage(VerticalYesNo.NO);
-            writDetails.setShowPeopleWhoWillBeEvictedPage(VerticalYesNo.YES);
+            writDetails.setShowChangeNameAddressPage(YesOrNo.NO);
+            writDetails.setShowPeopleWhoWillBeEvictedPage(YesOrNo.YES);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
