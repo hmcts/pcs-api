@@ -562,7 +562,10 @@ public class TestingSupportController {
                 Party minimalParty = Party.builder()
                     .firstName(matched.getFirstName())
                     .lastName(matched.getLastName())
-                    .address(modelMapper.map(matched.getAddress(), AddressUK.class))
+                    .address(matched.getAddress() == null
+                        ? null :
+                        modelMapper.map(matched.getAddress(), AddressUK.class)
+                        )
                     .build();
 
                 minimalPartyMap.put(accessCode, minimalParty);
