@@ -58,7 +58,7 @@ class ClaimServiceTest {
         String expectedAdditionalReasons = "some additional reasons";
         String claimantCircumstancesDetails = UUID.randomUUID().toString();
         String asbDetails = "Some antisocial behaviour details";
-        String prohibitedConductDetails = "Some other prohibited conduct details"; 
+        String prohibitedConductDetails = "Some other prohibited conduct details";
 
         PCSCase pcsCase = mock(PCSCase.class);
         PartyEntity claimantPartyEntity = new PartyEntity();
@@ -159,8 +159,8 @@ class ClaimServiceTest {
 
         SuspensionOfRightToBuy suspension = mock(SuspensionOfRightToBuy.class);
         when(pcsCase.getSuspensionOfRightToBuy()).thenReturn(suspension);
-        when(suspension.getSuspensionOfRightToBuyHousingActs()).thenReturn(expectedSuspensionAct);
-        when(suspension.getSuspensionOfRightToBuyReason()).thenReturn(expectedSuspensionReason);
+        when(suspension.getHousingAct()).thenReturn(expectedSuspensionAct);
+        when(suspension.getReason()).thenReturn(expectedSuspensionReason);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
@@ -189,8 +189,8 @@ class ClaimServiceTest {
 
         DemotionOfTenancy demotion = mock(DemotionOfTenancy.class);
         when(pcsCase.getDemotionOfTenancy()).thenReturn(demotion);
-        when(demotion.getDemotionOfTenancyHousingActs()).thenReturn(expectedDemotionAct);
-        when(demotion.getDemotionOfTenancyReason()).thenReturn(expectedDemotionReason);
+        when(demotion.getHousingAct()).thenReturn(expectedDemotionAct);
+        when(demotion.getReason()).thenReturn(expectedDemotionReason);
         when(demotion.getStatementOfExpressTermsDetails()).thenReturn(expectedStatementDetails);
 
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);

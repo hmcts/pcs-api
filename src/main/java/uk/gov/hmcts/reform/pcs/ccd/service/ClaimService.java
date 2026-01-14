@@ -42,13 +42,13 @@ public class ClaimService {
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
             .suspensionOfRightToBuyHousingAct(suspensionOrder != null
-                                                  ? suspensionOrder.getSuspensionOfRightToBuyHousingActs() : null)
+                                                  ? suspensionOrder.getHousingAct() : null)
             .suspensionOfRightToBuyReason(suspensionOrder != null
-                                              ? suspensionOrder.getSuspensionOfRightToBuyReason() : null)
+                                              ? suspensionOrder.getReason() : null)
             .demotionOfTenancyHousingAct(demotionOrder != null
-                                             ? demotionOrder.getDemotionOfTenancyHousingActs() : null)
+                                             ? demotionOrder.getHousingAct() : null)
             .demotionOfTenancyReason(demotionOrder != null
-                                         ? demotionOrder.getDemotionOfTenancyReason() : null)
+                                         ? demotionOrder.getReason() : null)
             .statementOfExpressTermsDetails(demotionOrder != null
                                                 ? demotionOrder.getStatementOfExpressTermsDetails() : null)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
@@ -73,11 +73,11 @@ public class ClaimService {
         SuspensionOfRightToBuy suspension = pcsCase.getSuspensionOfRightToBuy();
         SuspensionOfRightToBuyDemotionOfTenancy combined = pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy();
 
-        if ((suspension == null || suspension.getSuspensionOfRightToBuyHousingActs() == null)
+        if ((suspension == null || suspension.getHousingAct() == null)
             && combined != null && combined.getSuspensionOfRightToBuyActs() != null) {
             return SuspensionOfRightToBuy.builder()
-                .suspensionOfRightToBuyHousingActs(combined.getSuspensionOfRightToBuyActs())
-                .suspensionOfRightToBuyReason(combined.getSuspensionOrderReason())
+                .housingAct(combined.getSuspensionOfRightToBuyActs())
+                .reason(combined.getSuspensionOrderReason())
                 .build();
         }
         return suspension;
@@ -87,11 +87,11 @@ public class ClaimService {
         DemotionOfTenancy demotion = pcsCase.getDemotionOfTenancy();
         SuspensionOfRightToBuyDemotionOfTenancy combined = pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy();
 
-        if ((demotion == null || demotion.getDemotionOfTenancyHousingActs() == null)
+        if ((demotion == null || demotion.getHousingAct() == null)
             && combined != null && combined.getDemotionOfTenancyActs() != null) {
             return DemotionOfTenancy.builder()
-                .demotionOfTenancyHousingActs(combined.getDemotionOfTenancyActs())
-                .demotionOfTenancyReason(combined.getDemotionOrderReason())
+                .housingAct(combined.getDemotionOfTenancyActs())
+                .reason(combined.getDemotionOrderReason())
                 .statementOfExpressTermsDetails(demotion != null ? demotion.getStatementOfExpressTermsDetails() : null)
                 .build();
         }
