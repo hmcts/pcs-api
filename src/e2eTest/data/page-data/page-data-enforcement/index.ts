@@ -23,3 +23,6 @@ export * from '@data/page-data/page-data-enforcement/legalCosts.page.data';
 export * from '@data/page-data/page-data-enforcement/landRegistryFees.page.data';
 export * from '@data/page-data/page-data-enforcement/rePayments.page.data';
 export * from '@data/page-data/page-data-enforcement/languageUsed.page.data';
+export * from '@data/page-data/page-data-enforcement/suspendedOrder.page.data';
+export * from '@data/page-data/page-data-enforcement/statementOfTruth1.page.data';
+export * from '@data/page-data/page-data-enforcement/statementOfTruth2.page.data';

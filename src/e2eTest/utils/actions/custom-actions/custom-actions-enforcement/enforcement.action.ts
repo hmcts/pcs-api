@@ -25,7 +25,8 @@ import {
   peopleYouWantToEvict,
   moneyOwed,
   languageUsed,
-  enterDefendantsDOB
+  enterDefendantsDOB,
+  suspendedOrder
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -72,6 +73,7 @@ export class EnforcementAction implements IAction {
       ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
       ['validateAmountToRePayTable', () => this.validateAmountToRePayTable()],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
+      ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -358,6 +360,15 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: languageDetails.question, option: languageDetails.option });
     await performAction('clickButton', languageUsed.continueButton);
+  }
+
+  private async confirmSuspendedOrder(suspendedOrderPara: actionRecord){
+    await this.addFieldsToMap(suspendedOrderPara);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: suspendedOrderPara.question, option: suspendedOrderPara.option });
+    await performAction('clickButton', suspendedOrder.continueButton);
+
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {

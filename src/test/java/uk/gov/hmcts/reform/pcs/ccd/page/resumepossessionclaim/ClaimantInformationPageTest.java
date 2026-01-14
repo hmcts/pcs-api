@@ -39,61 +39,19 @@ class ClaimantInformationPageTest extends BasePageTest {
         assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm()).isNull();
     }
 
-    @Test
-    void shouldFallbackToClaimantNameWhenOrganisationNameIsNull() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .claimantInformation(
-                ClaimantInformation.builder()
-                    .organisationName(null)
-                    .claimantName("Claimant Name")
-                    .build()
-            )
-            .claimantCircumstances(ClaimantCircumstances.builder().build())
-            .build();
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
-            .isEqualTo("Claimant Name’s");
-    }
-
-    @Test
-    void shouldFallbackToClaimantNameWhenOrganisationNameIsEmpty() {
-        // Given
-        PCSCase caseData = PCSCase.builder()
-            .claimantInformation(
-                ClaimantInformation.builder()
-                    .organisationName("")
-                    .claimantName("Claimant Name")
-                    .build()
-            )
-            .claimantCircumstances(ClaimantCircumstances.builder().build())
-            .build();
-
-        // When
-        callMidEventHandler(caseData);
-
-        // Then
-        assertThat(caseData.getClaimantCircumstances().getClaimantNamePossessiveForm())
-            .isEqualTo("Claimant Name’s");
-    }
-
     @ParameterizedTest
     @MethodSource("claimantNamesEndingWithSTestData")
     @DisplayName("Should append apostrophe to organisation names ending with ’s’ or ’S’: {0}")
     void shouldAppendApostropheToOrganisationNamesEndingWithS(@SuppressWarnings("unused") String testDescription,
-                                                          String organisationName,
-                                                          String overriddenOrganisationName,
+                                                          String claimantName,
+                                                          String overriddenClaimantName,
                                                           String expectedDisplayedName) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
                 ClaimantInformation.builder()
-                    .organisationName(organisationName)
-                    .overriddenClaimantName(overriddenOrganisationName)
+                    .claimantName(claimantName)
+                    .overriddenClaimantName(overriddenClaimantName)
                     .build()
             )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
@@ -111,15 +69,15 @@ class ClaimantInformationPageTest extends BasePageTest {
     @MethodSource("claimantNameTestData")
     @DisplayName("{0}")
     void shouldHandleDisplayedOrganisationName(@SuppressWarnings("unused") String testDescription,
-                                           String organisationName,
-                                           String overriddenOrganisationName,
+                                           String claimantName,
+                                           String overriddenClaimantName,
                                            String expectedDisplayedClaimantName) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
                 ClaimantInformation.builder()
-                    .organisationName(organisationName)
-                    .overriddenClaimantName(overriddenOrganisationName)
+                    .claimantName(claimantName)
+                    .overriddenClaimantName(overriddenClaimantName)
                     .build()
             )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
@@ -137,15 +95,15 @@ class ClaimantInformationPageTest extends BasePageTest {
     @MethodSource("namesWithExistingApostropheTestData")
     @DisplayName("Should handle names that already end with apostrophe: {0}")
     void shouldHandleNamesWithExistingApostrophe(@SuppressWarnings("unused") String testDescription,
-                                                String organisationName,
-                                                String overriddenOrganisationName,
+                                                String claimantName,
+                                                String overriddenClaimantName,
                                                 String expectedDisplayedName) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
                 ClaimantInformation.builder()
-                    .organisationName(organisationName)
-                    .overriddenClaimantName(overriddenOrganisationName)
+                    .claimantName(claimantName)
+                    .overriddenClaimantName(overriddenClaimantName)
                     .build()
             )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
@@ -163,15 +121,15 @@ class ClaimantInformationPageTest extends BasePageTest {
     @MethodSource("realWorldHousingSocietyNamesTestData")
     @DisplayName("Should handle real-world housing society and organization names: {0}")
     void shouldHandleRealWorldHousingSocietyNames(@SuppressWarnings("unused") String testDescription,
-                                                 String organisationName,
-                                                 String overriddenOrganisationName,
+                                                 String claimantName,
+                                                 String overriddenClaimantName,
                                                  String expectedDisplayedName) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .claimantInformation(
                 ClaimantInformation.builder()
-                    .organisationName(organisationName)
-                    .overriddenClaimantName(overriddenOrganisationName)
+                    .claimantName(claimantName)
+                    .overriddenClaimantName(overriddenClaimantName)
                     .build()
             )
             .claimantCircumstances(ClaimantCircumstances.builder().build())
@@ -211,15 +169,15 @@ class ClaimantInformationPageTest extends BasePageTest {
         );
     }
 
-    private static Arguments testCase(String description, String organisationName, String overriddenName) {
-        String nameToUse = overriddenName != null ? overriddenName : organisationName;
-        return Arguments.of(description, organisationName, overriddenName, nameToUse.trim() + "’");
+    private static Arguments testCase(String description, String claimantName, String overriddenName) {
+        String nameToUse = overriddenName != null ? overriddenName : claimantName;
+        return Arguments.of(description, claimantName, overriddenName, nameToUse.trim() + "’");
     }
 
-    private static Arguments testData(String description, String organisationName, String overriddenName) {
-        String nameToUse = (overriddenName != null && !overriddenName.isEmpty()) ? overriddenName : organisationName;
+    private static Arguments testData(String description, String claimantName, String overriddenName) {
+        String nameToUse = (overriddenName != null && !overriddenName.isEmpty()) ? overriddenName : claimantName;
         String expectedResult = nameToUse == null ? null : nameToUse.trim() + "’s";
-        return Arguments.of(description, organisationName, overriddenName, expectedResult);
+        return Arguments.of(description, claimantName, overriddenName, expectedResult);
     }
 
     private static Stream<Arguments> namesWithExistingApostropheTestData() {
@@ -235,7 +193,7 @@ class ClaimantInformationPageTest extends BasePageTest {
             Arguments.of("should handle name with trailing space",
                         "Name ", null, "Name’s"),
             Arguments.of("should handle empty string",
-                        "", null, null),
+                        "", null, ""),
             Arguments.of("should handle overridden name ending with apostrophe",
                         "Organisation Name", "HDPI’S", "HDPI’S"),
             Arguments.of("should handle name ending with s but not possessive",
