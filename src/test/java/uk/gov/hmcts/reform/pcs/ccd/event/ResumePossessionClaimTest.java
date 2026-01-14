@@ -68,6 +68,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedCo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
@@ -203,6 +204,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private FeeFormatter feeFormatter;
+    @Mock
+    private DocumentService documentService;
 
     @BeforeEach
     void setUp() {
@@ -229,7 +232,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossession, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter
+            underlesseeOrMortgageePage, feeService, feeFormatter,documentService
         );
 
         setEventUnderTest(underTest);

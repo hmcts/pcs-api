@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -57,5 +57,5 @@ public class DocumentEntity {
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "document")
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimDocumentEntity> claimDocuments = new HashSet<>();
+    private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
 }

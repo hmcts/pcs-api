@@ -21,7 +21,6 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
-import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.model.UnderlesseeMortgagee;
@@ -85,10 +84,6 @@ public class PcsCaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     private List<Defendant> defendants;
 
-    @Column(name = "party_documents")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private List<PartyDocumentDto> partyDocuments;
-
     @Column(name = "statement_of_truth")
     @JdbcTypeCode(SqlTypes.JSON)
     private StatementOfTruth statementOfTruth;
@@ -112,9 +107,10 @@ public class PcsCaseEntity {
         party.setPcsCase(this);
     }
 
-    public void addDocuments(List<DocumentEntity> documents){
+    public void addDocuments(List<DocumentEntity> documents) {
         for (DocumentEntity document : documents) {
             document.setPcsCase(this);
             this.documents.add(document);
-        }}
+        }
+    }
 }

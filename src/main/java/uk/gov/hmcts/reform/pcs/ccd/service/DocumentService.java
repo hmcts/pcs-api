@@ -30,8 +30,8 @@ public class DocumentService {
         List<Document> additionalDocuments = ListValueUtils.unwrapListItems(pcsCase.getAdditionalDocuments()).stream()
             .map(additionalDocument -> additionalDocument.getDocument()).toList();
 
-        entities.addAll(mapToDocumentEntity( ListValueUtils.wrapListItems(additionalDocuments), DocumentType.ADDITIONAL));
-        entities.addAll(mapToDocumentEntity(pcsCase.getRentStatementDocuments(), DocumentType.RENT_STATEMENT));
+        entities.addAll(mapToDocumentEntity(ListValueUtils.wrapListItems(additionalDocuments),DocumentType.ADDITIONAL));
+        entities.addAll(mapToDocumentEntity(pcsCase.getRentStatementDocuments(),DocumentType.RENT_STATEMENT));
 
         entities.addAll(mapToDocumentEntity(
             Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
@@ -45,7 +45,7 @@ public class DocumentService {
             DocumentType.OCCUPATION_LICENSE
         ));
 
-        return entities;
+        return documentRepository.saveAll(entities);
     }
 
     private List<DocumentEntity> mapToDocumentEntity(List<ListValue<Document>> docs, DocumentType type) {

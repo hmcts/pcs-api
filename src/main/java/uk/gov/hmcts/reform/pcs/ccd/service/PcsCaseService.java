@@ -22,7 +22,6 @@ public class PcsCaseService {
     private final PcsCaseMergeService pcsCaseMergeService;
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
-    private final PartyDocumentsService partyDocumentsService;
 
     public void createCase(long caseReference, AddressUK propertyAddress, LegislativeCountry legislativeCountry) {
 
@@ -51,7 +50,6 @@ public class PcsCaseService {
                         ? pcsCase.getPreActionProtocolCompleted().toBoolean()
                         : null);
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
-        pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
         // Set claimant type if available
         if (pcsCase.getClaimantType() != null && pcsCase.getClaimantType().getValueCode() != null) {
             ClaimantType claimantType = ClaimantType.valueOf(pcsCase.getClaimantType().getValueCode());
@@ -71,7 +69,6 @@ public class PcsCaseService {
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         pcsCaseMergeService.mergeCaseData(pcsCaseEntity, pcsCase);
-        pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
     }
 
     public PcsCaseEntity loadCase(long caseReference) {
