@@ -38,7 +38,7 @@ public class ClaimantContactPreferences {
     @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo claimantProvidePhoneNumber;
 
-    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$")
+    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$", max = 60)
     private String claimantContactPhoneNumber;
 
 }
