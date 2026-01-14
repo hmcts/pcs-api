@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
@@ -22,7 +21,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -58,10 +56,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsOrBreachOfTenancyGround;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
@@ -84,11 +82,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -107,8 +106,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
@@ -156,7 +153,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
     private final ReasonsForPossessionWales reasonsForPossessionWales;
     private final AddressFormatter addressFormatter;
-    private final RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private final RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
     private final CheckingNotice checkingNotice;
@@ -166,6 +163,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
     private final DocumentService documentService;
+    private final CaseAssignmentService caseAssignmentService;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -202,7 +200,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(introductoryDemotedOrOtherGroundsForPossession)
             .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
-            .add(rentArrearsGroundsForPossession)
+            .add(rentArrearsGroundsForPossessionPage)
             .add(rentArrearsGroundForPossessionAdditionalGrounds)
             .add(rentArrearsGroundsForPossessionReasons)
             .add(noRentArrearsGroundsForPossessionOptions)
@@ -212,7 +210,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(checkingNotice)
             .add(walesCheckingNotice)
             .add(noticeDetails)
-            .add(new RentDetails())
+            .add(new RentDetailsPage())
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
@@ -253,10 +251,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
-            claimantInfo.setOrganisationName(organisationName);
+            claimantInfo.setClaimantName(organisationName);
         } else {
             // Fallback to user details if organisation name cannot be retrieved
-            claimantInfo.setOrganisationName(userEmail);
+            claimantInfo.setClaimantName(userEmail);  // HDPI-3582 will fix this
             log.warn("Could not retrieve organisation name, using user details as fallback");
         }
 
@@ -288,8 +286,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
         caseData.setClaimantType(claimantTypeList);
 
+        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+
         contactPreferences.setFormattedClaimantContactAddress(addressFormatter
-            .formatMediumAddress(organisationService.getOrganisationAddressForCurrentUser(), BR_DELIMITER));
+            .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
+
+        if (contactPreferences.getOrganisationAddress() != null) {
+            contactPreferences.setOrgAddressFound(YesOrNo.YES);
+        } else {
+            contactPreferences.setOrgAddressFound(YesOrNo.NO);
+        }
 
         caseData.setClaimantContactPreferences(contactPreferences);
 
@@ -317,22 +323,19 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        PartyEntity claimantPartyEntity = createClaimantPartyEntity(pcsCase);
-        pcsCaseEntity.addParty(claimantPartyEntity);
-
-        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
         List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
         pcsCaseEntity.addDocuments(documentEntities);
         claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
 
-        pcsCaseService.save(pcsCaseEntity);
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        String responsibleParty = getClaimantInfo(pcsCase).getOrganisationName();
+        String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
         String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
 
@@ -351,49 +354,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .build();
     }
 
-    private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {
-        UserInfo userDetails = securityContextService.getCurrentUserDetails();
-        UUID userID = UUID.fromString(userDetails.getUid());
-
-        ClaimantInformation claimantInfo = getClaimantInfo(pcsCase);
-
-        String claimantName = isNotBlank(claimantInfo.getOverriddenClaimantName())
-            ? claimantInfo.getOverriddenClaimantName()
-            : claimantInfo.getClaimantName();
-
-        ClaimantContactPreferences contactPreferences = getContactPreferences(pcsCase);
-
-        AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress() != null
-            ? contactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
-
-        String contactEmail = isNotBlank(contactPreferences.getOverriddenClaimantContactEmail())
-            ? contactPreferences.getOverriddenClaimantContactEmail() : contactPreferences.getClaimantContactEmail();
-
-        String organisationName = isNotBlank(claimantInfo.getOverriddenClaimantName())
-            ? claimantInfo.getOverriddenClaimantName() : claimantInfo.getOrganisationName();
-        if (isBlank(organisationName)) {
-            organisationName = claimantName;
-        }
-
-        return partyService.createPartyEntity(
-            userID,
-            claimantName,
-            null,
-            organisationName,
-            contactEmail,
-            contactAddress,
-            contactPreferences.getClaimantContactPhoneNumber()
-        );
-    }
-
     private ClaimantInformation getClaimantInfo(PCSCase caseData) {
         return Optional.ofNullable(caseData.getClaimantInformation())
             .orElse(ClaimantInformation.builder().build());
-    }
-
-    private ClaimantContactPreferences getContactPreferences(PCSCase caseData) {
-        return Optional.ofNullable(caseData.getClaimantContactPreferences())
-            .orElse(ClaimantContactPreferences.builder().build());
     }
 
     private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {

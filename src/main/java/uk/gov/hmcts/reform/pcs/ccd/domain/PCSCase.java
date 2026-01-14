@@ -6,22 +6,22 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -63,6 +63,9 @@ public class PCSCase {
 
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
+
+    @CCD(access = ClaimantAccess.class)
+    private List<ListValue<Party>> allClaimants;
 
     @CCD(
         label = "Property address",
@@ -139,20 +142,8 @@ public class PCSCase {
     )
     private YesOrNo claimDueToRentArrears;
 
-    // Rent arrears grounds checkboxes
-    @CCD(
-        label = "What are your grounds for possession?",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround"
-    )
-    private Set<RentArrearsGround> rentArrearsGrounds;
-
-    @CCD(
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround"
-    )
-    private Set<RentArrearsGround> copyOfRentArrearsGrounds;
+    @JsonUnwrapped(prefix = "rentArrears_")
+    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
 
     @CCD
     private YesOrNo overrideResumedGrounds;
@@ -162,23 +153,8 @@ public class PCSCase {
     )
     private YesOrNo hasOtherAdditionalGrounds;
 
-    // Additional grounds checkboxes - Mandatory
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsMandatoryGrounds"
-    )
-    private Set<RentArrearsMandatoryGrounds> rentArrearsMandatoryGrounds;
 
-    // Additional grounds checkboxes - Discretionary
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsDiscretionaryGrounds"
-    )
-    private Set<RentArrearsDiscretionaryGrounds> rentArrearsDiscretionaryGrounds;
+
 
     @CCD(
         label = "Mandatory grounds",
@@ -279,50 +255,11 @@ public class PCSCase {
     @CCD
     private PeriodicContractTermsWales periodicContractTermsWales;
 
-    @CCD(
-        label = "How much is the rent?",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String currentRent;
-
-    @CCD(
-        label = "How frequently should rent be paid?"
-    )
-    private RentPaymentFrequency rentFrequency;
-
-    @CCD(
-        label = "Enter frequency",
-        hint = "Please specify the frequency"
-    )
-    private String otherRentFrequency;
-
-    @CCD(
-        label = "Enter the amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String dailyRentChargeAmount;
-
-    @CCD(
-        label = "Is the amount per day that unpaid rent should be charged at correct?"
-    )
-    private VerticalYesNo rentPerDayCorrect;
-
-    @CCD(
-        label = "Enter amount per day that unpaid rent should be charged at",
-        typeOverride = FieldType.MoneyGBP,
-        min = 0
-    )
-    private String amendedDailyRentChargeAmount;
-
-    @CCD(
-        typeOverride = FieldType.MoneyGBP
-    )
-    private String calculatedDailyRentChargeAmount;
-
+    @JsonUnwrapped(prefix = "rentDetails_")
     @CCD
-    private String formattedCalculatedDailyRentChargeAmount;
+    private RentDetails rentDetails;
+
+    private RentPaymentFrequency rentSectionPaymentFrequency;
 
     @CCD(searchable = false)
     private YesOrNo showPostcodeNotAssignedToCourt;
@@ -344,14 +281,16 @@ public class PCSCase {
      */
     @CCD(
         label = "Add additional defendant",
-        hint = "Add an additional defendant to the case"
+        hint = "Add an additional defendant to the case",
+        min = 1
     )
     private List<ListValue<DefendantDetails>> additionalDefendants;
 
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    private List<ListValue<DefendantDetails>> allDefendants;
+    @CCD(access = ClaimantAccess.class)
+    private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
     @CCD
@@ -360,42 +299,9 @@ public class PCSCase {
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
-    // --- Rent arrears (statement upload + totals + third party payments) ---
-    @CCD(
-        label = "Add document",
-        hint = "Upload a document to the system",
-        typeOverride = FieldType.Collection,
-        typeParameterOverride = "Document"
-    )
-    private List<ListValue<Document>> rentStatementDocuments;
-
-    @CCD(
-        label = "Total rent arrears",
-        min = 0,
-        typeOverride = FieldType.MoneyGBP
-    )
-    private String totalRentArrears;
-
-    @CCD(
-        label = "For the period shown on the rent statement, have any rent payments been paid by someone "
-            + "other than the defendants?",
-        hint = "This could include payments from Universal Credit, Housing Benefit or any other contributions "
-            + "made by a government department, like the Department for Work and Pensions (DWP)"
-    )
-    private VerticalYesNo thirdPartyPayments;
-
-    @CCD(
-        label = "Where have the payments come from?",
-        hint = "Select all that apply",
-        typeOverride = FieldType.MultiSelectList,
-        typeParameterOverride = "ThirdPartyPaymentSource"
-    )
-    private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
-
-    @CCD(
-        label = "Payment source"
-    )
-    private String thirdPartyPaymentSourceOther;
+    @JsonUnwrapped(prefix = "rentArrears_")
+    @CCD
+    private RentArrearsSection rentArrears;
 
     @CCD
     private YesOrNo showIntroductoryDemotedOtherGroundReasonPage;
@@ -471,10 +377,10 @@ public class PCSCase {
     )
     private Set<AlternativesToPossession> alternativesToPossession;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "suspensionOfRTB_")
     private SuspensionOfRightToBuy suspensionOfRightToBuy;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "demotionOfTenancy_")
     private DemotionOfTenancy demotionOfTenancy;
 
     private AdditionalReasons additionalReasonsForPossession;
@@ -550,9 +456,16 @@ public class PCSCase {
 
     @CCD(
         label = "Add underlessee or mortgagee",
-        hint = "Add an underlessee or mortgagee to the case"
+        hint = "Add an underlessee or mortgagee to the case",
+        min = 1
     )
     private List<ListValue<UnderlesseeMortgageeDetails>> additionalUnderlesseeOrMortgagee;
+
+    /**
+     * Combined list of all underlessees/mortgagees in the case.
+     */
+    @CCD(access = ClaimantAccess.class)
+    private List<ListValue<Party>> allUnderlesseeOrMortgagees;
 
     @CCD(
         searchable = false,

@@ -55,8 +55,12 @@ export class ActionEnforcementRegistry {
     ['provideMoneyOwed', new EnforcementAction()],
     ['provideLegalCosts', new EnforcementAction()],
     ['provideLandRegistryFees', new EnforcementAction()],
+    ['provideAmountToRePay', new EnforcementAction()],
+    ['validateAmountToRePayTable', new EnforcementAction()],
     ['selectLanguageUsed', new EnforcementAction()],
+    ['confirmSuspendedOrder', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
+    ['generateRandomString', new EnforcementAction()],
   ]);
 
   static getAction(actionName: string): IAction {

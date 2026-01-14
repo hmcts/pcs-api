@@ -27,13 +27,16 @@ export class PageContentValidation implements IValidation {
                     :has-text("${value}") + button,
                     [role="link"]:text("${value}"),
                     a:text("${value}"),
-                    :has-text("${value}") ~ button`),
+                    :has-text("${value}") ~ button,
+                    button:has-text("${value}"),
+                    button >> text=${value}`),
     Link: (page: Page, value: string) => page.locator(`
                     a:text("${value}"),
                     a.govuk-link:text("${value}"),
                     button.govuk-js-link:text("${value}"),
                     [role="link"]:text("${value}"),
-                    [aria-label*="${value}"]:text("${value}")`),
+                    [aria-label*="${value}"]:text("${value}"),
+                    summary>span:text("${value}")`),
     Header: (page: Page, value: string) => page.locator(`
                     h1:text("${value}"),
                     h2:text("${value}"),
@@ -50,13 +53,13 @@ export class PageContentValidation implements IValidation {
                     label:text("${value}") + input[type="checkbox"],
                     .checkbox:text("${value}") ~ input[type="checkbox"],
                     label >> text=${value} >> xpath=..//input[@type="checkbox"]`),
-    Question: (page: Page, value: string) => page.locator(`
-                    label:text("${value}") ~ input[type="radio"],
-                    label:text("${value}") + input[type="radio"],
-                    .radio:text("${value}") ~ input[type="radio"],
-                    legend:text("${value}") ~ input[type="radio"],
-                    .question:text("${value}") ~ input[type="radio"],
-                    label >> text=${value} >> xpath=..//input[@type="radio"]`),
+    Question: (page: Page, value: string) => page.locator(`span:has-text("${value}")`)
+      .or(page.locator(`label:text("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`label:text("${value}") + input[type="radio"]`))
+      .or(page.locator(`.radio:text("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`legend:text("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`.question:text("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`label >> text=${value} >> xpath=..//input[@type="radio"]`)),
     RadioOption: (page: Page, value: string) => page.locator(`
                     label:text("${value}") ~ input[type="radio"],
                     label:text("${value}") + input[type="radio"],
@@ -69,19 +72,24 @@ export class PageContentValidation implements IValidation {
                     option:text("${value}"),
                     select option:text("${value}")`),
     HintText: (page: Page, value: string) => page.locator(`
-                    .hint:text("${value}")`),
+                    .hint:text("${value}"),
+                    span:text-is("${value}")`),
     TextLabel: (page: Page, value: string) => page.locator(`
                     label:has-text("${value}"),
-                    .label:has-text("${value}")`),
+                    .label:has-text("${value}"),
+                    span:text-is("${value}")`),
     Paragraph: (page: Page, value: string) => page.locator(`
-                    .paragraph:text("${value}"),
-                    p:text("${value}"),
-                    markdown:text("${value}"),
+                     p:text("${value}"),
+                     .paragraph:text("${value}"),
+                     markdown:text("${value}"),
                     .content:text("${value}"),
                     .body:text("${value}"),
                     .text-content:text("${value}"),
                     .govuk-body:text("${value}"),
-                    .govuk-list:text("${value}")`),
+                    .govuk-list:text("${value}"),
+                    span:text-is("${value}"),
+                    dl:has-text("${value}") > dt,
+                    strong:text("${value}")`),
     Text: (page: Page, value: string) => page.locator(`:text("${value}")`),
     Tab: (page: Page, value: string) => page.getByRole('tab', { name: value }),
   };
@@ -91,6 +99,7 @@ export class PageContentValidation implements IValidation {
   }
 
   async validateCurrentPage(page: Page): Promise<void> {
+    await page.waitForLoadState('load');
     const pageUrl = page.url();
 
     if (PageContentValidation.isCYAPage(pageUrl)) {
@@ -104,7 +113,7 @@ export class PageContentValidation implements IValidation {
 
     const pageResults: ValidationResult[] = [];
     for (const [key, value] of Object.entries(pageData)) {
-      if (key.includes('Input') || key.includes('Hidden')) continue;
+      if (key.includes('Input') || key.includes('Hidden') || key.includes('Dynamic') || key.includes('NewTab')) continue;
       if (typeof value === 'string' && value.trim() !== '') {
         const elementType = this.getElementType(key);
         const isVisible = await this.isElementVisible(page, value as string, elementType);

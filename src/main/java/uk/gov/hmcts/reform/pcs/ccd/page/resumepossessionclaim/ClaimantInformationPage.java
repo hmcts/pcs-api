@@ -21,7 +21,7 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             .pageLabel("Claimant name")
             .label("claimantInformation-separator", "---")
             .complex(PCSCase::getClaimantInformation)
-            .readonlyNoSummary(ClaimantInformation::getOrganisationName)
+            .readonlyNoSummary(ClaimantInformation::getClaimantName)
             .mandatory(ClaimantInformation::getIsClaimantNameCorrect)
             .mandatory(
                 ClaimantInformation::getOverriddenClaimantName,
@@ -48,9 +48,7 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
         String claimantNamePossessiveForm =
             StringUtils.isNotEmpty(claimantInfo.getOverriddenClaimantName())
             ? claimantInfo.getOverriddenClaimantName()
-            : (StringUtils.isNotEmpty(claimantInfo.getOrganisationName())
-                ? claimantInfo.getOrganisationName()
-                : claimantInfo.getClaimantName());
+            : claimantInfo.getClaimantName();
         caseData.getClaimantCircumstances().setClaimantNamePossessiveForm(applyApostrophe(claimantNamePossessiveForm));
     }
 
