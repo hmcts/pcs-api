@@ -71,8 +71,7 @@ public class PartyService {
         }
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
-        AddressUK contactAddress = claimantContactPreferences.getOverriddenClaimantContactAddress() != null
-            ? claimantContactPreferences.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+        AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);
 
         claimantParty.setAddress(mapAddress(contactAddress));
 
@@ -180,6 +179,13 @@ public class PartyService {
     private AddressEntity mapAddress(AddressUK address) {
         return address != null
             ? modelMapper.map(address, AddressEntity.class) : null;
+    }
+
+    private AddressUK resolveContactAddress(ClaimantContactPreferences contactPreferences) {
+        if (contactPreferences.getOverriddenClaimantContactAddress() != null) {
+            return contactPreferences.getOverriddenClaimantContactAddress();
+        }
+        return contactPreferences.getOrganisationAddress();
     }
 
 }
