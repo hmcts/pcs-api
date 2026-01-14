@@ -24,7 +24,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -129,7 +133,7 @@ public class ClaimEntity {
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimPartyEntity> claimParties = new HashSet<>();
+    private List<ClaimPartyEntity> claimParties = new ArrayList<>();
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default

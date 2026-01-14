@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.model.SecureOrFlexibleReasonsForGrounds;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -29,9 +29,7 @@ public class PcsCaseMergeService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final TenancyLicenceService tenancyLicenceService;
-    private final DefendantService defendantService;
     private final StatementOfTruthService statementOfTruthService;
-    private final UnderlesseeMortgageeService underlesseeMortgageService;
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
 
@@ -41,20 +39,11 @@ public class PcsCaseMergeService {
         }
 
         if (pcsCase.getUserPcqId() != null) {
-            UUID pcqId = UUID.fromString(pcsCase.getUserPcqId());
-            setPcqIdForCurrentUser(pcqId, pcsCaseEntity);
+            setPcqIdForCurrentUser(pcsCase.getUserPcqId(), pcsCaseEntity);
         }
 
         if (pcsCase.getCaseManagementLocation() != null) {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
-        }
-
-        if (pcsCase.getDefendant1() != null) {
-            pcsCaseEntity.setDefendants(defendantService.buildDefendantsList(pcsCase));
-        }
-
-        if (pcsCase.getUnderlesseeOrMortgagee1() != null) {
-            pcsCaseEntity.setUnderlesseesMortgagees(underlesseeMortgageService.buildUnderlesseeMortgageeList(pcsCase));
         }
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
@@ -62,7 +51,7 @@ public class PcsCaseMergeService {
         pcsCaseEntity.setStatementOfTruth(statementOfTruthService.buildStatementOfTruth(pcsCase));
     }
 
-    private void setPcqIdForCurrentUser(UUID pcqId, PcsCaseEntity pcsCaseEntity) {
+    private void setPcqIdForCurrentUser(String pcqId, PcsCaseEntity pcsCaseEntity) {
         UserInfo userDetails = securityContextService.getCurrentUserDetails();
         UUID userId = UUID.fromString(userDetails.getUid());
         pcsCaseEntity.getParties().stream()
@@ -79,9 +68,8 @@ public class PcsCaseMergeService {
     private static PartyEntity createPartyForUser(UUID userId, UserInfo userDetails) {
         PartyEntity party = new PartyEntity();
         party.setIdamId(userId);
-        party.setForename(userDetails.getGivenName());
-        party.setSurname(userDetails.getFamilyName());
-        party.setActive(true);
+        party.setFirstName(userDetails.getGivenName());
+        party.setLastName(userDetails.getFamilyName());
         return party;
     }
 

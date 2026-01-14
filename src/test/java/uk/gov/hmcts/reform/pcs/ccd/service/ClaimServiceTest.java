@@ -18,15 +18,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimPartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,7 +51,6 @@ class ClaimServiceTest {
     void shouldCreateMainClaim() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        PartyEntity claimantPartyEntity = new PartyEntity();
 
         when(pcsCase.getClaimAgainstTrespassers()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getClaimDueToRentArrears()).thenReturn(YesOrNo.NO);
@@ -75,7 +71,7 @@ class ClaimServiceTest {
         when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
         assertThat(createdClaimEntity.getAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
@@ -92,12 +88,6 @@ class ClaimServiceTest {
         assertThat(createdClaimEntity.getAdditionalDocsProvided()).isEqualTo(VerticalYesNo.YES);
         assertThat(createdClaimEntity.getGenAppExpected()).isEqualTo(VerticalYesNo.NO);
         assertThat(createdClaimEntity.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
-
-        Set<ClaimPartyEntity> claimParties = createdClaimEntity.getClaimParties();
-        assertThat(claimParties).hasSize(1);
-        ClaimPartyEntity claimParty = claimParties.iterator().next();
-        assertThat(claimParty.getParty()).isEqualTo(claimantPartyEntity);
-        assertThat(claimParty.getRole()).isEqualTo(PartyRole.CLAIMANT);
         assertThat(createdClaimEntity.getClaimGrounds()).containsExactlyElementsOf(expectedClaimGrounds);
 
         verify(claimRepository).save(createdClaimEntity);
@@ -115,7 +105,7 @@ class ClaimServiceTest {
 
         // When
         ClaimEntity createdClaimEntity =
-            claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+            claimService.createMainClaimEntity(pcsCase);
 
         // Then
         assertThat(createdClaimEntity.getAdditionalReasons())
@@ -126,7 +116,6 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithDefendantCircumstancesDetails() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        PartyEntity claimantPartyEntity = new PartyEntity();
 
         VerticalYesNo defendantInfoProvided = VerticalYesNo.YES;
         String circumstancesInfo = "Some circumstance Info";
@@ -137,7 +126,7 @@ class ClaimServiceTest {
         when(defendantCircumstances.getHasDefendantCircumstancesInfo()).thenReturn(defendantInfoProvided);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
         assertThat(createdClaimEntity.getDefendantCircumstances()).isEqualTo(circumstancesInfo);
@@ -148,7 +137,6 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithClaimantCircumstancesDetails() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        PartyEntity claimantPartyEntity = new PartyEntity();
 
         VerticalYesNo claimantInfoProvided = VerticalYesNo.NO;
         String circumstancesInfo = "example circumstance Info";
@@ -159,7 +147,7 @@ class ClaimServiceTest {
         when(claimantCircumstances.getClaimantCircumstancesDetails()).thenReturn(circumstancesInfo);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
         assertThat(createdClaimEntity.getClaimantCircumstances()).isEqualTo(circumstancesInfo);
@@ -170,12 +158,11 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithoutClaimantTypeDetailsWhenNull() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        PartyEntity claimantPartyEntity = new PartyEntity();
 
         when(pcsCase.getClaimantType()).thenReturn(null);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
         assertThat(createdClaimEntity.getClaimantType()).isNull();
@@ -185,14 +172,13 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithoutClaimantTypeDetailsWhenValueCodeIsNull() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        PartyEntity claimantPartyEntity = new PartyEntity();
 
         DynamicStringList claimantTypeList = mock(DynamicStringList.class);
         when(claimantTypeList.getValueCode()).thenReturn(null);
         when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
         assertThat(createdClaimEntity.getClaimantType()).isNull();
@@ -203,7 +189,6 @@ class ClaimServiceTest {
     void shouldCreateMainClaim_WithClaimantTypeDetails(ClaimantType claimantType) {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        PartyEntity claimantPartyEntity = new PartyEntity();
 
         DynamicStringList claimantTypeList = DynamicStringList.builder()
             .value(DynamicStringListElement.builder()
@@ -215,7 +200,7 @@ class ClaimServiceTest {
         when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
 
         // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
 
         // Then
         assertThat(createdClaimEntity.getClaimantType()).isEqualTo(claimantType);

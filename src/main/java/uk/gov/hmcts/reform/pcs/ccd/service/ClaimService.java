@@ -10,8 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 
 import java.util.List;
@@ -23,7 +21,7 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
     private final ClaimGroundService claimGroundService;
 
-    public ClaimEntity createMainClaimEntity(PCSCase pcsCase, PartyEntity claimantPartyEntity) {
+    public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
 
         AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
 
@@ -62,7 +60,6 @@ public class ClaimService {
             .languageUsed(pcsCase.getLanguageUsed())
             .build();
 
-        claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
 
         claimRepository.save(claimEntity);
