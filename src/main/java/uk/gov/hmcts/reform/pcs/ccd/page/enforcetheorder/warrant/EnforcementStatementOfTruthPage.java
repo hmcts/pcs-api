@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthClaimantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthLegalRepDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -111,7 +112,7 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
         }
 
         if (statementOfTruth.getCompletedBy() != null) {
-            if (statementOfTruth.getCompletedBy().name().equals("CLAIMANT")) {
+            if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
                 StatementOfTruthClaimantDetails claimantDetails = statementOfTruth.getClaimantDetails();
                 if (claimantDetails != null) {
                     textAreaValidationService.validateTextArea(
@@ -127,7 +128,7 @@ public class EnforcementStatementOfTruthPage implements CcdPageConfiguration {
                         errors
                     );
                 }
-            } else if (statementOfTruth.getCompletedBy().name().equals("LEGAL_REPRESENTATIVE")) {
+            } else if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
                 StatementOfTruthLegalRepDetails legalRepDetails = statementOfTruth.getLegalRepDetails();
                 if (legalRepDetails != null) {
                     textAreaValidationService.validateTextArea(
