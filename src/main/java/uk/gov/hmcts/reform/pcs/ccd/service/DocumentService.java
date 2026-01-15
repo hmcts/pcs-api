@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -15,12 +16,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -30,71 +30,71 @@ public class DocumentService {
 
     public List<DocumentEntity> createAllDocuments(PCSCase pcsCase) {
 
-        Map<Document, DocumentType> allDocuments = new HashMap<>();
+        List<Pair<Document, DocumentType>> allDocuments = new ArrayList<>();
 
-        allDocuments.putAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
+        allDocuments.addAll(mapAdditionalDocumentsWithType(pcsCase.getAdditionalDocuments()));
 
-        allDocuments.putAll(
-            mapDocumentsWithType(
-                Optional.ofNullable(pcsCase.getRentArrears())
-                    .map(RentArrearsSection::getStatementDocuments)
-                    .orElse(null), DocumentType.RENT_STATEMENT));
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getRentArrears())
+                .map(RentArrearsSection::getStatementDocuments)
+                .orElse(null), DocumentType.RENT_STATEMENT));
 
-        allDocuments.putAll(
-            mapDocumentsWithType(
-                Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
-                    .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
-                    .orElse(null), DocumentType.TENANCY_AGREEMENT));
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
+                .map(TenancyLicenceDetails::getTenancyLicenceDocuments)
+                .orElse(null), DocumentType.TENANCY_LICENCE));
 
-        allDocuments.putAll(
-            mapDocumentsWithType(
-                Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
-                    .map(OccupationLicenceDetailsWales::getLicenceDocuments)
-                    .orElse(null), DocumentType.OCCUPATION_LICENSE));
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
+                .map(OccupationLicenceDetailsWales::getLicenceDocuments)
+                .orElse(null), DocumentType.OCCUPATION_LICENCE));
 
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
 
-    private Map<Document, DocumentType> mapDocumentsWithType(
+    private List<Pair<Document, DocumentType>> mapDocumentsWithType(
         List<ListValue<Document>> docs, DocumentType type) {
 
         if (docs == null || docs.isEmpty()) {
-            return Map.of();
+            return Collections.emptyList();
         }
 
         return docs.stream()
             .map(ListValue::getValue)
             .filter(Objects::nonNull)
-            .collect(Collectors.toMap(
-                document -> document,
-                document -> type
-            ));
+            .map(doc -> Pair.of(doc, type))
+            .toList();
     }
 
-    private Map<Document, DocumentType> mapAdditionalDocumentsWithType(
+    private List<Pair<Document, DocumentType>> mapAdditionalDocumentsWithType(
         List<ListValue<AdditionalDocument>> documents) {
 
+        if (documents == null || documents.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         return ListValueUtils.unwrapListItems(documents).stream()
-            .collect(Collectors.toMap(
-                AdditionalDocument::getDocument,
-                doc -> mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType())
-            ));
+            .map(doc -> Pair.of(
+                doc.getDocument(),
+                mapAdditionalDocumentTypeToDocumentType(doc.getDocumentType())
+            ))
+            .toList();
     }
 
     private List<DocumentEntity> createDocumentEntities(
-        Map<Document, DocumentType> documents) {
+        List<Pair<Document, DocumentType>> documents) {
 
         if (documents == null || documents.isEmpty()) {
             return List.of();
         }
 
-        return documents.entrySet().stream()
-            .map(documentMap -> DocumentEntity.builder()
-                .url(documentMap.getKey().getUrl())
-                .fileName(documentMap.getKey().getFilename())
-                .binaryUrl(documentMap.getKey().getBinaryUrl())
-                .categoryId(documentMap.getKey().getCategoryId())
-                .type(documentMap.getValue())
+        return documents.stream()
+            .map(pair -> DocumentEntity.builder()
+                .url(pair.getKey().getUrl())
+                .fileName(pair.getKey().getFilename())
+                .binaryUrl(pair.getKey().getBinaryUrl())
+                .categoryId(pair.getKey().getCategoryId())
+                .type(pair.getValue())
                 .build())
             .toList();
     }

@@ -7,10 +7,10 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 @AllArgsConstructor
 @Getter
 public enum DocumentType implements HasLabel {
-    RENT_STATEMENT("Rent statement"),
-    OCCUPATION_LICENSE("Occupation license"),
-    TENANCY_LICENSE("Tenancy licence"),
-    NOTICE_SERVED("Notice served"),
+    RENT_STATEMENT("Rent Statement"),
+    OCCUPATION_LICENCE("Occupation Licence"),
+    TENANCY_LICENCE("Tenancy Licence"),
+    NOTICE_SERVED("Notice Served"),
     WITNESS_STATEMENT("Witness Statement"),
     TENANCY_AGREEMENT("Tenancy Agreement"),
     LETTER_FROM_CLAIMANT("Letter from Claimant"),

@@ -125,7 +125,7 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldSaveTenancyAgreementDocuments() {
+    void shouldSaveTenancyLicenceDocuments() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
         Document doc = Document.builder()
@@ -148,8 +148,8 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
-        DocumentEntity entity = entities.get(0);
-        assertThat(entity.getType()).isEqualTo(DocumentType.TENANCY_AGREEMENT);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.TENANCY_LICENCE);
         assertThat(entity.getFileName()).isEqualTo("file2");
     }
 
@@ -164,6 +164,7 @@ class DocumentServiceTest {
             .binaryUrl("bin3")
             .categoryId("cat3")
             .build();
+
         OccupationLicenceDetailsWales occupationLicenceDetails = OccupationLicenceDetailsWales.builder()
             .licenceDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
             .build();
@@ -177,8 +178,8 @@ class DocumentServiceTest {
         verify(documentRepository).saveAll(documentEntityListCaptor.capture());
         List<DocumentEntity> entities = documentEntityListCaptor.getValue();
         assertThat(entities).hasSize(1);
-        DocumentEntity entity = entities.get(0);
-        assertThat(entity.getType()).isEqualTo(DocumentType.OCCUPATION_LICENSE);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.OCCUPATION_LICENCE);
         assertThat(entity.getFileName()).isEqualTo("file3");
     }
 
