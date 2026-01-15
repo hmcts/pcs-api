@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.nonprod;
+package uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,9 +13,9 @@ public class TestCaseSelectionPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("nonProdSupport")
-            .pageLabel("A Non Production Support Page")
-            .mandatory(PCSCase::getNonProdSupportFileList);
+            .page("testCaseSelection")
+            .pageLabel("A Test Case Support Page")
+            .mandatory(PCSCase::getTestCaseSupportFileList);
     }
 
 }

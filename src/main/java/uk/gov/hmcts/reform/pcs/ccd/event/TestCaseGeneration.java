@@ -18,11 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
-import uk.gov.hmcts.reform.pcs.ccd.page.nonprod.TestCaseSelectionPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper;
-import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.TestCaseSupportException;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +46,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     private final ResumePossessionClaim resumePossessionClaim;
     private final EnforceTheOrder enforceTheOrder;
 
-    private final CaseSupportHelper caseSupportHelper;
+    private final TestCaseSupportHelper testCaseSupportHelper;
 
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
@@ -75,8 +75,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
         caseData.setFeeAmount(TEST_FEE_AMOUNT);
-        DynamicList nonProdFilesList = caseSupportHelper.getNonProdFilesList();
-        caseData.setNonProdSupportFileList(nonProdFilesList);
+        caseData.setTestCaseSupportFileList(testCaseSupportHelper.getFileList());
         return caseData;
     }
 
@@ -107,8 +106,8 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     PCSCase loadTestPcsCase(String label) {
         PCSCase loadedCase;
         try {
-            Resource nonProdResource = caseSupportHelper.getTestResource(label);
-            String jsonString = StreamUtils.copyToString(nonProdResource.getInputStream(), StandardCharsets.UTF_8);
+            Resource testResource = testCaseSupportHelper.getTestResource(label);
+            String jsonString = StreamUtils.copyToString(testResource.getInputStream(), StandardCharsets.UTF_8);
             loadedCase = draftCaseDataService.parseCaseDataJson(jsonString);
         } catch (IOException e) {
             throw new TestCaseSupportException(e);
@@ -117,7 +116,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     public DynamicList getTestFilesList(PCSCase fromEvent) {
-        return Optional.ofNullable(fromEvent.getNonProdSupportFileList())
+        return Optional.ofNullable(fromEvent.getTestCaseSupportFileList())
             .orElseThrow(() -> new IllegalArgumentException(NO_NON_PROD_CASE_AVAILABLE));
     }
 

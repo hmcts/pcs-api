@@ -499,6 +499,6 @@ public class PCSCase {
         label = "Select an operation to perform.",
         typeOverride = DynamicRadioList
     )
-    private DynamicList nonProdSupportFileList;
+    private DynamicList testCaseSupportFileList;
 
 }

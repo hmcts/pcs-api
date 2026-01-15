@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.nonprod;
+package uk.gov.hmcts.reform.pcs.ccd.testcasesupport;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,14 +17,14 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper.JSON;
-import static uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper.LOCATION_PATTERN;
+import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper.JSON;
+import static uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper.LOCATION_PATTERN;
 
 @ExtendWith(MockitoExtension.class)
-class CaseSupportHelperTest {
+class TestCaseSupportHelperTest {
 
     @InjectMocks
-    private CaseSupportHelper underTest;
+    private TestCaseSupportHelper underTest;
 
     @Mock
     private Resource resource1;
@@ -37,7 +37,8 @@ class CaseSupportHelperTest {
     private ResourcePatternResolver resourcePatternResolver;
 
     @Test
-    void shouldReturnDynamicListWithAllResourceFilenamesWhenNonprodDirectoryContainsMultipleFiles() throws IOException {
+    void shouldReturnDynamicListWithAllResourceFilenamesWhenTestCaseDirectoryContainsMultipleFiles()
+        throws IOException {
         // Given
         when(resource1.getFilename()).thenReturn("test-file-one.json");
         when(resource2.getFilename()).thenReturn("test-file-two.json");
@@ -47,7 +48,7 @@ class CaseSupportHelperTest {
         when(resourcePatternResolver.getResources(LOCATION_PATTERN + "*")).thenReturn(resources);
 
         // When
-        DynamicList result = underTest.getNonProdFilesList();
+        DynamicList result = underTest.getFileList();
 
         // Then
         assertThat(result).isNotNull();
@@ -88,7 +89,7 @@ class CaseSupportHelperTest {
         UUID expectedCode2 = UUID.nameUUIDFromBytes(filename2.getBytes());
 
         // When
-        DynamicList result = underTest.getNonProdFilesList();
+        DynamicList result = underTest.getFileList();
 
         // Then
         assertThat(result.getListItems()).hasSize(2);
@@ -107,7 +108,7 @@ class CaseSupportHelperTest {
         when(resourcePatternResolver.getResources(LOCATION_PATTERN + "*")).thenReturn(resources);
 
         // When
-        DynamicList result = underTest.getNonProdFilesList();
+        DynamicList result = underTest.getFileList();
 
         // Then
         assertThat(result).isNotNull();
@@ -128,7 +129,7 @@ class CaseSupportHelperTest {
         when(resourcePatternResolver.getResources(LOCATION_PATTERN + "*")).thenReturn(resources);
 
         // When
-        DynamicList result = underTest.getNonProdFilesList();
+        DynamicList result = underTest.getFileList();
 
         // Then
         assertThat(result).isNotNull();
@@ -144,7 +145,7 @@ class CaseSupportHelperTest {
             .thenThrow(new IOException("Failed to read resources"));
 
         // When
-        DynamicList result = underTest.getNonProdFilesList();
+        DynamicList result = underTest.getFileList();
 
         // Then
         assertThat(result).isNotNull();
@@ -153,7 +154,7 @@ class CaseSupportHelperTest {
     }
 
     @Test
-    void shouldReturnFirstMatchingResourceWhenGetNonProdResourceIsCalledWithValidLabel() throws IOException {
+    void shouldReturnFirstMatchingResourceWhenGetTestCaseResourceIsCalledWithValidLabel() throws IOException {
         // Given
         String label = "test file one";
         String expectedName = "test-file-one";
@@ -171,7 +172,7 @@ class CaseSupportHelperTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenGetNonProdResourceCannotFindMatchingResource()
+    void shouldThrowExceptionWhenGetTestCaseResourceCannotFindMatchingResource()
         throws IOException {
         // Given
         String label = "non existent file";

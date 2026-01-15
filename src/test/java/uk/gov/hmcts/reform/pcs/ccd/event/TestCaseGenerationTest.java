@@ -24,8 +24,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper;
-import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.TestCaseSupportException;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.io.ByteArrayInputStream;
@@ -60,7 +60,7 @@ class TestCaseGenerationTest {
     private TestCaseGeneration underTest;
 
     @Mock
-    private CaseSupportHelper caseSupportHelper;
+    private TestCaseSupportHelper testCaseSupportHelper;
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
@@ -95,11 +95,11 @@ class TestCaseGenerationTest {
     }
 
     @Test
-    void shouldReturnDynamicListWhenNonProdSupportFileListIsPresent() {
+    void shouldReturnDynamicListWhenTestCaseSupportFileListIsPresent() {
         // Given
         DynamicList expectedList = DynamicList.builder().build();
         PCSCase pcsCase = mock(PCSCase.class);
-        when(pcsCase.getNonProdSupportFileList()).thenReturn(expectedList);
+        when(pcsCase.getTestCaseSupportFileList()).thenReturn(expectedList);
 
         // When
         DynamicList actualList = underTest.getTestFilesList(pcsCase);
@@ -109,10 +109,10 @@ class TestCaseGenerationTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenNonProdSupportFileListIsNull() {
+    void shouldThrowExceptionWhenTestCaseSupportFileListIsNull() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
-        when(pcsCase.getNonProdSupportFileList()).thenReturn(null);
+        when(pcsCase.getTestCaseSupportFileList()).thenReturn(null);
 
         // When / Then
         assertThatThrownBy(() -> underTest.getTestFilesList(pcsCase))
@@ -129,7 +129,7 @@ class TestCaseGenerationTest {
         InputStream inputStream = new ByteArrayInputStream(jsonContent.getBytes(StandardCharsets.UTF_8));
         PCSCase expectedCase = PCSCase.builder().build();
 
-        when(caseSupportHelper.getTestResource(label)).thenReturn(resource);
+        when(testCaseSupportHelper.getTestResource(label)).thenReturn(resource);
         when(resource.getInputStream()).thenReturn(inputStream);
         when(draftCaseDataService.parseCaseDataJson(jsonContent)).thenReturn(expectedCase);
 
@@ -138,7 +138,7 @@ class TestCaseGenerationTest {
 
         // Then
         assertThat(actualCase).isEqualTo(expectedCase);
-        verify(caseSupportHelper).getTestResource(label);
+        verify(testCaseSupportHelper).getTestResource(label);
         verify(draftCaseDataService).parseCaseDataJson(jsonContent);
     }
 
@@ -147,7 +147,7 @@ class TestCaseGenerationTest {
         // Given
         String label = "test-label";
         IOException ioException = new IOException("File not found");
-        when(caseSupportHelper.getTestResource(label)).thenThrow(ioException);
+        when(testCaseSupportHelper.getTestResource(label)).thenThrow(ioException);
 
         // When / Then
         assertThatThrownBy(() -> underTest.loadTestPcsCase(label))
@@ -197,7 +197,7 @@ class TestCaseGenerationTest {
             .value(DynamicListElement.builder().label(label).build())
             .build();
 
-        PCSCase pcsCase = PCSCase.builder().nonProdSupportFileList(testFilesList).build();
+        PCSCase pcsCase = PCSCase.builder().testCaseSupportFileList(testFilesList).build();
 
         EventPayload<PCSCase, State> eventPayload = mock(EventPayload.class);
         when(eventPayload.caseReference()).thenReturn(caseReference);
@@ -225,7 +225,7 @@ class TestCaseGenerationTest {
             .build();
 
         PCSCase pcsCase = PCSCase.builder()
-            .nonProdSupportFileList(testFilesList)
+            .testCaseSupportFileList(testFilesList)
             .build();
 
         EventPayload<PCSCase, State> eventPayload = new EventPayload<>(caseReference, pcsCase, null);

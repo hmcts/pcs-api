@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.nonprod;
+package uk.gov.hmcts.reform.pcs.ccd.testcasesupport;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +17,14 @@ import java.util.UUID;
 @Component
 @AllArgsConstructor
 @Slf4j
-public class CaseSupportHelper {
+public class TestCaseSupportHelper {
 
-    public static final String LOCATION_PATTERN = "classpath*:nonprod/";
+    public static final String LOCATION_PATTERN = "classpath*:testcasesupport/";
     public static final String JSON = ".json";
 
     private final ResourcePatternResolver resourcePatternResolver;
 
-    public DynamicList getNonProdFilesList() {
+    public DynamicList getFileList() {
         try {
             Resource[] resources = resourcePatternResolver.getResources(LOCATION_PATTERN + "*");
             List<DynamicListElement> listItems = Arrays.stream(resources)
@@ -39,7 +39,7 @@ public class CaseSupportHelper {
                 .value(DynamicListElement.builder().label("Please select ...").code(UUID.randomUUID()).build())
                 .build();
         } catch (IOException e) {
-            log.error("Error reading nonprod files", e);
+            log.error("Error reading Test Case Support files", e);
             return DynamicList.builder().build();
         }
     }
