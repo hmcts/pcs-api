@@ -48,9 +48,9 @@ class AlternativesToPossessionOptionsTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getSuspensionOfRightToBuy()
-                       .getShowSuspensionOfRightToBuyHousingActsPage()).isEqualTo(expectedSuspensionPageFlag);
+                       .getShowHousingActsPage()).isEqualTo(expectedSuspensionPageFlag);
         assertThat(response.getData().getDemotionOfTenancy()
-                       .getShowDemotionOfTenancyHousingActsPage()).isEqualTo(expectedDemotionPageFlag);
+                       .getShowHousingActsPage()).isEqualTo(expectedDemotionPageFlag);
         assertThat(response.getData().getSuspensionOfRightToBuyDemotionOfTenancy()
                        .getSuspensionToBuyDemotionOfTenancyPages()).isEqualTo(expectedCombinedPageFlag);
     }

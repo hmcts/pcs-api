@@ -1,0 +1,25 @@
+export const defendantCircumstances = {
+  makeAClaimCaption: 'Make a claim',
+  mainHeader: `Defendants’ circumstances`,
+  caseNumberParagraph: 'Case number:',
+  propertyAddressParagraph: 'Property address',
+  youCanUseThisSectionMultipleDynamicParagraph: `You can use this section to tell us anything relevant about the defendants’ financial or personal situation.`,
+  youCanUseThisSectionSingleDynamicParagraph: `You can use this section to tell us anything relevant about the defendant’s financial or personal situation.`,
+  isThereAnyInformationMultipleDefendantsCircumstancesDynamicQuestion: `Is there any information you’d like to provide about the defendants’ circumstances?`,
+  isThereAnyInformationSingleDefendantCircumstancesDynamicQuestion: 'Is there any information you’d like to provide about the defendant’s circumstances?',
+  thisCanBeAnyKnownHintText: `This can be any known details or any attempts made to obtain details`,
+  yesRadioOption: 'Yes',
+  noRadioOption: `No`,
+  giveDetailsDefendantCircumstancesSingularHiddenTextLabel: `Give details about the defendant’s circumstances`,
+  giveDetailsDefendantCircumstancesPluralHiddenTextLabel: `Give details about the defendants’ circumstances`,
+  giveDetailsDefendantCircumstancesHiddenTextInput: `Defendant circumstances sample test input data`,
+  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
+  chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
+  onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,
+  thisWillSaveYourProgressHiddenParagraph: `This will save your progress and take you to the case overview.`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`
+};
+
