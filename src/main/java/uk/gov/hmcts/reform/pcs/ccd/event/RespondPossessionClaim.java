@@ -139,25 +139,13 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 //This will be implemented in a future ticket.
                 //Note that defendants will be stored in a list
             } else {
-                // Filter to only store firstName, lastName, and address in draft
-                if (possessionClaimResponse.getParty() != null) {
-                    Party filteredParty = Party.builder()
-                        .firstName(possessionClaimResponse.getParty().getFirstName())
-                        .lastName(possessionClaimResponse.getParty().getLastName())
-                        .address(possessionClaimResponse.getParty().getAddress())
-                        .build();
+                // Save complete draft with all user-entered data
+                PCSCase draftToSave = PCSCase.builder()
+                    .possessionClaimResponse(possessionClaimResponse)
+                    .build();
 
-                    PossessionClaimResponse filteredResponse = PossessionClaimResponse.builder()
-                        .party(filteredParty)
-                        .build();
-
-                    PCSCase filteredDraft = PCSCase.builder()
-                        .possessionClaimResponse(filteredResponse)
-                        .build();
-
-                    draftCaseDataService.patchUnsubmittedEventData(
-                        caseReference, filteredDraft, respondPossessionClaim, userId);
-                }
+                draftCaseDataService.patchUnsubmittedEventData(
+                    caseReference, draftToSave, respondPossessionClaim, userId);
             }
         }
         return SubmitResponse.defaultResponse();

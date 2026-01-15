@@ -34,6 +34,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentCaptor.forClass;
+import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
 class RespondPossessionClaimTest extends BaseEventTest {
@@ -431,6 +433,59 @@ class RespondPossessionClaimTest extends BaseEventTest {
             eq(EventId.respondPossessionClaim),
             eq(defendantUserId)
         );
+    }
+
+    @Test
+    void shouldSaveCompletePartyDataInDraftIncludingContactDetails() {
+        AddressUK address = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postCode("SW1A 1AA")
+            .build();
+
+        uk.gov.hmcts.reform.pcs.ccd.domain.Party party = uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .address(address)
+            .emailAddress("john.doe@example.com")
+            .phoneNumber("07700900000")
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .party(party)
+            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(UUID.randomUUID().toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+
+        callSubmitHandler(caseData);
+
+        ArgumentCaptor<PCSCase> draftCaptor = forClass(PCSCase.class);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            draftCaptor.capture(),
+            eq(EventId.respondPossessionClaim),
+            any(UUID.class)
+        );
+
+        PCSCase savedDraft = draftCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
+        assertThat(savedDraft.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getEmailAddress()).isEqualTo("john.doe@example.com");
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getPhoneNumber()).isEqualTo("07700900000");
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(address);
     }
 
 }
