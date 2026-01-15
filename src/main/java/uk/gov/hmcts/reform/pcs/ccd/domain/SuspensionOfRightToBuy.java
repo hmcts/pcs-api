@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,6 +15,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class SuspensionOfRightToBuy {
 
     public static final String SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL = "Why are you requesting a suspension order?";
@@ -20,7 +23,7 @@ public class SuspensionOfRightToBuy {
     @CCD(
         label = "Which section of the Housing Act is the suspension of right to buy claim made under?"
     )
-    private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingActs;
+    private SuspensionOfRightToBuyHousingAct housingAct;
 
     @CCD(
         label = SUSPENSION_OF_RIGHT_TO_BUY_REASON_LABEL,
@@ -28,7 +31,7 @@ public class SuspensionOfRightToBuy {
             + "up to 250 characters",
         typeOverride = TextArea
     )
-    private String suspensionOfRightToBuyReason;
+    private String reason;
 
-    private YesOrNo showSuspensionOfRightToBuyHousingActsPage;
+    private YesOrNo showHousingActsPage;
 }

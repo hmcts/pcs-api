@@ -26,13 +26,13 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
         pageBuilder
             .page("statementOfExpressTerms", this::midEvent)
             .pageLabel("Statement of express terms")
-            .showCondition("showDemotionOfTenancyHousingActsPage=\"Yes\""
+            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"Yes\""
                                + " OR suspensionToBuyDemotionOfTenancyPages=\"Yes\"")
             .label("statementOfExpressTerms-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsDetails,
-                           "statementOfExpressTermsServed=\"YES\"")
+                           "demotionOfTenancy_StatementOfExpressTermsServed=\"YES\"")
                 .done()
             .label("statementOfExpressTerms-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -40,9 +40,9 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        
+
         List<String> validationErrors = new ArrayList<>();
-        
+
         DemotionOfTenancy demotionOfTenancy = caseData.getDemotionOfTenancy();
         if (demotionOfTenancy != null) {
             validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
@@ -51,7 +51,7 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
                 TextAreaValidationService.LONG_TEXT_LIMIT
             ));
         }
-        
+
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
