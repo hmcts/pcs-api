@@ -73,6 +73,7 @@ export class EnforcementAction implements IAction {
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
       ['selectStatementOfTruthOne', () => this.selectStatementOfTruthOne(fieldName as actionRecord)],
+      ['selectStatementOfTruthTwo', () => this.selectStatementOfTruthTwo(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -368,7 +369,7 @@ export class EnforcementAction implements IAction {
       }
       await performAction('clickButton', statementOfTruthOne.continueButton);
     }
-  
+
   private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
       await performAction('check', claimantDetails.iCertifyCheckbox);
       await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
