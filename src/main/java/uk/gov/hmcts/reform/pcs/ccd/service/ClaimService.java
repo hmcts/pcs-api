@@ -6,16 +6,14 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 
 import java.util.List;
 
@@ -26,7 +24,7 @@ public class ClaimService {
     private final ClaimRepository claimRepository;
     private final ClaimGroundService claimGroundService;
 
-    public ClaimEntity createMainClaimEntity(PCSCase pcsCase, PartyEntity claimantPartyEntity) {
+    public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
 
         String additionalReasons = pcsCase.getAdditionalReasonsForPossession().getReasons();
 
@@ -42,25 +40,24 @@ public class ClaimService {
             .defendantCircumstances(defendantCircumstances != null
                                         ? defendantCircumstances.getDefendantCircumstancesInfo() : null)
             .suspensionOfRightToBuyHousingAct(suspensionOrder != null
-                                                  ? suspensionOrder.getSuspensionOfRightToBuyHousingActs() : null)
+                                                  ? suspensionOrder.getHousingAct() : null)
             .suspensionOfRightToBuyReason(suspensionOrder != null
-                                              ? suspensionOrder.getSuspensionOfRightToBuyReason() : null)
+                                              ? suspensionOrder.getReason() : null)
             .demotionOfTenancyHousingAct(demotionOrder != null
-                                             ? demotionOrder.getDemotionOfTenancyHousingActs() : null)
+                                             ? demotionOrder.getHousingAct() : null)
             .demotionOfTenancyReason(demotionOrder != null
-                                         ? demotionOrder.getDemotionOfTenancyReason() : null)
+                                         ? demotionOrder.getReason() : null)
             .statementOfExpressTermsDetails(demotionOrder != null
                                                 ? demotionOrder.getStatementOfExpressTermsDetails() : null)
             .costsClaimed(pcsCase.getClaimingCostsWanted().toBoolean())
             .additionalReasons(additionalReasons)
-            .applicationWithClaim(YesOrNoToBoolean.convert(pcsCase.getApplicationWithClaim()))
+            .applicationWithClaim(YesOrNoConverter.toBoolean(pcsCase.getApplicationWithClaim()))
             .languageUsed(pcsCase.getLanguageUsed())
             .prohibitedConduct(prohibitedConduct)
             .asbQuestions(asbQuestions)
             .build();
 
 
-        claimEntity.addParty(claimantPartyEntity, PartyRole.CLAIMANT);
         claimEntity.addClaimGrounds(claimGrounds);
         claimEntity.setClaimantCircumstances(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails());
 
@@ -73,11 +70,11 @@ public class ClaimService {
         SuspensionOfRightToBuy suspension = pcsCase.getSuspensionOfRightToBuy();
         SuspensionOfRightToBuyDemotionOfTenancy combined = pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy();
 
-        if ((suspension == null || suspension.getSuspensionOfRightToBuyHousingActs() == null)
+        if ((suspension == null || suspension.getHousingAct() == null)
             && combined != null && combined.getSuspensionOfRightToBuyActs() != null) {
             return SuspensionOfRightToBuy.builder()
-                .suspensionOfRightToBuyHousingActs(combined.getSuspensionOfRightToBuyActs())
-                .suspensionOfRightToBuyReason(combined.getSuspensionOrderReason())
+                .housingAct(combined.getSuspensionOfRightToBuyActs())
+                .reason(combined.getSuspensionOrderReason())
                 .build();
         }
         return suspension;
@@ -87,11 +84,11 @@ public class ClaimService {
         DemotionOfTenancy demotion = pcsCase.getDemotionOfTenancy();
         SuspensionOfRightToBuyDemotionOfTenancy combined = pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy();
 
-        if ((demotion == null || demotion.getDemotionOfTenancyHousingActs() == null)
+        if ((demotion == null || demotion.getHousingAct() == null)
             && combined != null && combined.getDemotionOfTenancyActs() != null) {
             return DemotionOfTenancy.builder()
-                .demotionOfTenancyHousingActs(combined.getDemotionOfTenancyActs())
-                .demotionOfTenancyReason(combined.getDemotionOrderReason())
+                .housingAct(combined.getDemotionOfTenancyActs())
+                .reason(combined.getDemotionOrderReason())
                 .statementOfExpressTermsDetails(demotion != null ? demotion.getStatementOfExpressTermsDetails() : null)
                 .build();
         }
@@ -104,9 +101,9 @@ public class ClaimService {
         }
 
         return ProhibitedConductWales.builder()
-            .claimForProhibitedConductContract(YesOrNoToBoolean.convert(pcsCase.getProhibitedConductWalesClaim()))
+            .claimForProhibitedConductContract(YesOrNoConverter.toBoolean(pcsCase.getProhibitedConductWalesClaim()))
             .agreedTermsOfPeriodicContract(pcsCase.getPeriodicContractTermsWales() != null
-                ? YesOrNoToBoolean.convert(pcsCase.getPeriodicContractTermsWales().getAgreedTermsOfPeriodicContract())
+                ? YesOrNoConverter.toBoolean(pcsCase.getPeriodicContractTermsWales().getAgreedTermsOfPeriodicContract())
                 : null)
             .detailsOfTerms(pcsCase.getPeriodicContractTermsWales() != null
                 ? pcsCase.getPeriodicContractTermsWales().getDetailsOfTerms() : null)
@@ -120,13 +117,13 @@ public class ClaimService {
         }
 
         return ASBQuestionsWales.builder()
-            .antisocialBehaviour(YesOrNoToBoolean.convert(
+            .antisocialBehaviour(YesOrNoConverter.toBoolean(
                 pcsCase.getAsbQuestionsWales().getAntisocialBehaviour()))
             .antisocialBehaviourDetails(pcsCase.getAsbQuestionsWales().getAntisocialBehaviourDetails())
-            .illegalPurposesUse(YesOrNoToBoolean.convert(
+            .illegalPurposesUse(YesOrNoConverter.toBoolean(
                 pcsCase.getAsbQuestionsWales().getIllegalPurposesUse()))
             .illegalPurposesUseDetails(pcsCase.getAsbQuestionsWales().getIllegalPurposesUseDetails())
-            .otherProhibitedConduct(YesOrNoToBoolean.convert(
+            .otherProhibitedConduct(YesOrNoConverter.toBoolean(
                 pcsCase.getAsbQuestionsWales().getOtherProhibitedConduct()))
             .otherProhibitedConductDetails(pcsCase.getAsbQuestionsWales().getOtherProhibitedConductDetails())
             .build();
