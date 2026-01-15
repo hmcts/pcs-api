@@ -58,6 +58,6 @@ public class RentArrearsSection {
         label = "Payment source",
         max = 60
     )
-    private String thirdPartyPaymentSourceOther;
+    private String paymentSourceOther;
 }
 
