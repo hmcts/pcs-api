@@ -27,31 +27,37 @@ public class StatementOfTruthService {
             .completedBy(completedBy);
 
         if (completedBy == StatementOfTruthCompletedBy.CLAIMANT) {
-            StatementOfTruthClaimantDetails claimantDetails =
-                details.getClaimantDetails();
-                List<StatementOfTruthAgreementClaimant> agreementClaimantList =
-                    claimantDetails.getAgreementClaimant();
-                builder.agreementClaimant(
-                        agreementClaimantList != null && !agreementClaimantList.isEmpty()
-                            ? agreementClaimantList.getFirst()
-                            : null)
-                    .fullNameClaimant(claimantDetails.getFullNameClaimant())
-                    .positionClaimant(claimantDetails.getPositionClaimant());
+            buildClaimantDetails(details.getClaimantDetails(), builder);
         } else if (completedBy == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-            StatementOfTruthLegalRepDetails legalRepDetails =
-                details.getLegalRepDetails();
-                List<StatementOfTruthAgreementLegalRep> agreementLegalRepList =
-                    legalRepDetails.getAgreementLegalRep();
-                builder.agreementLegalRep(
-                        agreementLegalRepList != null && !agreementLegalRepList.isEmpty()
-                            ? agreementLegalRepList.getFirst()
-                            : null)
-                    .fullNameLegalRep(legalRepDetails.getFullNameLegalRep())
-                    .firmNameLegalRep(legalRepDetails.getFirmNameLegalRep())
-                    .positionLegalRep(legalRepDetails.getPositionLegalRep());
+            buildLegalRepDetails(details.getLegalRepDetails(), builder);
         }
 
         return builder.build();
+    }
+
+    private void buildClaimantDetails(StatementOfTruthClaimantDetails claimantDetails,
+                                      StatementOfTruth.StatementOfTruthBuilder builder) {
+        List<StatementOfTruthAgreementClaimant> agreementClaimantList =
+            claimantDetails.getAgreementClaimant();
+        builder.agreementClaimant(
+                agreementClaimantList != null && !agreementClaimantList.isEmpty()
+                    ? agreementClaimantList.getFirst()
+                    : null)
+            .fullNameClaimant(claimantDetails.getFullNameClaimant())
+            .positionClaimant(claimantDetails.getPositionClaimant());
+    }
+
+    private void buildLegalRepDetails(StatementOfTruthLegalRepDetails legalRepDetails,
+                                      StatementOfTruth.StatementOfTruthBuilder builder) {
+        List<StatementOfTruthAgreementLegalRep> agreementLegalRepList =
+            legalRepDetails.getAgreementLegalRep();
+        builder.agreementLegalRep(
+                agreementLegalRepList != null && !agreementLegalRepList.isEmpty()
+                    ? agreementLegalRepList.getFirst()
+                    : null)
+            .fullNameLegalRep(legalRepDetails.getFullNameLegalRep())
+            .firmNameLegalRep(legalRepDetails.getFirmNameLegalRep())
+            .positionLegalRep(legalRepDetails.getPositionLegalRep());
     }
 
 }
