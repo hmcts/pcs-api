@@ -295,7 +295,7 @@ public class PCSCase {
     private String nextStepsMarkdown;
 
     @CCD(searchable = false)
-    private String riskAssessmentMarkdown;
+    private String componentShowcaseMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
     @CCD

@@ -14,13 +14,13 @@ import java.util.Map;
 
 @Component
 @AllArgsConstructor
-public class RiskAssessmentRenderer {
+public class ComponentShowcaseRenderer {
 
     private final PebbleEngine pebbleEngine;
 
     public String render() {
 
-        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("riskAssessment");
+        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("componentShowcase");
         Writer writer = new StringWriter();
 
         Map<String, Object> context = new HashMap<>();
