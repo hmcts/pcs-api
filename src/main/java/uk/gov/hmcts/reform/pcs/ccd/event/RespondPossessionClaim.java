@@ -126,8 +126,6 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        log.info("Update Draft Data for Defendant Response, Case Reference: {}", eventPayload.caseReference());
-
         long caseReference = eventPayload.caseReference();
         PossessionClaimResponse possessionClaimResponse = eventPayload.caseData().getPossessionClaimResponse();
         YesOrNo isFinalSubmit = eventPayload.caseData().getSubmitDraftAnswers();
