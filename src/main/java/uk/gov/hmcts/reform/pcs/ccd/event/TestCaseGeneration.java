@@ -80,7 +80,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         return caseData;
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+    SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         Long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
         DynamicList testFilesList = getTestFilesList(pcsCase);
@@ -94,7 +94,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
     }
 
-    private void makeAClaimTestCreation(String label, Long caseReference) {
+    void makeAClaimTestCreation(String label, Long caseReference) {
         PCSCase loadedCase = loadTestPcsCase(label);
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
@@ -104,7 +104,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }
 
-    private PCSCase loadTestPcsCase(String label) {
+    PCSCase loadTestPcsCase(String label) {
         PCSCase loadedCase;
         try {
             Resource nonProdResource = caseSupportHelper.getTestResource(label);
