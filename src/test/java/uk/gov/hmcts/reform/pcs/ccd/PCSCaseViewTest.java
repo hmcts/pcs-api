@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.ComponentShowcaseRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -66,6 +67,8 @@ class PCSCaseViewTest {
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
     @Mock
+    private ComponentShowcaseRenderer componentShowcaseRenderer;
+    @Mock
     private ClaimEntity mainClaimEntity;
     private PCSCaseView underTest;
 
@@ -75,7 +78,7 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                                    modelMapper, draftCaseDataService, caseTitleService
+                                    modelMapper, draftCaseDataService, caseTitleService, componentShowcaseRenderer
         );
     }
 

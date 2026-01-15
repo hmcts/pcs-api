@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.renderer.ComponentShowcaseRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -49,6 +50,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final ModelMapper modelMapper;
     private final DraftCaseDataService draftCaseDataService;
     private final CaseTitleService caseTitleService;
+    private final ComponentShowcaseRenderer componentShowcaseRenderer;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -158,6 +160,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
     private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
+
+        pcsCase.setComponentShowcaseMarkdown(componentShowcaseRenderer.render());
 
         if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""

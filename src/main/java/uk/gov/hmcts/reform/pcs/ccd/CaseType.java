@@ -63,6 +63,12 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .caseReferenceField()
             .field(PCSCase::getPropertyAddress, "Property Address");
 
+        builder.tab("componentShowcase", "GOV.UK components")
+            .label("addressHeading", null, "### Built-in ExUI address field")
+            .field(PCSCase::getPropertyAddress)
+            .label("componentShowcaseMarkdownLabel", null, "${componentShowcaseMarkdown}")
+            .field("componentShowcaseMarkdown", NEVER_SHOW);
+
         builder.tab("nextSteps", "Next steps")
             .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
