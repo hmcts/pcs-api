@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
@@ -67,7 +68,7 @@ class WarrantPageConfigurerTest extends BasePageTest {
 
         // Then
         InOrder inOrder = inOrder(pageBuilder);
-
+        inOrder.verify(pageBuilder).add(isA(EnforcementApplicationPage.class));
         inOrder.verify(pageBuilder).add(isA(NameAndAddressForEvictionPage.class));
         inOrder.verify(pageBuilder).add(isA(ChangeNameAddressPage.class));
         inOrder.verify(pageBuilder).add(isA(PeopleWhoWillBeEvictedPage.class));
