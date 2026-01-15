@@ -118,4 +118,8 @@ public class WarrantDetails {
     @JsonUnwrapped(prefix = "warrant")
     @CCD
     private StatementOfTruthDetails statementOfTruth;
+    
+    @CCD
+    @JsonUnwrapped(prefix = "warrant")
+    private DefendantsDOB defendantsDOB;
 }
