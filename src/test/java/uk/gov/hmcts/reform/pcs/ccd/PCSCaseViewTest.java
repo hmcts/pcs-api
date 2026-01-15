@@ -30,6 +30,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -64,6 +68,14 @@ class PCSCaseViewTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private CaseTitleService caseTitleService;
+    @Mock
+    private TenancyLicenceView tenancyLicenceView;
+    @Mock
+    private RentDetailsView rentDetailsView;
+    @Mock
+    private AlternativesToPossessionView alternativesToPossessionView;
+    @Mock
+    private HousingActWalesView housingActWalesView;
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -77,7 +89,9 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                                    modelMapper, draftCaseDataService, caseTitleService
+                                    modelMapper, draftCaseDataService, caseTitleService,
+                                    tenancyLicenceView, rentDetailsView, alternativesToPossessionView,
+                                    housingActWalesView
         );
     }
 
@@ -341,6 +355,18 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getDefendantCircumstances()).isNull();
         assertThat(pcsCase.getAdditionalReasonsForPossession()).isNull();
         assertThat(pcsCase.getClaimantType()).isNull();
+    }
+
+    @Test
+    void shouldSetCaseFieldsInViewHelpers() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(alternativesToPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(housingActWalesView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     private static Stream<Arguments> complexClaimFieldsScenarios() {
