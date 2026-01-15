@@ -115,4 +115,8 @@ public class WarrantDetails {
                     + "return to the case summary page, and then check the tab named ‘Case File View’"
     )
     private VerticalYesNo isSuspendedOrder;
+
+    @CCD
+    @JsonUnwrapped(prefix = "warrant")
+    private DefendantsDOB defendantsDOB;
 }
