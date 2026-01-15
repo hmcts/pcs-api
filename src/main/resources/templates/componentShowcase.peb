@@ -235,7 +235,7 @@
     </div>
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-one-quarter">
-        <h2>Summary card ❌ ✅</h2>
+        <h2>Summary card ✅</h2>
       </div>
       <div class="govuk-grid-column-three-quarters">
         <div class="govuk-summary-card">
@@ -495,127 +495,53 @@
         <h2>Tag ✅</h2>
       </div>
       <div class="govuk-grid-column-three-quarters">
+        <h2>Standalone</h2>
         <strong class="govuk-tag">
           Completed
         </strong>
         <strong class="govuk-tag govuk-tag--red">
           Urgent
         </strong>
+        <strong class="govuk-tag govuk-tag--green">
+          New
+        </strong>
+        <h2>In a table</h2>
+        <i>These don't work well in a table, but we could investigate that further</i>
         <table class="govuk-table">
           <thead class="govuk-table__head">
           <tr class="govuk-table__row">
-            <th class="govuk-table__header" scope="col"> Class name </th>
-            <th class="govuk-table__header" scope="col"> Tag </th>
+            <th class="govuk-table__header" scope="col"> Application </th>
+            <th class="govuk-table__header" scope="col"> Status </th>
           </tr>
           </thead>
           <tbody class="govuk-table__body">
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">
-              <code> govuk-tag--grey </code>
+              Joshua Wessel
             </td>
             <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--grey">
-                Inactive
+              <strong class="govuk-tag govuk-tag--red">
+                Urgent
               </strong>
             </td>
           </tr>
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">
-              <code> govuk-tag--green </code>
+              Rachel Silver
             </td>
             <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--green">
+              <strong class="govuk-tag govuk-tag--blue">
                 New
               </strong>
             </td>
           </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <code> govuk-tag--turquoise </code>
-            </td>
-            <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--turquoise">
-                Active
-              </strong>
-            </td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <code> govuk-tag--blue </code>
-            </td>
-            <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--blue">
-                Pending
-              </strong>
-            </td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <code> govuk-tag--light-blue </code>
-            </td>
-            <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--light-blue">
-                In progress
-              </strong>
-            </td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <code> govuk-tag--purple </code>
-            </td>
-            <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--purple">
-                Received
-              </strong>
-            </td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <code> govuk-tag--pink </code>
-            </td>
-            <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--pink">
-                Sent
-              </strong>
-            </td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <code> govuk-tag--red </code>
-            </td>
-            <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--red">
-                Rejected
-              </strong>
-            </td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <code> govuk-tag--orange </code>
-            </td>
-            <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--orange">
-                Declined
-              </strong>
-            </td>
-          </tr>
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">
-              <code> govuk-tag--yellow </code>
-            </td>
-            <td class="govuk-table__cell">
-              <strong class="govuk-tag govuk-tag--yellow">
-                Delayed
-              </strong>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+        </tbody>
+      </table>
       </div>
     </div>
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-one-quarter">
-        <h2>Task List ❌ ✅</h2>
+        <h2>Task List ❌</h2>
       </div>
       <div class="govuk-grid-column-three-quarters">
         <ul class="govuk-task-list">
