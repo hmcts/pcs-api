@@ -356,6 +356,17 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: suspendedOrder.yesRadioOption
       });
       await performValidation('mainHeader', statementOfTruthOne.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.four,
+        inputArray: statementOfTruthOne.errorValidationField.errorCheckBox,
+        label: statementOfTruthOne.completedByLabel,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.three,
+        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
         question: statementOfTruthOne.completedByLabel,
         option: statementOfTruthOne.claimantRadioOption,
         button: statementOfTruthOne.continueButton
@@ -374,28 +385,17 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
         header: statementOfTruthOne.errors,
         label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.four,
-        inputArray: statementOfTruthOne.errorValidationField.errorCheckBox,
-        label: statementOfTruthOne.completedByLabel,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.three,
-        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
         button: statementOfTruthOne.continueButton
       });
       await performAction('validateAmountToRePayTable');
       await performAction('selectStatementOfTruthOne', {
-      checkbox: statementOfTruthOne.iCertifyCheckbox,
-      completedBy: statementOfTruthOne.claimantRadioOption,
-      iBelieveCheckbox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-      fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
-      positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
+        checkbox: statementOfTruthOne.iCertifyCheckbox,
+        completedBy: statementOfTruthOne.claimantRadioOption,
+        iBelieveCheckbox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
+        fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
+        positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
       });
-      await performValidation('mainHeader', checkYourAnswers.mainHeader); 
+      await performValidation('mainHeader', checkYourAnswers.mainHeader);
     });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -513,7 +513,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
       positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel
     });
-    await performValidation('mainHeader', checkYourAnswers.mainHeader); 
+    await performValidation('mainHeader', checkYourAnswers.mainHeader);
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -627,7 +627,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nameOfFirmTextInput: statementOfTruthOne.nameOfFirmHiddenTextLabel,
       positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
     });
-    await performValidation('mainHeader', checkYourAnswers.mainHeader); 
+    await performValidation('mainHeader', checkYourAnswers.mainHeader);
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
