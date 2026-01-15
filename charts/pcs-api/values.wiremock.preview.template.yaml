@@ -74,7 +74,7 @@ wiremock:
     ras-proxy.json: |
       {
         "request": {
-          "method": "GET",
+          "method": "ALL",
           "urlPathPattern": "/am/.*"
         },
         "response": {
