@@ -107,40 +107,46 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                 .getStatementOfTruth();
 
         if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
-            StatementOfTruthClaimantDetails claimantDetails = statementOfTruth.getClaimantDetails();
-            textAreaValidationService.validateTextArea(
-                claimantDetails.getFullNameClaimant(),
-                "Full name",
-                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                errors
-            );
-            textAreaValidationService.validateTextArea(
-                claimantDetails.getPositionClaimant(),
-                "Position or office held",
-                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                errors
-            );
+            validateClaimantDetails(statementOfTruth.getClaimantDetails(), errors);
         } else if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-            StatementOfTruthLegalRepDetails legalRepDetails = statementOfTruth.getLegalRepDetails();
-            textAreaValidationService.validateTextArea(
-                legalRepDetails.getFullNameLegalRep(),
-                "Full name",
-                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                errors
-            );
-            textAreaValidationService.validateTextArea(
-                legalRepDetails.getFirmNameLegalRep(),
-                "Name of firm",
-                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                errors
-            );
-            textAreaValidationService.validateTextArea(
-                legalRepDetails.getPositionLegalRep(),
-                "Position or office held",
-                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                errors
-            );
+            validateLegalRepDetails(statementOfTruth.getLegalRepDetails(), errors);
         }
+    }
+
+    private void validateClaimantDetails(StatementOfTruthClaimantDetails claimantDetails, List<String> errors) {
+        textAreaValidationService.validateTextArea(
+            claimantDetails.getFullNameClaimant(),
+            "Full name",
+            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+            errors
+        );
+        textAreaValidationService.validateTextArea(
+            claimantDetails.getPositionClaimant(),
+            "Position or office held",
+            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+            errors
+        );
+    }
+
+    private void validateLegalRepDetails(StatementOfTruthLegalRepDetails legalRepDetails, List<String> errors) {
+        textAreaValidationService.validateTextArea(
+            legalRepDetails.getFullNameLegalRep(),
+            "Full name",
+            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+            errors
+        );
+        textAreaValidationService.validateTextArea(
+            legalRepDetails.getFirmNameLegalRep(),
+            "Name of firm",
+            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+            errors
+        );
+        textAreaValidationService.validateTextArea(
+            legalRepDetails.getPositionLegalRep(),
+            "Position or office held",
+            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+            errors
+        );
     }
 }
 
