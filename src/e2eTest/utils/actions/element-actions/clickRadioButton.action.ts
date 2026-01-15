@@ -2,6 +2,8 @@ import { Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
 import { actionRetries } from '../../../playwright.config';
 
+let counter = 0;
+
 export class ClickRadioButtonAction implements IAction {
   async execute(page: Page, action: string, params: actionRecord): Promise<void> {
     const idx = params.index !== undefined ? Number(params.index) : 0;
@@ -20,10 +22,12 @@ export class ClickRadioButtonAction implements IAction {
         return;
       }
     }
+    if(counter === 3)throw new Error(`The radio button with question: "${question}" and option: "${option}" is not found`);
   }
 
   private async clickWithRetry(locator: any): Promise<boolean> {
     if ((await locator.count()) !== 1) {
+      counter++;
       return false;
     }
 
@@ -59,9 +63,6 @@ export class ClickRadioButtonAction implements IAction {
       .filter({ has: page.locator('label.form-label').filter({ hasText: option }) })
       .locator('input[type="radio"]');
   }
-
-  private escapeRegex(text: string): string {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
+  
 }
 
