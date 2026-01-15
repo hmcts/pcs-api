@@ -24,7 +24,9 @@ import {
   peopleYouWantToEvict,
   moneyOwed,
   languageUsed,
-  suspendedOrder
+  suspendedOrder,
+  statementOfTruthOne,
+  statementOfTruthTwo
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -70,6 +72,7 @@ export class EnforcementAction implements IAction {
       ['validateAmountToRePayTable', () => this.validateAmountToRePayTable()],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
+      ['selectStatementOfTruthOne', () => this.selectStatementOfTruthOne(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -347,6 +350,40 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: suspendedOrderPara.question, option: suspendedOrderPara.option });
     await performAction('clickButton', suspendedOrder.continueButton);
 
+  }
+
+  private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
+      await performAction('check', claimantDetails.iCertifyCheckbox);
+      await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
+      if(claimantDetails.completedBy == statementOfTruthOne.claimantRadioOption){
+        await performAction('check', claimantDetails.iBelieveCheckbox);
+        await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+        await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      }
+      if(claimantDetails.completedBy == statementOfTruthOne.claimantLegalRepresentativeRadioOption){
+        await performAction('check', claimantDetails.signThisStatementCheckbox);
+        await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+        await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+        await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      }
+      await performAction('clickButton', statementOfTruthOne.continueButton);
+    }
+  
+  private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
+      await performAction('check', claimantDetails.iCertifyCheckbox);
+      await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
+      if(claimantDetails.completedBy == statementOfTruthTwo.claimantRadioOption){
+        await performAction('check', claimantDetails.iBelieveCheckbox);
+        await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+        await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      }
+      if(claimantDetails.completedBy == statementOfTruthTwo.claimantLegalRepresentativeRadioOption){
+        await performAction('check', claimantDetails.signThisStatementCheckbox);
+        await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+        await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+        await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      }
+      await performAction('clickButton', statementOfTruthOne.continueButton);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {

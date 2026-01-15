@@ -3,6 +3,7 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import {
   caseSummary,
+  checkYourAnswers,
   signInOrCreateAnAccount,
   user
 } from '@data/page-data';
@@ -327,6 +328,46 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: suspendedOrder.yesRadioOption
       });
       await performValidation('mainHeader', statementOfTruthOne.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.four,
+        inputArray: statementOfTruthOne.errorValidationField.errorCheckBox,
+        label: statementOfTruthOne.completedByLabel,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.three,
+        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
+        question: statementOfTruthOne.completedByLabel,
+        option: statementOfTruthOne.claimantRadioOption,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.two,
+        inputArray: statementOfTruthOne.errorValidationField.errorTextField,
+        header: statementOfTruthOne.errors,
+        label: statementOfTruthOne.fullNameHiddenTextLabel,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.two,
+        inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
+        header: statementOfTruthOne.errors,
+        label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('validateAmountToRePayTable');
+      await performAction('selectStatementOfTruthOne', {
+      checkbox: statementOfTruthOne.iCertifyCheckbox,
+      completedBy: statementOfTruthOne.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
+      positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
+      });
+      await performValidation('mainHeader', checkYourAnswers.mainHeader); 
     });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -430,6 +471,16 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: suspendedOrder.noRadioOption
     });
     await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
+    await performAction('validateAmountToRePayTable');
+    await performAction('selectStatementOfTruthTwo', {
+      checkbox: statementOfTruthTwo.iCertifyCheckbox,
+      completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
+      signThisStatementCheckbox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
+      fullNameTextInput: statementOfTruthTwo.fullNameHiddenTextLabel,
+      nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
+      positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel
+    });
+    await performValidation('mainHeader', checkYourAnswers.mainHeader); 
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -529,6 +580,16 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: suspendedOrder.yesRadioOption
     });
     await performValidation('mainHeader', statementOfTruthOne.mainHeader);
+    await performAction('validateAmountToRePayTable');
+    await performAction('selectStatementOfTruthOne', {
+      checkbox: statementOfTruthOne.iCertifyCheckbox,
+      completedBy: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
+      signThisStatementCheckbox: statementOfTruthOne.signThisStatementHiddenCheckbox,
+      fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
+      nameOfFirmTextInput: statementOfTruthOne.nameOfFirmHiddenTextLabel,
+      positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
+    });
+    await performValidation('mainHeader', checkYourAnswers.mainHeader); 
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
