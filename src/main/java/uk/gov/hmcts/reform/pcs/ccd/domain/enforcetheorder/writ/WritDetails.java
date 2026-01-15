@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LegalCosts;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Text;
 
@@ -46,4 +47,8 @@ public class WritDetails {
         typeOverride = Text
     )
     private String highCourtEnforcementOfficerDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private LegalCosts legalCosts;
 }
