@@ -71,8 +71,23 @@ wiremock:
           "proxyBaseUrl": "http://rd-professional-api-aat.service.core-compute-aat.internal"
         }
       }
+    ras-proxy.json: |
+      {
+        "request": {
+          "method": "GET",
+          "urlPathPattern": "/am/.*"
+        },
+        "response": {
+          "proxyBaseUrl": "http://am-role-assignment-service-aat.service.core-compute-aat.internal"
+        }
+      }
 
 java:
   environment:
     FEES_REGISTER_API_URL: "https://wiremock-${SERVICE_NAME}.preview.platform.hmcts.net"
     RD_PROFESSIONAL_API_URL: "https://wiremock-${SERVICE_NAME}.preview.platform.hmcts.net"
+ccd:
+  ccd-data-store-api:
+    java:
+      environment:
+        ROLE_ASSIGNMENT_URL: "https://wiremock-${SERVICE_NAME}.preview.platform.hmcts.net"
