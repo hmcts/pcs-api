@@ -49,20 +49,20 @@ public class DraftCaseDataService {
     }
 
     public <T> void patchUnsubmittedEventData(long caseReference, T eventData, EventId eventId) {
-        String patchCaseDataJson = writeCaseDataJson(eventData);
-        patchUnsubmittedCaseData(caseReference, eventId, patchCaseDataJson);
+        String patchEventDataJson = writeCaseDataJson(eventData);
+        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson);
     }
 
-    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchCaseDataJson) {
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
         DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository.findByCaseReferenceAndEventId(
                 caseReference, eventId)
             .map(existingDraft -> {
-                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchCaseDataJson));
+                existingDraft.setCaseData(mergeCaseDataJson(existingDraft.getCaseData(), patchEventDataJson));
                 return existingDraft;
             }).orElseGet(() -> {
                 DraftCaseDataEntity newDraft = new DraftCaseDataEntity();
                 newDraft.setCaseReference(caseReference);
-                newDraft.setCaseData(patchCaseDataJson);
+                newDraft.setCaseData(patchEventDataJson);
                 newDraft.setEventId(eventId);
                 return newDraft;
             });

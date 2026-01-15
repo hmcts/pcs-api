@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 @AllArgsConstructor
 @Component
-public class NonProdSupportPage implements CcdPageConfiguration {
+public class TestCaseSelectionPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

@@ -18,7 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
-import uk.gov.hmcts.reform.pcs.ccd.page.nonprod.NonProdSupportPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.nonprod.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.nonprod.CaseSupportHelper;
@@ -69,7 +69,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
                 .showSummary()
                 .name(EVENT_NAME)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
-        new PageBuilder(eventBuilder).add(new NonProdSupportPage());
+        new PageBuilder(eventBuilder).add(new TestCaseSelectionPage());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {

@@ -42,14 +42,7 @@ public enum State {
         access = {CaseworkerReadAccess.class, ClaimantAccess.class},
         hint = "${pageHeadingMarkdown}"
     )
-    CASE_CLOSED,
-
-    @CCD(
-        label = "Draft",
-        access = {ClaimantAccess.class},
-        hint = "${pageHeadingMarkdown}"
-    )
-    DRAFT,
+    CASE_CLOSED
 
 }
 
