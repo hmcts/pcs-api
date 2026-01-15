@@ -106,50 +106,40 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
         StatementOfTruthDetails statementOfTruth = caseData.getEnforcementOrder().getWarrantDetails()
                 .getStatementOfTruth();
 
-        if (statementOfTruth == null) {
-            return;
-        }
-
-        if (statementOfTruth.getCompletedBy() != null) {
-            if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
-                StatementOfTruthClaimantDetails claimantDetails = statementOfTruth.getClaimantDetails();
-                if (claimantDetails != null) {
-                    textAreaValidationService.validateTextArea(
-                        claimantDetails.getFullNameClaimant(),
-                        "Full name",
-                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                        errors
-                    );
-                    textAreaValidationService.validateTextArea(
-                        claimantDetails.getPositionClaimant(),
-                        "Position or office held",
-                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                        errors
-                    );
-                }
-            } else if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-                StatementOfTruthLegalRepDetails legalRepDetails = statementOfTruth.getLegalRepDetails();
-                if (legalRepDetails != null) {
-                    textAreaValidationService.validateTextArea(
-                        legalRepDetails.getFullNameLegalRep(),
-                        "Full name",
-                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                        errors
-                    );
-                    textAreaValidationService.validateTextArea(
-                        legalRepDetails.getFirmNameLegalRep(),
-                        "Name of firm",
-                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                        errors
-                    );
-                    textAreaValidationService.validateTextArea(
-                        legalRepDetails.getPositionLegalRep(),
-                        "Position or office held",
-                        TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-                        errors
-                    );
-                }
-            }
+        if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
+            StatementOfTruthClaimantDetails claimantDetails = statementOfTruth.getClaimantDetails();
+            textAreaValidationService.validateTextArea(
+                claimantDetails.getFullNameClaimant(),
+                "Full name",
+                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+                errors
+            );
+            textAreaValidationService.validateTextArea(
+                claimantDetails.getPositionClaimant(),
+                "Position or office held",
+                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+                errors
+            );
+        } else if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
+            StatementOfTruthLegalRepDetails legalRepDetails = statementOfTruth.getLegalRepDetails();
+            textAreaValidationService.validateTextArea(
+                legalRepDetails.getFullNameLegalRep(),
+                "Full name",
+                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+                errors
+            );
+            textAreaValidationService.validateTextArea(
+                legalRepDetails.getFirmNameLegalRep(),
+                "Name of firm",
+                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+                errors
+            );
+            textAreaValidationService.validateTextArea(
+                legalRepDetails.getPositionLegalRep(),
+                "Position or office held",
+                TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+                errors
+            );
         }
     }
 }
