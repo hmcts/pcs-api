@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoToBoolean;
+import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 
 import java.math.BigDecimal;
@@ -28,11 +28,11 @@ public class TenancyLicenceService {
                     ? tenancyDetails.getDetailsOfOtherTypeOfTenancyLicence() : null)
             .supportingDocuments(ListValueUtils.unwrapListItems(
                     tenancyDetails != null ? tenancyDetails.getTenancyLicenceDocuments() : null))
-            .arrearsJudgmentWanted(YesOrNoToBoolean.convert(pcsCase.getArrearsJudgmentWanted()));
+            .arrearsJudgmentWanted(YesOrNoConverter.toBoolean(pcsCase.getArrearsJudgmentWanted()));
 
         buildRentSection(pcsCase.getRentDetails(), tenancyLicenceBuilder);
 
-        tenancyLicenceBuilder.noticeServed(YesOrNoToBoolean.convert(pcsCase.getNoticeServed()));
+        tenancyLicenceBuilder.noticeServed(YesOrNoConverter.toBoolean(pcsCase.getNoticeServed()));
 
         buildRentArrearsSection(pcsCase.getRentArrears(), tenancyLicenceBuilder);
 
@@ -119,7 +119,7 @@ public class TenancyLicenceService {
         // Add notice served details for Wales
         if (walesNoticeDetails != null) {
             tenancyLicence.walesNoticeServed(walesNoticeDetails.getNoticeServed() != null
-                ? YesOrNoToBoolean.convert(walesNoticeDetails.getNoticeServed()) : null);
+                ? YesOrNoConverter.toBoolean(walesNoticeDetails.getNoticeServed()) : null);
             tenancyLicence.walesTypeOfNoticeServed(walesNoticeDetails.getTypeOfNoticeServed());
         }
     }
