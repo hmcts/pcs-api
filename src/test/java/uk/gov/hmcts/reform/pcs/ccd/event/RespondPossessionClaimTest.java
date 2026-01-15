@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -483,7 +482,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(savedDraft.getPossessionClaimResponse().getParty()).isNotNull();
         assertThat(savedDraft.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
         assertThat(savedDraft.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getEmailAddress()).isEqualTo("john.doe@example.com");
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getEmailAddress())
+            .isEqualTo("john.doe@example.com");
         assertThat(savedDraft.getPossessionClaimResponse().getParty().getPhoneNumber()).isEqualTo("07700900000");
         assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(address);
     }
