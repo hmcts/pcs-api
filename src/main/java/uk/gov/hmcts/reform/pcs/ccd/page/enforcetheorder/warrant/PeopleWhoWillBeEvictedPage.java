@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,8 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         pageBuilder
             .page("peopleWhoWillBeEvicted", this::midEvent)
             .pageLabel("The people who will be evicted")
-            .showCondition("warrantShowPeopleWhoWillBeEvictedPage=\"Yes\" AND selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                + " AND warrantShowPeopleWhoWillBeEvictedPage=\"Yes\"")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowPeopleWhoWillBeEvictedPage, NEVER_SHOW)

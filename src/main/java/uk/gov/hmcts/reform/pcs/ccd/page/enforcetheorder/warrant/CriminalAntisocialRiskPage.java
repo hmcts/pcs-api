@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -28,9 +29,9 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("criminalAntisocialRisk", this::midEvent)
             .pageLabel("Their history of criminal or antisocial behaviour")
-            .showCondition("warrantAnyRiskToBailiff=\"YES\""
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
                 + " AND warrantEnforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\""
-                + " AND selectEnforcementType=\"WARRANT\"")
+                + " AND warrantAnyRiskToBailiff=\"YES\"")
             .label("criminalAntisocialRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
