@@ -558,10 +558,10 @@ public class TestingSupportController {
 
                 PartyEntity matched = partyByPartyId.get(partyId);
                 if (matched == null) {
-                    throw new IllegalStateException("No party found for partyId=" + partyId);
+                    throw new IllegalStateException("Party is not found on Case. PartyID = " + partyId);
                 }
 
-                AddressUK addressUK = new AddressUK();
+                AddressUK addressUK;
 
                 if (!matched.getAddressKnown().toBoolean()) {
                     addressUK = null;
