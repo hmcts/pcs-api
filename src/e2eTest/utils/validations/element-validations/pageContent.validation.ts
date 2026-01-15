@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { IValidation } from '../../interfaces/validation.interface';
+import { IValidation } from '@utils/interfaces';
 import * as fs from 'fs';
 import * as path from 'path';
 import { cyaValidation, CYAStore } from '../custom-validations/CYA/cyaPage.validation';
@@ -27,7 +27,9 @@ export class PageContentValidation implements IValidation {
                     :has-text("${value}") + button,
                     [role="link"]:text("${value}"),
                     a:text("${value}"),
-                    :has-text("${value}") ~ button`),
+                    :has-text("${value}") ~ button,
+                    button:has-text("${value}"),
+                    button >> text=${value}`),
     Link: (page: Page, value: string) => page.locator(`
                     a:text("${value}"),
                     a.govuk-link:text("${value}"),
@@ -97,6 +99,7 @@ export class PageContentValidation implements IValidation {
   }
 
   async validateCurrentPage(page: Page): Promise<void> {
+    await page.waitForLoadState('load');
     const pageUrl = page.url();
 
     if (PageContentValidation.isCYAPage(pageUrl)) {

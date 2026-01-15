@@ -67,5 +67,4 @@ public class ClaimService {
         return claimEntity;
     }
 
-
 }
