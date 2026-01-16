@@ -152,12 +152,14 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 //Note that defendants will be stored in a list
             } else {
                 // Save complete draft with all user-entered data
-                PCSCase draftToSave = PCSCase.builder()
-                    .possessionClaimResponse(possessionClaimResponse)
-                    .build();
+                if (possessionClaimResponse.getParty() != null) {
+                    PCSCase draftToSave = PCSCase.builder()
+                        .possessionClaimResponse(possessionClaimResponse)
+                        .build();
 
-                draftCaseDataService.patchUnsubmittedEventData(
-                    caseReference, draftToSave, respondPossessionClaim);
+                    draftCaseDataService.patchUnsubmittedEventData(
+                        caseReference, draftToSave, respondPossessionClaim);
+                }
             }
         }
         return SubmitResponse.defaultResponse();
