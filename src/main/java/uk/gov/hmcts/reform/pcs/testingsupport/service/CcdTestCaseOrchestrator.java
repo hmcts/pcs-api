@@ -5,9 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.BeforeAll;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -22,35 +19,24 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@SpringBootApplication
-@EnableFeignClients(basePackages = {
-    "uk.gov.hmcts.reform.ccd.client"
-})
+
 public class CcdTestCaseOrchestrator {
 
     private static final String CASE_TYPE = "PCS";
     private static final String CREATE_EVENT = "createPossessionClaim";
     private static final String RESUME_EVENT = "resumePossessionClaim";
 
-    @Autowired
-    private IdamClient idamClient;
+    private final IdamClient idamClient;
+    private final AuthTokenGenerator s2sAuthTokenGenerator;
+    private final CoreCaseDataApi coreCaseDataApi;
 
-    @Autowired
-    protected AuthTokenGenerator s2sAuthTokenGenerator;
+//    @BeforeAll
+//    public void setup() {
+//        idamToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+//        s2sToken = s2sAuthTokenGenerator.generate();
+//    }
 
-    @Autowired
-    private CoreCaseDataApi coreCaseDataApi;
-
-    private String idamToken;
-    private String s2sToken;
-
-    @BeforeAll
-    public void setup() {
-        idamToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
-        s2sToken = s2sAuthTokenGenerator.generate();
-    }
-
-    public Long createCase() {
+    public Long createCase(String idamToken, String s2sToken) {
 
         PCSCase caseData = PCSCase.builder()
             .propertyAddress(AddressUK.builder()
@@ -63,7 +49,6 @@ public class CcdTestCaseOrchestrator {
             .legislativeCountry(LegislativeCountry.ENGLAND)
             .build();
 
-        // 1. Start createPossessionClaim event
         StartEventResponse createEvent = coreCaseDataApi.startCase(
             idamToken,
             s2sToken,
@@ -76,7 +61,6 @@ public class CcdTestCaseOrchestrator {
             .data(caseData)
             .build();
 
-        // 2. Submit case creation
         CaseDetails caseDetails = coreCaseDataApi.submitCaseCreation(
             idamToken,
             s2sToken,
@@ -86,7 +70,6 @@ public class CcdTestCaseOrchestrator {
 
         String caseId = caseDetails.getId().toString();
 
-        // 3. Start resumePossessionClaim event
         StartEventResponse resumeEvent = coreCaseDataApi.startEvent(
             idamToken,
             s2sToken,
@@ -94,10 +77,8 @@ public class CcdTestCaseOrchestrator {
             RESUME_EVENT
         );
 
-        // 4. Build resumePossessionClaim payload
         JsonNode resumePossessionClaimPayload = buildResumePossessionClaimPayload();
 
-        // 5. Submit resumePossessionClaim event
         CaseDataContent resumeContent = CaseDataContent.builder()
             .eventToken(resumeEvent.getToken())
             .data(resumePossessionClaimPayload)
