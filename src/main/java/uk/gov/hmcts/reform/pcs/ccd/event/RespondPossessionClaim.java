@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
@@ -26,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -41,7 +41,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     private final DraftCaseDataService draftCaseDataService;
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
-    private final ModelMapper modelMapper;
+    private final AddressMapper addressMapper;
 
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -94,16 +94,14 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 return new CaseAccessException("User is not linked as a defendant on this case");
             });
 
+        // Map address using AddressMapper to ensure all fields are explicitly set (including null values)
+        // This ensures consistent JSON structure for CCD event token validation
         AddressUK contactAddress;
         if (matchedDefendant.getAddressSameAsProperty() != null
             && matchedDefendant.getAddressSameAsProperty() == VerticalYesNo.YES) {
-            contactAddress = pcsCaseEntity.getPropertyAddress() != null
-                ? modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class)
-                : null;
+            contactAddress = addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress());
         } else {
-            contactAddress = matchedDefendant.getAddress() != null
-                ? modelMapper.map(matchedDefendant.getAddress(), AddressUK.class)
-                : null;
+            contactAddress = addressMapper.toAddressUK(matchedDefendant.getAddress());
         }
 
         // Always create Party object to maintain consistent structure for CCD event token validation
@@ -151,7 +149,6 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 //This will be implemented in a future ticket.
                 //Note that defendants will be stored in a list
             } else {
-                // Save complete draft with all user-entered data
                 if (possessionClaimResponse.getParty() != null) {
                     PCSCase draftToSave = PCSCase.builder()
                         .possessionClaimResponse(possessionClaimResponse)

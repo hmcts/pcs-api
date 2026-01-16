@@ -8,8 +8,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -49,7 +50,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private SecurityContextService securityContextService;
 
     @Mock
-    private ModelMapper modelMapper;
+    private AddressMapper addressMapper;
 
     @BeforeEach
     void setUp() {
@@ -57,7 +58,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             draftCaseDataService,
             pcsCaseService,
             securityContextService,
-            modelMapper
+            addressMapper
         ));
     }
 
@@ -69,7 +70,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .postCode("SW1A 1AA")
             .build();
 
-        uk.gov.hmcts.reform.pcs.ccd.domain.Party party = uk.gov.hmcts.reform.pcs.ccd.domain.Party.builder()
+        Party party = Party.builder()
             .firstName("John")
             .lastName("Doe")
             .address(address)
@@ -139,7 +140,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(expectedAddress);
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(expectedAddress);
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -346,7 +347,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(modelMapper.map(propertyAddressEntity, AddressUK.class)).thenReturn(propertyAddress);
+        when(addressMapper.toAddressUK(propertyAddressEntity)).thenReturn(propertyAddress);
 
         PCSCase caseData = PCSCase.builder().build();
 
