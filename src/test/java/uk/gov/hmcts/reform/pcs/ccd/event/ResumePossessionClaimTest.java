@@ -460,7 +460,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @MethodSource("unsubmittedDataFlagScenarios")
         void shouldSetFlagForUnsubmittedData(boolean hasUnsubmittedData, YesOrNo expectedCaseDataFlag) {
             // Given
-            when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim, USER_ID))
+            when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim))
                 .thenReturn(hasUnsubmittedData);
 
             when(userDetails.getSub()).thenReturn("user@test.com");
@@ -478,7 +478,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(updatedCaseData.getHasUnsubmittedCaseData()).isEqualTo(expectedCaseDataFlag);
-            verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim, USER_ID);
+            verify(draftCaseDataService).hasUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim);
         }
 
         private static Stream<Arguments> unsubmittedDataFlagScenarios() {
@@ -518,7 +518,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any(), any(UUID.class));
+            verify(draftCaseDataService, never()).deleteUnsubmittedCaseData(anyLong(), any());
         }
     }
 
@@ -705,7 +705,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim, USER_ID);
+            verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim);
         }
 
         @Test

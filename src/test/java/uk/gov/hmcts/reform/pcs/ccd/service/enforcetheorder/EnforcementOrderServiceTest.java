@@ -153,6 +153,6 @@ class EnforcementOrderServiceTest {
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder, USER_ID);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
     }
 }

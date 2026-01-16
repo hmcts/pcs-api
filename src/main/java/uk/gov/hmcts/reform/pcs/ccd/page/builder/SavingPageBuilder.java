@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
-import java.util.UUID;
 
 public class SavingPageBuilder extends PageBuilder {
 
@@ -81,9 +80,8 @@ public class SavingPageBuilder extends PageBuilder {
         private void patchUnsubmittedData(CaseDetails<PCSCase, State> details) {
             long caseReference = details.getId();
             PCSCase caseData = details.getData();
-            UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
-            draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId, userId);
+            draftCaseDataService.patchUnsubmittedEventData(caseReference, caseData, caseEventId);
         }
 
     }

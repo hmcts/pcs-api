@@ -97,7 +97,7 @@ class SelectClaimantTypeTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId, USER_ID);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId);
         assertThat(caseData.getHasUnsubmittedCaseData()).isEqualTo(NO);
     }
 

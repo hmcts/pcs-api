@@ -85,19 +85,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(UUID.randomUUID().toString())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         callSubmitHandler(caseData);
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.respondPossessionClaim),
-            any(UUID.class)
+            eq(EventId.respondPossessionClaim)
         );
 
     }
@@ -160,8 +154,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.respondPossessionClaim),
-            eq(defendantUserId)
+            eq(EventId.respondPossessionClaim)
         );
     }
 
@@ -190,7 +183,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldThrowCaseAccessExceptionWhenDefendantsIsNull() {
+    void shouldThrowCaseAccessExceptionWhenNoClaimExists() {
         UUID defendantUserId = UUID.randomUUID();
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
@@ -207,7 +200,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThatThrownBy(() -> callStartHandler(caseData))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No defendants associated with this case");
+            .hasMessage("No claim found for this case");
     }
 
     @Test
@@ -260,19 +253,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(UUID.randomUUID().toString())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         callSubmitHandler(caseData);
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.respondPossessionClaim),
-            any(UUID.class)
+            eq(EventId.respondPossessionClaim)
         );
     }
 
@@ -283,19 +270,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(UUID.randomUUID().toString())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         callSubmitHandler(caseData);
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
-            eq(EventId.respondPossessionClaim),
-            any(UUID.class)
+            eq(EventId.respondPossessionClaim)
         );
     }
 
@@ -310,19 +291,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .submitDraftAnswers(null)
             .build();
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(UUID.randomUUID().toString())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
 
         callSubmitHandler(caseData);
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
-            eq(EventId.respondPossessionClaim),
-            any(UUID.class)
+            eq(EventId.respondPossessionClaim)
         );
     }
 
@@ -429,8 +404,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
-            eq(EventId.respondPossessionClaim),
-            eq(defendantUserId)
+            eq(EventId.respondPossessionClaim)
         );
     }
 
@@ -460,20 +434,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(UUID.randomUUID().toString())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-
         callSubmitHandler(caseData);
 
         ArgumentCaptor<PCSCase> draftCaptor = forClass(PCSCase.class);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             draftCaptor.capture(),
-            eq(EventId.respondPossessionClaim),
-            any(UUID.class)
+            eq(EventId.respondPossessionClaim)
         );
 
         PCSCase savedDraft = draftCaptor.getValue();

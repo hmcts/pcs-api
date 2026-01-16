@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -40,9 +39,7 @@ public class EnforcementOrderService {
     @Transactional
     public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
         createEnforcementOrder(caseReference, enforcementOrder);
-        UserInfo userInfo = securityContextService.getCurrentUserDetails();
-        UUID userId = UUID.fromString(userInfo.getUid());
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder, userId);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
     }
 
     private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {

@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
@@ -301,17 +300,14 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private void setUnsubmittedCaseDataFlag(long caseReference, PCSCase caseData) {
-        UserInfo userInfo = securityContextService.getCurrentUserDetails();
-        UUID userId = UUID.fromString(userInfo.getUid());
-
-        log.info("Checking for unsubmitted draft data: caseReference={}, eventId={}, userId={}",
-            caseReference, resumePossessionClaim, userId);
+        log.info("Checking for unsubmitted draft data: caseReference={}, eventId={}",
+            caseReference, resumePossessionClaim);
 
         boolean hasUnsubmittedCaseData = draftCaseDataService
-            .hasUnsubmittedCaseData(caseReference, resumePossessionClaim, userId);
+            .hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        log.info("Draft data check result: caseReference={}, userId={}, hasUnsubmittedData={}",
-            caseReference, userId, hasUnsubmittedCaseData);
+        log.info("Draft data check result: caseReference={}, hasUnsubmittedData={}",
+            caseReference, hasUnsubmittedCaseData);
 
         caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
     }
@@ -339,14 +335,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
+        log.info("Deleting draft data after claim submission: caseReference={}, eventId={}",
+            caseReference, resumePossessionClaim);
 
-        log.info("Deleting draft data after claim submission: caseReference={}, eventId={}, userId={}",
-            caseReference, resumePossessionClaim, userId);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim, userId);
-
-        log.info("Draft data deleted successfully for userId={}", userId);
+        log.info("Draft data deleted successfully");
 
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);

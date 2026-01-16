@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -62,8 +63,18 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
         UUID authenticatedUserId = UUID.fromString(userInfo.getUid());
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        List<PartyEntity> defendants = pcsCaseEntity.getClaims().stream()
-            .flatMap(claim -> claim.getClaimParties().stream())
+        // Get the main claim (first claim in the list)
+        // Counter-claims will be on the same case reference but are not yet implemented
+        // When counter-claims are added, they will be additional claims in the list
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().stream()
+            .findFirst()
+            .orElseThrow(() -> {
+                log.error("No claim found for case {}", caseReference);
+                return new CaseAccessException("No claim found for this case");
+            });
+
+        // Get all defendants from the main claim only
+        List<PartyEntity> defendants = mainClaim.getClaimParties().stream()
             .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
             .map(ClaimPartyEntity::getParty)
             .toList();
@@ -73,6 +84,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             throw new CaseAccessException("No defendants associated with this case");
         }
 
+        // Find the specific defendant who is currently authenticated
         PartyEntity matchedDefendant = defendants.stream()
             .filter(defendant -> authenticatedUserId.equals(defendant.getIdamId()))
             .findFirst()
@@ -115,7 +127,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .build();
 
         draftCaseDataService.patchUnsubmittedEventData(
-            caseReference, filteredDraft, EventId.respondPossessionClaim, authenticatedUserId);
+            caseReference, filteredDraft, EventId.respondPossessionClaim);
 
         PCSCase caseDataForCcd = PCSCase.builder()
             .possessionClaimResponse(possessionClaimResponse)
@@ -129,7 +141,6 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
         long caseReference = eventPayload.caseReference();
         PossessionClaimResponse possessionClaimResponse = eventPayload.caseData().getPossessionClaimResponse();
         YesOrNo isFinalSubmit = eventPayload.caseData().getSubmitDraftAnswers();
-        UUID userId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
         if (possessionClaimResponse != null && isFinalSubmit != null) {
             if (isFinalSubmit.toBoolean()) {
@@ -145,7 +156,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                     .build();
 
                 draftCaseDataService.patchUnsubmittedEventData(
-                    caseReference, draftToSave, respondPossessionClaim, userId);
+                    caseReference, draftToSave, respondPossessionClaim);
             }
         }
         return SubmitResponse.defaultResponse();
