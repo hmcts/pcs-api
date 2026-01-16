@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -19,7 +20,8 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         pageBuilder
             .page("evictionRisksPosed", this::midEvent)
             .pageLabel("The risks posed by everyone at the property")
-            .showCondition("warrantAnyRiskToBailiff=\"YES\" AND selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                + " AND warrantAnyRiskToBailiff=\"YES\"")
             .label("evictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

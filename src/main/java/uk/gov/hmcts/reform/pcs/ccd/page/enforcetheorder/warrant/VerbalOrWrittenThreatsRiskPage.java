@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -28,9 +29,9 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("verbalOrWrittenThreatsRisk", this::midEvent)
                 .pageLabel("Their verbal or written threats")
-                .showCondition("warrantAnyRiskToBailiff=\"YES\" "
+                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
                     + " AND warrantEnforcementRiskCategoriesCONTAINS\"VERBAL_OR_WRITTEN_THREATS\""
-                    + " AND selectEnforcementType=\"WARRANT\"")
+                    + " AND warrantAnyRiskToBailiff=\"YES\"")
                 .label("verbalOrWrittenThreatsRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)

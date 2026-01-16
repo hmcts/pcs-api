@@ -97,23 +97,19 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
-        PCSCase pcsCase = before.getData();
         PCSCase data = details.getData();
-        setFormattedDefendantNames(pcsCase.getAllDefendants(), data);
+        setFormattedDefendantNames(data.getAllDefendants(), data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data).build();
     }
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
-            pcsCase.setAllDefendants(defendants);
             pcsCase.getEnforcementOrder().setFormattedDefendantNames(defendants.stream()
                 .map(defendant ->
                     defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
                     + "<br>")
                 .collect(Collectors.joining("\n")));
-            pcsCase.getEnforcementOrder().setFormattedDefendantNamesWrit(
-                    pcsCase.getEnforcementOrder().getFormattedDefendantNames());
         }
     }
 

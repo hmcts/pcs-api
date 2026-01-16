@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.Text;
@@ -25,15 +26,11 @@ public class WritDetails {
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
-    @CCD(
-            searchable = false
-    )
-    private VerticalYesNo showChangeNameAddressPage;
+    @CCD(searchable = false)
+    private YesOrNo showChangeNameAddressPage;
 
-    @CCD(
-            searchable = false
-    )
-    private VerticalYesNo showPeopleWhoWillBeEvictedPage;
+    @CCD(searchable = false)
+    private YesOrNo showPeopleWhoWillBeEvictedPage;
 
     @CCD(
         label = "Have you hired a High Court enforcement officer?"

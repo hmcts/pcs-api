@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -29,9 +30,9 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("violentAggressiveRisk", this::midEvent)
             .pageLabel("Their violent or aggressive behaviour")
-            .showCondition("warrantAnyRiskToBailiff=\"YES\""
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
                 + " AND warrantEnforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\""
-                + " AND selectEnforcementType=\"WARRANT\"")
+                + " AND warrantAnyRiskToBailiff=\"YES\"")
             .label("violentAggressiveRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
