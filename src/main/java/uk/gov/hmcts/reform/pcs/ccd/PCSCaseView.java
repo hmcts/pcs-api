@@ -9,11 +9,13 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -85,17 +87,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .claimantType(pcsCaseEntity.getClaimantType() != null
-                ? DynamicStringList.builder()
-                    .value(DynamicStringListElement.builder()
-                        .code(pcsCaseEntity.getClaimantType().name())
-                        .label(pcsCaseEntity.getClaimantType().getLabel())
-                        .build())
-                    .build()
-                : null)
-            .preActionProtocolCompleted(pcsCaseEntity.getPreActionProtocolCompleted() != null
-                ? VerticalYesNo.from(pcsCaseEntity.getPreActionProtocolCompleted())
-                : null)
             .noticeServed(pcsCaseEntity.getTenancyLicence() != null
                 && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
                 ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
@@ -107,6 +98,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
         setRentDetails(pcsCase, pcsCaseEntity);
+        setClaimFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -250,6 +242,63 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             return null;
         }
         return pounds.movePointRight(2).toPlainString();
+    }
+
+    private void mapBasicClaimFields(PCSCase pcsCase, ClaimEntity claim) {
+        pcsCase.setClaimAgainstTrespassers(claim.getAgainstTrespassers());
+        pcsCase.setClaimDueToRentArrears(claim.getDueToRentArrears());
+        pcsCase.setClaimingCostsWanted(claim.getClaimCosts());
+        pcsCase.setPreActionProtocolCompleted(claim.getPreActionProtocolFollowed());
+        pcsCase.setMediationAttempted(claim.getMediationAttempted());
+        pcsCase.setMediationAttemptedDetails(claim.getMediationDetails());
+        pcsCase.setSettlementAttempted(claim.getSettlementAttempted());
+        pcsCase.setSettlementAttemptedDetails(claim.getSettlementDetails());
+        pcsCase.setAddAnotherDefendant(claim.getAdditionalDefendants());
+        pcsCase.setHasUnderlesseeOrMortgagee(claim.getUnderlesseeOrMortgagee());
+        pcsCase.setAddAdditionalUnderlesseeOrMortgagee(claim.getAdditionalUnderlesseesOrMortgagees());
+        pcsCase.setApplicationWithClaim(claim.getGenAppExpected());
+        pcsCase.setLanguageUsed(claim.getLanguageUsed());
+        pcsCase.setWantToUploadDocuments(claim.getAdditionalDocsProvided());
+    }
+
+    private void mapComplexClaimFields(PCSCase pcsCase, ClaimEntity claim) {
+        pcsCase.setClaimantCircumstances(
+            ClaimantCircumstances.builder()
+                .claimantCircumstancesSelect(claim.getClaimantCircumstancesProvided())
+                .claimantCircumstancesDetails(claim.getClaimantCircumstances())
+                .build()
+        );
+
+        pcsCase.setDefendantCircumstances(
+            DefendantCircumstances.builder()
+                .hasDefendantCircumstancesInfo(claim.getDefendantCircumstancesProvided())
+                .defendantCircumstancesInfo(claim.getDefendantCircumstances())
+                .build()
+        );
+
+        pcsCase.setAdditionalReasonsForPossession(
+            AdditionalReasons.builder()
+                .hasReasons(claim.getAdditionalReasonsProvided())
+                .reasons(claim.getAdditionalReasons())
+                .build()
+        );
+
+        if (claim.getClaimantType() != null) {
+            pcsCase.setClaimantType(DynamicStringList.builder()
+                .value(DynamicStringListElement.builder().code(claim.getClaimantType().name())
+                           .label(claim.getClaimantType().getLabel())
+                           .build())
+                .build());
+        }
+
+    }
+
+    private void setClaimFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
+        if (!pcsCaseEntity.getClaims().isEmpty()) {
+            ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
+            mapBasicClaimFields(pcsCase, mainClaim);
+            mapComplexClaimFields(pcsCase, mainClaim);
+        }
     }
 
 }

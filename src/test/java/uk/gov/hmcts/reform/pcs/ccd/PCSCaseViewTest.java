@@ -13,7 +13,9 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -41,7 +43,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
@@ -67,13 +68,14 @@ class PCSCaseViewTest {
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
     @Mock
-    private ClaimEntity mainClaimEntity;
+    private ClaimEntity claimEntity;
+
     private PCSCaseView underTest;
 
     @BeforeEach
     void setUp() {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-        when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaimEntity));
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
                                     modelMapper, draftCaseDataService, caseTitleService
@@ -158,41 +160,6 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldMapPreActionProtocolCompletedWhenYes() {
-        // Given
-        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(true);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @ParameterizedTest
-    @MethodSource("preActionProtocolScenarios")
-    void shouldMapPreActionProtocolCompleted(Boolean databaseFlag,
-                                             VerticalYesNo expectedCaseDataValue) {
-        // Given
-        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(databaseFlag);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(expectedCaseDataValue);
-    }
-
-    private static Stream<Arguments> preActionProtocolScenarios() {
-        return Stream.of(
-            // DB value, expected case data value
-            arguments(false, VerticalYesNo.NO),
-            arguments(true, VerticalYesNo.YES),
-            arguments(null, null)
-        );
-    }
-
-    @Test
     void shouldMapLegislativeCountry() {
         // Given
         LegislativeCountry expectedLegislativeCountry = LegislativeCountry.SCOTLAND;
@@ -203,48 +170,6 @@ class PCSCaseViewTest {
 
         // Then
         assertThat(pcsCase.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
-    }
-
-    @Test
-    void shouldMapClaimantTypeFromDatabaseToCCD() {
-        // Given
-        ClaimantType expectedClaimantType = ClaimantType.COMMUNITY_LANDLORD;
-        when(pcsCaseEntity.getClaimantType()).thenReturn(expectedClaimantType);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getClaimantType()).isNotNull();
-        assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(expectedClaimantType.name());
-        assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(expectedClaimantType.getLabel());
-    }
-
-    @Test
-    void shouldHandleNullClaimantType() {
-        // Given
-        when(pcsCaseEntity.getClaimantType()).thenReturn(null);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getClaimantType()).isNull();
-    }
-
-    @ParameterizedTest
-    @MethodSource("claimantTypeMappingScenarios")
-    void shouldMapAllClaimantTypes(ClaimantType claimantType) {
-        // Given
-        when(pcsCaseEntity.getClaimantType()).thenReturn(claimantType);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getClaimantType()).isNotNull();
-        assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(claimantType.name());
-        assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(claimantType.getLabel());
     }
 
     @Test
@@ -278,7 +203,7 @@ class PCSCaseViewTest {
             PartyRole.UNDERLESSEE_OR_MORTGAGEE
         );
 
-        when(mainClaimEntity.getClaimParties()).thenReturn(
+        when(claimEntity.getClaimParties()).thenReturn(
             List.of(claimantClaimParty, defendant1ClaimParty, defendant2ClaimParty,
                     underlessee1ClaimParty, underlessee2ClaimParty
             ));
@@ -361,13 +286,130 @@ class PCSCaseViewTest {
             .build();
     }
 
-    private static Stream<Arguments> claimantTypeMappingScenarios() {
+    @Test
+    void shouldMapBasicClaimFields() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getAgainstTrespassers()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getDueToRentArrears()).thenReturn(YesOrNo.NO);
+        when(claimEntity.getClaimCosts()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getPreActionProtocolFollowed()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
+        when(claimEntity.getMediationDetails()).thenReturn("mediation details");
+        when(claimEntity.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getSettlementDetails()).thenReturn("settlement details");
+        when(claimEntity.getAdditionalDefendants()).thenReturn(VerticalYesNo.NO);
+        when(claimEntity.getUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getAdditionalUnderlesseesOrMortgagees()).thenReturn(VerticalYesNo.NO);
+        when(claimEntity.getGenAppExpected()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
+        when(claimEntity.getAdditionalDocsProvided()).thenReturn(VerticalYesNo.YES);
+
+        // When
+        PCSCase result = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(result.getClaimAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getClaimDueToRentArrears()).isEqualTo(YesOrNo.NO);
+        assertThat(result.getClaimingCostsWanted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getMediationAttemptedDetails()).isEqualTo("mediation details");
+        assertThat(result.getSettlementAttempted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getSettlementAttemptedDetails()).isEqualTo("settlement details");
+        assertThat(result.getAddAnotherDefendant()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getHasUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getAddAdditionalUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
+        assertThat(result.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
+    }
+
+    @ParameterizedTest
+    @MethodSource("complexClaimFieldsScenarios")
+    void shouldMapComplexClaimFields(
+        VerticalYesNo claimantSelect,
+        String claimantDetails,
+        VerticalYesNo defendantSelect,
+        String defendantDetails,
+        VerticalYesNo additionalReasonsProvided,
+        String additionalReasons,
+        ClaimantType claimantType
+    ) {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getClaimantCircumstancesProvided()).thenReturn(claimantSelect);
+        when(claimEntity.getClaimantCircumstances()).thenReturn(claimantDetails);
+
+        when(claimEntity.getDefendantCircumstancesProvided()).thenReturn(defendantSelect);
+        when(claimEntity.getDefendantCircumstances()).thenReturn(defendantDetails);
+
+        when(claimEntity.getAdditionalReasonsProvided()).thenReturn(additionalReasonsProvided);
+        when(claimEntity.getAdditionalReasons()).thenReturn(additionalReasons);
+
+        when(claimEntity.getClaimantType()).thenReturn(claimantType);
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getClaimantCircumstances().getClaimantCircumstancesSelect()).isEqualTo(claimantSelect);
+        assertThat(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails()).isEqualTo(claimantDetails);
+
+        assertThat(pcsCase.getDefendantCircumstances().getHasDefendantCircumstancesInfo()).isEqualTo(defendantSelect);
+        assertThat(pcsCase.getDefendantCircumstances().getDefendantCircumstancesInfo()).isEqualTo(defendantDetails);
+
+        assertThat(pcsCase.getAdditionalReasonsForPossession().getHasReasons()).isEqualTo(additionalReasonsProvided);
+        assertThat(pcsCase.getAdditionalReasonsForPossession().getReasons()).isEqualTo(additionalReasons);
+
+        if (claimantType != null) {
+            assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(claimantType.name());
+            assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(claimantType.getLabel());
+        } else {
+            assertThat(pcsCase.getClaimantType()).isNull();
+        }
+    }
+
+    @Test
+    void shouldNotPopulateAnyClaimFieldsWhenNoClaimsExist() {
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of());
+
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        assertThat(pcsCase.getClaimAgainstTrespassers()).isNull();
+        assertThat(pcsCase.getClaimingCostsWanted()).isNull();
+        assertThat(pcsCase.getClaimantCircumstances()).isNull();
+        assertThat(pcsCase.getDefendantCircumstances()).isNull();
+        assertThat(pcsCase.getAdditionalReasonsForPossession()).isNull();
+        assertThat(pcsCase.getClaimantType()).isNull();
+    }
+
+    private static Stream<Arguments> complexClaimFieldsScenarios() {
         return Stream.of(
-            arguments(ClaimantType.PRIVATE_LANDLORD),
-            arguments(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING),
-            arguments(ClaimantType.COMMUNITY_LANDLORD),
-            arguments(ClaimantType.MORTGAGE_LENDER),
-            arguments(ClaimantType.OTHER)
+            Arguments.of(
+                VerticalYesNo.YES, "claimant info",
+                VerticalYesNo.NO, "defendant info",
+                VerticalYesNo.YES, "some reasons",
+                ClaimantType.PRIVATE_LANDLORD
+            ),
+            Arguments.of(
+                null, null,
+                VerticalYesNo.NO, "defendant info",
+                VerticalYesNo.YES, "some reasons",
+                ClaimantType.COMMUNITY_LANDLORD
+            ),
+            Arguments.of(
+                VerticalYesNo.YES, "claimant info",
+                null, null,
+                VerticalYesNo.NO, null,
+                ClaimantType.MORTGAGE_LENDER
+            ),
+            Arguments.of(
+                VerticalYesNo.NO, "some claimant details",
+                VerticalYesNo.YES, "some defendant details",
+                VerticalYesNo.NO, "reasons",
+                null
+            )
         );
     }
 
