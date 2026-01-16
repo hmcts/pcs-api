@@ -41,6 +41,7 @@ import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 
@@ -73,6 +74,7 @@ public class TestingSupportController {
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
+    private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
@@ -83,7 +85,7 @@ public class TestingSupportController {
         PartyRepository partyRepository,
         PartyAccessCodeRepository partyAccessCodeRepository,
         PcsCaseService pcsCaseService,
-        AccessCodeGenerationService accessCodeGenerationService
+        AccessCodeGenerationService accessCodeGenerationService, CcdTestCaseOrchestrator ccdTestCaseOrchestrator
     ) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
@@ -94,6 +96,7 @@ public class TestingSupportController {
         this.partyAccessCodeRepository = partyAccessCodeRepository;
         this.pcsCaseService = pcsCaseService;
         this.accessCodeGenerationService = accessCodeGenerationService;
+        this.ccdTestCaseOrchestrator = ccdTestCaseOrchestrator;
     }
 
     @Operation(
@@ -522,4 +525,41 @@ public class TestingSupportController {
         }
     }
 
+    @Operation(
+        summary = "Create a PCS case via testing support",
+        description = "Testing support endpoint that orchestrates the CCD calls required to create a case."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Case created successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - invalid payload"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping(
+        value = "/create-casee",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, Object>> createPCSCaseViaTestingSupport(
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @RequestBody JsonNode resumePossessionClaimPayload
+    ) {
+        try {
+            Long caseId = ccdTestCaseOrchestrator.createCase(
+                authorization,
+                serviceAuthorization
+            );
+
+            return ResponseEntity.status(201).body(Map.of(
+                "status", "CREATED",
+                "caseId", caseId
+            ));
+
+        } catch (Exception e) {
+            log.error("Failed to create CCD case via testing support", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 }

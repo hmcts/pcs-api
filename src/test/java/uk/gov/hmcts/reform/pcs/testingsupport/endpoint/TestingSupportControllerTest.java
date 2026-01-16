@@ -30,6 +30,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
 import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
 import java.time.Instant;
@@ -72,6 +73,9 @@ class TestingSupportControllerTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private AccessCodeGenerationService accessCodeGenerationService;
+    @Mock
+    private CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
+
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -82,7 +86,7 @@ class TestingSupportControllerTest {
                                                  docAssemblyService, eligibilityService,
                                                  pcsCaseRepository, partyRepository,
                                                  partyAccessCodeRepository, pcsCaseService,
-                                                 accessCodeGenerationService
+                                                 accessCodeGenerationService, ccdTestCaseOrchestrator
         );
     }
 

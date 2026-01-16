@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.fees.client.FeesApi;
 import uk.gov.hmcts.reform.idam.client.IdamApi;
 import uk.gov.hmcts.reform.pcs.hearings.service.api.HmcHearingApi;
@@ -27,7 +28,8 @@ import uk.gov.hmcts.reform.pcs.reference.api.RdProfessionalApi;
         IdamApi.class,
         IdamTokenApi.class,
         RdProfessionalApi.class,
-        FeesApi.class
+        FeesApi.class,
+        CoreCaseDataApi.class
     }
 )
 @EnableJms
