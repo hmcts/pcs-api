@@ -74,7 +74,6 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         PCSCase caseData = eventPayload.caseData();
-        caseData.setFeeAmount(TEST_FEE_AMOUNT);
         caseData.setTestCaseSupportFileList(testCaseSupportHelper.getFileList());
         return caseData;
     }
@@ -95,6 +94,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     void makeAClaimTestCreation(String label, Long caseReference) {
         PCSCase loadedCase = loadTestPcsCase(label);
+        loadedCase.setFeeAmount(TEST_FEE_AMOUNT);
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
             loadedCase.getLegislativeCountry());
