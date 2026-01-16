@@ -5,7 +5,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -45,16 +44,6 @@ public class PcsCaseMergeService {
 
         if (pcsCase.getCaseManagementLocation() != null) {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
-        }
-
-        if (pcsCase.getPreActionProtocolCompleted() != null) {
-            pcsCaseEntity.setPreActionProtocolCompleted(pcsCase.getPreActionProtocolCompleted().toBoolean());
-        }
-
-        // Merge claimant type if available
-        if (pcsCase.getClaimantType() != null && pcsCase.getClaimantType().getValueCode() != null) {
-            ClaimantType claimantType = ClaimantType.valueOf(pcsCase.getClaimantType().getValueCode());
-            pcsCaseEntity.setClaimantType(claimantType);
         }
 
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
