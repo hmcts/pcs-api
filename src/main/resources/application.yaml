@@ -140,7 +140,7 @@ doc_assembly:
     services: pcs_api,ccd_data,ccd_gw,ccd_case_document_am_api,ccd_definition,ccd_admin,ccd_ps,ccd
 
 rd-professional:
-  api-url: ${RD_PROFESSIONAL_API_URL:http://localhost:8084}
+  api-url: ${RD_PROFESSIONAL_API_URL:http://localhost:8085}
 
 fees:
   mock: false
