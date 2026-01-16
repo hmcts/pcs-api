@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
-import { IAction, actionData, actionRecord, actionTuple } from '@utils/interfaces/action.interface';
+import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourApplication,
   nameAndAddressForEviction,
@@ -26,7 +26,7 @@ import {
   moneyOwed,
   languageUsed,
   statementOfTruthOne,
-  statementOfTruthTwo
+  statementOfTruthTwo,
   enterDefendantsDOB,
   suspendedOrder
 } from '@data/page-data/page-data-enforcement';
@@ -376,7 +376,7 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
-      await performAction('check', claimantDetails.iCertifyCheckbox);
+      await performAction('check', claimantDetails.selectCheckBox);
       await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
       if(claimantDetails.completedBy == statementOfTruthOne.claimantRadioOption){
         await performAction('check', claimantDetails.iBelieveCheckbox);

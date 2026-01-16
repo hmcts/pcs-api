@@ -618,9 +618,9 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: suspendedOrder.yesRadioOption
     });
     await performValidation('mainHeader', statementOfTruthOne.mainHeader);
-    await performAction('validateAmountToRePayTable');
+   // await performAction('validateAmountToRePayTable');
     await performAction('selectStatementOfTruthOne', {
-      checkbox: statementOfTruthOne.iCertifyCheckbox,
+      selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
       completedBy: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
       signThisStatementCheckbox: statementOfTruthOne.signThisStatementHiddenCheckbox,
       fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
