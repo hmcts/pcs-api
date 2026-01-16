@@ -12,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
@@ -154,7 +155,7 @@ class DocumentServiceTest {
     }
 
     @Test
-    void shouldSaveOccupationLicenseDocuments() {
+    void shouldSaveOccupationLicenceDocuments() {
         // Given
         PCSCase pcsCase = mock(PCSCase.class);
 
@@ -181,6 +182,36 @@ class DocumentServiceTest {
         DocumentEntity entity = entities.getFirst();
         assertThat(entity.getType()).isEqualTo(DocumentType.OCCUPATION_LICENCE);
         assertThat(entity.getFileName()).isEqualTo("file3");
+    }
+
+    @Test
+    void shouldSaveNoticeServedDocuments() {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        Document doc = Document.builder()
+            .url("url4")
+            .filename("file4")
+            .binaryUrl("bin4")
+            .categoryId("cat4")
+            .build();
+
+        NoticeServedDetails noticeServedDetails = NoticeServedDetails.builder()
+            .noticeDocuments(List.of(ListValue.<Document>builder().id("1").value(doc).build()))
+            .build();
+
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> entities = documentEntityListCaptor.getValue();
+        assertThat(entities).hasSize(1);
+        DocumentEntity entity = entities.getFirst();
+        assertThat(entity.getType()).isEqualTo(DocumentType.NOTICE_SERVED);
+        assertThat(entity.getFileName()).isEqualTo("file4");
     }
 
     @Test

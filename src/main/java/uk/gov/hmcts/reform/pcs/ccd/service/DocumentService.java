@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocument;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalDocumentType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
@@ -48,6 +49,11 @@ public class DocumentService {
             Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
                 .map(OccupationLicenceDetailsWales::getLicenceDocuments)
                 .orElse(null), DocumentType.OCCUPATION_LICENCE));
+
+        allDocuments.addAll(mapDocumentsWithType(
+            Optional.ofNullable(pcsCase.getNoticeServedDetails())
+                .map(NoticeServedDetails::getNoticeDocuments)
+                .orElse(null), DocumentType.NOTICE_SERVED));
 
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
     }
