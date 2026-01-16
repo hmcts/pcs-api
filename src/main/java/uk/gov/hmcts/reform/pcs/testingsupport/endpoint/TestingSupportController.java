@@ -516,4 +516,78 @@ public class TestingSupportController {
         }
     }
 
+//    @Operation(
+//        summary = "Create a PCS case via testing support",
+//        description = "Testing support endpoint that orchestrates the CCD calls required to create a case. "
+//    )
+//    @ApiResponses(value = {
+//        @ApiResponse(responseCode = "201", description = "Case created successfully"),
+//        @ApiResponse(responseCode = "400", description = "Bad request - invalid payload"),
+//        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+//        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+//        @ApiResponse(responseCode = "500", description = "Internal server error")
+//    })
+//    @PostMapping(
+//        value = "/{legislativeCountry}/create-case",
+//        consumes = MediaType.APPLICATION_JSON_VALUE,
+//        produces = MediaType.APPLICATION_JSON_VALUE
+//    )
+//    public ResponseEntity<Map<String, Object>> createPCSCaseViaTestingSupport(
+//        @Parameter(
+//            description = "Legislative country used to determine address",
+//            required = true
+//        )
+//        @PathVariable LegislativeCountry legislativeCountry,
+//
+//        @Parameter(
+//            description = "Bearer token for user authentication",
+//            required = true
+//        )
+//        @RequestHeader(value = AUTHORIZATION) String authorization,
+//
+//        @Parameter(
+//            description = "Service-to-Service (S2S) authorization token",
+//            required = true
+//        )
+//        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+//
+//        @Parameter(
+//            description = "Payload for the resumePossessionClaim CCD event",
+//            required = true
+//        )
+//        @RequestBody JsonNode resumePossessionClaimPayload
+//    ) {
+//        try {
+//            log.info("Testing support: creating CCD case for legislativeCountry={}", legislativeCountry);
+//
+//            /*
+//             * Intended orchestration flow (implementation to live in a service):
+//             *
+//             * 1. GET  /event-triggers/createPossessionClaim
+//             *    - postcode derived from legislativeCountry
+//             *
+//             * 2. POST /case-types/PCS-316/cases
+//             *
+//             * 3. GET  /cases/{caseId}/event-triggers/resumePossessionClaim
+//             *
+//             * 4. POST /cases/{caseId}/events
+//             *    - body = resumePossessionClaimPayload
+//             */
+//
+//            // Delegate orchestration to a service (to be implemented)
+//            // CcdTestCaseOrchestratorResult result =
+//            //     ccdTestCaseOrchestrator.createCase(legislativeCountry, resumePossessionClaimPayload);
+//
+//            // Temporary stub response so the endpoint shape is agreed first
+//            return ResponseEntity.status(201).body(Map.of(
+//                "status", "CREATED",
+//                "legislativeCountry", legislativeCountry.name()
+//            ));
+//
+//        } catch (Exception e) {
+//            log.error("Failed to create CCD case via testing support", e);
+//            return ResponseEntity.internalServerError().build();
+//        }
+//    }
+
 }
