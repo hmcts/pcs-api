@@ -1,6 +1,7 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Builder
 @Data
@@ -16,12 +17,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 @NoArgsConstructor
 @AllArgsConstructor
-public class NameAndAddressForEviction {
+public class WritDetails {
 
-    @CCD(
-        label = "Is this the correct name and address for the eviction?",
-        hint = "You can choose the defendants you want to evict on the next page"
-    )
-    private VerticalYesNo correctNameAndAddress;
+    @JsonUnwrapped
+    @CCD
+    private NameAndAddressForEviction nameAndAddressForEviction;
 
+    @CCD(searchable = false)
+    private YesOrNo showChangeNameAddressPage;
+
+    @CCD(searchable = false)
+    private YesOrNo showPeopleWhoWillBeEvictedPage;
 }

@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,8 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         pageBuilder
             .page("peopleWhoWillBeEvicted", this::midEvent)
             .pageLabel("The people who will be evicted")
-            .showCondition("showPeopleWhoWillBeEvictedPage=\"YES\" AND selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                + " AND warrantShowPeopleWhoWillBeEvictedPage=\"Yes\"")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowPeopleWhoWillBeEvictedPage, NEVER_SHOW)
@@ -63,10 +66,10 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
         if (peopleToEvict.getEvictEveryone() == VerticalYesNo.NO) {
             // Navigate to PeopleYouWantToEvictPage
-            warrantDetails.setShowPeopleYouWantToEvictPage(VerticalYesNo.YES);
+            warrantDetails.setShowPeopleYouWantToEvictPage(YesOrNo.YES);
         } else if (peopleToEvict.getEvictEveryone() == VerticalYesNo.YES) {
             // Skip PeopleYouWantToEvictPage, go directly to LivingInThePropertyPage
-            warrantDetails.setShowPeopleYouWantToEvictPage(VerticalYesNo.NO);
+            warrantDetails.setShowPeopleYouWantToEvictPage(YesOrNo.NO);
         }
         
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

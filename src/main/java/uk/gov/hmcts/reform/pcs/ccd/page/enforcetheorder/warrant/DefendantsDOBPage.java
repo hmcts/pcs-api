@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public class DefendantsDOBPage implements CcdPageConfiguration {
         pageBuilder
             .page("knownDefendantsDOBInformation", this::midEvent)
             .pageLabel("Enter the defendants’ dates of birth")
-            .showCondition("selectEnforcementType=\"WARRANT\" AND warrantDefendantsDOBKnown=\"YES\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                + " AND warrantDefendantsDOBKnown=\"YES\"")
             .label("knownDefendantsDOBInformation-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

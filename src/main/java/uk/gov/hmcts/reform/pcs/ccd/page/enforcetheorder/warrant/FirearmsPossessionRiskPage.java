@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -28,8 +29,9 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("firearmsPossessionRisk", this::midEvent)
             .pageLabel("Their history of firearm possession")
-            .showCondition("anyRiskToBailiff=\"YES\" AND enforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\""
-                + " AND selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                + " AND warrantEnforcementRiskCategoriesCONTAINS\"FIREARMS_POSSESSION\""
+                + " AND warrantAnyRiskToBailiff=\"YES\"")
             .label("firearmsPossessionRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

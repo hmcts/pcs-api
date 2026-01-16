@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         pageBuilder
             .page("vulnerableAdultsChildren", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
-            .showCondition("selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
             .label("vulnerableAdultsChildren-line-separator", "---")
             .label(
                 "vulnerableAdultsChildren-information-text", """
@@ -49,13 +50,13 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWarrantDetails)
             .mandatory(WarrantDetails::getVulnerablePeoplePresent)
             .complex(WarrantDetails::getVulnerableAdultsChildren,
-                    "vulnerablePeoplePresent=\"YES\"")
+                    "warrantVulnerablePeoplePresent=\"YES\"")
                     .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
                     .mandatory(
                         VulnerableAdultsChildren::getVulnerableReasonText,
-                        "vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
+                        "warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                            + "OR warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                            + "OR warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
                     )
                 .done()
             .done()
