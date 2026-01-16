@@ -10,7 +10,9 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -36,7 +38,8 @@ public class RentArrearsSection {
         min = 0,
         typeOverride = FieldType.MoneyGBP
     )
-    private String total;
+    @JacksonMoneyGBP
+    private BigDecimal total;
 
     @CCD(
         label = "For the period shown on the rent statement, have any rent payments been paid by someone "

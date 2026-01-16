@@ -51,7 +51,7 @@ public class TenancyLicenceService {
                                   TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
         if (rentDetails != null) {
             tenancyLicenceBuilder
-                    .rentAmount(penceToPounds(rentDetails.getCurrentRent()))
+                    .rentAmount(rentDetails.getCurrentRent())
                     .rentPaymentFrequency(rentDetails.getFrequency())
                     .otherRentFrequency(rentDetails.getOtherFrequency())
                     .dailyRentChargeAmount(getDailyRentAmount(rentDetails));
@@ -62,14 +62,14 @@ public class TenancyLicenceService {
         if (rentDetails == null) {
             return null;
         }
-        String[] fieldValues = {
+        BigDecimal[] fieldValues = {
             rentDetails.getAmendedDailyCharge(),
             rentDetails.getCalculatedDailyCharge(),
             rentDetails.getDailyCharge()
         };
-        for (String value : fieldValues) {
-            if (value != null && !value.trim().isEmpty()) {
-                return penceToPounds(value);
+        for (BigDecimal value : fieldValues) {
+            if (value != null) {
+                return value;
             }
         }
         return null;
@@ -80,17 +80,10 @@ public class TenancyLicenceService {
         if (rentArrears != null) {
             tenancyLicenceBuilder
                     .rentStatementDocuments(ListValueUtils.unwrapListItems(rentArrears.getStatementDocuments()))
-                    .totalRentArrears(penceToPounds(rentArrears.getTotal()))
+                    .totalRentArrears(rentArrears.getTotal())
                     .thirdPartyPaymentSources(rentArrears.getThirdPartyPaymentSources())
                     .thirdPartyPaymentSourceOther(rentArrears.getThirdPartyPaymentSourceOther());
         }
-    }
-
-    private BigDecimal penceToPounds(String penceString) {
-        if (penceString == null || penceString.isBlank()) {
-            return null;
-        }
-        return new BigDecimal(penceString).movePointLeft(2);
     }
 
     private void buildNoticeServedDetails(NoticeServedDetails noticeServedDetails,
