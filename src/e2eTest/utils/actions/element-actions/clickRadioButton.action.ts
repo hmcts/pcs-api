@@ -1,8 +1,6 @@
-import { Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { actionRecord, IAction } from '@utils/interfaces/action.interface';
 import { actionRetries } from '../../../playwright.config';
-
-let counter = 0;
 
 export class ClickRadioButtonAction implements IAction {
   async execute(page: Page, action: string, params: actionRecord): Promise<void> {
@@ -13,7 +11,6 @@ export class ClickRadioButtonAction implements IAction {
     const patterns = [
       () => this.radioPattern1(page, question, option, idx),
       () => this.radioPattern2(page, question, option, idx),
-      () => this.radioPattern3(page, question, option, idx)
     ];
 
     for (const getLocator of patterns) {
@@ -22,12 +19,11 @@ export class ClickRadioButtonAction implements IAction {
         return;
       }
     }
-    if(counter === 3)throw new Error(`The radio button with question: "${question}" and option: "${option}" is not found`);
+    throw new Error(`The radio button with question: "${question}" and option: "${option}" is not found`);
   }
 
   private async clickWithRetry(locator: any): Promise<boolean> {
     if ((await locator.count()) !== 1) {
-      counter++;
       return false;
     }
 
@@ -40,7 +36,7 @@ export class ClickRadioButtonAction implements IAction {
       await new Promise(resolve => setTimeout(resolve, 500));
       radioIsChecked = await locator.isChecked();
     } while (!radioIsChecked && attempt < actionRetries);
-
+    expect(radioIsChecked, `Radio was not checked after ${attempt} attempts`).toBeTruthy();
     return radioIsChecked;
   }
 
@@ -55,14 +51,5 @@ export class ClickRadioButtonAction implements IAction {
     return page.locator(`//span[text()="${question}"]/ancestor::fieldset[1]//child::label[text()="${option}"]/preceding-sibling::input[@type='radio']`);
   }
 
-  private radioPattern3(page: Page, question: string, option: string, idx: number) {
-    return page.locator(`legend:has-text("${question}")`)
-      .nth(idx)
-      .locator('xpath=ancestor::fieldset[1]')
-      .locator('div.multiple-choice')
-      .filter({ has: page.locator('label.form-label').filter({ hasText: option }) })
-      .locator('input[type="radio"]');
-  }
-  
 }
 
