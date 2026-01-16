@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
 
@@ -45,9 +45,12 @@ public class NameAndAddressForEvictionPage implements CcdPageConfiguration {
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getWarrantDetails)
-            .complex(WarrantDetails::getNameAndAddressForEviction)
-            .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
+              .complex(EnforcementOrder::getWarrantDetails)
+                .complex(WarrantDetails::getNameAndAddressForEviction)
+                  .mandatory(NameAndAddressForEviction::getCorrectNameAndAddress)
+                .done()
+              .done()
+            .done()
             .label("nameAndAddressForEviction-save-and-return", SAVE_AND_RETURN);
 
     }

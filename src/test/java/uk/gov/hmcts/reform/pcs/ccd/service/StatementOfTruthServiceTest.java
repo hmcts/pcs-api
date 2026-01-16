@@ -7,11 +7,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthClaimantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthLegalRepDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 
-import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -26,6 +28,12 @@ class StatementOfTruthServiceTest {
 
     @Mock
     private StatementOfTruthDetails statementOfTruthDetails;
+
+    @Mock
+    private StatementOfTruthClaimantDetails claimantDetails;
+
+    @Mock
+    private StatementOfTruthLegalRepDetails legalRepDetails;
 
     @Test
     void shouldReturnNullWhenStatementOfTruthIsNull() {
@@ -57,10 +65,11 @@ class StatementOfTruthServiceTest {
         // Given
         when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
         when(statementOfTruthDetails.getCompletedBy()).thenReturn(StatementOfTruthCompletedBy.CLAIMANT);
-        when(statementOfTruthDetails.getAgreementClaimant())
-            .thenReturn(Arrays.asList(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
-        when(statementOfTruthDetails.getFullNameClaimant()).thenReturn("John Smith");
-        when(statementOfTruthDetails.getPositionClaimant()).thenReturn("Director");
+        when(statementOfTruthDetails.getClaimantDetails()).thenReturn(claimantDetails);
+        when(claimantDetails.getAgreementClaimant())
+            .thenReturn(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
+        when(claimantDetails.getFullNameClaimant()).thenReturn("John Smith");
+        when(claimantDetails.getPositionClaimant()).thenReturn("Director");
 
         // When
         StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
@@ -84,11 +93,12 @@ class StatementOfTruthServiceTest {
         when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
         when(statementOfTruthDetails.getCompletedBy())
             .thenReturn(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
-        when(statementOfTruthDetails.getAgreementLegalRep())
-            .thenReturn(Arrays.asList(StatementOfTruthAgreementLegalRep.AGREED));
-        when(statementOfTruthDetails.getFullNameLegalRep()).thenReturn("Jane Doe");
-        when(statementOfTruthDetails.getFirmNameLegalRep()).thenReturn("Smith & Co Solicitors");
-        when(statementOfTruthDetails.getPositionLegalRep()).thenReturn("Partner");
+        when(statementOfTruthDetails.getLegalRepDetails()).thenReturn(legalRepDetails);
+        when(legalRepDetails.getAgreementLegalRep())
+            .thenReturn(List.of(StatementOfTruthAgreementLegalRep.AGREED));
+        when(legalRepDetails.getFullNameLegalRep()).thenReturn("Jane Doe");
+        when(legalRepDetails.getFirmNameLegalRep()).thenReturn("Smith & Co Solicitors");
+        when(legalRepDetails.getPositionLegalRep()).thenReturn("Partner");
 
         // When
         StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);

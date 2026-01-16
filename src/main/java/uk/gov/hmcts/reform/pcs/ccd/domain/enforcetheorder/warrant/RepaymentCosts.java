@@ -29,4 +29,6 @@ public class RepaymentCosts {
 
     private String repaymentSummaryMarkdown;
 
+    private String statementOfTruthRepaymentSummaryMarkdown;
+
 }
