@@ -26,7 +26,8 @@ public class UnderlesseeMortgageeDetails {
 
     @CCD(label = "What is their name?",
         hint = "Enter their first and last name, or the company or organisation name",
-        showCondition = "nameKnown=\"YES\""
+        showCondition = "nameKnown=\"YES\"",
+        max = 60
     )
     private String name;
 

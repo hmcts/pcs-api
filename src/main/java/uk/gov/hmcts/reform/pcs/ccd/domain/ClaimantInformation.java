@@ -36,7 +36,8 @@ public class ClaimantInformation {
             It does not change your registered claimant name on My HMCTS
             """,
         access = {CitizenAccess.class},
-        typeOverride = FieldType.Text
+        typeOverride = FieldType.Text,
+        max = 60
     )
     private String overriddenClaimantName;
 }

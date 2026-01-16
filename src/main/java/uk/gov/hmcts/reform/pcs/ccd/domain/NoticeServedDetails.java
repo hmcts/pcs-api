@@ -70,7 +70,8 @@ public class NoticeServedDetails {
 
     // Text fields for different service methods
     @CCD(
-            label = "Name of person the document was left with"
+            label = "Name of person the document was left with",
+            max = 60
     )
     private String noticePersonName;
 

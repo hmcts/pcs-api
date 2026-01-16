@@ -71,7 +71,7 @@ public class RentArrears implements CcdPageConfiguration {
                             "rentArrears_ThirdPartyPayments=\"YES\"")
 
                     // "Other" free text is mandatory when OTHER is selected
-                    .mandatory(RentArrearsSection::getThirdPartyPaymentSourceOther,
+                    .mandatory(RentArrearsSection::getPaymentSourceOther,
                             "rentArrears_ThirdPartyPayments=\"YES\" "
                             + "AND rentArrears_ThirdPartyPaymentSources CONTAINS \"OTHER\"")
                 .done()
