@@ -4,6 +4,7 @@ import lombok.Getter;
 import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
@@ -29,6 +30,14 @@ public enum ClaimantType implements HasLabel {
 
     public boolean isApplicableFor(LegislativeCountry legislativeCountry) {
         return legislativeCountries.contains(legislativeCountry);
+    }
+
+    public static ClaimantType fromName(String code) {
+
+        return Arrays.stream(values())
+            .filter(type -> type.name().equals(code))
+            .findFirst()
+            .orElse(null);
     }
 
 }

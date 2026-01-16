@@ -7,7 +7,7 @@ export const preactionProtocol = {
   //contactedOrAttemptedToContactParagraph: `contacted, or attempted to contact, the defendants`,
   continueButton: `Continue`,
   haveYouFollowedThePreactionQuestion: `Have you followed the pre-action protocol?`,
-  ifYourClaimIsOnParagraph: `If your claim is on the grounds of rent arrears, you should have:`,
+  ifYourClaimIsOnDynamicParagraph: `If your claim is on the grounds of rent arrears, you should have:`,
   makeAClaimCaption: `Make a claim`,
   noRadioOption: `No`,
   //offeredToAssistTheDefendantsParagraph: `offered to assist the defendants in a claim for housing benefit or Universal Credit`,
