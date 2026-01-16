@@ -29,7 +29,12 @@ import {
   peopleWillBeEvicted,
   youNeedPermission,
   languageUsed,
-  peopleYouWantToEvict
+  peopleYouWantToEvict,
+  confirmDefendantsDOB,
+  enterDefendantsDOB,
+  suspendedOrder,
+  statementOfTruthOne,
+  statementOfTruthTwo
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -96,11 +101,37 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
       });
+      await performValidation('mainHeader', confirmDefendantsDOB.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: confirmDefendantsDOB.errorValidation,
+        validationType: confirmDefendantsDOB.errorValidationType.three,
+        inputArray: confirmDefendantsDOB.errorValidationField.errorRadioOption,
+        question: confirmDefendantsDOB.defendantsDOBQuestion,
+        option: confirmDefendantsDOB.yesRadioOption,
+        button: confirmDefendantsDOB.continueButton
+      });
+      await performAction('confirmDefendantsDOB', {
+        question: confirmDefendantsDOB.defendantsDOBQuestion,
+        option: confirmDefendantsDOB.yesRadioOption,
+      });
+      await performValidation('mainHeader', enterDefendantsDOB.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: enterDefendantsDOB.errorValidation,
+        validationType: enterDefendantsDOB.errorValidationType.two,
+        inputArray: enterDefendantsDOB.errorValidationField.errorTextField,
+        header: enterDefendantsDOB.errors,
+        label: enterDefendantsDOB.defendantsDOBTextLabel,
+        button: enterDefendantsDOB.continueButton
+      });
+      await performAction('enterDefendantsDOB', {
+        label: enterDefendantsDOB.defendantsDOBTextLabel,
+        input: defendantDetails,
+      });
       await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
       await performAction('selectPeopleWhoWillBeEvicted', {
         question: peopleWillBeEvicted.evictEveryOneQuestion,
         option: peopleWillBeEvicted.yesRadioOption,
-      })
+      });
       await performValidation('mainHeader', everyoneLivingAtTheProperty.mainHeader);
       await performAction('selectEveryoneLivingAtTheProperty', {
         question: everyoneLivingAtTheProperty.riskToBailiffQuestion,
@@ -306,7 +337,24 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: languageUsed.languageUsedRadioOptions.englishRadioOption,
         button: languageUsed.continueButton
       });
-      await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
+      await performAction('selectLanguageUsed', {
+        question: languageUsed.whichLanguageUsedQuestion,
+        option: languageUsed.languageUsedRadioOptions.englishRadioOption
+      });
+      await performValidation('mainHeader', suspendedOrder.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: suspendedOrder.errorValidation,
+        validationType: suspendedOrder.errorValidationType.three,
+        inputArray: suspendedOrder.errorValidationField.errorRadioOption,
+        question: suspendedOrder.suspendedOrderQuestion,
+        option: suspendedOrder.yesRadioOption,
+        button: suspendedOrder.continueButton
+      });
+      await performAction('confirmSuspendedOrder', {
+        question: suspendedOrder.suspendedOrderQuestion,
+        option: suspendedOrder.yesRadioOption
+      });
+      await performValidation('mainHeader', statementOfTruthOne.mainHeader);
     });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -328,6 +376,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+    });
+    await performValidation('mainHeader', confirmDefendantsDOB.mainHeader);
+    await performAction('confirmDefendantsDOB', {
+      question: confirmDefendantsDOB.defendantsDOBQuestion,
+      option: confirmDefendantsDOB.noRadioOption,
     });
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {
@@ -400,7 +453,16 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: rePayments.enterTheAmountTextInput
     });
     await performValidation('mainHeader', languageUsed.mainHeader);
-    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
+    await performAction('selectLanguageUsed', {
+      question: languageUsed.whichLanguageUsedQuestion,
+      option: languageUsed.languageUsedRadioOptions.englishRadioOption
+    });
+    await performValidation('mainHeader', suspendedOrder.mainHeader);
+    await performAction('confirmSuspendedOrder', {
+      question: suspendedOrder.suspendedOrderQuestion,
+      option: suspendedOrder.noRadioOption
+    });
+    await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -422,6 +484,11 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+    });
+    await performValidation('mainHeader', confirmDefendantsDOB.mainHeader);
+    await performAction('confirmDefendantsDOB', {
+      question: confirmDefendantsDOB.defendantsDOBQuestion,
+      option: confirmDefendantsDOB.noRadioOption,
     });
     await performValidation('mainHeader', peopleWillBeEvicted.mainHeader);
     await performAction('selectPeopleWhoWillBeEvicted', {
@@ -490,7 +557,16 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: rePayments.enterTheAmountTextInput
     });
     await performValidation('mainHeader', languageUsed.mainHeader);
-    await performAction('selectLanguageUsed', { question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.languageUsedRadioOptions.englishRadioOption });
+    await performAction('selectLanguageUsed', {
+      question: languageUsed.whichLanguageUsedQuestion,
+      option: languageUsed.languageUsedRadioOptions.englishRadioOption
+    });
+    await performValidation('mainHeader', suspendedOrder.mainHeader);
+    await performAction('confirmSuspendedOrder', {
+      question: suspendedOrder.suspendedOrderQuestion,
+      option: suspendedOrder.yesRadioOption
+    });
+    await performValidation('mainHeader', statementOfTruthOne.mainHeader);
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {

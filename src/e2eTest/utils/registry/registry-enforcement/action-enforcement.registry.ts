@@ -34,6 +34,8 @@ export class ActionEnforcementRegistry {
     ['validateGetQuoteFromBailiffLink', new EnforcementAction()],
     ['selectApplicationType', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
+    ['confirmDefendantsDOB', new EnforcementAction()],
+    ['enterDefendantsDOB', new EnforcementAction()],
     ['getDefendantDetails', new EnforcementAction()],
     ['selectPeopleWhoWillBeEvicted', new EnforcementAction()],
     ['selectPeopleYouWantToEvict', new EnforcementAction()],
@@ -58,6 +60,7 @@ export class ActionEnforcementRegistry {
     ['provideAmountToRePay', new EnforcementAction()],
     ['validateAmountToRePayTable', new EnforcementAction()],
     ['selectLanguageUsed', new EnforcementAction()],
+    ['confirmSuspendedOrder', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],
   ]);

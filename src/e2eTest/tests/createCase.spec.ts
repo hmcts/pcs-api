@@ -1,4 +1,4 @@
-import {selectors, test} from '@playwright/test';
+import {test} from '@playwright/test';
 import {
   initializeExecutor,
   performAction,
@@ -9,29 +9,18 @@ import {
   addressCheckYourAnswers,
   addressDetails,
   additionalReasonsForPossession,
-  alternativesToPossession,
   applications,
   checkYourAnswers,
-  claimantCircumstances,
-  claimingCosts,
   completeYourClaim,
-  dailyRentAmount,
-  defendantCircumstances,
-  detailsOfRentArrears,
   home,
   housingAct,
   languageUsed,
-  mediationAndSettlement,
-  moneyJudgment,
-  noticeDetails,
-  noticeOfYourIntention,
   propertyDetails,
   reasonsForPossession,
   reasonsForRequestingADemotionOrder,
   reasonsForRequestingASuspensionAndDemotionOrder,
   reasonsForRequestingASuspensionOrder,
   rentArrearsOrBreachOfTenancy,
-  rentDetails,
   signInOrCreateAnAccount,
   statementOfExpressTerms,
   statementOfTruth,
@@ -40,7 +29,8 @@ import {
   uploadAdditionalDocs,
   user,
   wantToUploadDocuments,
-  whatAreYourGroundsForPossession
+  whatAreYourGroundsForPossession,
+  detailsOfRentArrears
 } from '@data/page-data';
 import{
   claimantType,
@@ -52,7 +42,18 @@ import{
   groundsForPossession,
   introductoryDemotedOrOtherGroundsForPossession,
   groundsForPossessionRentArrears,
-  preactionProtocol
+  preactionProtocol,
+  alternativesToPossession,
+  claimantCircumstances,
+  claimingCosts,
+  dailyRentAmount,
+  defendantCircumstances,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeDetails,
+  rentDetails,
+  checkingNotice,
+  provideMoreDetailsOfClaim
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
@@ -129,27 +130,27 @@ test.describe('[Create Case - England]', async () => {
      await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
      await performValidation('mainHeader', mediationAndSettlement.mainHeader);
      await performAction('selectMediationAndSettlement', {
-       attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-       settlementWithDefendantsOption: mediationAndSettlement.no,
+       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
      });
-     await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-     await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-     await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
-     await performAction('clickLinkAndVerifyNewTabTitle', noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, noticeOfYourIntention.mainHeaderEnglandNewTab);
+     await performValidation('mainHeader', checkingNotice.mainHeader);
+     await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
+     await performValidation('text', {"text": checkingNotice.youMayHaveAlreadyServedEnglandDynamicParagraph, "elementType": "paragraph"});
+     await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderEnglandNewTab);
      await performAction('selectNoticeOfYourIntention', {
-       question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-       option: noticeOfYourIntention.yes
+       question: checkingNotice.haveYouServedNoticeToQuestion,
+       option: checkingNotice.yesRadioOption
      });
      await performValidation('mainHeader', noticeDetails.mainHeader);
      await performAction('selectNoticeDetails', {
-       howDidYouServeNotice: noticeDetails.byFirstClassPost,
+       howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
        day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'});
      await performValidation('mainHeader', rentDetails.mainHeader);
      await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
      await performValidation('mainHeader', dailyRentAmount.mainHeader);
      await performAction('selectDailyRentAmount', {
        calculateRentAmount: '£114.29',
-       unpaidRentInteractiveOption: dailyRentAmount.no,
+       unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
        unpaidRentAmountPerDay: '20'
      });
      await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -160,11 +161,11 @@ test.describe('[Create Case - England]', async () => {
        paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
      });
      await performValidation('mainHeader', moneyJudgment.mainHeader);
-     await performAction('selectMoneyJudgment', moneyJudgment.yes);
+     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
      await performValidation('mainHeader', claimantCircumstances.mainHeader);
      await performAction('selectClaimantCircumstances', {
-       circumstanceOption: claimantCircumstances.yes,
-       claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+       circumstanceOption: claimantCircumstances.yesRadioOption,
+       claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
      });
      await performValidation('mainHeader', defendantCircumstances.mainHeader);
      await performAction('selectDefendantCircumstances', {
@@ -174,7 +175,7 @@ test.describe('[Create Case - England]', async () => {
      await performValidation('mainHeader', alternativesToPossession.mainHeader);
      await performAction('selectAlternativesToPossession');
      await performValidation('mainHeader', claimingCosts.mainHeader);
-     await performAction('selectClaimingCosts', claimingCosts.yes);
+     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
      await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
      await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
      await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -247,26 +248,26 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
+      howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
       day: '16', month: '07', year: '1985'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
+      unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -277,11 +278,11 @@ test.describe('[Create Case - England]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -291,7 +292,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -371,20 +372,20 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -392,15 +393,15 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.suspensionOfRightToBuyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
       , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988}]);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -462,28 +463,28 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byPersonallyHandling,
-      explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
-      explanation: noticeDetails.byPersonallyHandlingExplanationInput,
+      howDidYouServeNotice: noticeDetails.byPersonallyHandingItToRadioOption,
+      explanationLabel: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextLabel,
+      explanation: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextInput,
       day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption:'Weekly', rentAmount:'800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
+      unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -494,11 +495,11 @@ test.describe('[Create Case - England]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -506,8 +507,8 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.demotionOfTenancy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.demotionOfTenancyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
       , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
@@ -515,7 +516,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -572,26 +573,26 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byPersonallyHandling,
-      explanationLabel: noticeDetails.nameOfPersonDocumentWasLeftLabel,
-      explanation: noticeDetails.byPersonallyHandlingExplanationInput,
+      howDidYouServeNotice: noticeDetails.byPersonallyHandingItToRadioOption,
+      explanationLabel: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextLabel,
+      explanation: noticeDetails.nameOfPersonTheDocumentWasLeftHiddenTextInput,
       day: '31', month: '01', year: '1962', hour: '10', minute: '55', second: '30'});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -599,8 +600,8 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.demotionOfTenancy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.demotionOfTenancyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
       , option: housingAct.demotionOfTenancy.section82AHousingAct1985}]);
@@ -608,7 +609,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -657,26 +658,26 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byEmail,
-      explanationLabel: noticeDetails.explainHowServedByEmailLabel,
-      explanation: noticeDetails.byEmailExplanationInput,
+      howDidYouServeNotice: noticeDetails.byEmailRadioOption,
+      explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
+      explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput,
       day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -684,8 +685,8 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.suspensionOfRightToBuyCheckBox, alternativesToPossession.demotionOfTenancyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
       , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988}
@@ -698,7 +699,7 @@ test.describe('[Create Case - England]', async () => {
       , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
       ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -755,16 +756,16 @@ test.describe('[Create Case - England]', async () => {
     });
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.rentFrequencyFortnightly,unpaidRentAmountPerDay:'50'});
+    await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.enterFrequencyHiddenTextInput,unpaidRentAmountPerDay:'50'});
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.docx', 'rentArrears.pdf'],
@@ -773,11 +774,11 @@ test.describe('[Create Case - England]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -785,8 +786,8 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.demotionOfTenancy
-      , option: [alternativesToPossession.demotionOfTenancy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.demotionOfTenancyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.demotionOfTenancy.whichSection
       , option: housingAct.demotionOfTenancy.section6AHousingAct1988}]);
@@ -795,7 +796,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', reasonsForRequestingADemotionOrder.mainHeader);
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -854,19 +855,19 @@ test.describe('[Create Case - England]', async () => {
     });
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no,
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
+      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
@@ -876,11 +877,11 @@ test.describe('[Create Case - England]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -888,8 +889,8 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.suspensionOfRightToBuyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
       , option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985}]);
@@ -897,7 +898,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -969,22 +970,22 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
     });
     await performAction('selectNoticeDetails', {
-       howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
+       howDidYouServeNotice: noticeDetails.byOtherElectronicMethodRadioOption,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10'});
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
+      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
@@ -994,11 +995,11 @@ test.describe('[Create Case - England]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.no);
+    await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -1006,8 +1007,8 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy, alternativesToPossession.demotionOfTenancy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.suspensionOfRightToBuyCheckBox, alternativesToPossession.demotionOfTenancyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
       , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988}
@@ -1020,7 +1021,7 @@ test.describe('[Create Case - England]', async () => {
       , {suspension: reasonsForRequestingASuspensionAndDemotionOrder.requestSuspensionOrderQuestion
         ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -1080,20 +1081,20 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {"text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": noticeOfYourIntention.servedNoticeInteractiveQuestion, "elementType": "inlineText"});
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
+    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
     });
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byEmail,
-      explanationLabel: noticeDetails.explainHowServedByEmailLabel,
-      explanation: noticeDetails.byEmailExplanationInput,
+      howDidYouServeNotice: noticeDetails.byEmailRadioOption,
+      explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
+      explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput,
       day: '29', month: '02', year: '2000', hour: '16', minute: '01', second: '56'
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
@@ -1101,7 +1102,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
+      unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -1112,11 +1113,11 @@ test.describe('[Create Case - England]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -1124,15 +1125,15 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.suspensionOfRightToBuyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
       , option: housingAct.suspensionOfRightToBuy.section6AHousingAct1988}]);
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -1187,22 +1188,22 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForPossession', [reasonsForPossession.breachOfTenancy]);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes,
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption,
     });
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byEmail,
-      explanationLabel: noticeDetails.explainHowServedByEmailLabel,
-      explanation: noticeDetails.byEmailExplanationInput});
+      howDidYouServeNotice: noticeDetails.byEmailRadioOption,
+      explanationLabel: noticeDetails.explainHowItWasServedByEmailHiddenTextLabel,
+      explanation: noticeDetails.explainHowItWasServedByEmailHiddenTextInput});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -1210,8 +1211,8 @@ test.describe('[Create Case - England]', async () => {
       additionalDefendants: false
     });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
-    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.suspensionOrDemotion
-      , option: [alternativesToPossession.suspensionOfRightToBuy]});
+    await performAction('selectAlternativesToPossession', {question: alternativesToPossession.inTheAlternativeToPossessionQuestion
+      , option: [alternativesToPossession.suspensionOfRightToBuyCheckBox]});
     await performValidation('mainHeader', housingAct.mainHeader);
     await performAction('selectHousingAct', [{question: housingAct.suspensionOfRightToBuy.whichSection
       , option: housingAct.suspensionOfRightToBuy.section121AHousingAct1985}]);
@@ -1219,7 +1220,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', reasonsForRequestingASuspensionOrder.mainHeader);
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
