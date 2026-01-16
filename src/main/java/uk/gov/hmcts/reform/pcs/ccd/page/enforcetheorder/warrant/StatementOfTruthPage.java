@@ -113,40 +113,24 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
         }
     }
 
-    private void validateClaimantDetails(StatementOfTruthClaimantDetails claimantDetails, List<String> errors) {
+    private void validate(String value, String label, List<String> errors) {
         textAreaValidationService.validateTextArea(
-            claimantDetails.getFullNameClaimant(),
-            "Full name",
-            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-            errors
-        );
-        textAreaValidationService.validateTextArea(
-            claimantDetails.getPositionClaimant(),
-            "Position or office held",
+            value,
+            label,
             TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
             errors
         );
     }
 
+    private void validateClaimantDetails(StatementOfTruthClaimantDetails claimantDetails, List<String> errors) {
+        validate(claimantDetails.getFullNameClaimant(), "Full name", errors);
+        validate(claimantDetails.getPositionClaimant(), "Position or office held", errors);
+    }
+
     private void validateLegalRepDetails(StatementOfTruthLegalRepDetails legalRepDetails, List<String> errors) {
-        textAreaValidationService.validateTextArea(
-            legalRepDetails.getFullNameLegalRep(),
-            "Full name",
-            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-            errors
-        );
-        textAreaValidationService.validateTextArea(
-            legalRepDetails.getFirmNameLegalRep(),
-            "Name of firm",
-            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-            errors
-        );
-        textAreaValidationService.validateTextArea(
-            legalRepDetails.getPositionLegalRep(),
-            "Position or office held",
-            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
-            errors
-        );
+        validate(legalRepDetails.getFullNameLegalRep(), "Full name", errors);
+        validate(legalRepDetails.getFirmNameLegalRep(), "Name of firm", errors);
+        validate(legalRepDetails.getPositionLegalRep(), "Position or office held", errors);
     }
 }
 
