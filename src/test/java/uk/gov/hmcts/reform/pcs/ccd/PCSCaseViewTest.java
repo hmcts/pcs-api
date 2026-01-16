@@ -278,6 +278,7 @@ class PCSCaseViewTest {
         when(claimEntity.getAdditionalUnderlesseesOrMortgagees()).thenReturn(VerticalYesNo.NO);
         when(claimEntity.getGenAppExpected()).thenReturn(VerticalYesNo.YES);
         when(claimEntity.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
+        when(claimEntity.getAdditionalDocsProvided()).thenReturn(VerticalYesNo.YES);
 
         // When
         PCSCase result = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
@@ -296,6 +297,7 @@ class PCSCaseViewTest {
         assertThat(result.getAddAdditionalUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
+        assertThat(result.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
     }
 
     @ParameterizedTest

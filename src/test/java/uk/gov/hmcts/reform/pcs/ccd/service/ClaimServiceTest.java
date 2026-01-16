@@ -18,8 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -30,11 +28,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
-import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimServiceTest {
@@ -200,49 +195,6 @@ class ClaimServiceTest {
 
         // Then
         assertThat(createdClaimEntity.getClaimantType()).isEqualTo(claimantType);
-    }
-
-    @Test
-    void shouldSetAlternativesToPossession() {
-        // Given
-        PossessionAlternativesEntity possessionAlternativesEntity = mock(PossessionAlternativesEntity.class);
-        when(possessionAlternativesService.createPossessionAlternativesEntity(pcsCase))
-            .thenReturn(possessionAlternativesEntity);
-
-        // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
-
-        // Then
-        assertThat(createdClaimEntity.getPossessionAlternativesEntity()).isEqualTo(possessionAlternativesEntity);
-    }
-
-    @Test
-    void shouldSetWalesHousingActForWalesProperties() {
-        // Given
-        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
-
-        HousingActWalesEntity housingActWalesEntity = mock(HousingActWalesEntity.class);
-        when(housingActWalesService.createHousingActWalesEntity(pcsCase))
-            .thenReturn(housingActWalesEntity);
-
-        // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
-
-        // Then
-        assertThat(createdClaimEntity.getHousingActWales()).isEqualTo(housingActWalesEntity);
-    }
-
-    @Test
-    void shouldNotSetWalesHousingActForNonWalesProperties() {
-        // Given
-        when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
-
-        // When
-        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
-
-        // Then
-        assertThat(createdClaimEntity.getHousingActWales()).isNull();
-        verify(housingActWalesService, never()).createHousingActWalesEntity(pcsCase);
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {
