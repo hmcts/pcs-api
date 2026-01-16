@@ -38,9 +38,6 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                     .label("statementOfTruth-lineSeparator", "---")
-                    .complex(WarrantDetails::getRepaymentCosts)
-                        .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
-                    .done()
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetails::getCertification)
                         .label("statementOfTruth-cert-suspended",
@@ -69,8 +66,13 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                             """,
                             "isSuspendedOrder=\"NO\""
                         )
+                    .done()
+                    .complex(WarrantDetails::getRepaymentCosts)
+                        .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
                         .label("statementOfTruth-payments-table",
                             "${repaymentStatementOfTruthRepaymentSummaryMarkdown}")
+                    .done()
+                    .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetails::getCompletedBy)
                         .complex(StatementOfTruthDetails::getClaimantDetails,
                             "warrantCompletedBy=\"CLAIMANT\"")
