@@ -495,6 +495,7 @@ public class PCSCase {
     @CCD(searchable = false)
     private String formattedDefendantNames;
 
+    @CCD(access = ClaimantAccess.class)
     private List<ListValue<Document>> allDocuments;
 
 }
