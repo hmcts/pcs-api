@@ -95,7 +95,8 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             });
 
         AddressUK contactAddress;
-        if (matchedDefendant.getAddressSameAsProperty() == VerticalYesNo.YES) {
+        if (matchedDefendant.getAddressSameAsProperty() != null
+            && matchedDefendant.getAddressSameAsProperty() == VerticalYesNo.YES) {
             contactAddress = pcsCaseEntity.getPropertyAddress() != null
                 ? modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class)
                 : null;

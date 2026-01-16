@@ -300,13 +300,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private void setUnsubmittedCaseDataFlag(long caseReference, PCSCase caseData) {
-        log.info("Checking for unsubmitted draft data: caseReference={}, eventId={}",
-            caseReference, resumePossessionClaim);
-
         boolean hasUnsubmittedCaseData = draftCaseDataService
             .hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        log.info("Draft data check result: caseReference={}, hasUnsubmittedData={}",
+        log.debug("Draft data check result: caseReference={}, hasUnsubmittedData={}",
             caseReference, hasUnsubmittedCaseData);
 
         caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
@@ -335,12 +332,12 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        log.info("Deleting draft data after claim submission: caseReference={}, eventId={}",
+        log.debug("Deleting draft data after claim submission: caseReference={}, eventId={}",
             caseReference, resumePossessionClaim);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        log.info("Draft data deleted successfully");
+        log.debug("Draft data deleted successfully");
 
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
