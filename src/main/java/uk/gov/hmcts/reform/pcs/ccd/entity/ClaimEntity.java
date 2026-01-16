@@ -143,6 +143,11 @@ public class ClaimEntity {
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
+    private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
+
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
     private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
@@ -159,6 +164,19 @@ public class ClaimEntity {
         for (ClaimGroundEntity ground : grounds) {
             ground.setClaim(this);
             this.claimGrounds.add(ground);
+        }
+    }
+
+    public void addClaimDocuments(List<DocumentEntity> documents) {
+
+        for (DocumentEntity document : documents) {
+            ClaimDocumentEntity claimDocument = ClaimDocumentEntity.builder()
+                .claim(this)
+                .document(document)
+                .build();
+
+            claimDocuments.add(claimDocument);
+            document.getClaimDocuments().add(claimDocument);
         }
     }
 }
