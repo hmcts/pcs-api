@@ -14,7 +14,6 @@ import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.api.callback.MidEvent;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -55,10 +54,6 @@ class SavingPageBuilderTest {
 
     @BeforeEach
     void setUp() {
-        UserInfo userInfo = UserInfo.builder()
-            .uid(USER_ID.toString())
-            .build();
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
         underTest = new SavingPageBuilder(draftCaseDataService, securityContextService, eventBuilder, eventId);
     }
