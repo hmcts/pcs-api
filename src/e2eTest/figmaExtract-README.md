@@ -35,7 +35,7 @@ A Figma Personal Access Token.
 
 How to generate:
 1. Open Figma
-2. Go to **Settings**
+2. Go to Help and Account -> Account Settings -> Security tab
 3. Navigate to **Personal access tokens**
 4. Generate a token
 
