@@ -67,6 +67,9 @@ public class WarrantDetails {
     @CCD(searchable = false)
     private YesOrNo showPeopleYouWantToEvictPage;
 
+    @CCD(label = "Do you know the defendants’ dates of birth?")
+    private VerticalYesNo defendantsDOBKnown;
+
     @JsonUnwrapped
     @CCD(
         label = "Risk details"

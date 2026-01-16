@@ -97,9 +97,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
-        PCSCase pcsCase = before.getData();
         PCSCase data = details.getData();
-        setFormattedDefendantNames(pcsCase.getAllDefendants(), data);
+        setFormattedDefendantNames(data.getAllDefendants(), data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data).build();
     }
