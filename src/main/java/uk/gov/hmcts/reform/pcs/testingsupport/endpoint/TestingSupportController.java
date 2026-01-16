@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -356,7 +357,7 @@ public class TestingSupportController {
 
             ClaimEntity mainClaim = ClaimEntity.builder()
                 .pcsCase(caseEntity)
-                .costsClaimed(false)
+                .claimCosts(VerticalYesNo.NO)
                 .build();
 
             caseEntity.addClaim(mainClaim);
