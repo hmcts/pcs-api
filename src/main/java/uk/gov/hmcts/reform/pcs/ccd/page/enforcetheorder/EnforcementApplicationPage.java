@@ -105,7 +105,6 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
-            pcsCase.setAllDefendants(defendants);
             pcsCase.getEnforcementOrder().setFormattedDefendantNames(defendants.stream()
                 .map(defendant ->
                     defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
