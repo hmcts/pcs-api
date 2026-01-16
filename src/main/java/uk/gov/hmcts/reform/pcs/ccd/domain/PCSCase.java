@@ -6,6 +6,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
@@ -493,5 +494,11 @@ public class PCSCase {
 
     @CCD(searchable = false)
     private String formattedDefendantNames;
+
+    @CCD(
+        label = "Select an operation to perform.",
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList testCaseSupportFileList;
 
 }
