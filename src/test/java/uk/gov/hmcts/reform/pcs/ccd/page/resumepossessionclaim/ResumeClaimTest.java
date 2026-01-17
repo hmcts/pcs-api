@@ -11,14 +11,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -42,8 +40,6 @@ class ResumeClaimTest extends BasePageTest {
 
     @Mock(strictness = LENIENT)
     private DraftCaseDataService draftCaseDataService;
-    @Mock(strictness = LENIENT)
-    private SecurityContextService securityContextService;
     @Mock
     private ModelMapper modelMapper;
 
@@ -51,12 +47,7 @@ class ResumeClaimTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        UserInfo userInfo = UserInfo.builder()
-            .uid(USER_ID.toString())
-            .build();
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-
-        setPageUnderTest(new ResumeClaim(draftCaseDataService, securityContextService, modelMapper));
+        setPageUnderTest(new ResumeClaim(draftCaseDataService, modelMapper));
     }
 
     @ParameterizedTest

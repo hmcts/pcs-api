@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -29,7 +28,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 public class ResumeClaim implements CcdPageConfiguration {
 
     private final DraftCaseDataService draftCaseDataService;
-    private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
     @Override

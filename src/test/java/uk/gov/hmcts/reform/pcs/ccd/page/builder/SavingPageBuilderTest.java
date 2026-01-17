@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
 
@@ -40,8 +39,6 @@ class SavingPageBuilderTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
-    private SecurityContextService securityContextService;
-    @Mock
     private EventBuilder<PCSCase, UserRole, State> eventBuilder;
     @Mock
     private FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> fieldCollectionBuilder;
@@ -55,7 +52,7 @@ class SavingPageBuilderTest {
     @BeforeEach
     void setUp() {
         when(eventBuilder.fields()).thenReturn(fieldCollectionBuilder);
-        underTest = new SavingPageBuilder(draftCaseDataService, securityContextService, eventBuilder, eventId);
+        underTest = new SavingPageBuilder(draftCaseDataService, eventBuilder, eventId);
     }
 
     @Test

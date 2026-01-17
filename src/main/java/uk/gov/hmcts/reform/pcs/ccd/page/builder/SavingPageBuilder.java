@@ -11,23 +11,19 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 
 public class SavingPageBuilder extends PageBuilder {
 
     private final DraftCaseDataService draftCaseDataService;
-    private final SecurityContextService securityContextService;
     private final EventId eventId;
 
     public SavingPageBuilder(DraftCaseDataService draftCaseDataService,
-                             SecurityContextService securityContextService,
                              EventBuilder<PCSCase, UserRole, State> eventBuilder, EventId eventId) {
 
         super(eventBuilder);
         this.draftCaseDataService = draftCaseDataService;
-        this.securityContextService = securityContextService;
         this.eventId = eventId;
     }
 

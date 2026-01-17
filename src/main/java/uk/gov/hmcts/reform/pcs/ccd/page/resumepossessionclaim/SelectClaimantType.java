@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD;
@@ -27,7 +26,6 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 public class SelectClaimantType implements CcdPageConfiguration {
 
     private final DraftCaseDataService draftCaseDataService;
-    private final SecurityContextService securityContextService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
