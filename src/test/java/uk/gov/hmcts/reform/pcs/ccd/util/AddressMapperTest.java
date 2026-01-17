@@ -97,7 +97,7 @@ class AddressMapperTest {
     }
 
     @Test
-    void shouldHandleEmptyStringsInAddressEntity() {
+    void shouldConvertEmptyStringsToNullInAddressEntity() {
         // Given
         AddressEntity addressEntity = AddressEntity.builder()
             .addressLine1("")
@@ -112,14 +112,41 @@ class AddressMapperTest {
         // When
         AddressUK result = underTest.toAddressUK(addressEntity);
 
-        // Then - Empty strings should be mapped as-is (not converted to null)
+        // Then - Empty strings should be converted to null for consistency
         assertThat(result).isNotNull();
-        assertThat(result.getAddressLine1()).isEmpty();
-        assertThat(result.getAddressLine2()).isEmpty();
-        assertThat(result.getAddressLine3()).isEmpty();
-        assertThat(result.getPostTown()).isEmpty();
-        assertThat(result.getCounty()).isEmpty();
-        assertThat(result.getPostCode()).isEmpty();
-        assertThat(result.getCountry()).isEmpty();
+        assertThat(result.getAddressLine1()).isNull();
+        assertThat(result.getAddressLine2()).isNull();
+        assertThat(result.getAddressLine3()).isNull();
+        assertThat(result.getPostTown()).isNull();
+        assertThat(result.getCounty()).isNull();
+        assertThat(result.getPostCode()).isNull();
+        assertThat(result.getCountry()).isNull();
+    }
+
+    @Test
+    void shouldHandleMixOfEmptyStringsAndNullValues() {
+        // Given
+        AddressEntity addressEntity = AddressEntity.builder()
+            .addressLine1("123 Test Street")
+            .addressLine2("")  // Empty string
+            .addressLine3(null)  // Null
+            .postTown("London")
+            .county("")  // Empty string
+            .postcode("W1A 1AA")
+            .country(null)  // Null
+            .build();
+
+        // When
+        AddressUK result = underTest.toAddressUK(addressEntity);
+
+        // Then - Both empty strings and nulls should be normalized to null
+        assertThat(result).isNotNull();
+        assertThat(result.getAddressLine1()).isEqualTo("123 Test Street");
+        assertThat(result.getAddressLine2()).isNull();
+        assertThat(result.getAddressLine3()).isNull();
+        assertThat(result.getPostTown()).isEqualTo("London");
+        assertThat(result.getCounty()).isNull();
+        assertThat(result.getPostCode()).isEqualTo("W1A 1AA");
+        assertThat(result.getCountry()).isNull();
     }
 }

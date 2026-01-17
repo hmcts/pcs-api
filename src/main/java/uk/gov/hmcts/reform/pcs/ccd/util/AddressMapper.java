@@ -34,13 +34,17 @@ public class AddressMapper {
         }
 
         return AddressUK.builder()
-            .addressLine1(addressEntity.getAddressLine1())
-            .addressLine2(addressEntity.getAddressLine2())
-            .addressLine3(addressEntity.getAddressLine3())
-            .postTown(addressEntity.getPostTown())
-            .county(addressEntity.getCounty())
-            .postCode(addressEntity.getPostcode())
-            .country(addressEntity.getCountry())
+            .addressLine1(nullIfEmpty(addressEntity.getAddressLine1()))
+            .addressLine2(nullIfEmpty(addressEntity.getAddressLine2()))
+            .addressLine3(nullIfEmpty(addressEntity.getAddressLine3()))
+            .postTown(nullIfEmpty(addressEntity.getPostTown()))
+            .county(nullIfEmpty(addressEntity.getCounty()))
+            .postCode(nullIfEmpty(addressEntity.getPostcode()))
+            .country(nullIfEmpty(addressEntity.getCountry()))
             .build();
+    }
+
+    private String nullIfEmpty(String value) {
+        return (value == null || value.isEmpty()) ? null : value;
     }
 }
