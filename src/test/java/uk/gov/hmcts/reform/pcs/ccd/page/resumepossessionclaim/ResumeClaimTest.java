@@ -19,7 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,8 +34,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ResumeClaimTest extends BasePageTest {
-
-    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock(strictness = LENIENT)
     private DraftCaseDataService draftCaseDataService;

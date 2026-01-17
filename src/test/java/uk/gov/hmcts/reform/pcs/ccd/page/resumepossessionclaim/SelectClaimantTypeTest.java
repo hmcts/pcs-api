@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,8 +35,6 @@ import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WAL
 
 @ExtendWith(MockitoExtension.class)
 class SelectClaimantTypeTest extends BasePageTest {
-
-    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock
     private DraftCaseDataService draftCaseDataService;

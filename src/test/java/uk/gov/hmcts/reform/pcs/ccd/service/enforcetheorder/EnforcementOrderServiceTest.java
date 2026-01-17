@@ -31,8 +31,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class EnforcementOrderServiceTest {
 
-    private static final UUID USER_ID = UUID.randomUUID();
-
     @Mock
     private DraftCaseDataService draftCaseDataService;
 

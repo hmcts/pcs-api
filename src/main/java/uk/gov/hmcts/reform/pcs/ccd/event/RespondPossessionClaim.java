@@ -128,12 +128,10 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
         draftCaseDataService.patchUnsubmittedEventData(
             caseReference, filteredDraft, EventId.respondPossessionClaim);
 
-        PCSCase caseDataForCcd = PCSCase.builder()
+        return PCSCase.builder()
             .possessionClaimResponse(possessionClaimResponse)
             .submitDraftAnswers(YesOrNo.NO)
             .build();
-
-        return caseDataForCcd;
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

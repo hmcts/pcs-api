@@ -20,8 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -34,7 +32,6 @@ class SavingPageBuilderTest {
 
     private static final long CASE_REFERENCE = 1234L;
     private static final String TEST_PAGE_ID = "test-page";
-    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
