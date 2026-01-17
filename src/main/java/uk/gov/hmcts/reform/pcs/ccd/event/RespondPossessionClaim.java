@@ -141,22 +141,59 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
         PossessionClaimResponse possessionClaimResponse = eventPayload.caseData().getPossessionClaimResponse();
         YesOrNo isFinalSubmit = eventPayload.caseData().getSubmitDraftAnswers();
 
-        if (possessionClaimResponse != null && isFinalSubmit != null) {
-            if (isFinalSubmit.toBoolean()) {
-                //find draft data using idam user and case reference and event
+        // Validate required fields
+        if (possessionClaimResponse == null) {
+            log.error("Submit failed for case {}: possessionClaimResponse is null", caseReference);
+            return SubmitResponse.<State>builder()
+                .errors(List.of("Invalid submission: missing response data"))
+                .build();
+        }
 
-                //Store defendant response to database
-                //This will be implemented in a future ticket.
-                //Note that defendants will be stored in a list
-            } else {
-                if (possessionClaimResponse.getParty() != null) {
+        if (isFinalSubmit == null) {
+            log.error("Submit failed for case {}: submitDraftAnswers is null", caseReference);
+            return SubmitResponse.<State>builder()
+                .errors(List.of("Invalid submission: missing submit flag"))
+                .build();
+        }
+
+        if (isFinalSubmit.toBoolean()) {
+            //find draft data using idam user and case reference and event
+
+            //Store defendant response to database
+            //This will be implemented in a future ticket.
+            //Note that defendants will be stored in a list
+        } else {
+            if (possessionClaimResponse.getParty() != null) {
+                try {
+                    log.debug("Attempting to save draft for case {} with party data", caseReference);
+
                     PCSCase draftToSave = PCSCase.builder()
                         .possessionClaimResponse(possessionClaimResponse)
                         .build();
 
                     draftCaseDataService.patchUnsubmittedEventData(
                         caseReference, draftToSave, respondPossessionClaim);
+
+                    log.debug("Draft saved successfully for case {}", caseReference);
+                } catch (Exception e) {
+                    log.error("Failed to save draft for case {}", caseReference, e);
+                    return SubmitResponse.<State>builder()
+                        .errors(List.of("We couldn't save your response. Please try again or contact support."))
+                        .build();
                 }
+            } else {
+                // Party is null - could be empty draft OR malformed structure
+                log.error(
+                    "Draft submit rejected for case {}: party is null. "
+                        + "possessionClaimResponse present: {}, isFinalSubmit: {}",
+                    caseReference,
+                    possessionClaimResponse != null,
+                    isFinalSubmit
+                );
+
+                return SubmitResponse.<State>builder()
+                    .errors(List.of("We couldn't save your response. Please review your details and try again."))
+                    .build();
             }
         }
         return SubmitResponse.defaultResponse();

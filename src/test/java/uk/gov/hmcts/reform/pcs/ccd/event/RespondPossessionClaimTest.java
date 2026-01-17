@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -454,6 +455,147 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .isEqualTo("john.doe@example.com");
         assertThat(savedDraft.getPossessionClaimResponse().getParty().getPhoneNumber()).isEqualTo("07700900000");
         assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(address);
+    }
+
+    @Test
+    void shouldReturnErrorWhenPossessionClaimResponseIsNull() {
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(null)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        var response = callSubmitHandler(caseData);
+
+        assertThat(response.getErrors()).isNotNull();
+        assertThat(response.getErrors()).hasSize(1);
+        assertThat(response.getErrors().get(0)).isEqualTo("Invalid submission: missing response data");
+
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            any(),
+            eq(EventId.respondPossessionClaim)
+        );
+    }
+
+    @Test
+    void shouldReturnErrorWhenSubmitDraftAnswersIsNull() {
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .party(Party.builder().firstName("John").build())
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .submitDraftAnswers(null)
+            .build();
+
+        var response = callSubmitHandler(caseData);
+
+        assertThat(response.getErrors()).isNotNull();
+        assertThat(response.getErrors()).hasSize(1);
+        assertThat(response.getErrors().get(0)).isEqualTo("Invalid submission: missing submit flag");
+
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            any(),
+            eq(EventId.respondPossessionClaim)
+        );
+    }
+
+    @Test
+    void shouldReturnErrorWhenPartyIsNull() {
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .party(null)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        var response = callSubmitHandler(caseData);
+
+        assertThat(response.getErrors()).isNotNull();
+        assertThat(response.getErrors()).hasSize(1);
+        assertThat(response.getErrors().get(0))
+            .isEqualTo("We couldn't save your response. Please review your details and try again.");
+
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            any(),
+            eq(EventId.respondPossessionClaim)
+        );
+    }
+
+    @Test
+    void shouldReturnErrorWhenDraftSaveThrowsException() {
+        AddressUK address = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postCode("SW1A 1AA")
+            .build();
+
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .address(address)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .party(party)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        doThrow(new RuntimeException("Database connection failed"))
+            .when(draftCaseDataService).patchUnsubmittedEventData(
+                eq(TEST_CASE_REFERENCE),
+                any(PCSCase.class),
+                eq(EventId.respondPossessionClaim)
+            );
+
+        var response = callSubmitHandler(caseData);
+
+        assertThat(response.getErrors()).isNotNull();
+        assertThat(response.getErrors()).hasSize(1);
+        assertThat(response.getErrors().get(0))
+            .isEqualTo("We couldn't save your response. Please try again or contact support.");
+    }
+
+    @Test
+    void shouldReturnDefaultResponseWhenDraftSavedSuccessfully() {
+        AddressUK address = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postCode("SW1A 1AA")
+            .build();
+
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .address(address)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .party(party)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        var response = callSubmitHandler(caseData);
+
+        assertThat(response.getErrors()).isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            any(PCSCase.class),
+            eq(EventId.respondPossessionClaim)
+        );
     }
 
 }
