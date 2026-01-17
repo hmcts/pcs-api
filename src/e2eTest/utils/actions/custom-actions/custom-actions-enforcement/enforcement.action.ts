@@ -106,19 +106,23 @@ export class EnforcementAction implements IAction {
 
   private async getDefendantDetails(defendantsDetails: actionRecord) {
 
+    let originalDefendantDetails: string[] = [];
+
     if (defendantsDetails.defendant1NameKnown === 'YES') {
-      defendantDetails.push(
+      originalDefendantDetails.push(
         `${submitCaseApiData.submitCasePayload.defendant1.firstName} ${submitCaseApiData.submitCasePayload.defendant1.lastName}`
       );
     };
 
     if (defendantsDetails.additionalDefendants === 'YES') {
-      submitCaseApiData.submitCasePayload.additionalDefendants.forEach(defendant => {
+
+      for (const defendant of submitCaseApiData.submitCasePayload.additionalDefendants) {
         if (defendant.value.nameKnown === 'YES') {
-          defendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
+          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
         }
-      });
+      };
     };
+    defendantDetails = [...new Set(originalDefendantDetails)];
 
   }
 
@@ -362,7 +366,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', languageUsed.continueButton);
   }
 
-  private async confirmSuspendedOrder(suspendedOrderPara: actionRecord){
+  private async confirmSuspendedOrder(suspendedOrderPara: actionRecord) {
     await this.addFieldsToMap(suspendedOrderPara);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });

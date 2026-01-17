@@ -569,7 +569,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performValidation('mainHeader', statementOfTruthOne.mainHeader);
   });
 
-  test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
+  test('Apply for a Writ of Possession [General application journey] - risk to Bailiff [Yes]', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed - https://tools.hmcts.net/jira/browse/HDPI-2237 ',
@@ -589,5 +589,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
       });
       await performValidation('mainHeader', youNeedPermission.mainHeader);
+      await performAction('clickButton', youNeedPermission.continueButton);
+      await performValidation('errorMessage', { header: youNeedPermission.errors, message: youNeedPermission.errMessage });
     });
 });

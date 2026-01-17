@@ -7,8 +7,11 @@ import {
   user
 } from '@data/page-data';
 import {
+  confirmHCEOHired,
   nameAndAddressForEviction,
-  yourApplication} from '@data/page-data/page-data-enforcement';
+  youNeedPermission,
+  yourApplication
+} from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
@@ -73,7 +76,32 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
       });
-      
+      await performValidation('mainHeader', confirmHCEOHired.mainHeader);
+
+    });
+
+  test('Apply for a Writ of Possession [General application journey]', {
+    annotation: {
+      type: 'issue',
+      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed - https://tools.hmcts.net/jira/browse/HDPI-2237 ',
+    },
+  },
+    async () => {
+      await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+      await performAction('clickButton', caseSummary.go);
+      await performAction('selectApplicationType', {
+        question: yourApplication.typeOfApplicationQuestion,
+        option: yourApplication.typeOfApplicationOptions.writOfPossession,
+      });
+      await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+      await performAction('selectNameAndAddressForEviction', {
+        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+        option: nameAndAddressForEviction.noRadioOption,
+        defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      });
+      await performValidation('mainHeader', youNeedPermission.mainHeader);
+      await performAction('clickButton', youNeedPermission.continueButton);
+      await performValidation('errorMessage', { header: youNeedPermission.errors, message: youNeedPermission.errMessage });
     });
 
 });
