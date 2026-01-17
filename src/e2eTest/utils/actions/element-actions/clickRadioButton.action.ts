@@ -36,7 +36,9 @@ export class ClickRadioButtonAction implements IAction {
       await new Promise(resolve => setTimeout(resolve, 500));
       radioIsChecked = await locator.isChecked();
     } while (!radioIsChecked && attempt < actionRetries);
-    expect(radioIsChecked, `Radio was checked after ${attempt} ${attempt === 1 ? "attempt" : "attempts"}`).toBe(true);
+    expect(radioIsChecked, radioIsChecked
+      ? `Radio was checked after ${attempt} ${attempt === 1 ? "attempt" : "attempts"}`
+      : `Radio was not checked after ${actionRetries} attempts`).toBe(true);
     return radioIsChecked;
   }
 
