@@ -401,7 +401,12 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
         assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isNull();
         assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isNull();
-        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isNull();
+        // Address should be an AddressUK object with all fields null (for CCD token validation)
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress().getAddressLine1()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress().getPostTown()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress().getPostCode()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress().getCountry()).isNull();
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),

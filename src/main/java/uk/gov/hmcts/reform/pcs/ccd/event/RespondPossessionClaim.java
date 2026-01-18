@@ -108,6 +108,20 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             contactAddress = addressMapper.toAddressUK(matchedDefendant.getAddress());
         }
 
+        // Ensure address is never null - always create with all fields for CCD token validation
+        // If AddressMapper returns null, create an empty AddressUK with all fields explicitly null
+        if (contactAddress == null) {
+            contactAddress = AddressUK.builder()
+                .addressLine1(null)
+                .addressLine2(null)
+                .addressLine3(null)
+                .postTown(null)
+                .county(null)
+                .postCode(null)
+                .country(null)
+                .build();
+        }
+
         // Always create Party object to maintain consistent structure for CCD event token validation
         // The party field must exist in the response structure (even with null field values)
         // If party is null, CCD omits the field entirely, causing "Cannot find matching start trigger"
