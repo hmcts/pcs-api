@@ -108,20 +108,6 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             contactAddress = addressMapper.toAddressUK(matchedDefendant.getAddress());
         }
 
-        // Ensure address is never null - always create with all fields for CCD token validation
-        // If AddressMapper returns null, create an empty AddressUK with all fields explicitly null
-        if (contactAddress == null) {
-            contactAddress = AddressUK.builder()
-                .addressLine1(null)
-                .addressLine2(null)
-                .addressLine3(null)
-                .postTown(null)
-                .county(null)
-                .postCode(null)
-                .country(null)
-                .build();
-        }
-
         // Always create Party object to maintain consistent structure for CCD event token validation
         // The party field must exist in the response structure (even with null field values)
         // If party is null, CCD omits the field entirely, causing "Cannot find matching start trigger"
@@ -139,12 +125,21 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
         PCSCase caseData = eventPayload.caseData();
         caseData.setPossessionClaimResponse(possessionClaimResponse);
 
-        PCSCase filteredDraft = PCSCase.builder()
-            .possessionClaimResponse(possessionClaimResponse)
-            .build();
+        // Seed the draft only once. Subsequent START calls (new tokens) must not overwrite user progress.
+        if (!draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
+            PCSCase filteredDraft = PCSCase.builder()
+                .possessionClaimResponse(possessionClaimResponse)
+                .build();
 
-        draftCaseDataService.patchUnsubmittedEventData(
-            caseReference, filteredDraft, EventId.respondPossessionClaim);
+            draftCaseDataService.patchUnsubmittedEventData(
+                caseReference, filteredDraft, respondPossessionClaim);
+
+            log.info("Draft seeded for case {} and event {} from defendant data in database",
+                caseReference, respondPossessionClaim);
+        } else {
+            log.info("Draft already exists for case {} and event {} - skipping draft seed to preserve user progress",
+                caseReference, respondPossessionClaim);
+        }
 
         return PCSCase.builder()
             .possessionClaimResponse(possessionClaimResponse)

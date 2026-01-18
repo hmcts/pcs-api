@@ -142,6 +142,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(addressMapper.toAddressUK(addressEntity)).thenReturn(expectedAddress);
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false); // No draft exists yet - should seed
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -349,6 +351,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(addressMapper.toAddressUK(propertyAddressEntity)).thenReturn(propertyAddress);
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false); // No draft exists yet - should seed
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -390,8 +394,21 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .uid(defendantUserId.toString())
             .build();
 
+        AddressUK emptyAddress = AddressUK.builder()
+            .addressLine1(null)
+            .addressLine2(null)
+            .addressLine3(null)
+            .postTown(null)
+            .county(null)
+            .postCode(null)
+            .country(null)
+            .build();
+
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(addressMapper.toAddressUK(null)).thenReturn(emptyAddress);
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(false); // No draft exists yet - should seed
 
         PCSCase caseData = PCSCase.builder().build();
 
@@ -409,6 +426,64 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(result.getPossessionClaimResponse().getParty().getAddress().getCountry()).isNull();
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            any(PCSCase.class),
+            eq(EventId.respondPossessionClaim)
+        );
+    }
+
+    @Test
+    void shouldNotOverwriteDraftWhenDraftAlreadyExists() {
+        UUID defendantUserId = UUID.randomUUID();
+
+        AddressEntity addressEntity = AddressEntity.builder()
+            .addressLine1("123 Test Street")
+            .postTown("London")
+            .postcode("SW1A 1AA")
+            .build();
+
+        PartyEntity matchingDefendant = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("John")
+            .lastName("Doe")
+            .address(addressEntity)
+            .build();
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+            .build();
+
+        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
+            .party(matchingDefendant)
+            .role(PartyRole.DEFENDANT)
+            .build();
+        claimEntity.getClaimParties().add(claimPartyEntity);
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
+            .build();
+        pcsCaseEntity.getClaims().add(claimEntity);
+        pcsCaseEntity.getParties().add(matchingDefendant);
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(true); // Draft already exists - should NOT seed
+
+        PCSCase caseData = PCSCase.builder().build();
+
+        PCSCase result = callStartHandler(caseData);
+
+        // Should still return the party data for CCD token validation
+        assertThat(result.getPossessionClaimResponse()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
+        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
+
+        // Should NOT call patchUnsubmittedEventData when draft already exists
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
