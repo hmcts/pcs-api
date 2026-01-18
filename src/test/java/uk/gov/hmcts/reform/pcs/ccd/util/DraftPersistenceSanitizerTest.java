@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests for DraftPersistenceSanitizer.
- * Verifies pass-through behavior - actual sanitisation is tested in integration tests.
+ * Verifies null field removal behavior before draft persistence.
  */
 class DraftPersistenceSanitizerTest {
 
@@ -30,12 +30,13 @@ class DraftPersistenceSanitizerTest {
     }
 
     @Test
-    void shouldReturnSameObjectWhenCaseDataProvided() {
+    void shouldReturnNewObjectWhenCaseDataProvided() {
         PCSCase caseData = PCSCase.builder().build();
 
         PCSCase result = sanitizer.sanitize(caseData);
 
-        assertThat(result).isSameAs(caseData);
+        assertThat(result).isNotNull();
+        assertThat(result).isNotSameAs(caseData);
     }
 
     @Test
@@ -56,13 +57,14 @@ class DraftPersistenceSanitizerTest {
 
         PCSCase result = sanitizer.sanitize(caseData);
 
-        // Sanitizer is pass-through; null removal happens during serialization
-        assertThat(result).isSameAs(caseData);
-        assertThat(result.getPossessionClaimResponse().getParty()).isSameAs(party);
+        // Sanitizer creates new object without null fields
+        assertThat(result).isNotSameAs(caseData);
+        assertThat(result.getPossessionClaimResponse()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
     }
 
     @Test
-    void shouldHandlePartyWithMixedData() {
+    void shouldPreserveNonNullFieldsAndStructure() {
         AddressUK address = AddressUK.builder()
             .addressLine1("123 Main Street")
             .postCode("SW1A 1AA")
@@ -85,10 +87,13 @@ class DraftPersistenceSanitizerTest {
 
         PCSCase result = sanitizer.sanitize(caseData);
 
-        // Sanitizer is pass-through; verification of actual null removal
-        // happens in integration tests with draftCaseDataObjectMapper
-        assertThat(result).isSameAs(caseData);
+        // Verify non-null fields are preserved
         assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
         assertThat(result.getPossessionClaimResponse().getParty().getPhoneNumber()).isEqualTo("07123456789");
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress().getAddressLine1())
+            .isEqualTo("123 Main Street");
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress().getPostCode())
+            .isEqualTo("SW1A 1AA");
     }
 }
