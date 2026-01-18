@@ -32,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -53,13 +54,22 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private AddressMapper addressMapper;
 
+    @Mock
+    private uk.gov.hmcts.reform.pcs.ccd.util.DraftPersistenceSanitizer draftPersistenceSanitizer;
+
     @BeforeEach
     void setUp() {
+        // Configure sanitizer mock to pass-through (returns input unchanged)
+        // Using lenient() because not all tests call submit callback (some test start callback or errors)
+        lenient().when(draftPersistenceSanitizer.sanitize(any(PCSCase.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
         setEventUnderTest(new RespondPossessionClaim(
             draftCaseDataService,
             pcsCaseService,
             securityContextService,
-            addressMapper
+            addressMapper,
+            draftPersistenceSanitizer
         ));
     }
 
@@ -86,7 +96,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .possessionClaimResponse(possessionClaimResponse)
             .submitDraftAnswers(YesOrNo.NO)
             .build();
-
 
         callSubmitHandler(caseData);
 

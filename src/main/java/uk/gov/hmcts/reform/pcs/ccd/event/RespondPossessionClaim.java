@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.util.DraftPersistenceSanitizer;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -42,6 +43,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
     private final AddressMapper addressMapper;
+    private final DraftPersistenceSanitizer draftPersistenceSanitizer;
 
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -161,25 +163,8 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             //This will be implemented in a future ticket.
             //Note that defendants will be stored in a list
         } else {
-            if (possessionClaimResponse.getParty() != null) {
-                try {
-                    log.debug("Attempting to save draft for case {} with party data", caseReference);
-
-                    PCSCase draftToSave = PCSCase.builder()
-                        .possessionClaimResponse(possessionClaimResponse)
-                        .build();
-
-                    draftCaseDataService.patchUnsubmittedEventData(
-                        caseReference, draftToSave, respondPossessionClaim);
-
-                    log.debug("Draft saved successfully for case {}", caseReference);
-                } catch (Exception e) {
-                    log.error("Failed to save draft for case {}", caseReference, e);
-                    return SubmitResponse.<State>builder()
-                        .errors(List.of("We couldn't save your response. Please try again or contact support."))
-                        .build();
-                }
-            } else {
+            // Draft submission - sanitize data before saving to prevent null overwrites
+            if (possessionClaimResponse.getParty() == null) {
                 // Party is null - could be empty draft OR malformed structure
                 log.error(
                     "Draft submit rejected for case {}: party is null. "
@@ -191,6 +176,30 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
 
                 return SubmitResponse.<State>builder()
                     .errors(List.of("We couldn't save your response. Please review your details and try again."))
+                    .build();
+            }
+
+            // Sanitize draft data: remove null/empty fields to prevent overwriting existing draft data
+            // This allows partial updates (e.g., only phoneNumber) without losing other fields
+            try {
+                log.debug("Sanitizing draft data for case {}", caseReference);
+
+                PCSCase draftToSave = PCSCase.builder()
+                    .possessionClaimResponse(possessionClaimResponse)
+                    .build();
+
+                PCSCase sanitizedDraft = draftPersistenceSanitizer.sanitize(draftToSave);
+
+                log.debug("Saving sanitized draft for case {}", caseReference);
+
+                draftCaseDataService.patchUnsubmittedEventData(
+                    caseReference, sanitizedDraft, respondPossessionClaim);
+
+                log.debug("Draft saved successfully for case {}", caseReference);
+            } catch (Exception e) {
+                log.error("Failed to save draft for case {}", caseReference, e);
+                return SubmitResponse.<State>builder()
+                    .errors(List.of("We couldn't save your response. Please try again or contact support."))
                     .build();
             }
         }
