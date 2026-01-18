@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.draft.patch.PcsDraftPatch;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -32,7 +33,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -54,22 +54,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private AddressMapper addressMapper;
 
-    @Mock
-    private uk.gov.hmcts.reform.pcs.ccd.util.DraftPersistenceSanitizer draftPersistenceSanitizer;
-
     @BeforeEach
     void setUp() {
-        // Configure sanitizer mock to pass-through (returns input unchanged)
-        // Using lenient() because not all tests call submit callback (some test start callback or errors)
-        lenient().when(draftPersistenceSanitizer.sanitize(any(PCSCase.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
-
         setEventUnderTest(new RespondPossessionClaim(
             draftCaseDataService,
             pcsCaseService,
             securityContextService,
-            addressMapper,
-            draftPersistenceSanitizer
+            addressMapper
         ));
     }
 
@@ -101,7 +92,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            any(PCSCase.class),
+            any(PcsDraftPatch.class),
             eq(EventId.respondPossessionClaim)
         );
 
@@ -447,14 +438,15 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         callSubmitHandler(caseData);
 
-        ArgumentCaptor<PCSCase> draftCaptor = forClass(PCSCase.class);
+        ArgumentCaptor<PcsDraftPatch> draftCaptor = forClass(PcsDraftPatch.class);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             draftCaptor.capture(),
             eq(EventId.respondPossessionClaim)
         );
 
-        PCSCase savedDraft = draftCaptor.getValue();
+        PcsDraftPatch savedDraft = draftCaptor.getValue();
+        assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
         assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
         assertThat(savedDraft.getPossessionClaimResponse().getParty()).isNotNull();
@@ -463,7 +455,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(savedDraft.getPossessionClaimResponse().getParty().getEmailAddress())
             .isEqualTo("john.doe@example.com");
         assertThat(savedDraft.getPossessionClaimResponse().getParty().getPhoneNumber()).isEqualTo("07700900000");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(address);
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress().getAddressLine1())
+            .isEqualTo("123 Test Street");
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress().getPostTown())
+            .isEqualTo("London");
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress().getPostCode())
+            .isEqualTo("SW1A 1AA");
     }
 
     @Test
@@ -526,7 +524,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
         assertThat(response.getErrors().get(0))
-            .isEqualTo("We couldn't save your response. Please review your details and try again.");
+            .isEqualTo("Invalid response structure. Please refresh the page and try again.");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
@@ -561,7 +559,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         doThrow(new RuntimeException("Database connection failed"))
             .when(draftCaseDataService).patchUnsubmittedEventData(
                 eq(TEST_CASE_REFERENCE),
-                any(PCSCase.class),
+                any(PcsDraftPatch.class),
                 eq(EventId.respondPossessionClaim)
             );
 
@@ -571,6 +569,60 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(response.getErrors()).hasSize(1);
         assertThat(response.getErrors().get(0))
             .isEqualTo("We couldn't save your response. Please try again or contact support.");
+    }
+
+    @Test
+    void shouldSerializePcsDraftPatchOmittingNullFields() throws Exception {
+        // Given: A party with some fields populated and some null
+        AddressUK address = AddressUK.builder()
+            .addressLine1(null)  // null - should be omitted
+            .postTown("London")   // non-null - should be present
+            .postCode("SW1A 1AA") // non-null - should be present
+            .country("UK")        // non-null - should be present
+            .build();
+
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName(null)      // null - should be omitted
+            .address(address)
+            .build();
+
+        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
+            .party(party)
+            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(possessionClaimResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When: Submitting draft
+        callSubmitHandler(caseData);
+
+        // Then: Capture the PcsDraftPatch
+        ArgumentCaptor<PcsDraftPatch> draftCaptor = forClass(PcsDraftPatch.class);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            draftCaptor.capture(),
+            eq(EventId.respondPossessionClaim)
+        );
+
+        PcsDraftPatch capturedPatch = draftCaptor.getValue();
+
+        // Serialize the PcsDraftPatch to JSON using Jackson
+        com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        String json = objectMapper.writeValueAsString(capturedPatch);
+
+        // Assert: JSON contains non-null fields
+        assertThat(json).contains("\"Country\":\"UK\"");       // Country was set
+        assertThat(json).contains("\"PostTown\":\"London\"");  // PostTown was set
+        assertThat(json).contains("\"PostCode\":\"SW1A 1AA\""); // PostCode was set
+        assertThat(json).contains("\"firstName\":\"John\"");   // firstName was set
+
+        // Assert: JSON does NOT contain null fields (they are omitted)
+        assertThat(json).doesNotContain("\"AddressLine1\"");   // AddressLine1 was null
+        assertThat(json).doesNotContain("\"lastName\"");       // lastName was null
     }
 
     @Test
@@ -602,7 +654,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            any(PCSCase.class),
+            any(PcsDraftPatch.class),
             eq(EventId.respondPossessionClaim)
         );
     }
