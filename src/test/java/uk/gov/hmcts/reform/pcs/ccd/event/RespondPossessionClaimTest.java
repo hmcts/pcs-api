@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.patch.PcsDraftPatch;
+import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.PcsCaseDraftUpdate;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -92,7 +92,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            any(PcsDraftPatch.class),
+            any(PcsCaseDraftUpdate.class),
             eq(EventId.respondPossessionClaim)
         );
 
@@ -518,14 +518,14 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         callSubmitHandler(caseData);
 
-        ArgumentCaptor<PcsDraftPatch> draftCaptor = forClass(PcsDraftPatch.class);
+        ArgumentCaptor<PcsCaseDraftUpdate> draftCaptor = forClass(PcsCaseDraftUpdate.class);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             draftCaptor.capture(),
             eq(EventId.respondPossessionClaim)
         );
 
-        PcsDraftPatch savedDraft = draftCaptor.getValue();
+        PcsCaseDraftUpdate savedDraft = draftCaptor.getValue();
         assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
         assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
@@ -639,7 +639,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         doThrow(new RuntimeException("Database connection failed"))
             .when(draftCaseDataService).patchUnsubmittedEventData(
                 eq(TEST_CASE_REFERENCE),
-                any(PcsDraftPatch.class),
+                any(PcsCaseDraftUpdate.class),
                 eq(EventId.respondPossessionClaim)
             );
 
@@ -652,7 +652,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldSerializePcsDraftPatchOmittingNullFields() throws Exception {
+    void shouldSerializePcsCaseDraftUpdateOmittingNullFields() throws Exception {
         // Given: A party with some fields populated and some null
         AddressUK address = AddressUK.builder()
             .addressLine1(null)  // null - should be omitted
@@ -680,17 +680,17 @@ class RespondPossessionClaimTest extends BaseEventTest {
         // When: Submitting draft
         callSubmitHandler(caseData);
 
-        // Then: Capture the PcsDraftPatch
-        ArgumentCaptor<PcsDraftPatch> draftCaptor = forClass(PcsDraftPatch.class);
+        // Then: Capture the PcsCaseDraftUpdate
+        ArgumentCaptor<PcsCaseDraftUpdate> draftCaptor = forClass(PcsCaseDraftUpdate.class);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             draftCaptor.capture(),
             eq(EventId.respondPossessionClaim)
         );
 
-        PcsDraftPatch capturedPatch = draftCaptor.getValue();
+        PcsCaseDraftUpdate capturedPatch = draftCaptor.getValue();
 
-        // Serialize the PcsDraftPatch to JSON using Jackson
+        // Serialize the PcsCaseDraftUpdate to JSON using Jackson
         com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
         String json = objectMapper.writeValueAsString(capturedPatch);
 
@@ -736,7 +736,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            any(PcsDraftPatch.class),
+            any(PcsCaseDraftUpdate.class),
             eq(EventId.respondPossessionClaim)
         );
     }

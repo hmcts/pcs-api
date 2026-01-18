@@ -25,10 +25,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.patch.AddressUKDraftPatch;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.patch.PartyDraftPatch;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.patch.PcsDraftPatch;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.patch.PossessionClaimResponseDraftPatch;
+import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.AddressUKDraftUpdate;
+import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.PartyDraftUpdate;
+import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.PcsCaseDraftUpdate;
+import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.PossessionClaimResponseDraftUpdate;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -167,140 +167,141 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 .build();
         }
 
+        // Route to appropriate handler
         if (isFinalSubmit.toBoolean()) {
-            //find draft data using idam user and case reference and event
-
-            //Store defendant response to database
-            //This will be implemented in a future ticket.
-            //Note that defendants will be stored in a list
+            return processFinalSubmit(caseReference, possessionClaimResponse);
         } else {
-            // ============================================================================
-            // DRAFT SUBMISSION - Patch DTO approach to prevent null field overwrites
-            // ============================================================================
-            // Logic explanation:
-            // 1. Incoming domain object (Party) has @JsonInclude(ALWAYS) for CCD token validation
-            //    → All fields serialize including nulls → Would overwrite existing draft data
-            // 2. Solution: Map to patch DTOs with @JsonInclude(NON_NULL)
-            //    → Only non-null fields serialize → Jackson merge preserves existing values
-            // 3. Flow: Party → PartyDraftPatch → JSON (nulls omitted) → Merge → Draft updated
-            // ============================================================================
-
-            log.info("Draft submission for case {}: Validating and building patch DTO", caseReference);
-
-            // Validation 1: Ensure party object exists
-            if (possessionClaimResponse.getParty() == null) {
-                log.error(
-                    "Draft submit rejected for case {}: party is null. "
-                        + "possessionClaimResponse present: {}, isFinalSubmit: {}",
-                    caseReference,
-                    possessionClaimResponse != null,
-                    isFinalSubmit
-                );
-
-                return SubmitResponse.<State>builder()
-                    .errors(List.of("Invalid response structure. Please refresh the page and try again."))
-                    .build();
-            }
-
-            Party incomingParty = possessionClaimResponse.getParty();
-
-            // Debug: Log incoming party data
-            log.debug("Incoming party data for case {}: firstName='{}', lastName='{}', "
-                    + "emailAddress='{}', phoneNumber='{}', orgName='{}', "
-                    + "nameKnown={}, addressKnown={}, addressSameAsProperty={}, address={}",
-                caseReference,
-                incomingParty.getFirstName(),
-                incomingParty.getLastName(),
-                incomingParty.getEmailAddress(),
-                incomingParty.getPhoneNumber(),
-                incomingParty.getOrgName(),
-                incomingParty.getNameKnown(),
-                incomingParty.getAddressKnown(),
-                incomingParty.getAddressSameAsProperty(),
-                incomingParty.getAddress() != null ? "present" : "null"
-            );
-
-            if (incomingParty.getAddress() != null) {
-                AddressUK address = incomingParty.getAddress();
-                log.debug("Incoming address for case {}: AddressLine1='{}', PostTown='{}', "
-                        + "PostCode='{}', Country='{}'",
-                    caseReference,
-                    address.getAddressLine1(),
-                    address.getPostTown(),
-                    address.getPostCode(),
-                    address.getCountry()
-                );
-            }
-
-            // Build patch DTO with NON_NULL to omit null fields from JSON
-            // This enables PATCH semantics: only non-null fields update the draft
-            try {
-                log.debug("Building draft patch DTO for case {}: mapping Party → PartyDraftPatch", caseReference);
-
-                PartyDraftPatch partyPatch = toPartyDraftPatch(incomingParty);
-
-                log.debug("PartyDraftPatch created for case {}: firstName='{}', lastName='{}', "
-                        + "emailAddress='{}', phoneNumber='{}', address={}",
-                    caseReference,
-                    partyPatch.getFirstName(),
-                    partyPatch.getLastName(),
-                    partyPatch.getEmailAddress(),
-                    partyPatch.getPhoneNumber(),
-                    partyPatch.getAddress() != null ? "present" : "null"
-                );
-
-                PossessionClaimResponseDraftPatch responsePatch = PossessionClaimResponseDraftPatch.builder()
-                    .contactByPhone(possessionClaimResponse.getContactByPhone())
-                    .party(partyPatch)
-                    .build();
-
-                log.debug("PossessionClaimResponseDraftPatch created for case {}: contactByPhone={}",
-                    caseReference, responsePatch.getContactByPhone());
-
-                PcsDraftPatch draftPatch = PcsDraftPatch.builder()
-                    .submitDraftAnswers(isFinalSubmit)
-                    .possessionClaimResponse(responsePatch)
-                    .build();
-
-                log.info("Persisting draft patch for case {}: Patch DTO will be serialized to JSON "
-                        + "(nulls omitted due to @JsonInclude(NON_NULL)), then merged with existing draft",
-                    caseReference);
-
-                draftCaseDataService.patchUnsubmittedEventData(
-                    caseReference, draftPatch, respondPossessionClaim);
-
-                log.info("Draft saved successfully for case {}: Patch applied, existing values preserved "
-                        + "for any fields that were null in incoming request", caseReference);
-            } catch (Exception e) {
-                log.error("Failed to save draft for case {}: Exception during patch DTO persistence",
-                    caseReference, e);
-                return SubmitResponse.<State>builder()
-                    .errors(List.of("We couldn't save your response. Please try again or contact support."))
-                    .build();
-            }
+            return processDraftSubmit(caseReference, possessionClaimResponse, isFinalSubmit);
         }
+    }
+
+    /**
+     * Processes final submission of defendant response.
+     *
+     * @param caseReference the case reference
+     * @param possessionClaimResponse the defendant's response
+     * @return submit response
+     */
+    private SubmitResponse<State> processFinalSubmit(
+        long caseReference,
+        PossessionClaimResponse possessionClaimResponse
+    ) {
+        //TODO: find draft data using idam user and case reference and event
+
+        //TODO: Store defendant response to database
+        //This will be implemented in a future ticket.
+        //Note that defendants will be stored in a list
+
+        log.debug("Final submit not yet implemented for case {}", caseReference);
         return SubmitResponse.defaultResponse();
     }
 
     /**
-     * Maps Party domain object to PartyDraftPatch DTO.
+     * Processes draft submission of defendant response.
+     * Maps domain objects to draft update DTOs and persists to database.
+     *
+     * @param caseReference the case reference
+     * @param possessionClaimResponse the defendant's response
+     * @param isFinalSubmit the submit flag
+     * @return submit response
+     */
+    private SubmitResponse<State> processDraftSubmit(
+        long caseReference,
+        PossessionClaimResponse possessionClaimResponse,
+        YesOrNo isFinalSubmit
+    ) {
+        log.debug("Draft submission for case {}: Validating and building update DTO", caseReference);
+
+        // Validate party exists
+        if (possessionClaimResponse.getParty() == null) {
+            log.error("Draft submit rejected for case {}: party is null", caseReference);
+            return SubmitResponse.<State>builder()
+                .errors(List.of("Invalid response structure. Please refresh the page and try again."))
+                .build();
+        }
+
+        // Build and save draft update
+        PcsCaseDraftUpdate draftUpdate = buildDraftUpdate(caseReference, possessionClaimResponse, isFinalSubmit);
+        return saveDraftUpdate(caseReference, draftUpdate);
+    }
+
+    /**
+     * Builds draft update DTO from domain objects.
+     * Uses draft update DTOs with @JsonInclude(NON_NULL) to enable PATCH semantics.
+     *
+     * @param caseReference the case reference
+     * @param possessionClaimResponse the defendant's response
+     * @param isFinalSubmit the submit flag
+     * @return draft update DTO
+     */
+    private PcsCaseDraftUpdate buildDraftUpdate(
+        long caseReference,
+        PossessionClaimResponse possessionClaimResponse,
+        YesOrNo isFinalSubmit
+    ) {
+        Party incomingParty = possessionClaimResponse.getParty();
+
+        PartyDraftUpdate partyUpdate = toPartyDraftUpdate(incomingParty);
+
+        PossessionClaimResponseDraftUpdate responseUpdate = PossessionClaimResponseDraftUpdate.builder()
+            .contactByPhone(possessionClaimResponse.getContactByPhone())
+            .party(partyUpdate)
+            .build();
+
+        return PcsCaseDraftUpdate.builder()
+            .submitDraftAnswers(isFinalSubmit)
+            .possessionClaimResponse(responseUpdate)
+            .build();
+    }
+
+    /**
+     * Saves draft update to database.
+     *
+     * @param caseReference the case reference
+     * @param draftUpdate the draft update DTO
+     * @return submit response
+     */
+    private SubmitResponse<State> saveDraftUpdate(long caseReference, PcsCaseDraftUpdate draftUpdate) {
+        try {
+            log.debug("Persisting draft update for case {}: Update DTO will be serialized to JSON "
+                    + "(nulls omitted due to @JsonInclude(NON_NULL)), then merged with existing draft",
+                caseReference);
+
+            draftCaseDataService.patchUnsubmittedEventData(
+                caseReference, draftUpdate, respondPossessionClaim);
+
+            log.debug("Draft saved successfully for case {}: Update applied, existing values preserved "
+                    + "for any fields that were null in incoming request", caseReference);
+            return SubmitResponse.defaultResponse();
+
+        } catch (Exception e) {
+            log.error("Failed to save draft for case {}: Exception during update DTO persistence",
+                caseReference, e);
+            return SubmitResponse.<State>builder()
+                .errors(List.of("We couldn't save your response. Please try again or contact support."))
+                .build();
+        }
+    }
+
+    /**
+     * Maps Party domain object to PartyDraftUpdate DTO.
      * Copies all fields directly - NON_NULL annotation on DTO ensures nulls are omitted from JSON.
      *
      * @param party the party from the incoming request
-     * @return PartyDraftPatch with all fields copied from party
+     * @return PartyDraftUpdate with all fields copied from party
      */
-    private PartyDraftPatch toPartyDraftPatch(Party party) {
+    private PartyDraftUpdate toPartyDraftUpdate(Party party) {
         if (party == null) {
             return null;
         }
 
-        return PartyDraftPatch.builder()
+        return PartyDraftUpdate.builder()
             .firstName(party.getFirstName())
             .lastName(party.getLastName())
             .orgName(party.getOrgName())
             .nameKnown(party.getNameKnown())
             .emailAddress(party.getEmailAddress())
-            .address(toAddressUKDraftPatch(party.getAddress()))
+            .address(toAddressUKDraftUpdate(party.getAddress()))
             .addressKnown(party.getAddressKnown())
             .addressSameAsProperty(party.getAddressSameAsProperty())
             .phoneNumber(party.getPhoneNumber())
@@ -308,18 +309,18 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     }
 
     /**
-     * Maps AddressUK domain object to AddressUKDraftPatch DTO.
+     * Maps AddressUK domain object to AddressUKDraftUpdate DTO.
      * Copies all fields directly - NON_NULL annotation on DTO ensures nulls are omitted from JSON.
      *
      * @param address the address from the incoming request
-     * @return AddressUKDraftPatch with all fields copied from address
+     * @return AddressUKDraftUpdate with all fields copied from address
      */
-    private AddressUKDraftPatch toAddressUKDraftPatch(AddressUK address) {
+    private AddressUKDraftUpdate toAddressUKDraftUpdate(AddressUK address) {
         if (address == null) {
             return null;
         }
 
-        return AddressUKDraftPatch.builder()
+        return AddressUKDraftUpdate.builder()
             .addressLine1(address.getAddressLine1())
             .addressLine2(address.getAddressLine2())
             .addressLine3(address.getAddressLine3())

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.draft.patch;
+package uk.gov.hmcts.reform.pcs.ccd.domain.draft.update;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 /**
- * Draft patch DTO for PossessionClaimResponse.
+ * Draft update DTO for PossessionClaimResponse.
  * Uses NON_NULL to omit null fields from JSON, enabling PATCH semantics during draft persistence.
  */
 @Data
@@ -16,7 +16,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PossessionClaimResponseDraftPatch {
+public class PossessionClaimResponseDraftUpdate {
     private YesOrNo contactByPhone;
-    private PartyDraftPatch party;
+    private PartyDraftUpdate party;
 }

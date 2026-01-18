@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.draft.patch;
+package uk.gov.hmcts.reform.pcs.ccd.domain.draft.update;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 /**
- * Draft patch DTO for Party.
+ * Draft update DTO for Party.
  * Uses NON_NULL to omit null fields from JSON, enabling PATCH semantics during draft persistence.
  * Mirrors all fields from Party domain object.
  */
@@ -17,13 +17,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PartyDraftPatch {
+public class PartyDraftUpdate {
     private String firstName;
     private String lastName;
     private String orgName;
     private VerticalYesNo nameKnown;
     private String emailAddress;
-    private AddressUKDraftPatch address;
+    private AddressUKDraftUpdate address;
     private VerticalYesNo addressKnown;
     private VerticalYesNo addressSameAsProperty;
     private String phoneNumber;
