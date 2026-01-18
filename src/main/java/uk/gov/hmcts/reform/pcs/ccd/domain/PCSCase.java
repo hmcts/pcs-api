@@ -489,7 +489,7 @@ public class PCSCase {
     @CCD(
         access = {DefendantAccess.class}
     )
-    private DefendantResponse defendantResponse;
+    private PossessionClaimResponse possessionClaimResponse;
 
     @CCD(searchable = false)
     private String formattedDefendantNames;

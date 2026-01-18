@@ -86,7 +86,8 @@ class ResumeClaimTest extends BasePageTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
 
-        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId)).thenReturn(Optional.empty());
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, eventId))
+            .thenReturn(Optional.empty());
 
         when(caseData.getResumeClaimKeepAnswers()).thenReturn(YesOrNo.YES);
 
