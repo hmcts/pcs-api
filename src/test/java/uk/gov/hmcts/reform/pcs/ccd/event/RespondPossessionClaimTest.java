@@ -615,14 +615,16 @@ class RespondPossessionClaimTest extends BaseEventTest {
         String json = objectMapper.writeValueAsString(capturedPatch);
 
         // Assert: JSON contains non-null fields
-        assertThat(json).contains("\"Country\":\"UK\"");       // Country was set
-        assertThat(json).contains("\"PostTown\":\"London\"");  // PostTown was set
-        assertThat(json).contains("\"PostCode\":\"SW1A 1AA\""); // PostCode was set
-        assertThat(json).contains("\"firstName\":\"John\"");   // firstName was set
+        assertThat(json)
+            .contains("\"Country\":\"UK\"")       // Country was set
+            .contains("\"PostTown\":\"London\"")  // PostTown was set
+            .contains("\"PostCode\":\"SW1A 1AA\"") // PostCode was set
+            .contains("\"firstName\":\"John\"");   // firstName was set
 
         // Assert: JSON does NOT contain null fields (they are omitted)
-        assertThat(json).doesNotContain("\"AddressLine1\"");   // AddressLine1 was null
-        assertThat(json).doesNotContain("\"lastName\"");       // lastName was null
+        assertThat(json)
+            .doesNotContain("\"AddressLine1\"")   // AddressLine1 was null
+            .doesNotContain("\"lastName\"");       // lastName was null
     }
 
     @Test
