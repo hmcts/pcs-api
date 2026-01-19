@@ -1,5 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,12 +31,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.AddressUKDraftUpdate;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.PartyDraftUpdate;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.PcsCaseDraftUpdate;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.PossessionClaimResponseDraftUpdate;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -47,6 +50,29 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     private final SecurityContextService securityContextService;
     private final AddressMapper addressMapper;
 
+    /**
+     * ObjectMapper for draft serialization that omits null fields.
+     * Uses mix-ins to override Party's @JsonInclude(ALWAYS) annotation,
+     * preventing null values from overwriting existing draft data during merge.
+     * Lazy-initialized to avoid overhead when not needed.
+     */
+    private ObjectMapper draftSerializer;
+
+    /**
+     * Mix-in interface to override Party's @JsonInclude(ALWAYS) during draft serialization.
+     * This allows null fields to be omitted from JSON, enabling true PATCH semantics.
+     * Party retains @JsonInclude(ALWAYS) for CCD token validation in START callback.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private interface DraftPartyMixIn {}
+
+    /**
+     * Mix-in interface to override AddressUK serialization during draft persistence.
+     * Ensures null address fields are omitted from JSON to prevent overwriting existing data.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private interface DraftAddressMixIn {}
+
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
@@ -58,6 +84,35 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT);
+    }
+
+    /**
+     * Gets or creates the ObjectMapper for draft serialization.
+     * This mapper uses mix-ins to override Party's @JsonInclude(ALWAYS) annotation,
+     * allowing null fields to be omitted during draft persistence while preserving
+     * the ALWAYS behavior for CCD token validation in the START callback.
+     *
+     * @return ObjectMapper configured to omit null fields for draft persistence
+     */
+    private ObjectMapper getDraftSerializer() {
+        if (draftSerializer == null) {
+            draftSerializer = new ObjectMapper();
+            draftSerializer.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            draftSerializer.registerModules(
+                new Jdk8Module(),
+                new JavaTimeModule(),
+                new ParameterNamesModule()
+            );
+
+            // Mix-ins override class-level @JsonInclude annotations
+            // This allows Party to keep @JsonInclude(ALWAYS) for CCD token validation
+            // while using NON_NULL for draft persistence to prevent null overwrites
+            draftSerializer.addMixIn(Party.class, DraftPartyMixIn.class);
+            draftSerializer.addMixIn(AddressUK.class, DraftAddressMixIn.class);
+
+            log.debug("Initialized draft serializer with NON_NULL mix-ins for Party and AddressUK");
+        }
+        return draftSerializer;
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -167,168 +222,50 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 .build();
         }
 
-        // Route to appropriate handler
         if (isFinalSubmit.toBoolean()) {
-            return processFinalSubmit(caseReference, possessionClaimResponse);
+            //TODO: find draft data using idam user and case reference and event
+
+            //TODO: Store defendant response to database
+            //This will be implemented in a future ticket.
+            //Note that defendants will be stored in a list
         } else {
-            return processDraftSubmit(caseReference, possessionClaimResponse, isFinalSubmit);
+            // Draft submission
+            if (possessionClaimResponse.getParty() == null) {
+                log.error("Draft submit rejected for case {}: party is null", caseReference);
+                return SubmitResponse.<State>builder()
+                    .errors(List.of("Invalid response structure. Please refresh the page and try again."))
+                    .build();
+            }
+
+            try {
+                log.debug("Saving draft for case {} with null-omitting serialization", caseReference);
+
+                PCSCase draftToSave = PCSCase.builder()
+                    .possessionClaimResponse(possessionClaimResponse)
+                    .build();
+
+                // Serialize with custom mapper that omits nulls (via mix-in override)
+                // then deserialize back to PCSCase to pass to service
+                ObjectMapper mapper = getDraftSerializer();
+                String sanitizedJson = mapper.writeValueAsString(draftToSave);
+                PCSCase sanitizedDraft = mapper.readValue(sanitizedJson, PCSCase.class);
+
+                draftCaseDataService.patchUnsubmittedEventData(
+                    caseReference, sanitizedDraft, respondPossessionClaim);
+
+                log.debug("Draft saved successfully for case {} (nulls omitted via mix-in)", caseReference);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to serialize/deserialize draft for case {}", caseReference, e);
+                throw new UnsubmittedDataException("Failed to prepare draft data", e);
+            } catch (Exception e) {
+                log.error("Failed to save draft for case {}", caseReference, e);
+                return SubmitResponse.<State>builder()
+                    .errors(List.of("We couldn't save your response. Please try again or contact support."))
+                    .build();
+            }
         }
-    }
 
-    /**
-     * Processes final submission of defendant response.
-     *
-     * @param caseReference the case reference
-     * @param possessionClaimResponse the defendant's response
-     * @return submit response
-     */
-    private SubmitResponse<State> processFinalSubmit(
-        long caseReference,
-        PossessionClaimResponse possessionClaimResponse
-    ) {
-        //TODO: find draft data using idam user and case reference and event
-
-        //TODO: Store defendant response to database
-        //This will be implemented in a future ticket.
-        //Note that defendants will be stored in a list
-
-        log.debug("Final submit not yet implemented for case {}", caseReference);
         return SubmitResponse.defaultResponse();
-    }
-
-    /**
-     * Processes draft submission of defendant response.
-     * Maps domain objects to draft update DTOs and persists to database.
-     *
-     * @param caseReference the case reference
-     * @param possessionClaimResponse the defendant's response
-     * @param isFinalSubmit the submit flag
-     * @return submit response
-     */
-    private SubmitResponse<State> processDraftSubmit(
-        long caseReference,
-        PossessionClaimResponse possessionClaimResponse,
-        YesOrNo isFinalSubmit
-    ) {
-        log.debug("Draft submission for case {}: Validating and building update DTO", caseReference);
-
-        // Validate party exists
-        if (possessionClaimResponse.getParty() == null) {
-            log.error("Draft submit rejected for case {}: party is null", caseReference);
-            return SubmitResponse.<State>builder()
-                .errors(List.of("Invalid response structure. Please refresh the page and try again."))
-                .build();
-        }
-
-        // Build and save draft update
-        PcsCaseDraftUpdate draftUpdate = buildDraftUpdate(caseReference, possessionClaimResponse, isFinalSubmit);
-        return saveDraftUpdate(caseReference, draftUpdate);
-    }
-
-    /**
-     * Builds draft update DTO from domain objects.
-     * Uses draft update DTOs with @JsonInclude(NON_NULL) to enable PATCH semantics.
-     *
-     * @param caseReference the case reference
-     * @param possessionClaimResponse the defendant's response
-     * @param isFinalSubmit the submit flag
-     * @return draft update DTO
-     */
-    private PcsCaseDraftUpdate buildDraftUpdate(
-        long caseReference,
-        PossessionClaimResponse possessionClaimResponse,
-        YesOrNo isFinalSubmit
-    ) {
-        Party incomingParty = possessionClaimResponse.getParty();
-
-        PartyDraftUpdate partyUpdate = toPartyDraftUpdate(incomingParty);
-
-        PossessionClaimResponseDraftUpdate responseUpdate = PossessionClaimResponseDraftUpdate.builder()
-            .contactByPhone(possessionClaimResponse.getContactByPhone())
-            .party(partyUpdate)
-            .build();
-
-        return PcsCaseDraftUpdate.builder()
-            .submitDraftAnswers(isFinalSubmit)
-            .possessionClaimResponse(responseUpdate)
-            .build();
-    }
-
-    /**
-     * Saves draft update to database.
-     *
-     * @param caseReference the case reference
-     * @param draftUpdate the draft update DTO
-     * @return submit response
-     */
-    private SubmitResponse<State> saveDraftUpdate(long caseReference, PcsCaseDraftUpdate draftUpdate) {
-        try {
-            log.debug("Persisting draft update for case {}: Update DTO will be serialized to JSON "
-                    + "(nulls omitted due to @JsonInclude(NON_NULL)), then merged with existing draft",
-                caseReference);
-
-            draftCaseDataService.patchUnsubmittedEventData(
-                caseReference, draftUpdate, respondPossessionClaim);
-
-            log.debug("Draft saved successfully for case {}: Update applied, existing values preserved "
-                    + "for any fields that were null in incoming request", caseReference);
-            return SubmitResponse.defaultResponse();
-
-        } catch (Exception e) {
-            log.error("Failed to save draft for case {}: Exception during update DTO persistence",
-                caseReference, e);
-            return SubmitResponse.<State>builder()
-                .errors(List.of("We couldn't save your response. Please try again or contact support."))
-                .build();
-        }
-    }
-
-    /**
-     * Maps Party domain object to PartyDraftUpdate DTO.
-     * Copies all fields directly - NON_NULL annotation on DTO ensures nulls are omitted from JSON.
-     *
-     * @param party the party from the incoming request
-     * @return PartyDraftUpdate with all fields copied from party
-     */
-    private PartyDraftUpdate toPartyDraftUpdate(Party party) {
-        if (party == null) {
-            return null;
-        }
-
-        return PartyDraftUpdate.builder()
-            .firstName(party.getFirstName())
-            .lastName(party.getLastName())
-            .orgName(party.getOrgName())
-            .nameKnown(party.getNameKnown())
-            .emailAddress(party.getEmailAddress())
-            .address(toAddressUKDraftUpdate(party.getAddress()))
-            .addressKnown(party.getAddressKnown())
-            .addressSameAsProperty(party.getAddressSameAsProperty())
-            .phoneNumber(party.getPhoneNumber())
-            .build();
-    }
-
-    /**
-     * Maps AddressUK domain object to AddressUKDraftUpdate DTO.
-     * Copies all fields directly - NON_NULL annotation on DTO ensures nulls are omitted from JSON.
-     *
-     * @param address the address from the incoming request
-     * @return AddressUKDraftUpdate with all fields copied from address
-     */
-    private AddressUKDraftUpdate toAddressUKDraftUpdate(AddressUK address) {
-        if (address == null) {
-            return null;
-        }
-
-        return AddressUKDraftUpdate.builder()
-            .addressLine1(address.getAddressLine1())
-            .addressLine2(address.getAddressLine2())
-            .addressLine3(address.getAddressLine3())
-            .postTown(address.getPostTown())
-            .county(address.getCounty())
-            .postCode(address.getPostCode())
-            .country(address.getCountry())
-            .build();
     }
 }
 

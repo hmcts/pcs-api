@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.draft.update.PcsCaseDraftUpdate;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -92,7 +91,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            any(PcsCaseDraftUpdate.class),
+            any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
         );
 
@@ -518,14 +517,14 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         callSubmitHandler(caseData);
 
-        ArgumentCaptor<PcsCaseDraftUpdate> draftCaptor = forClass(PcsCaseDraftUpdate.class);
+        ArgumentCaptor<PCSCase> draftCaptor = forClass(PCSCase.class);
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             draftCaptor.capture(),
             eq(EventId.respondPossessionClaim)
         );
 
-        PcsCaseDraftUpdate savedDraft = draftCaptor.getValue();
+        PCSCase savedDraft = draftCaptor.getValue();
         assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
         assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
@@ -639,7 +638,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         doThrow(new RuntimeException("Database connection failed"))
             .when(draftCaseDataService).patchUnsubmittedEventData(
                 eq(TEST_CASE_REFERENCE),
-                any(PcsCaseDraftUpdate.class),
+                any(PCSCase.class),
                 eq(EventId.respondPossessionClaim)
             );
 
@@ -649,62 +648,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(response.getErrors()).hasSize(1);
         assertThat(response.getErrors().get(0))
             .isEqualTo("We couldn't save your response. Please try again or contact support.");
-    }
-
-    @Test
-    void shouldSerializePcsCaseDraftUpdateOmittingNullFields() throws Exception {
-        // Given: A party with some fields populated and some null
-        AddressUK address = AddressUK.builder()
-            .addressLine1(null)  // null - should be omitted
-            .postTown("London")   // non-null - should be present
-            .postCode("SW1A 1AA") // non-null - should be present
-            .country("UK")        // non-null - should be present
-            .build();
-
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName(null)      // null - should be omitted
-            .address(address)
-            .build();
-
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .party(party)
-            .contactByPhone(YesOrNo.YES)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(possessionClaimResponse)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        // When: Submitting draft
-        callSubmitHandler(caseData);
-
-        // Then: Capture the PcsCaseDraftUpdate
-        ArgumentCaptor<PcsCaseDraftUpdate> draftCaptor = forClass(PcsCaseDraftUpdate.class);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE),
-            draftCaptor.capture(),
-            eq(EventId.respondPossessionClaim)
-        );
-
-        PcsCaseDraftUpdate capturedPatch = draftCaptor.getValue();
-
-        // Serialize the PcsCaseDraftUpdate to JSON using Jackson
-        com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        String json = objectMapper.writeValueAsString(capturedPatch);
-
-        // Assert: JSON contains non-null fields
-        assertThat(json)
-            .contains("\"Country\":\"UK\"")       // Country was set
-            .contains("\"PostTown\":\"London\"")  // PostTown was set
-            .contains("\"PostCode\":\"SW1A 1AA\"") // PostCode was set
-            .contains("\"firstName\":\"John\"");   // firstName was set
-
-        // Assert: JSON does NOT contain null fields (they are omitted)
-        assertThat(json)
-            .doesNotContain("\"AddressLine1\"")   // AddressLine1 was null
-            .doesNotContain("\"lastName\"");       // lastName was null
     }
 
     @Test
@@ -736,9 +679,312 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
-            any(PcsCaseDraftUpdate.class),
+            any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
         );
+    }
+
+    @Test
+    void shouldOmitAllNullFieldsFromPartyWhenSerializing() throws Exception {
+        // Given: Party with all fields null except firstName
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName(null)
+            .orgName(null)
+            .nameKnown(null)
+            .emailAddress(null)
+            .address(null)
+            .addressKnown(null)
+            .addressSameAsProperty(null)
+            .phoneNumber(null)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .party(party)
+            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When: Submitting draft
+        callSubmitHandler(caseData);
+
+        // Then: Verify the saved draft omits null fields
+        ArgumentCaptor<PCSCase> captor = forClass(PCSCase.class);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            captor.capture(),
+            eq(EventId.respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = captor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
+
+        // Verify null fields were not set (remain null after deserialization)
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getLastName()).isNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getParty().getEmailAddress()).isNull();
+    }
+
+    @Test
+    void shouldOmitNullAddressFieldsWhenSerializing() throws Exception {
+        // Given: Address with some fields null
+        AddressUK address = AddressUK.builder()
+            .addressLine1("123 Main Street")
+            .addressLine2(null)
+            .addressLine3(null)
+            .postTown("London")
+            .county(null)
+            .postCode("SW1A 1AA")
+            .country(null)
+            .build();
+
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .address(address)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .party(party)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When: Submitting draft
+        callSubmitHandler(caseData);
+
+        // Then: Verify the saved draft omits null address fields
+        ArgumentCaptor<PCSCase> captor = forClass(PCSCase.class);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            captor.capture(),
+            eq(EventId.respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = captor.getValue();
+        Party savedParty = savedDraft.getPossessionClaimResponse().getParty();
+        AddressUK savedAddress = savedParty.getAddress();
+
+        assertThat(savedAddress).isNotNull();
+        assertThat(savedAddress.getAddressLine1()).isEqualTo("123 Main Street");
+        assertThat(savedAddress.getPostTown()).isEqualTo("London");
+        assertThat(savedAddress.getPostCode()).isEqualTo("SW1A 1AA");
+
+        // Verify null fields were not set
+        assertThat(savedAddress.getAddressLine2()).isNull();
+        assertThat(savedAddress.getCounty()).isNull();
+    }
+
+    @Test
+    void shouldOmitNullContactByPhoneField() throws Exception {
+        // Given: Response with null contactByPhone
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .party(party)
+            .contactByPhone(null)  // Null field
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When: Submitting draft
+        callSubmitHandler(caseData);
+
+        // Then: Verify contactByPhone was omitted
+        ArgumentCaptor<PCSCase> captor = forClass(PCSCase.class);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            captor.capture(),
+            eq(EventId.respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = captor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isNull();
+    }
+
+    @Test
+    void shouldIncludeAllNonNullFieldsWhenSerializing() throws Exception {
+        // Given: Fully populated response with no nulls
+        AddressUK address = AddressUK.builder()
+            .addressLine1("123 Main Street")
+            .addressLine2("Apt 4B")
+            .addressLine3("Building C")
+            .postTown("London")
+            .county("Greater London")
+            .postCode("SW1A 1AA")
+            .country("UK")
+            .build();
+
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .orgName("Test Org")
+            .nameKnown(VerticalYesNo.YES)
+            .emailAddress("john@example.com")
+            .address(address)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
+            .phoneNumber("07700900000")
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .party(party)
+            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When: Submitting draft
+        callSubmitHandler(caseData);
+
+        // Then: All fields should be included
+        ArgumentCaptor<PCSCase> captor = forClass(PCSCase.class);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            captor.capture(),
+            eq(EventId.respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = captor.getValue();
+        Party savedParty = savedDraft.getPossessionClaimResponse().getParty();
+        AddressUK savedAddress = savedParty.getAddress();
+
+        // Verify all party fields are preserved
+        assertThat(savedParty.getFirstName()).isEqualTo("John");
+        assertThat(savedParty.getLastName()).isEqualTo("Doe");
+        assertThat(savedParty.getOrgName()).isEqualTo("Test Org");
+        assertThat(savedParty.getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedParty.getEmailAddress()).isEqualTo("john@example.com");
+        assertThat(savedParty.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedParty.getPhoneNumber()).isEqualTo("07700900000");
+
+        // Verify all address fields are preserved
+        assertThat(savedAddress.getAddressLine1()).isEqualTo("123 Main Street");
+        assertThat(savedAddress.getAddressLine2()).isEqualTo("Apt 4B");
+        assertThat(savedAddress.getAddressLine3()).isEqualTo("Building C");
+        assertThat(savedAddress.getPostTown()).isEqualTo("London");
+        assertThat(savedAddress.getCounty()).isEqualTo("Greater London");
+        assertThat(savedAddress.getPostCode()).isEqualTo("SW1A 1AA");
+        assertThat(savedAddress.getCountry()).isEqualTo("UK");
+
+        assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
+    }
+
+    @Test
+    void shouldHandleMixedNullAndNonNullPartyFields() throws Exception {
+        // Given: Party with mixed null and non-null fields (realistic scenario)
+        AddressUK address = AddressUK.builder()
+            .addressLine1("123 Main Street")
+            .addressLine2(null)  // User didn't fill this
+            .postTown("London")
+            .postCode("SW1A 1AA")
+            .country(null)  // User didn't fill this
+            .build();
+
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .orgName(null)  // Not applicable for individual
+            .emailAddress("john@example.com")
+            .address(address)
+            .phoneNumber(null)  // User didn't provide
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .party(party)
+            .contactByPhone(YesOrNo.NO)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When: Submitting draft
+        callSubmitHandler(caseData);
+
+        // Then: Non-null fields included, null fields omitted
+        ArgumentCaptor<PCSCase> captor = forClass(PCSCase.class);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            captor.capture(),
+            eq(EventId.respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = captor.getValue();
+        Party savedParty = savedDraft.getPossessionClaimResponse().getParty();
+        AddressUK savedAddress = savedParty.getAddress();
+
+        // Non-null fields should be present
+        assertThat(savedParty.getFirstName()).isEqualTo("John");
+        assertThat(savedParty.getLastName()).isEqualTo("Doe");
+        assertThat(savedParty.getEmailAddress()).isEqualTo("john@example.com");
+        assertThat(savedAddress.getAddressLine1()).isEqualTo("123 Main Street");
+        assertThat(savedAddress.getPostTown()).isEqualTo("London");
+        assertThat(savedAddress.getPostCode()).isEqualTo("SW1A 1AA");
+        assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.NO);
+
+        // Null fields should remain null (not overwritten)
+        assertThat(savedParty.getOrgName()).isNull();
+        assertThat(savedParty.getPhoneNumber()).isNull();
+        assertThat(savedAddress.getAddressLine2()).isNull();
+        assertThat(savedAddress.getCountry()).isNull();
+    }
+
+    @Test
+    void shouldOmitNullAddressWhenPartyAddressIsNull() throws Exception {
+        // Given: Party with null address
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .address(null)  // No address provided
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .party(party)
+            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When: Submitting draft
+        callSubmitHandler(caseData);
+
+        // Then: Address field should be omitted
+        ArgumentCaptor<PCSCase> captor = forClass(PCSCase.class);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(TEST_CASE_REFERENCE),
+            captor.capture(),
+            eq(EventId.respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = captor.getValue();
+        Party savedParty = savedDraft.getPossessionClaimResponse().getParty();
+
+        assertThat(savedParty.getFirstName()).isEqualTo("John");
+        assertThat(savedParty.getLastName()).isEqualTo("Doe");
+        assertThat(savedParty.getAddress()).isNull();
     }
 
 }
