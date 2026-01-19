@@ -73,7 +73,7 @@ export class EnforcementAction implements IAction {
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
       ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
-      ['validateAmountToRePayTable', () => this.validateAmountToRePayTable()],
+      ['validateAmountToRePayTable', () => this.validateAmountToRePayTable(fieldName as actionRecord)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
       ['selectStatementOfTruthOne', () => this.selectStatementOfTruthOne(fieldName as actionRecord)],
@@ -339,10 +339,13 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', landRegistryFees.continueButton);
   }
 
-  private async validateAmountToRePayTable() {
+  private async validateAmountToRePayTable(header: actionRecord) {
 
-    const totalAmt = Array.from(moneyMap.values()).reduce((a, b) => a + b, 0);
-    moneyMap.set(rePayments.totalAmt, totalAmt);
+    if (header.headerName == rePayments.title) {
+
+      const totalAmt = Array.from(moneyMap.values()).reduce((a, b) => a + b, 0);
+      moneyMap.set(rePayments.totalAmt, totalAmt);
+    };
     for (const [moneyField, amount] of moneyMap) {
       await performValidation('formLabelValue', moneyField, `${await this.convertCurrencyToString(amount)}`);
     }
@@ -376,7 +379,7 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
-      await performAction('check', claimantDetails.selectCheckBox);
+      await performAction('check', claimantDetails.selectCheckbox);
       await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
       if(claimantDetails.completedBy == statementOfTruthOne.claimantRadioOption){
         await performAction('check', claimantDetails.iBelieveCheckbox);
@@ -393,7 +396,7 @@ export class EnforcementAction implements IAction {
     }
 
   private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
-      await performAction('check', claimantDetails.iCertifyCheckbox);
+      await performAction('check', claimantDetails.selectCheckbox);
       await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
       if(claimantDetails.completedBy == statementOfTruthTwo.claimantRadioOption){
         await performAction('check', claimantDetails.iBelieveCheckbox);
