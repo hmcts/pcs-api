@@ -13,12 +13,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -104,7 +102,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
-        setRentDetails(pcsCase, pcsCaseEntity);
         setClaimFields(pcsCase, pcsCaseEntity);
 
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -147,18 +144,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
 
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
-    }
-
-    private void setRentDetails(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        TenancyLicenceEntity tenancyLicence = pcsCaseEntity.getTenancyLicence();
-        if (tenancyLicence != null) {
-            pcsCase.setRentDetails(RentDetails.builder()
-                .currentRent(tenancyLicence.getRentAmount())
-                .frequency(tenancyLicence.getRentFrequency())
-                .otherFrequency(tenancyLicence.getOtherRentFrequency())
-                .dailyCharge(tenancyLicence.getRentPerDay())
-                .build());
-        }
     }
 
     private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
