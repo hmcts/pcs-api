@@ -8,6 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+
+import java.math.BigDecimal;
 
 /**
  * CCD domain complex type for rent details.
@@ -24,7 +27,8 @@ public class RentDetails {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String currentRent;
+    @JacksonMoneyGBP
+    private BigDecimal currentRent;
 
     @CCD(
         label = "How frequently should rent be paid?"
@@ -43,7 +47,8 @@ public class RentDetails {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String dailyCharge;
+    @JacksonMoneyGBP
+    private BigDecimal dailyCharge;
 
     @CCD(
         label = "Is the amount per day that unpaid rent should be charged at correct?"
@@ -55,12 +60,14 @@ public class RentDetails {
         typeOverride = FieldType.MoneyGBP,
         min = 0
     )
-    private String amendedDailyCharge;
+    @JacksonMoneyGBP
+    private BigDecimal amendedDailyCharge;
 
     @CCD(
         typeOverride = FieldType.MoneyGBP
     )
-    private String calculatedDailyCharge;
+    @JacksonMoneyGBP
+    private BigDecimal calculatedDailyCharge;
 
     @CCD
     private String formattedCalculatedDailyCharge;
