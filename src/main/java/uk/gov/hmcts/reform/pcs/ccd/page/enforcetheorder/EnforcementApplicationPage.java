@@ -90,6 +90,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .mandatory(EnforcementOrder::getSelectEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getFormattedDefendantNames, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW, true)
             .done()
             .label("enforcementApplication-clarification", WRIT_OR_WARRANT_INFORMATION)
             .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);

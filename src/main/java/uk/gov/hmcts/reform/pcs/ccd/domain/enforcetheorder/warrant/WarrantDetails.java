@@ -120,6 +120,6 @@ public class WarrantDetails {
     private VerticalYesNo isSuspendedOrder;
 
     @CCD
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     private DefendantsDOB defendantsDOB;
 }
