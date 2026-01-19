@@ -2,10 +2,15 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -17,17 +22,20 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 @Builder
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+@NoArgsConstructor
+@AllArgsConstructor
 public class WarrantDetails {
 
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     @CCD
     private AdditionalInformation additionalInformation;
 
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     @CCD
     private NameAndAddressForEviction nameAndAddressForEviction;
 
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     @CCD
     private PeopleToEvict peopleToEvict;
 
@@ -50,22 +58,19 @@ public class WarrantDetails {
     )
     private Set<RiskCategory> enforcementRiskCategories;
 
-    @CCD(
-        searchable = false
-    )
-    private VerticalYesNo showChangeNameAddressPage;
+    @CCD(searchable = false)
+    private YesOrNo showChangeNameAddressPage;
 
-    @CCD(
-        searchable = false
-    )
-    private VerticalYesNo showPeopleWhoWillBeEvictedPage;
+    @CCD(searchable = false)
+    private YesOrNo showPeopleWhoWillBeEvictedPage;
 
-    @CCD(
-        searchable = false
-    )
-    private VerticalYesNo showPeopleYouWantToEvictPage;
+    @CCD(searchable = false)
+    private YesOrNo showPeopleYouWantToEvictPage;
 
-    @JsonUnwrapped(prefix = "warrant")
+    @CCD(label = "Do you know the defendants’ dates of birth?")
+    private VerticalYesNo defendantsDOBKnown;
+
+    @JsonUnwrapped
     @CCD(
         label = "Risk details"
     )
@@ -86,23 +91,23 @@ public class WarrantDetails {
     )
     private LanguageUsed enforcementLanguageUsed;
 
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     @CCD
     private PropertyAccessDetails propertyAccessDetails;
 
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     @CCD
     private LegalCosts legalCosts;
 
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     @CCD
     private MoneyOwedByDefendants moneyOwedByDefendants;
 
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     @CCD
     private LandRegistryFees landRegistryFees;
 
-    @JsonUnwrapped(prefix = "repayment")
+    @JsonUnwrapped
     @CCD
     private RepaymentCosts repaymentCosts;
 
@@ -115,6 +120,6 @@ public class WarrantDetails {
     private VerticalYesNo isSuspendedOrder;
 
     @CCD
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     private DefendantsDOB defendantsDOB;
 }
