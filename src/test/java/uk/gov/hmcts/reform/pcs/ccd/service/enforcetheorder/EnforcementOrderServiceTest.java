@@ -70,7 +70,7 @@ class EnforcementOrderServiceTest {
     void shouldReturnEnforcementOrderWhenFound() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        final ClaimEntity claimEntity = pcsCaseEntity.getClaims().iterator().next();
+        final ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
         final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
         final EnforcementOrderEntity enforcementOrderEntity =
                 EnforcementDataUtil.buildEnforcementOrderEntity(enforcementOrderId, claimEntity, enforcementOrder);
