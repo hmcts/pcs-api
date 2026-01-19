@@ -320,7 +320,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         }
     }
 
-    private SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
+    public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
@@ -393,7 +393,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulerClient.scheduleIfNotExists(
             ACCESS_CODE_TASK_DESCRIPTOR
-            .instance(taskId)
+                .instance(taskId)
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );

@@ -204,5 +204,4 @@ class PcsCaseServiceTest {
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
     }
-
 }
