@@ -1,11 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.event;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -33,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
-import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -50,29 +43,6 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     private final SecurityContextService securityContextService;
     private final AddressMapper addressMapper;
 
-    /**
-     * ObjectMapper for draft serialization that omits null fields.
-     * Uses mix-ins to override Party's @JsonInclude(ALWAYS) annotation,
-     * preventing null values from overwriting existing draft data during merge.
-     * Lazy-initialized to avoid overhead when not needed.
-     */
-    private ObjectMapper draftSerializer;
-
-    /**
-     * Mix-in interface to override Party's @JsonInclude(ALWAYS) during draft serialization.
-     * This allows null fields to be omitted from JSON, enabling true PATCH semantics.
-     * Party retains @JsonInclude(ALWAYS) for CCD token validation in START callback.
-     */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private interface DraftPartyMixIn {}
-
-    /**
-     * Mix-in interface to override AddressUK serialization during draft persistence.
-     * Ensures null address fields are omitted from JSON to prevent overwriting existing data.
-     */
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private interface DraftAddressMixIn {}
-
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
@@ -84,35 +54,6 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT);
-    }
-
-    /**
-     * Gets or creates the ObjectMapper for draft serialization.
-     * This mapper uses mix-ins to override Party's @JsonInclude(ALWAYS) annotation,
-     * allowing null fields to be omitted during draft persistence while preserving
-     * the ALWAYS behavior for CCD token validation in the START callback.
-     *
-     * @return ObjectMapper configured to omit null fields for draft persistence
-     */
-    private ObjectMapper getDraftSerializer() {
-        if (draftSerializer == null) {
-            draftSerializer = new ObjectMapper();
-            draftSerializer.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-            draftSerializer.registerModules(
-                new Jdk8Module(),
-                new JavaTimeModule(),
-                new ParameterNamesModule()
-            );
-
-            // Mix-ins override class-level @JsonInclude annotations
-            // This allows Party to keep @JsonInclude(ALWAYS) for CCD token validation
-            // while using NON_NULL for draft persistence to prevent null overwrites
-            draftSerializer.addMixIn(Party.class, DraftPartyMixIn.class);
-            draftSerializer.addMixIn(AddressUK.class, DraftAddressMixIn.class);
-
-            log.debug("Initialized draft serializer with NON_NULL mix-ins for Party and AddressUK");
-        }
-        return draftSerializer;
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -238,26 +179,18 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             }
 
             try {
-                log.debug("Saving draft for case {} with null-omitting serialization", caseReference);
-
+                // HDPI-3509: draftCaseDataObjectMapper (configured in JacksonConfiguration) uses mix-ins
+                // to override Party's @JsonInclude(ALWAYS) annotation, ensuring null fields are omitted
+                // during draft persistence to prevent overwriting existing data
                 PCSCase draftToSave = PCSCase.builder()
                     .possessionClaimResponse(possessionClaimResponse)
                     .submitDraftAnswers(isFinalSubmit)
                     .build();
 
-                // Serialize with custom mapper that omits nulls (via mix-in override)
-                // then deserialize back to PCSCase to pass to service
-                ObjectMapper mapper = getDraftSerializer();
-                String sanitizedJson = mapper.writeValueAsString(draftToSave);
-                PCSCase sanitizedDraft = mapper.readValue(sanitizedJson, PCSCase.class);
-
                 draftCaseDataService.patchUnsubmittedEventData(
-                    caseReference, sanitizedDraft, respondPossessionClaim);
+                    caseReference, draftToSave, respondPossessionClaim);
 
-                log.debug("Draft saved successfully for case {} (nulls omitted via mix-in)", caseReference);
-            } catch (JsonProcessingException e) {
-                log.error("Failed to serialize/deserialize draft for case {}", caseReference, e);
-                throw new UnsubmittedDataException("Failed to prepare draft data", e);
+                log.debug("Draft saved successfully for case {}", caseReference);
             } catch (Exception e) {
                 log.error("Failed to save draft for case {}", caseReference, e);
                 return SubmitResponse.<State>builder()

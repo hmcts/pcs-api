@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.config;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +14,8 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DraftCaseDataMixIn;
 
@@ -22,6 +25,20 @@ import static com.fasterxml.jackson.databind.MapperFeature.INFER_BUILDER_TYPE_BI
 
 @Configuration
 public class JacksonConfiguration {
+
+    /**
+     * Mix-in to override Party's @JsonInclude(ALWAYS) annotation for draft persistence.
+     * Party needs ALWAYS for CCD token validation, but drafts need NON_NULL for PATCH semantics.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private interface DraftPartyMixIn {}
+
+    /**
+     * Mix-in to override AddressUK's serialization for draft persistence.
+     * Ensures null address fields are omitted to prevent overwriting existing data.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private interface DraftAddressMixIn {}
 
     @Primary
     @Bean
@@ -55,6 +72,12 @@ public class JacksonConfiguration {
 
         mapper.addMixIn(PCSCase.class, DraftCaseDataMixIn.class);
         mapper.setSerializationInclusion(Include.NON_NULL);
+
+        // HDPI-3509: Override Party's @JsonInclude(ALWAYS) for draft persistence
+        // Party needs ALWAYS for CCD token validation in START callback,
+        // but drafts need NON_NULL to prevent null fields from overwriting existing data
+        mapper.addMixIn(Party.class, DraftPartyMixIn.class);
+        mapper.addMixIn(AddressUK.class, DraftAddressMixIn.class);
 
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.setDateFormat(new StdDateFormat());
