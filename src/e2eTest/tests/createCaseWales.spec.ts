@@ -8,23 +8,14 @@ import {
 import {
   addressCheckYourAnswers,
   addressDetails,
-  claimantCircumstances,
   claimantDetailsWales,
-  claimingCosts,
-  dailyRentAmount,
-  defendantCircumstances,
   detailsOfRentArrears,
   home,
-  mediationAndSettlement,
-  moneyJudgment,
-  noticeOfYourIntention,
   occupationContractOrLicenceDetailsWales,
   prohibitedConductStandardContractWales,
-  rentDetails,
   reasonsForPossession,
   signInOrCreateAnAccount,
   asbQuestionsWales,
-  noticeDetails,
   user,
   whatAreYourGroundsForPossessionWales,
   underlesseeOrMortgageeEntitledToClaim,
@@ -36,7 +27,7 @@ import {
   checkYourAnswers,
   propertyDetails,
   underlesseeOrMortgageeDetails,
-  statementOfTruth, borderPostcode
+  statementOfTruth
 } from '@data/page-data';
 import{
   claimantType,
@@ -44,7 +35,16 @@ import{
   claimantInformation,
   defendantDetails,
   contactPreferences,
-  preactionProtocol
+  preactionProtocol,
+  claimantCircumstances,
+  claimingCosts,
+  dailyRentAmount,
+  defendantCircumstances,
+  mediationAndSettlement,
+  moneyJudgment,
+  rentDetails,
+  noticeDetails,
+  checkingNotice
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 
@@ -116,20 +116,20 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('text', {"text": preactionProtocol.communityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performAction('clickLinkAndVerifyNewTabTitle', noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink, noticeOfYourIntention.mainHeaderWalesNewTab);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderWalesNewTab);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
+      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
@@ -139,11 +139,11 @@ test.describe('[Create Case - Wales]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.no);
+    await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -155,7 +155,7 @@ test.describe('[Create Case - Wales]', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -225,19 +225,19 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {
       rentAmount: '850',
       rentFrequencyOption: 'Other',
-      inputFrequency: rentDetails.rentFrequencyFortnightly,
+      inputFrequency: rentDetails.enterFrequencyHiddenTextInput,
       unpaidRentAmountPerDay: '50'
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -248,11 +248,11 @@ test.describe('[Create Case - Wales]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -272,7 +272,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     // The following sections are commented out pending development of the Wales journey.
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -343,19 +343,19 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no,
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption,
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performAction('selectDailyRentAmount', {
     calculateRentAmount: '£32.85',
-    unpaidRentInteractiveOption: dailyRentAmount.yes
+    unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
@@ -365,11 +365,11 @@ test.describe('[Create Case - Wales]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -385,7 +385,7 @@ test.describe('[Create Case - Wales]', async () => {
       option2: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.no);
+    await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -456,22 +456,24 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performValidation('text', {"text": checkingNotice.youMayHaveAlreadyServedWalesDynamicParagraph, "elementType": "paragraph"});
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes,
-      typeOfNotice: noticeOfYourIntention.typeOfNoticeInput
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption,
+      typeOfNotice: 'What type of notice did you serve?',
+      typeOfNoticeInput: 'RWH20'
     });
     await performAction('selectNoticeDetails', {
-     howDidYouServeNotice: noticeDetails.byOtherElectronicMethod,
+     howDidYouServeNotice: noticeDetails.byOtherElectronicMethodRadioOption,
       day: '25', month: '02', year: '1970', hour: '22', minute: '45', second: '10', files: 'NoticeDetails.pdf'});
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -483,7 +485,7 @@ test.describe('[Create Case - Wales]', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -502,7 +504,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + other options @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + estate grounds + other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -556,19 +558,19 @@ test.describe('[Create Case - Wales]', async () => {
       [whatAreYourGroundsForPossessionWales.mandatory.failureToGiveupPossession, whatAreYourGroundsForPossessionWales.discretionary.buildingWorks]);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
+      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
@@ -578,11 +580,11 @@ test.describe('[Create Case - Wales]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.no);
+    await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -594,7 +596,7 @@ test.describe('[Create Case - Wales]', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -679,18 +681,18 @@ test.describe('[Create Case - Wales]', async () => {
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -702,7 +704,7 @@ test.describe('[Create Case - Wales]', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -774,19 +776,19 @@ test.describe('[Create Case - Wales]', async () => {
     // Following lines enabled to reach notice of your intention page as HDPI-2343 is done for Wales journey routing
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£32.85',
-      unpaidRentInteractiveOption: dailyRentAmount.yes
+      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
@@ -796,11 +798,11 @@ test.describe('[Create Case - Wales]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.no);
+    await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.no,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -812,7 +814,7 @@ test.describe('[Create Case - Wales]', async () => {
       option1: prohibitedConductStandardContractWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);

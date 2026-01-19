@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { IValidation } from '../../interfaces/validation.interface';
+import { IValidation } from '@utils/interfaces';
 import * as fs from 'fs';
 import * as path from 'path';
 import { cyaValidation, CYAStore } from '../custom-validations/CYA/cyaPage.validation';

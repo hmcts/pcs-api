@@ -104,7 +104,10 @@ class PartyServiceTest {
             // Given
             String expectedClaimantName = "Claimant name";
 
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder().build();
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder()
                 .claimantName(expectedClaimantName)
@@ -112,15 +115,15 @@ class PartyServiceTest {
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(partyRepository).save(partyEntityCaptor.capture());
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
             assertThat(createdClaimant.getOrgName()).isEqualTo(expectedClaimantName);
         }
 
@@ -130,7 +133,10 @@ class PartyServiceTest {
             String expectedClaimantName = "Claimant name";
             String overriddenName = "Overridden name";
 
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder().build();
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder()
                 .claimantName(expectedClaimantName)
@@ -139,15 +145,15 @@ class PartyServiceTest {
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
             assertThat(createdClaimant.getOrgName()).isEqualTo(expectedClaimantName);
             assertThat(createdClaimant.getNameOverridden()).isEqualTo(YesOrNo.NO);
 
@@ -161,7 +167,10 @@ class PartyServiceTest {
             String claimantName = "Claimant name";
             String expectedOverriddenName = "Overridden name";
 
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder().build();
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder()
                 .claimantName(claimantName)
@@ -170,15 +179,15 @@ class PartyServiceTest {
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
             assertThat(createdClaimant.getOrgName()).isEqualTo(expectedOverriddenName);
             assertThat(createdClaimant.getNameOverridden()).isEqualTo(YesOrNo.YES);
 
@@ -186,31 +195,34 @@ class PartyServiceTest {
         }
 
         @Test
-        void shouldUseClaimantAddressIfCorrect() {
+        void shouldUseOrganisationAddressWhenNoOverriddenContactAddress() {
             // Given
-            AddressUK claimantAddress = mock(AddressUK.class);
+            AddressUK organisationAddress = mock(AddressUK.class);
+            AddressEntity mappedAddress = mock(AddressEntity.class);
+            when(modelMapper.map(organisationAddress, AddressEntity.class)).thenReturn(mappedAddress);
 
-            final AddressEntity expectedAddressEntity = stubAddressUKModelMapper(claimantAddress);
-
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .organisationAddress(organisationAddress)
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder()
                 .isClaimantNameCorrect(VerticalYesNo.YES)
+                .claimantName("Claimant name")
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
-            when(pcsCase.getPropertyAddress()).thenReturn(claimantAddress); // TODO: Fix under HDPI-3533
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
-            assertThat(createdClaimant.getAddress()).isEqualTo(expectedAddressEntity);
+
+            assertThat(createdClaimant.getAddress()).isSameAs(mappedAddress);
             verify(pcsCaseEntity).addParty(createdClaimant);
         }
 
@@ -218,12 +230,14 @@ class PartyServiceTest {
         void shouldUseOverriddenClaimantAddress() {
             // Given
             AddressUK overriddenAddress = mock(AddressUK.class);
+            AddressEntity mappedAddress = mock(AddressEntity.class);
+            when(modelMapper.map(overriddenAddress, AddressEntity.class)).thenReturn(mappedAddress);
 
-            final AddressEntity expectedAddressEntity = stubAddressUKModelMapper(overriddenAddress);
-
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
-                .isCorrectClaimantContactAddress(VerticalYesNo.NO)
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .overriddenClaimantContactAddress(overriddenAddress)
+                .organisationAddress(mock(AddressUK.class)) // should be ignored when overridden present
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder()
@@ -231,41 +245,41 @@ class PartyServiceTest {
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
-            assertThat(createdClaimant.getAddress()).isEqualTo(expectedAddressEntity);
+
+            assertThat(createdClaimant.getAddress()).isSameAs(mappedAddress);
             verify(pcsCaseEntity).addParty(createdClaimant);
         }
 
         @Test
-        void shouldUseClaimantEmailAddressIfCorrect() {
+        void shouldUseClaimantEmailAddressIfOverriddenNotProvided() {
             // Given
             String expectedEmailAddress = "test@test.com";
 
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
-                .isCorrectClaimantContactAddress(VerticalYesNo.YES)
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail(expectedEmailAddress)
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder().build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
             assertThat(createdClaimant.getEmailAddress()).isEqualTo(expectedEmailAddress);
             verify(pcsCaseEntity).addParty(createdClaimant);
         }
@@ -275,25 +289,52 @@ class PartyServiceTest {
             // Given
             String expectedEmailAddress = "overridden@test.com";
 
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
-                .isCorrectClaimantContactAddress(VerticalYesNo.NO)
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .claimantContactEmail("original@test.com")
                 .overriddenClaimantContactEmail(expectedEmailAddress)
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder().build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
             assertThat(createdClaimant.getEmailAddress()).isEqualTo(expectedEmailAddress);
             verify(pcsCaseEntity).addParty(createdClaimant);
+        }
+
+        @Test
+        void shouldFallbackToClaimantEmailWhenOverriddenEmailIsBlank() {
+            // Given
+            String claimantEmail = "test@test.com";
+
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .claimantContactEmail(claimantEmail)
+                .overriddenClaimantContactEmail("   ")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
+
+            ClaimantInformation claimantInformation = ClaimantInformation.builder().build();
+
+            when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+            // Then
+            verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
+            PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
+            assertThat(createdClaimant.getEmailAddress()).isEqualTo(claimantEmail);
         }
 
         @Test
@@ -301,23 +342,24 @@ class PartyServiceTest {
             // Given
             String expectedPhoneNumber = "some phone number";
 
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantProvidePhoneNumber(VerticalYesNo.YES)
                 .claimantContactPhoneNumber(expectedPhoneNumber)
+                .claimantContactEmail("test@test.com")
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder().build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
             assertThat(createdClaimant.getPhoneNumber()).isEqualTo(expectedPhoneNumber);
             assertThat(createdClaimant.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
             verify(pcsCaseEntity).addParty(createdClaimant);
@@ -326,30 +368,28 @@ class PartyServiceTest {
         @Test
         void shouldNotUseClaimantPhoneNumerWhenNotProvided() {
             // Given
-            String expectedPhoneNumber = "some phone number";
-
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantProvidePhoneNumber(VerticalYesNo.NO)
-                .claimantContactPhoneNumber(expectedPhoneNumber)
+                .claimantContactPhoneNumber("some phone number")
+                .claimantContactEmail("test@test.com")
                 .build();
 
             ClaimantInformation claimantInformation = ClaimantInformation.builder().build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
 
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
+
             assertThat(createdClaimant.getPhoneNumber()).isNull();
             assertThat(createdClaimant.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.NO);
             verify(pcsCaseEntity).addParty(createdClaimant);
         }
-
     }
 
     @Nested
@@ -365,8 +405,11 @@ class PartyServiceTest {
             ClaimantInformation claimantInformation = mock(ClaimantInformation.class);
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
 
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder().build();
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
         }
 
         @Test
@@ -392,8 +435,9 @@ class PartyServiceTest {
 
             AddressUK correspondenceAddress = defendant1.getCorrespondenceAddress();
             if (correspondenceAddress != null) {
-                AddressEntity correspondenceAddressEntity = stubAddressUKModelMapper(correspondenceAddress);
-                expectedPartyEntity.setAddress(correspondenceAddressEntity);
+                AddressEntity mapped = mock(AddressEntity.class);
+                when(modelMapper.map(correspondenceAddress, AddressEntity.class)).thenReturn(mapped);
+                expectedPartyEntity.setAddress(mapped);
             }
 
             // When
@@ -401,8 +445,8 @@ class PartyServiceTest {
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.DEFENDANT));
-
             PartyEntity createdDefendant = partyEntityCaptor.getValue();
+
             assertThat(createdDefendant)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedPartyEntity);
@@ -414,7 +458,8 @@ class PartyServiceTest {
         void shouldBuildListWithMultipleDefendants() {
             // Given
             AddressUK defendant1Address = mock(AddressUK.class);
-            final AddressEntity defendant1AddressEntity = stubAddressUKModelMapper(defendant1Address);
+            AddressEntity mappedDefendant1Address = mock(AddressEntity.class);
+            when(modelMapper.map(defendant1Address, AddressEntity.class)).thenReturn(mappedDefendant1Address);
 
             DefendantDetails defendant1Details = DefendantDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
@@ -444,22 +489,13 @@ class PartyServiceTest {
             when(pcsCase.getAdditionalDefendants()).thenReturn(wrapListItems(additionalDefendantsDetails));
             when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.YES);
 
-            // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
-
-            // Then
-            verify(claimEntity, times(3))
-                .addParty(partyEntityCaptor.capture(), eq(PartyRole.DEFENDANT));
-
-            List<PartyEntity> createdDefendants = partyEntityCaptor.getAllValues();
-
             PartyEntity expectedDefendant1 = PartyEntity.builder()
                 .nameKnown(VerticalYesNo.YES)
                 .firstName("defendant 1 first name")
                 .lastName("defendant 1 last name")
                 .addressKnown(VerticalYesNo.YES)
                 .addressSameAsProperty(VerticalYesNo.NO)
-                .address(defendant1AddressEntity)
+                .address(mappedDefendant1Address)
                 .build();
 
             PartyEntity expectedDefendant2 = PartyEntity.builder()
@@ -474,6 +510,15 @@ class PartyServiceTest {
                 .addressKnown(VerticalYesNo.YES)
                 .addressSameAsProperty(VerticalYesNo.YES)
                 .build();
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+            // Then
+            verify(claimEntity, times(3))
+                .addParty(partyEntityCaptor.capture(), eq(PartyRole.DEFENDANT));
+
+            List<PartyEntity> createdDefendants = partyEntityCaptor.getAllValues();
 
             assertThat(createdDefendants)
                 .usingRecursiveFieldByFieldElementComparator()
@@ -490,7 +535,8 @@ class PartyServiceTest {
         void shouldIgnoreMultipleDefendantsIfAdditionalDefendantsNotIndicated() {
             // Given
             AddressUK defendant1Address = mock(AddressUK.class);
-            final AddressEntity defendant1AddressEntity = stubAddressUKModelMapper(defendant1Address);
+            AddressEntity mappedDefendant1Address = mock(AddressEntity.class);
+            when(modelMapper.map(defendant1Address, AddressEntity.class)).thenReturn(mappedDefendant1Address);
 
             DefendantDetails defendant1Details = DefendantDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
@@ -512,20 +558,20 @@ class PartyServiceTest {
             when(pcsCase.getAdditionalDefendants()).thenReturn(wrapListItems(List.of(defendant2Details)));
             when(pcsCase.getAddAnotherDefendant()).thenReturn(VerticalYesNo.NO);
 
-            // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
-
-            // Then
-            verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.DEFENDANT));
-
             PartyEntity expectedDefendant1 = PartyEntity.builder()
                 .nameKnown(VerticalYesNo.YES)
                 .firstName("defendant 1 first name")
                 .lastName("defendant 1 last name")
                 .addressKnown(VerticalYesNo.YES)
                 .addressSameAsProperty(VerticalYesNo.NO)
-                .address(defendant1AddressEntity)
+                .address(mappedDefendant1Address)
                 .build();
+
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+            // Then
+            verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.DEFENDANT));
 
             assertThat(partyEntityCaptor.getValue())
                 .usingRecursiveComparison()
@@ -538,14 +584,10 @@ class PartyServiceTest {
             return Stream.of(
                 argumentSet(
                     "Name and address not known",
-
-                    // Case data
                     DefendantDetails.builder()
                         .nameKnown(VerticalYesNo.NO)
                         .addressKnown(VerticalYesNo.NO)
                         .build(),
-
-                    // Expected PartyEntity
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.NO)
                         .addressKnown(VerticalYesNo.NO)
@@ -553,16 +595,12 @@ class PartyServiceTest {
                 ),
                 argumentSet(
                     "Name known, address not known",
-
-                    // Case data
                     DefendantDetails.builder()
                         .nameKnown(VerticalYesNo.YES)
                         .firstName("expected first name")
                         .lastName(("expected last name"))
                         .addressKnown(VerticalYesNo.NO)
                         .build(),
-
-                    // Expected PartyEntity
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.YES)
                         .firstName("expected first name")
@@ -570,29 +608,21 @@ class PartyServiceTest {
                         .addressKnown(VerticalYesNo.NO)
                         .build()
                 ),
-
                 argumentSet(
                     "Name not known, address same as property",
-
-                    // Case data
                     DefendantDetails.builder()
                         .nameKnown(VerticalYesNo.NO)
                         .addressKnown(VerticalYesNo.YES)
                         .addressSameAsPossession(VerticalYesNo.YES)
                         .build(),
-
-                    // Expected PartyEntity
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.NO)
                         .addressKnown(VerticalYesNo.YES)
                         .addressSameAsProperty(VerticalYesNo.YES)
                         .build()
                 ),
-
                 argumentSet(
                     "Name known, different correspondence address",
-
-                    // Case data
                     DefendantDetails.builder()
                         .nameKnown(VerticalYesNo.YES)
                         .firstName("expected first name")
@@ -601,8 +631,6 @@ class PartyServiceTest {
                         .addressSameAsPossession(VerticalYesNo.NO)
                         .correspondenceAddress(correspondenceAddress)
                         .build(),
-
-                    // Expected PartyEntity
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.YES)
                         .firstName("expected first name")
@@ -614,7 +642,6 @@ class PartyServiceTest {
             );
         }
     }
-
 
     @Nested
     @DisplayName("Underlessee tests")
@@ -630,8 +657,11 @@ class PartyServiceTest {
             ClaimantInformation claimantInformation = mock(ClaimantInformation.class);
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
 
-            ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder().build();
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(contactPreferences);
+            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
+                .claimantContactEmail("test@test.com")
+                .claimantProvidePhoneNumber(VerticalYesNo.NO)
+                .build();
+            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
         }
 
         private void stubPlaceholderDefendant() {
@@ -678,8 +708,9 @@ class PartyServiceTest {
 
             AddressUK correspondenceAddress = underlessee1.getAddress();
             if (correspondenceAddress != null) {
-                AddressEntity correspondenceAddressEntity = stubAddressUKModelMapper(correspondenceAddress);
-                expectedPartyEntity.setAddress(correspondenceAddressEntity);
+                AddressEntity mapped = mock(AddressEntity.class);
+                when(modelMapper.map(correspondenceAddress, AddressEntity.class)).thenReturn(mapped);
+                expectedPartyEntity.setAddress(mapped);
             }
 
             // When
@@ -687,8 +718,8 @@ class PartyServiceTest {
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.UNDERLESSEE_OR_MORTGAGEE));
-
             PartyEntity createdUnderlessee = partyEntityCaptor.getValue();
+
             assertThat(createdUnderlessee)
                 .usingRecursiveComparison()
                 .isEqualTo(expectedPartyEntity);
@@ -702,10 +733,12 @@ class PartyServiceTest {
             when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
 
             AddressUK underlessee1Address = mock(AddressUK.class);
-            final AddressEntity underlessee1AddressEntity = stubAddressUKModelMapper(underlessee1Address);
+            AddressEntity mappedUnderlessee1Address = mock(AddressEntity.class);
+            when(modelMapper.map(underlessee1Address, AddressEntity.class)).thenReturn(mappedUnderlessee1Address);
 
             AddressUK underlessee3Address = mock(AddressUK.class);
-            final AddressEntity underlessee3AddressEntity = stubAddressUKModelMapper(underlessee3Address);
+            AddressEntity mappedUnderlessee3Address = mock(AddressEntity.class);
+            when(modelMapper.map(underlessee3Address, AddressEntity.class)).thenReturn(mappedUnderlessee3Address);
 
             UnderlesseeMortgageeDetails underlessee1Details = UnderlesseeMortgageeDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
@@ -731,20 +764,11 @@ class PartyServiceTest {
                 .thenReturn(wrapListItems(List.of(underlessee2Details, underlessee3Details)));
             when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
 
-            // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
-
-            // Then
-            verify(claimEntity, times(3))
-                .addParty(partyEntityCaptor.capture(), eq(PartyRole.UNDERLESSEE_OR_MORTGAGEE));
-
-            List<PartyEntity> createdDefendants = partyEntityCaptor.getAllValues();
-
             PartyEntity expectedUnderlessee1 = PartyEntity.builder()
                 .nameKnown(VerticalYesNo.YES)
                 .orgName("underlessee 1 name")
                 .addressKnown(VerticalYesNo.YES)
-                .address(underlessee1AddressEntity)
+                .address(mappedUnderlessee1Address)
                 .build();
 
             PartyEntity expectedUnderlessee2 = PartyEntity.builder()
@@ -756,10 +780,19 @@ class PartyServiceTest {
             PartyEntity expectedUnderlessee3 = PartyEntity.builder()
                 .nameKnown(VerticalYesNo.NO)
                 .addressKnown(VerticalYesNo.YES)
-                .address(underlessee3AddressEntity)
+                .address(mappedUnderlessee3Address)
                 .build();
 
-            assertThat(createdDefendants)
+            // When
+            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
+
+            // Then
+            verify(claimEntity, times(3))
+                .addParty(partyEntityCaptor.capture(), eq(PartyRole.UNDERLESSEE_OR_MORTGAGEE));
+
+            List<PartyEntity> createdUnderlessees = partyEntityCaptor.getAllValues();
+
+            assertThat(createdUnderlessees)
                 .usingRecursiveFieldByFieldElementComparator()
                 .containsExactly(expectedUnderlessee1, expectedUnderlessee2, expectedUnderlessee3);
 
@@ -776,7 +809,8 @@ class PartyServiceTest {
             when(pcsCase.getHasUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
 
             AddressUK underlessee1Address = mock(AddressUK.class);
-            final AddressEntity underlessee1AddressEntity = stubAddressUKModelMapper(underlessee1Address);
+            AddressEntity mappedUnderlessee1Address = mock(AddressEntity.class);
+            when(modelMapper.map(underlessee1Address, AddressEntity.class)).thenReturn(mappedUnderlessee1Address);
 
             UnderlesseeMortgageeDetails underlessee1Details = UnderlesseeMortgageeDetails.builder()
                 .nameKnown(VerticalYesNo.YES)
@@ -795,22 +829,22 @@ class PartyServiceTest {
             when(pcsCase.getAdditionalUnderlesseeOrMortgagee()).thenReturn(wrapListItems(List.of(underlessee2Details)));
             when(pcsCase.getAddAdditionalUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.NO);
 
+            PartyEntity expectedUnderlessee1 = PartyEntity.builder()
+                .nameKnown(VerticalYesNo.YES)
+                .orgName("underlessee 1 name")
+                .addressKnown(VerticalYesNo.YES)
+                .address(mappedUnderlessee1Address)
+                .build();
+
             // When
             underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
             // Then
             verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.UNDERLESSEE_OR_MORTGAGEE));
 
-            PartyEntity expectedDefendant1 = PartyEntity.builder()
-                .nameKnown(VerticalYesNo.YES)
-                .orgName("underlessee 1 name")
-                .addressKnown(VerticalYesNo.YES)
-                .address(underlessee1AddressEntity)
-                .build();
-
             assertThat(partyEntityCaptor.getValue())
                 .usingRecursiveComparison()
-                .isEqualTo(expectedDefendant1);
+                .isEqualTo(expectedUnderlessee1);
         }
 
         private static Stream<Arguments> singleUnderlesseeScenarios() {
@@ -819,14 +853,10 @@ class PartyServiceTest {
             return Stream.of(
                 argumentSet(
                     "Name and address not known",
-
-                    // Case data
                     UnderlesseeMortgageeDetails.builder()
                         .nameKnown(VerticalYesNo.NO)
                         .addressKnown(VerticalYesNo.NO)
                         .build(),
-
-                    // Expected PartyEntity
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.NO)
                         .addressKnown(VerticalYesNo.NO)
@@ -834,34 +864,25 @@ class PartyServiceTest {
                 ),
                 argumentSet(
                     "Name known, address not known",
-
-                    // Case data
                     UnderlesseeMortgageeDetails.builder()
                         .nameKnown(VerticalYesNo.YES)
                         .name("expected underlessee name")
                         .addressKnown(VerticalYesNo.NO)
                         .build(),
-
-                    // Expected PartyEntity
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.YES)
                         .orgName("expected underlessee name")
                         .addressKnown(VerticalYesNo.NO)
                         .build()
                 ),
-
                 argumentSet(
                     "Name known, address known",
-
-                    // Case data
                     UnderlesseeMortgageeDetails.builder()
                         .nameKnown(VerticalYesNo.YES)
                         .name("expected underlessee name")
                         .addressKnown(VerticalYesNo.YES)
                         .address(correspondenceAddress)
                         .build(),
-
-                    // Expected PartyEntity
                     PartyEntity.builder()
                         .nameKnown(VerticalYesNo.YES)
                         .orgName("expected underlessee name")
@@ -871,11 +892,4 @@ class PartyServiceTest {
             );
         }
     }
-
-    private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
-        AddressEntity addressEntity = mock(AddressEntity.class);
-        when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
-        return addressEntity;
-    }
-
 }
