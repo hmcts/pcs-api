@@ -8,7 +8,6 @@ export class FormLabelValueValidation implements IValidation {
     if (data !== undefined) {
       const locText = await valueLocator.innerText();
       expect(locText.replace(/\s+/g, ' ').trim().split(' ').sort().join(' '),`Original inner text => ${locText}, Original user input => ${String(data)}`).toBe(String(data).split(' ').sort().join(' '));
-      //await expect(valueLocator).toHaveText(String(data).replace(/\r\n?/g, ' '));
     } else {
       const value = await valueLocator.textContent();
       if (!value?.trim()) {
