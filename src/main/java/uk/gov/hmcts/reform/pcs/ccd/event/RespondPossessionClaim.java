@@ -242,6 +242,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
 
                 PCSCase draftToSave = PCSCase.builder()
                     .possessionClaimResponse(possessionClaimResponse)
+                    .submitDraftAnswers(isFinalSubmit)
                     .build();
 
                 // Serialize with custom mapper that omits nulls (via mix-in override)
