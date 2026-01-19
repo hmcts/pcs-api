@@ -32,8 +32,33 @@ class HousingActWalesServiceTest {
     @BeforeEach
     void setUp() {
         when(pcsCase.getWalesHousingAct()).thenReturn(walesHousingAct);
+        when(walesHousingAct.getRegistered()).thenReturn(YesNoNotApplicable.NO);
 
         underTest = new HousingActWalesService();
+    }
+
+    @Test
+    void shouldReturnNullWhenNullWalesHousingAct() {
+        // Given
+        when(pcsCase.getWalesHousingAct()).thenReturn(null);
+
+        // When
+        HousingActWalesEntity housingActWalesEntity = underTest.createHousingActWalesEntity(pcsCase);
+
+        // Then
+        assertThat(housingActWalesEntity).isNull();
+    }
+
+    @Test
+    void shouldReturnNullWhenNullRegisteredField() {
+        // Given
+        when(walesHousingAct.getRegistered()).thenReturn(null);
+
+        // When
+        HousingActWalesEntity housingActWalesEntity = underTest.createHousingActWalesEntity(pcsCase);
+
+        // Then
+        assertThat(housingActWalesEntity).isNull();
     }
 
     @Test

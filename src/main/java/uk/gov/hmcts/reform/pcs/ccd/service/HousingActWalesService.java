@@ -12,6 +12,10 @@ public class HousingActWalesService {
     public HousingActWalesEntity createHousingActWalesEntity(PCSCase pcsCase) {
         WalesHousingAct walesHousingAct = pcsCase.getWalesHousingAct();
 
+        if (walesHousingAct == null || walesHousingAct.getRegistered() == null) {
+            return null;
+        }
+
         HousingActWalesEntity housingActWalesEntity = new HousingActWalesEntity();
 
         housingActWalesEntity.setRegistered(walesHousingAct.getRegistered());
