@@ -6,11 +6,8 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-<<<<<<< HEAD
 import uk.gov.hmcts.ccd.sdk.type.Document;
-=======
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
->>>>>>> origin
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
