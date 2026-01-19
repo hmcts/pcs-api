@@ -72,9 +72,9 @@ class PossessionAlternativesServiceTest {
             = underTest.createPossessionAlternativesEntity(pcsCase);
 
         // Then
-        assertThat(possessionAlternativesEntity.getSortbRequested()).isEqualTo(YesOrNo.NO);
-        assertThat(possessionAlternativesEntity.getSortbHousingActSection()).isNull();
-        assertThat(possessionAlternativesEntity.getSortbReason()).isNull();
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTB()).isEqualTo(YesOrNo.NO);
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTBHousingActSection()).isNull();
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTBReason()).isNull();
 
         assertThat(possessionAlternativesEntity.getDotRequested()).isEqualTo(YesOrNo.NO);
         assertThat(possessionAlternativesEntity.getDotHousingActSection()).isNull();
@@ -95,10 +95,10 @@ class PossessionAlternativesServiceTest {
             = underTest.createPossessionAlternativesEntity(pcsCase);
 
         // Then
-        assertThat(possessionAlternativesEntity.getSortbRequested()).isEqualTo(YesOrNo.YES);
-        assertThat(possessionAlternativesEntity.getSortbHousingActSection())
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTB()).isEqualTo(YesOrNo.YES);
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTBHousingActSection())
             .isEqualTo(SuspensionOfRightToBuyHousingAct.SECTION_82A_2);
-        assertThat(possessionAlternativesEntity.getSortbReason()).isEqualTo("suspension reason");
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTBReason()).isEqualTo("suspension reason");
 
         assertThat(possessionAlternativesEntity.getDotRequested()).isEqualTo(YesOrNo.NO);
         assertThat(possessionAlternativesEntity.getDotHousingActSection()).isNull();
@@ -119,9 +119,9 @@ class PossessionAlternativesServiceTest {
             = underTest.createPossessionAlternativesEntity(pcsCase);
 
         // Then
-        assertThat(possessionAlternativesEntity.getSortbRequested()).isEqualTo(YesOrNo.NO);
-        assertThat(possessionAlternativesEntity.getSortbHousingActSection()).isNull();
-        assertThat(possessionAlternativesEntity.getSortbReason()).isNull();
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTB()).isEqualTo(YesOrNo.NO);
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTBHousingActSection()).isNull();
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTBReason()).isNull();
 
         assertThat(possessionAlternativesEntity.getDotRequested()).isEqualTo(YesOrNo.YES);
         assertThat(possessionAlternativesEntity.getDotHousingActSection())
@@ -143,10 +143,10 @@ class PossessionAlternativesServiceTest {
             = underTest.createPossessionAlternativesEntity(pcsCase);
 
         // Then
-        assertThat(possessionAlternativesEntity.getSortbRequested()).isEqualTo(YesOrNo.YES);
-        assertThat(possessionAlternativesEntity.getSortbHousingActSection())
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTB()).isEqualTo(YesOrNo.YES);
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTBHousingActSection())
             .isEqualTo(SuspensionOfRightToBuyHousingAct.SECTION_82A_2);
-        assertThat(possessionAlternativesEntity.getSortbReason()).isEqualTo("suspension reason");
+        assertThat(possessionAlternativesEntity.getSuspensionOfRTBReason()).isEqualTo("suspension reason");
 
         assertThat(possessionAlternativesEntity.getDotRequested()).isEqualTo(YesOrNo.YES);
         assertThat(possessionAlternativesEntity.getDotHousingActSection())

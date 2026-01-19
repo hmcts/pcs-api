@@ -16,21 +16,21 @@ CREATE TABLE housing_act_wales (
 );
 
 /*
-sortb = suspension of right to buy
+supension_of_rtb = suspension of right to buy
 dot = demotion of tenancy
 */
 CREATE TABLE possession_alternatives (
-  id                        UUID PRIMARY KEY,
-  version                   INT,
-  claim_id                  UUID REFERENCES claim (id),
-  sortb_requested           YES_NO NOT NULL,
-  sortb_housing_act_section VARCHAR(20),
-  sortb_reason              VARCHAR(250),
-  dot_requested             YES_NO NOT NULL,
-  dot_housing_act_section   VARCHAR(20),
-  dot_statement_served      YES_NO,
-  dot_statement_details     VARCHAR(950),
-  dot_reason                VARCHAR(250)
+  id                                   UUID PRIMARY KEY,
+  version                              INT,
+  claim_id                             UUID REFERENCES claim (id),
+  supension_of_rtb_requested           YES_NO NOT NULL,
+  supension_of_rtb_housing_act_section VARCHAR(20),
+  supension_of_rtb_reason              VARCHAR(250),
+  dot_requested                        YES_NO NOT NULL,
+  dot_housing_act_section              VARCHAR(20),
+  dot_statement_served                 YES_NO,
+  dot_statement_details                VARCHAR(950),
+  dot_reason                           VARCHAR(250)
 );
 
 CREATE TABLE tenancy_licence (

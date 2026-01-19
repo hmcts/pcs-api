@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -40,15 +41,18 @@ public class PossessionAlternativesEntity {
     @JsonBackReference
     private ClaimEntity claim;
 
-    // sortb = suspension of right to buy
+    // suspensionOfRTB = suspension of right to buy
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo sortbRequested;
+    @Column(name = "supension_of_rtb_requested")
+    private YesOrNo suspensionOfRTB;
 
     @Enumerated(EnumType.STRING)
-    private SuspensionOfRightToBuyHousingAct sortbHousingActSection;
+    @Column(name = "supension_of_rtb_housing_act_section")
+    private SuspensionOfRightToBuyHousingAct suspensionOfRTBHousingActSection;
 
-    private String sortbReason;
+    @Column(name = "supension_of_rtb_reason")
+    private String suspensionOfRTBReason;
 
 
     // dot = demotion of tenancy

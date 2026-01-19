@@ -30,10 +30,10 @@ public class AlternativesToPossessionView {
     private static void setPossessionAlternativesFields(PCSCase pcsCase,
                                                         PossessionAlternativesEntity possessionAlternatives) {
 
-        if (possessionAlternatives.getSortbRequested() == YesOrNo.YES) {
+        if (possessionAlternatives.getSuspensionOfRTB() == YesOrNo.YES) {
             SuspensionOfRightToBuy suspensionOfRightToBuy = SuspensionOfRightToBuy.builder()
-                .housingAct(possessionAlternatives.getSortbHousingActSection())
-                .reason(possessionAlternatives.getSortbReason())
+                .housingAct(possessionAlternatives.getSuspensionOfRTBHousingActSection())
+                .reason(possessionAlternatives.getSuspensionOfRTBReason())
                 .build();
             pcsCase.setSuspensionOfRightToBuy(suspensionOfRightToBuy);
         }

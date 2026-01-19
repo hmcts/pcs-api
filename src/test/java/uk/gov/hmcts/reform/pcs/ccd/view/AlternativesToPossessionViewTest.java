@@ -75,9 +75,9 @@ class AlternativesToPossessionViewTest {
 
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(mainClaimEntity));
         when(mainClaimEntity.getPossessionAlternativesEntity()).thenReturn(possessionAlternativesEntity);
-        when(possessionAlternativesEntity.getSortbRequested()).thenReturn(YesOrNo.YES);
-        when(possessionAlternativesEntity.getSortbHousingActSection()).thenReturn(expectedHousingAct);
-        when(possessionAlternativesEntity.getSortbReason()).thenReturn(expectedReason);
+        when(possessionAlternativesEntity.getSuspensionOfRTB()).thenReturn(YesOrNo.YES);
+        when(possessionAlternativesEntity.getSuspensionOfRTBHousingActSection()).thenReturn(expectedHousingAct);
+        when(possessionAlternativesEntity.getSuspensionOfRTBReason()).thenReturn(expectedReason);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);

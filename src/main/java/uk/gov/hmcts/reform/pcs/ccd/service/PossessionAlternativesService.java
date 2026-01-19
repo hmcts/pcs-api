@@ -30,7 +30,7 @@ public class PossessionAlternativesService {
         boolean suspensionOfRtbRequested = alternativesToPossession.contains(SUSPENSION_OF_RIGHT_TO_BUY);
         boolean demotionOfTenancyRequested = alternativesToPossession.contains(DEMOTION_OF_TENANCY);
 
-        possessionAlternativesEntity.setSortbRequested(YesOrNo.from(suspensionOfRtbRequested));
+        possessionAlternativesEntity.setSuspensionOfRTB(YesOrNo.from(suspensionOfRtbRequested));
         possessionAlternativesEntity.setDotRequested(YesOrNo.from(demotionOfTenancyRequested));
 
         if (suspensionOfRtbRequested && demotionOfTenancyRequested) {
@@ -54,8 +54,9 @@ public class PossessionAlternativesService {
         SuspensionOfRightToBuyDemotionOfTenancy combinedAnswers
             = pcsCase.getSuspensionOfRightToBuyDemotionOfTenancy();
 
-        possessionAlternativesEntity.setSortbHousingActSection(combinedAnswers.getSuspensionOfRightToBuyActs());
-        possessionAlternativesEntity.setSortbReason(combinedAnswers.getSuspensionOrderReason());
+        possessionAlternativesEntity
+            .setSuspensionOfRTBHousingActSection(combinedAnswers.getSuspensionOfRightToBuyActs());
+        possessionAlternativesEntity.setSuspensionOfRTBReason(combinedAnswers.getSuspensionOrderReason());
 
         possessionAlternativesEntity.setDotHousingActSection(combinedAnswers.getDemotionOfTenancyActs());
         possessionAlternativesEntity.setDotReason(combinedAnswers.getDemotionOrderReason());
@@ -64,8 +65,8 @@ public class PossessionAlternativesService {
     private static void setSuspensionOfRTB(PCSCase pcsCase,
                                            PossessionAlternativesEntity possessionAlternativesEntity) {
         SuspensionOfRightToBuy suspensionOfRightToBuy = pcsCase.getSuspensionOfRightToBuy();
-        possessionAlternativesEntity.setSortbHousingActSection(suspensionOfRightToBuy.getHousingAct());
-        possessionAlternativesEntity.setSortbReason(suspensionOfRightToBuy.getReason());
+        possessionAlternativesEntity.setSuspensionOfRTBHousingActSection(suspensionOfRightToBuy.getHousingAct());
+        possessionAlternativesEntity.setSuspensionOfRTBReason(suspensionOfRightToBuy.getReason());
     }
 
     private static void setDemotionOfTenancy(PCSCase pcsCase,
