@@ -111,7 +111,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldSuccessfullyValidateAndLinkPartyWithValidAccessCode() throws Exception {
         // Given
         long caseReference = 12345L;
-        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, null);
+        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, null,PartyRole.DEFENDANT);
         String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
@@ -136,7 +136,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldCallIdamClientGetUserInfoWithExactAuthHeader() throws Exception {
         // Given
         long caseReference = 12355L;
-        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, null);
+        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, null,PartyRole.DEFENDANT);
         String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
@@ -173,11 +173,41 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     @Test
+    @DisplayName("Should return 404 when party is not a defendant")
+    void shouldReturn404WhenPartyIsNotDefendant() throws Exception {
+        // Given
+        long caseReference = 12354L;
+        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, null,PartyRole.CLAIMANT);
+
+        PartyEntity party = caseEntity.getClaims()
+            .getFirst()
+            .getClaimParties()
+            .stream()
+            .filter(claimPartyEntity -> claimPartyEntity.getRole() == PartyRole.CLAIMANT)
+            .map(ClaimPartyEntity::getParty)
+            .toList().getFirst();
+
+        String accessCode = createPartyAccessCode(caseEntity, party.getId());
+
+        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
+
+        // When/Then
+        mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
+                            .header(AUTHORIZATION, AUTH_HEADER)
+                            .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message", is("The party this access code was generated for"
+                                                    + " is not a defendant in this case")));
+    }
+
+    @Test
     @DisplayName("Should return 400 when access code not found")
     void shouldReturn400WhenAccessCodeNotFound() throws Exception {
         // Given
         long caseReference = 12346L;
-        createTestCaseWithDefendant(caseReference, null);
+        createTestCaseWithParty(caseReference, null,PartyRole.DEFENDANT);
         String invalidAccessCode = "INVALIDCODE12";
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(invalidAccessCode);
@@ -196,7 +226,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldReturn409WhenAccessCodeAlreadyUsed() throws Exception {
         // Given
         long caseReference = 12347L;
-        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, USER_ID);
+        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, USER_ID,PartyRole.DEFENDANT);
         String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
 
         ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
@@ -289,7 +319,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         // Given - Create a case with a defendant that's already linked
         // This will cause an exception when trying to link again
         long caseReference = 12352L;
-        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, USER_ID);
+        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, USER_ID,PartyRole.DEFENDANT);
         String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
 
         // Capture the initial state before the failed operation
@@ -324,7 +354,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     void shouldCommitTransactionWhenOperationSucceeds() throws Exception {
         // Given
         long caseReference = 12353L;
-        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, null);
+        PcsCaseEntity caseEntity = createTestCaseWithParty(caseReference, null,PartyRole.DEFENDANT);
         String accessCode = createPartyAccessCode(caseEntity, getDefendants(caseEntity).getFirst().getId());
 
         // Verify initial state - defendant not linked
@@ -351,7 +381,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
 
     // Helper methods
 
-    private PcsCaseEntity createTestCaseWithDefendant(long caseReference, UUID idamUserId) {
+    private PcsCaseEntity createTestCaseWithParty(long caseReference, UUID idamUserId, PartyRole partyRole) {
         PcsCaseEntity caseEntity = new PcsCaseEntity();
         caseEntity.setCaseReference(caseReference);
 
@@ -367,7 +397,7 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         defendant.setLastName("Doe");
 
         caseEntity.addParty(defendant);
-        claimEntity.addParty(defendant, PartyRole.DEFENDANT);
+        claimEntity.addParty(defendant, partyRole);
 
         return pcsCaseRepository.save(caseEntity);
     }

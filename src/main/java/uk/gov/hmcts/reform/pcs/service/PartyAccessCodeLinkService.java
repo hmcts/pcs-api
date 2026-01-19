@@ -48,10 +48,7 @@ public class PartyAccessCodeLinkService {
             .map(ClaimPartyEntity::getParty)
             .toList();
 
-        PartyEntity partyEntity = defendantPartyEntities.stream()
-            .filter(entity -> partyId.equals(entity.getId()))
-            .findFirst()
-            .get();
+        PartyEntity partyEntity = validator.validatePartyIsADefendant(defendantPartyEntities,partyId);
 
         validator.validatePartyNotAlreadyLinked(partyEntity);
 

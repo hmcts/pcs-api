@@ -99,6 +99,8 @@ class PartyAccessCodeLinkServiceTest {
         when(caseAssignmentService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
             mock(CaseAssignmentUserRolesResponse.class));
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
+            .thenReturn(defendantEntity);
         // validatePartyNotAlreadyLinked and validateUserNotLinkedToAnotherParty are void methods
         doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity);
         doNothing().when(validator).validateUserNotLinkedToAnotherParty(
@@ -145,6 +147,9 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
+            .thenReturn(defendantEntity);
+
         // validatePartyNotAlreadyLinked throws exception (defendant already has idamUserId)
         doThrow(new AccessCodeAlreadyUsedException("This access code is already linked to a user."))
             .when(validator).validatePartyNotAlreadyLinked(defendantEntity);
@@ -176,6 +181,8 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyIsADefendant(allDefendants, partyId2))
+            .thenReturn(defendantEntity2);
         // validatePartyNotAlreadyLinked passes
         doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity2);
         // validateUserNotLinkedToAnotherParty throws exception
@@ -211,6 +218,8 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyIsADefendant(allDefendants, partyId2))
+            .thenReturn(defendantEntity2);
         // All validations pass
         doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity2);
         doNothing().when(validator).validateUserNotLinkedToAnotherParty(

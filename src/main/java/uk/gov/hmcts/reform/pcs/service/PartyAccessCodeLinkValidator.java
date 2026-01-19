@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +27,20 @@ public class PartyAccessCodeLinkValidator {
                 log.error("Invalid access code - caseId: {}, accessCodeLength: {}, accessCodeProvided: {}",
                     caseId, accessCode != null ? accessCode.length() : 0, accessCode != null);
                 return new InvalidAccessCodeException("Invalid data");
+            });
+    }
+
+    public PartyEntity validatePartyIsADefendant(
+        List<PartyEntity> defendantEntities,
+        UUID partyId
+    ) {
+        return defendantEntities.stream()
+            .filter(partyEntity -> partyId.equals(partyEntity.getId()))
+            .findFirst()
+            .orElseThrow(() -> {
+                log.error("Party with ID {} is not a defendant", partyId);
+                return new InvalidPartyForAccessCodeException("The party this access code was generated for"
+                                                                  + " is not a defendant in this case");
             });
     }
 
