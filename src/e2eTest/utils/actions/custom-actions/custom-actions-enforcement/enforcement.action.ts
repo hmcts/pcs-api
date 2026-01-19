@@ -427,18 +427,27 @@ export class EnforcementAction implements IAction {
     }
   }
 
-  private async generateMoreThanMaxString(page: Page, label: string, input: string): Promise<string> {
+  private async generateMoreThanMaxString(page: Page, label: string, input: string | number): Promise<string> {
 
-    if (input !== 'MAXPLUS') return '';
+    let length: number;
 
-    const hintText = await page
-      .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
-      .innerText();
+    if (input === 'MAXPLUS') {
+      const hintText = await page
+        .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
+        .innerText();
 
-    const limit = await this.retrieveAmountFromString(hintText);
-    if (limit == 0) return '';
+      const limit = await this.retrieveAmountFromString(hintText);
+      if (limit === 0) return '';
 
-    const length = limit + 1;
+      length = limit + 1;
+
+    } else if (typeof input === 'number') {
+      length = input + 1;
+
+    } else {
+      return '';
+    }
+
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let finalString = '';
     for (let i = 0; i < length; i++) {
