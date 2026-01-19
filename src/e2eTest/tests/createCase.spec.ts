@@ -74,11 +74,8 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
-  // Clean up case users after each test
   if (caseNumber) {
-    await performAction('deleteCaseUsers', {
-      caseId: caseNumber
-    });
+    await performAction('deleteCaseUsers', { caseId: caseNumber });
   }
   PageContentValidation.finaliseTest();
 });

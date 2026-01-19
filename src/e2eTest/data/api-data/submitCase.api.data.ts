@@ -95,4 +95,4 @@ export const submitCaseApiData = {
   },
   submitCaseApiEndPoint: () =>
     `/cases/${process.env.CASE_NUMBER}/events`,
-}
+};

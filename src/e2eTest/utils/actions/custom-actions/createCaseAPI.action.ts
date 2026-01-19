@@ -3,6 +3,7 @@ import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
 import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData } from '@data/api-data';
 import { user } from '@data/user-data';
+import { caseNumber } from './createCase.action';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -11,7 +12,7 @@ export class CreateCaseAPIAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCaseAPI', () => this.createCaseAPI(fieldName)],
       ['submitCaseAPI', () => this.submitCaseAPI(fieldName)],
-      ['deleteCaseUsers', () => this.deleteCaseUsers(fieldName)]
+      ['deleteCaseUsers', () => this.deleteCaseUsers()]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -19,7 +20,7 @@ export class CreateCaseAPIAction implements IAction {
   }
 
   private async createCaseAPI(caseData: actionData): Promise<void> {
-    const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseApiInstance());
+    const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
     process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
     const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
     const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
@@ -34,7 +35,7 @@ export class CreateCaseAPIAction implements IAction {
   }
 
   private async submitCaseAPI(caseData: actionData): Promise<void> {
-    const submitCaseApi = Axios.create(submitCaseEventTokenApiData.createCaseApiInstance());
+    const submitCaseApi = Axios.create(submitCaseEventTokenApiData.submitCaseEventTokenApiInstance());
     process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
     const submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
     try {
@@ -60,30 +61,17 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async deleteCaseUsers(userData: actionData | actionRecord): Promise<void> {
+  private async deleteCaseUsers(): Promise<void> {
     const deleteCaseUsersApi = Axios.create(caseUserRoleDeletionApiData.deleteCaseUsersApiInstance());
 
-    // Extract parameters from userData
     let caseId: string;
     let userId: string;
     let caseRole: string;
 
-    // Use uid from permanent user data as default
-    const defaultUserId = user.claimantSolicitor.uid;
+    userId = user.claimantSolicitor.uid;
+    caseId = caseInfo.id || process.env.CASE_NUMBER || caseNumber || '';
+    caseRole = '[CREATOR]';
 
-    if (typeof userData === 'object' && userData !== null) {
-      // If it's an object with properties
-      caseId = (userData as any).caseId || caseInfo.id || process.env.CASE_NUMBER || '';
-      userId = (userData as any).userId || (userData as any).uid || defaultUserId;
-      caseRole = (userData as any).caseRole || '[CREATOR]';
-    } else {
-      // Fallback to caseInfo and permanent user data if no data provided
-      caseId = caseInfo.id || process.env.CASE_NUMBER || '';
-      userId = defaultUserId;
-      caseRole = '[CREATOR]';
-    }
-
-    // Convert formatted case number (with dashes) to unformatted if needed
     if (caseId && caseId.includes('-')) {
       caseId = caseId.replace(/-/g, '');
     }

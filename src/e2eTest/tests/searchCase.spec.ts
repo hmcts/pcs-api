@@ -25,11 +25,8 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
-  // Clean up case users after each test
   if (caseInfo.id || process.env.CASE_NUMBER) {
-    await performAction('deleteCaseUsers', {
-      caseId: caseInfo.id || process.env.CASE_NUMBER
-    });
+    await performAction('deleteCaseUsers', { caseId: caseInfo.id || process.env.CASE_NUMBER });
   }
 });
 
