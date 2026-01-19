@@ -29,11 +29,11 @@ public class CcdTestCaseOrchestrator {
     private final AuthTokenGenerator s2sAuthTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;
 
-//    @BeforeAll
-//    public void setup() {
-//        idamToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
-//        s2sToken = s2sAuthTokenGenerator.generate();
-//    }
+    //    @BeforeAll
+    //    public void setup() {
+    //        idamToken = idamClient.getAccessToken("pcs-solicitor1@test.com", "password");
+    //        s2sToken = s2sAuthTokenGenerator.generate();
+    //    }
 
     public Long createCase(String idamToken, String s2sToken) {
 
@@ -123,7 +123,7 @@ public class CcdTestCaseOrchestrator {
                 "notes": "Test case for resumePossessionClaim"
               }
             }
-            """;
+                """;
 
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readTree(json);
