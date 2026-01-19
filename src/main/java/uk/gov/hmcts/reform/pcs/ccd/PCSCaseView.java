@@ -228,7 +228,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                 .value(Document.builder()
                            .filename(entity.getFileName())
                            .url(entity.getUrl())
-                           .binaryUrl(entity.getUrl())
+                           .binaryUrl(entity.getBinaryUrl())
                            .categoryId(entity.getCategoryId())
                            .build())
                 .build())
