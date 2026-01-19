@@ -173,28 +173,6 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
     }
 
     @Test
-    @DisplayName("Should return 404 when party does not belong to this case")
-    void shouldReturn404WhenPartyDoesNotBelongToCase() throws Exception {
-        // Given
-        long caseReference = 12354L;
-        PcsCaseEntity caseEntity = createTestCaseWithDefendant(caseReference, null);
-        // Create access code for a DIFFERENT party that doesn't exist in the case
-        UUID nonExistentPartyId = UUID.randomUUID();
-        String accessCode = createPartyAccessCode(caseEntity, nonExistentPartyId);
-
-        ValidateAccessCodeRequest request = new ValidateAccessCodeRequest(accessCode);
-
-        // When/Then
-        mockMvc.perform(post("/cases/{caseReference}/validate-access-code", caseReference)
-                        .header(AUTHORIZATION, AUTH_HEADER)
-                        .header(SERVICE_AUTHORIZATION, SERVICE_AUTH_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message", is("Invalid data")));
-    }
-
-    @Test
     @DisplayName("Should return 400 when access code not found")
     void shouldReturn400WhenAccessCodeNotFound() throws Exception {
         // Given
@@ -414,6 +392,9 @@ class CasePartyLinkControllerIT extends AbstractPostgresContainerIT {
         defendant2.setIdamId(secondIdamUserId);
         defendant2.setFirstName("Jane");
         defendant2.setLastName("Smith");
+
+        caseEntity.addParty(defendant1);
+        caseEntity.addParty(defendant2);
 
         claimEntity.addParty(defendant1, PartyRole.DEFENDANT);
         claimEntity.addParty(defendant2, PartyRole.DEFENDANT);

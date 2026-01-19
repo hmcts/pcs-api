@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
-import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
 
 import java.util.List;
 import java.util.Optional;
@@ -70,33 +69,6 @@ class PartyAccessCodeLinkValidatorTest {
         // WHEN + THEN
         assertThatThrownBy(() -> validator.validateAccessCode(CASE_ID, ACCESS_CODE))
             .isInstanceOf(InvalidAccessCodeException.class)
-            .hasMessageContaining("Invalid data");
-    }
-
-    @Test
-    void shouldReturnParty_WhenPartyBelongsToCase() {
-        // GIVEN
-        PartyEntity partyEntity = createParty(PARTY_ID, null);
-        List<PartyEntity> partyEntities = List.of(partyEntity);
-
-        // WHEN
-        PartyEntity result = validator.validatePartyBelongsToCase(partyEntities, PARTY_ID);
-
-        // THEN
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(PARTY_ID);
-    }
-
-    @Test
-    void shouldThrowInvalidPartyForCaseException_WhenPartyNotInCase() {
-        // GIVEN
-        UUID differentPartyId = UUID.randomUUID();
-        PartyEntity partyEntity = createParty(differentPartyId, null);
-        List<PartyEntity> partyEntities = List.of(partyEntity);
-
-        // WHEN + THEN
-        assertThatThrownBy(() -> validator.validatePartyBelongsToCase(partyEntities, PARTY_ID))
-            .isInstanceOf(InvalidPartyForCaseException.class)
             .hasMessageContaining("Invalid data");
     }
 

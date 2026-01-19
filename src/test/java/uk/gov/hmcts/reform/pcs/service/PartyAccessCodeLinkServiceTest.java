@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
-import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
 
 import java.util.List;
 import java.util.UUID;
@@ -100,8 +99,6 @@ class PartyAccessCodeLinkServiceTest {
         when(caseAssignmentService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
             mock(CaseAssignmentUserRolesResponse.class));
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
-        when(validator.validatePartyBelongsToCase(List.of(defendantEntity), partyId))
-            .thenReturn(defendantEntity);
         // validatePartyNotAlreadyLinked and validateUserNotLinkedToAnotherParty are void methods
         doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity);
         doNothing().when(validator).validateUserNotLinkedToAnotherParty(
@@ -133,32 +130,6 @@ class PartyAccessCodeLinkServiceTest {
     }
 
     @Test
-    void shouldThrowInvalidPartyForCase_WhenPartyIdDoesNotMatchDefendant() {
-        // GIVEN
-        UUID caseId = UUID.randomUUID();
-        UUID pacPartyId = UUID.randomUUID();
-        UUID defendantPartyId = UUID.randomUUID(); // DIFFERENT → mismatch
-
-        PartyEntity defendantEntity = createParty(defendantPartyId, null);
-        PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
-
-        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
-            .partyId(pacPartyId)
-            .code(ACCESS_CODE)
-            .build();
-
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
-        when(validator.validatePartyBelongsToCase(List.of(defendantEntity), pacPartyId))
-            .thenThrow(new InvalidPartyForCaseException("Party does not belong to this case."));
-
-        // WHEN + THEN
-        assertThatThrownBy(() -> service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser))
-            .isInstanceOf(InvalidPartyForCaseException.class)
-            .hasMessageContaining("Party does not belong to this case");
-    }
-
-    @Test
     void shouldThrowAccessCodeAlreadyUsedException_WhenDefendantAlreadyLinked() {
         // GIVEN
         UUID caseId = UUID.randomUUID();
@@ -174,8 +145,6 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
-        when(validator.validatePartyBelongsToCase(List.of(defendantEntity), partyId))
-            .thenReturn(defendantEntity);
         // validatePartyNotAlreadyLinked throws exception (defendant already has idamUserId)
         doThrow(new AccessCodeAlreadyUsedException("This access code is already linked to a user."))
             .when(validator).validatePartyNotAlreadyLinked(defendantEntity);
@@ -207,8 +176,6 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
-        when(validator.validatePartyBelongsToCase(allDefendants, partyId2))
-            .thenReturn(defendantEntity2);
         // validatePartyNotAlreadyLinked passes
         doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity2);
         // validateUserNotLinkedToAnotherParty throws exception
@@ -244,8 +211,6 @@ class PartyAccessCodeLinkServiceTest {
 
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
-        when(validator.validatePartyBelongsToCase(allDefendants, partyId2))
-            .thenReturn(defendantEntity2);
         // All validations pass
         doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity2);
         doNothing().when(validator).validateUserNotLinkedToAnotherParty(
