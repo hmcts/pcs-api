@@ -52,10 +52,10 @@ import{
   moneyJudgment,
   noticeDetails,
   rentDetails,
-  checkingNotice,
-  provideMoreDetailsOfClaim
+  checkingNotice
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -74,6 +74,12 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
+  // Clean up case users after each test
+  if (caseNumber) {
+    await performAction('deleteCaseUsers', {
+      caseId: caseNumber
+    });
+  }
   PageContentValidation.finaliseTest();
 });
 

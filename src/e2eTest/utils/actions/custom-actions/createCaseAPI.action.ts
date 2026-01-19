@@ -1,7 +1,8 @@
 import Axios from 'axios';
-import { actionData, actionRecord, IAction } from '../../interfaces/action.interface';
+import { actionData, actionRecord, IAction } from '@utils/interfaces';
 import { Page } from '@playwright/test';
-import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData } from '@data/api-data';
+import { createCaseApiData, createCaseEventTokenApiData, submitCaseApiData, submitCaseEventTokenApiData, caseUserRoleDeletionApiData } from '@data/api-data';
+import { user } from '@data/user-data';
 
 export let caseInfo: { id: string; fid: string; state: string } = { id: '', fid: '', state: '' };
 
@@ -9,7 +10,8 @@ export class CreateCaseAPIAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCaseAPI', () => this.createCaseAPI(fieldName)],
-      ['submitCaseAPI', () => this.submitCaseAPI(fieldName)]
+      ['submitCaseAPI', () => this.submitCaseAPI(fieldName)],
+      ['deleteCaseUsers', () => this.deleteCaseUsers(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -49,12 +51,74 @@ export class CreateCaseAPIAction implements IAction {
       if (status === 404) {
         console.error(submitCaseApiData.submitCasePayload);
         throw new Error(`Submission failed: endpoint not found (404).please check the payload above \n ${error}`);
-        
+
       }
       if (!status) {
         throw new Error('Submission failed: no response from server.');
       }
       throw new Error(`Submission failed with status ${status}.`);
+    }
+  }
+
+  private async deleteCaseUsers(userData: actionData | actionRecord): Promise<void> {
+    const deleteCaseUsersApi = Axios.create(caseUserRoleDeletionApiData.deleteCaseUsersApiInstance());
+
+    // Extract parameters from userData
+    let caseId: string;
+    let userId: string;
+    let caseRole: string;
+
+    // Use uid from permanent user data as default
+    const defaultUserId = user.claimantSolicitor.uid;
+
+    if (typeof userData === 'object' && userData !== null) {
+      // If it's an object with properties
+      caseId = (userData as any).caseId || caseInfo.id || process.env.CASE_NUMBER || '';
+      userId = (userData as any).userId || (userData as any).uid || defaultUserId;
+      caseRole = (userData as any).caseRole || '[CREATOR]';
+    } else {
+      // Fallback to caseInfo and permanent user data if no data provided
+      caseId = caseInfo.id || process.env.CASE_NUMBER || '';
+      userId = defaultUserId;
+      caseRole = '[CREATOR]';
+    }
+
+    // Convert formatted case number (with dashes) to unformatted if needed
+    if (caseId && caseId.includes('-')) {
+      caseId = caseId.replace(/-/g, '');
+    }
+
+    if (!caseId) {
+      console.warn('No case ID available for case user removal. Skipping...');
+      return;
+    }
+
+    if (!userId) {
+      console.warn('No user ID available for case user removal. Skipping...');
+      return;
+    }
+
+    try {
+      const payload = caseUserRoleDeletionApiData.deleteCaseUsersPayload(caseId, userId, caseRole);
+      await deleteCaseUsersApi.delete(caseUserRoleDeletionApiData.deleteCaseUsersApiEndPoint, {
+        data: payload
+      });
+      console.log(`Successfully removed case user: ${userId} with role ${caseRole} from case ${caseId}`);
+    } catch (error: any) {
+      const status = error?.response?.status;
+      if (status === 404) {
+        console.warn(`Case user removal failed: case or user not found (404). Case ID: ${caseId}, User ID: ${userId}`);
+        return;
+      }
+      if (status === 403) {
+        console.warn(`Case user removal failed: insufficient permissions (403). Case ID: ${caseId}, User ID: ${userId}`);
+        return;
+      }
+      if (!status) {
+        console.error('Case user removal failed: no response from server.');
+        return;
+      }
+      console.error(`Case user removal failed with status ${status}. Case ID: ${caseId}, User ID: ${userId}`);
     }
   }
 }

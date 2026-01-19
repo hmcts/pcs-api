@@ -38,6 +38,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
+import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
 test.beforeEach(async ({ page }) => {
@@ -63,6 +64,15 @@ test.beforeEach(async ({ page }) => {
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+});
+
+test.afterEach(async () => {
+  // Clean up case users after each test
+  if (caseInfo.id || process.env.CASE_NUMBER) {
+    await performAction('deleteCaseUsers', {
+      caseId: caseInfo.id || process.env.CASE_NUMBER
+    });
+  }
 });
 
 test.describe('[Enforcement - Warrant of Possession]', async () => {

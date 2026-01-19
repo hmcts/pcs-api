@@ -45,6 +45,7 @@ export class ActionRegistry {
     ['enterTestAddressManually', new CreateCaseAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
+    ['deleteCaseUsers', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],

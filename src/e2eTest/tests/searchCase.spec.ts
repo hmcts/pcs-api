@@ -23,6 +23,16 @@ test.beforeEach(async ({page}) => {
     accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
   });
 });
+
+test.afterEach(async () => {
+  // Clean up case users after each test
+  if (caseInfo.id || process.env.CASE_NUMBER) {
+    await performAction('deleteCaseUsers', {
+      caseId: caseInfo.id || process.env.CASE_NUMBER
+    });
+  }
+});
+
 //Skipping these tests as per the decision taken on https://tools.hmcts.net/jira/browse/HDPI-3317
 test.describe.skip('[Search Case]', () => {
   test('Search for case via case list', async ({}) => {
