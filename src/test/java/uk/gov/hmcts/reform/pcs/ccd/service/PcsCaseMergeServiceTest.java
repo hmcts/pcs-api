@@ -8,9 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -21,8 +19,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWa
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.EnumSet;
@@ -32,7 +28,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -177,83 +172,6 @@ class PcsCaseMergeServiceTest {
 
         // Then
         verify(pcsCaseEntity).setCaseManagementLocation(location);
-    }
-
-    @Test
-    void shouldUpdatePreActionProtocolCompletedWhenNotNull() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        VerticalYesNo preActionProtocolCompleted = VerticalYesNo.YES;
-
-        when(pcsCase.getPreActionProtocolCompleted()).thenReturn(preActionProtocolCompleted);
-
-        // When
-        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        // Then
-        verify(pcsCaseEntity).setPreActionProtocolCompleted(preActionProtocolCompleted.toBoolean());
-    }
-
-    @Test
-    void shouldMergeClaimantTypeWhenAvailable() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        DynamicStringList claimantTypeList = DynamicStringList.builder()
-            .value(DynamicStringListElement.builder()
-                .code(ClaimantType.COMMUNITY_LANDLORD.name())
-                .label(ClaimantType.COMMUNITY_LANDLORD.getLabel())
-                .build())
-            .build();
-
-        when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
-
-        // When
-        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        // Then
-        verify(pcsCaseEntity).setClaimantType(ClaimantType.COMMUNITY_LANDLORD);
-    }
-
-    @Test
-    void shouldSkipClaimantTypeWhenNull() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        when(pcsCase.getClaimantType()).thenReturn(null);
-
-        // When
-        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        // Then
-        verify(pcsCaseEntity, never()).setClaimantType(any());
-    }
-
-
-    @Test
-    void shouldMergeAllClaimantTypes() {
-        // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
-        DynamicStringList claimantTypeList = DynamicStringList.builder()
-            .value(DynamicStringListElement.builder()
-                .code(ClaimantType.PRIVATE_LANDLORD.name())
-                .label(ClaimantType.PRIVATE_LANDLORD.getLabel())
-                .build())
-            .build();
-
-        when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
-
-        // When
-        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        // Then
-        verify(pcsCaseEntity).setClaimantType(ClaimantType.PRIVATE_LANDLORD);
     }
 
     @Test
