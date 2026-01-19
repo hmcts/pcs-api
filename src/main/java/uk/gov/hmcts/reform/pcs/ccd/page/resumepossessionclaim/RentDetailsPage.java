@@ -54,15 +54,13 @@ public class RentDetailsPage implements CcdPageConfiguration {
         if (rentFrequency != null) {
             if (rentFrequency != RentPaymentFrequency.OTHER) {
                 // Calculate daily rent, if currentRent is also set
-                if (rentDetails.getCurrentRent() != null && !rentDetails.getCurrentRent().trim().isEmpty()) {
-                    BigDecimal rentAmountInPence = new BigDecimal(rentDetails.getCurrentRent());
-                    BigDecimal dailyAmountInPence = calculateDailyRent(rentAmountInPence, rentFrequency);
+                if (rentDetails.getCurrentRent() != null) {
+                    BigDecimal rentAmount = rentDetails.getCurrentRent();
+                    BigDecimal dailyAmount = calculateDailyRent(rentAmount, rentFrequency);
 
-                    long dailyAmountInPenceRounded = dailyAmountInPence.setScale(0, RoundingMode.HALF_UP).longValue();
-                    rentDetails.setCalculatedDailyCharge(String.valueOf(dailyAmountInPenceRounded));
+                    rentDetails.setCalculatedDailyCharge(dailyAmount);
 
-                    BigDecimal dailyAmountInPounds = new BigDecimal(dailyAmountInPenceRounded).movePointLeft(2);
-                    rentDetails.setFormattedCalculatedDailyCharge(formatCurrency(dailyAmountInPounds));
+                    rentDetails.setFormattedCalculatedDailyCharge(formatCurrency(dailyAmount));
                 }
 
                 // Set flag to NO - DailyRentAmount should show first
@@ -80,7 +78,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
                 .build();
     }
 
-    private BigDecimal calculateDailyRent(BigDecimal rentAmountInPence, RentPaymentFrequency frequency) {
+    private BigDecimal calculateDailyRent(BigDecimal rentAmount, RentPaymentFrequency frequency) {
         BigDecimal divisor;
 
         switch (frequency) {
@@ -98,7 +96,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
                 throw new IllegalArgumentException("Daily rent calculation not supported for frequency: " + frequency);
         }
 
-        return rentAmountInPence.divide(divisor, 2, RoundingMode.HALF_UP);
+        return rentAmount.divide(divisor, 2, RoundingMode.HALF_UP);
     }
 
     private String formatCurrency(BigDecimal amount) {
