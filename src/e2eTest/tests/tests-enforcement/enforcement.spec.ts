@@ -364,7 +364,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
         positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
       });
-      await performValidation('mainHeader', checkYourAnswers.mainHeader);
+      await performValidation('mainHeader', checkYourAnswers.header);
     });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -482,7 +482,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
       positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel
     });
-    await performValidation('mainHeader', checkYourAnswers.mainHeader);
+    await performValidation('mainHeader', checkYourAnswers.header);
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -596,7 +596,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nameOfFirmTextInput: statementOfTruthOne.nameOfFirmHiddenTextLabel,
       positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
     });
-    await performValidation('mainHeader', checkYourAnswers.mainHeader);
+    await performValidation('mainHeader', checkYourAnswers.header);
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
