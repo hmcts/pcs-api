@@ -9,6 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -39,8 +40,10 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .warrantDetails(WarrantDetails.builder()
                     .vulnerablePeoplePresent(vulnerablePeoplePresent)
-                    .vulnerableCategory(vulnerableCategory)
-                    .vulnerableReasonText(vulnerableReasonText)
+                    .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                        .vulnerableCategory(vulnerableCategory)
+                        .vulnerableReasonText(vulnerableReasonText)
+                        .build())
                     .build())
                 .build();
 
@@ -112,8 +115,10 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .warrantDetails(WarrantDetails.builder()
                     .vulnerablePeoplePresent(vulnerablePeoplePresent)
-                    .vulnerableCategory(vulnerableCategory)
-                    .vulnerableReasonText(vulnerableReasonText)
+                    .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                        .vulnerableCategory(vulnerableCategory)
+                        .vulnerableReasonText(vulnerableReasonText)
+                        .build())
                     .build())
                 .build();
 
@@ -127,13 +132,13 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getVulnerableReasonText())
+                .getVulnerableAdultsChildren().getVulnerableReasonText())
                 .isEqualTo(vulnerableReasonText);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getVulnerablePeoplePresent())
                 .isEqualTo(vulnerablePeoplePresent);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getVulnerableCategory())
+                .getVulnerableAdultsChildren().getVulnerableCategory())
                 .isEqualTo(vulnerableCategory);
     }
 
