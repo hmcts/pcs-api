@@ -62,19 +62,8 @@ export class CreateCaseAPIAction implements IAction {
   }
 
   private async deleteCaseUsers(): Promise<void> {
-    const deleteCaseUsersApi = Axios.create(caseUserRoleDeletionApiData.deleteCaseUsersApiInstance());
-
-    let caseId: string;
-    let userId: string;
-    let caseRole: string;
-
-    userId = user.claimantSolicitor.uid;
-    caseId = caseInfo.id || process.env.CASE_NUMBER || caseNumber || '';
-    caseRole = '[CREATOR]';
-
-    if (caseId && caseId.includes('-')) {
-      caseId = caseId.replace(/-/g, '');
-    }
+    const userId = user.claimantSolicitor.uid;
+    let caseId = (caseInfo.id || process.env.CASE_NUMBER || caseNumber || '').replace(/-/g, '');
 
     if (!caseId) {
       console.warn('No case ID available for case user removal. Skipping...');
@@ -86,27 +75,26 @@ export class CreateCaseAPIAction implements IAction {
       return;
     }
 
+    const deleteCaseUsersApi = Axios.create(caseUserRoleDeletionApiData.deleteCaseUsersApiInstance());
+    const caseRole = '[CREATOR]';
+
     try {
       const payload = caseUserRoleDeletionApiData.deleteCaseUsersPayload(caseId, userId, caseRole);
-      await deleteCaseUsersApi.delete(caseUserRoleDeletionApiData.deleteCaseUsersApiEndPoint, {
-        data: payload
-      });
+      await deleteCaseUsersApi.delete(caseUserRoleDeletionApiData.deleteCaseUsersApiEndPoint, { data: payload });
       console.log(`Successfully removed case user: ${userId} with role ${caseRole} from case ${caseId}`);
     } catch (error: any) {
       const status = error?.response?.status;
+      const errorMessage = `Case ID: ${caseId}, User ID: ${userId}`;
+
       if (status === 404) {
-        console.warn(`Case user removal failed: case or user not found (404). Case ID: ${caseId}, User ID: ${userId}`);
-        return;
-      }
-      if (status === 403) {
-        console.warn(`Case user removal failed: insufficient permissions (403). Case ID: ${caseId}, User ID: ${userId}`);
-        return;
-      }
-      if (!status) {
+        console.warn(`Case user removal failed: case or user not found (404). ${errorMessage}`);
+      } else if (status === 403) {
+        console.warn(`Case user removal failed: insufficient permissions (403). ${errorMessage}`);
+      } else if (!status) {
         console.error('Case user removal failed: no response from server.');
-        return;
+      } else {
+        console.error(`Case user removal failed with status ${status}. ${errorMessage}`);
       }
-      console.error(`Case user removal failed with status ${status}. Case ID: ${caseId}, User ID: ${userId}`);
     }
   }
 }

@@ -67,8 +67,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.afterEach(async () => {
-  if (caseInfo.id || process.env.CASE_NUMBER) {
-    await performAction('deleteCaseUsers', { caseId: caseInfo.id || process.env.CASE_NUMBER });
+  if (caseInfo.id) {
+    await performAction('deleteCaseUsers');
   }
 });
 

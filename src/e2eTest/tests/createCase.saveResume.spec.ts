@@ -47,6 +47,7 @@ import {
   checkingNotice
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -71,6 +72,9 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
+  if (caseNumber) {
+    await performAction('deleteCaseUsers');
+  }
   PageContentValidation.finaliseTest();
 });
 
