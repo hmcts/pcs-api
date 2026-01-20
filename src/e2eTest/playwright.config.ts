@@ -21,8 +21,8 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: env === 'preview' ? 1 : 4,
   timeout: 600 * 1000,
-  expect: { timeout: 60 * 1000 },
-  use: { actionTimeout: 60 * 1000, navigationTimeout: 60 * 1000 },
+  expect: { timeout: 30 * 1000 },
+  use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
