@@ -120,7 +120,7 @@ public class WarrantDetails {
 
     @JsonUnwrapped(prefix = "warrant")
     @CCD
-    private EnforcementStatementOfTruthDetails statementOfTruth;
+    private StatementOfTruthDetails statementOfTruth;
     
     @CCD
     @JsonUnwrapped(prefix = "warrant")

@@ -16,7 +16,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @Data
 @Builder
 @ComplexType(generate = true)
-public class EnforcementStatementOfTruthDetails {
+public class StatementOfTruthDetails {
 
     @CCD(label = "Completed by")
     private StatementOfTruthCompletedBy completedBy;
