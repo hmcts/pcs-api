@@ -341,8 +341,7 @@ export class EnforcementAction implements IAction {
 
   private async validateAmountToRePayTable(header: actionRecord) {
 
-    if (header.headerName == rePayments.title) {
-
+    if (header.headerName === rePayments.mainHeader) {
       const totalAmt = Array.from(moneyMap.values()).reduce((a, b) => a + b, 0);
       moneyMap.set(rePayments.totalAmt, totalAmt);
     };

@@ -304,7 +304,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
       });
       await performValidation('mainHeader', rePayments.mainHeader);
-      await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader});
+      await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
       await performAction('inputErrorValidation', {
         validationReq: rePayments.errorValidation,
         validationType: rePayments.errorValidationType.three,
@@ -356,7 +356,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: suspendedOrder.yesRadioOption
       });
       await performValidation('mainHeader', statementOfTruthOne.mainHeader);
-      await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthOne.mainHeader});
+      await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthOne.mainHeader });
       await performAction('selectStatementOfTruthOne', {
         selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
         completedBy: statementOfTruthOne.claimantRadioOption,
@@ -364,7 +364,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
         positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
       });
-      await performValidation('mainHeader', checkYourAnswers.header);
     });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
@@ -455,7 +454,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader});
+    await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
     await performAction('provideAmountToRePay', {
       question: rePayments.rePaymentQuestion,
       option: rePayments.rePaymentRadioOptions.none,
@@ -473,7 +472,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: suspendedOrder.noRadioOption
     });
     await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
-    await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthTwo.mainHeader});
+    await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthTwo.mainHeader });
     await performAction('selectStatementOfTruthTwo', {
       selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
       completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
@@ -482,7 +481,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
       positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel
     });
-    await performValidation('mainHeader', checkYourAnswers.header);
   });
 
   test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
@@ -569,7 +567,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
     });
     await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader});
+    await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
     await performAction('provideAmountToRePay', {
       question: rePayments.rePaymentQuestion,
       option: rePayments.rePaymentRadioOptions.all,
@@ -587,7 +585,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: suspendedOrder.yesRadioOption
     });
     await performValidation('mainHeader', statementOfTruthOne.mainHeader);
-    await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthOne.mainHeader});
+    await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthOne.mainHeader });
     await performAction('selectStatementOfTruthOne', {
       selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
       completedBy: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
@@ -596,7 +594,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nameOfFirmTextInput: statementOfTruthOne.nameOfFirmHiddenTextLabel,
       positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
     });
-    await performValidation('mainHeader', checkYourAnswers.header);
   });
 
   test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {

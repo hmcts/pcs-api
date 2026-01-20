@@ -1,7 +1,7 @@
 export const statementOfTruthTwo = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Statement of truth',
-  iCertifyCheckbox: `I certify that:`,
+  iCertifyCheckbox: 'I certify that:',
   completedByLabel: 'Completed by',
   claimantRadioOption: 'Claimant',
   claimantLegalRepresentativeRadioOption: 'Claimant’s legal representative (as defined by CPR 2.3 (1))',
