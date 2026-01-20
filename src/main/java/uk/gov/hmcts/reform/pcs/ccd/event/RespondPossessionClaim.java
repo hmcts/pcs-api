@@ -132,15 +132,27 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
 
             log.info("Draft seeded for case {} and event {} from defendant data in database",
                 caseReference, respondPossessionClaim);
-        } else {
-            log.info("Draft already exists for case {} and event {} - skipping draft seed to preserve user progress",
-                caseReference, respondPossessionClaim);
-        }
 
-        return PCSCase.builder()
-            .possessionClaimResponse(possessionClaimResponse)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
+            // Return initial data from database for first START
+            return PCSCase.builder()
+                .possessionClaimResponse(possessionClaimResponse)
+                .submitDraftAnswers(YesOrNo.NO)
+                .build();
+        } else {
+            log.info("Draft already exists for case {} and event {} - returning draft data to preserve user progress",
+                caseReference, respondPossessionClaim);
+
+            // Return existing draft data to preserve user progress
+            PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(
+                caseReference, respondPossessionClaim)
+                .orElseThrow(() -> new IllegalStateException(
+                    "Draft should exist but was not found for case " + caseReference));
+
+            return PCSCase.builder()
+                .possessionClaimResponse(draftData.getPossessionClaimResponse())
+                .submitDraftAnswers(YesOrNo.NO)
+                .build();
+        }
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
