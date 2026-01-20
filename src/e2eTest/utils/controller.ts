@@ -4,7 +4,7 @@ import { validationData, validationRecord, validationTuple } from '@utils/interf
 import { ActionRegistry } from '@utils/registry/action.registry';
 import { ValidationRegistry } from '@utils/registry/validation.registry';
 import { AxeUtils} from "@hmcts/playwright-common";
-import { cyaStore } from '../utils/validations/custom-validations/CYA/cyaPage.validation';
+import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
