@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -114,10 +115,14 @@ public class WarrantDetails {
             label = "Is your order a suspended order?",
             hint = "If your order is suspended, you will see a different version of the statement of truth on the "
                     + "next page. If you do not know if your order is suspended: save your application as a draft, "
-                    + "return to the case summary page, and then check the tab named ‘Case File View’"
+                    + "return to the case summary page, and then check the tab named 'Case File View'"
     )
     private VerticalYesNo isSuspendedOrder;
 
+    @JsonUnwrapped(prefix = "warrant")
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
+    
     @CCD
     @JsonUnwrapped(prefix = "warrant")
     private DefendantsDOB defendantsDOB;
