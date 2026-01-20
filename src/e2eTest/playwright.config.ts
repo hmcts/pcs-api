@@ -19,7 +19,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
-  workers: env === 'preview' ? 1 : 4,
+  workers: 4,
   timeout: 600 * 1000,
   expect: { timeout: 60 * 1000 },
   use: { actionTimeout: 60 * 1000, navigationTimeout: 60 * 1000 },
