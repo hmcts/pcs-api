@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.testingsupport;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -31,7 +30,8 @@ class EnforcementDMTest {
     @Test
     void shouldCaptureAllCCDAnnotatedFields() throws IOException {
         domainDataModelSupportHelper.addIgnoredClassesToMissingList(EnforcementOrder.class, ClaimEntity.class);
-        File tempFile = File.createTempFile("missing_entity_representation_for_ccd_fields_report_", ".txt");
+        File tempFile = File.createTempFile("missing_entity_representation_for_ccd_fields_report_",
+                                            ".txt");
         try (PrintWriter writer = new PrintWriter(new FileWriter(tempFile))) {
             domainDataModelSupportHelper.printMissingCCDFields(writer, EnforcementOrderEntity.class);
             System.out.println("Created Missing field report : " + tempFile.getAbsolutePath());

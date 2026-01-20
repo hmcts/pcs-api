@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.testingsupport;
 
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ class DomainDataModelSupportHelper {
     private final Map<String, List<CCDFieldInfo>> ccdFieldsByClass = new HashMap<>();
     private final Set<Class<?>> ignoredClassesFromMissing = new HashSet<>();
 
+    @SuppressWarnings("rawtypes")
     public DomainDataModelSupportHelper(Class clazz) {
         identifyCCDFields(clazz);
     }
@@ -56,7 +56,7 @@ class DomainDataModelSupportHelper {
         }
     }
 
-    public void printCCDFields(PrintWriter writer) throws IOException {
+    public void printCCDFields(PrintWriter writer) {
         writer.println("\n========================================");
         writer.println("CCD Annotated Fields Report From Domain :");
         writer.println("========================================\n");
@@ -116,39 +116,24 @@ class DomainDataModelSupportHelper {
                 writer.println();
             });
         }
-        summaryOfMissing(missingFields);
+        summaryOfMissing(writer, missingFields);
 
     }
 
-    private static void summaryOfMissing(List<MissingCCDFieldInfo> missingFields) {
-        System.out.println("========================================");
-        System.out.println("Total Missing CCD Fields: " + missingFields.size());
-        System.out.println("Classes with Missing Fields: " +
+    private static void summaryOfMissing(PrintWriter writer, List<MissingCCDFieldInfo> missingFields) {
+        writer.println("========================================");
+        writer.println("Total Missing CCD Fields: " + missingFields.size());
+        writer.println("Classes with Missing Fields: " +
                                missingFields.stream().map(m -> m.className).distinct().count());
-        System.out.println("========================================\n");
+        writer.println("========================================\n");
     }
 
-    static class CCDFieldInfo {
-        private final String fieldName;
-        private final Class<?> fieldType;
-        private final CCD annotation;
-
-        public CCDFieldInfo(String fieldName, Class<?> fieldType, CCD annotation) {
-            this.fieldName = fieldName;
-            this.fieldType = fieldType;
-            this.annotation = annotation;
-        }
+    record CCDFieldInfo(String fieldName, Class<?> fieldType, CCD annotation) {
 
     }
 
-    static class MissingCCDFieldInfo {
-        private final String className;
-        private final CCDFieldInfo ccdFieldInfo;
+    record MissingCCDFieldInfo(String className, CCDFieldInfo ccdFieldInfo) {
 
-        public MissingCCDFieldInfo(String className, CCDFieldInfo ccdFieldInfo) {
-            this.className = className;
-            this.ccdFieldInfo = ccdFieldInfo;
-        }
     }
 
     private void identifyCCDFields(Class<?> clazz) {
