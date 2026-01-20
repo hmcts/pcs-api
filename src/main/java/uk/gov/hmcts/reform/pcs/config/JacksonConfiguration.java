@@ -14,8 +14,6 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DraftCaseDataMixIn;
 
@@ -73,11 +71,12 @@ public class JacksonConfiguration {
         mapper.addMixIn(PCSCase.class, DraftCaseDataMixIn.class);
         mapper.setSerializationInclusion(Include.NON_NULL);
 
-        // HDPI-3509: Override Party's @JsonInclude(ALWAYS) for draft persistence
-        // Party needs ALWAYS for CCD token validation in START callback,
-        // but drafts need NON_NULL to prevent null fields from overwriting existing data
-        mapper.addMixIn(Party.class, DraftPartyMixIn.class);
-        mapper.addMixIn(AddressUK.class, DraftAddressMixIn.class);
+        // HDPI-3509: REMOVED MIX-INS TO DEMONSTRATE BUG
+        // Without mix-ins, Party's @JsonInclude(NON_NULL) causes:
+        // 1. Draft overwrite bug (null fields overwrite existing data)
+        // 2. CCD token validation failure (field structure changes between START/SUBMIT)
+        // mapper.addMixIn(Party.class, DraftPartyMixIn.class);
+        // mapper.addMixIn(AddressUK.class, DraftAddressMixIn.class);
 
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         mapper.setDateFormat(new StdDateFormat());
