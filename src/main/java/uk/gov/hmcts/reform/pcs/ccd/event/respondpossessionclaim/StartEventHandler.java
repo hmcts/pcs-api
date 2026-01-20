@@ -38,15 +38,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
+        PCSCase caseDataFromPayload = eventPayload.caseData();
         UUID authenticatedUserId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
         PartyEntity defendantEntity = validateAccess(caseReference, authenticatedUserId);
         PossessionClaimResponse initialResponse = buildInitialResponse(defendantEntity, caseReference);
 
-        PCSCase caseData = eventPayload.caseData();
-        caseData.setPossessionClaimResponse(initialResponse);
-
-        return getOrInitializeDraft(caseReference, initialResponse);
+        return getOrInitializeDraft(caseReference, initialResponse, caseDataFromPayload);
     }
 
     private PartyEntity validateAccess(long caseReference, UUID authenticatedUserId) {
@@ -118,10 +116,12 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .build();
     }
 
-    private PCSCase getOrInitializeDraft(long caseReference, PossessionClaimResponse initialResponse) {
+    private PCSCase getOrInitializeDraft(long caseReference,
+                                          PossessionClaimResponse initialResponse,
+                                          PCSCase caseDataFromPayload) {
         if (draftService.exists(caseReference)) {
-            return draftService.load(caseReference);
+            return draftService.load(caseReference, caseDataFromPayload);
         }
-        return draftService.initialize(caseReference, initialResponse);
+        return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
     }
 }

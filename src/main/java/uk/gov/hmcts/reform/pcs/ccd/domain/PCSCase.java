@@ -38,7 +38,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 /**
  * The main domain model representing a possessions case.
  */
-@Builder
+@Builder(toBuilder = true)
 @Data
 public class PCSCase {
 

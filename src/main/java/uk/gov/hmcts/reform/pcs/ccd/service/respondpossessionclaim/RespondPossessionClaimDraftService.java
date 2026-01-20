@@ -21,19 +21,22 @@ public class RespondPossessionClaimDraftService {
         return draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim);
     }
 
-    public PCSCase load(long caseReference) {
+    public PCSCase load(long caseReference, PCSCase caseDataFromPayload) {
         log.info("Loading existing draft for case {} and event {}", caseReference, respondPossessionClaim);
 
         PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
             .orElseThrow(() -> new IllegalStateException("Draft not found for case " + caseReference));
 
-        return PCSCase.builder()
+        return caseDataFromPayload.toBuilder()
             .possessionClaimResponse(draftData.getPossessionClaimResponse())
+            .hasUnsubmittedCaseData(draftData.getHasUnsubmittedCaseData())
             .submitDraftAnswers(YesOrNo.NO)
             .build();
     }
 
-    public PCSCase initialize(long caseReference, PossessionClaimResponse initialResponse) {
+    public PCSCase initialize(long caseReference,
+                               PossessionClaimResponse initialResponse,
+                               PCSCase caseDataFromPayload) {
         PCSCase filteredDraft = PCSCase.builder()
             .possessionClaimResponse(initialResponse)
             .build();
@@ -43,7 +46,7 @@ public class RespondPossessionClaimDraftService {
         log.info("Draft seeded for case {} and event {} from defendant data in database",
             caseReference, respondPossessionClaim);
 
-        return PCSCase.builder()
+        return caseDataFromPayload.toBuilder()
             .possessionClaimResponse(initialResponse)
             .submitDraftAnswers(YesOrNo.NO)
             .build();

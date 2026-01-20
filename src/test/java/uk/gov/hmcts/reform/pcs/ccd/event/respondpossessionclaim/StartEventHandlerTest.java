@@ -104,7 +104,7 @@ class StartEventHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(addressMapper.toAddressUK(addressEntity)).thenReturn(expectedAddress);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
-        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class)))
+        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class)))
             .thenReturn(initializedDraft);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
@@ -114,7 +114,7 @@ class StartEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
-        verify(draftService).initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class));
+        verify(draftService).initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class));
     }
 
     @Test
@@ -148,7 +148,7 @@ class StartEventHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
         when(draftService.exists(CASE_REFERENCE)).thenReturn(true);
-        when(draftService.load(CASE_REFERENCE)).thenReturn(existingDraft);
+        when(draftService.load(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(existingDraft);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -157,7 +157,7 @@ class StartEventHandlerTest {
 
         // Then
         assertThat(result).isEqualTo(existingDraft);
-        verify(draftService).load(CASE_REFERENCE);
+        verify(draftService).load(eq(CASE_REFERENCE), any(PCSCase.class));
     }
 
     @Test
@@ -201,7 +201,7 @@ class StartEventHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(addressMapper.toAddressUK(propertyAddressEntity)).thenReturn(propertyAddress);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
-        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class)))
+        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class)))
             .thenReturn(initializedDraft);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
@@ -253,7 +253,7 @@ class StartEventHandlerTest {
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(addressMapper.toAddressUK(defendantAddressEntity)).thenReturn(defendantAddress);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
-        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class)))
+        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class)))
             .thenReturn(initializedDraft);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
@@ -363,14 +363,16 @@ class StartEventHandlerTest {
         AddressUK emptyAddress = AddressUK.builder().build();
 
         PCSCase initializedDraft = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder().build())
+            .possessionClaimResponse(PossessionClaimResponse.builder()
+                .party(Party.builder().build())
+                .build())
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(addressMapper.toAddressUK(null)).thenReturn(emptyAddress);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
-        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class)))
+        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class)))
             .thenReturn(initializedDraft);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
@@ -380,8 +382,8 @@ class StartEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(eventPayload.caseData().getPossessionClaimResponse()).isNotNull();
-        assertThat(eventPayload.caseData().getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(result.getPossessionClaimResponse()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
     }
 
     private EventPayload<PCSCase, State> createEventPayload() {
