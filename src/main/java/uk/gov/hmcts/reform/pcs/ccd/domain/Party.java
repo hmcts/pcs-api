@@ -11,7 +11,8 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.ALWAYS)
+// TEMPORARILY BROKEN: Changed from ALWAYS to NON_NULL to replicate CCD token validation bug
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Party {
 
     private String firstName;
