@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
 @Data
@@ -82,17 +81,8 @@ public class WarrantDetails {
     )
     private YesNoNotSure vulnerablePeoplePresent;
 
-    @CCD(
-            label = "Confirm if the vulnerable people in the property are adults, children, or both adults and children"
-    )
-    private VulnerableCategory vulnerableCategory;
-
-    @CCD(
-            label = "How are they vulnerable?",
-            hint = "You can enter up to 6,800 characters",
-            typeOverride = TextArea
-    )
-    private String vulnerableReasonText;
+    @CCD
+    private VulnerableAdultsChildren vulnerableAdultsChildren;
 
     @CCD(
         label = "Which language did you use to complete this service?",

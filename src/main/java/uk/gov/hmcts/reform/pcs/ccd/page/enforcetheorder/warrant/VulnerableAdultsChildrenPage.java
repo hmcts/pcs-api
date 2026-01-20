@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
@@ -48,15 +49,16 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .mandatory(WarrantDetails::getVulnerablePeoplePresent)
-            .mandatory(WarrantDetails::getVulnerableCategory,
+            .complex(WarrantDetails::getVulnerableAdultsChildren,
                     "warrantVulnerablePeoplePresent=\"YES\"")
-            .mandatory(
-                    WarrantDetails::getVulnerableReasonText,
-                    "warrantVulnerablePeoplePresent=\"YES\" "
-                        + "AND (warrantVulnerableCategory=\"VULNERABLE_ADULTS\" "
-                        + "OR warrantVulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                        + "OR warrantVulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")"
-                    )
+                .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
+                .mandatory(
+                    VulnerableAdultsChildren::getVulnerableReasonText,
+                    "warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                        + "OR warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                        + "OR warrantVulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
+                )
+            .done()
             .done()
             .done()
             .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -77,7 +79,10 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
 
         if (data.getEnforcementOrder().getWarrantDetails().getVulnerablePeoplePresent() == YesNoNotSure.YES) {
             String txt = data.getEnforcementOrder()
-                    .getWarrantDetails().getVulnerableReasonText();
+                    .getWarrantDetails().getVulnerableAdultsChildren() != null
+                    ? data.getEnforcementOrder()
+                        .getWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText()
+                    : null;
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,
                 "How are they vulnerable?",
