@@ -3,8 +3,7 @@ import { actionData, actionRecord, actionTuple } from '@utils/interfaces/action.
 import { validationData, validationRecord, validationTuple } from '@utils/interfaces/validation.interface';
 import { ActionRegistry } from '@utils/registry/action.registry';
 import { ValidationRegistry } from '@utils/registry/validation.registry';
-import { AxeUtils} from "@hmcts/playwright-common";
-import { cyaStore } from '../utils/validations/custom-validations/CYA/cyaPage.validation';
+import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
@@ -40,16 +39,6 @@ async function validatePageIfNavigated(action:string): Promise<void> {
   if(action.includes('click')) {
     const pageNavigated = await detectPageNavigation();
     if (pageNavigated) {
-      const executor = getExecutor();
-      const currentUrl = executor.page.url();
-
-      // Skip accessibility audit for login/auth pages
-      if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-          currentUrl.includes('idam') || currentUrl.includes('auth')) {
-        await performValidation('autoValidatePageContent');
-        return;
-      }
-
       await performValidation('autoValidatePageContent');
 
       // Temporarily disabled axeUtil audits for e2e tests. They will be re-enabled once the issues with multiple video generation and soft assertions are resolved.
