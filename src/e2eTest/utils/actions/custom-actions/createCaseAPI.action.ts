@@ -12,7 +12,7 @@ export class CreateCaseAPIAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['createCaseAPI', () => this.createCaseAPI(fieldName)],
       ['submitCaseAPI', () => this.submitCaseAPI(fieldName)],
-      ['deleteCaseUsers', () => this.deleteCaseUsers()]
+      ['deleteCaseRole', () => this.deleteCaseRole(fieldName)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -61,9 +61,10 @@ export class CreateCaseAPIAction implements IAction {
     }
   }
 
-  private async deleteCaseUsers(): Promise<void> {
+  private async deleteCaseRole(roleData: actionData): Promise<void> {
     const userId = user.claimantSolicitor.uid;
     let caseId = (caseInfo.id || process.env.CASE_NUMBER || caseNumber || '').replace(/-/g, '');
+    const caseRole = typeof roleData === 'string' ? roleData : String(roleData);
 
     if (!caseId) {
       console.warn('No case ID available for case user removal.');
@@ -76,7 +77,6 @@ export class CreateCaseAPIAction implements IAction {
     }
 
     const deleteCaseUsersApi = Axios.create(caseUserRoleDeletionApiData.deleteCaseUsersApiInstance());
-    const caseRole = '[CREATOR]';
 
     try {
       const payload = caseUserRoleDeletionApiData.deleteCaseUsersPayload(caseId, userId, caseRole);

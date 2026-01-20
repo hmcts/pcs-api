@@ -68,7 +68,7 @@ test.beforeEach(async ({ page }) => {
 
 test.afterEach(async () => {
   if (caseInfo.id) {
-    await performAction('deleteCaseUsers');
+    await performAction('deleteCaseRole', '[CREATOR]');
   }
 });
 

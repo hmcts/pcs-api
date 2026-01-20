@@ -73,7 +73,7 @@ test.beforeEach(async ({page}) => {
 
 test.afterEach(async () => {
   if (caseNumber) {
-    await performAction('deleteCaseUsers');
+    await performAction('deleteCaseRole', '[CREATOR]');
   }
   PageContentValidation.finaliseTest();
 });
