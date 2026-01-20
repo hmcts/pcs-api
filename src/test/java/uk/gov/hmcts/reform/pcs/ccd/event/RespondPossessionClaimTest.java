@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -466,20 +467,38 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .uid(defendantUserId.toString())
             .build();
 
+        // Mock draft data that user has already saved
+        Party draftParty = Party.builder()
+            .firstName("SavedFirstName")
+            .lastName("SavedLastName")
+            .emailAddress("saved@example.com")
+            .build();
+
+        PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
+            .party(draftParty)
+            .build();
+
+        PCSCase draftData = PCSCase.builder()
+            .possessionClaimResponse(draftResponse)
+            .build();
+
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(true); // Draft already exists - should NOT seed
+        when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
+            .thenReturn(Optional.of(draftData)); // Return saved draft data
 
         PCSCase caseData = PCSCase.builder().build();
 
         PCSCase result = callStartHandler(caseData);
 
-        // Should still return the party data for CCD token validation
+        // Should return draft data (user's saved progress), NOT database defendant data
         assertThat(result.getPossessionClaimResponse()).isNotNull();
         assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
-        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
-        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("SavedFirstName");
+        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("SavedLastName");
+        assertThat(result.getPossessionClaimResponse().getParty().getEmailAddress()).isEqualTo("saved@example.com");
 
         // Should NOT call patchUnsubmittedEventData when draft already exists
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
