@@ -2,8 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
@@ -16,6 +18,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 
 @Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WarrantDetails {
 
@@ -105,4 +109,16 @@ public class WarrantDetails {
     @JsonUnwrapped(prefix = "repayment")
     @CCD
     private RepaymentCosts repaymentCosts;
+
+    @CCD(
+            label = "Is your order a suspended order?",
+            hint = "If your order is suspended, you will see a different version of the statement of truth on the "
+                    + "next page. If you do not know if your order is suspended: save your application as a draft, "
+                    + "return to the case summary page, and then check the tab named ‘Case File View’"
+    )
+    private VerticalYesNo isSuspendedOrder;
+
+    @CCD
+    @JsonUnwrapped(prefix = "warrant")
+    private DefendantsDOB defendantsDOB;
 }

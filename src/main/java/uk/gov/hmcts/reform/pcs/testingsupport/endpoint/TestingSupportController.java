@@ -364,7 +364,7 @@ public class TestingSupportController {
 
             ClaimEntity mainClaim = ClaimEntity.builder()
                 .pcsCase(caseEntity)
-                .costsClaimed(false)
+                .claimCosts(VerticalYesNo.NO)
                 .build();
 
             caseEntity.addClaim(mainClaim);

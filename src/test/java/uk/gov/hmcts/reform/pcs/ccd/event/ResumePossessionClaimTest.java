@@ -68,6 +68,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -204,6 +205,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private FeeFormatter feeFormatter;
     @Mock
+    private DocumentService documentService;
+    @Mock
     private CaseAssignmentService caseAssignmentService;
 
     @BeforeEach
@@ -231,7 +234,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, caseAssignmentService
+            underlesseeOrMortgageePage, feeService, feeFormatter,documentService, caseAssignmentService
         );
 
         setEventUnderTest(underTest);
@@ -274,17 +277,45 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
-        void shouldSetClaimantDetails() {
+        void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
             // Given
-            String expectedClaimantEmail = "user@test.com";
-            String expectedClaimantAddress = "formatted claimant address";
+            String userEmail = "user@test.com";
+            String orgName = "ACME Org Ltd";
 
-            AddressUK claimantAddress = mock(AddressUK.class);
-            when(userDetails.getSub()).thenReturn(expectedClaimantEmail);
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(orgName);
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn("formatted org address");
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantInformation().getClaimantName()).isEqualTo(orgName);
+            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail()).isEqualTo(userEmail);
+        }
+
+        @Test
+        void shouldFallbackToUserEmailWhenOrganisationNameNotAvailable() {
+            // Given
+            String userEmail = "user@test.com";
+
+            when(userDetails.getSub()).thenReturn(userEmail);
             when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(claimantAddress);
-            when(addressFormatter.formatMediumAddress(claimantAddress, AddressFormatter.BR_DELIMITER))
-                .thenReturn(expectedClaimantAddress);
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn("formatted org address");
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -296,11 +327,89 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(updatedCaseData.getClaimantInformation().getClaimantName())
-                .isEqualTo(expectedClaimantEmail); // HDPI-3582 will fix this
-            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail())
-                .isEqualTo(expectedClaimantEmail);
+                .isEqualTo(userEmail); // HDPI-3582 will fix this
+        }
+
+        @Test
+        void shouldCreateContactPreferencesWhenNull() {
+            // Given
+            String userEmail = "user@test.com";
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn("formatted org address");
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .claimantContactPreferences(null)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantContactPreferences()).isNotNull();
+            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail()).isEqualTo(userEmail);
+        }
+
+        @Test
+        void shouldSetOrganisationAddressAndFormattedAddressAndFlagWhenAddressPresent() {
+            // Given
+            String userEmail = "user@test.com";
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+
+            AddressUK organisationAddress = mock(AddressUK.class);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
+
+            String formattedOrgAddress = "formatted org address";
+            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
+                .thenReturn(formattedOrgAddress);
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantContactPreferences().getOrganisationAddress())
+                .isEqualTo(organisationAddress);
             assertThat(updatedCaseData.getClaimantContactPreferences().getFormattedClaimantContactAddress())
-                .isEqualTo("formatted claimant address");
+                .isEqualTo(formattedOrgAddress);
+            assertThat(updatedCaseData.getClaimantContactPreferences().getOrgAddressFound())
+                .isEqualTo(YesOrNo.YES);
+        }
+
+        @Test
+        void shouldSetOrgAddressFoundNoWhenOrganisationAddressNull() {
+            // Given
+            String userEmail = "user@test.com";
+            when(userDetails.getSub()).thenReturn(userEmail);
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
+            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER))
+                .thenReturn(null);
+
+            PCSCase caseData = PCSCase.builder()
+                .propertyAddress(mock(AddressUK.class))
+                .legislativeCountry(WALES)
+                .build();
+
+            // When
+            PCSCase updatedCaseData = callStartHandler(caseData);
+
+            // Then
+            assertThat(updatedCaseData.getClaimantContactPreferences().getOrganisationAddress()).isNull();
+            assertThat(updatedCaseData.getClaimantContactPreferences().getOrgAddressFound())
+                .isEqualTo(YesOrNo.NO);
         }
 
         @ParameterizedTest
@@ -338,7 +447,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                         ClaimantType.OTHER
                     )
                 ),
-
                 arguments(
                     WALES, List.of(
                         ClaimantType.PRIVATE_LANDLORD,
@@ -347,7 +455,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                         ClaimantType.OTHER
                     )
                 ),
-
                 arguments(SCOTLAND, List.of())
             );
         }
@@ -358,6 +465,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim))
                 .thenReturn(hasUnsubmittedData);
+
+            when(userDetails.getSub()).thenReturn("user@test.com");
+            when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
+            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(null);
+            when(addressFormatter.formatMediumAddress(null, AddressFormatter.BR_DELIMITER)).thenReturn(null);
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -374,14 +486,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         private static Stream<Arguments> unsubmittedDataFlagScenarios() {
             return Stream.of(
-                // unsubmitted case data available, expected case data flag
                 arguments(false, YesOrNo.NO),
                 arguments(true, YesOrNo.YES)
             );
         }
-
     }
-
 
     @Nested
     @DisplayName("Save for later submit callback tests")
@@ -440,22 +549,22 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
+            stubClaimCreation();
             // When
             callSubmitHandler(caseData);
 
             // Then
             InOrder inOrder = inOrder(pcsCaseService);
+            inOrder.verify(pcsCaseService).loadCase(TEST_CASE_REFERENCE);
             inOrder.verify(pcsCaseService).mergeCaseData(pcsCaseEntity, caseData);
+            verify(pcsCaseEntity).addClaim(any(ClaimEntity.class));
         }
 
         @Test
         void shouldCreatePartiesInSubmitCallback() {
             // Given
             AddressUK propertyAddress = mock(AddressUK.class);
-            String claimantName = "Test Claimant";
-            String claimantContactEmail = "claimant@test.com";
-            String claimantContactPhoneNumber = "01234 567890";
-            String claimantCircumstances = "Some circumstances";
+            AddressUK organisationAddress = mock(AddressUK.class);
 
             stubFeeService();
 
@@ -465,17 +574,18 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .claimantInformation(
                     ClaimantInformation.builder()
-                        .claimantName(claimantName)
+                        .claimantName("Test Claimant")
                         .build()
                 )
                 .claimantContactPreferences(
                     ClaimantContactPreferences.builder()
-                        .claimantContactEmail(claimantContactEmail)
-                        .claimantContactPhoneNumber(claimantContactPhoneNumber)
+                        .claimantContactEmail("claimant@test.com")
+                        .claimantContactPhoneNumber("01234 567890")
+                        .organisationAddress(organisationAddress)
                         .build()
                 )
                 .claimantCircumstances(ClaimantCircumstances.builder()
-                                           .claimantCircumstancesDetails(claimantCircumstances)
+                                           .claimantCircumstancesDetails("Some circumstances")
                                            .build())
                 .claimingCostsWanted(VerticalYesNo.YES)
                 .build();
@@ -490,13 +600,60 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
-        void shouldCreateMainClaim() {
+        void shouldSchedulePaymentTaskWithResponsiblePartyAsClaimantName() {
             // Given
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(ClaimantInformation.builder().claimantName("Responsible Party Ltd").build())
                 .build();
+
+            stubClaimCreation();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
+            assertThat(taskData.getResponsibleParty()).isEqualTo("Responsible Party Ltd");
+        }
+
+        @Test
+        void shouldSchedulePaymentTaskWithResponsiblePartyEmptyWhenClaimantInfoNull() {
+            // Given
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .claimantInformation(null) // important
+                .build();
+
+            stubClaimCreation();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
+            assertThat(taskData.getResponsibleParty()).isNull();
+        }
+
+        @Test
+        void shouldCreateMainClaim() {
+            // Given
+            stubFeeService();
+
+            ClaimEntity claimEntity = mock(ClaimEntity.class);
+            when(claimService.createMainClaimEntity(any()))
+                .thenReturn(claimEntity);
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .build();
+
+            when(documentService.createAllDocuments(any()))
+                .thenReturn(List.of());
 
             // When
             callSubmitHandler(caseData);
@@ -508,12 +665,13 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSchedulePaymentTask() {
             // Given
-            final FeeDetails feeDetails = stubFeeService();
-
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
 
+            stubClaimCreation();
+
+            FeeDetails feeDetails = stubFeeService();
             // When
             callSubmitHandler(caseData);
 
@@ -521,6 +679,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
             FeesAndPayTaskData taskData = getScheduledTaskData(FEE_CASE_ISSUED_TASK_DESCRIPTOR);
             assertThat(taskData.getFeeType()).isEqualTo(FeeType.CASE_ISSUE_FEE.getCode());
             assertThat(taskData.getFeeDetails()).isEqualTo(feeDetails);
+            assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
+            assertThat(taskData.getCcdCaseNumber()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
         @Test
@@ -541,10 +701,21 @@ class ResumePossessionClaimTest extends BaseEventTest {
             assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 
-        private ClaimEntity stubClaimCreation() {
-            ClaimEntity claimEntity = mock(ClaimEntity.class);
-            when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
-            return claimEntity;
+        @Test
+        void shouldDeleteDraftDataOnSubmitAndPay() {
+            // Given
+            stubClaimCreation();
+            stubFeeService();
+
+            PCSCase caseData = PCSCase.builder()
+                .completionNextStep(SUBMIT_AND_PAY_NOW)
+                .build();
+
+            // When
+            callSubmitHandler(caseData);
+
+            // Then
+            verify(draftCaseDataService).deleteUnsubmittedCaseData(TEST_CASE_REFERENCE, resumePossessionClaim);
         }
 
         @Test
@@ -565,6 +736,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(submitResponse.getConfirmationBody()).contains("You must pay the claim fee of " + formattedFee);
+        }
+
+        private ClaimEntity stubClaimCreation() {
+            ClaimEntity claimEntity = mock(ClaimEntity.class);
+            when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
+            return claimEntity;
         }
 
         private FeeDetails stubFeeService() {
@@ -600,8 +777,5 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             return taskDataList.getFirst();
         }
-
-
     }
-
 }

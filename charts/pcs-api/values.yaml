@@ -43,6 +43,7 @@ java:
     FLYWAY_NOOP_STRATEGY: "false"
     SPRING_FLYWAY_ENABLED: "true"
     CCD_DATA_STORE_URL: "http://ccd-data-store-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
+    RD_PROFESSIONAL_API_URL: "http://rd-professional-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
 servicebus:
   enabled: false
 ccd:
