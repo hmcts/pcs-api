@@ -9,7 +9,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -37,15 +36,11 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
             String vulnerableReasonText,
             boolean expectsError) {
         // Given
-        VulnerableAdultsChildren vulnerableAdultsChildren = VulnerableAdultsChildren.builder()
-                .vulnerableCategory(vulnerableCategory)
-                .vulnerableReasonText(vulnerableReasonText)
-                .build();
-
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .warrantDetails(WarrantDetails.builder()
                     .vulnerablePeoplePresent(vulnerablePeoplePresent)
-                    .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                    .vulnerableCategory(vulnerableCategory)
+                    .vulnerableReasonText(vulnerableReasonText)
                     .build())
                 .build();
 
@@ -114,15 +109,11 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
             VulnerableCategory vulnerableCategory,
             String vulnerableReasonText) {
         // Given
-        VulnerableAdultsChildren vulnerableAdultsChildren = VulnerableAdultsChildren.builder()
-                .vulnerableCategory(vulnerableCategory)
-                .vulnerableReasonText(vulnerableReasonText)
-                .build();
-
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .warrantDetails(WarrantDetails.builder()
                     .vulnerablePeoplePresent(vulnerablePeoplePresent)
-                    .vulnerableAdultsChildren(vulnerableAdultsChildren)
+                    .vulnerableCategory(vulnerableCategory)
+                    .vulnerableReasonText(vulnerableReasonText)
                     .build())
                 .build();
 
@@ -136,13 +127,13 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getVulnerableAdultsChildren().getVulnerableReasonText())
+                .getVulnerableReasonText())
                 .isEqualTo(vulnerableReasonText);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getVulnerablePeoplePresent())
                 .isEqualTo(vulnerablePeoplePresent);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getVulnerableAdultsChildren().getVulnerableCategory())
+                .getVulnerableCategory())
                 .isEqualTo(vulnerableCategory);
     }
 
