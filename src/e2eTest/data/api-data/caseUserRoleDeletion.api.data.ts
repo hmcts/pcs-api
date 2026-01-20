@@ -1,6 +1,6 @@
 export const caseUserRoleDeletionApiData = {
   deleteCaseUsersApiInstance: () => ({
-    baseURL: process.env.DATA_STORE_URL_BASE || 'http://ccd-data-store-api-aat.service.core-compute-aat.internal',
+    baseURL: process.env.DATA_STORE_URL_BASE,
     headers: {
       Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
       ServiceAuthorization: `${process.env.SERVICE_AUTH_TOKEN}`,

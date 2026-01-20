@@ -66,12 +66,12 @@ export class CreateCaseAPIAction implements IAction {
     let caseId = (caseInfo.id || process.env.CASE_NUMBER || caseNumber || '').replace(/-/g, '');
 
     if (!caseId) {
-      console.warn('No case ID available for case user removal. Skipping...');
+      console.warn('No case ID available for case user removal.');
       return;
     }
 
     if (!userId) {
-      console.warn('No user ID available for case user removal. Skipping...');
+      console.warn('No user ID available for case user removal.');
       return;
     }
 
@@ -92,9 +92,9 @@ export class CreateCaseAPIAction implements IAction {
       } else if (status === 403) {
         console.warn(`Case user removal failed: insufficient permissions (403). ${errorMessage}`);
       } else if (!status) {
-        console.error('Case user removal failed: no response from server.');
+        console.warn('Case user removal failed: no response from server.');
       } else {
-        console.error(`Case user removal failed with status ${status}. ${errorMessage}`);
+        console.warn(`Case user removal failed with status ${status}. ${errorMessage}`);
       }
     }
   }
