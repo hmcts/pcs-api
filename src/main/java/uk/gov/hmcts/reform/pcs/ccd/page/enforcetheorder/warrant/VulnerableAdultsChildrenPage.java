@@ -52,9 +52,10 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     "warrantVulnerablePeoplePresent=\"YES\"")
             .mandatory(
                     WarrantDetails::getVulnerableReasonText,
-                    "warrantVulnerableCategory=\"VULNERABLE_ADULTS\" "
+                    "warrantVulnerablePeoplePresent=\"YES\" "
+                        + "AND (warrantVulnerableCategory=\"VULNERABLE_ADULTS\" "
                         + "OR warrantVulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                        + "OR warrantVulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
+                        + "OR warrantVulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")"
                     )
             .done()
             .done()
