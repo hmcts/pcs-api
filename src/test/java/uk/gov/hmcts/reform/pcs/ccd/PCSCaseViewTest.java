@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
@@ -240,6 +241,44 @@ class PCSCaseViewTest {
                 asListValue(underlessee2Id, underlessee2)
             );
 
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenNoDocumentsExist() {
+        // Given
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldMapDocuments() {
+        // Given
+        DocumentEntity entity1 = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("doc1.pdf")
+            .url("url1")
+            .build();
+
+        DocumentEntity entity2 = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("doc2.pdf")
+            .url("url2")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1,entity2));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        //Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(2);
+        assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getFilename())
+            .containsExactly("doc1.pdf", "doc2.pdf");
     }
 
     private static ListValue<Party> asListValue(UUID id, Party party) {

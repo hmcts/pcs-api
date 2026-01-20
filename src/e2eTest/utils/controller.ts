@@ -51,19 +51,17 @@ async function validatePageIfNavigated(action:string): Promise<void> {
       }
 
       await performValidation('autoValidatePageContent');
-
-      // Temporarily disabled axeUtil audits for e2e tests. They will be re-enabled once the issues with multiple video generation and soft assertions are resolved.
-      // try {
-      //   await new AxeUtils(executor.page).audit()
-      // } catch (error) {
-      //   const errorMessage = String((error as Error).message || error).toLowerCase();
-      //   if (errorMessage.includes('execution context was destroyed') ||
-      //       errorMessage.includes('navigation')) {
-      //     console.warn(`Accessibility audit skipped due to navigation: ${errorMessage}`);
-      //   } else {
-      //     throw error;
-      //   }
-      // }
+      try {
+        await new AxeUtils(executor.page).audit();
+      } catch (error) {
+        const errorMessage = String((error as Error).message || error).toLowerCase();
+        if (errorMessage.includes('execution context was destroyed') ||
+            errorMessage.includes('navigation')) {
+          console.warn(`Accessibility audit skipped due to navigation: ${errorMessage}`);
+        } else {
+          throw error;
+        }
+      }
     }
   }
 }
