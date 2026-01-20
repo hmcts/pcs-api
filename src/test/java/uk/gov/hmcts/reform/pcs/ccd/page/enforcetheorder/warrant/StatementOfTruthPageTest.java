@@ -13,9 +13,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthClaimantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementStatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -58,7 +58,7 @@ class StatementOfTruthPageTest extends BasePageTest {
                 .fullNameClaimant(fieldName.equals("Full name") ? value : "Valid Name")
                 .positionClaimant(fieldName.equals("Position or office held") ? value : "Valid Position")
                 .build();
-            StatementOfTruthDetails statementOfTruth = StatementOfTruthDetails.builder()
+            EnforcementStatementOfTruthDetails statementOfTruth = EnforcementStatementOfTruthDetails.builder()
                 .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
                 .claimantDetails(claimantDetails)
                 .build();
@@ -109,10 +109,10 @@ class StatementOfTruthPageTest extends BasePageTest {
         }
     }
 
-    private PCSCase createCaseDataWithStatementOfTruth(StatementOfTruthDetails statementOfTruth) {
-        StatementOfTruthDetails sot = statementOfTruth != null
+    private PCSCase createCaseDataWithStatementOfTruth(EnforcementStatementOfTruthDetails statementOfTruth) {
+        EnforcementStatementOfTruthDetails sot = statementOfTruth != null
             ? statementOfTruth
-            : StatementOfTruthDetails.builder().build();
+            : EnforcementStatementOfTruthDetails.builder().build();
 
         WarrantDetails warrantDetails = WarrantDetails.builder()
             .isSuspendedOrder(null)

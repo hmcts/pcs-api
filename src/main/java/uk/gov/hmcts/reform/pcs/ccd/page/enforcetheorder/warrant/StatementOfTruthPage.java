@@ -10,9 +10,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthClaimantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthLegalRepDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementStatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -39,7 +39,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                 .complex(EnforcementOrder::getWarrantDetails)
                     .label("statementOfTruth-lineSeparator", "---")
                     .complex(WarrantDetails::getStatementOfTruth)
-                        .mandatory(StatementOfTruthDetails::getCertification)
+                        .mandatory(EnforcementStatementOfTruthDetails::getCertification)
                         .label("statementOfTruth-cert-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
@@ -73,14 +73,14 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                             "${repaymentStatementOfTruthRepaymentSummaryMarkdown}")
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
-                        .mandatory(StatementOfTruthDetails::getCompletedBy)
-                        .complex(StatementOfTruthDetails::getClaimantDetails,
+                        .mandatory(EnforcementStatementOfTruthDetails::getCompletedBy)
+                        .complex(EnforcementStatementOfTruthDetails::getClaimantDetails,
                             "warrantCompletedBy=\"CLAIMANT\"")
                             .mandatory(StatementOfTruthClaimantDetails::getAgreementClaimant)
                             .mandatory(StatementOfTruthClaimantDetails::getFullNameClaimant)
                             .mandatory(StatementOfTruthClaimantDetails::getPositionClaimant)
                         .done()
-                        .complex(StatementOfTruthDetails::getLegalRepDetails,
+                        .complex(EnforcementStatementOfTruthDetails::getLegalRepDetails,
                             "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
                             .mandatory(StatementOfTruthLegalRepDetails::getAgreementLegalRep)
                             .mandatory(StatementOfTruthLegalRepDetails::getFullNameLegalRep)
@@ -105,8 +105,9 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
     }
 
     private void validateCharacterLimits(PCSCase caseData, List<String> errors) {
-        StatementOfTruthDetails statementOfTruth = caseData.getEnforcementOrder().getWarrantDetails()
-                .getStatementOfTruth();
+        EnforcementStatementOfTruthDetails statementOfTruth = caseData.getEnforcementOrder()
+            .getWarrantDetails()
+            .getStatementOfTruth();
 
         if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
             validateClaimantDetails(statementOfTruth.getClaimantDetails(), errors);
