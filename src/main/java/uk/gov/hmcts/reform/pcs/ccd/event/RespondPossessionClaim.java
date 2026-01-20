@@ -8,16 +8,13 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -94,28 +91,32 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                 return new CaseAccessException("User is not linked as a defendant on this case");
             });
 
+        // HDPI-3509: BROKEN - Removed to demonstrate CCD token validation failure
+        // Without creating Party object and mapping address, these fields will be null/omitted
+        // causing "Cannot find matching start trigger" error when user submits with data
+
         // Map address using AddressMapper to ensure all fields are explicitly set (including null values)
         // This ensures consistent JSON structure for CCD event token validation
-        AddressUK contactAddress;
-        if (matchedDefendant.getAddressSameAsProperty() != null
-            && matchedDefendant.getAddressSameAsProperty() == VerticalYesNo.YES) {
-            contactAddress = addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress());
-        } else {
-            contactAddress = addressMapper.toAddressUK(matchedDefendant.getAddress());
-        }
+        // AddressUK contactAddress;
+        // if (matchedDefendant.getAddressSameAsProperty() != null
+        //     && matchedDefendant.getAddressSameAsProperty() == VerticalYesNo.YES) {
+        //     contactAddress = addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress());
+        // } else {
+        //     contactAddress = addressMapper.toAddressUK(matchedDefendant.getAddress());
+        // }
 
         // Always create Party object to maintain consistent structure for CCD event token validation
         // The party field must exist in the response structure (even with null field values)
         // If party is null, CCD omits the field entirely, causing "Cannot find matching start trigger"
         // errors when user later submits with populated party data (field appears to be "added")
-        Party party = Party.builder()
-            .firstName(matchedDefendant.getFirstName())
-            .lastName(matchedDefendant.getLastName())
-            .address(contactAddress)
-            .build();
+        // Party party = Party.builder()
+        //     .firstName(matchedDefendant.getFirstName())
+        //     .lastName(matchedDefendant.getLastName())
+        //     .address(contactAddress)
+        //     .build();
 
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .party(party)
+            .party(null)
             .build();
 
         PCSCase caseData = eventPayload.caseData();
