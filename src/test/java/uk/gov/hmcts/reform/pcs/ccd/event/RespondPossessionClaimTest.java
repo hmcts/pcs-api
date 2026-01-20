@@ -19,8 +19,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -56,11 +59,21 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @BeforeEach
     void setUp() {
-        setEventUnderTest(new RespondPossessionClaim(
-            draftCaseDataService,
+        RespondPossessionClaimDraftService draftService =
+            new RespondPossessionClaimDraftService(draftCaseDataService);
+
+        StartEventHandler startEventHandler = new StartEventHandler(
             pcsCaseService,
-            securityContextService,
-            addressMapper
+            addressMapper,
+            draftService,
+            securityContextService
+        );
+
+        SubmitEventHandler submitEventHandler = new SubmitEventHandler(draftService);
+
+        setEventUnderTest(new RespondPossessionClaim(
+            startEventHandler,
+            submitEventHandler
         ));
     }
 
