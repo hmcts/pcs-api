@@ -38,4 +38,5 @@ public class EnforcementOrderEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "enforcement_order")
     private EnforcementOrder enforcementOrder;
+
 }
