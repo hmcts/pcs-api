@@ -9,9 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NonPrefixWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
@@ -38,7 +38,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
             boolean expectsError) {
         // Given
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .warrantDetails(WarrantDetails.builder()
+                .nonPrefixWarrantDetails(NonPrefixWarrantDetails.builder()
                     .vulnerablePeoplePresent(vulnerablePeoplePresent)
                     .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
                         .vulnerableCategory(vulnerableCategory)
@@ -113,7 +113,7 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
             String vulnerableReasonText) {
         // Given
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-                .warrantDetails(WarrantDetails.builder()
+                .nonPrefixWarrantDetails(NonPrefixWarrantDetails.builder()
                     .vulnerablePeoplePresent(vulnerablePeoplePresent)
                     .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
                         .vulnerableCategory(vulnerableCategory)
@@ -131,13 +131,13 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isEmpty();
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+        assertThat(response.getData().getEnforcementOrder().getNonPrefixWarrantDetails()
                 .getVulnerableAdultsChildren().getVulnerableReasonText())
                 .isEqualTo(vulnerableReasonText);
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+        assertThat(response.getData().getEnforcementOrder().getNonPrefixWarrantDetails()
                 .getVulnerablePeoplePresent())
                 .isEqualTo(vulnerablePeoplePresent);
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
+        assertThat(response.getData().getEnforcementOrder().getNonPrefixWarrantDetails()
                 .getVulnerableAdultsChildren().getVulnerableCategory())
                 .isEqualTo(vulnerableCategory);
     }
