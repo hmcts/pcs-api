@@ -9,7 +9,6 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -32,7 +31,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseMergeServiceTest {
@@ -44,20 +42,15 @@ class PcsCaseMergeServiceTest {
     @Mock
     private TenancyLicenceService tenancyLicenceService;
     @Mock
-    private StatementOfTruthService statementOfTruthService;
-    @Mock
     private PCSCase pcsCase;
 
     private PcsCaseMergeService underTest;
 
     @BeforeEach
     void setUp() {
-        when(pcsCase.getTenancyLicenceDetails()).thenReturn(mock(TenancyLicenceDetails.class));
-
         underTest = new PcsCaseMergeService(securityContextService,
                                             modelMapper,
-                                            tenancyLicenceService,
-                                            statementOfTruthService);
+                                            tenancyLicenceService);
     }
 
     @Test
@@ -71,7 +64,6 @@ class PcsCaseMergeServiceTest {
         underTest.mergeCaseData(pcsCaseEntity, pcsCase);
 
         // Then
-        verify(pcsCaseEntity).setLegacyTenancyLicence(any());
         verify(pcsCaseEntity).setPossessionGrounds(any());
     }
 
@@ -271,13 +263,8 @@ class PcsCaseMergeServiceTest {
     void shouldSetTenancyLicence() {
         // Given
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
-        TenancyLicenceDetails tenancyLicenceDetails = TenancyLicenceDetails.builder()
-            .typeOfTenancyLicence(ASSURED_TENANCY)
-            .build();
-
-        when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyLicenceDetails);
         TenancyLicenceEntity tenancyLicenceEntity = mock(TenancyLicenceEntity.class);
-        when(tenancyLicenceService.buildTenancyLicenceEntity(pcsCase)).thenReturn(tenancyLicenceEntity);
+        when(tenancyLicenceService.createTenancyLicenceEntity(pcsCase)).thenReturn(tenancyLicenceEntity);
 
         // When
         underTest.mergeCaseData(pcsCaseEntity, pcsCase);

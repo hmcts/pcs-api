@@ -25,7 +25,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -161,6 +164,18 @@ public class ClaimEntity {
     @JsonManagedReference
     private PossessionAlternativesEntity possessionAlternativesEntity;
 
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private RentArrearsEntity rentArrears;
+
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private NoticeOfPossessionEntity noticeOfPossession;
+
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private StatementOfTruthEntity statementOfTruth;
+
     public void setHousingActWales(HousingActWalesEntity housingActWales) {
         if (this.housingActWales != null) {
             this.housingActWales.setClaim(null);
@@ -182,6 +197,42 @@ public class ClaimEntity {
 
         if (this.possessionAlternativesEntity != null) {
             this.possessionAlternativesEntity.setClaim(this);
+        }
+    }
+
+    public void setRentArrears(RentArrearsEntity rentArrears) {
+        if (this.rentArrears != null) {
+            this.rentArrears.setClaim(null);
+        }
+
+        this.rentArrears = rentArrears;
+
+        if (this.rentArrears != null) {
+            this.rentArrears.setClaim(this);
+        }
+    }
+
+    public void setNoticeOfPossession(NoticeOfPossessionEntity noticeOfPossession) {
+        if (this.noticeOfPossession != null) {
+            this.noticeOfPossession.setClaim(null);
+        }
+
+        this.noticeOfPossession = noticeOfPossession;
+
+        if (this.noticeOfPossession != null) {
+            this.noticeOfPossession.setClaim(this);
+        }
+    }
+
+    public void setStatementOfTruth(StatementOfTruthEntity statementOfTruth) {
+        if (this.statementOfTruth != null) {
+            this.statementOfTruth.setClaim(null);
+        }
+
+        this.statementOfTruth = statementOfTruth;
+
+        if (this.statementOfTruth != null) {
+            this.statementOfTruth.setClaim(this);
         }
     }
 

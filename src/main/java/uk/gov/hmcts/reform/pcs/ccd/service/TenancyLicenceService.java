@@ -1,38 +1,91 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
-import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
-import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 public class TenancyLicenceService {
 
-    public TenancyLicenceEntity buildTenancyLicenceEntity(PCSCase pcsCase) {
+    public TenancyLicenceEntity createTenancyLicenceEntity(PCSCase pcsCase) {
 
         TenancyLicenceEntity tenancyLicenceEntity = new TenancyLicenceEntity();
 
-        TenancyLicenceDetails tenancyLicenceDetails = pcsCase.getTenancyLicenceDetails();
+        if (!hasTenancyTypeSet(pcsCase)) {
+            return null;
+        }
+
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            OccupationLicenceDetailsWales occupationLicenceDetailsWales = pcsCase.getOccupationLicenceDetailsWales();
+            if (occupationLicenceDetailsWales.getOccupationLicenceTypeWales() == null) {
+                return null;
+            }
+            setWalesLicence(occupationLicenceDetailsWales, tenancyLicenceEntity);
+        } else {
+            TenancyLicenceDetails tenancyLicenceDetails = pcsCase.getTenancyLicenceDetails();
+            if (tenancyLicenceDetails.getTypeOfTenancyLicence() == null) {
+                return null;
+            }
+            setNonWalesLicence(tenancyLicenceDetails, tenancyLicenceEntity);
+        }
+
+        setRentDetails(pcsCase, tenancyLicenceEntity);
+
+        return tenancyLicenceEntity;
+    }
+
+    private boolean hasTenancyTypeSet(PCSCase pcsCase) {
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            return Optional.ofNullable(pcsCase.getOccupationLicenceDetailsWales())
+                .map(OccupationLicenceDetailsWales::getOccupationLicenceTypeWales)
+                .isPresent();
+        } else {
+            return Optional.ofNullable(pcsCase.getTenancyLicenceDetails())
+                .map(TenancyLicenceDetails::getTypeOfTenancyLicence)
+                .isPresent();
+        }
+    }
+
+    private void setWalesLicence(OccupationLicenceDetailsWales occupationLicenceDetails,
+                                 TenancyLicenceEntity tenancyLicenceEntity) {
+
+        OccupationLicenceTypeWales occupationLicenceType = occupationLicenceDetails.getOccupationLicenceTypeWales();
+
+        CombinedLicenceType combinedLicenceType = getCombinedLicenceType(occupationLicenceType);
+        tenancyLicenceEntity.setType(combinedLicenceType);
+        if (combinedLicenceType == CombinedLicenceType.OTHER) {
+            tenancyLicenceEntity.setOtherTypeDetails(occupationLicenceDetails.getOtherLicenceTypeDetails());
+        }
+
+        tenancyLicenceEntity.setStartDate(occupationLicenceDetails.getLicenceStartDate());
+    }
+
+    private void setNonWalesLicence(TenancyLicenceDetails tenancyLicenceDetails,
+                                    TenancyLicenceEntity tenancyLicenceEntity) {
+
         TenancyLicenceType tenancyLicenceType = tenancyLicenceDetails.getTypeOfTenancyLicence();
-        tenancyLicenceEntity.setType(tenancyLicenceType);
-        if (tenancyLicenceType == TenancyLicenceType.OTHER) {
+
+        CombinedLicenceType combinedLicenceType = getCombinedLicenceType(tenancyLicenceType);
+        tenancyLicenceEntity.setType(combinedLicenceType);
+        if (combinedLicenceType == CombinedLicenceType.OTHER) {
             tenancyLicenceEntity.setOtherTypeDetails(tenancyLicenceDetails.getDetailsOfOtherTypeOfTenancyLicence());
         }
 
         tenancyLicenceEntity.setStartDate(tenancyLicenceDetails.getTenancyLicenceDate());
+    }
 
+    private void setRentDetails(PCSCase pcsCase, TenancyLicenceEntity tenancyLicenceEntity) {
         RentDetails rentDetails = pcsCase.getRentDetails();
 
         if (rentDetails != null && rentDetails.getFrequency() != null) {
@@ -44,28 +97,14 @@ public class TenancyLicenceService {
                 tenancyLicenceEntity.setOtherRentFrequency(rentDetails.getOtherFrequency());
             }
         }
-
-        return tenancyLicenceEntity;
     }
 
-    public TenancyLicence buildTenancyLicence(PCSCase pcsCase) {
-        TenancyLicenceDetails tenancyDetails = pcsCase.getTenancyLicenceDetails();
-        TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder = TenancyLicence.builder()
-            .supportingDocuments(ListValueUtils.unwrapListItems(
-                    tenancyDetails != null ? tenancyDetails.getTenancyLicenceDocuments() : null))
-            .arrearsJudgmentWanted(YesOrNoConverter.toBoolean(pcsCase.getArrearsJudgmentWanted()));
+    private CombinedLicenceType getCombinedLicenceType(TenancyLicenceType tenancyLicenceType) {
+        return tenancyLicenceType != null ? tenancyLicenceType.getCombinedLicenceType() : null;
+    }
 
-        tenancyLicenceBuilder.noticeServed(YesOrNoConverter.toBoolean(pcsCase.getNoticeServed()));
-
-        buildRentArrearsSection(pcsCase.getRentArrears(), tenancyLicenceBuilder);
-
-        buildNoticeServedDetails(pcsCase.getNoticeServedDetails(), tenancyLicenceBuilder);
-
-        buildWalesNoticeServedDetails(pcsCase.getWalesNoticeDetails(), tenancyLicenceBuilder);
-
-        buildWalesOccupationContractDetails(pcsCase.getOccupationLicenceDetailsWales(), tenancyLicenceBuilder);
-
-        return tenancyLicenceBuilder.build();
+    private CombinedLicenceType getCombinedLicenceType(OccupationLicenceTypeWales occupationLicenceType) {
+        return occupationLicenceType != null ? occupationLicenceType.getCombinedLicenceType() : null;
     }
 
     private BigDecimal getDailyRentAmount(RentDetails rentDetails) {
@@ -82,61 +121,4 @@ public class TenancyLicenceService {
         return null;
     }
 
-    private void buildRentArrearsSection(RentArrearsSection rentArrears,
-                                         TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
-        if (rentArrears != null) {
-            tenancyLicenceBuilder
-                    .rentStatementDocuments(ListValueUtils.unwrapListItems(rentArrears.getStatementDocuments()))
-                    .totalRentArrears(rentArrears.getTotal())
-                    .thirdPartyPaymentSources(rentArrears.getThirdPartyPaymentSources())
-                    .thirdPartyPaymentSourceOther(rentArrears.getThirdPartyPaymentSourceOther());
-        }
-    }
-
-    private void buildNoticeServedDetails(NoticeServedDetails noticeServedDetails,
-                                                    TenancyLicence.TenancyLicenceBuilder tenancyLicenceBuilder) {
-        // Add notice served details
-        if (noticeServedDetails != null) {
-            tenancyLicenceBuilder
-                .noticeServiceMethod(noticeServedDetails.getNoticeServiceMethod() != null
-                        ? noticeServedDetails.getNoticeServiceMethod().name()
-                        : null)
-                .noticePostedDate(noticeServedDetails.getNoticePostedDate())
-                .noticeDeliveredDate(noticeServedDetails.getNoticeDeliveredDate())
-                .noticeHandedOverDateTime(noticeServedDetails.getNoticeHandedOverDateTime())
-                .noticePersonName(noticeServedDetails.getNoticePersonName())
-                .noticeEmailSentDateTime(noticeServedDetails.getNoticeEmailSentDateTime())
-                .noticeEmailExplanation(noticeServedDetails.getNoticeEmailExplanation())
-                .noticeOtherElectronicDateTime(noticeServedDetails.getNoticeOtherElectronicDateTime())
-                .noticeOtherDateTime(noticeServedDetails.getNoticeOtherDateTime())
-                .noticeOtherExplanation(noticeServedDetails.getNoticeOtherExplanation())
-                .noticeDocuments(ListValueUtils.unwrapListItems(noticeServedDetails.getNoticeDocuments()));
-        }
-    }
-
-    private void buildWalesNoticeServedDetails(WalesNoticeDetails walesNoticeDetails,
-                                               TenancyLicence.TenancyLicenceBuilder tenancyLicence) {
-        // Add notice served details for Wales
-        if (walesNoticeDetails != null) {
-            tenancyLicence.walesNoticeServed(walesNoticeDetails.getNoticeServed() != null
-                ? YesOrNoConverter.toBoolean(walesNoticeDetails.getNoticeServed()) : null);
-            tenancyLicence.walesTypeOfNoticeServed(walesNoticeDetails.getTypeOfNoticeServed());
-        }
-    }
-
-    private void buildWalesOccupationContractDetails(OccupationLicenceDetailsWales occupationLicenceDetailsWales,
-                                                     TenancyLicence.TenancyLicenceBuilder tenancyLicence) {
-        // Add Wales Occupation Contract/Licence details
-        if (occupationLicenceDetailsWales != null) {
-            tenancyLicence.occupationLicenceTypeWales(
-                occupationLicenceDetailsWales.getOccupationLicenceTypeWales());
-            tenancyLicence.walesOtherLicenceTypeDetails(
-                occupationLicenceDetailsWales.getOtherLicenceTypeDetails());
-            tenancyLicence.walesLicenceStartDate(
-                occupationLicenceDetailsWales.getLicenceStartDate());
-            tenancyLicence.walesLicenceDocuments(
-                ListValueUtils.unwrapListItems(
-                    occupationLicenceDetailsWales.getLicenceDocuments()));
-        }
-    }
 }

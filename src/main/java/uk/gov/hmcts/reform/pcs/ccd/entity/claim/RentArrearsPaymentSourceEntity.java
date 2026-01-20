@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity;
+package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
@@ -8,19 +8,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.UUID;
+
+import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Builder
@@ -28,32 +27,21 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tenancy_licence")
-public class TenancyLicenceEntity {
+@Table(name = "rent_arrears_payment_source")
+public class RentArrearsPaymentSourceEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne
-    @JoinColumn(name = "case_id")
+    @ManyToOne(fetch = LAZY)
+    @JoinColumn(name = "rent_arrears_id")
     @JsonBackReference
-    private PcsCaseEntity pcsCase;
+    private RentArrearsEntity rentArrears;
 
     @Enumerated(EnumType.STRING)
-    private CombinedLicenceType type;
+    private ThirdPartyPaymentSource name;
 
-    private String otherTypeDetails;
-
-    private LocalDate startDate;
-
-    private BigDecimal rentAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RentPaymentFrequency rentFrequency;
-
-    private String otherRentFrequency;
-
-    private BigDecimal rentPerDay;
+    private String description;
 
 }
