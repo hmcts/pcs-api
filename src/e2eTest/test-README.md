@@ -151,7 +151,7 @@ yarn test:chrome
 
 ## 9. Content Auto-Validation
 
-How It Works -
+**How It Works -**
 Automatic: Triggers after click actions that cause page navigation
 
 Data-Driven: Uses page data files in data/page-data-figma/
