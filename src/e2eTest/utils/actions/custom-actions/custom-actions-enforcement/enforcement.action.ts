@@ -380,12 +380,12 @@ export class EnforcementAction implements IAction {
   private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
       await performAction('check', claimantDetails.selectCheckbox);
       await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
-      if(claimantDetails.completedBy == statementOfTruthOne.claimantRadioOption){
+      if(claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption){
         await performAction('check', claimantDetails.iBelieveCheckbox);
         await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
         await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
       }
-      if(claimantDetails.completedBy == statementOfTruthOne.claimantLegalRepresentativeRadioOption){
+      if(claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption){
         await performAction('check', claimantDetails.signThisStatementCheckbox);
         await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
         await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
@@ -397,12 +397,12 @@ export class EnforcementAction implements IAction {
   private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
       await performAction('check', claimantDetails.selectCheckbox);
       await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
-      if(claimantDetails.completedBy == statementOfTruthTwo.claimantRadioOption){
+      if(claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption){
         await performAction('check', claimantDetails.iBelieveCheckbox);
         await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
         await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
       }
-      if(claimantDetails.completedBy == statementOfTruthTwo.claimantLegalRepresentativeRadioOption){
+      if(claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption){
         await performAction('check', claimantDetails.signThisStatementCheckbox);
         await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
         await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
