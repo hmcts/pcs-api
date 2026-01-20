@@ -83,7 +83,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
   test('Apply for a Writ of Possession [General application journey]', {
     annotation: {
       type: 'issue',
-      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed - https://tools.hmcts.net/jira/browse/HDPI-2237 ',
+      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
     },
   },
     async () => {
