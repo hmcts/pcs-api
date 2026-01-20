@@ -86,7 +86,11 @@ public class DraftCaseDataService {
         log.info("Patching draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
 
         String patchEventDataJson = writeCaseDataJson(eventData);
+        patchUnsubmittedCaseData(caseReference, eventId, patchEventDataJson);
+    }
 
+    public void patchUnsubmittedCaseData(long caseReference, EventId eventId, String patchEventDataJson) {
+        UUID userId = getCurrentUserId();
         DraftCaseDataEntity draftCaseDataEntity = draftCaseDataRepository
             .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
             .map(existingDraft -> {
@@ -121,7 +125,7 @@ public class DraftCaseDataService {
         log.debug("Draft deleted successfully for userId={}", userId);
     }
 
-    private PCSCase parseCaseDataJson(String caseDataJson) {
+    public PCSCase parseCaseDataJson(String caseDataJson) {
         try {
             return objectMapper.readValue(caseDataJson, PCSCase.class);
         } catch (JsonProcessingException e) {
