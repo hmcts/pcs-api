@@ -90,6 +90,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .mandatory(EnforcementOrder::getSelectEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getFormattedDefendantNames, NEVER_SHOW, true)
+            .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW, true)
             .done()
             .label("enforcementApplication-clarification", WRIT_OR_WARRANT_INFORMATION)
             .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);
@@ -97,23 +99,19 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
-        PCSCase pcsCase = before.getData();
         PCSCase data = details.getData();
-        setFormattedDefendantNames(pcsCase.getAllDefendants(), data);
+        setFormattedDefendantNames(data.getAllDefendants(), data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data).build();
     }
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
-            pcsCase.setAllDefendants(defendants);
             pcsCase.getEnforcementOrder().setFormattedDefendantNames(defendants.stream()
                 .map(defendant ->
                     defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
                     + "<br>")
                 .collect(Collectors.joining("\n")));
-            pcsCase.getEnforcementOrder().setFormattedDefendantNamesWrit(
-                    pcsCase.getEnforcementOrder().getFormattedDefendantNames());
         }
     }
 

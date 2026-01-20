@@ -1,0 +1,18 @@
+export const claimingCosts = {
+  makeAClaimCaption: 'Make a claim',
+  mainHeader: `Claiming costs`,
+  caseNumberParagraph: 'Case number:',
+  propertyAddressParagraph: 'Property address',
+  doYouWantToAskForYourCostBackQuestion: `Do you want to ask for your costs back?`,
+  youDoNotNeedToHintText: `You do not need to provide the exact amount at this stage, but a judge will request a schedule of costs at the hearing`,
+  yesRadioOption: 'Yes',
+  noRadioOption: `No`,
+  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
+  chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
+  onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,
+  thisWillSaveYourProgressHiddenParagraph: `This will save your progress and take you to the case overview.`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`,
+};

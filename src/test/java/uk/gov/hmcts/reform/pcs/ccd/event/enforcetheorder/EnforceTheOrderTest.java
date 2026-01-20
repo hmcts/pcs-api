@@ -44,7 +44,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
@@ -92,8 +91,8 @@ class EnforceTheOrderTest extends BaseEventTest {
         callStartHandler(caseData);
 
         //Then
-        verify(warrantPageConfigurer, times(1)).configurePages(savingPageBuilder);
-        verify(writPageConfigurer, times(1)).configurePages(savingPageBuilder);
+        verify(warrantPageConfigurer).configurePages(savingPageBuilder);
+        verify(writPageConfigurer).configurePages(savingPageBuilder);
     }
 
     @Test

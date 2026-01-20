@@ -31,21 +31,15 @@ public class EnforcementOrder {
     @CCD
     private WritDetails writDetails;
 
-    @CCD(
-        searchable = false
-    )
+    @CCD(searchable = false)
     @External
     private String warrantFeeAmount;
 
-    @CCD(
-        searchable = false
-    )
+    @CCD(searchable = false)
     @External
     private String writFeeAmount;
 
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
-    private String formattedDefendantNamesWrit;
-    private String formattedPropertyAddressWrit;
 }

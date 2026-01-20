@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
@@ -57,20 +58,17 @@ public class WarrantDetails {
     )
     private Set<RiskCategory> enforcementRiskCategories;
 
-    @CCD(
-        searchable = false
-    )
-    private VerticalYesNo showChangeNameAddressPage;
+    @CCD(searchable = false)
+    private YesOrNo showChangeNameAddressPage;
 
-    @CCD(
-        searchable = false
-    )
-    private VerticalYesNo showPeopleWhoWillBeEvictedPage;
+    @CCD(searchable = false)
+    private YesOrNo showPeopleWhoWillBeEvictedPage;
 
-    @CCD(
-        searchable = false
-    )
-    private VerticalYesNo showPeopleYouWantToEvictPage;
+    @CCD(searchable = false)
+    private YesOrNo showPeopleYouWantToEvictPage;
+
+    @CCD(label = "Do you know the defendants’ dates of birth?")
+    private VerticalYesNo defendantsDOBKnown;
 
     @JsonUnwrapped
     @CCD(
@@ -120,4 +118,8 @@ public class WarrantDetails {
                     + "return to the case summary page, and then check the tab named ‘Case File View’"
     )
     private VerticalYesNo isSuspendedOrder;
+
+    @CCD
+    @JsonUnwrapped
+    private DefendantsDOB defendantsDOB;
 }

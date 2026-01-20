@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -27,7 +28,8 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
         pageBuilder
             .page("hCEOfficerDetails", this::midEvent)
             .pageLabel("Your High Court enforcement officer")
-            .showCondition("selectEnforcementType=\"WRIT\" AND writHasHiredHighCourtEnforcementOfficer=\"YES\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW
+                               + " AND writHasHiredHighCourtEnforcementOfficer=\"YES\"")
             .label("hCEOfficerDetails-line-separator", "---")
             .label(
                 "hCEOfficerDetails-information-text", """
@@ -40,7 +42,6 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
             .done()
             .done()
             .label("hCEOfficerDetails-saveAndReturn", SAVE_AND_RETURN);
-        ;
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

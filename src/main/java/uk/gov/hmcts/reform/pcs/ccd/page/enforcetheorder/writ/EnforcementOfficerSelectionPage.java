@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
 
@@ -38,7 +39,7 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
             .page("enforcementOfficerSelection")
             .pageLabel("The National Information Centre for Enforcement will choose a High Court enforcement officer "
                            + "for you")
-            .showCondition("selectEnforcementType=\"WRIT\""
+            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW
                                + " AND writHasHiredHighCourtEnforcementOfficer=\"NO\"")
             .label("enforcementOfficerSelection-line-separator", "---")
             .label("enforcementOfficerSelection-notice", APPLICATION_INFORMATION)

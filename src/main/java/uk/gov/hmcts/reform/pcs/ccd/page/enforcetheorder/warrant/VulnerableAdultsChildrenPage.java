@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         pageBuilder
             .page("vulnerableAdultsChildren", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
-            .showCondition("selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
             .label("vulnerableAdultsChildren-line-separator", "---")
             .label(
                 "vulnerableAdultsChildren-information-text", """
