@@ -5,9 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
-import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
-import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -28,7 +26,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(respondPossessionClaim.name(), this::submit, this::start)
+            .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler::submit, startEventHandler::start)
             // TODO: HDPI-3580 - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
             // Temporarily enabled for all states to allow testing before case submission/payment
             .forAllStates()
@@ -36,13 +34,5 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT);
-    }
-
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        return startEventHandler.handle(eventPayload);
-    }
-
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
-        return submitEventHandler.handle(eventPayload);
     }
 }

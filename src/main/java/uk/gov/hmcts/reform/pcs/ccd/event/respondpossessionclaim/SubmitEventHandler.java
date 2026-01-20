@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -16,11 +17,12 @@ import java.util.List;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class SubmitEventHandler {
+public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final RespondPossessionClaimDraftService draftService;
 
-    public SubmitResponse<State> handle(EventPayload<PCSCase, State> eventPayload) {
+    @Override
+    public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 

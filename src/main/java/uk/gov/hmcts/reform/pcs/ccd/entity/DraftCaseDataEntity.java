@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,7 +37,6 @@ public class DraftCaseDataEntity {
     @Enumerated(EnumType.STRING)
     private EventId eventId;
 
-    @Column(name = "idam_user_id", nullable = false)
     private UUID idamUserId;
 
 }

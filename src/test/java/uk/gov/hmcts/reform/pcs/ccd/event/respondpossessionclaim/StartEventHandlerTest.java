@@ -110,7 +110,7 @@ class StartEventHandlerTest {
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
         // When
-        PCSCase result = underTest.handle(eventPayload);
+        PCSCase result = underTest.start(eventPayload);
 
         // Then
         assertThat(result).isNotNull();
@@ -153,7 +153,7 @@ class StartEventHandlerTest {
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
         // When
-        PCSCase result = underTest.handle(eventPayload);
+        PCSCase result = underTest.start(eventPayload);
 
         // Then
         assertThat(result).isEqualTo(existingDraft);
@@ -207,7 +207,7 @@ class StartEventHandlerTest {
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
         // When
-        underTest.handle(eventPayload);
+        underTest.start(eventPayload);
 
         // Then
         verify(addressMapper).toAddressUK(propertyAddressEntity);
@@ -259,7 +259,7 @@ class StartEventHandlerTest {
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
         // When
-        underTest.handle(eventPayload);
+        underTest.start(eventPayload);
 
         // Then
         verify(addressMapper).toAddressUK(defendantAddressEntity);
@@ -283,7 +283,7 @@ class StartEventHandlerTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
         // When / Then
-        assertThatThrownBy(() -> underTest.handle(eventPayload))
+        assertThatThrownBy(() -> underTest.start(eventPayload))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("No claim found for this case");
     }
@@ -307,7 +307,7 @@ class StartEventHandlerTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
         // When / Then
-        assertThatThrownBy(() -> underTest.handle(eventPayload))
+        assertThatThrownBy(() -> underTest.start(eventPayload))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("No defendants associated with this case");
     }
@@ -336,7 +336,7 @@ class StartEventHandlerTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
 
         // When / Then
-        assertThatThrownBy(() -> underTest.handle(eventPayload))
+        assertThatThrownBy(() -> underTest.start(eventPayload))
             .isInstanceOf(CaseAccessException.class)
             .hasMessage("User is not linked as a defendant on this case");
     }
@@ -376,7 +376,7 @@ class StartEventHandlerTest {
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
         // When
-        PCSCase result = underTest.handle(eventPayload);
+        PCSCase result = underTest.start(eventPayload);
 
         // Then
         assertThat(result).isNotNull();

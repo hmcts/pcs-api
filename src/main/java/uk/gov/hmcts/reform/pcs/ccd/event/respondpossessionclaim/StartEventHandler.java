@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -27,14 +28,15 @@ import java.util.UUID;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class StartEventHandler {
+public class StartEventHandler implements Start<PCSCase, State> {
 
     private final PcsCaseService pcsCaseService;
     private final AddressMapper addressMapper;
     private final RespondPossessionClaimDraftService draftService;
     private final SecurityContextService securityContextService;
 
-    public PCSCase handle(EventPayload<PCSCase, State> eventPayload) {
+    @Override
+    public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         UUID authenticatedUserId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
