@@ -41,7 +41,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Apply for a Writ of Possession @PR @regression',
+  test('Writ - Apply for a Writ of Possession @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -80,7 +80,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
 
     });
 
-  test('Apply for a Writ of Possession [General application journey]', {
+  test('Writ - Apply for a Writ of Possession [General application journey]', {
     annotation: {
       type: 'issue',
       description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
