@@ -141,8 +141,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        // HDPI-3509: BROKEN - addressMapper not used anymore (demonstrating bug)
-        // when(addressMapper.toAddressUK(addressEntity)).thenReturn(expectedAddress);
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(expectedAddress);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
 
@@ -150,9 +149,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PCSCase result = callStartHandler(caseData);
 
-        // HDPI-3509: BROKEN - Party is now null to demonstrate CCD token validation bug
         assertThat(result.getPossessionClaimResponse()).isNotNull();
-        assertThat(result.getPossessionClaimResponse().getParty()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
+        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(expectedAddress);
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
@@ -349,8 +350,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        // HDPI-3509: BROKEN - addressMapper not used anymore (demonstrating bug)
-        // when(addressMapper.toAddressUK(propertyAddressEntity)).thenReturn(propertyAddress);
+        when(addressMapper.toAddressUK(propertyAddressEntity)).thenReturn(propertyAddress);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
 
@@ -358,9 +358,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PCSCase result = callStartHandler(caseData);
 
-        // HDPI-3509: BROKEN - Party is now null to demonstrate CCD token validation bug
         assertThat(result.getPossessionClaimResponse()).isNotNull();
-        assertThat(result.getPossessionClaimResponse().getParty()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("Jane");
+        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Smith");
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(propertyAddress);
     }
 
     @Test
@@ -404,8 +406,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        // HDPI-3509: BROKEN - addressMapper not used anymore (demonstrating bug)
-        // when(addressMapper.toAddressUK(null)).thenReturn(emptyAddress);
+        when(addressMapper.toAddressUK(null)).thenReturn(emptyAddress);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
 
@@ -413,9 +414,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         PCSCase result = callStartHandler(caseData);
 
-        // HDPI-3509: BROKEN - Party is now null to demonstrate CCD token validation bug
+        // Party object should be created even when defendant has no data (firstName/lastName are null)
+        // This is important for CCD event token validation
         assertThat(result.getPossessionClaimResponse()).isNotNull();
-        assertThat(result.getPossessionClaimResponse().getParty()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isNull();
+        assertThat(result.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(emptyAddress);
 
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),

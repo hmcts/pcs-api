@@ -8,13 +8,15 @@ import uk.gov.hmcts.ccd.sdk.api.DecentralisedConfigBuilder;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -55,14 +57,47 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
+        UUID authenticatedUserId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
-        UserInfo userInfo = securityContextService.getCurrentUserDetails();
-        UUID authenticatedUserId = UUID.fromString(userInfo.getUid());
+        // Find and validate that authenticated user is a defendant on this case
+        PartyEntity defendantEntity = findAuthenticatedDefendant(caseReference, authenticatedUserId);
+
+        // Build initial response from defendant's database record
+        PossessionClaimResponse initialResponse = buildInitialResponseFromDatabase(defendantEntity, caseReference);
+
+        // Set response on eventPayload caseData (required by CCD framework)
+        PCSCase caseData = eventPayload.caseData();
+        caseData.setPossessionClaimResponse(initialResponse);
+
+        // Handle draft: initialize on first START or return existing draft to preserve user progress
+        return getOrInitializeDraft(caseReference, initialResponse);
+    }
+
+    /**
+     * Finds and validates that the authenticated user is a defendant on the specified case.
+     *
+     * @param caseReference The case reference number
+     * @param authenticatedUserId The authenticated user's IDAM ID
+     * @return The PartyEntity for the authenticated defendant
+     * @throws CaseAccessException if user is not a defendant on this case
+     */
+    private PartyEntity findAuthenticatedDefendant(long caseReference, UUID authenticatedUserId) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        List<PartyEntity> defendants = getDefendantsFromMainClaim(pcsCaseEntity, caseReference);
+        return findDefendantByUserId(defendants, authenticatedUserId, caseReference);
+    }
 
+    /**
+     * Retrieves all defendants from the main claim of the case.
+     * Counter-claims are not yet implemented - when added, they will be additional claims in the list.
+     *
+     * @param pcsCaseEntity The case entity loaded from database
+     * @param caseReference The case reference number (for error logging)
+     * @return List of all defendant PartyEntity objects from the main claim
+     * @throws CaseAccessException if no claim found or no defendants exist
+     */
+    private List<PartyEntity> getDefendantsFromMainClaim(PcsCaseEntity pcsCaseEntity, long caseReference) {
         // Get the main claim (first claim in the list)
-        // Counter-claims will be on the same case reference but are not yet implemented
-        // When counter-claims are added, they will be additional claims in the list
         ClaimEntity mainClaim = pcsCaseEntity.getClaims().stream()
             .findFirst()
             .orElseThrow(() -> {
@@ -81,8 +116,21 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             throw new CaseAccessException("No defendants associated with this case");
         }
 
-        // Find the specific defendant who is currently authenticated
-        PartyEntity matchedDefendant = defendants.stream()
+        return defendants;
+    }
+
+    /**
+     * Finds the defendant that matches the authenticated user's IDAM ID.
+     *
+     * @param defendants List of all defendants on the case
+     * @param authenticatedUserId The authenticated user's IDAM ID
+     * @param caseReference The case reference number (for error logging)
+     * @return The PartyEntity matching the authenticated user
+     * @throws CaseAccessException if no matching defendant found (authorization failure)
+     */
+    private PartyEntity findDefendantByUserId(
+            List<PartyEntity> defendants, UUID authenticatedUserId, long caseReference) {
+        return defendants.stream()
             .filter(defendant -> authenticatedUserId.equals(defendant.getIdamId()))
             .findFirst()
             .orElseThrow(() -> {
@@ -90,70 +138,134 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
                     authenticatedUserId, caseReference);
                 return new CaseAccessException("User is not linked as a defendant on this case");
             });
+    }
 
-        // HDPI-3509: BROKEN - Removed to demonstrate CCD token validation failure
-        // Without creating Party object and mapping address, these fields will be null/omitted
-        // causing "Cannot find matching start trigger" error when user submits with data
+    /**
+     * Builds the initial PossessionClaimResponse from the defendant's database record.
+     * Creates the base structure with defendant details and resolved address.
+     *
+     * @param defendantEntity The defendant's party entity from database
+     * @param caseReference The case reference number
+     * @return Initial PossessionClaimResponse populated from database
+     */
+    private PossessionClaimResponse buildInitialResponseFromDatabase(PartyEntity defendantEntity, long caseReference) {
+        AddressUK contactAddress = resolveDefendantAddress(defendantEntity, caseReference);
+        Party party = buildPartyFromDefendant(defendantEntity, contactAddress);
 
-        // Map address using AddressMapper to ensure all fields are explicitly set (including null values)
-        // This ensures consistent JSON structure for CCD event token validation
-        // AddressUK contactAddress;
-        // if (matchedDefendant.getAddressSameAsProperty() != null
-        //     && matchedDefendant.getAddressSameAsProperty() == VerticalYesNo.YES) {
-        //     contactAddress = addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress());
-        // } else {
-        //     contactAddress = addressMapper.toAddressUK(matchedDefendant.getAddress());
-        // }
+        return PossessionClaimResponse.builder()
+            .party(party)
+            .build();
+    }
 
-        // Always create Party object to maintain consistent structure for CCD event token validation
-        // The party field must exist in the response structure (even with null field values)
-        // If party is null, CCD omits the field entirely, causing "Cannot find matching start trigger"
-        // errors when user later submits with populated party data (field appears to be "added")
-        // Party party = Party.builder()
-        //     .firstName(matchedDefendant.getFirstName())
-        //     .lastName(matchedDefendant.getLastName())
-        //     .address(contactAddress)
-        //     .build();
+    /**
+     * Resolves the defendant's contact address.
+     * If the defendant's address is the same as the property, uses the property address.
+     * Otherwise, uses the defendant's own address.
+     *
+     * <p>
+     * AddressMapper ensures all fields are explicitly set (including nulls) for consistent
+     * JSON structure required by CCD event token validation.
+     *
+     * @param defendantEntity The defendant's party entity
+     * @param caseReference The case reference number
+     * @return The resolved AddressUK
+     */
+    private AddressUK resolveDefendantAddress(PartyEntity defendantEntity, long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
-        PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
-            .party(null)
+        if (defendantEntity.getAddressSameAsProperty() != null
+            && defendantEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
+            return addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress());
+        } else {
+            return addressMapper.toAddressUK(defendantEntity.getAddress());
+        }
+    }
+
+    /**
+     * Builds a Party object from the defendant entity.
+     *
+     * <p>
+     * IMPORTANT: Always creates a Party object (even with null fields) to maintain consistent
+     * structure for CCD event token validation. If party is null, CCD omits the field entirely,
+     * causing "Cannot find matching start trigger" errors when user later submits with populated
+     * party data (the field appears to be "added").
+     *
+     * @param defendantEntity The defendant's party entity
+     * @param contactAddress The resolved contact address
+     * @return Party object with firstName, lastName, and address
+     */
+    private Party buildPartyFromDefendant(PartyEntity defendantEntity, AddressUK contactAddress) {
+        return Party.builder()
+            .firstName(defendantEntity.getFirstName())
+            .lastName(defendantEntity.getLastName())
+            .address(contactAddress)
+            .build();
+    }
+
+    /**
+     * Handles draft logic: initializes draft on first START, returns existing draft on subsequent STARTs.
+     * This ensures user progress is preserved when they request new CCD event tokens.
+     *
+     * @param caseReference The case reference number
+     * @param initialResponse The initial response built from database
+     * @return PCSCase with either initial data (first time) or draft data (returning user)
+     */
+    private PCSCase getOrInitializeDraft(long caseReference, PossessionClaimResponse initialResponse) {
+        boolean draftExists = draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim);
+
+        if (!draftExists) {
+            return initializeDraft(caseReference, initialResponse);
+        } else {
+            return getExistingDraft(caseReference);
+        }
+    }
+
+    /**
+     * Initializes a new draft on first START call.
+     * Saves the initial response to draft store and returns it to CCD.
+     *
+     * @param caseReference The case reference number
+     * @param initialResponse The initial response built from database
+     * @return PCSCase with initial data and submitDraftAnswers=NO
+     */
+    private PCSCase initializeDraft(long caseReference, PossessionClaimResponse initialResponse) {
+        PCSCase filteredDraft = PCSCase.builder()
+            .possessionClaimResponse(initialResponse)
             .build();
 
-        PCSCase caseData = eventPayload.caseData();
-        caseData.setPossessionClaimResponse(possessionClaimResponse);
+        draftCaseDataService.patchUnsubmittedEventData(
+            caseReference, filteredDraft, respondPossessionClaim);
 
-        // Seed the draft only once. Subsequent START calls (new tokens) must not overwrite user progress.
-        if (!draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
-            PCSCase filteredDraft = PCSCase.builder()
-                .possessionClaimResponse(possessionClaimResponse)
-                .build();
+        log.info("Draft seeded for case {} and event {} from defendant data in database",
+            caseReference, respondPossessionClaim);
 
-            draftCaseDataService.patchUnsubmittedEventData(
-                caseReference, filteredDraft, respondPossessionClaim);
+        return PCSCase.builder()
+            .possessionClaimResponse(initialResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+    }
 
-            log.info("Draft seeded for case {} and event {} from defendant data in database",
-                caseReference, respondPossessionClaim);
+    /**
+     * Returns existing draft data to preserve user progress.
+     * Called on subsequent START calls when user requests new event token.
+     *
+     * @param caseReference The case reference number
+     * @return PCSCase with existing draft data and submitDraftAnswers=NO
+     * @throws IllegalStateException if draft should exist but is not found
+     */
+    private PCSCase getExistingDraft(long caseReference) {
+        log.info("Draft already exists for case {} and event {} - returning draft data to preserve user progress",
+            caseReference, respondPossessionClaim);
 
-            // Return initial data from database for first START
-            return PCSCase.builder()
-                .possessionClaimResponse(possessionClaimResponse)
-                .submitDraftAnswers(YesOrNo.NO)
-                .build();
-        } else {
-            log.info("Draft already exists for case {} and event {} - returning draft data to preserve user progress",
-                caseReference, respondPossessionClaim);
+        PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(
+            caseReference, respondPossessionClaim)
+            .orElseThrow(() -> new IllegalStateException(
+                "Draft should exist but was not found for case " + caseReference));
 
-            // Return existing draft data to preserve user progress
-            PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(
-                caseReference, respondPossessionClaim)
-                .orElseThrow(() -> new IllegalStateException(
-                    "Draft should exist but was not found for case " + caseReference));
-
-            return PCSCase.builder()
-                .possessionClaimResponse(draftData.getPossessionClaimResponse())
-                .submitDraftAnswers(YesOrNo.NO)
-                .build();
-        }
+        return PCSCase.builder()
+            .possessionClaimResponse(draftData.getPossessionClaimResponse())
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
