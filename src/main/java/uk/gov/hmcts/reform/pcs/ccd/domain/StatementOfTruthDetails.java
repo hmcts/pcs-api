@@ -17,32 +17,17 @@ public class StatementOfTruthDetails {
     @CCD(label = "Completed by")
     private StatementOfTruthCompletedBy completedBy;
 
-    @CCD(
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "StatementOfTruthAgreementClaimant"
-    )
-    private List<StatementOfTruthAgreementClaimant> agreementClaimant;
+    @CCD
+    private StatementOfTruthClaimantDetails claimantDetails;
 
-    @CCD(label = "Full name")
-    private String fullNameClaimant;
-
-    @CCD(label = "Position or office held")
-    private String positionClaimant;
+    @CCD
+    private StatementOfTruthLegalRepDetails legalRepDetails;
 
     @CCD(
         typeOverride = MultiSelectList,
-        typeParameterOverride = "StatementOfTruthAgreementLegalRep"
+        typeParameterOverride = "StatementOfTruthAgreement"
     )
-    private List<StatementOfTruthAgreementLegalRep> agreementLegalRep;
-
-    @CCD(label = "Full name")
-    private String fullNameLegalRep;
-
-    @CCD(label = "Name of firm")
-    private String firmNameLegalRep;
-
-    @CCD(label = "Position or office held")
-    private String positionLegalRep;
+    private List<StatementOfTruthAgreement> certification;
 
 }
 

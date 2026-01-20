@@ -3,7 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthClaimantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthLegalRepDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class StatementOfTruth implements CcdPageConfiguration {
@@ -25,20 +27,19 @@ public class StatementOfTruth implements CcdPageConfiguration {
             )
             .complex(PCSCase::getStatementOfTruth)
                 .mandatory(StatementOfTruthDetails::getCompletedBy)
-                .mandatory(StatementOfTruthDetails::getAgreementClaimant,
+                .complex(StatementOfTruthDetails::getClaimantDetails,
                     "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getFullNameClaimant,
-                    "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getPositionClaimant,
-                    "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getAgreementLegalRep,
+                    .mandatory(StatementOfTruthClaimantDetails::getAgreementClaimant)
+                    .mandatory(StatementOfTruthClaimantDetails::getFullNameClaimant)
+                    .mandatory(StatementOfTruthClaimantDetails::getPositionClaimant)
+                    .done()
+                .complex(StatementOfTruthDetails::getLegalRepDetails,
                     "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
-                .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
-                    "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
-                .mandatory(StatementOfTruthDetails::getFirmNameLegalRep,
-                    "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
-                .mandatory(StatementOfTruthDetails::getPositionLegalRep,
-                    "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
+                    .mandatory(StatementOfTruthLegalRepDetails::getAgreementLegalRep)
+                    .mandatory(StatementOfTruthLegalRepDetails::getFullNameLegalRep)
+                    .mandatory(StatementOfTruthLegalRepDetails::getFirmNameLegalRep)
+                    .mandatory(StatementOfTruthLegalRepDetails::getPositionLegalRep)
+                    .done()
             .done()
             .label("statementOfTruth-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

@@ -73,7 +73,18 @@ class DraftCaseJsonMergerTest {
                             "waysToPay",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
-                            "enforcementOrder.showPeopleYouWantToEvictPage")
+                            "enforcementOrder.showPeopleYouWantToEvictPage",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.agreementClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.fullNameClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.positionClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.agreementLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.fullNameLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.firmNameLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.positionLegalRep",
+                            "statementOfTruth.claimantDetails",
+                            "statementOfTruth.legalRepDetails")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()
