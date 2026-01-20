@@ -81,7 +81,8 @@ export class CreateCaseAPIAction implements IAction {
     try {
       const payload = caseUserRoleDeletionApiData.deleteCaseUsersPayload(caseId, userId, caseRole);
       await deleteCaseUsersApi.delete(caseUserRoleDeletionApiData.deleteCaseUsersApiEndPoint, { data: payload });
-      console.log(`Successfully removed case user: ${userId} with role ${caseRole} from case ${caseId}`);
+      console.log(`\n✅ CASE USER CLEANUP:`);
+      console.log(`   Successfully removed case user: ${userId} with role ${caseRole} from case ${caseId}`);
     } catch (error: any) {
       const status = error?.response?.status;
       const errorMessage = `Case ID: ${caseId}, User ID: ${userId}`;
