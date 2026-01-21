@@ -37,7 +37,9 @@ How to generate:
 1. Open Figma
 2. Go to Help and Account -> Account Settings -> Security tab
 3. Navigate to **Personal access tokens**
-4. Generate a token
+4. Select option ![img.png](img.png)
+5. Generate a token
+
 
 ---
 
@@ -62,9 +64,9 @@ export FIGMA_API_TOKEN=your_figma_token_here
 export FIGMA_FILE_KEY=your_figma_file_key_here
 
 
-## Run the script
+## Run the script from project root
 
-### Run for the entire Figma file
+### Run for the entire Figma file/all files/all pages
 
 npx ts-node src/e2eTest/scripts/figmaExtractV1.ts output/figma-text
 

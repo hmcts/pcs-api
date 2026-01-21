@@ -9,6 +9,10 @@ const FIGMA_FILE_KEY = process.env.FIGMA_FILE_KEY;
 const FIGMA_FOOTER_NAMES_TO_EXCLUDE = ['ExUI Footer', 'Footer Component', 'Global Footer', 'footer'];
 const FIGMA_HEADER_NAMES_TO_EXCLUDE = ['ExUI Header', 'Header Component', 'Main Nav', 'Global Header'];
 const H1_LAYER_NAMES = ['h1', 'main header', 'page title', 'title']; // Case-insensitive check
+const EXCLUDED_TEXTS = [
+  'Alpha',
+  'This is a new service – your feedback will help us to improve it.',
+];
 
 type PotentialH1 = {
   text: string;
@@ -64,9 +68,29 @@ function generateKey(text: string, nodeName: string): string {
   const textLower = text.toLowerCase();
   const nameLower = (nodeName || '').toLowerCase();
 
-  // Rule 1: Handle specific options like "Yes" and "No".
-  if (textLower === 'yes') return 'yesOption';
-  if (textLower === 'no') return 'noOption';
+  // Rule 1: Handle specific options like "Yes" and "No" as radio options.
+  if (textLower === 'yes') return 'yesRadioOption';
+  if (textLower === 'no') return 'noRadioOption';
+
+  // Rule 1.5: Handle specific button texts that should always be buttons.
+  if (textLower === 'save and continue') return 'saveAndContinueButton';
+  if (textLower === 'save for later') return 'saveForLaterButton';
+  if (textLower === 'continue') return 'continueButton';
+
+  // Rule 1.6: Handle specific link texts.
+  if (textLower === 'cancel') {
+    // If it's explicitly a button, let it fall through to button detection
+    if (nameLower.includes('button') || nameLower.includes('btn')) {
+      // Let it continue to button detection below
+    } else {
+      // Default to cancelLink (most Cancel actions are links, not labels)
+      return 'cancelLink';
+    }
+  }
+  if (textLower === 'sign out' || textLower === 'signout') {
+    // Always treat sign out as a link
+    return 'signOutLink';
+  }
 
   // Rule 2: Determine the suffix based on the Figma layer name, using a priority order.
   let suffix = 'Label'; // Default suffix.
@@ -225,6 +249,12 @@ function extractFlatText(node: any, pageTitle: string | null): Record<string, st
 
   if (node.type === 'TEXT' && node.characters?.trim()) {
     const text = node.characters.trim();
+    
+    // Exclude specific texts that should not be included
+    if (EXCLUDED_TEXTS.some(excludedText => text === excludedText || text.includes(excludedText))) {
+      return {};
+    }
+    
     const key = generateKey(text, node.name);
     results[key] = text;
     return results;
