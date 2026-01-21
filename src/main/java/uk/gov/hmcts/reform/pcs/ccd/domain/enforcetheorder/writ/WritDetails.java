@@ -39,7 +39,7 @@ public class WritDetails {
     private VerticalYesNo hasHiredHighCourtEnforcementOfficer;
 
     @CCD(
-        label = "Name of your High Court enforcement officer?",
+        label = "Name of your High Court enforcement officer",
         hint = "If you do not know their name, use the name of the organisation they work for",
         typeOverride = Text
     )

@@ -36,8 +36,6 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                             <p class="govuk-body govuk-!-margin-bottom-1">You may need to pay additional fees for things
                              like:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">there is a backlog in the County Court bailiff service
-                              </li>
                               <li class="govuk-!-font-size-19">hiring a dog handler (if you are trying to evict someone
                                who owns an aggressive dog)
                               </li>
@@ -48,11 +46,6 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                             <p class="govuk-body govuk-!-margin-bottom-1">You can either:
                             </p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">there is a backlog in the County Court bailiff service
-                              </li>
-                              <li class="govuk-!-font-size-19">hiring a dog handler (if you are trying to evict someone
-                               who owns an aggressive dog)
-                              </li>
                               <li class="govuk-!-font-size-19">
                                <a href="https://certificatedbailiffs.justice.gov.uk/searchPublic.do?search"
                                rel="noreferrer noopener" target="_blank" class="govuk-link">search for a High Court

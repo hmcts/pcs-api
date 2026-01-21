@@ -117,6 +117,24 @@ class DraftCaseDataServiceTest {
     }
 
     @Test
+    void shouldPatchUnsubmittedCaseDataWithJson() {
+        // Given
+        String caseDataJson = "case data json";
+        when(draftCaseDataRepository.findByCaseReferenceAndEventId(CASE_REFERENCE, eventId))
+            .thenReturn(Optional.empty());
+
+        // When
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, caseDataJson);
+
+        // Then
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+
+        assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
+    }
+
+    @Test
     void shouldUpdateExistingUnsubmittedCaseData() throws JsonProcessingException {
         // Given
         String existingCaseDataJson = "existing case data json";
