@@ -48,7 +48,7 @@ public class CommonPageContent {
                 <p>
                     The amount you can reclaim from the defendant is usually fixed.
                 </p>
-                <p>
+                <p class="govuk-body govuk-!-margin-bottom-1">
                     You can either:
                 </p>
                 <p>
