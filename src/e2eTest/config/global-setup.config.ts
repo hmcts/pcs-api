@@ -1,10 +1,16 @@
 import { IdamUtils, ServiceAuthUtils } from '@hmcts/playwright-common';
 import { accessTokenApiData, s2STokenApiData } from '@data/api-data';
 import { user } from '@data/user-data';
+import { authenticateAndSaveState } from '@utils/auth/auth-setup';
 
 async function globalSetupConfig(): Promise<void> {
+  // Get API tokens (for API-based test setup)
   await getAccessToken();
   await getS2SToken();
+  
+  // Perform browser-based login and save authentication state
+  // This allows all tests to reuse the same authenticated session
+  await authenticateAndSaveState();
 }
 
 export const getS2SToken = async (): Promise<void> => {

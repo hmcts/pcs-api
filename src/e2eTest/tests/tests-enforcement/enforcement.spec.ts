@@ -1,11 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import {
-  caseSummary,
-  signInOrCreateAnAccount,
-  user
-} from '@data/page-data';
+import { caseSummary } from '@data/page-data';
 import {
   accessToTheProperty,
   animalsAtTheProperty,
@@ -51,14 +47,7 @@ test.beforeEach(async ({ page }) => {
     additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
   });
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
-  });
+  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({

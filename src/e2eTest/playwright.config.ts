@@ -1,4 +1,5 @@
 import * as process from 'node:process';
+import * as path from 'path';
 
 import {defineConfig, devices} from '@playwright/test';
 
@@ -12,6 +13,9 @@ export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 const env = process.env.ENVIRONMENT?.toLowerCase() || 'preview';
 
+// Path to the saved authentication state
+const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
+
 export default defineConfig({
   testDir: 'tests/',
   /* Run tests in files in parallel */
@@ -22,7 +26,13 @@ export default defineConfig({
   workers: 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
-  use: { actionTimeout: 30 * 1000, navigationTimeout: 30 * 1000 },
+  use: { 
+    actionTimeout: 30 * 1000, 
+    navigationTimeout: 30 * 1000,
+    // Use the saved authentication state for all tests
+    // This means tests will start already logged in
+    storageState: STORAGE_STATE_PATH,
+  },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
