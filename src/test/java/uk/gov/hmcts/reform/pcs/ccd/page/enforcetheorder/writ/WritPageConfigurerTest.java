@@ -43,7 +43,6 @@ class WritPageConfigurerTest extends BasePageTest {
         ArgumentCaptor<CcdPageConfiguration> pageCaptor = ArgumentCaptor.forClass(CcdPageConfiguration.class);
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
-        int numberOfPages = pageCaptor.getAllValues().size();
         AtomicInteger verificationCount = new AtomicInteger(0);
 
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionWritPage.class, verificationCount);
@@ -55,9 +54,9 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LandRegistryFeesPage.class, verificationCount);
 
+        int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
 
         verifyNoMoreInteractions(pageBuilder);
     }
-
 }

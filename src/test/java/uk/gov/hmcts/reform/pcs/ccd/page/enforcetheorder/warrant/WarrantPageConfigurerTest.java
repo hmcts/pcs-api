@@ -79,7 +79,6 @@ class WarrantPageConfigurerTest extends BasePageTest {
         ArgumentCaptor<CcdPageConfiguration> pageCaptor = ArgumentCaptor.forClass(CcdPageConfiguration.class);
         InOrder inOrder = inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
-        int numberOfPages = pageCaptor.getAllValues().size();
         AtomicInteger verificationCount = new AtomicInteger(0);
 
         verifyAndCount(inOrder, pageBuilder, EnforcementApplicationPage.class, verificationCount);
@@ -114,6 +113,7 @@ class WarrantPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, StatementOfTruthPlaceHolder.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, StatementOfTruthPlaceHolder2.class, verificationCount);
 
+        int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
 
         verifyNoMoreInteractions(pageBuilder);
