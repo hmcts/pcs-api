@@ -200,7 +200,7 @@ class TenancyLicenceServiceTest {
         // Test third party payment source other field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                        .thirdPartyPaymentSourceOther("Custom payment method")
+                        .paymentSourceOther("Custom payment method")
                         .build()),
                 expected -> assertThat(expected.getThirdPartyPaymentSourceOther()).isEqualTo("Custom payment method"));
 
@@ -281,7 +281,7 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                .thirdPartyPaymentSourceOther(null)
+                .paymentSourceOther(null)
                 .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -294,7 +294,7 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                .thirdPartyPaymentSourceOther("")
+                .paymentSourceOther("")
                 .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);

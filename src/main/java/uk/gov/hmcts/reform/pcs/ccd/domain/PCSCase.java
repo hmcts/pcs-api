@@ -6,6 +6,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -495,5 +496,8 @@ public class PCSCase {
         typeOverride = DynamicRadioList
     )
     private DynamicList testCaseSupportFileList;
+
+    @CCD(access = ClaimantAccess.class)
+    private List<ListValue<Document>> allDocuments;
 
 }
