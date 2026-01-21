@@ -43,13 +43,13 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                         .label("statementOfTruth-cert-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
-                                <li>the defendant has not vacated the land as ordered †(*and that the whole or part of
-                                any instalments due under the judgment or order have not been paid) (and the balance now
+                                <li>the defendant has not vacated the land as ordered (*and that the whole or part of
+                                any instalments due under the judgment or order have not been paid) ( †and the balance now
                                 due is as shown)</li>
                                 <li>notice has been given in accordance with The Dwelling Houses (Execution of
                                 Possession Orders by Mortgagees) Regulations 2010.</li>
                                 <li>a statement of the payments due and made under the judgment or order is attached to
-                                this request</li>
+                                this request.††</li>
                             </ul>
                             """,
                             "isSuspendedOrder=\"YES\""
@@ -57,8 +57,8 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                         .label("statementOfTruth-cert-not-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
-                                <li>the defendant has not vacated the land as ordered †(*and that the whole or part of
-                                any instalments due under the judgment or order have not been paid) (and the balance now
+                                <li>the defendant has not vacated the land as ordered (*and that the whole or part of
+                                any instalments due under the judgment or order have not been paid) (†and the balance now
                                 due is as shown)</li>
                                 <li>notice has been given in accordance with The Dwelling Houses (Execution of
                                 Possession Orders by Mortgagees) Regulations 2010.</li>
