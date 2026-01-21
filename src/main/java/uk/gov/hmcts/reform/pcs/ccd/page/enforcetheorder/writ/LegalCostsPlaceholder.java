@@ -20,6 +20,7 @@ public class LegalCostsPlaceholder implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWritDetails)
             .label("legalCostsWrit-content", "---")
             .done()
+            .done()
             .label("legalCostsWrit-saveAndReturn", SAVE_AND_RETURN);
     }
 }

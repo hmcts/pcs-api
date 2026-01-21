@@ -20,6 +20,7 @@ public class RepaymentsPlaceholder implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWritDetails)
             .label("repaymentsWrit-content", "---")
             .done()
+            .done()
             .label("repaymentsWrit-saveAndReturn", SAVE_AND_RETURN);
     }
 }
