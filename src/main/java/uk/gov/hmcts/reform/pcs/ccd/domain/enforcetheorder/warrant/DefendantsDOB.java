@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -19,11 +18,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class DefendantsDOB {
-
-    @CCD(
-        label = "Do you know the defendants’ dates of birth?"
-    )
-    private VerticalYesNo defendantsDOBKnown;
 
     @CCD(
         label = "What are the defendants’ dates of birth?",

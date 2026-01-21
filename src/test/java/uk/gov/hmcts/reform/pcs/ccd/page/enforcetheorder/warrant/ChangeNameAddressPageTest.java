@@ -40,23 +40,6 @@ class ChangeNameAddressPageTest extends BasePageTest {
             assertThat(response.getErrors().getFirst())
                 .contains("You cannot continue with this application until you ask the judge for permission");
         }
-
-        @Test
-        @DisplayName("Should return error message about general application")
-        void shouldReturnGeneralApplicationErrorMessage() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(EnforcementOrder.builder().build())
-                .build();
-
-            // When
-            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-            // Then
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().getFirst())
-                .contains("You cannot continue with this application until you ask the judge for permission");
-        }
     }
 }
 

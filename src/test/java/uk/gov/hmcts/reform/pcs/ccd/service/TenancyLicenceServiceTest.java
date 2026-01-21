@@ -150,7 +150,7 @@ class TenancyLicenceServiceTest {
         // Test rent amount field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-                        .currentRent("120000") // value in pence
+                        .currentRent(new BigDecimal("1200.00"))
                         .build()),
                 expected -> assertThat(expected.getRentAmount())
                         .isEqualTo(new BigDecimal("1200.00")));
@@ -172,14 +172,14 @@ class TenancyLicenceServiceTest {
         // Test daily rent charge amount field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-                        .dailyCharge("4000")
+                        .dailyCharge(new BigDecimal("40.00"))
                         .build()),
                 expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
 
         // Test total rent arrears field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                        .total("150000") // value in pence
+                        .total(new BigDecimal("1500.00"))
                         .build()),
                 expected -> assertThat(expected.getTotalRentArrears())
                         .isEqualTo(new BigDecimal("1500.00")));
@@ -200,7 +200,7 @@ class TenancyLicenceServiceTest {
         // Test third party payment source other field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                        .thirdPartyPaymentSourceOther("Custom payment method")
+                        .paymentSourceOther("Custom payment method")
                         .build()),
                 expected -> assertThat(expected.getThirdPartyPaymentSourceOther()).isEqualTo("Custom payment method"));
 
@@ -222,19 +222,19 @@ class TenancyLicenceServiceTest {
 
     @ParameterizedTest(name = "amended={0}, calculated={1}, daily={2} -> expected={3}")
     @MethodSource("dailyRentChargeScenarios")
-    void shouldPreferDailyRentCharge(String amendedDailyRent, String calculatedDailyRent, String dailyRent,
-                                     String expectedAmount) {
+    void shouldPreferDailyRentCharge(BigDecimal amendedDailyRent, BigDecimal calculatedDailyRent, BigDecimal dailyRent,
+                                     BigDecimal expectedAmount) {
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentDetails()).thenReturn(RentDetails.builder()
                 .amendedDailyCharge(amendedDailyRent)
                 .calculatedDailyCharge(calculatedDailyRent)
                 .dailyCharge(dailyRent)
-                .currentRent("120000")
+                .currentRent(new BigDecimal("1200.00"))
                 .frequency(RentPaymentFrequency.MONTHLY)
                 .build());
 
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
-        assertThat(result.getDailyRentChargeAmount()).isEqualTo(new BigDecimal(expectedAmount));
+        assertThat(result.getDailyRentChargeAmount()).isEqualTo(expectedAmount);
     }
 
     @Test
@@ -281,7 +281,7 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                .thirdPartyPaymentSourceOther(null)
+                .paymentSourceOther(null)
                 .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -294,7 +294,7 @@ class TenancyLicenceServiceTest {
         // Given
         when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
-                .thirdPartyPaymentSourceOther("")
+                .paymentSourceOther("")
                 .build());
         // When
         TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
@@ -578,9 +578,9 @@ class TenancyLicenceServiceTest {
 
     static Stream<Arguments> dailyRentChargeScenarios() {
         return Stream.of(
-                Arguments.of("5000", "4000", "3500", "50.00"),
-                Arguments.of(null, "4000", "3500", "40.00"),
-                Arguments.of(null, null, "3500", "35.00")
+                Arguments.of("50.00", "40.00", "35.00", "50.00"),
+                Arguments.of(null, "40.00", "35.00", "40.00"),
+                Arguments.of(null, null, "35.00", "35.00")
         );
     }
 }

@@ -47,6 +47,7 @@ import{
   checkingNotice
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -65,6 +66,9 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
+  if (caseNumber) {
+    await performAction('deleteCaseRole', '[CREATOR]');
+  }
   PageContentValidation.finaliseTest();
 });
 
@@ -504,7 +508,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
-  test('Wales - Secure contract - Rent arrears + other options @regression', async () => {
+  test('Wales - Secure contract - Rent arrears + estate grounds + other options @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
