@@ -4,7 +4,7 @@ import {
   addressDetails,
   borderPostcode,
   canNotUseOnlineService,
-  home,
+  housingPossessionClaim,
   propertyIneligible,
   userIneligible
 } from '@data/page-data';
@@ -22,11 +22,12 @@ import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
-  await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
-  await performAction('clickTab', home.createCaseTab);
-  await performAction('selectJurisdictionCaseTypeEvent');
-  await performAction('housingPossessionClaim');
+  await performAction(
+    'navigateToUrl',
+    `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`
+  );
+  await performAction('clickButton', housingPossessionClaim.continue);
+// Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
 test.afterEach(async () => {

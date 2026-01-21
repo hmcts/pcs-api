@@ -3,6 +3,7 @@ import { user } from '@data/user-data';
 import { signInOrCreateAnAccount } from '@data/page-data/signInOrCreateAnAccount.page.data';
 import * as path from 'path';
 import * as fs from 'fs';
+import {home} from "@data/page-data";
 
 // Path relative to the e2eTest directory
 const STORAGE_STATE_PATH = path.join(__dirname, '../../.auth/storage-state.json');
@@ -13,7 +14,7 @@ const STORAGE_STATE_PATH = path.join(__dirname, '../../.auth/storage-state.json'
  */
 export async function authenticateAndSaveState(): Promise<string> {
   console.log('🔐 Starting authentication setup...');
-  
+
   // Validate required environment variables before starting browser
   const baseUrl = process.env.MANAGE_CASE_BASE_URL;
   if (!baseUrl) {
@@ -25,7 +26,7 @@ export async function authenticateAndSaveState(): Promise<string> {
   if (!userEmail || !userPassword) {
     throw new Error('Login failed: missing credentials. Ensure IDAM_PCS_USER_PASSWORD is set.');
   }
-  
+
   // Ensure the .auth directory exists
   const authDir = path.dirname(STORAGE_STATE_PATH);
   if (!fs.existsSync(authDir)) {
@@ -44,14 +45,37 @@ export async function authenticateAndSaveState(): Promise<string> {
 
   try {
     console.log(`📍 Navigating to: ${baseUrl}`);
-    await page.goto(baseUrl);
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+    
+    // Wait for page to be ready
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(2000); // Give time for cookie banners to appear
 
-    // Handle cookie consent (additional cookies)
-    await handleCookieConsent(
-      page,
-      signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-      signInOrCreateAnAccount.hideThisCookieMessageButton
-    );
+    // Handle cookie consent (additional cookies) - with retry
+    let retryCount = 0;
+    const maxRetries = 3;
+    while (retryCount < maxRetries) {
+      await handleCookieConsent(
+        page,
+        signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+        signInOrCreateAnAccount.hideThisCookieMessageButton
+      );
+      
+      // Check if banner is still visible
+      const banner = page.locator('#cm_cookie_notification');
+      const isStillVisible = await banner.isVisible({ timeout: 2000 }).catch(() => false);
+      
+      if (!isStillVisible) {
+        console.log(`✅ Additional cookies banner handled successfully`);
+        break;
+      }
+      
+      retryCount++;
+      if (retryCount < maxRetries) {
+        console.log(`🔄 Retrying cookie consent handling (attempt ${retryCount + 1}/${maxRetries})`);
+        await page.waitForTimeout(2000);
+      }
+    }
 
     // Perform login (userEmail and userPassword are already validated above)
     console.log(`🔑 Logging in as: ${userEmail}`);
@@ -88,18 +112,106 @@ export async function authenticateAndSaveState(): Promise<string> {
       return page.waitForSelector('body', { timeout: 30000 });
     });
 
-    // Handle analytics cookie consent (if present)
+    // Handle analytics cookie consent (if present) - with retry
+    let analyticsRetryCount = 0;
+    const analyticsMaxRetries = 3;
+    while (analyticsRetryCount < analyticsMaxRetries) {
+      await handleCookieConsent(
+        page,
+        signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+      );
+      
+      // Check if banner is still visible
+      const analyticsBanner = page.locator('xuilib-cookie-banner');
+      const isStillVisible = await analyticsBanner.isVisible({ timeout: 2000 }).catch(() => false);
+      
+      if (!isStillVisible) {
+        console.log(`✅ Analytics cookies banner handled successfully`);
+        break;
+      }
+      
+      analyticsRetryCount++;
+      if (analyticsRetryCount < analyticsMaxRetries) {
+        console.log(`🔄 Retrying analytics cookie consent handling (attempt ${analyticsRetryCount + 1}/${analyticsMaxRetries})`);
+        await page.waitForTimeout(2000);
+      }
+    }
+
+    // Navigate to home page to ensure cookies are persisted
+    // Some cookie consent systems require a navigation to properly save cookies
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+    
+    // Wait for page to be ready (use domcontentloaded instead of networkidle for reliability)
+    await page.waitForLoadState('domcontentloaded');
+    
+    // Handle cookie consent again after navigation (in case it appears)
+    // This ensures cookies are properly set before saving state
+    await handleCookieConsent(
+      page,
+      signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+      signInOrCreateAnAccount.hideThisCookieMessageButton
+    );
     await handleCookieConsent(
       page,
       signInOrCreateAnAccount.acceptAnalyticsCookiesButton
     );
 
-    // Wait a bit to ensure all cookies/localStorage are set
+    // Wait a bit to ensure all cookies/localStorage are set and persisted
     await page.waitForTimeout(2000);
 
-    // Save the authentication state
+    // Verify cookies are actually set before saving
+    const cookies = await context.cookies();
+    console.log(`🍪 Found ${cookies.length} cookies before saving state`);
+    
+    // Log cookie names for debugging
+    if (cookies.length > 0) {
+      const cookieNames = cookies.map(c => c.name).join(', ');
+      console.log(`🍪 Cookie names: ${cookieNames}`);
+    }
+
+    const locator = page.locator(`div.mat-tab-label .mat-tab-label-content:has-text("${home.createCaseTab}"),
+                                  a:text-is("${home.createCaseTab}")`);
+    await locator.waitFor({ state: 'visible' });
+    await locator.click();
+
+    // Wait a bit more after clicking to ensure all state is saved
+    await page.waitForTimeout(2000);
+
+    // Navigate once more to ensure cookies persist across navigation
+    await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+
+    // Final check - handle cookie consent one more time if it appears
+    await handleCookieConsent(
+      page,
+      signInOrCreateAnAccount.acceptAdditionalCookiesButton,
+      signInOrCreateAnAccount.hideThisCookieMessageButton
+    );
+    await handleCookieConsent(
+      page,
+      signInOrCreateAnAccount.acceptAnalyticsCookiesButton
+    );
+
+    // Wait for cookies to be fully persisted
+    await page.waitForTimeout(2000);
+
+    // Verify cookies again before saving
+    const finalCookies = await context.cookies();
+    console.log(`🍪 Found ${finalCookies.length} cookies before final save`);
+
+    // Save the authentication state (this includes all cookies and localStorage)
     await context.storageState({ path: STORAGE_STATE_PATH });
+    
+    // Verify the saved state contains cookies
+    const savedState = JSON.parse(fs.readFileSync(STORAGE_STATE_PATH, 'utf-8'));
+    const savedCookies = savedState.cookies || [];
     console.log(`✅ Authentication state saved to: ${STORAGE_STATE_PATH}`);
+    console.log(`🍪 Saved ${savedCookies.length} cookies in storageState`);
+    
+    if (savedCookies.length > 0) {
+      const savedCookieNames = savedCookies.map((c: any) => c.name).join(', ');
+      console.log(`🍪 Saved cookie names: ${savedCookieNames}`);
+    }
 
     return STORAGE_STATE_PATH;
   } catch (error) {
@@ -134,29 +246,64 @@ async function handleCookieConsent(
       return;
     }
 
-    const isBannerVisible = await consentBanner.isVisible().catch(() => false);
+    // Wait a bit for the page to fully load
+    await page.waitForTimeout(1000);
+
+    // Check if banner is visible with a longer timeout
+    const isBannerVisible = await consentBanner.isVisible({ timeout: 5000 }).catch(() => false);
 
     if (!isBannerVisible) {
+      console.log(`ℹ️ Cookie banner not visible: ${acceptButtonName}`);
       return;
     }
 
-    await acceptBtn.waitFor({ state: 'visible', timeout: 10000 });
-    await page.waitForTimeout(500);
-    await acceptBtn.click();
+    console.log(`🍪 Handling cookie consent: ${acceptButtonName}`);
 
-    await consentBanner.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {
-      return consentBanner.waitFor({ state: 'detached', timeout: 10000 });
-    });
+    // Wait for the accept button to be visible and enabled
+    await acceptBtn.waitFor({ state: 'visible', timeout: 15000 });
+    await acceptBtn.waitFor({ state: 'attached', timeout: 5000 });
+    
+    // Scroll into view if needed
+    await acceptBtn.scrollIntoViewIfNeeded();
+    
+    await page.waitForTimeout(500);
+    
+    // Click the accept button
+    await acceptBtn.click({ force: false });
+    console.log(`✅ Clicked ${acceptButtonName} button`);
+
+    // Wait for banner to disappear - try multiple strategies
+    try {
+      await consentBanner.waitFor({ state: 'hidden', timeout: 15000 });
+      console.log(`✅ Cookie banner hidden: ${acceptButtonName}`);
+    } catch {
+      try {
+        await consentBanner.waitFor({ state: 'detached', timeout: 15000 });
+        console.log(`✅ Cookie banner detached: ${acceptButtonName}`);
+      } catch {
+        // Check if it's still visible
+        const stillVisible = await consentBanner.isVisible().catch(() => false);
+        if (stillVisible) {
+          console.warn(`⚠️ Cookie banner still visible after clicking: ${acceptButtonName}`);
+        }
+      }
+    }
+    
+    // Wait longer to ensure cookies are actually set by the browser
+    await page.waitForTimeout(2000);
 
     if (hideButtonName) {
       const successBanner = page.locator('#accept-all-cookies-success');
-      const hideBtn = successBanner.getByRole('button', { name: hideButtonName });
-      const isSuccessBannerVisible = await successBanner.isVisible().catch(() => false);
+      const isSuccessBannerVisible = await successBanner.isVisible({ timeout: 5000 }).catch(() => false);
 
       if (isSuccessBannerVisible) {
+        const hideBtn = successBanner.getByRole('button', { name: hideButtonName });
         await hideBtn.waitFor({ state: 'visible', timeout: 10000 });
+        await hideBtn.scrollIntoViewIfNeeded();
         await page.waitForTimeout(500);
         await hideBtn.click();
+        console.log(`✅ Clicked hide button: ${hideButtonName}`);
+        
         await successBanner.waitFor({ state: 'hidden', timeout: 10000 }).catch(() => {
           return successBanner.waitFor({ state: 'detached', timeout: 10000 });
         });
@@ -164,8 +311,7 @@ async function handleCookieConsent(
     }
   } catch (error) {
     const errorMessage = (error as Error).message;
-    if (!errorMessage.includes('timeout') && !errorMessage.includes('waiting for')) {
-      console.log(`Cookie consent handling encountered an issue: ${acceptButtonName} - ${errorMessage}`);
-    }
+    console.error(`❌ Cookie consent handling error for ${acceptButtonName}: ${errorMessage}`);
+    // Don't throw - we'll try again later
   }
 }
