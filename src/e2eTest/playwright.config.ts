@@ -11,7 +11,6 @@ export const LONG_TIMEOUT = 30000;
 export const VERY_LONG_TIMEOUT = 60000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
-const env = process.env.ENVIRONMENT?.toLowerCase() || 'preview';
 
 // Path to the saved authentication state
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
@@ -23,11 +22,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
-  workers: 4,
+  workers: 2,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
-  use: { 
-    actionTimeout: 30 * 1000, 
+  use: {
+    actionTimeout: 30 * 1000,
     navigationTimeout: 30 * 1000,
     // Use the saved authentication state for all tests
     // This means tests will start already logged in
