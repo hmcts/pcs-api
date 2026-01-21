@@ -12,9 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -37,9 +41,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -72,6 +78,8 @@ class TestingSupportControllerTest {
     private PcsCaseService pcsCaseService;
     @Mock
     private AccessCodeGenerationService accessCodeGenerationService;
+    @Mock
+    private ModelMapper modelMapper;
 
     private TestingSupportController underTest;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -82,7 +90,7 @@ class TestingSupportControllerTest {
                                                  docAssemblyService, eligibilityService,
                                                  pcsCaseRepository, partyRepository,
                                                  partyAccessCodeRepository, pcsCaseService,
-                                                 accessCodeGenerationService
+                                                 accessCodeGenerationService, modelMapper
         );
     }
 
@@ -1125,6 +1133,91 @@ class TestingSupportControllerTest {
         // Then
         assertThat(response.getStatusCode().value()).isEqualTo(500);
         assertThat(response.getBody()).isNull();
+    }
+
+    @Test
+    void shouldReturnPins() {
+        // Given
+        long caseReference = 8888888888888888L;
+        UUID caseId = UUID.randomUUID();
+        String accessCodeString = "CODE123";
+        UUID partyCode = UUID.randomUUID();
+        String firstName = "firstname";
+        String lastName = "lastname";
+
+        PartyEntity defendant = PartyEntity.builder()
+            .id(partyCode)
+            .firstName(firstName)
+            .lastName(lastName)
+            .addressKnown(VerticalYesNo.NO)
+            .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .id(caseId)
+            .caseReference(caseReference)
+            .parties(Set.of(defendant))
+            .build();
+
+        List<PartyAccessCodeEntity> accessCodes = new ArrayList<>();
+        PartyAccessCodeEntity accessCode1 = PartyAccessCodeEntity.builder()
+            .id(UUID.randomUUID())
+            .code(accessCodeString)
+            .partyId(partyCode)
+            .build();
+        accessCodes.add(accessCode1);
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.ofNullable(caseEntity));
+
+        when(partyAccessCodeRepository.findAllByPcsCase_Id(caseId))
+            .thenReturn(accessCodes);
+
+        // When
+        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+            "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertNotNull(response.getBody());
+        assertThat(
+            response.getBody().get(accessCodeString).getFirstName().equals(firstName)
+                &&
+                response.getBody().get(accessCodeString).getLastName().equals(lastName));
+    }
+
+    @Test
+    void shouldHandleInvalidCaseWhenReturnPins() {
+        // Given
+        long caseReference = 8888888888888888L;
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenReturn(Optional.empty());
+
+        // When
+        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+            "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(HttpStatus.NOT_FOUND.equals(response.getStatusCode()));
+    }
+
+    @Test
+    void shouldHandleServerErrorWhenReturnPins() {
+        // Given
+        long caseReference = 1111111111111111L;
+
+        when(pcsCaseRepository.findByCaseReference(caseReference))
+            .thenThrow(new RuntimeException());
+
+        // When
+        ResponseEntity<Map<String, Party>> response = underTest.getPins(
+            "ServiceAuthToken", caseReference
+        );
+
+        // Then
+        assertThat(HttpStatus.INTERNAL_SERVER_ERROR.equals(response.getStatusCode()));
     }
 
     private JsonNode createJsonNodeFormPayload(String applicantName) {
