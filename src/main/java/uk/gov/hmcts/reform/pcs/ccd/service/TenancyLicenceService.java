@@ -89,7 +89,7 @@ public class TenancyLicenceService {
                     .rentStatementDocuments(ListValueUtils.unwrapListItems(rentArrears.getStatementDocuments()))
                     .totalRentArrears(rentArrears.getTotal())
                     .thirdPartyPaymentSources(rentArrears.getThirdPartyPaymentSources())
-                    .thirdPartyPaymentSourceOther(rentArrears.getThirdPartyPaymentSourceOther());
+                    .thirdPartyPaymentSourceOther(rentArrears.getPaymentSourceOther());
         }
     }
 
