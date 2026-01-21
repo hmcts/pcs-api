@@ -59,7 +59,7 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
 
         return textAreaValidationService.validateSingleTextArea(
             txt,
-            "Name of your High Court enforcement officer?",
+            "Name of your High Court enforcement officer",
             TextAreaValidationService.BYTE_TEXT_LIMIT
         );
     }
