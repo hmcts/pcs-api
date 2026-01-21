@@ -17,6 +17,7 @@ def secrets = [
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
     secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
+    secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
     secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
     secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD'),
     secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),

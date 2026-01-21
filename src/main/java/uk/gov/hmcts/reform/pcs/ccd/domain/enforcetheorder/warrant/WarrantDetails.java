@@ -77,13 +77,6 @@ public class WarrantDetails {
     private EnforcementRiskDetails riskDetails;
 
     @CCD(
-        label = "Is anyone living at the property vulnerable?"
-    )
-    private YesNoNotSure vulnerablePeoplePresent;
-
-    private VulnerableAdultsChildren vulnerableAdultsChildren;
-
-    @CCD(
         label = "Which language did you use to complete this service?",
         hint = "If someone else helped you to answer a question in this service, "
             + "ask them if they answered any questions in Welsh. We’ll use this to "

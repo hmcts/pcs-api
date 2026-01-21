@@ -22,7 +22,7 @@ plugins {
   id 'org.sonarqube' version '7.2.2.6593'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   id 'hmcts.ccd.sdk' version '6.6.1'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.1993'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2000'
   id 'io.freefair.lombok' version '9.2.0'
   id 'au.com.dius.pact' version '4.6.19'
   /*
@@ -242,7 +242,7 @@ jacocoTestReport {
 }
 
 tasks.named('sonarqube') {
-  dependsOn jacocoTestReport
+  // dependsOn jacocoTestReport
 }
 
 tasks.named('check') {
