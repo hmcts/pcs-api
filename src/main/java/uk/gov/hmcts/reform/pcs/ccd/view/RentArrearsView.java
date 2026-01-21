@@ -38,7 +38,7 @@ public class RentArrearsView {
             thirdPartyPaymentSourceEntity -> {
                 thirdPartyPaymentSources.add(thirdPartyPaymentSourceEntity.getName());
                 if (thirdPartyPaymentSourceEntity.getName() == ThirdPartyPaymentSource.OTHER) {
-                    rentArrears.setThirdPartyPaymentSourceOther(thirdPartyPaymentSourceEntity.getDescription());
+                    rentArrears.setPaymentSourceOther(thirdPartyPaymentSourceEntity.getDescription());
                 }
             }
         );

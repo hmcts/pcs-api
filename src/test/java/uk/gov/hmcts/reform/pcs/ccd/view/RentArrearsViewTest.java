@@ -110,7 +110,7 @@ class RentArrearsViewTest {
             ThirdPartyPaymentSource.DISCRETIONARY_HOUSING_PAYMENT,
             ThirdPartyPaymentSource.OTHER
         );
-        assertThat(rentArrears.getThirdPartyPaymentSourceOther()).isEqualTo(otherPaymentSourceDescription);
+        assertThat(rentArrears.getPaymentSourceOther()).isEqualTo(otherPaymentSourceDescription);
     }
 
 }

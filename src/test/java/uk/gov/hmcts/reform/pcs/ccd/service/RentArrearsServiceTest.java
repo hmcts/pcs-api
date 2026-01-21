@@ -97,7 +97,7 @@ class RentArrearsServiceTest {
 
         when(rentArrears.getThirdPartyPayments()).thenReturn(VerticalYesNo.YES);
         when(rentArrears.getThirdPartyPaymentSources()).thenReturn(List.of(ThirdPartyPaymentSource.OTHER));
-        when(rentArrears.getThirdPartyPaymentSourceOther()).thenReturn(otherSourceDescription);
+        when(rentArrears.getPaymentSourceOther()).thenReturn(otherSourceDescription);
 
         // When
         RentArrearsEntity rentArrearsEntity = underTest.createRentArrearsEntity(pcsCase);

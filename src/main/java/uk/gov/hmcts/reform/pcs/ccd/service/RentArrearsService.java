@@ -45,7 +45,7 @@ public class RentArrearsService {
 
         paymentSourceEntity.setName(paymentSource);
         if (paymentSource == ThirdPartyPaymentSource.OTHER) {
-            paymentSourceEntity.setDescription(rentArrears.getThirdPartyPaymentSourceOther());
+            paymentSourceEntity.setDescription(rentArrears.getPaymentSourceOther());
         }
 
         return paymentSourceEntity;
