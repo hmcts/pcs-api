@@ -63,7 +63,7 @@ export class CreateCaseAPIAction implements IAction {
 
   private async deleteCaseRole(roleData: actionData): Promise<void> {
     const userId = user.claimantSolicitor.uid;
-    let caseId = (caseInfo.id || process.env.CASE_NUMBER || caseNumber || '').replace(/-/g, '');
+    let caseId = '1768987464870573';
     const caseRole = typeof roleData === 'string' ? roleData : String(roleData);
 
     if (!caseId) {
