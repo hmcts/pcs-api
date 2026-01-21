@@ -7,9 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.LEGAL_COSTS_HELP;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
 
 public class LegalCostsWritPage implements CcdPageConfiguration {
 
@@ -18,7 +18,7 @@ public class LegalCostsWritPage implements CcdPageConfiguration {
         pageBuilder
                 .page("legalCostsWrit")
                 .pageLabel("Legal costs")
-                .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+                .showCondition(WRIT_FLOW)
                 .label("legalCostsWrit-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWritDetails)
