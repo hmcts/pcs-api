@@ -35,6 +35,9 @@ class WritPageConfigurerTest extends BasePageTest {
         inOrder.verify(pageBuilder).add(isA(NameAndAddressForEvictionWritPage.class));
         inOrder.verify(pageBuilder).add(isA(ChangeNameAddressWritPage.class));
         inOrder.verify(pageBuilder).add(isA(ConfirmHiringEnforcementOfficerPlaceholder.class));
+        inOrder.verify(pageBuilder).add(isA(LegalCostsPlaceholder.class));
+        inOrder.verify(pageBuilder).add(isA(LandRegistryFeesPage.class));
+        inOrder.verify(pageBuilder).add(isA(RepaymentsPlaceholder.class));
 
         verifyNoMoreInteractions(pageBuilder);
     }
