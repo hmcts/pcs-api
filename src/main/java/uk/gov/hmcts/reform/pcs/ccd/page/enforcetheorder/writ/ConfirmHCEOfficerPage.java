@@ -33,7 +33,7 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                             <p class="govuk-body">It usually costs around £1000.00 to hire a High Court enforcement
                              officer to do an eviction.
                             </p>
-                            <p class="govuk-body">You may need to pay additional fees for things
+                            <p class="govuk-body govuk-!-margin-bottom-1">You may need to pay additional fees for things
                              like:</p>
                             <ul class="govuk-list govuk-list--bullet">
                               <li class="govuk-!-font-size-19">hiring a dog handler (if you are trying to evict someone
@@ -43,7 +43,7 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
                                property
                               </li>
                             </ul>
-                            <p class="govuk-body">You can either:
+                            <p class="govuk-body govuk-!-margin-bottom-1">You can either:
                             </p>
                             <ul class="govuk-list govuk-list--bullet">
                               <li class="govuk-!-font-size-19">
