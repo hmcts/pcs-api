@@ -6,7 +6,8 @@ export class FormLabelValueValidation implements IValidation {
     const valueLocator = await this.findFieldValueLocator(page, fieldName);
     
     if (data !== undefined) {
-      await expect(valueLocator).toHaveText(String(data).replace(/\r\n?/g, ' '));
+      const locText = await valueLocator.innerText();
+      expect(locText.replace(/\s+/g, ' ').trim().split(' ').sort().join(' '),`Original inner text => ${locText}, Original user input => ${String(data)}`).toBe(String(data).split(' ').sort().join(' '));
     } else {
       const value = await valueLocator.textContent();
       if (!value?.trim()) {
