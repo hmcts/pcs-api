@@ -27,6 +27,8 @@ public class LegalCostsWritPage implements CcdPageConfiguration {
                 .mandatory(LegalCosts::getAmountOfLegalCosts,
                         "writAreLegalCostsToBeClaimed=\"YES\"")
                 .done()
+                .done()
+                .done()
                 .label("legalCostsWrit-help", LEGAL_COSTS_HELP)
                 .label("legalCostsWrit-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
