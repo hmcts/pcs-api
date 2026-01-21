@@ -24,7 +24,6 @@ public class CommonPageContent {
         </details>
         """;
 
-    @SuppressWarnings("checkstyle:LineLength")
     public static final String LEGAL_COSTS_HELP = """
         <details class="govuk-details">
             <summary class="govuk-details__summary">
@@ -52,9 +51,11 @@ public class CommonPageContent {
                     You can either:
                 </p>
                 <ul>
-                    <li class="govuk-list govuk-!-font-size-19">ask your lawyer or legal representative how much you can reclaim, or</li>
+                    <li class="govuk-list govuk-!-font-size-19">ask your lawyer or legal representative how much you can
+                     reclaim, or</li>
                     <li class="govuk-list govuk-!-font-size-19">
-                        <a href="https://www.justice.gov.uk/courts/procedure-rules/civil/rules/part45-fixed-costs/practice-direction-45-fixed-costs"
+                        <a href="https://www.justice.gov.uk/courts/procedure-rules/civil/rules/part45-fixed-costs/
+                        practice-direction-45-fixed-costs"
                             target="_blank">
                             check the Civil Procedure Rules (Justice.gov website, opens in a new tab)
                         </a>
