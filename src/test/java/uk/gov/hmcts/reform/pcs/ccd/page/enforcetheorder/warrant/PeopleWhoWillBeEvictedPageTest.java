@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -69,7 +70,7 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getWarrantDetails()
-                    .getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
+                    .getShowPeopleYouWantToEvictPage()).isEqualTo(YesOrNo.NO);
         }
 
         @Test
@@ -93,7 +94,7 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
             assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getWarrantDetails()
-                    .getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.YES);
+                    .getShowPeopleYouWantToEvictPage()).isEqualTo(YesOrNo.YES);
         }
     }
 }

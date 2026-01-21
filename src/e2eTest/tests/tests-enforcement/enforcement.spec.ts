@@ -73,7 +73,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Possession]', async () => {
-  test('Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -364,7 +364,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', statementOfTruthOne.mainHeader);
     });
 
-  test('Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performAction('validateWritOrWarrantFeeAmount', {
@@ -472,7 +472,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
   });
 
-  test('Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performAction('validateWritOrWarrantFeeAmount', {
@@ -576,10 +576,10 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performValidation('mainHeader', statementOfTruthOne.mainHeader);
   });
 
-  test('Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
+  test('Warrant - Apply for a Warrant of Possession [General application journey] - risk to Bailiff [Yes]', {
     annotation: {
       type: 'issue',
-      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed - https://tools.hmcts.net/jira/browse/HDPI-2237 ',
+      description: 'General application journey is a placeholder for now,this test will be fully etched out when this is ready to be developed',
     },
   },
     async () => {
@@ -596,5 +596,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
       });
       await performValidation('mainHeader', youNeedPermission.mainHeader);
+      await performAction('clickButton', youNeedPermission.continueButton);
+      await performValidation('errorMessage', { header: youNeedPermission.errors, message: youNeedPermission.errMessage });
     });
 });
