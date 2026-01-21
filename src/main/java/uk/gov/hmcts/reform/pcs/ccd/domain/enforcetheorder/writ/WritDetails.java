@@ -28,4 +28,10 @@ public class WritDetails {
 
     @CCD(searchable = false)
     private YesOrNo showPeopleWhoWillBeEvictedPage;
+
+    @CCD(
+        searchable = false,
+        label = "Has the claim been transferred to the High Court?"
+    )
+    private YesOrNo hasClaimTransferredToHighCourt;
 }
