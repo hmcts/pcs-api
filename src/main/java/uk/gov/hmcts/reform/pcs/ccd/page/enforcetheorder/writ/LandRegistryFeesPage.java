@@ -12,7 +12,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("landRegistryFeesWrit")
-            .pageLabel("Land Registry fees")
+            .pageLabel("Land Registry fees (placeholder)")
             .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
             .label("landRegistryFeesWrit-content", "---")
             .label("landRegistryFeesWrit-save-and-return", SAVE_AND_RETURN);
