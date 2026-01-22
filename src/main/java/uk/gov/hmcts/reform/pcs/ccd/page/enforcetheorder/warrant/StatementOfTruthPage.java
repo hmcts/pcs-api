@@ -25,6 +25,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 @Component
 public class StatementOfTruthPage implements CcdPageConfiguration {
 
+    private static final String WARRANT_COMPLETED_BY_CLAIMANT = "warrantCompletedBy=\"CLAIMANT\"";
+    private static final String WARRANT_COMPLETED_BY_LEGAL_REP = "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"";
+
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
@@ -73,19 +76,19 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetails::getCompletedBy)
                         .mandatory(StatementOfTruthDetails::getAgreementClaimant,
-                            "warrantCompletedBy=\"CLAIMANT\"")
+                            WARRANT_COMPLETED_BY_CLAIMANT)
                         .mandatory(StatementOfTruthDetails::getFullNameClaimant,
-                            "warrantCompletedBy=\"CLAIMANT\"")
+                            WARRANT_COMPLETED_BY_CLAIMANT)
                         .mandatory(StatementOfTruthDetails::getPositionClaimant,
-                            "warrantCompletedBy=\"CLAIMANT\"")
+                            WARRANT_COMPLETED_BY_CLAIMANT)
                         .mandatory(StatementOfTruthDetails::getAgreementLegalRep,
-                            "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
+                            WARRANT_COMPLETED_BY_LEGAL_REP)
                         .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
-                            "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
+                            WARRANT_COMPLETED_BY_LEGAL_REP)
                         .mandatory(StatementOfTruthDetails::getFirmNameLegalRep,
-                            "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
+                            WARRANT_COMPLETED_BY_LEGAL_REP)
                         .mandatory(StatementOfTruthDetails::getPositionLegalRep,
-                            "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
+                            WARRANT_COMPLETED_BY_LEGAL_REP)
                     .done()
                 .done()
             .done()
