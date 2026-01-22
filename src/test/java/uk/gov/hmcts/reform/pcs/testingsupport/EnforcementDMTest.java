@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.testingsupport;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -17,6 +18,16 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Enforcement Domain-Entity Validation Tests
+ * Validates that CCD-annotated fields from the enforcement domain model
+ * are properly represented in the EnforcementOrderEntity persistence layer.
+ * This test serves as both a progress tracker and ongoing validation to ensure
+ * the enforcement domain and entity models remain synchronized.
+ * Category: Domain Entity Validation
+ */
+@Tag("architecture")
+@Tag("enforcement-domain-entity-alignment")
 class EnforcementDMTest {
 
     private DomainDataModelSupportHelper domainDataModelSupportHelper;

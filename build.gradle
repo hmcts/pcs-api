@@ -126,6 +126,43 @@ test {
   failFast = true
 }
 
+tasks.register('architectureValidation', Test) {
+  description = "Runs architecture validation tests (domain-entity alignment checks)"
+  group = "verification"
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
+  useJUnitPlatform {
+    includeTags 'architecture'
+  }
+
+  ignoreFailures = true
+
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+    exceptionFormat = 'full'
+  }
+}
+
+tasks.register('enforcementValidation', Test) {
+  description = "Runs enforcement domain-entity alignment validation"
+  group = "verification"
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
+  useJUnitPlatform {
+    includeTags 'enforcement-domain-entity-alignment'
+  }
+
+  ignoreFailures = true
+
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+    exceptionFormat = 'full'
+    showStandardStreams = true  // Shows the console output with missing fields
+  }
+}
+
 tasks.register('functional', Test) {
   description = "Runs functional tests"
   group = "verification"
