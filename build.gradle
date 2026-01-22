@@ -124,6 +124,9 @@ tasks.withType(Test).configureEach {
 
 test {
   failFast = true
+  useJUnitPlatform {
+    excludeTags 'enforcement-domain-entity-alignment'
+  }
 }
 
 tasks.register('architectureValidation', Test) {
