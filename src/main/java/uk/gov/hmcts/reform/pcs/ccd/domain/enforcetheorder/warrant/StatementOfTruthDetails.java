@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementLegalRep;
@@ -24,7 +23,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-@ComplexType(generate = true)
 public class StatementOfTruthDetails {
 
     @CCD(label = "Completed by")

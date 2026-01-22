@@ -112,7 +112,7 @@ public class WarrantDetails {
     )
     private VerticalYesNo isSuspendedOrder;
 
-    @JsonUnwrapped(prefix = "warrant")
+    @JsonUnwrapped
     @CCD
     private StatementOfTruthDetails statementOfTruth;
     

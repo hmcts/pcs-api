@@ -50,7 +50,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                                 this request.††</li>
                             </ul>
                             """,
-                            "isSuspendedOrder=\"YES\""
+                            "warrantIsSuspendedOrder=\"YES\""
                         )
                         .label("statementOfTruth-cert-not-suspended",
                             """
@@ -62,13 +62,13 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                                 Possession Orders by Mortgagees) Regulations 2010.</li>
                             </ul>
                             """,
-                            "isSuspendedOrder=\"NO\""
+                            "warrantIsSuspendedOrder=\"NO\""
                         )
                     .done()
                     .complex(WarrantDetails::getRepaymentCosts)
                         .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
                         .label("statementOfTruth-payments-table",
-                            "${repaymentStatementOfTruthRepaymentSummaryMarkdown}")
+                            "${warrantStatementOfTruthRepaymentSummaryMarkdown}")
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetails::getCompletedBy)
