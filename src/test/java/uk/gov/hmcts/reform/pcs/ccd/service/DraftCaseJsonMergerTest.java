@@ -71,7 +71,6 @@ class DraftCaseJsonMergerTest {
                             "claimantType",
                             "noRentArrearsReasonForGrounds.holidayLetTextArea",
                             "waysToPay",
-                            "enforcementOrder.warrantDetails.vulnerableCategory",
                             "enforcementOrder.warrantDetails.selectedDefendants")
             .isEqualTo(existingCaseData);
 

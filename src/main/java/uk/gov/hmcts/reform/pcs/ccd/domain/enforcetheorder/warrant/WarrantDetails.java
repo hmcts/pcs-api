@@ -78,23 +78,6 @@ public class WarrantDetails {
     private EnforcementRiskDetails riskDetails;
 
     @CCD(
-        label = "Is anyone living at the property vulnerable?"
-    )
-    private YesNoNotSure vulnerablePeoplePresent;
-
-    @CCD(
-            label = "Confirm if the vulnerable people in the property are adults, children, or both adults and children"
-    )
-    private VulnerableCategory vulnerableCategory;
-
-    @CCD(
-            label = "How are they vulnerable?",
-            hint = "You can enter up to 6,800 characters",
-            typeOverride = TextArea
-    )
-    private String vulnerableReasonText;
-
-    @CCD(
         label = "Which language did you use to complete this service?",
         hint = "If someone else helped you to answer a question in this service, "
             + "ask them if they answered any questions in Welsh. We’ll use this to "
