@@ -17,14 +17,19 @@ class DomainDataModelSupportHelper {
     private final Set<Class<?>> processedClasses = new HashSet<>();
     private final Map<String, List<CCDFieldInfo>> ccdFieldsByClass = new HashMap<>();
     private final Set<Class<?>> ignoredClassesFromMissing = new HashSet<>();
+    private final Set<String> ignoredFieldsFromMissing = new HashSet<>();
 
     @SuppressWarnings("rawtypes")
     public DomainDataModelSupportHelper(Class clazz) {
         identifyCCDFields(clazz);
     }
 
-    public void addIgnoredClassesToMissingList(Class<?>... classes) {
+    public void addClassesToIgnore(Class<?>... classes) {
         ignoredClassesFromMissing.addAll(Arrays.asList(classes));
+    }
+
+    public void addFieldsToIgnore(String... fieldNames) {
+        ignoredFieldsFromMissing.addAll(Arrays.asList(fieldNames));
     }
 
     public List<MissingCCDFieldInfo> findMissingCCDFields(Class<?> entityClass) {
@@ -33,7 +38,8 @@ class DomainDataModelSupportHelper {
         List<MissingCCDFieldInfo> missingFields = new ArrayList<>();
         ccdFieldsByClass.forEach((className, ccdFields) -> {
             for (CCDFieldInfo ccdField : ccdFields) {
-                if (!entityFieldNames.contains(ccdField.fieldName)) {
+                if (!entityFieldNames.contains(ccdField.fieldName)
+                    && !ignoredFieldsFromMissing.contains(ccdField.fieldName)) {
                     missingFields.add(new MissingCCDFieldInfo(className, ccdField));
                 }
             }
@@ -80,22 +86,20 @@ class DomainDataModelSupportHelper {
     }
 
     private static void outputDomainFieldDetails(CCDFieldInfo field, PrintWriter writer) {
-            writer.println("  Field Name: " + field.fieldName);
-            writer.println("  Field Type: " + field.fieldType.getSimpleName());
-            writer.println("  Label: " + field.annotation.label());
-            writer.println("  Searchable: " + field.annotation.searchable());
-            writer.println();
+        writer.println("  Field Name: " + field.fieldName);
+        writer.println("  Field Type: " + field.fieldType.getSimpleName());
+        writer.println("  Label: " + field.annotation.label());
+        writer.println("  Searchable: " + field.annotation.searchable());
+        writer.println();
     }
 
     public void printMissingCCDFields(PrintWriter writer, Class<?> entityClass) {
-        List<MissingCCDFieldInfo> missingFields = findMissingCCDFields(entityClass);
-
         writer.println("\n========================================");
         writer.println("Missing CCD Fields Report");
         writer.println("Entity: " + entityClass.getSimpleName());
         writer.println("========================================");
         writer.println("These CCD fields are NOT found in the entity graph\n");
-
+        List<MissingCCDFieldInfo> missingFields = findMissingCCDFields(entityClass);
         if (missingFields.isEmpty()) {
             writer.println("All CCD fields are present in the entity graph.");
         } else {
@@ -123,22 +127,14 @@ class DomainDataModelSupportHelper {
     private static void summaryOfMissing(PrintWriter writer, List<MissingCCDFieldInfo> missingFields) {
         writer.println("========================================");
         writer.println("Total Missing CCD Fields: " + missingFields.size());
-        writer.println("Classes with Missing Fields: " +
-                               missingFields.stream().map(m -> m.className).distinct().count());
+        writer.println("Classes with Missing Fields: "
+            + missingFields.stream().map(m -> m.className).distinct().count());
         writer.println("========================================\n");
     }
 
-    record CCDFieldInfo(String fieldName, Class<?> fieldType, CCD annotation) {
-
-    }
-
-    record MissingCCDFieldInfo(String className, CCDFieldInfo ccdFieldInfo) {
-
-    }
-
-    private void identifyCCDFields(Class<?> clazz) {
-        if (clazz == null || processedClasses.contains(clazz)) {
-            return;
+    public Map<String, List<CCDFieldInfo>> identifyCCDFields(Class<?> clazz) {
+        if (clazz == null || processedClasses.contains(clazz) || ignoredClassesFromMissing.contains(clazz)) {
+            return ccdFieldsByClass;
         }
         processedClasses.add(clazz);
         Field[] fields = clazz.getDeclaredFields();
@@ -157,6 +153,7 @@ class DomainDataModelSupportHelper {
         if (!ccdFields.isEmpty()) {
             ccdFieldsByClass.put(clazz.getSimpleName(), ccdFields);
         }
+        return ccdFieldsByClass;
     }
 
     private boolean isCompositeType(Class<?> type) {
@@ -165,6 +162,14 @@ class DomainDataModelSupportHelper {
             && !type.getName().startsWith("java.")
             && !type.getName().startsWith("javax.")
             && !type.getName().startsWith("uk.gov.hmcts.ccd.sdk.type.");
+    }
+
+    record CCDFieldInfo(String fieldName, Class<?> fieldType, CCD annotation) {
+
+    }
+
+    record MissingCCDFieldInfo(String className, CCDFieldInfo ccdFieldInfo) {
+
     }
 
 }
