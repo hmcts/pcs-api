@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 @DisplayName("CannotApplyForWritInfoPage tests")
 class CannotApplyForWritInfoPageTest extends BasePageTest {
 
@@ -41,5 +42,4 @@ class CannotApplyForWritInfoPageTest extends BasePageTest {
                     + " to transfer to the High Court");
         }
     }
-
 }
