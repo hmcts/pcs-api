@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { IAction } from '../../interfaces/action.interface';
+import { IAction } from '@utils/interfaces';
 import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
 
 export class ClickButtonAction implements IAction {
@@ -23,7 +23,13 @@ export class ClickButtonAction implements IAction {
 
   private async clickButton(page: Page, button: Locator): Promise<void> {
     await page.waitForLoadState();
-    await button.click(); 
+    // Wait for button to be visible and enabled before clicking
+    await button.first().waitFor({ state: 'visible', timeout: 30000 });
+    // Ensure spinner is gone before clicking
+    await page.locator('.spinner-container').waitFor({ state: 'detached' }).catch(() => {
+      // Spinner might not be present, continue anyway
+    });
+    await button.click();
     await page.waitForLoadState();
     await page.locator('.spinner-container').waitFor({ state: 'detached' });
   }
