@@ -23,6 +23,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
+@SuppressWarnings("java:S1192")
 public class StatementOfTruthDetails {
 
     @CCD(label = "Completed by")
