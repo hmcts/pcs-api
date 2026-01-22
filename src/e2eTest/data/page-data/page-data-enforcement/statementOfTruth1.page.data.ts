@@ -9,6 +9,9 @@ export const statementOfTruthOne = {
   fullNameHiddenTextLabel: 'Full name',
   nameOfFirmHiddenTextLabel: 'Name of firm',
   positionOrOfficeHeldHiddenTextLabel: 'Position or office held',
+  fullNameHiddenTextInput: 'John Doe',
+  nameOfFirmHiddenTextInput: 'Doe & Co Solicitors',
+  positionOrOfficeHeldHiddenTextInput: 'Solicitor',
   signThisStatementHiddenCheckbox: 'The claimant believes that the facts stated in this claim form are true.  I am authorised by the claimant to sign this statement.',
   continueButton: 'Continue'
 };

@@ -361,8 +361,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
         completedBy: statementOfTruthOne.claimantRadioOption,
         iBelieveCheckbox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
-        positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
+        fullNameTextInput: statementOfTruthOne.fullNameHiddenTextInput,
+        positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput
       });
     });
 
@@ -477,9 +477,9 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
       completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
       signThisStatementCheckbox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
-      fullNameTextInput: statementOfTruthTwo.fullNameHiddenTextLabel,
-      nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
-      positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel
+      fullNameTextInput: statementOfTruthTwo.fullNameHiddenTextInput,
+      nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput
     });
   });
 
@@ -590,9 +590,9 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
       completedBy: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
       signThisStatementCheckbox: statementOfTruthOne.signThisStatementHiddenCheckbox,
-      fullNameTextInput: statementOfTruthOne.fullNameHiddenTextLabel,
-      nameOfFirmTextInput: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-      positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel
+      fullNameTextInput: statementOfTruthOne.fullNameHiddenTextInput,
+      nameOfFirmTextInput: statementOfTruthOne.nameOfFirmHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput
     });
   });
 
