@@ -26,7 +26,8 @@ import {
   addressCheckYourAnswers,
   statementOfTruth,
   claimSaved,
-  payClaimFee
+  payClaimFee,
+  wantToUploadDocuments
 } from '@data/page-data';
 import {
   claimantType,
@@ -259,6 +260,7 @@ export class CreateCaseAction implements IAction {
   private async selectContactPreferences(preferences: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
+
     const prefData = preferences as {
       notifications: string;
       correspondenceAddress: string;
@@ -292,7 +294,7 @@ export class CreateCaseAction implements IAction {
         await performAction('inputText', contactPreferences.enterPhoneNumberHiddenTextLabel, contactPreferences.enterPhoneNumberTextInput);
       }
     }
-    await performAction('clickButton', contactPreferences.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', contactPreferences.continueButton, defendantDetails.mainHeader);
   }
 
   private async addDefendantDetails(defendantData: actionRecord) {
@@ -768,7 +770,7 @@ export class CreateCaseAction implements IAction {
       question: underlesseeOrMortgageeEntitledToClaim.question,
       option: underlesseeOrMortgageeEntitledToClaim.option
     });
-    await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
+    await performAction('clickButtonAndVerifyPageNavigation', underlesseeOrMortgageeDetails.continueButton, wantToUploadDocuments.mainHeader);
   }
 
   private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {

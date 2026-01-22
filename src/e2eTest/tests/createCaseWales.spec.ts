@@ -53,7 +53,7 @@ test.beforeEach(async ({page}) => {
     'navigateToUrl',
     `${process.env.MANAGE_CASE_BASE_URL}/cases/case-create/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/createPossessionClaim/createPossessionClaimstartTheService`
   );
-  await performAction('clickButton', housingPossessionClaim.continue);
+  await performAction('clickButtonAndVerifyPageNavigation', housingPossessionClaim.continue, addressDetails.mainHeader);
 // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
