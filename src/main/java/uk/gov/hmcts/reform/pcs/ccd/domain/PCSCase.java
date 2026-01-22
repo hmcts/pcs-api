@@ -500,4 +500,6 @@ public class PCSCase {
     @CCD(access = ClaimantAccess.class)
     private List<ListValue<Document>> allDocuments;
 
+    private String formattedDefendantNames;
+    private String formattedPropertyAddress;
 }
