@@ -26,7 +26,9 @@ import {
   moneyOwed,
   languageUsed,
   enterDefendantsDOB,
-  suspendedOrder
+  suspendedOrder,
+  confirmHCEOHired,
+  yourHCEO
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -48,6 +50,8 @@ export class EnforcementAction implements IAction {
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
+      ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord)],
+      ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord)],
       ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord)],
       ['enterDefendantsDOB', () => this.enterDefendantsDOB(page, fieldName as actionRecord)],
@@ -124,6 +128,22 @@ export class EnforcementAction implements IAction {
     };
     defendantDetails = [...new Set(originalDefendantDetails)];
 
+  }
+
+  private async selectHaveHiredHCEO(haveYouHired: actionRecord) {
+    await this.addFieldsToMap(haveYouHired);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: haveYouHired.question, option: haveYouHired.option });
+    await performAction('clickButton', confirmHCEOHired.continueButton);
+  }
+
+  private async nameYourHCEO(nameHCEO: actionRecord) {
+    await this.addFieldsToMap(nameHCEO);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('inputText', nameHCEO.label, nameHCEO.input);
+    await performAction('clickButton', yourHCEO.continueButton);
   }
 
   private async selectNameAndAddressForEviction(nameAndAddress: actionRecord) {

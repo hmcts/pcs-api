@@ -7,13 +7,15 @@ import {
   user
 } from '@data/page-data';
 import {
-  confirmHCEOHired,
   nameAndAddressForEviction,
   youNeedPermission,
-  yourApplication
+  yourApplication,
+  confirmHCEOHired,
+  yourHCEO
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { theNICEWillChoose } from '@data/page-data/page-data-enforcement/theNICEWillChooseHCEO.page.data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
@@ -41,7 +43,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - Apply for a Writ of Possession @PR @regression',
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -77,8 +79,69 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
       });
       await performValidation('mainHeader', confirmHCEOHired.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: confirmHCEOHired.errorValidation,
+        validationType: confirmHCEOHired.errorValidationType.three,
+        inputArray: confirmHCEOHired.errorValidationField.errorRadioOption,
+        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
+        option: confirmHCEOHired.yesRadioOption,
+        button: confirmHCEOHired.continueButton
+      });
+      await performAction('selectHaveHiredHCEO', {
+        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
+        option: confirmHCEOHired.yesRadioOption,
+      });
+      await performValidation('mainHeader', yourHCEO.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: yourHCEO.errorValidation,
+        validationType: yourHCEO.errorValidationType.two,
+        inputArray: yourHCEO.errorValidationField.errorTextField,
+        header: yourHCEO.errors,
+        label: yourHCEO.nameOfYourHCEOLabel,
+        button: yourHCEO.continueButton
+      });
+      await performAction('nameYourHCEO', {
+        label: yourHCEO.nameOfYourHCEOLabel,
+        input: yourHCEO.nameOfYourHCEOInput,
+      });
+
 
     });
+
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No]', async () => {
+
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
+    await performAction('validateGetQuoteFromBailiffLink', {
+      type: yourApplication.summaryWritOrWarrant,
+      link: yourApplication.quoteFromBailiffLink,
+      newPage: yourApplication.hceoPageTitle
+    });
+    await performAction('expandSummary', yourApplication.summarySaveApplication);
+    await performAction('selectApplicationType', {
+      question: yourApplication.typeOfApplicationQuestion,
+      option: yourApplication.typeOfApplicationOptions.writOfPossession,
+    });
+    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+    await performAction('selectNameAndAddressForEviction', {
+      question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+      option: nameAndAddressForEviction.yesRadioOption,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+    });
+    await performValidation('mainHeader', confirmHCEOHired.mainHeader);
+    await performAction('selectHaveHiredHCEO', {
+      question: confirmHCEOHired.haveYouHiredHCEOQuestion,
+      option: confirmHCEOHired.noRadioOption,
+    });
+    await performValidation('mainHeader', theNICEWillChoose.mainHeader);
+  });
 
   test('Writ - Apply for a Writ of Possession [General application journey]', {
     annotation: {
