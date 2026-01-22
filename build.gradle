@@ -178,7 +178,7 @@ tasks.register('smoke', Test) {
 
 tasks.register('yarnInstall', Exec) {
   workingDir = file("${project.projectDir}/src/e2eTest")
-  commandLine 'yarn', 'install', '--ignore-engines'
+  commandLine 'yarn', 'install'
 }
 
 tasks.register('runE2eTests', Exec) {
