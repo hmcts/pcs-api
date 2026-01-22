@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@axe-core/playwright": "^4.10.2",
-    "@hmcts/playwright-common": "^1.0.33",
+    "@hmcts/playwright-common": "1.1.0",
     "oauth4webapi": "^3.5.1",
     "uuid": "^13.0.0"
   }
