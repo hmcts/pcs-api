@@ -1,5 +1,5 @@
 export const submitCaseEventTokenApiData = {
-  createCaseApiInstance: () => ({
+  submitCaseEventTokenApiInstance: () => ({
     baseURL: process.env.DATA_STORE_URL_BASE,
     headers: {
       Authorization: `Bearer ${process.env.BEARER_TOKEN}`,
@@ -10,5 +10,5 @@ export const submitCaseEventTokenApiData = {
     }
   }),
   submitCaseEventTokenApiEndPoint: () =>
-    `/cases/${process.env.CASE_NUMBER}/event-triggers/resumePossessionClaim`
-}
+    `/cases/${process.env.CASE_NUMBER}/event-triggers/resumePossessionClaim`,
+};

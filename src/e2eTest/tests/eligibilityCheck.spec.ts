@@ -20,6 +20,7 @@ import {
   performValidation
 } from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -38,6 +39,9 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
+  if (caseNumber) {
+    await performAction('deleteCaseRole', '[CREATOR]');
+  }
   PageContentValidation.finaliseTest();
 });
 
@@ -60,6 +64,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
   });
 
   test('Cross border - Verify postcode page for England and Scotland content @regression', async () => {
@@ -88,6 +93,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
   });
 
   test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR @regression', async () => {
@@ -107,6 +113,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
   });
 
   test('England - Verify postcode not assigned to court - Can not use this service page', async () => {
@@ -144,6 +151,10 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
+    await performValidation('text', {
+      "text": userIneligible.exitBackHintText,
+      "elementType": "inlineText"
+    });
     await performAction('clickButton', userIneligible.cancel);
   });
 
@@ -166,6 +177,10 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     });
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performValidation('text', {
+      "text": userIneligible.exitBackHintText,
+      "elementType": "inlineText"
     });
     await performAction('clickButton', userIneligible.cancel);
   });
@@ -190,6 +205,10 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
     });
+    await performValidation('text', {
+      "text": userIneligible.exitBackHintText,
+      "elementType": "inlineText"
+    });
     await performAction('clickButton', userIneligible.cancel);
   });
 
@@ -210,6 +229,10 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     });
     await performValidation('errorMessage', {
       header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+    });
+    await performValidation('text', {
+      "text": userIneligible.exitBackHintText,
+      "elementType": "inlineText"
     });
     await performAction('clickButton', userIneligible.cancel);
   });

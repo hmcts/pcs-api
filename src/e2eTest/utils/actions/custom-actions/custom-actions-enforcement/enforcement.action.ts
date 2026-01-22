@@ -4,6 +4,7 @@ import { IAction, actionData, actionRecord, actionTuple } from '@utils/interface
 import {
   yourApplication,
   nameAndAddressForEviction,
+  confirmDefendantsDOB,
   everyoneLivingAtTheProperty,
   vulnerableAdultsAndChildren,
   violentOrAggressiveBehaviour,
@@ -23,7 +24,9 @@ import {
   rePayments,
   peopleYouWantToEvict,
   moneyOwed,
-  languageUsed
+  languageUsed,
+  enterDefendantsDOB,
+  suspendedOrder
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -46,6 +49,8 @@ export class EnforcementAction implements IAction {
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord)],
+      ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord)],
+      ['enterDefendantsDOB', () => this.enterDefendantsDOB(page, fieldName as actionRecord)],
       ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
       ['selectPermissionFromJudge', () => this.selectPermissionFromJudge(page)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
@@ -68,6 +73,7 @@ export class EnforcementAction implements IAction {
       ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
       ['validateAmountToRePayTable', () => this.validateAmountToRePayTable()],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
+      ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -100,19 +106,23 @@ export class EnforcementAction implements IAction {
 
   private async getDefendantDetails(defendantsDetails: actionRecord) {
 
+    let originalDefendantDetails: string[] = [];
+
     if (defendantsDetails.defendant1NameKnown === 'YES') {
-      defendantDetails.push(
+      originalDefendantDetails.push(
         `${submitCaseApiData.submitCasePayload.defendant1.firstName} ${submitCaseApiData.submitCasePayload.defendant1.lastName}`
       );
     };
 
     if (defendantsDetails.additionalDefendants === 'YES') {
-      submitCaseApiData.submitCasePayload.additionalDefendants.forEach(defendant => {
+
+      for (const defendant of submitCaseApiData.submitCasePayload.additionalDefendants) {
         if (defendant.value.nameKnown === 'YES') {
-          defendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
+          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
         }
-      });
+      };
     };
+    defendantDetails = [...new Set(originalDefendantDetails)];
 
   }
 
@@ -121,11 +131,29 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
-      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
+      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.sort().join(' '));
     }
-    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.addressLine2}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
+    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
+  }
+
+  private async confirmDefendantsDOB(confirmDefendantsDateOfBirth: actionRecord) {
+    await this.addFieldsToMap(confirmDefendantsDateOfBirth);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: confirmDefendantsDateOfBirth.question, option: confirmDefendantsDateOfBirth.option });
+    await performAction('clickButton', confirmDefendantsDOB.continueButton);
+  }
+
+  private async enterDefendantsDOB(page: Page, defendantsDOB: actionRecord) {
+    await this.addFieldsToMap(defendantsDOB);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('inputText', defendantsDOB.label, await this.inputDOB(defendantsDOB.input as Array<string>));
+    fieldsMap.set(defendantsDOB.label as string, await page.getByLabel(enterDefendantsDOB.defendantsDOBTextLabel).inputValue());
+    await performAction('clickButton', enterDefendantsDOB.continueButton);
+
   }
 
   private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord) {
@@ -286,7 +314,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: legalCost.question, option: legalCost.option });
-    if (legalCost.option === accessToTheProperty.yesRadioOption) {
+    if (legalCost.option === legalCosts.yesRadioOption) {
       await performAction('inputText', legalCost.label, legalCost.input);
       const legalCostAmt = await this.retrieveAmountFromString(legalCost.input as string);
       moneyMap.set(legalCosts.legalCostsFee, legalCostAmt);
@@ -336,6 +364,15 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: languageDetails.question, option: languageDetails.option });
     await performAction('clickButton', languageUsed.continueButton);
+  }
+
+  private async confirmSuspendedOrder(suspendedOrderPara: actionRecord) {
+    await this.addFieldsToMap(suspendedOrderPara);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: suspendedOrderPara.question, option: suspendedOrderPara.option });
+    await performAction('clickButton', suspendedOrder.continueButton);
+
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
@@ -390,18 +427,27 @@ export class EnforcementAction implements IAction {
     }
   }
 
-  private async generateMoreThanMaxString(page: Page, label: string, input: string): Promise<string> {
+  private async generateMoreThanMaxString(page: Page, label: string, input: string | number): Promise<string> {
 
-    if (input !== 'MAXPLUS') return '';
+    let length: number;
 
-    const hintText = await page
-      .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
-      .innerText();
+    if (input === 'MAXPLUS') {
+      const hintText = await page
+        .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
+        .innerText();
 
-    const limit = await this.retrieveAmountFromString(hintText);
-    if (limit == 0) return '';
+      const limit = await this.retrieveAmountFromString(hintText);
+      if (limit === 0) return '';
 
-    const length = limit + 1;
+      length = limit + 1;
+
+    } else if (typeof input === 'number') {
+      length = input + 1;
+
+    } else {
+      return '';
+    }
+
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let finalString = '';
     for (let i = 0; i < length; i++) {
@@ -412,8 +458,8 @@ export class EnforcementAction implements IAction {
   }
 
   private async retrieveAmountFromString(input: string): Promise<number> {
-
-    const charLimitInfo = input.match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
+    const getCharCount = input.split('You can enter').map(str => str.trim()).filter(str => str.length > 0);
+    const charLimitInfo = getCharCount[getCharCount.length - 1].match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
     const amount = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : 0;
     return amount;
   }
@@ -441,5 +487,32 @@ export class EnforcementAction implements IAction {
     setIfKeyExists(fields.question as string, fields.option as string);
     setIfKeyExists(fields.label as string, fields.input as string);
     setIfKeyExists(fields.confirm as string, fields.peopleOption as string);
+  }
+
+  private async inputDOB(inputArray: string[]): Promise<string> {
+    return inputArray.map((item) => item + " - " + this.getRandomDOBFromPast(18, 30)).join('\n');
+  }
+
+  private getRandomDOBFromPast(date1: number, date2: number): string {
+    const today = new Date();
+    const maxDate = new Date(
+      today.getFullYear() - date1,
+      today.getMonth(),
+      today.getDate()
+    );
+
+    const minDate = new Date(
+      today.getFullYear() - date2,
+      today.getMonth(),
+      today.getDate()
+    );
+    const randomTime = minDate.getTime() + Math.random() * (maxDate.getTime() - minDate.getTime());
+    const randomDate = new Date(randomTime);
+
+    const day = String(randomDate.getDate()).padStart(2, '0');
+    const month = String(randomDate.getMonth() + 1).padStart(2, '0');
+    const year = randomDate.getFullYear();
+
+    return `${day} ${month} ${year}`;
   }
 }

@@ -20,7 +20,7 @@ public class WalesHousingAct {
 
     @CCD(
         label = "What’s your registration number?",
-        max = 40
+        max = 60
     )
     private String registrationNumber;
 
@@ -31,7 +31,7 @@ public class WalesHousingAct {
 
     @CCD(
         label = "What’s your licence number?",
-        max = 40
+        max = 60
     )
     private String licenceNumber;
 
@@ -43,19 +43,19 @@ public class WalesHousingAct {
 
     @CCD(
         label = "Agent’s first name",
-        max = 40
+        max = 60
     )
     private String agentFirstName;
 
     @CCD(
         label = "Agent’s last name",
-        max = 40
+        max = 60
     )
     private String agentLastName;
 
     @CCD(
         label = "Agent’s licence number",
-        max = 40
+        max = 60
     )
     private String agentLicenceNumber;
 

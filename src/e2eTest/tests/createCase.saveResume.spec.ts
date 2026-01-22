@@ -9,23 +9,14 @@ import {
   addressCheckYourAnswers,
   addressDetails,
   additionalReasonsForPossession,
-  alternativesToPossession,
   applications,
   checkYourAnswers,
-  claimantCircumstances,
-  claimingCosts,
   completeYourClaim,
-  dailyRentAmount,
-  defendantCircumstances,
+  detailsOfRentArrears,
   home,
   languageUsed,
-  mediationAndSettlement,
-  moneyJudgment,
-  noticeDetails,
-  noticeOfYourIntention,
   propertyDetails,
   reasonsForPossession,
-  rentDetails,
   resumeClaim,
   resumeClaimOptions,
   signInOrCreateAnAccount,
@@ -33,10 +24,9 @@ import {
   underlesseeOrMortgageeEntitledToClaim,
   user,
   wantToUploadDocuments,
-  whatAreYourGroundsForPossession,
-  detailsOfRentArrears
+  whatAreYourGroundsForPossession
 } from '@data/page-data';
-import{
+import {
   claimantType,
   claimType,
   claimantInformation,
@@ -44,9 +34,20 @@ import{
   contactPreferences,
   tenancyLicenceDetails,
   groundsForPossession,
-  preactionProtocol
+  preactionProtocol,
+  alternativesToPossession,
+  claimantCircumstances,
+  claimingCosts,
+  dailyRentAmount,
+  defendantCircumstances,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeDetails,
+  rentDetails,
+  checkingNotice
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -71,6 +72,9 @@ test.beforeEach(async ({page}) => {
 });
 
 test.afterEach(async () => {
+  if (caseNumber) {
+    await performAction('deleteCaseRole', '[CREATOR]');
+  }
   PageContentValidation.finaliseTest();
 });
 
@@ -126,28 +130,20 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {
-      "text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink,
-      "elementType": "paragraphLink"
-    })
-    await performValidation('text', {
-      "text": noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      "elementType": "inlineText"
-    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.no
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentFrequencyOption: 'Weekly', rentAmount: '800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
+      unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
@@ -158,11 +154,11 @@ test.describe('[Create Case - With resume claim options]', async () => {
       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -172,7 +168,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
@@ -260,31 +256,23 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {
-      "text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink,
-      "elementType": "paragraphLink"
-    })
-    await performValidation('text', {
-      "text": noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      "elementType": "inlineText"
-    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveQuestion,
-      option: noticeOfYourIntention.yes
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
+      howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
       day: '16', month: '07', year: '1985'
     });
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
     await performAction('selectDefendantCircumstances', {
@@ -294,7 +282,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);

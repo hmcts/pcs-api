@@ -5,7 +5,9 @@ export * from '@data/page-data/page-data-enforcement/evictionCouldBeDelayed.page
 export * from '@data/page-data/page-data-enforcement/firearmPossession.page.data';
 export * from '@data/page-data/page-data-enforcement/groupProtestsEviction.page.data';
 export * from '@data/page-data/page-data-enforcement/nameAndAddressForEviction.page.data';
-export * from '@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data'
+export * from '@data/page-data/page-data-enforcement/confirmDefendantsDOB.page.data';
+export * from '@data/page-data/page-data-enforcement/enterDefendantsDOB.page.data';
+export * from '@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data';
 export * from '@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data';
 export * from '@data/page-data/page-data-enforcement/verbalOrWrittenThreats.page.data';
 export * from '@data/page-data/page-data-enforcement/violentOrAggressiveBehaviour.page.data';
@@ -21,3 +23,7 @@ export * from '@data/page-data/page-data-enforcement/legalCosts.page.data';
 export * from '@data/page-data/page-data-enforcement/landRegistryFees.page.data';
 export * from '@data/page-data/page-data-enforcement/rePayments.page.data';
 export * from '@data/page-data/page-data-enforcement/languageUsed.page.data';
+export * from '@data/page-data/page-data-enforcement/suspendedOrder.page.data';
+export * from '@data/page-data/page-data-enforcement/statementOfTruth1.page.data';
+export * from '@data/page-data/page-data-enforcement/statementOfTruth2.page.data';
+export * from '@data/page-data/page-data-enforcement/confirmHCEOIsHired.page.data';

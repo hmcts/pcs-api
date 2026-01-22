@@ -16,17 +16,11 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 public class ClaimantInformation {
 
     @CCD(
-        label = "Claimant Name",
+        label = "Your claimant name registered with My HMCTS is:",
         access = {CitizenAccess.class}
     )
     @External
     private String claimantName;
-
-    @CCD(
-        label = "Your claimant name registered with My HMCTS is:"
-    )
-    @External
-    private String organisationName;
 
     @CCD(
         label = "Is this the correct claimant name?",
@@ -42,7 +36,8 @@ public class ClaimantInformation {
             It does not change your registered claimant name on My HMCTS
             """,
         access = {CitizenAccess.class},
-        typeOverride = FieldType.Text
+        typeOverride = FieldType.Text,
+        max = 60
     )
     private String overriddenClaimantName;
 }

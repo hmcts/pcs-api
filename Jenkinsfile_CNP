@@ -17,6 +17,7 @@ def secrets = [
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
     secret('pcs-api-idam-secret', 'PCS_API_IDAM_SECRET'),
     secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
+    secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
     secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
     secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD'),
     secret('idam-expired-user-token', 'IDAM_EXPIRED_USER_TOKEN'),
@@ -80,6 +81,7 @@ withPipeline(type, product, component) {
 
   onPerftest {
     setPerftestEnvVars()
+    enableHighLevelDataSetup()
   }
 
   before('highleveldatasetup') {
@@ -92,6 +94,11 @@ withPipeline(type, product, component) {
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
       env.CASE_API_URL = "http://pcs-api-aat.service.core-compute-aat.internal"
       env.DATA_STORE_URL_BASE="http://ccd-data-store-api-aat.service.core-compute-aat.internal"
+    }
+    onPerftest{
+      env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-perftest.service.core-compute-perftest.internal"
+      env.CASE_API_URL = "http://pcs-api-perftest.service.core-compute-perftest.internal"
+      env.DATA_STORE_URL_BASE="http://ccd-data-store-api-perftest.service.core-compute-perftest.internal"
     }
     generateDefinitions(builder)
   }

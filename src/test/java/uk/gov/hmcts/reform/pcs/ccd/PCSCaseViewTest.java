@@ -13,19 +13,23 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.CaseViewRequest;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -34,12 +38,13 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -60,19 +65,21 @@ class PCSCaseViewTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private CaseTitleService caseTitleService;
-    @Mock
-    private DefendantService defendantService;
-    @Mock
+    @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
+    @Mock
+    private ClaimEntity claimEntity;
 
     private PCSCaseView underTest;
 
     @BeforeEach
     void setUp() {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                modelMapper, draftCaseDataService, caseTitleService, defendantService);
+                                    modelMapper, draftCaseDataService, caseTitleService
+        );
     }
 
     @Test
@@ -85,8 +92,8 @@ class PCSCaseViewTest {
 
         // Then
         assertThatThrownBy(() -> underTest.getCase(request))
-                .isInstanceOf(CaseNotFoundException.class)
-                .hasMessage("No case found with reference %s", CASE_REFERENCE);
+            .isInstanceOf(CaseNotFoundException.class)
+            .hasMessage("No case found with reference %s", CASE_REFERENCE);
     }
 
     @Test
@@ -153,43 +160,6 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldMapPreActionProtocolCompletedWhenYes() {
-        // Given
-        pcsCaseEntity = mock(PcsCaseEntity.class);
-        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(true);
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @ParameterizedTest
-    @MethodSource("preActionProtocolScenarios")
-    void shouldMapPreActionProtocolCompleted(Boolean databaseFlag,
-                                             VerticalYesNo expectedCaseDataValue) {
-        // Given
-        when(pcsCaseEntity.getPreActionProtocolCompleted()).thenReturn(databaseFlag);
-
-        // When
-        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
-
-        // Then
-        assertThat(pcsCase.getPreActionProtocolCompleted()).isEqualTo(expectedCaseDataValue);
-    }
-
-    private static Stream<Arguments> preActionProtocolScenarios() {
-        return Stream.of(
-            // DB value, expected case data value
-            arguments(false, VerticalYesNo.NO),
-            arguments(true, VerticalYesNo.YES),
-            arguments(null, null)
-        );
-    }
-
-    @Test
     void shouldMapLegislativeCountry() {
         // Given
         LegislativeCountry expectedLegislativeCountry = LegislativeCountry.SCOTLAND;
@@ -203,74 +173,243 @@ class PCSCaseViewTest {
     }
 
     @Test
-    void shouldMapClaimantTypeFromDatabaseToCCD() {
+    void shouldMapAllParties() {
         // Given
-        ClaimantType expectedClaimantType = ClaimantType.COMMUNITY_LANDLORD;
-        when(pcsCaseEntity.getClaimantType()).thenReturn(expectedClaimantType);
+        Party claimant = mock(Party.class);
+        UUID claimantId = UUID.randomUUID();
+        ClaimPartyEntity claimantClaimParty = createClaimPartyEntity(claimant, claimantId, PartyRole.CLAIMANT);
+
+        Party defendant1 = mock(Party.class);
+        UUID defendant1Id = UUID.randomUUID();
+        ClaimPartyEntity defendant1ClaimParty = createClaimPartyEntity(defendant1, defendant1Id, PartyRole.DEFENDANT);
+
+        Party defendant2 = mock(Party.class);
+        UUID defendant2Id = UUID.randomUUID();
+        ClaimPartyEntity defendant2ClaimParty = createClaimPartyEntity(defendant2, defendant2Id, PartyRole.DEFENDANT);
+
+        Party underlessee1 = mock(Party.class);
+        UUID underlessee1Id = UUID.randomUUID();
+        ClaimPartyEntity underlessee1ClaimParty = createClaimPartyEntity(
+            underlessee1,
+            underlessee1Id,
+            PartyRole.UNDERLESSEE_OR_MORTGAGEE
+        );
+
+        Party underlessee2 = mock(Party.class);
+        UUID underlessee2Id = UUID.randomUUID();
+        ClaimPartyEntity underlessee2ClaimParty = createClaimPartyEntity(
+            underlessee2,
+            underlessee2Id,
+            PartyRole.UNDERLESSEE_OR_MORTGAGEE
+        );
+
+        when(claimEntity.getClaimParties()).thenReturn(
+            List.of(claimantClaimParty, defendant1ClaimParty, defendant2ClaimParty,
+                    underlessee1ClaimParty, underlessee2ClaimParty
+            ));
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        assertThat(pcsCase.getClaimantType()).isNotNull();
-        assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(expectedClaimantType.name());
-        assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(expectedClaimantType.getLabel());
+        assertThat(pcsCase.getAllClaimants())
+            .containsExactly(asListValue(claimantId, claimant));
+
+        assertThat(pcsCase.getAllDefendants())
+            .containsExactly(
+                asListValue(defendant1Id, defendant1),
+                asListValue(defendant2Id, defendant2)
+            );
+
+        assertThat(pcsCase.getAllUnderlesseeOrMortgagees())
+            .containsExactly(
+                asListValue(underlessee1Id, underlessee1),
+                asListValue(underlessee2Id, underlessee2)
+            );
+
     }
 
     @Test
-    void shouldHandleNullClaimantType() {
+    void shouldReturnEmptyListWhenNoDocumentsExist() {
         // Given
-        when(pcsCaseEntity.getClaimantType()).thenReturn(null);
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        assertThat(pcsCase.getClaimantType()).isNull();
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldMapDocuments() {
+        // Given
+        DocumentEntity entity1 = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("doc1.pdf")
+            .url("url1")
+            .build();
+
+        DocumentEntity entity2 = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("doc2.pdf")
+            .url("url2")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1,entity2));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        //Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(2);
+        assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getFilename())
+            .containsExactly("doc1.pdf", "doc2.pdf");
+    }
+
+    private static ListValue<Party> asListValue(UUID id, Party party) {
+        return ListValue.<Party>builder().id(id.toString()).value(party).build();
+    }
+
+    private ClaimPartyEntity createClaimPartyEntity(Party party, UUID partyId, PartyRole partyRole) {
+        PartyEntity partyEntity = mock(PartyEntity.class);
+
+        when(modelMapper.map(partyEntity, Party.class)).thenReturn(party);
+
+        ClaimPartyId claimPartyId = new ClaimPartyId();
+        claimPartyId.setPartyId(partyId);
+
+        return ClaimPartyEntity.builder()
+            .id(claimPartyId)
+            .role(partyRole)
+            .party(partyEntity)
+            .build();
+    }
+
+    @Test
+    void shouldMapBasicClaimFields() {
+        // Given
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getAgainstTrespassers()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getDueToRentArrears()).thenReturn(YesOrNo.NO);
+        when(claimEntity.getClaimCosts()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getPreActionProtocolFollowed()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getMediationAttempted()).thenReturn(VerticalYesNo.NO);
+        when(claimEntity.getMediationDetails()).thenReturn("mediation details");
+        when(claimEntity.getSettlementAttempted()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getSettlementDetails()).thenReturn("settlement details");
+        when(claimEntity.getAdditionalDefendants()).thenReturn(VerticalYesNo.NO);
+        when(claimEntity.getUnderlesseeOrMortgagee()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getAdditionalUnderlesseesOrMortgagees()).thenReturn(VerticalYesNo.NO);
+        when(claimEntity.getGenAppExpected()).thenReturn(VerticalYesNo.YES);
+        when(claimEntity.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
+        when(claimEntity.getAdditionalDocsProvided()).thenReturn(VerticalYesNo.YES);
+
+        // When
+        PCSCase result = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(result.getClaimAgainstTrespassers()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getClaimDueToRentArrears()).isEqualTo(YesOrNo.NO);
+        assertThat(result.getClaimingCostsWanted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getPreActionProtocolCompleted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getMediationAttempted()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getMediationAttemptedDetails()).isEqualTo("mediation details");
+        assertThat(result.getSettlementAttempted()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getSettlementAttemptedDetails()).isEqualTo("settlement details");
+        assertThat(result.getAddAnotherDefendant()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getHasUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getAddAdditionalUnderlesseeOrMortgagee()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
+        assertThat(result.getLanguageUsed()).isEqualTo(LanguageUsed.ENGLISH);
+        assertThat(result.getWantToUploadDocuments()).isEqualTo(VerticalYesNo.YES);
     }
 
     @ParameterizedTest
-    @MethodSource("claimantTypeMappingScenarios")
-    void shouldMapAllClaimantTypes(ClaimantType claimantType) {
+    @MethodSource("complexClaimFieldsScenarios")
+    void shouldMapComplexClaimFields(
+        VerticalYesNo claimantSelect,
+        String claimantDetails,
+        VerticalYesNo defendantSelect,
+        String defendantDetails,
+        VerticalYesNo additionalReasonsProvided,
+        String additionalReasons,
+        ClaimantType claimantType
+    ) {
         // Given
-        when(pcsCaseEntity.getClaimantType()).thenReturn(claimantType);
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
+        when(claimEntity.getClaimantCircumstancesProvided()).thenReturn(claimantSelect);
+        when(claimEntity.getClaimantCircumstances()).thenReturn(claimantDetails);
+
+        when(claimEntity.getDefendantCircumstancesProvided()).thenReturn(defendantSelect);
+        when(claimEntity.getDefendantCircumstances()).thenReturn(defendantDetails);
+
+        when(claimEntity.getAdditionalReasonsProvided()).thenReturn(additionalReasonsProvided);
+        when(claimEntity.getAdditionalReasons()).thenReturn(additionalReasons);
+
+        when(claimEntity.getClaimantType()).thenReturn(claimantType);
 
         // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
         // Then
-        assertThat(pcsCase.getClaimantType()).isNotNull();
-        assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(claimantType.name());
-        assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(claimantType.getLabel());
+        assertThat(pcsCase.getClaimantCircumstances().getClaimantCircumstancesSelect()).isEqualTo(claimantSelect);
+        assertThat(pcsCase.getClaimantCircumstances().getClaimantCircumstancesDetails()).isEqualTo(claimantDetails);
+
+        assertThat(pcsCase.getDefendantCircumstances().getHasDefendantCircumstancesInfo()).isEqualTo(defendantSelect);
+        assertThat(pcsCase.getDefendantCircumstances().getDefendantCircumstancesInfo()).isEqualTo(defendantDetails);
+
+        assertThat(pcsCase.getAdditionalReasonsForPossession().getHasReasons()).isEqualTo(additionalReasonsProvided);
+        assertThat(pcsCase.getAdditionalReasonsForPossession().getReasons()).isEqualTo(additionalReasons);
+
+        if (claimantType != null) {
+            assertThat(pcsCase.getClaimantType().getValue().getCode()).isEqualTo(claimantType.name());
+            assertThat(pcsCase.getClaimantType().getValue().getLabel()).isEqualTo(claimantType.getLabel());
+        } else {
+            assertThat(pcsCase.getClaimantType()).isNull();
+        }
     }
 
     @Test
-    void shouldMapDefendants() {
-        // Given
-        List<Defendant> defendantList = List.of(mock(Defendant.class), mock(Defendant.class));
-        DefendantDetails defendantDetails1 = mock(DefendantDetails.class);
-        DefendantDetails defendantDetails2 = mock(DefendantDetails.class);
+    void shouldNotPopulateAnyClaimFieldsWhenNoClaimsExist() {
+        when(pcsCaseEntity.getClaims()).thenReturn(List.of());
 
-        when(pcsCaseEntity.getDefendants()).thenReturn(defendantList);
-        when(defendantService.mapToDefendantDetails(defendantList))
-            .thenReturn(List.of(defendantDetails1, defendantDetails2));
-
-        // When
         PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
 
-        // Then
-        assertThat(pcsCase.getAllDefendants())
-            .map(ListValue::getValue)
-            .containsExactly(defendantDetails1, defendantDetails2);
+        assertThat(pcsCase.getClaimAgainstTrespassers()).isNull();
+        assertThat(pcsCase.getClaimingCostsWanted()).isNull();
+        assertThat(pcsCase.getClaimantCircumstances()).isNull();
+        assertThat(pcsCase.getDefendantCircumstances()).isNull();
+        assertThat(pcsCase.getAdditionalReasonsForPossession()).isNull();
+        assertThat(pcsCase.getClaimantType()).isNull();
     }
 
-    private static Stream<Arguments> claimantTypeMappingScenarios() {
+    private static Stream<Arguments> complexClaimFieldsScenarios() {
         return Stream.of(
-            arguments(ClaimantType.PRIVATE_LANDLORD),
-            arguments(ClaimantType.PROVIDER_OF_SOCIAL_HOUSING),
-            arguments(ClaimantType.COMMUNITY_LANDLORD),
-            arguments(ClaimantType.MORTGAGE_LENDER),
-            arguments(ClaimantType.OTHER)
+            Arguments.of(
+                VerticalYesNo.YES, "claimant info",
+                VerticalYesNo.NO, "defendant info",
+                VerticalYesNo.YES, "some reasons",
+                ClaimantType.PRIVATE_LANDLORD
+            ),
+            Arguments.of(
+                null, null,
+                VerticalYesNo.NO, "defendant info",
+                VerticalYesNo.YES, "some reasons",
+                ClaimantType.COMMUNITY_LANDLORD
+            ),
+            Arguments.of(
+                VerticalYesNo.YES, "claimant info",
+                null, null,
+                VerticalYesNo.NO, null,
+                ClaimantType.MORTGAGE_LENDER
+            ),
+            Arguments.of(
+                VerticalYesNo.NO, "some claimant details",
+                VerticalYesNo.YES, "some defendant details",
+                VerticalYesNo.NO, "reasons",
+                null
+            )
         );
     }
 

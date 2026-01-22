@@ -11,47 +11,56 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
+import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
 
 import java.net.URI;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.security.SecureRandom;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 
 @Slf4j
 @RestController
@@ -65,9 +74,12 @@ public class TestingSupportController {
     private final DocAssemblyService docAssemblyService;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
+    private final PartyRepository partyRepository;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
+    private final ModelMapper modelMapper;
+
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
@@ -75,18 +87,21 @@ public class TestingSupportController {
         DocAssemblyService docAssemblyService,
         EligibilityService eligibilityService,
         PcsCaseRepository pcsCaseRepository,
+        PartyRepository partyRepository,
         PartyAccessCodeRepository partyAccessCodeRepository,
         PcsCaseService pcsCaseService,
-        AccessCodeGenerationService accessCodeGenerationService
-    ) {
+        AccessCodeGenerationService accessCodeGenerationService,
+        ModelMapper modelMapper) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
         this.docAssemblyService = docAssemblyService;
         this.eligibilityService = eligibilityService;
         this.pcsCaseRepository = pcsCaseRepository;
+        this.partyRepository = partyRepository;
         this.partyAccessCodeRepository = partyAccessCodeRepository;
         this.pcsCaseService = pcsCaseService;
         this.accessCodeGenerationService = accessCodeGenerationService;
+        this.modelMapper = modelMapper;
     }
 
     @Operation(
@@ -338,65 +353,64 @@ public class TestingSupportController {
     ) {
         try {
             // Generate case reference if not provided (expand to 16 digits)
-            Long caseReference = Optional.ofNullable(request.getCaseReference())
+            long caseReference = Optional.ofNullable(request.getCaseReference())
                 .orElseGet(this::generateCaseReference);
 
             // Create case using PcsCaseService
-            pcsCaseService.createCase(
+            PcsCaseEntity caseEntity = pcsCaseService.createCase(
                 caseReference,
                 request.getPropertyAddress(),
                 request.getLegislativeCountry()
             );
 
-            // Load the created case entity
-            PcsCaseEntity caseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow(() -> new RuntimeException("Failed to create case"));
+            ClaimEntity mainClaim = ClaimEntity.builder()
+                .pcsCase(caseEntity)
+                .claimCosts(VerticalYesNo.NO)
+                .build();
 
-            // Create defendants and party entities
-            List<Defendant> defendants = new ArrayList<>();
-            List<CreateTestCaseResponse.DefendantInfo> defendantInfos = new ArrayList<>();
+            caseEntity.addClaim(mainClaim);
 
+            // Create defendants
+            List<PartyEntity> createdPartyEntities = new ArrayList<>();
             for (CreateTestCaseRequest.DefendantRequest defendantRequest : request.getDefendants()) {
-                UUID generatedPartyId = Optional.ofNullable(defendantRequest.getPartyId())
-                    .orElseGet(UUID::randomUUID);
-
                 // Create PartyEntity
                 PartyEntity partyEntity = PartyEntity.builder()
                     .pcsCase(caseEntity)
-                    .forename(defendantRequest.getFirstName())
-                    .surname(defendantRequest.getLastName())
-                    .idamId(defendantRequest.getIdamUserId())
-                    .active(true)
-                    .build();
-                caseEntity.addParty(partyEntity);
-
-                // Create Defendant model
-                Defendant defendant = Defendant.builder()
-                    .partyId(generatedPartyId)
-                    .idamUserId(defendantRequest.getIdamUserId())
                     .firstName(defendantRequest.getFirstName())
                     .lastName(defendantRequest.getLastName())
+                    .idamId(defendantRequest.getIdamUserId())
                     .build();
-                defendants.add(defendant);
 
-                // Create response info (accessCode will be populated after generation)
-                CreateTestCaseResponse.DefendantInfo defendantInfo = new CreateTestCaseResponse.DefendantInfo(
-                    generatedPartyId,
-                    defendantRequest.getIdamUserId(),
-                    defendantRequest.getFirstName(),
-                    defendantRequest.getLastName(),
-                    null  // Will be populated after access code generation
-                );
-                defendantInfos.add(defendantInfo);
+                createdPartyEntities.add(partyEntity);
+
+                caseEntity.addParty(partyEntity);
+                mainClaim.addParty(partyEntity, DEFENDANT);
             }
 
-            // Set defendants on case entity
-            caseEntity.setDefendants(defendants);
+            // Save to DB to generate party IDs
+            partyRepository.saveAllAndFlush(createdPartyEntities);
 
             // Save case with parties and defendants
             pcsCaseRepository.save(caseEntity);
 
-            log.info("Created test case {} with {} defendants", caseReference, defendants.size());
+            log.info("Created test case {} with {} defendants", caseReference, request.getDefendants().size());
+
+
+            List<CreateTestCaseResponse.DefendantInfo> defendantInfos = mainClaim.getClaimParties().stream()
+                .filter(claimParty -> claimParty.getRole() == DEFENDANT)
+                .map(ClaimPartyEntity::getParty)
+                .map(party ->
+                    // Create response info (accessCode will be populated after generation)
+                    new CreateTestCaseResponse.DefendantInfo(
+                        party.getId(),
+                        party.getIdamId(),
+                        party.getFirstName(),
+                        party.getLastName(),
+                        null  // Will be populated after access code generation
+                    )
+                )
+                .toList();
+
 
             // Generate access codes immediately (synchronous - better for testing)
             try {
@@ -489,6 +503,87 @@ public class TestingSupportController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             log.error("Failed to delete test case {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(
+        summary = "Get all pins associated with a case"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pins Returned"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/pins/{caseReference}")
+    public ResponseEntity<Map<String, Party>> getPins(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "Case reference to find pins for", required = true)
+        @PathVariable long caseReference
+    ) {
+        try {
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+                pcsCaseEntity.getId()
+            );
+
+            //map partyId to party
+            Map<UUID, PartyEntity> partyByPartyId = pcsCaseEntity.getParties().stream()
+                .collect(Collectors.toMap(
+                    PartyEntity::getId,
+                    Function.identity(),
+                    (existing, incoming) -> {
+                        throw new IllegalStateException("Duplicate partyId: " + existing.getId());
+                    }
+                ));
+
+            Map<String, Party> minimalPartyMap = new HashMap<>();
+
+            for (var accessCodeObject : accessCodes) {
+                //for each access code return the matching defendant's name and address
+
+                String accessCode = accessCodeObject.getCode();
+                UUID partyId = accessCodeObject.getPartyId();
+
+                PartyEntity matched = partyByPartyId.get(partyId);
+                if (matched == null) {
+                    throw new IllegalStateException("Party is not found on Case. PartyID = " + partyId);
+                }
+
+                AddressUK addressUK;
+
+                if (!matched.getAddressKnown().toBoolean()) {
+                    addressUK = null;
+                } else if (matched.getAddressSameAsProperty().toBoolean()) {
+                    addressUK = modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class);
+                } else {
+                    addressUK = modelMapper.map(matched.getAddress(), AddressUK.class);
+                }
+
+                Party minimalParty = Party.builder()
+                    .firstName(matched.getFirstName())
+                    .lastName(matched.getLastName())
+                    .address(addressUK)
+                    .build();
+
+                minimalPartyMap.put(accessCode, minimalParty);
+            }
+
+            return ResponseEntity.ok(minimalPartyMap);
+        } catch (Exception e) {
+            log.error("Failed to get Access codes / Pins {}", caseReference, e);
             return ResponseEntity.internalServerError().build();
         }
     }

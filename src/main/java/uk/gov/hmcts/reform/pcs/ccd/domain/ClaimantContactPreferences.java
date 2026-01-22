@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Builder
 @Data
@@ -14,13 +15,23 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 @AllArgsConstructor
 public class ClaimantContactPreferences {
 
+    @CCD
+    private AddressUK organisationAddress;
+
+    @CCD
+    private YesOrNo orgAddressFound;
+
     @CCD(typeOverride = FieldType.Email)
     private String claimantContactEmail;
 
     @CCD(label = "Do you want to use this email address for notifications?")
     private VerticalYesNo isCorrectClaimantContactEmail;
 
-    @CCD(label = "Enter email address", typeOverride = FieldType.Email)
+    @CCD(
+        label = "Enter email address",
+        typeOverride = FieldType.Email,
+        max = 60
+    )
     private String overriddenClaimantContactEmail;
 
     private String formattedClaimantContactAddress;
@@ -34,7 +45,7 @@ public class ClaimantContactPreferences {
     @CCD(label = "Do you want to provide a contact phone number?")
     private VerticalYesNo claimantProvidePhoneNumber;
 
-    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$")
+    @CCD(label = "Enter phone number", regex = "^\\s*0\\d{10}\\s*$", max = 60)
     private String claimantContactPhoneNumber;
 
 }
