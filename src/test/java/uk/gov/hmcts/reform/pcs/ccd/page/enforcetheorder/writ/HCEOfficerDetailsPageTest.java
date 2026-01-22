@@ -54,7 +54,7 @@ class HCEOfficerDetailsPageTest extends BasePageTest {
     }
 
     @Test
-    void shouldRejectTextOver6800Characters() {
+    void shouldRejectTextOver120Characters() {
         // Given
         String longText = "a".repeat(BYTE_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
