@@ -3,13 +3,12 @@ package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -17,6 +16,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 
 class RentSectionRoutingServiceTest {
@@ -99,12 +99,8 @@ class RentSectionRoutingServiceTest {
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
-                    .mandatoryGrounds(
-                Set.of(
-                    NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS
-                )
-                    )
-            .discretionaryGrounds(null)
+                    .mandatoryGrounds(Set.of(SERIOUS_RENT_ARREARS_GROUND8))
+                    .discretionaryGrounds(null)
                     .build()
             )
             .build();

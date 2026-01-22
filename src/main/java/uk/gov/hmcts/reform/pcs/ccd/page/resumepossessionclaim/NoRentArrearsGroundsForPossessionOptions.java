@@ -7,8 +7,8 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
@@ -55,9 +55,9 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds =
+        Set<AssuredMandatoryGrounds> mandatoryGrounds =
             caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
-        Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds =
+        Set<AssuredDiscretionaryGrounds> discretionaryGrounds =
             caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
 
         if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
@@ -68,11 +68,11 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
 
         boolean hasOtherMandatoryGrounds = mandatoryGrounds.stream()
             .anyMatch(ground -> ground
-                != NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS);
+                != AssuredMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
 
         boolean hasOtherDiscretionaryGrounds =  discretionaryGrounds.stream()
-            .anyMatch(ground -> ground != NoRentArrearsDiscretionaryGrounds.RENT_ARREARS
-                && ground != NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY);
+            .anyMatch(ground -> ground != AssuredDiscretionaryGrounds.RENT_ARREARS_GROUND10
+                && ground != AssuredDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
 
         boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
         caseData.getNoRentArrearsGroundsOptions()

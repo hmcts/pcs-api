@@ -2,22 +2,17 @@ package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds.RENT_ARREARS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds.RENT_ARREARS_GROUND10;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 /**
@@ -38,9 +33,9 @@ public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutin
     }
 
     private YesOrNo checkRentArrearsGrounds(PCSCase caseData) {
-        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsGroundsForPossession()
+        Set<AssuredMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsGroundsForPossession()
             .getMandatoryGrounds();
-        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsGroundsForPossession()
+        Set<AssuredDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsGroundsForPossession()
             .getDiscretionaryGrounds();
 
         // First check the canonical sets (mandatory/discretionary grounds)
@@ -76,9 +71,9 @@ public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutin
     }
 
     private YesOrNo checkNoRentArrearsGrounds(PCSCase caseData) {
-        Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds =
+        Set<AssuredMandatoryGrounds> mandatoryGrounds =
             caseData.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
-        Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds =
+        Set<AssuredDiscretionaryGrounds> discretionaryGrounds =
             caseData.getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
 
         if (mandatoryGrounds == null && discretionaryGrounds == null) {
@@ -86,10 +81,10 @@ public class AssuredTenancyRentSectionRoutingPolicy implements RentSectionRoutin
         }
 
         boolean hasRentRelatedGrounds =
-            (mandatoryGrounds != null && mandatoryGrounds.contains(SERIOUS_RENT_ARREARS))
+            (mandatoryGrounds != null && mandatoryGrounds.contains(SERIOUS_RENT_ARREARS_GROUND8))
             || (discretionaryGrounds != null && (
-                discretionaryGrounds.contains(RENT_ARREARS)
-                || discretionaryGrounds.contains(RENT_PAYMENT_DELAY)
+                discretionaryGrounds.contains(AssuredDiscretionaryGrounds.RENT_ARREARS_GROUND10)
+                || discretionaryGrounds.contains(AssuredDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11)
             ));
 
         return YesOrNo.from(hasRentRelatedGrounds);

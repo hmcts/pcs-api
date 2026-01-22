@@ -9,9 +9,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -47,7 +47,7 @@ class RentArrearsGroundsForPossessionPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds())
-            .containsExactly(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+            .containsExactly(AssuredMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds()).isEmpty();
     }
 
@@ -68,7 +68,7 @@ class RentArrearsGroundsForPossessionPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds())
-            .containsExactly(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10);
+            .containsExactly(AssuredDiscretionaryGrounds.RENT_ARREARS_GROUND10);
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds()).isEmpty();
     }
 
@@ -89,7 +89,7 @@ class RentArrearsGroundsForPossessionPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds())
-            .containsExactly(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
+            .containsExactly(AssuredDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds()).isEmpty();
     }
 
@@ -114,11 +114,11 @@ class RentArrearsGroundsForPossessionPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds())
-            .containsExactly(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+            .containsExactly(AssuredMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds())
             .containsExactlyInAnyOrder(
-                RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10,
-                RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11
+                AssuredDiscretionaryGrounds.RENT_ARREARS_GROUND10,
+                AssuredDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11
             );
     }
 
@@ -181,7 +181,7 @@ class RentArrearsGroundsForPossessionPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds())
-            .containsExactly(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+            .containsExactly(AssuredMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds()).isEmpty();
     }
 
