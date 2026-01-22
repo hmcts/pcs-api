@@ -37,17 +37,17 @@ public class RentArrearsGroundsForPossession {
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredMandatoryGrounds"
+        typeParameterOverride = "AssuredMandatoryGround"
     )
-    private Set<AssuredMandatoryGrounds> mandatoryGrounds;
+    private Set<AssuredMandatoryGround> mandatoryGrounds;
 
     // Additional grounds checkboxes - Discretionary
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredDiscretionaryGrounds"
+        typeParameterOverride = "AssuredDiscretionaryGround"
     )
-    private Set<AssuredDiscretionaryGrounds> discretionaryGrounds;
+    private Set<AssuredDiscretionaryGround> discretionaryGrounds;
 }
 

@@ -7,9 +7,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -74,14 +74,14 @@ public class RentArrearsGroundsForPossessionPage implements CcdPageConfiguration
             .getRentArrearsGrounds();
 
         // Initialize sets if they don't exist
-        Set<AssuredMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsGroundsForPossession()
+        Set<AssuredMandatoryGround> mandatoryGrounds = caseData.getRentArrearsGroundsForPossession()
             .getMandatoryGrounds();
 
         if (mandatoryGrounds == null) {
             mandatoryGrounds = new HashSet<>();
         }
 
-        Set<AssuredDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsGroundsForPossession()
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = caseData.getRentArrearsGroundsForPossession()
             .getDiscretionaryGrounds();
 
         if (discretionaryGrounds == null) {
@@ -94,15 +94,15 @@ public class RentArrearsGroundsForPossessionPage implements CcdPageConfiguration
             for (RentArrearsGround rentArrearsGround : rentArrearsGrounds) {
                 switch (rentArrearsGround) {
                     case SERIOUS_RENT_ARREARS_GROUND8:
-                        mandatoryGrounds.add(AssuredMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+                        mandatoryGrounds.add(AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
                         break;
                     case RENT_ARREARS_GROUND10:
                         // Ground 10 is discretionary
-                        discretionaryGrounds.add(AssuredDiscretionaryGrounds.RENT_ARREARS_GROUND10);
+                        discretionaryGrounds.add(AssuredDiscretionaryGround.RENT_ARREARS_GROUND10);
                         break;
                     case PERSISTENT_DELAY_GROUND11:
                         // Ground 11 is discretionary
-                        discretionaryGrounds.add(AssuredDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
+                        discretionaryGrounds.add(AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
                         break;
                 }
             }

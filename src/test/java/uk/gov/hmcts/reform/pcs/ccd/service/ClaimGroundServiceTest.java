@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
@@ -177,8 +177,8 @@ class ClaimGroundServiceTest {
             .falseStatementTextArea("False statement reason")
             .build();
 
-        Set<AssuredMandatoryGrounds> mandatory = EnumSet.allOf(AssuredMandatoryGrounds.class);
-        Set<AssuredDiscretionaryGrounds> discretionary = EnumSet.allOf(AssuredDiscretionaryGrounds.class);
+        Set<AssuredMandatoryGround> mandatory = EnumSet.allOf(AssuredMandatoryGround.class);
+        Set<AssuredDiscretionaryGround> discretionary = EnumSet.allOf(AssuredDiscretionaryGround.class);
 
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
@@ -258,14 +258,14 @@ class ClaimGroundServiceTest {
     @Test
     void shouldReturnClaimGroundEntities_WhenAssuredTenancyRentArrears() {
         // Given
-        Set<AssuredMandatoryGrounds> mandatoryGrounds = Set.of(
-            AssuredMandatoryGrounds.OWNER_OCCUPIER_GROUND1,
-            AssuredMandatoryGrounds.REDEVELOPMENT_GROUND6
+        Set<AssuredMandatoryGround> mandatoryGrounds = Set.of(
+            AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1,
+            AssuredMandatoryGround.REDEVELOPMENT_GROUND6
         );
 
-        Set<AssuredDiscretionaryGrounds> discretionaryGrounds = Set.of(
-            AssuredDiscretionaryGrounds.BREACH_TENANCY_GROUND12,
-            AssuredDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = Set.of(
+            AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12,
+            AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14
         );
 
         RentArrearsGroundsReasons reasons = RentArrearsGroundsReasons.builder()

@@ -7,9 +7,9 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -269,47 +269,47 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getOwnerOccupierReason(),
-                AssuredMandatoryGrounds.OWNER_OCCUPIER_GROUND1.getLabel(),
+                AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getRepossessionByLenderReason(),
-                AssuredMandatoryGrounds.REPOSSESSION_GROUND2.getLabel(),
+                AssuredMandatoryGround.REPOSSESSION_GROUND2.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getHolidayLetReason(),
-                AssuredMandatoryGrounds.HOLIDAY_LET_GROUND3.getLabel(),
+                AssuredMandatoryGround.HOLIDAY_LET_GROUND3.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getStudentLetReason(),
-                AssuredMandatoryGrounds.STUDENT_LET_GROUND4.getLabel(),
+                AssuredMandatoryGround.STUDENT_LET_GROUND4.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getMinisterOfReligionReason(),
-                AssuredMandatoryGrounds.MINISTER_RELIGION_GROUND5.getLabel(),
+                AssuredMandatoryGround.MINISTER_RELIGION_GROUND5.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getRedevelopmentReason(),
-                AssuredMandatoryGrounds.REDEVELOPMENT_GROUND6.getLabel(),
+                AssuredMandatoryGround.REDEVELOPMENT_GROUND6.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getDeathOfTenantReason(),
-                AssuredMandatoryGrounds.DEATH_OF_TENANT_GROUND7.getLabel(),
+                AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getAntisocialBehaviourReason(),
-                AssuredMandatoryGrounds.ANTISOCIAL_BEHAVIOUR_GROUND7A.getLabel(),
+                AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getNoRightToRentReason(),
-                AssuredMandatoryGrounds.NO_RIGHT_TO_RENT_GROUND7B.getLabel(),
+                AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };
@@ -320,47 +320,47 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getSuitableAltAccommodationReason(),
-                AssuredDiscretionaryGrounds.ALTERNATIVE_ACCOMMODATION_GROUND9.getLabel(),
+                AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getBreachOfTenancyConditionsReason(),
-                AssuredDiscretionaryGrounds.BREACH_TENANCY_GROUND12.getLabel(),
+                AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getPropertyDeteriorationReason(),
-                AssuredDiscretionaryGrounds.DETERIORATION_PROPERTY_GROUND13.getLabel(),
+                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getNuisanceAnnoyanceReason(),
-                AssuredDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14.getLabel(),
+                AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getDomesticViolenceReason(),
-                AssuredDiscretionaryGrounds.DOMESTIC_VIOLENCE_GROUND14A.getLabel(),
+                AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getOffenceDuringRiotReason(),
-                AssuredDiscretionaryGrounds.OFFENCE_RIOT_GROUND14ZA.getLabel(),
+                AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getFurnitureDeteriorationReason(),
-                AssuredDiscretionaryGrounds.DETERIORATION_FURNITURE_GROUND15.getLabel(),
+                AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getEmployeeOfLandlordReason(),
-                AssuredDiscretionaryGrounds.EMPLOYEE_LANDLORD_GROUND16.getLabel(),
+                AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getTenancyByFalseStatementReason(),
-                AssuredDiscretionaryGrounds.FALSE_STATEMENT_GROUND17.getLabel(),
+                AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };

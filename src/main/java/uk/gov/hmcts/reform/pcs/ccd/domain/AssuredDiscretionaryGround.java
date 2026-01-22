@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
  */
 @AllArgsConstructor
 @Getter
-public enum AssuredDiscretionaryGrounds implements HasLabel {
+public enum AssuredDiscretionaryGround implements HasLabel {
 
     ALTERNATIVE_ACCOMMODATION_GROUND9("Suitable alternative accommodation (ground 9)"),
     RENT_ARREARS_GROUND10("Rent arrears (ground 10)"),

@@ -4,11 +4,11 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -73,9 +73,9 @@ public class ClaimGroundService {
 
         Set<RentArrearsGround> rentArrearsGrounds = pcsCase.getRentArrearsGroundsForPossession()
             .getRentArrearsGrounds();
-        Set<AssuredMandatoryGrounds> mandatoryGrounds = pcsCase.getRentArrearsGroundsForPossession()
+        Set<AssuredMandatoryGround> mandatoryGrounds = pcsCase.getRentArrearsGroundsForPossession()
             .getMandatoryGrounds();
-        Set<AssuredDiscretionaryGrounds> discretionaryGrounds = pcsCase.getRentArrearsGroundsForPossession()
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = pcsCase.getRentArrearsGroundsForPossession()
             .getDiscretionaryGrounds();
         RentArrearsGroundsReasons grounds = pcsCase.getRentArrearsGroundsReasons();
 
@@ -91,7 +91,7 @@ public class ClaimGroundService {
         }
 
         if (mandatoryGrounds != null) {
-            for (AssuredMandatoryGrounds ground : mandatoryGrounds) {
+            for (AssuredMandatoryGround ground : mandatoryGrounds) {
                 String reasonText = switch (ground) {
                     case OWNER_OCCUPIER_GROUND1 -> grounds.getOwnerOccupierReason();
                     case REPOSSESSION_GROUND2 -> grounds.getRepossessionByLenderReason();
@@ -113,7 +113,7 @@ public class ClaimGroundService {
         }
 
         if (discretionaryGrounds != null) {
-            for (AssuredDiscretionaryGrounds ground : discretionaryGrounds) {
+            for (AssuredDiscretionaryGround ground : discretionaryGrounds) {
                 String reasonText = switch (ground) {
                     case ALTERNATIVE_ACCOMMODATION_GROUND9 -> grounds.getSuitableAltAccommodationReason();
                     case RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11 -> null;
@@ -138,15 +138,15 @@ public class ClaimGroundService {
 
     private List<ClaimGroundEntity> assuredTenancyNoRentArrearsGroundsWithReason(PCSCase pcsCase) {
 
-        Set<AssuredMandatoryGrounds> mandatoryGrounds = pcsCase.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
-        Set<AssuredDiscretionaryGrounds> discretionaryGrounds = pcsCase
+        Set<AssuredMandatoryGround> mandatoryGrounds = pcsCase.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = pcsCase
                 .getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
         NoRentArrearsReasonForGrounds grounds = pcsCase.getNoRentArrearsReasonForGrounds();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
         if (mandatoryGrounds != null) {
-            for (AssuredMandatoryGrounds ground : mandatoryGrounds) {
+            for (AssuredMandatoryGround ground : mandatoryGrounds) {
                 String reasonText = switch (ground) {
                     case OWNER_OCCUPIER_GROUND1 -> grounds.getOwnerOccupierTextArea();
                     case REPOSSESSION_GROUND2 -> grounds.getRepossessionByLenderTextArea();
@@ -168,7 +168,7 @@ public class ClaimGroundService {
         }
 
         if (discretionaryGrounds != null) {
-            for (AssuredDiscretionaryGrounds ground : discretionaryGrounds) {
+            for (AssuredDiscretionaryGround ground : discretionaryGrounds) {
                 String reasonText = switch (ground) {
                     case ALTERNATIVE_ACCOMMODATION_GROUND9 -> grounds.getSuitableAccomTextArea();
                     case RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11 -> null;

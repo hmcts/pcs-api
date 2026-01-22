@@ -9,7 +9,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
  */
 @AllArgsConstructor
 @Getter
-public enum AssuredMandatoryGrounds implements HasLabel {
+public enum AssuredMandatoryGround implements HasLabel {
 
     OWNER_OCCUPIER_GROUND1("Owner occupier (ground 1)"),
     REPOSSESSION_GROUND2("Repossession by the landlord’s mortgage lender (ground 2)"),
