@@ -73,6 +73,14 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
       });
       await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: nameAndAddressForEviction.errorValidation,
+        validationType: nameAndAddressForEviction.errorValidationType.three,
+        inputArray: nameAndAddressForEviction.errorValidationField.errorRadioOption,
+        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+        option: nameAndAddressForEviction.yesRadioOption,
+        button: nameAndAddressForEviction.continueButton
+      });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
