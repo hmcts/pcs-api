@@ -5,6 +5,9 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "resolutions": {
+    "lighthouse": "^12.8.2"
+  },
   "scripts": {
     "test:pr": "yarn playwright install && yarn playwright test --project chrome --grep '@PR'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:regression": "yarn playwright install && yarn playwright test --project chrome --grep '@regression'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
