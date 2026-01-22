@@ -1,5 +1,6 @@
 import * as process from 'node:process';
 import * as path from 'path';
+import * as fs from 'fs';
 
 import {defineConfig, devices} from '@playwright/test';
 
@@ -14,6 +15,9 @@ export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
 // Path to the saved authentication state
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
+
+// Only use storageState if the file exists (created by globalSetup)
+const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
 export default defineConfig({
   testDir: 'tests/',
@@ -30,7 +34,7 @@ export default defineConfig({
     navigationTimeout: 30 * 1000,
     // Use the saved authentication state for all tests
     // This means tests will start already logged in
-    storageState: STORAGE_STATE_PATH,
+    ...storageStateConfig,
   },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },

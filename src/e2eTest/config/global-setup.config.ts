@@ -46,8 +46,33 @@ async function authenticateAndSaveState(): Promise<string> {
     await dismissCookieBanner(page, 'additional');
     await dismissCookieBanner(page, 'analytics');
 
-    await page.waitForTimeout(1500);
+    // Wait for page to fully load and ensure we're authenticated
+    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+    await page.waitForTimeout(2000);
+
+    // Verify we have authentication cookies before saving
+    const cookies = await context.cookies();
+    const authCookies = cookies.filter(c => 
+      c.name.includes('auth') || 
+      c.name.includes('session') || 
+      c.name.includes('token') ||
+      c.name === 'Idam.Session' ||
+      c.name === '__auth__'
+    );
+
+    if (authCookies.length === 0) {
+      throw new Error('No authentication cookies found after login. Login may have failed.');
+    }
+
     await context.storageState({ path: STORAGE_STATE_PATH });
+
+    // Verify the file was created
+    if (!fs.existsSync(STORAGE_STATE_PATH)) {
+      throw new Error(`Storage state file was not created at ${STORAGE_STATE_PATH}`);
+    }
+
+    const savedState = JSON.parse(fs.readFileSync(STORAGE_STATE_PATH, 'utf-8'));
+    console.log(`✅ Authentication state saved: ${savedState.cookies?.length || 0} cookies`);
 
     return STORAGE_STATE_PATH;
   } catch (error) {
