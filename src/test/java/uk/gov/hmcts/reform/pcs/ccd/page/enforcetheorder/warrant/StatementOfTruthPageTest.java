@@ -11,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthClaimantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -54,13 +53,10 @@ class StatementOfTruthPageTest extends BasePageTest {
         @MethodSource("characterLimitScenarios")
         void shouldValidateCharacterLimits(String fieldName, String value, boolean shouldHaveError) {
             // Given
-            StatementOfTruthClaimantDetails claimantDetails = StatementOfTruthClaimantDetails.builder()
-                .fullNameClaimant(fieldName.equals("Full name") ? value : "Valid Name")
-                .positionClaimant(fieldName.equals("Position or office held") ? value : "Valid Position")
-                .build();
             StatementOfTruthDetails statementOfTruth = StatementOfTruthDetails.builder()
                 .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
-                .claimantDetails(claimantDetails)
+                .fullNameClaimant(fieldName.equals("Full name") ? value : "Valid Name")
+                .positionClaimant(fieldName.equals("Position or office held") ? value : "Valid Position")
                 .build();
 
             PCSCase caseData = createCaseDataWithStatementOfTruth(statementOfTruth);
