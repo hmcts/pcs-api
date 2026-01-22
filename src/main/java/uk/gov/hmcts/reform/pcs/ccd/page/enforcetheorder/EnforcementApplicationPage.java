@@ -83,15 +83,15 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("enforcementApplication", this::midEvent)
-                .pageLabel("Your application")
-                .label("enforcementApplication-content", "---")
+            .page("enforcementApplication", this::midEvent)
+            .pageLabel("Your application")
+            .label("enforcementApplication-content", "---")
+            .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
+            .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getSelectEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
-            .readonly(EnforcementOrder::getFormattedDefendantNames, NEVER_SHOW, true)
-            .readonly(EnforcementOrder::getFormattedPropertyAddress, NEVER_SHOW, true)
             .done()
             .label("enforcementApplication-clarification", WRIT_OR_WARRANT_INFORMATION)
             .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);
@@ -107,7 +107,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
-            pcsCase.getEnforcementOrder().setFormattedDefendantNames(defendants.stream()
+            pcsCase.setFormattedDefendantNames(defendants.stream()
                 .map(defendant ->
                     defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
                     + "<br>")

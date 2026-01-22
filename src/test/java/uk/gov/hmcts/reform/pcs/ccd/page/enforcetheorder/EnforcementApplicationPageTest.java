@@ -32,7 +32,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+        assertThat(caseData.getFormattedDefendantNames())
                 .isEqualTo("John Doe<br>");
     }
 
@@ -49,7 +49,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames())
+        assertThat(caseData.getFormattedDefendantNames())
                 .isEqualTo("John Doe<br>\n"
                         + "Test Testing<br>\n"
                         + "Third Def<br>");
@@ -64,7 +64,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then
-        assertThat(caseData.getEnforcementOrder().getFormattedDefendantNames()).isNull();
+        assertThat(caseData.getFormattedDefendantNames()).isNull();
     }
 
     private PCSCase createCaseWithDefendants(Party... defendants) {
