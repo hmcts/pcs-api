@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "test:pr": "yarn playwright install && yarn playwright test --project chrome --grep '@PR'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
