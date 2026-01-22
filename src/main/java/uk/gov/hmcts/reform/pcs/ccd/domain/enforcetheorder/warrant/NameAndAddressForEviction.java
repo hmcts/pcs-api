@@ -13,9 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 @Builder
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class NameAndAddressForEviction {
 
     @CCD(
