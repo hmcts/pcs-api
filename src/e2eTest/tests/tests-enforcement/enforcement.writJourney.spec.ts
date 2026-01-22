@@ -11,11 +11,11 @@ import {
   youNeedPermission,
   yourApplication,
   confirmHCEOHired,
-  yourHCEO
+  yourHCEO,
+  theNICEWillChoose
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { theNICEWillChoose } from '@data/page-data/page-data-enforcement/theNICEWillChooseHCEO.page.data';
 
 test.beforeEach(async ({ page }) => {
   initializeExecutor(page);

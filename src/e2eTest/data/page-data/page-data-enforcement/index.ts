@@ -8,6 +8,7 @@ export * from '@data/page-data/page-data-enforcement/nameAndAddressForEviction.p
 export * from '@data/page-data/page-data-enforcement/confirmDefendantsDOB.page.data';
 export * from '@data/page-data/page-data-enforcement/confirmHCEOIsHired.page.data';
 export * from '@data/page-data/page-data-enforcement/yourHCEO.page.data';
+export * from '@data/page-data/page-data-enforcement/theNICEWillChooseHCEO.page.data';
 export * from '@data/page-data/page-data-enforcement/enterDefendantsDOB.page.data';
 export * from '@data/page-data/page-data-enforcement/policeOrSocialServiceVisit.page.data';
 export * from '@data/page-data/page-data-enforcement/riskPosedByEveryoneAtProperty.page.data';
