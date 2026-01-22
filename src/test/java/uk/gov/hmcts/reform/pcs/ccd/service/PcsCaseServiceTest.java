@@ -43,9 +43,6 @@ class PcsCaseServiceTest {
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
-    @Mock
-    private PartyDocumentsService partyDocumentsService;
-
     private PcsCaseService underTest;
 
     @BeforeEach
@@ -57,8 +54,7 @@ class PcsCaseServiceTest {
             pcsCaseRepository,
             pcsCaseMergeService,
             modelMapper,
-            tenancyLicenceService,
-            partyDocumentsService
+            tenancyLicenceService
         );
     }
 
@@ -208,5 +204,4 @@ class PcsCaseServiceTest {
         when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(addressEntity);
         return addressEntity;
     }
-
 }

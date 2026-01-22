@@ -10,9 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NonPrefixWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         pageBuilder
             .page("vulnerableAdultsChildren", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
-            .showCondition("selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
             .label("vulnerableAdultsChildren-line-separator", "---")
             .label(
                 "vulnerableAdultsChildren-information-text", """
@@ -46,18 +47,18 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
                     """
             )
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getWarrantDetails)
-            .mandatory(WarrantDetails::getVulnerablePeoplePresent)
-            .complex(WarrantDetails::getVulnerableAdultsChildren,
+            .complex(EnforcementOrder::getNonPrefixWarrantDetails)
+            .mandatory(NonPrefixWarrantDetails::getVulnerablePeoplePresent)
+            .complex(NonPrefixWarrantDetails::getVulnerableAdultsChildren,
                     "vulnerablePeoplePresent=\"YES\"")
-                    .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
-                    .mandatory(
-                        VulnerableAdultsChildren::getVulnerableReasonText,
-                        "vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                            + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\""
-                    )
-                .done()
+            .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
+            .mandatory(VulnerableAdultsChildren::getVulnerableReasonText,
+                    "vulnerablePeoplePresent=\"YES\" "
+                    + "AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
+                    + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
+                    + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
+            .done()
+            .done()
             .done()
             .label("vulnerableAdultsChildren-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -75,9 +76,12 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
     private List<String> getValidationErrors(PCSCase data) {
         List<String> errors = new ArrayList<>();
 
-        if (data.getEnforcementOrder().getWarrantDetails().getVulnerablePeoplePresent() == YesNoNotSure.YES) {
+        if (data.getEnforcementOrder().getNonPrefixWarrantDetails().getVulnerablePeoplePresent() == YesNoNotSure.YES) {
             String txt = data.getEnforcementOrder()
-                    .getWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText();
+                    .getNonPrefixWarrantDetails().getVulnerableAdultsChildren() != null
+                    ? data.getEnforcementOrder()
+                        .getNonPrefixWarrantDetails().getVulnerableAdultsChildren().getVulnerableReasonText()
+                    : null;
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,
                 "How are they vulnerable?",

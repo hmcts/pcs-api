@@ -6,6 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 /**
  * CCD page configuration for the enforcement Language used screen.
@@ -18,7 +19,7 @@ public class LanguageUsedPage implements CcdPageConfiguration {
         pageBuilder
             .page("languageUsed")
             .pageLabel("Language used")
-            .showCondition("selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
             .label("languageUsed-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
