@@ -8,9 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthClaimantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthLegalRepDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.StatementOfTruthDetails;
@@ -74,19 +72,20 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetails::getCompletedBy)
-                        .complex(StatementOfTruthDetails::getClaimantDetails,
+                        .mandatory(StatementOfTruthDetails::getAgreementClaimant,
                             "warrantCompletedBy=\"CLAIMANT\"")
-                            .mandatory(StatementOfTruthClaimantDetails::getAgreementClaimant)
-                            .mandatory(StatementOfTruthClaimantDetails::getFullNameClaimant)
-                            .mandatory(StatementOfTruthClaimantDetails::getPositionClaimant)
-                        .done()
-                        .complex(StatementOfTruthDetails::getLegalRepDetails,
+                        .mandatory(StatementOfTruthDetails::getFullNameClaimant,
+                            "warrantCompletedBy=\"CLAIMANT\"")
+                        .mandatory(StatementOfTruthDetails::getPositionClaimant,
+                            "warrantCompletedBy=\"CLAIMANT\"")
+                        .mandatory(StatementOfTruthDetails::getAgreementLegalRep,
                             "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
-                            .mandatory(StatementOfTruthLegalRepDetails::getAgreementLegalRep)
-                            .mandatory(StatementOfTruthLegalRepDetails::getFullNameLegalRep)
-                            .mandatory(StatementOfTruthLegalRepDetails::getFirmNameLegalRep)
-                            .mandatory(StatementOfTruthLegalRepDetails::getPositionLegalRep)
-                        .done()
+                        .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
+                            "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
+                        .mandatory(StatementOfTruthDetails::getFirmNameLegalRep,
+                            "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
+                        .mandatory(StatementOfTruthDetails::getPositionLegalRep,
+                            "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"")
                     .done()
                 .done()
             .done()
@@ -95,7 +94,6 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-
         PCSCase caseData = details.getData();
         List<String> errors = new ArrayList<>();
 
@@ -110,9 +108,12 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
             .getStatementOfTruth();
 
         if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.CLAIMANT) {
-            validateClaimantDetails(statementOfTruth.getClaimantDetails(), errors);
+            validate(statementOfTruth.getFullNameClaimant(), "Full name", errors);
+            validate(statementOfTruth.getPositionClaimant(), "Position or office held", errors);
         } else if (statementOfTruth.getCompletedBy() == StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE) {
-            validateLegalRepDetails(statementOfTruth.getLegalRepDetails(), errors);
+            validate(statementOfTruth.getFullNameLegalRep(), "Full name", errors);
+            validate(statementOfTruth.getFirmNameLegalRep(), "Name of firm", errors);
+            validate(statementOfTruth.getPositionLegalRep(), "Position or office held", errors);
         }
     }
 
@@ -125,15 +126,5 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
         );
     }
 
-    private void validateClaimantDetails(StatementOfTruthClaimantDetails claimantDetails, List<String> errors) {
-        validate(claimantDetails.getFullNameClaimant(), "Full name", errors);
-        validate(claimantDetails.getPositionClaimant(), "Position or office held", errors);
-    }
-
-    private void validateLegalRepDetails(StatementOfTruthLegalRepDetails legalRepDetails, List<String> errors) {
-        validate(legalRepDetails.getFullNameLegalRep(), "Full name", errors);
-        validate(legalRepDetails.getFirmNameLegalRep(), "Name of firm", errors);
-        validate(legalRepDetails.getPositionLegalRep(), "Position or office held", errors);
-    }
 }
 
