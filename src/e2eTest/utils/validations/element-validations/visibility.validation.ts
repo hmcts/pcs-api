@@ -1,10 +1,11 @@
 import {Page, expect, Locator} from '@playwright/test';
-import {IValidation, validationData} from '../../interfaces/validation.interface';
+import {IValidation, validationData} from '@utils/interfaces';
 
 export class VisibilityValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationData): Promise<void> {
     let element = page.locator(`label:has-text("${fieldName}"),
-                                         span:has-text("${fieldName}")`);
+                                         span:has-text("${fieldName}"),
+                                         button:has-text("${fieldName}")`);
     let selectors = fieldName == "" ? Array.isArray(data) ? data as string[] : [data as string] : [fieldName];
     let elements = selectors.map(selector => page.locator(`label:has-text("${selector}"),
                                          span:has-text("${selector}")`));
