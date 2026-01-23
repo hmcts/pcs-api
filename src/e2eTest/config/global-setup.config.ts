@@ -15,7 +15,7 @@ async function globalSetupConfig(): Promise<void> {
 
 async function authenticateAndSaveState(): Promise<string> {
   const baseUrl = process.env.MANAGE_CASE_BASE_URL;
-  const userPassword = user.claimantSolicitor.password || process.env.IDAM_PCS_USER_PASSWORD;
+  const userPassword = user.claimantSolicitor.password;
 
   if (!baseUrl) throw new Error('MANAGE_CASE_BASE_URL is not set');
   if (!user.claimantSolicitor.email || !userPassword) {
@@ -34,7 +34,7 @@ async function authenticateAndSaveState(): Promise<string> {
     await page.waitForTimeout(1500);
 
     await dismissCookieBanner(page, 'additional');
-    await dismissCookieBanner(page, 'analytics');
+    await dismissCookieBanner(page, 'hide-success');
 
     await page.waitForSelector('#username', { timeout: 30000 });
     await page.locator('#username').fill(user.claimantSolicitor.email);
@@ -43,7 +43,6 @@ async function authenticateAndSaveState(): Promise<string> {
 
     await page.waitForURL((url) => !url.href.includes('/login') && !url.href.includes('/sign-in'), { timeout: 30000 });
 
-    await dismissCookieBanner(page, 'additional');
     await dismissCookieBanner(page, 'analytics');
 
     // Wait for page to fully load and ensure we're authenticated
@@ -52,23 +51,26 @@ async function authenticateAndSaveState(): Promise<string> {
 
     // Verify we have authentication cookies before saving
     const cookies = await context.cookies();
-    const authCookies = cookies.filter(c => 
-      c.name.includes('auth') || 
-      c.name.includes('session') || 
+    const authCookies = cookies.filter(c =>
+      c.name.includes('auth') ||
+      c.name.includes('session') ||
       c.name.includes('token') ||
       c.name === 'Idam.Session' ||
       c.name === '__auth__'
     );
 
+    // Validate authentication cookies before saving state
     if (authCookies.length === 0) {
-      throw new Error('No authentication cookies found after login. Login may have failed.');
+      const error = new Error('No authentication cookies found after login. Login may have failed.');
+      throw error;
     }
 
     await context.storageState({ path: STORAGE_STATE_PATH });
 
     // Verify the file was created
     if (!fs.existsSync(STORAGE_STATE_PATH)) {
-      throw new Error(`Storage state file was not created at ${STORAGE_STATE_PATH}`);
+      const error = new Error(`Storage state file was not created at ${STORAGE_STATE_PATH}`);
+      throw error;
     }
 
     const savedState = JSON.parse(fs.readFileSync(STORAGE_STATE_PATH, 'utf-8'));
@@ -87,14 +89,23 @@ async function authenticateAndSaveState(): Promise<string> {
 /**
  * Dismiss cookie banner. Before login: #cookie-accept-submit (hmcts-access).
  * After login: button "Accept analytics cookies" in .govuk-cookie-banner__message.
+ * After accepting: #cookie-accept-all-success-banner-hide to hide success message.
  */
-async function dismissCookieBanner(page: Page, type: 'additional' | 'analytics'): Promise<void> {
+async function dismissCookieBanner(page: Page, type: 'additional' | 'analytics' | 'hide-success'): Promise<void> {
   try {
-    const btn = type === 'additional'
-      ? page.locator('#cookie-accept-submit')
-      : page.locator('.govuk-cookie-banner__message').getByRole('button', { name: /Accept analytics cookies/i });
-    if (await btn.isVisible().catch(() => false)) {
+    let btn;
+    if (type === 'additional') {
+      btn = page.locator('#cookie-accept-submit');
+    } else if (type === 'analytics') {
+      btn = page.locator('.govuk-cookie-banner__message').getByRole('button', { name: /Accept analytics cookies/i });
+    } else if (type === 'hide-success') {
+      btn = page.locator('#cookie-accept-all-success-banner-hide');
+    }
+
+    if (btn && await btn.isVisible().catch(() => false)) {
       await btn.click();
+      // Wait a bit for the banner to disappear
+      await page.waitForTimeout(500);
     }
   } catch {
     // Ignore – banner may not be present
