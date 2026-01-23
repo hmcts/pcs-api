@@ -149,7 +149,7 @@ yarn test:chrome
 | Locator failures       | Verify fieldName matches UI text/attributes |
 | Timeout errors         | Add explicit waits in components            |
 
-##  9. Content Auto-Validation
+## 9. Content Auto-Validation
 
 How It Works -
 Automatic: Triggers after click actions that cause page navigation

@@ -135,7 +135,7 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
-    await performAction('clickButtonA', createCase.start);
+    await performAction('clickButton', createCase.start);
   }
 
   private async selectAddress(page: Page, caseData: actionData) {
