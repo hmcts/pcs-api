@@ -31,5 +31,8 @@
     "@hmcts/playwright-common": "^1.0.33",
     "oauth4webapi": "^3.5.1",
     "uuid": "^13.0.0"
+  },
+  "resolutions": {
+    "lighthouse": "^12.8.2"
   }
 }
