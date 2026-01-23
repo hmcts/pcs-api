@@ -24,17 +24,17 @@ public class NoRentArrearsGroundsOptions {
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsMandatoryGrounds"
+        typeParameterOverride = "AssuredMandatoryGround"
     )
-    private Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds;
+    private Set<AssuredMandatoryGround> mandatoryGrounds;
 
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "NoRentArrearsDiscretionaryGrounds"
+        typeParameterOverride = "AssuredDiscretionaryGround"
     )
-    private Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds;
+    private Set<AssuredDiscretionaryGround> discretionaryGrounds;
     private YesOrNo showGroundReasonPage;
 
 }
