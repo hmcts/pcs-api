@@ -72,7 +72,7 @@ test.afterEach(async () => {
   }
 });
 
-test.describe('[Enforcement - Warrant of Possession]', async () => {
+test.describe('[Enforcement - Warrant of Possession ]', async () => {
   test('Warrant - Apply for a Warrant of Possession -  testing risk to Bailiff [Yes] @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
