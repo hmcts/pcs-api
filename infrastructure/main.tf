@@ -1,7 +1,7 @@
 provider "azurerm" {
-  
 
-features {}
+
+  features {}
 
 
 }
