@@ -1,7 +1,7 @@
-import { IdamUtils, ServiceAuthUtils } from '@hmcts/playwright-common';
-import { chromium, Page } from '@playwright/test';
-import { accessTokenApiData, s2STokenApiData } from '@data/api-data';
-import { user } from '@data/user-data';
+import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
+import {chromium, Page} from '@playwright/test';
+import {accessTokenApiData, s2STokenApiData} from '@data/api-data';
+import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -43,13 +43,15 @@ async function authenticateAndSaveState(): Promise<string> {
 
     await page.waitForURL((url) => !url.href.includes('/login') && !url.href.includes('/sign-in'), { timeout: 30000 });
 
-    await dismissCookieBanner(page, 'analytics');
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
 
-    // Wait for page to fully load and ensure we're authenticated
+    await dismissCookieBanner(page, 'analytics');
+    await dismissCookieBanner(page, 'hide-success');
+
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
     await page.waitForTimeout(2000);
 
-    // Verify we have authentication cookies before saving
     const cookies = await context.cookies();
     const authCookies = cookies.filter(c =>
       c.name.includes('auth') ||
@@ -59,26 +61,22 @@ async function authenticateAndSaveState(): Promise<string> {
       c.name === '__auth__'
     );
 
-    // Validate authentication cookies before saving state
     if (authCookies.length === 0) {
-      const error = new Error('No authentication cookies found after login. Login may have failed.');
-      throw error;
+      throw new Error('No authentication cookies found after login. Login may have failed.');
     }
 
     await context.storageState({ path: STORAGE_STATE_PATH });
 
-    // Verify the file was created
     if (!fs.existsSync(STORAGE_STATE_PATH)) {
-      const error = new Error(`Storage state file was not created at ${STORAGE_STATE_PATH}`);
-      throw error;
+      throw new Error(`Storage state file was not created at ${STORAGE_STATE_PATH}`);
     }
 
     const savedState = JSON.parse(fs.readFileSync(STORAGE_STATE_PATH, 'utf-8'));
-    console.log(`✅ Authentication state saved: ${savedState.cookies?.length || 0} cookies`);
+    console.log(`Authentication state saved: ${savedState.cookies?.length || 0} cookies`);
 
     return STORAGE_STATE_PATH;
   } catch (error) {
-    console.error('❌ Authentication setup failed:', error);
+    console.error('Authentication setup failed:', error);
     await page.screenshot({ path: path.join(authDir, 'auth-failure.png'), fullPage: true });
     throw error;
   } finally {
@@ -86,29 +84,26 @@ async function authenticateAndSaveState(): Promise<string> {
   }
 }
 
-/**
- * Dismiss cookie banner. Before login: #cookie-accept-submit (hmcts-access).
- * After login: button "Accept analytics cookies" in .govuk-cookie-banner__message.
- * After accepting: #cookie-accept-all-success-banner-hide to hide success message.
- */
 async function dismissCookieBanner(page: Page, type: 'additional' | 'analytics' | 'hide-success'): Promise<void> {
   try {
     let btn;
     if (type === 'additional') {
       btn = page.locator('#cookie-accept-submit');
     } else if (type === 'analytics') {
-      btn = page.locator('.govuk-cookie-banner__message').getByRole('button', { name: /Accept analytics cookies/i });
+      btn = page.locator('.govuk-button-group').getByRole('button', { name: 'Accept analytics cookies' });
     } else if (type === 'hide-success') {
       btn = page.locator('#cookie-accept-all-success-banner-hide');
     }
 
-    if (btn && await btn.isVisible().catch(() => false)) {
-      await btn.click();
-      // Wait a bit for the banner to disappear
-      await page.waitForTimeout(500);
+    if (btn) {
+      const isVisible = await btn.isVisible({ timeout: 5000 }).catch(() => false);
+      if (isVisible) {
+        await btn.scrollIntoViewIfNeeded();
+        await btn.click();
+        await page.waitForTimeout(500);
+      }
     }
   } catch {
-    // Ignore – banner may not be present
   }
 }
 
