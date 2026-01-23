@@ -10,8 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
@@ -33,14 +33,16 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
     @Test
     void shouldPreserveSelectedMandatoryAndDiscretionaryGrounds() {
         // Given: Mandatory and Discretionary are set
-        Set<NoRentArrearsMandatoryGrounds> expectedMandatory = Set.of(
-            NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR,
-            NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT,
-            NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS);
-        Set<NoRentArrearsDiscretionaryGrounds> expectedDiscretionary = Set.of(
-            NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE,
-            NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE,
-            NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
+        Set<AssuredMandatoryGround> expectedMandatory = Set.of(
+            AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A,
+            AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7,
+            AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8
+        );
+        Set<AssuredDiscretionaryGround> expectedDiscretionary = Set.of(
+            AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A,
+            AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16,
+            AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17
+        );
 
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
@@ -66,14 +68,16 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
     void shouldMapSelectedGroundsToEnums() {
         // Given: Mandatory and Discretionary are set
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
-        Set<NoRentArrearsMandatoryGrounds> expectedMandatory = Set.of(
-            NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR,
-            NoRentArrearsMandatoryGrounds.DEATH_OF_TENANT,
-            NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS);
-        Set<NoRentArrearsDiscretionaryGrounds> expectedDiscretionary = Set.of(
-            NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE,
-            NoRentArrearsDiscretionaryGrounds.LANDLORD_EMPLOYEE,
-            NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT);
+        Set<AssuredMandatoryGround> expectedMandatory = Set.of(
+            AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A,
+            AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7,
+            AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8
+        );
+        Set<AssuredDiscretionaryGround> expectedDiscretionary = Set.of(
+            AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A,
+            AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16,
+            AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17
+        );
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
                 NoRentArrearsGroundsOptions.builder()
@@ -89,9 +93,9 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         callMidEventHandler(caseData);
 
         // Then: Mandatory and Discretionary enum should exist in each set
-        Set<NoRentArrearsMandatoryGrounds> selectedMandatory =
+        Set<AssuredMandatoryGround> selectedMandatory =
             caseDetails.getData().getNoRentArrearsGroundsOptions().getMandatoryGrounds();
-        Set<NoRentArrearsDiscretionaryGrounds> selectedDiscretionary =
+        Set<AssuredDiscretionaryGround> selectedDiscretionary =
             caseDetails.getData().getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
 
         assertThat(selectedMandatory).containsExactlyInAnyOrderElementsOf(expectedMandatory);
@@ -101,8 +105,8 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
     @ParameterizedTest
     @MethodSource("provideRentArrearsScenarios")
     void shouldSetCorrectShowFlagForNoRentArrearsReasonsPage(
-        Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds,
-        Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds,
+        Set<AssuredMandatoryGround> mandatoryGrounds,
+        Set<AssuredDiscretionaryGround> discretionaryGrounds,
         YesOrNo expectedShowFlag) {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -125,18 +129,19 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
     private static Stream<Arguments> provideRentArrearsScenarios() {
         return Stream.of(
-            Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS),
+            Arguments.of(Set.of(AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8),
                          Set.of(),
                          YesOrNo.NO),
             Arguments.of(Set.of(),
-                         Set.of(NoRentArrearsDiscretionaryGrounds.RENT_ARREARS,
-                                NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY),
+                         Set.of(
+                             AssuredDiscretionaryGround.RENT_ARREARS_GROUND10,
+                             AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11),
                          YesOrNo.NO),
-            Arguments.of(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR),
+            Arguments.of(Set.of(AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A),
                          Set.of(),
                          YesOrNo.YES),
             Arguments.of(Set.of(),
-                         Set.of(NoRentArrearsDiscretionaryGrounds.FALSE_STATEMENT),
+                         Set.of(AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17),
                          YesOrNo.YES)
         );
     }
