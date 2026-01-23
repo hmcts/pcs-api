@@ -132,12 +132,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         label: yourHCEO.nameOfYourHCEOLabel,
         input: yourHCEO.nameOfYourHCEOInput,
       });
-
-
     });
 
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No]', async () => {
-
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
@@ -183,5 +180,4 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('clickButton', youNeedPermission.continueButton);
       await performValidation('errorMessage', { header: youNeedPermission.errors, message: youNeedPermission.errMessage });
     });
-
 });
