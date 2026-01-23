@@ -12,8 +12,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NonPrefixWarra
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
-import java.util.Set;
-
 /**
  * The main domain model representing an enforcement order.
  */
@@ -56,5 +54,5 @@ public class EnforcementOrder {
     @CCD(
             label = "What do you want to apply for?"
     )
-    private Set<GeneralApplicationType> generalApplicationTypes;
+    private GeneralApplicationType generalApplicationTypes;
 }

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ChooseGeneralApplicationPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.GenApplicationPlaceholder;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.generalApplication;
 
@@ -28,13 +29,13 @@ public class GeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
                 configBuilder
                         .decentralisedEvent(generalApplication.name(), this::submit, this::start)
                         .forAllStates()
-                        .name("Enforce the order")
+                        .name("Make a Gen Application")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                         .showSummary();
 
         new PageBuilder(eventBuilder)
-            .add(new ChooseGeneralApplicationPage());
-
+            .add(new ChooseGeneralApplicationPage())
+            .add(new GenApplicationPlaceholder());
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
