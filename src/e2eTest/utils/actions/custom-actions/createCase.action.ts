@@ -770,7 +770,7 @@ export class CreateCaseAction implements IAction {
       question: underlesseeOrMortgageeEntitledToClaim.question,
       option: underlesseeOrMortgageeEntitledToClaim.option
     });
-    await performAction('clickButtonAndVerifyPageNavigation', underlesseeOrMortgageeDetails.continueButton, wantToUploadDocuments.mainHeader);
+    await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
   }
 
   private async selectUnderlesseeOrMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
