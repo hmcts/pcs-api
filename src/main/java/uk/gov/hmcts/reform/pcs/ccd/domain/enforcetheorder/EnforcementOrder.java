@@ -44,7 +44,9 @@ public class EnforcementOrder {
     @External
     private String warrantFeeAmount;
 
-    @CCD(searchable = false)
+    @CCD(
+        searchable = false
+    )
     @External
     private String writFeeAmount;
 }
