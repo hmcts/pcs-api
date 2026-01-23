@@ -10,9 +10,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -101,7 +101,7 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds())
-            .contains(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
+            .contains(AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
     }
 
     @Test
@@ -126,11 +126,11 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds())
-            .contains(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+            .contains(AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds())
             .containsExactlyInAnyOrder(
-                RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10,
-                RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11
+                AssuredDiscretionaryGround.RENT_ARREARS_GROUND10,
+                AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11
             );
     }
 
@@ -155,8 +155,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         // And canonical sets include both 8 and 1 mapped into mandatory
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds())
             .containsExactlyInAnyOrder(
-                RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8,
-                RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1
+                AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8,
+                AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1
             );
     }
 
@@ -183,8 +183,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         // And canonical discretionary includes mapped values
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds())
             .containsExactlyInAnyOrder(
-                RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10,
-                RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12
+                AssuredDiscretionaryGround.RENT_ARREARS_GROUND10,
+                AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12
             );
     }
 
@@ -211,21 +211,21 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         assertThat(response.getData().getShowRentArrearsGroundReasonPage()).isEqualTo(YesOrNo.YES);
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds())
             .containsExactlyInAnyOrder(
-                RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8,
-                RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1
+                AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8,
+                AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1
             );
         assertThat(response.getData().getRentArrearsGroundsForPossession().getDiscretionaryGrounds())
-            .contains(RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12);
+            .contains(AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12);
     }
 
     @Test
     void shouldUseExistingCanonicalSetsWhenNoRentArrearsAndNoAdditional() {
         // Given: no rent arrears grounds and no additional grounds, but existing canonical sets
-        Set<RentArrearsMandatoryGrounds> existingMandatory = Set.of(
-            RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1
+        Set<AssuredMandatoryGround> existingMandatory = Set.of(
+            AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1
         );
-        Set<RentArrearsDiscretionaryGrounds> existingDiscretionary = Set.of(
-            RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12
+        Set<AssuredDiscretionaryGround> existingDiscretionary = Set.of(
+            AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12
         );
         PCSCase caseData = PCSCase.builder()
             .rentArrearsGroundsForPossession(
@@ -287,7 +287,7 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         // Then: should merge additional grounds
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getRentArrearsGroundsForPossession().getMandatoryGrounds())
-            .contains(RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1);
+            .contains(AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1);
     }
 
     @ParameterizedTest
