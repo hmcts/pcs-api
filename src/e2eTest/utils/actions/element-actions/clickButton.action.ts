@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { IAction } from '../../interfaces/action.interface';
+import { IAction } from '@utils/interfaces';
 import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
 
 export class ClickButtonAction implements IAction {
@@ -23,13 +23,16 @@ export class ClickButtonAction implements IAction {
 
   private async clickButton(page: Page, button: Locator): Promise<void> {
     await page.waitForLoadState();
-    await button.click(); 
+    await button.click();
     await page.waitForLoadState();
     await page.locator('.spinner-container').waitFor({ state: 'detached' });
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
-    const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
+    // Use flexible locator pattern to match various header formats (h1, h1.govuk-heading-xl, h1.govuk-heading-l, h2, h3)
+    const pageElement = page.locator(`h1:has-text("${nextPageElement}"),
+                                      h1.govuk-heading-xl:has-text("${nextPageElement}"),
+                                      h1.govuk-heading-l:has-text("${nextPageElement}")`).first();
     let attempt = 0;
     let nextPageElementIsVisible = false;
     do {
@@ -37,7 +40,7 @@ export class ClickButtonAction implements IAction {
       await this.clickButton(page, button);
       //Adding sleep to slow down execution when the application behaves abnormally
       await page.waitForTimeout(waitForPageRedirectionTimeout);
-      nextPageElementIsVisible = await pageElement.isVisible();
+      nextPageElementIsVisible = await pageElement.isVisible().catch(() => false);
     } while (!nextPageElementIsVisible && attempt < actionRetries);
     if (!nextPageElementIsVisible) {
       throw new Error(`Navigation to "${nextPageElement}" page/element failed after ${attempt} attempts`);
@@ -47,7 +50,10 @@ export class ClickButtonAction implements IAction {
   private async clickButtonAndWaitForElement(page: Page, button: Locator, nextPageElement: string): Promise<void> {
     await this.clickButton(page, button);
     //Adding sleep to slow down execution when the application behaves abnormally
-    await page.locator(`h1:has-text("${nextPageElement}")`).waitFor({ state: 'visible' });
+    // Use flexible locator pattern to match various header formats
+    await page.locator(`h1:has-text("${nextPageElement}"),
+                        h1.govuk-heading-xl:has-text("${nextPageElement}"),
+                        h1.govuk-heading-l:has-text("${nextPageElement}")`).first().waitFor({ state: 'visible' });
   }
 
   private async verifyPageAndClickButton(page: Page, currentPageHeader: string, button: Locator): Promise<void> {
