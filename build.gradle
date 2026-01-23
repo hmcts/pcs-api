@@ -16,7 +16,7 @@ plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '3.5.9'
+  id 'org.springframework.boot' version '3.5.10'
   id 'com.github.ben-manes.versions' version '0.53.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.2.2.6593'
@@ -295,7 +295,7 @@ ext {
   logbackVersion = "1.5.25"
   testcontainersVersion = "2.0.3"
   testcontainersAdditionsVersion = "1.21.4"
-  springFrameworkBootVersion = "3.5.9"
+  springFrameworkBootVersion = "3.5.10"
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.2"
   pactVersion = "4.6.19"
