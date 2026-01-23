@@ -27,7 +27,7 @@ import {
   uploadAdditionalDocs,
   wantToUploadDocuments,
   whatAreYourGroundsForPossession,
-  detailsOfRentArrears, housingPossessionClaim,
+  detailsOfRentArrears,
   home
 } from '@data/page-data';
 import{
