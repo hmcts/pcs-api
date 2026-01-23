@@ -16,7 +16,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NonPrefixWarrantDetails {
+public class RawWarrantDetails {
 
     @CCD(
             label = "Is anyone living at the property vulnerable?"

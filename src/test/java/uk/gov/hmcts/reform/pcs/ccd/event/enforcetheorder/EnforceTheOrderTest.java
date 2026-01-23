@@ -178,7 +178,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getNonPrefixWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).isEqualTo(expectedListItems);
@@ -206,7 +206,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getNonPrefixWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).isEmpty();
@@ -259,7 +259,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getNonPrefixWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).hasSize(2);

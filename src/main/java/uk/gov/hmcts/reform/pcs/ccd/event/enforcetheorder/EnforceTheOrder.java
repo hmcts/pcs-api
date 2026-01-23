@@ -10,7 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NonPrefixWarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
@@ -74,12 +74,12 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private void populateDefendantSelectionList(PCSCase caseData) {
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
-        NonPrefixWarrantDetails warrantDetails = NonPrefixWarrantDetails.builder().build();
-        enforcementOrder.setNonPrefixWarrantDetails(warrantDetails);
+        RawWarrantDetails warrantDetails = RawWarrantDetails.builder().build();
+        enforcementOrder.setRawWarrantDetails(warrantDetails);
         var allDefendants = caseData.getAllDefendants();
         List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
 
-        enforcementOrder.getNonPrefixWarrantDetails().setSelectedDefendants(
+        enforcementOrder.getRawWarrantDetails().setSelectedDefendants(
             DynamicMultiSelectStringList.builder()
                 .value(new ArrayList<>())
                 .listItems(listItems)
