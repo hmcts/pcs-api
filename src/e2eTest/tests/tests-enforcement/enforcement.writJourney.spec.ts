@@ -17,15 +17,34 @@ import {
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page },testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
-  await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-  await performAction('getDefendantDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-  });
+  if (testInfo.title.includes('@noDefendants')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('getDefendantDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadNoDefendants
+    });
+  } else if (testInfo.title.includes('@onlyMain')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadOnlyMain });
+    await performAction('getDefendantDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadOnlyMain.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadOnlyMain.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadOnlyMain
+    });
+  } else {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('getDefendantDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayload
+    });
+  }
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
@@ -47,6 +66,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
+      await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
         type: yourApplication.summaryWritOrWarrant,
         label1: yourApplication.warrantFeeValidationLabel,
@@ -120,19 +140,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
 
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
-    await performAction('validateWritOrWarrantFeeAmount', {
-      type: yourApplication.summaryWritOrWarrant,
-      label1: yourApplication.warrantFeeValidationLabel,
-      text1: yourApplication.warrantFeeValidationText,
-      label2: yourApplication.writFeeValidationLabel,
-      text2: yourApplication.writFeeValidationText
-    });
-    await performAction('validateGetQuoteFromBailiffLink', {
-      type: yourApplication.summaryWritOrWarrant,
-      link: yourApplication.quoteFromBailiffLink,
-      newPage: yourApplication.hceoPageTitle
-    });
-    await performAction('expandSummary', yourApplication.summarySaveApplication);
+    await performValidation('mainHeader', yourApplication.mainHeader);
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
@@ -160,6 +168,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
+      await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,

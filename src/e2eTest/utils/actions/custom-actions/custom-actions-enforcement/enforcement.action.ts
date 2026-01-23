@@ -111,22 +111,32 @@ export class EnforcementAction implements IAction {
   private async getDefendantDetails(defendantsDetails: actionRecord) {
 
     let originalDefendantDetails: string[] = [];
-
+    const payLoad = defendantsDetails.payLoad as Record<string, any>;
     if (defendantsDetails.defendant1NameKnown === 'YES') {
       originalDefendantDetails.push(
-        `${submitCaseApiData.submitCasePayload.defendant1.firstName} ${submitCaseApiData.submitCasePayload.defendant1.lastName}`
+        `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName}`
       );
-    };
+    } else {
+      originalDefendantDetails.push(
+        `null null`
+      );
+    }
 
     if (defendantsDetails.additionalDefendants === 'YES') {
 
-      for (const defendant of submitCaseApiData.submitCasePayload.additionalDefendants) {
+      for (const defendant of payLoad.additionalDefendants) {
         if (defendant.value.nameKnown === 'YES') {
           originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
-        }
+        } else {
+          originalDefendantDetails.push(
+            `null null`
+          );
+        };
       };
-    };
-    defendantDetails = [...new Set(originalDefendantDetails)];
+    }
+    defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
+    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    ];
 
   }
 
@@ -153,6 +163,11 @@ export class EnforcementAction implements IAction {
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
       await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.sort().join(' '));
     }
+
+    defendantDetails = defendantDetails.map(fullName =>
+      fullName?.trim().toLowerCase() === 'null null' ? 'Name not known' : fullName
+    );
+
     await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
