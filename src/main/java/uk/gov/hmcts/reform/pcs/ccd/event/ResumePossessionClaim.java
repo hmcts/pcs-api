@@ -92,6 +92,7 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -164,6 +165,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final FeeFormatter feeFormatter;
     private final DocumentService documentService;
     private final CaseAssignmentService caseAssignmentService;
+    private final MoneyConverter moneyConverter;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -210,7 +212,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(checkingNotice)
             .add(walesCheckingNotice)
             .add(noticeDetails)
-            .add(new RentDetailsPage())
+            .add(new RentDetailsPage(moneyConverter))
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())

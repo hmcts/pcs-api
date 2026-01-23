@@ -75,6 +75,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -208,6 +209,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private DocumentService documentService;
     @Mock
     private CaseAssignmentService caseAssignmentService;
+    @Mock
+    private MoneyConverter moneyConverter;
 
     @BeforeEach
     void setUp() {
@@ -234,7 +237,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter,documentService, caseAssignmentService
+            underlesseeOrMortgageePage, feeService, feeFormatter,documentService, caseAssignmentService, moneyConverter
         );
 
         setEventUnderTest(underTest);

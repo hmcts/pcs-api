@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.math.BigDecimal;
 
@@ -16,7 +17,7 @@ class RentDetailsTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentDetailsPage());
+        setPageUnderTest(new RentDetailsPage(new MoneyConverter()));
     }
 
     @Test
@@ -220,6 +221,25 @@ class RentDetailsTest extends BasePageTest {
         // Then
         assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
         assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isNull();
+    }
+
+    @Test
+    void shouldSetFormattedCurrencyWhenCalculatingDailyRentWithRemainingTwoDecimalPlaces() {
+        // Given - rent that results in a value with non-zero pence
+        PCSCase caseData = PCSCase.builder()
+            .rentDetails(RentDetails.builder()
+                             .currentRent(new BigDecimal("70.70"))
+                             .frequency(RentPaymentFrequency.WEEKLY)
+                             .build())
+            .build();
+
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        // £70.70 / 7 = £10.10, formatted should show "£10.10" with two decimal places
+        assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo(new BigDecimal("10.10"));
+        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£10.10");
     }
 
 }

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -10,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,7 +22,10 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
  * Page configuration for the Rent Details section.
  * Allows claimants to enter rent amount and payment frequency details.
  */
+@AllArgsConstructor
 public class RentDetailsPage implements CcdPageConfiguration {
+
+    private final MoneyConverter moneyConverter;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -59,8 +64,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
                     BigDecimal dailyAmount = calculateDailyRent(rentAmount, rentFrequency);
 
                     rentDetails.setCalculatedDailyCharge(dailyAmount);
-
-                    rentDetails.setFormattedCalculatedDailyCharge(formatCurrency(dailyAmount));
+                    rentDetails.setFormattedCalculatedDailyCharge("£" + moneyConverter.formatCurrency(dailyAmount));
                 }
 
                 // Set flag to NO - DailyRentAmount should show first
@@ -99,13 +103,4 @@ public class RentDetailsPage implements CcdPageConfiguration {
         return rentAmount.divide(divisor, 2, RoundingMode.HALF_UP);
     }
 
-    private String formatCurrency(BigDecimal amount) {
-        if (amount == null) {
-            return null;
-        }
-
-        // Strip trailing zeros for cleaner display (e.g., "£42.00" -> "£42", "£42.50" -> "£42.5")
-        BigDecimal stripped = amount.stripTrailingZeros();
-        return "£" + stripped.toPlainString();
-    }
 }
