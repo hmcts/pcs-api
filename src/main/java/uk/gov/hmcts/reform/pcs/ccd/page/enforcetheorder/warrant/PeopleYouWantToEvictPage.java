@@ -7,6 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NonPrefixWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -34,8 +35,9 @@ public class PeopleYouWantToEvictPage implements CcdPageConfiguration {
             .readonly(WarrantDetails::getShowPeopleYouWantToEvictPage, NEVER_SHOW)
             .done()
             .label("peopleYouWantToEvict-line-separator", "---")
-            .complex(EnforcementOrder::getWarrantDetails)
-            .mandatory(WarrantDetails::getSelectedDefendants)
+            .complex(EnforcementOrder::getNonPrefixWarrantDetails)
+            .mandatory(NonPrefixWarrantDetails::getSelectedDefendants)
+            .done()
             .done()
             .label("peopleYouWantToEvict-save-and-return", SAVE_AND_RETURN);
     }
@@ -48,7 +50,8 @@ public class PeopleYouWantToEvictPage implements CcdPageConfiguration {
         List<String> errors = new ArrayList<>();
         
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
-        DynamicMultiSelectStringList selectedDefendants = enforcementOrder.getWarrantDetails().getSelectedDefendants();
+        DynamicMultiSelectStringList selectedDefendants =
+                enforcementOrder.getNonPrefixWarrantDetails().getSelectedDefendants();
         
         // Validate that at least one defendant is selected
         if (selectedDefendants == null 
