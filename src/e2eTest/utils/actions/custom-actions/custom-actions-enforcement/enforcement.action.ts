@@ -110,19 +110,23 @@ export class EnforcementAction implements IAction {
 
   private async getDefendantDetails(defendantsDetails: actionRecord) {
 
+    let originalDefendantDetails: string[] = [];
+
     if (defendantsDetails.defendant1NameKnown === 'YES') {
-      defendantDetails.push(
+      originalDefendantDetails.push(
         `${submitCaseApiData.submitCasePayload.defendant1.firstName} ${submitCaseApiData.submitCasePayload.defendant1.lastName}`
       );
     };
 
     if (defendantsDetails.additionalDefendants === 'YES') {
-      submitCaseApiData.submitCasePayload.additionalDefendants.forEach(defendant => {
+
+      for (const defendant of submitCaseApiData.submitCasePayload.additionalDefendants) {
         if (defendant.value.nameKnown === 'YES') {
-          defendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
+          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
         }
-      });
+      };
     };
+    defendantDetails = [...new Set(originalDefendantDetails)];
 
   }
 
@@ -131,9 +135,9 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
-      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
+      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.sort().join(' '));
     }
-    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet}${addressInfo.addressLine2}${addressInfo.townCity}${addressInfo.engOrWalPostcode}`);
+    await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
   }
@@ -368,7 +372,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', languageUsed.continueButton);
   }
 
-  private async confirmSuspendedOrder(suspendedOrderPara: actionRecord){
+  private async confirmSuspendedOrder(suspendedOrderPara: actionRecord) {
     await this.addFieldsToMap(suspendedOrderPara);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -463,18 +467,27 @@ export class EnforcementAction implements IAction {
     }
   }
 
-  private async generateMoreThanMaxString(page: Page, label: string, input: string): Promise<string> {
+  private async generateMoreThanMaxString(page: Page, label: string, input: string | number): Promise<string> {
 
-    if (input !== 'MAXPLUS') return '';
+    let length: number;
 
-    const hintText = await page
-      .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
-      .innerText();
+    if (input === 'MAXPLUS') {
+      const hintText = await page
+        .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
+        .innerText();
 
-    const limit = await this.retrieveAmountFromString(hintText);
-    if (limit == 0) return '';
+      const limit = await this.retrieveAmountFromString(hintText);
+      if (limit === 0) return '';
 
-    const length = limit + 1;
+      length = limit + 1;
+
+    } else if (typeof input === 'number') {
+      length = input + 1;
+
+    } else {
+      return '';
+    }
+
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     let finalString = '';
     for (let i = 0; i < length; i++) {
