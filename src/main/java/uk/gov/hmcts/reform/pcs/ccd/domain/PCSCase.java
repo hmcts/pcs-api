@@ -76,8 +76,6 @@ public class PCSCase {
     @External
     private AddressUK propertyAddress;
 
-    private String formattedPropertyAddress;
-
     @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
 
@@ -493,9 +491,6 @@ public class PCSCase {
     )
     private DefendantResponse defendantResponse;
 
-    @CCD(searchable = false)
-    private String formattedDefendantNames;
-
     @CCD(
         label = "Select an operation to perform.",
         typeOverride = DynamicRadioList
@@ -505,4 +500,7 @@ public class PCSCase {
     @CCD(access = ClaimantAccess.class)
     private List<ListValue<Document>> allDocuments;
 
+    @CCD(searchable = false)
+    private String formattedDefendantNames;
+    private String formattedPropertyAddress;
 }
