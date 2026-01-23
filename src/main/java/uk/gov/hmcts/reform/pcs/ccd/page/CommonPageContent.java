@@ -37,7 +37,7 @@ public class CommonPageContent {
             <div class="govuk-details__text">
                 <p>
                     Legal costs are the costs you incur when a lawyer, legal representative, or
-                    someone working in a legal department applies for a writ or warrant on your behalf.
+                    someone working in a legal department applies for a writ or a warrant on your behalf.
                 </p>
                 <p>
                     They will invoice these costs to you, and you can reclaim them from the defendant.
