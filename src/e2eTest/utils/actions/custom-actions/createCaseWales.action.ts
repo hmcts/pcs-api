@@ -1,4 +1,4 @@
-import {actionData, actionRecord, IAction} from '@utils/interfaces';
+import {actionData, actionRecord, IAction} from '../../interfaces/action.interface';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {claimantDetailsWales} from '@data/page-data/claimantDetailsWales.page.data';

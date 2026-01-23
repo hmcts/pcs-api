@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { IAction } from '@utils/interfaces';
+import { IAction } from '../../interfaces/action.interface';
 import { actionRetries, waitForPageRedirectionTimeout } from '../../../playwright.config';
 
 export class ClickButtonAction implements IAction {
@@ -23,7 +23,7 @@ export class ClickButtonAction implements IAction {
 
   private async clickButton(page: Page, button: Locator): Promise<void> {
     await page.waitForLoadState();
-    await button.click();
+    await button.click(); 
     await page.waitForLoadState();
     await page.locator('.spinner-container').waitFor({ state: 'detached' });
   }

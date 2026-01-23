@@ -12,9 +12,7 @@ export const LONG_TIMEOUT = 30000;
 export const VERY_LONG_TIMEOUT = 60000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
-
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
-
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
 export default defineConfig({
@@ -27,11 +25,7 @@ export default defineConfig({
   workers: 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
-  use: {
-    actionTimeout: 30 * 1000,
-    navigationTimeout: 30 * 1000,
-    ...storageStateConfig,
-  },
+  use: { actionTimeout: 30 * 1000,  navigationTimeout: 30 * 1000, ...storageStateConfig },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),

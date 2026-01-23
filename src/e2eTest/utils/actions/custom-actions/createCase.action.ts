@@ -26,8 +26,7 @@ import {
   addressCheckYourAnswers,
   statementOfTruth,
   claimSaved,
-  payClaimFee,
-  wantToUploadDocuments
+  payClaimFee
 } from '@data/page-data';
 import {
   claimantType,
@@ -260,7 +259,6 @@ export class CreateCaseAction implements IAction {
   private async selectContactPreferences(preferences: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-
     const prefData = preferences as {
       notifications: string;
       correspondenceAddress: string;
