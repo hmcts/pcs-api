@@ -16,10 +16,10 @@ public class ToggleClaimSentToHighCourtPlaceholder implements CcdPageConfigurati
             .page("toggleClaimSentToHighCourtPlaceholder")
             .pageLabel("Placeholder to simulate if claim has been sent to High Court")
             .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .label("toggleClaimSentToHighCourtPlaceholder-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .mandatory(WritDetails::getHasClaimTransferredToHighCourt)
-            .label("toggleClaimSentToHighCourtPlaceholder-line-separator", "---")
             .done()
             .done()
             .label("toggleClaimSentToHighCourtPlaceholder-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

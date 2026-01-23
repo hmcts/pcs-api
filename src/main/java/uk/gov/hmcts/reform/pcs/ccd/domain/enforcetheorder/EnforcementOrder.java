@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NonPrefixWarra
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
+import java.util.Set;
+
 /**
  * The main domain model representing an enforcement order.
  */
@@ -44,13 +46,15 @@ public class EnforcementOrder {
     @External
     private String warrantFeeAmount;
 
-    @CCD(
-        searchable = false
-    )
+    @CCD(searchable = false)
     @External
     private String writFeeAmount;
 
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
 
+    @CCD(
+            label = "What do you want to apply for?"
+    )
+    private Set<GeneralApplicationType> generalApplicationTypes;
 }
