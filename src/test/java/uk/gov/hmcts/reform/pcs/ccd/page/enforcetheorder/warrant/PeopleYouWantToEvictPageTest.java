@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NonPrefixWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -36,7 +36,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .warrantDetails(WarrantDetails.builder()
+                    .nonPrefixWarrantDetails(NonPrefixWarrantDetails.builder()
                         .selectedDefendants(DynamicMultiSelectStringList.builder()
                             .value(List.of())
                             .build())
@@ -59,7 +59,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .warrantDetails(WarrantDetails.builder()
+                    .nonPrefixWarrantDetails(NonPrefixWarrantDetails.builder()
                         .selectedDefendants(null)
                         .build())
                     .build())
@@ -85,7 +85,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
                 .build();
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .warrantDetails(WarrantDetails.builder()
+                    .nonPrefixWarrantDetails(NonPrefixWarrantDetails.builder()
                         .selectedDefendants(DynamicMultiSelectStringList.builder()
                             .value(List.of(element1))
                             .listItems(List.of(element1))
@@ -100,7 +100,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNullOrEmpty();
             DynamicMultiSelectStringList selected = 
-                response.getData().getEnforcementOrder().getWarrantDetails().getSelectedDefendants();
+                response.getData().getEnforcementOrder().getNonPrefixWarrantDetails().getSelectedDefendants();
             assertThat(selected).isNotNull();
             assertThat(selected.getValue()).hasSize(1);
             assertThat(selected.getValue().getFirst().getCode()).isEqualTo(defendantCode);
@@ -123,7 +123,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
                 .build();
             PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
-                    .warrantDetails(WarrantDetails.builder()
+                    .nonPrefixWarrantDetails(NonPrefixWarrantDetails.builder()
                         .selectedDefendants(DynamicMultiSelectStringList.builder()
                             .value(List.of(element1, element2))
                             .listItems(List.of(element1, element2))
@@ -138,7 +138,7 @@ class PeopleYouWantToEvictPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNullOrEmpty();
             DynamicMultiSelectStringList selected = 
-                response.getData().getEnforcementOrder().getWarrantDetails().getSelectedDefendants();
+                response.getData().getEnforcementOrder().getNonPrefixWarrantDetails().getSelectedDefendants();
             assertThat(selected).isNotNull();
             assertThat(selected.getValue()).hasSize(2);
             assertThat(selected.getValue().stream()
