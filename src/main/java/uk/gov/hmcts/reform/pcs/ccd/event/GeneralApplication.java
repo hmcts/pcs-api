@@ -29,7 +29,7 @@ public class GeneralApplication implements CCDConfig<PCSCase, State, UserRole> {
                 configBuilder
                         .decentralisedEvent(generalApplication.name(), this::submit, this::start)
                         .forAllStates()
-                        .name("Make a Gen Application")
+                        .name("Resolve a property dispute")
                         .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                         .showSummary();
 
