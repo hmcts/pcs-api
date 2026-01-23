@@ -7,7 +7,6 @@ CREATE TABLE defendant_response (
                     defence_submitted BOOLEAN NOT NULL,
                     counterclaim_submitted BOOLEAN NOT NULL,
                     additional_information VARCHAR(6800),
-                    --statement_of_truth_id REFERENCES
                     created_at TIMESTAMP Default NOW(),
                     updated_at TIMESTAMP Default NOW()
 );
