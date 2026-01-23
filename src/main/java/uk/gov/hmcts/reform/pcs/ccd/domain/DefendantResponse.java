@@ -12,4 +12,13 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 @AllArgsConstructor
 public class DefendantResponse {
     private YesOrNo contactByPhone;
+    private YesOrNo contactByEmail;
+    private YesOrNo contactByText;
+    private YesOrNo contactByPost;
+
+    private String email;
+
+    private String address;
+
+    private String phoneNumber;
 }
