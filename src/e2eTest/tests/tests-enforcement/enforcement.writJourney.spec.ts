@@ -30,7 +30,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - Apply for a Writ of Possession @regression',
+  test('Writ - Apply for a Writ of Possession @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);

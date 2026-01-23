@@ -6,7 +6,6 @@ import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-a
 import {prohibitedConductStandardContractWales} from '@data/page-data/prohibitedConductStandardContractWales.page.data';
 import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
-import {contactPreferences} from "@data/page-data-figma";
 
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
   async execute(page: Page, action: string, fieldName: actionData | actionRecord, data?: actionData): Promise<void> {
@@ -43,7 +42,6 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
         ['inputText', claimantDetailsWales.yearLabel, claimantDetailsWales.yearInput]);
     }
     await performAction('clickButton', claimantDetailsWales.continue);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantDetailsWales.continue, contactPreferences.mainHeader);
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {

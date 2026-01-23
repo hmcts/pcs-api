@@ -43,18 +43,6 @@ async function validatePageIfNavigated(action:string): Promise<void> {
       const executor = getExecutor();
       const currentUrl = executor.page.url();
 
-      // Wait for page to load fully before starting validations
-      try {
-        await executor.page.waitForLoadState('domcontentloaded', { timeout: 30000 });
-        await executor.page.waitForLoadState('load', { timeout: 30000 });
-      } catch (error) {
-        // If load state times out, continue anyway - page might still be usable
-        const errorMessage = String((error as Error).message || error).toLowerCase();
-        if (!errorMessage.includes('timeout')) {
-          console.warn(`Page load state wait encountered an issue: ${errorMessage}`);
-        }
-      }
-
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
           currentUrl.includes('idam') || currentUrl.includes('auth')) {

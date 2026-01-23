@@ -13,10 +13,8 @@ export const VERY_LONG_TIMEOUT = 60000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
 
-// Path to the saved authentication state
 const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
 
-// Only use storageState if the file exists (created by globalSetup)
 const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
 export default defineConfig({
@@ -32,8 +30,6 @@ export default defineConfig({
   use: {
     actionTimeout: 30 * 1000,
     navigationTimeout: 30 * 1000,
-    // Use the saved authentication state for all tests
-    // This means tests will start already logged in
     ...storageStateConfig,
   },
   /* Report slow tests if they take longer than 5 mins */

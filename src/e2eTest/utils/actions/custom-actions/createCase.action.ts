@@ -294,7 +294,7 @@ export class CreateCaseAction implements IAction {
         await performAction('inputText', contactPreferences.enterPhoneNumberHiddenTextLabel, contactPreferences.enterPhoneNumberTextInput);
       }
     }
-    await performAction('clickButtonAndVerifyPageNavigation', contactPreferences.continueButton, defendantDetails.mainHeader);
+    await performAction('clickButton', contactPreferences.continueButton);
   }
 
   private async addDefendantDetails(defendantData: actionRecord) {
