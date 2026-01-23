@@ -59,9 +59,24 @@ import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 // Disable global storageState for this file - these tests need to test sign-out/re-login flow
 test.use({ storageState: undefined });
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({page, context}) => {
+  // Clear all cookies to ensure a fresh session (no storageState)
+  await context.clearCookies();
+  
   initializeExecutor(page);
+  // Navigate to base URL first (needed for localStorage access)
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  
+  // Clear storage after navigating to a real page
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      // Ignore if storage is not accessible
+    }
+  });
+  
   await performAction('handleCookieConsent', {
     accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
     hide: signInOrCreateAnAccount.hideThisCookieMessageButton
