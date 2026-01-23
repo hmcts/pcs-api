@@ -47,8 +47,4 @@ public class EnforcementOrder {
     @CCD(searchable = false)
     @External
     private String writFeeAmount;
-
-    private String formattedDefendantNames;
-    private String formattedPropertyAddress;
-
 }
