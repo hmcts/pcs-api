@@ -133,7 +133,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         label: yourHCEO.nameOfYourHCEOLabel,
         input: yourHCEO.nameOfYourHCEOInput,
       });
-      await performValidation('mainHeader',moneyOwed.mainHeaderPlaceholder);
+      await performValidation('mainHeader',moneyOwed.mainHeaderWrit);
       await performAction('clickButton', moneyOwed.continueButton);
       await performValidation('mainHeader', legalCosts.mainHeader);
       await performAction('inputErrorValidation', {
@@ -160,7 +160,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         label: legalCosts.howMuchYouWantToReclaimTextLabel,
         input: legalCosts.howMuchYouWantToReclaimTextInput
       });
-      await performValidation('mainHeader', landRegistryFees.mainHeaderPlaceholder);
+      await performValidation('mainHeader', landRegistryFees.mainHeaderWrit);
     });
 
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] @PR @regression', async () => {
@@ -184,14 +184,14 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
     await performValidation('mainHeader', theNICEWillChoose.mainHeader);
     await performAction('clickButton', theNICEWillChoose.continueButton);
-    await performValidation('mainHeader',moneyOwed.mainHeaderPlaceholder);
+    await performValidation('mainHeader',moneyOwed.mainHeaderWrit);
     await performAction('clickButton', moneyOwed.continueButton);
     await performValidation('mainHeader', legalCosts.mainHeader);
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.noRadioOption
     });
-    await performValidation('mainHeader', landRegistryFees.mainHeaderPlaceholder);
+    await performValidation('mainHeader', landRegistryFees.mainHeaderWrit);
   });
 
   test('Writ - Apply for a Writ of Possession [General application journey]', {
