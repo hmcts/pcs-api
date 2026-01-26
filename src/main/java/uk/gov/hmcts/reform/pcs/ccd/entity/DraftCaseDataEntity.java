@@ -37,4 +37,6 @@ public class DraftCaseDataEntity {
     @Enumerated(EnumType.STRING)
     private EventId eventId;
 
+    private UUID idamUserId;
+
 }

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -21,6 +22,9 @@ class WritPageConfigurerTest extends BasePageTest {
     @InjectMocks
     private WritPageConfigurer writPageConfigurer;
 
+    @Mock
+    private HCEOfficerDetailsPage hceOfficerDetailsPage;
+
     @Test
     void shouldConfigurePagesInCorrectOrder() {
         // Given
@@ -34,7 +38,11 @@ class WritPageConfigurerTest extends BasePageTest {
         // Then
         inOrder.verify(pageBuilder).add(isA(NameAndAddressForEvictionWritPage.class));
         inOrder.verify(pageBuilder).add(isA(ChangeNameAddressWritPage.class));
-        inOrder.verify(pageBuilder).add(isA(ConfirmHiringEnforcementOfficerPlaceholder.class));
+        inOrder.verify(pageBuilder).add(isA(ConfirmHCEOfficerPage.class));
+        inOrder.verify(pageBuilder).add(hceOfficerDetailsPage);
+        inOrder.verify(pageBuilder).add(isA(EnforcementOfficerSelectionPage.class));
+        inOrder.verify(pageBuilder).add(isA(AmountDefendantOwesPage.class));
+
 
         verifyNoMoreInteractions(pageBuilder);
     }
