@@ -48,11 +48,7 @@ public class PartyAccessCodeLinkService {
             .map(ClaimPartyEntity::getParty)
             .toList();
 
-
-        PartyEntity partyEntity = validator.validatePartyBelongsToCase(
-            defendantPartyEntities,
-            partyId
-        );
+        PartyEntity partyEntity = validator.validatePartyIsADefendant(defendantPartyEntities,partyId);
 
         validator.validatePartyNotAlreadyLinked(partyEntity);
 
