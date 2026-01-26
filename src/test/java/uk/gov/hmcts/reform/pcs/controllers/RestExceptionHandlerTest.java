@@ -11,11 +11,12 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.request.WebRequest;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 import java.util.List;
 
@@ -85,8 +86,8 @@ class RestExceptionHandlerTest {
     @Test
     void shouldHandleInvalidPartyForCaseException() {
         // Given
-        String expectedErrorMessage = "Party not found for case";
-        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(expectedErrorMessage);
+        String expectedErrorMessage = "Invalid party for access code";
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(expectedErrorMessage);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -101,9 +102,9 @@ class RestExceptionHandlerTest {
     @Test
     void shouldHandleInvalidPartyForCaseExceptionWithCause() {
         // Given
-        String expectedErrorMessage = "Party not found for case";
+        String errorMessage = "Invalid party for access code";
         Throwable cause = new RuntimeException("Root cause");
-        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(expectedErrorMessage, cause);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(errorMessage, cause);
 
         // When
         ResponseEntity<RestExceptionHandler.Error> responseEntity
@@ -112,7 +113,7 @@ class RestExceptionHandlerTest {
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(responseEntity.getBody()).isNotNull();
-        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+        assertThat(responseEntity.getBody().message()).isEqualTo(errorMessage);
     }
 
     @Test
@@ -291,6 +292,39 @@ class RestExceptionHandlerTest {
 
         // Then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleCaseAccessException() {
+        // Given
+        String expectedErrorMessage = "User is not linked as a defendant on this case";
+        CaseAccessException exception = new CaseAccessException(expectedErrorMessage);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleCaseAccess(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(responseEntity.getBody()).isNotNull();
+        assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    void shouldHandleCaseAccessExceptionWithCause() {
+        // Given
+        String expectedErrorMessage = "No defendants associated with this case";
+        Throwable cause = new RuntimeException("Root cause");
+        CaseAccessException exception = new CaseAccessException(expectedErrorMessage, cause);
+
+        // When
+        ResponseEntity<RestExceptionHandler.Error> responseEntity
+            = underTest.handleCaseAccess(exception);
+
+        // Then
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
         assertThat(responseEntity.getBody()).isNotNull();
         assertThat(responseEntity.getBody().message()).isEqualTo(expectedErrorMessage);
     }
