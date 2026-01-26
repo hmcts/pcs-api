@@ -10,7 +10,6 @@ export const LONG_TIMEOUT = 30000;
 export const VERY_LONG_TIMEOUT = 60000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
-const env = process.env.ENVIRONMENT?.toLowerCase() || 'preview';
 
 export default defineConfig({
   testDir: 'tests/',
@@ -18,7 +17,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 3 : 0,
+  retries: process.env.CI ? 1 : 0,
   workers: 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
