@@ -29,10 +29,6 @@ export class ClickButtonAction implements IAction {
   }
 
   private async clickButtonAndVerifyPageNavigation(page: Page, button: Locator, nextPageElement: string): Promise<void> {
-    // Wait for page to stabilize before clicking (especially after dropdown selections)
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1000);
-    
     const pageElement = page.locator(`h1:has-text("${nextPageElement}")`);
     let attempt = 0;
     let nextPageElementIsVisible = false;
