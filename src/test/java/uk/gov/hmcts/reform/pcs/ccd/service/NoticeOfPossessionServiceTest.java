@@ -21,16 +21,19 @@ import java.time.LocalDateTime;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeOfPossessionServiceTest {
 
-    @Mock
+    @Mock(strictness = LENIENT)
     private PCSCase pcsCase;
     @Mock(strictness = LENIENT)
     private NoticeServedDetails noticeServedDetails;
-    @Mock
+    @Mock(strictness = LENIENT)
     private WalesNoticeDetails walesNoticeDetails;
 
     private NoticeOfPossessionService underTest;
@@ -44,46 +47,37 @@ class NoticeOfPossessionServiceTest {
     }
 
     @Test
-    void shouldReturnNullIfNoticeServedDetailsIsNull() {
+    void shouldNotSetNoticeDetailsIfNoticeNotServed() {
         // Given
-        when(pcsCase.getNoticeServedDetails()).thenReturn(null);
+        when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
 
         // Then
-        assertThat(noticeOfPossessionEntity).isNull();
-    }
+        verifyNoInteractions(noticeServedDetails);
 
-    @Test
-    void shouldReturnNullIfNoticeServedMethodIsNull() {
-        // Given
-        when(noticeServedDetails.getNoticeServiceMethod()).thenReturn(null);
-
-        // When
-        NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
-
-        // Then
-        assertThat(noticeOfPossessionEntity).isNull();
+        assertThat(noticeOfPossessionEntity)
+            .usingRecursiveComparison()
+            .isEqualTo(NoticeOfPossessionEntity.builder()
+                           .noticeServed(YesOrNo.NO)
+                           .build()
+            );
     }
 
     @ParameterizedTest
     @EnumSource(value = YesOrNo.class)
-    void shouldSetNoticeServedAndTypeForWales(YesOrNo noticeServed) {
+    void shouldSetNoticeServedForWales(YesOrNo noticeServed) {
         // Given
-        String typeOfNotice = "type of notice";
-
         when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
         when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
         when(walesNoticeDetails.getNoticeServed()).thenReturn(noticeServed);
-        when(walesNoticeDetails.getTypeOfNoticeServed()).thenReturn(typeOfNotice);
 
         // When
         NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
 
         // Then
         assertThat(noticeOfPossessionEntity.getNoticeServed()).isEqualTo(noticeServed);
-        assertThat(noticeOfPossessionEntity.getNoticeType()).isEqualTo(typeOfNotice);
     }
 
     @ParameterizedTest
@@ -98,6 +92,41 @@ class NoticeOfPossessionServiceTest {
 
         // Then
         assertThat(noticeOfPossessionEntity.getNoticeServed()).isEqualTo(noticeServed);
+    }
+
+    @Test
+    void shouldSetNoticeTypeForWalesWhenNoticeServed() {
+        // Given
+        String typeOfNotice = "type of notice";
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
+        when(walesNoticeDetails.getNoticeServed()).thenReturn(YesOrNo.YES);
+        when(walesNoticeDetails.getTypeOfNoticeServed()).thenReturn(typeOfNotice);
+
+        // When
+        NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
+
+        // Then
+        assertThat(noticeOfPossessionEntity.getNoticeType()).isEqualTo(typeOfNotice);
+    }
+
+    @Test
+    void shouldNotSetNoticeTypeForWalesWhenNoticeNotServed() {
+        // Given
+        String typeOfNotice = "should be ignored";
+
+        when(pcsCase.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
+        when(walesNoticeDetails.getNoticeServed()).thenReturn(YesOrNo.NO);
+        when(walesNoticeDetails.getTypeOfNoticeServed()).thenReturn(typeOfNotice);
+
+        // When
+        NoticeOfPossessionEntity noticeOfPossessionEntity = underTest.createNoticeOfPossessionEntity(pcsCase);
+
+        // Then
+        verify(walesNoticeDetails, never()).getTypeOfNoticeServed();
+        assertThat(noticeOfPossessionEntity.getNoticeType()).isNull();
     }
 
     @ParameterizedTest
