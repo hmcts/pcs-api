@@ -1,6 +1,4 @@
-// Auto-generated from Figma file: MHSqNylYUQUmLbWCQeBHqq, based on page: "Welsh self-declaration" (2998:126465) and other states
-
-export const languageUsed = {
+export const claimLanguageUsed = {
   mainHeader: `Language used`,
   cancelLink: `Cancel`,
   caseNumberParagraph: `Case number: `,
@@ -9,14 +7,13 @@ export const languageUsed = {
   englishAndWelshRadioOption: `English and Welsh`,
   englishLRadioOption: `English`,
   welshRadioOption: `Welsh`,
-  ifSomeoneElseHelpedYouHintText: `If someone else helped you to answer a question in this service, ask them if they answered any questions in Welsh. We’ll use this to make sure your claim is processed correctly`,
+  ifSomeoneElseHelpedYouHintText: `If someone else helped you to answer a question in this service, ask them if they answered any questions in Welsh. We'll use this to make sure your claim is processed correctly`,
   makeAClaimCaption: `Make a claim`,
   previousButton: `Previous`,
   whichLanguageDidYouUseQuestion: `Which language did you use to complete this service?`,
-   IWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
+  IWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   ifYouWantToSaveYourApplicationHiddenText: `If you want to save your application and return to it later:`,
   chooseContinueHiddenText: `1. Choose 'Continue'.`,
   onTheNextPageChooseCancelHiddenText: `2. On the next page choose 'Cancel'.`,
-  thisWillSaveYourProgressHiddenText: `This will save your progress and take you to the case overview.`
-
+  thisWillSaveYourProgressHiddenText: `This will save your progress and take you to the case overview.`,
 };

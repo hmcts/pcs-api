@@ -1,5 +1,3 @@
-// Auto-generated from Figma file: MHSqNylYUQUmLbWCQeBHqq, based on page: "All defendant details questions combined into one screen " (1:37407) and other states
-
 export const completingYourClaim = {
   mainHeader: `Completing your claim`,
   cancelLink: `Cancel`,

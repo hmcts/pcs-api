@@ -8,13 +8,9 @@ import {
 import {
   addressCheckYourAnswers,
   addressDetails,
-  additionalReasonsForPossession,
-  applications,
   checkYourAnswers,
-  completeYourClaim,
   home,
   housingAct,
-  languageUsed,
   propertyDetails,
   reasonsForPossession,
   reasonsForRequestingADemotionOrder,
@@ -23,14 +19,9 @@ import {
   rentArrearsOrBreachOfTenancy,
   signInOrCreateAnAccount,
   statementOfExpressTerms,
-  statementOfTruth,
   underlesseeOrMortgageeDetails,
-  underlesseeOrMortgageeEntitledToClaim,
-  uploadAdditionalDocs,
   user,
-  wantToUploadDocuments,
   whatAreYourGroundsForPossession,
-  detailsOfRentArrears
 } from '@data/page-data';
 import{
   claimantType,
@@ -52,10 +43,20 @@ import{
   moneyJudgment,
   noticeDetails,
   rentDetails,
-  checkingNotice
+  checkingNotice,
+  additionalReasonsForPossession,
+  generalApplication,
+  completingYourClaim,
+  rentArrears,
+  claimLanguageUsed,
+  payClaimFee,
+  underlesseeMortgageeEntitledToClaimRelief
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import {wantToUploadDocuments} from "@data/page-data-figma/wantToUploadDocuments.page.data";
+import {statementOfTruth} from "@data/page-data-figma/statementOfTruth.page.data";
+import {uploadAdditionalDocuments} from "@data/page-data-figma/uploadAdditionalDocuments.page.data";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
@@ -156,12 +157,12 @@ test.describe('[Create Case - England]', async () => {
        unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
        unpaidRentAmountPerDay: '20'
      });
-     await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+     await performValidation('mainHeader', rentArrears.mainHeader);
      await performAction('provideDetailsOfRentArrears', {
        files: ['rentArrears.pdf'],
        rentArrearsAmountOnStatement: '1000',
-       rentPaidByOthersOption: detailsOfRentArrears.yes,
-       paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+      rentPaidByOthersOption: rentArrears.yesOption,
+      paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
      });
      await performValidation('mainHeader', moneyJudgment.mainHeader);
      await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -179,19 +180,19 @@ test.describe('[Create Case - England]', async () => {
      await performAction('selectAlternativesToPossession');
      await performValidation('mainHeader', claimingCosts.mainHeader);
      await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-     await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-       question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-       option: underlesseeOrMortgageeEntitledToClaim.no});
-     await performAction('wantToUploadDocuments', {
-       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-       option: wantToUploadDocuments.no
-     });
-     await performAction('selectApplications', applications.yes);
-     await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
-     await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
+      option: wantToUploadDocuments.no
+    });
+    await performAction('selectApplications', generalApplication.yesOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
      await performAction('selectStatementOfTruth', {
        completedBy: statementOfTruth.claimantRadioOption,
        iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
@@ -273,12 +274,12 @@ test.describe('[Create Case - England]', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+      rentPaidByOthersOption: rentArrears.yesOption,
+      paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -296,26 +297,26 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.no});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.yes
     });
     await performAction('uploadAdditionalDocs', {
       documents: [{
-        type: uploadAdditionalDocs.tenancyAgreementOption,
+        type: uploadAdditionalDocuments.tenancyAgreementOption,
         fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocs.shortDescriptionInput
+        description: uploadAdditionalDocuments.shortDescriptionInput
       }]
     });
-    await performAction('selectApplications', applications.yes);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
-    await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
+    await performAction('selectApplications', generalApplication.yesOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
     await performAction('selectStatementOfTruth', {
       completedBy: statementOfTruth.claimantLegalRepresentativeRadioOption,
       signThisStatementCheckbox: statementOfTruth.signThisStatementHiddenCheckbox,
@@ -405,12 +406,12 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.yes});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
       nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
       addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
@@ -424,9 +425,9 @@ test.describe('[Create Case - England]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.no);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.welsh});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.noOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.welshRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -490,12 +491,12 @@ test.describe('[Create Case - England]', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+      rentPaidByOthersOption: rentArrears.yesOption,
+      paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -520,12 +521,12 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.yes});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
       nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
       addressOption: underlesseeOrMortgageeDetails.noRadioOption,
@@ -535,9 +536,9 @@ test.describe('[Create Case - England]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.no);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.englishAndWelsh});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.noOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishAndWelshRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved')
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -613,18 +614,18 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noOption);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.no});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.no);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.englishAndWelsh});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.noOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishAndWelshRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -703,12 +704,12 @@ test.describe('[Create Case - England]', async () => {
       ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.yes});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
       nameOption: underlesseeOrMortgageeDetails.noRadioOption,
       addressOption: underlesseeOrMortgageeDetails.noRadioOption,
@@ -718,9 +719,9 @@ test.describe('[Create Case - England]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.no);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.noOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -769,12 +770,12 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
     await performAction('provideRentDetails', {rentAmount:'850', rentFrequencyOption:'Other', inputFrequency:rentDetails.enterFrequencyHiddenTextInput,unpaidRentAmountPerDay:'50'});
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.docx', 'rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+      rentPaidByOthersOption: rentArrears.yesOption,
+      paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -800,12 +801,12 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.yes});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
       nameOption: underlesseeOrMortgageeDetails.noRadioOption,
       addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
@@ -815,9 +816,9 @@ test.describe('[Create Case - England]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.yes);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.yesOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -872,12 +873,12 @@ test.describe('[Create Case - England]', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
     });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+      rentPaidByOthersOption: rentArrears.yesOption,
+      paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -902,12 +903,12 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option:underlesseeOrMortgageeEntitledToClaim.yes});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
       nameOption: underlesseeOrMortgageeDetails.noRadioOption,
       addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
@@ -917,9 +918,9 @@ test.describe('[Create Case - England]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.yes);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.yesOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -990,12 +991,12 @@ test.describe('[Create Case - England]', async () => {
       calculateRentAmount: '£32.85',
       unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
     });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+      rentPaidByOthersOption: rentArrears.yesOption,
+      paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
@@ -1025,12 +1026,12 @@ test.describe('[Create Case - England]', async () => {
         ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option:underlesseeOrMortgageeEntitledToClaim.yes});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
     await performAction('selectUnderlesseeOrMortgageeDetails', {
       nameOption: underlesseeOrMortgageeDetails.noRadioOption,
       addressOption: underlesseeOrMortgageeDetails.noRadioOption,
@@ -1040,9 +1041,9 @@ test.describe('[Create Case - England]', async () => {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.yes);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.yesOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -1108,12 +1109,12 @@ test.describe('[Create Case - England]', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+      rentPaidByOthersOption: rentArrears.yesOption,
+      paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -1137,19 +1138,19 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.no);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.no});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.no);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.welsh});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.noOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.welshRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
@@ -1224,19 +1225,19 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.no});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
       option: wantToUploadDocuments.no
     });
-    await performAction('selectApplications', applications.yes);
-    await performAction('selectLanguageUsed', {question: languageUsed.whichLanguageUsedQuestion, option: languageUsed.english});
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('selectApplications', generalApplication.yesOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');

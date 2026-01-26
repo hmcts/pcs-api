@@ -1,4 +1,4 @@
-export const uploadAdditionalDocs = {
+export const uploadAdditionalDocuments = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Upload additional documents',
   continue: 'Continue',

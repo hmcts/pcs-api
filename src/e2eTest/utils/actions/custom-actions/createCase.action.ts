@@ -7,26 +7,18 @@ import {
   housingPossessionClaim,
   resumeClaimOptions,
   reasonsForPossession,
-  detailsOfRentArrears,
   borderPostcode,
   rentArrearsOrBreachOfTenancy,
   whatAreYourGroundsForPossession,
-  languageUsed,
-  applications,
   reasonsForRequestingADemotionOrder,
   statementOfExpressTerms,
   reasonsForRequestingASuspensionOrder,
-  uploadAdditionalDocs,
-  additionalReasonsForPossession,
-  completeYourClaim,
   userIneligible,
   whatAreYourGroundsForPossessionWales,
   underlesseeOrMortgageeDetails,
   reasonsForRequestingASuspensionAndDemotionOrder,
   addressCheckYourAnswers,
-  statementOfTruth,
-  claimSaved,
-  payClaimFee
+  claimSaved
 } from '@data/page-data';
 import {
   claimantType,
@@ -49,9 +41,17 @@ import {
   claimingCosts,
   alternativesToPossession,
   provideMoreDetailsOfClaim,
-  checkingNotice
+  checkingNotice,
+  additionalReasonsForPossession,
+  generalApplication,
+  completingYourClaim,
+  rentArrears,
+  claimLanguageUsed,
+  payClaimFee
 } from '@data/page-data-figma';
 import {VERY_LONG_TIMEOUT} from 'playwright.config';
+import {statementOfTruth} from "@data/page-data-figma/statementOfTruth.page.data";
+import {uploadAdditionalDocuments} from "@data/page-data-figma/uploadAdditionalDocuments.page.data";
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -568,21 +568,21 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', defendantCircumstances.continueButton);
   }
 
-  private async provideDetailsOfRentArrears(rentArrears: actionRecord) {
+  private async provideDetailsOfRentArrears(rentArrearsData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('uploadFile', rentArrears.files);
-    await performAction('inputText', detailsOfRentArrears.totalRentArrearsLabel, rentArrears.rentArrearsAmountOnStatement);
+    await performAction('uploadFile', rentArrearsData.files);
+    await performAction('inputText', rentArrears.howMuchAreTheTotalRentArrearsAsShownOnTheRentStatementQuestion, rentArrearsData.rentArrearsAmountOnStatement);
     await performAction('clickRadioButton', {
-      question: detailsOfRentArrears.periodShownOnRentStatementLabel,
-      option: rentArrears.rentPaidByOthersOption
+      question: rentArrears.forThePeriodShownOnTheRentStatementHaveAnyRentPaymentsBeenPaidBySomeoneOtherThanTheDefendantsQuestion,
+      option: rentArrearsData.rentPaidByOthersOption
     });
-    if (rentArrears.rentPaidByOthersOption == detailsOfRentArrears.yes) {
-      await performAction('check', {question: detailsOfRentArrears.whereHaveThePaymentsComeQuestion, option: rentArrears.paymentOptions});
-      if ((rentArrears.paymentOptions as Array<string>).includes(detailsOfRentArrears.other)) {
-        await performAction('inputText', detailsOfRentArrears.paymentSourceLabel, detailsOfRentArrears.paymentOptionOtherInput);
+    if (rentArrearsData.rentPaidByOthersOption == rentArrears.yesOption) {
+      await performAction('check', {question: rentArrears.whereHaveThePaymentsComeFromQuestion, option: rentArrearsData.paymentOptions});
+      if ((rentArrearsData.paymentOptions as Array<string>).includes(rentArrears.otherCheckBox)) {
+        await performAction('inputText', rentArrears.paymentSourceTextLabel, rentArrears.paymentSourceTextInput);
       }
-      await performAction('clickButton', detailsOfRentArrears.continue);
+      await performAction('clickButton', rentArrears.continueButton);
     }
   }
 
@@ -658,8 +658,8 @@ export class CreateCaseAction implements IAction {
   private async selectApplications(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: applications.areYouPlanningToMakeAnApplicationQuestion, option: option});
-    await performAction('clickButton', applications.continue);
+    await performAction('clickRadioButton', {question: generalApplication.areYouPlanningToMakeQuestion, option: option});
+    await performAction('clickButton', generalApplication.continueButton);
   }
 
   private async wantToUploadDocuments(documentsData: actionRecord) {
@@ -669,7 +669,7 @@ export class CreateCaseAction implements IAction {
       question: documentsData.question,
       option: documentsData.option
     });
-    await performAction('clickButton', uploadAdditionalDocs.continue);
+    await performAction('clickButton', uploadAdditionalDocuments.continue);
   }
 
   private async uploadAdditionalDocs(documentsData: actionRecord) {
@@ -680,11 +680,11 @@ export class CreateCaseAction implements IAction {
         await performActions(
           'Add Document',
           ['uploadFile', document.fileName],
-          ['select', uploadAdditionalDocs.typeOfDocument, document.type],
-          ['inputText', uploadAdditionalDocs.shortDescriptionLabel, document.description]
+          ['select', uploadAdditionalDocuments.typeOfDocument, document.type],
+          ['inputText', uploadAdditionalDocuments.shortDescriptionLabel, document.description]
         );
       }
-      await performAction('clickButton', uploadAdditionalDocs.continue);
+      await performAction('clickButton', uploadAdditionalDocuments.continue);
     }
   }
 
@@ -692,15 +692,15 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performAction('clickRadioButton', {question: completeYourClaim.whatWouldYouLikeToDoNextQuestion, option: option});
-    await performAction('clickButton', completeYourClaim.continue);
+    await performAction('clickRadioButton', {question: completingYourClaim.whatWouldYouLikeToDoNextQuestion, option: option});
+    await performAction('clickButton', completingYourClaim.continueButton);
   }
 
   private async selectLanguageUsed(languageDetails: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: languageDetails.question, option: languageDetails.option});
-    await performAction('clickButton', languageUsed.continue);
+    await performAction('clickButton', claimLanguageUsed.continueButton);
   }
 
   private async claimSaved() {
@@ -713,11 +713,11 @@ export class CreateCaseAction implements IAction {
   private async payClaimFee(params?: { clickLink?: boolean }) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeBanner});
+    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeLabel});
     if (params?.clickLink === true) {
-      await performAction('clickButton', payClaimFee.payClaimFeeLink);
+      await performAction('clickButton', payClaimFee.pay404ClaimFeeLabel);
     }
-    await performAction('clickButton', payClaimFee.closeAndReturnButton);
+    await performAction('clickButton', payClaimFee.closeAndReturnToCaseLabel);
   }
 
   private async enterTestAddressManually(page: Page, address: actionRecord) {
@@ -754,19 +754,19 @@ export class CreateCaseAction implements IAction {
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: additionalReasonsForPossession.isThereAnyOtherInformationQuestion, option: reasons});
-    if(reasons == additionalReasonsForPossession.yes){
-      await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleText);
+    await performAction('clickRadioButton', {question: additionalReasonsForPossession.IsThereAnyOtherInformationQuestion, option: reasons});
+    if(reasons == additionalReasonsForPossession.yesOption){
+      await performAction('inputText', additionalReasonsForPossession.AdditionalReasonsForPossessionLabel, 'Sample additional reasons text');
     }
-    await performAction('clickButton', additionalReasonsForPossession.continue);
+    await performAction('clickButton', additionalReasonsForPossession.continueButton);
   }
 
-  private async selectUnderlesseeOrMortgageeEntitledToClaim(underlesseeOrMortgageeEntitledToClaim: actionRecord) {
+  private async selectUnderlesseeOrMortgageeEntitledToClaim(underlesseeOrMortgageeData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeEntitledToClaim.question,
-      option: underlesseeOrMortgageeEntitledToClaim.option
+      question: underlesseeOrMortgageeData.question,
+      option: underlesseeOrMortgageeData.option
     });
     await performAction('clickButton', underlesseeOrMortgageeDetails.continueButton);
   }

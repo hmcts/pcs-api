@@ -1,6 +1,4 @@
-// Auto-generated from Figma file: ez65eYH9Xwj2i5BLKt65nu, based on page: "Details of rent arrears / start" (2001:21567) and other states
-
-export const detailsOfRentArrears = {
+export const rentArrears = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Details of rent arrears`,
   caseNumberParagraph: `Case number:`,
@@ -39,16 +37,14 @@ export const detailsOfRentArrears = {
   homelessPreventionFundCheckBox: `Homeless prevention fund`,
   otherCheckBox: `Other`,
   paymentSourceTextLabel: `Payment source`,
-  paymentSourceTextInput: ``,
-
+  paymentSourceTextInput: `credit`,
   iWantToSaveThisApplicationLink: `I want to save this application and return to it later`,
   ifYouWantToSaveYourApplicationParagraph: `If you want to save your application and return to it later: `,
   chooseContinueParagraph: `1. Choose 'Continue'.`,
   onTheNextPageChooseCancelParagraph: `2. On the next page choose 'Cancel'.`,
   thisWillSaveYourProgressParagraph: `This will save your progress and take you to the case overview.`,
-
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-
 };
+
