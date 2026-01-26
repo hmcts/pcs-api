@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -24,6 +25,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter.CURRENCY_SYMBOL;
  * Allows claimants to enter rent amount and payment frequency details.
  */
 @AllArgsConstructor
+@Component
 public class RentDetailsPage implements CcdPageConfiguration {
 
     private final MoneyConverter moneyConverter;

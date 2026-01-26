@@ -9,10 +9,6 @@ import java.text.DecimalFormat;
 public class MoneyConverter {
 
     public static final String CURRENCY_SYMBOL = "£";
-    private static final ThreadLocal<DecimalFormat> INTEGER_FORMAT =
-        ThreadLocal.withInitial(() -> new DecimalFormat("0"));
-    private static final ThreadLocal<DecimalFormat> DECIMAL_FORMAT =
-        ThreadLocal.withInitial(() -> new DecimalFormat("0.00"));
 
     public BigDecimal convertPenceToBigDecimal(String penceString) {
         if (penceString == null || penceString.trim().isEmpty()) {
@@ -39,7 +35,8 @@ public class MoneyConverter {
             return null;
         }
         BigDecimal stripped = amount.stripTrailingZeros();
-        DecimalFormat decimalFormat = stripped.scale() <= 0 ? INTEGER_FORMAT.get() : DECIMAL_FORMAT.get();
+        DecimalFormat decimalFormat = stripped.scale() <= 0 ? new DecimalFormat("0")
+            : new DecimalFormat("0.00");
         return decimalFormat.format(stripped);
     }
 
