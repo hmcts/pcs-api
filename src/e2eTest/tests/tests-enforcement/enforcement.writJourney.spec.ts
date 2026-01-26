@@ -3,23 +3,46 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  confirmHCEOHired,
   nameAndAddressForEviction,
   youNeedPermission,
-  yourApplication
+  yourApplication,
+  confirmHCEOHired,
+  yourHCEO,
+  theNICEWillChoose
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page },testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
-  await performAction('getDefendantDetails', {
-    defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
-    additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
-  });
+  if (testInfo.title.includes('@noDefendants')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
+    await performAction('getDefendantDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadNoDefendants.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadNoDefendants.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadNoDefendants
+    });
+  } else if (testInfo.title.includes('@onlyMain')) {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadOnlyMain });
+    await performAction('getDefendantDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayloadOnlyMain.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayloadOnlyMain.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayloadOnlyMain
+    });
+  } else {
+    await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
+    await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
+    await performAction('getDefendantDetails', {
+      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      additionalDefendants: submitCaseApiData.submitCasePayload.addAnotherDefendant,
+      payLoad: submitCaseApiData.submitCasePayload
+    });
+  }
   await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
@@ -30,10 +53,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - Apply for a Writ of Possession @PR @regression',
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
+      await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
         type: yourApplication.summaryWritOrWarrant,
         label1: yourApplication.warrantFeeValidationLabel,
@@ -60,14 +84,68 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
       });
       await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: nameAndAddressForEviction.errorValidation,
+        validationType: nameAndAddressForEviction.errorValidationType.three,
+        inputArray: nameAndAddressForEviction.errorValidationField.errorRadioOption,
+        question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+        option: nameAndAddressForEviction.yesRadioOption,
+        button: nameAndAddressForEviction.continueButton
+      });
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
       });
       await performValidation('mainHeader', confirmHCEOHired.mainHeader);
-
+      await performAction('inputErrorValidation', {
+        validationReq: confirmHCEOHired.errorValidation,
+        validationType: confirmHCEOHired.errorValidationType.three,
+        inputArray: confirmHCEOHired.errorValidationField.errorRadioOption,
+        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
+        option: confirmHCEOHired.yesRadioOption,
+        button: confirmHCEOHired.continueButton
+      });
+      await performAction('selectHaveHiredHCEO', {
+        question: confirmHCEOHired.haveYouHiredHCEOQuestion,
+        option: confirmHCEOHired.yesRadioOption,
+      });
+      await performValidation('mainHeader', yourHCEO.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: yourHCEO.errorValidation,
+        validationType: yourHCEO.errorValidationType.two,
+        inputArray: yourHCEO.errorValidationField.errorTextField,
+        header: yourHCEO.errors,
+        label: yourHCEO.nameOfYourHCEOLabel,
+        button: yourHCEO.continueButton
+      });
+      await performAction('nameYourHCEO', {
+        label: yourHCEO.nameOfYourHCEOLabel,
+        input: yourHCEO.nameOfYourHCEOInput,
+      });
     });
+
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] @PR @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', yourApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: yourApplication.typeOfApplicationQuestion,
+      option: yourApplication.typeOfApplicationOptions.writOfPossession,
+    });
+    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
+    await performAction('selectNameAndAddressForEviction', {
+      question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
+      option: nameAndAddressForEviction.yesRadioOption,
+      defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+    });
+    await performValidation('mainHeader', confirmHCEOHired.mainHeader);
+    await performAction('selectHaveHiredHCEO', {
+      question: confirmHCEOHired.haveYouHiredHCEOQuestion,
+      option: confirmHCEOHired.noRadioOption,
+    });
+    await performValidation('mainHeader', theNICEWillChoose.mainHeader);
+  });
 
   test('Writ - Apply for a Writ of Possession [General application journey]', {
     annotation: {
@@ -78,6 +156,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
+      await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
@@ -92,5 +171,4 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('clickButton', youNeedPermission.continueButton);
       await performValidation('errorMessage', { header: youNeedPermission.errors, message: youNeedPermission.errMessage });
     });
-
 });
