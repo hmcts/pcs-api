@@ -364,7 +364,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', statementOfTruthOne.mainHeader);
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @PR @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performAction('validateWritOrWarrantFeeAmount', {
