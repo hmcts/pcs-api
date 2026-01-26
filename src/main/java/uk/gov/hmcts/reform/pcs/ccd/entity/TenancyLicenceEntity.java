@@ -15,8 +15,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -55,5 +58,9 @@ public class TenancyLicenceEntity {
     private String otherRentFrequency;
 
     private BigDecimal rentPerDay;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo calculatedDailyRentCorrect;
 
 }

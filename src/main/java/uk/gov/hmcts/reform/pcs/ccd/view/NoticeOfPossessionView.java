@@ -38,29 +38,32 @@ public class NoticeOfPossessionView {
             pcsCase.setNoticeServed(noticeOfPossessionEntity.getNoticeServed());
         }
 
-        switch (servingMethod) {
-            case FIRST_CLASS_POST -> {
-                noticeServedDetails.setNoticePostedDate(noticeOfPossessionEntity.getNoticeDate());
-            }
-            case DELIVERED_PERMITTED_PLACE -> {
-                noticeServedDetails.setNoticeDeliveredDate(noticeOfPossessionEntity.getNoticeDate());
-            }
-            case PERSONALLY_HANDED -> {
-                noticeServedDetails.setNoticeHandedOverDateTime(noticeOfPossessionEntity.getNoticeDateTime());
-                noticeServedDetails.setNoticePersonName(noticeOfPossessionEntity.getNoticeDetails());
-            }
-            case EMAIL -> {
-                noticeServedDetails.setNoticeEmailSentDateTime(noticeOfPossessionEntity.getNoticeDateTime());
-                noticeServedDetails.setNoticeEmailExplanation(noticeOfPossessionEntity.getNoticeDetails());
-            }
-            case OTHER_ELECTRONIC -> {
-                noticeServedDetails.setNoticeOtherElectronicDateTime(noticeOfPossessionEntity.getNoticeDateTime());
-            }
-            case OTHER -> {
-                noticeServedDetails.setNoticeOtherDateTime(noticeOfPossessionEntity.getNoticeDateTime());
-                noticeServedDetails.setNoticeOtherExplanation(noticeOfPossessionEntity.getNoticeDetails());
+        if (servingMethod != null) {
+            switch (servingMethod) {
+                case FIRST_CLASS_POST -> {
+                    noticeServedDetails.setNoticePostedDate(noticeOfPossessionEntity.getNoticeDate());
+                }
+                case DELIVERED_PERMITTED_PLACE -> {
+                    noticeServedDetails.setNoticeDeliveredDate(noticeOfPossessionEntity.getNoticeDate());
+                }
+                case PERSONALLY_HANDED -> {
+                    noticeServedDetails.setNoticeHandedOverDateTime(noticeOfPossessionEntity.getNoticeDateTime());
+                    noticeServedDetails.setNoticePersonName(noticeOfPossessionEntity.getNoticeDetails());
+                }
+                case EMAIL -> {
+                    noticeServedDetails.setNoticeEmailSentDateTime(noticeOfPossessionEntity.getNoticeDateTime());
+                    noticeServedDetails.setNoticeEmailExplanation(noticeOfPossessionEntity.getNoticeDetails());
+                }
+                case OTHER_ELECTRONIC -> {
+                    noticeServedDetails.setNoticeOtherElectronicDateTime(noticeOfPossessionEntity.getNoticeDateTime());
+                }
+                case OTHER -> {
+                    noticeServedDetails.setNoticeOtherDateTime(noticeOfPossessionEntity.getNoticeDateTime());
+                    noticeServedDetails.setNoticeOtherExplanation(noticeOfPossessionEntity.getNoticeDetails());
+                }
             }
         }
+
         pcsCase.setNoticeServedDetails(noticeServedDetails);
     }
 

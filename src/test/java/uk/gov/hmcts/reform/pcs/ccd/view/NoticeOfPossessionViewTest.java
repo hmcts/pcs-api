@@ -42,7 +42,7 @@ class NoticeOfPossessionViewTest {
     private PcsCaseEntity pcsCaseEntity;
     @Mock(strictness = LENIENT)
     private ClaimEntity mainClaimEntity;
-    @Mock
+    @Mock(strictness = LENIENT)
     private NoticeOfPossessionEntity noticeOfPossessionEntity;
     @Captor
     private ArgumentCaptor<NoticeServedDetails> noticeServedDetailsCaptor;
@@ -115,6 +115,26 @@ class NoticeOfPossessionViewTest {
         WalesNoticeDetails walesNoticeDetails = walesNoticeDetailsCaptor.getValue();
         assertThat(walesNoticeDetails.getNoticeServed()).isEqualTo(YesOrNo.YES);
         assertThat(walesNoticeDetails.getTypeOfNoticeServed()).isEqualTo(noticeType);
+    }
+
+    @Test
+    void shouldIgnoreServingDatesWhenServingMethodIsNull() {
+        // Given
+        when(noticeOfPossessionEntity.getServingMethod()).thenReturn(null);
+        when(noticeOfPossessionEntity.getNoticeDate()).thenReturn(mock(LocalDate.class));
+        when(noticeOfPossessionEntity.getNoticeDateTime()).thenReturn(mock(LocalDateTime.class));
+
+        // When
+        underTest.setCaseFields(pcsCase, pcsCaseEntity);
+
+        // Then
+        verify(pcsCase).setNoticeServedDetails(noticeServedDetailsCaptor.capture());
+
+        NoticeServedDetails noticeServedDetails = noticeServedDetailsCaptor.getValue();
+
+        assertThat(noticeServedDetails)
+            .usingRecursiveComparison()
+            .isEqualTo(NoticeServedDetails.builder().build());
     }
 
     @Test

@@ -92,6 +92,7 @@ public class TenancyLicenceService {
             tenancyLicenceEntity.setRentAmount(rentDetails.getCurrentRent());
             tenancyLicenceEntity.setRentPerDay(getDailyRentAmount(rentDetails));
             tenancyLicenceEntity.setRentFrequency(rentDetails.getFrequency());
+            tenancyLicenceEntity.setCalculatedDailyRentCorrect(rentDetails.getPerDayCorrect());
 
             if (rentDetails.getFrequency() == RentPaymentFrequency.OTHER) {
                 tenancyLicenceEntity.setOtherRentFrequency(rentDetails.getOtherFrequency());

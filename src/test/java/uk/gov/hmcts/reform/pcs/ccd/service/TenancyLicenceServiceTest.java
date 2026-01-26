@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
@@ -173,6 +174,7 @@ class TenancyLicenceServiceTest {
             .dailyCharge(dailyCharge)
             .frequency(rentFrequency)
             .otherFrequency("should be ignored")
+            .perDayCorrect(VerticalYesNo.YES)
             .build();
 
         when(pcsCase.getRentDetails()).thenReturn(rentDetails);
@@ -185,6 +187,7 @@ class TenancyLicenceServiceTest {
         assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(dailyCharge);
         assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(rentFrequency);
         assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
+        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
