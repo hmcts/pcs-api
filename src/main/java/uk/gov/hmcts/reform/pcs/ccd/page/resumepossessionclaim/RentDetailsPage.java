@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter.CURRENCY_SYMBOL;
 
 /**
  * Page configuration for the Rent Details section.
@@ -64,7 +65,8 @@ public class RentDetailsPage implements CcdPageConfiguration {
                     BigDecimal dailyAmount = calculateDailyRent(rentAmount, rentFrequency);
 
                     rentDetails.setCalculatedDailyCharge(dailyAmount);
-                    rentDetails.setFormattedCalculatedDailyCharge("£" + moneyConverter.formatCurrency(dailyAmount));
+                    rentDetails.setFormattedCalculatedDailyCharge(CURRENCY_SYMBOL
+                                                                      + moneyConverter.formatCurrency(dailyAmount));
                 }
 
                 // Set flag to NO - DailyRentAmount should show first

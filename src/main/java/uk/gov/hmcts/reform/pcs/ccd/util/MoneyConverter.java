@@ -8,7 +8,11 @@ import java.text.DecimalFormat;
 @Component
 public class MoneyConverter {
 
-    private static final String CURRENCY_SYMBOL = "£";
+    public static final String CURRENCY_SYMBOL = "£";
+    private static final ThreadLocal<DecimalFormat> INTEGER_FORMAT =
+        ThreadLocal.withInitial(() -> new DecimalFormat("0"));
+    private static final ThreadLocal<DecimalFormat> DECIMAL_FORMAT =
+        ThreadLocal.withInitial(() -> new DecimalFormat("0.00"));
 
     public BigDecimal convertPenceToBigDecimal(String penceString) {
         if (penceString == null || penceString.trim().isEmpty()) {
@@ -35,8 +39,8 @@ public class MoneyConverter {
             return null;
         }
         BigDecimal stripped = amount.stripTrailingZeros();
-        String pattern = stripped.scale() <= 0 ? "0" : "0.00";
-        return new DecimalFormat(pattern).format(amount);
+        DecimalFormat decimalFormat = stripped.scale() <= 0 ? INTEGER_FORMAT.get() : DECIMAL_FORMAT.get();
+        return decimalFormat.format(stripped);
     }
 
 }

@@ -36,6 +36,35 @@ class MoneyConverterTest {
         assertThat(formattedPence).isEqualTo(expectedPence);
     }
 
+    @ParameterizedTest
+    @MethodSource("currencyFormattingScenarios")
+    void shouldFormatCurrency(BigDecimal amount, String expectedFormattedCurrency) {
+        String formattedCurrency = underTest.formatCurrency(amount);
+
+        assertThat(formattedCurrency).isEqualTo(expectedFormattedCurrency);
+    }
+
+    private static Stream<Arguments> currencyFormattingScenarios() {
+        return Stream.of(
+            arguments(new BigDecimal("150"), "150"),
+            arguments(new BigDecimal("1500"), "1500"),
+            arguments(new BigDecimal("0.5"), "0.50"),
+            arguments(new BigDecimal("1501.01"), "1501.01"),
+            arguments(new BigDecimal("150040"), "150040"),
+            arguments(new BigDecimal("1.00"), "1"),
+            arguments(BigDecimal.ZERO, "0"),
+            arguments(new BigDecimal("999999.99"), "999999.99"),
+            arguments(new BigDecimal("-45.00"), "-45"),
+            arguments(new BigDecimal("-00.45"), "-0.45"),
+            arguments(new BigDecimal("-00.40"), "-0.40"),
+            arguments(new BigDecimal("0.10"), "0.10"),
+            arguments(new BigDecimal("10.10"), "10.10"),
+            arguments(new BigDecimal("100.00"), "100"),
+            arguments(new BigDecimal("0.01"), "0.01"),
+            arguments(null, null)
+        );
+    }
+
     private static Stream<Arguments> penceToBigDecimalScenarios() {
         return Stream.of(
             Arguments.arguments("1500", new BigDecimal("15.00")),
