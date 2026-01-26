@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -48,9 +49,9 @@ class NameAndAddressForEvictionPageTest extends BasePageTest {
             assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getWarrantDetails()
-                    .getShowChangeNameAddressPage()).isEqualTo(VerticalYesNo.YES);
+                    .getShowChangeNameAddressPage()).isEqualTo(YesOrNo.YES);
             assertThat(enforcementOrder.getWarrantDetails()
-                    .getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
+                    .getShowPeopleWhoWillBeEvictedPage()).isEqualTo(YesOrNo.NO);
         }
 
         @Test
@@ -74,9 +75,9 @@ class NameAndAddressForEvictionPageTest extends BasePageTest {
             assertThat(response.getErrors()).isNullOrEmpty();
             EnforcementOrder enforcementOrder = response.getData().getEnforcementOrder();
             assertThat(enforcementOrder.getWarrantDetails()
-                    .getShowChangeNameAddressPage()).isEqualTo(VerticalYesNo.NO);
+                    .getShowChangeNameAddressPage()).isEqualTo(YesOrNo.NO);
             assertThat(enforcementOrder.getWarrantDetails()
-                    .getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.YES);
+                    .getShowPeopleWhoWillBeEvictedPage()).isEqualTo(YesOrNo.YES);
         }
     }
 }

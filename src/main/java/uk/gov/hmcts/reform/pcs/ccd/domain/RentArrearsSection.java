@@ -58,8 +58,9 @@ public class RentArrearsSection {
     private List<ThirdPartyPaymentSource> thirdPartyPaymentSources;
 
     @CCD(
-        label = "Payment source"
+        label = "Payment source",
+        max = 60
     )
-    private String thirdPartyPaymentSourceOther;
+    private String paymentSourceOther;
 }
 
