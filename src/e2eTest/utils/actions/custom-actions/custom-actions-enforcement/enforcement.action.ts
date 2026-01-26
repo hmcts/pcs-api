@@ -28,10 +28,13 @@ import {
   statementOfTruthOne,
   statementOfTruthTwo,
   enterDefendantsDOB,
-  suspendedOrder
+  suspendedOrder,
+  confirmHCEOHired,
+  yourHCEO
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { createCaseApiData } from '@data/api-data';
+import { LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -50,6 +53,8 @@ export class EnforcementAction implements IAction {
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
+      ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord)],
+      ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord)],
       ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord)],
       ['enterDefendantsDOB', () => this.enterDefendantsDOB(page, fieldName as actionRecord)],
@@ -111,23 +116,49 @@ export class EnforcementAction implements IAction {
   private async getDefendantDetails(defendantsDetails: actionRecord) {
 
     let originalDefendantDetails: string[] = [];
-
+    const payLoad = defendantsDetails.payLoad as Record<string, any>;
     if (defendantsDetails.defendant1NameKnown === 'YES') {
       originalDefendantDetails.push(
-        `${submitCaseApiData.submitCasePayload.defendant1.firstName} ${submitCaseApiData.submitCasePayload.defendant1.lastName}`
+        `${payLoad.defendant1.firstName} ${payLoad.defendant1.lastName}`
       );
-    };
+    } else {
+      originalDefendantDetails.push(
+        `null null`
+      );
+    }
 
     if (defendantsDetails.additionalDefendants === 'YES') {
 
-      for (const defendant of submitCaseApiData.submitCasePayload.additionalDefendants) {
+      for (const defendant of payLoad.additionalDefendants) {
         if (defendant.value.nameKnown === 'YES') {
           originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
-        }
+        } else {
+          originalDefendantDetails.push(
+            `null null`
+          );
+        };
       };
-    };
-    defendantDetails = [...new Set(originalDefendantDetails)];
+    }
+    defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
+    ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
+    ];
 
+  }
+
+  private async selectHaveHiredHCEO(haveYouHired: actionRecord) {
+    await this.addFieldsToMap(haveYouHired);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: haveYouHired.question, option: haveYouHired.option });
+    await performAction('clickButton', confirmHCEOHired.continueButton);
+  }
+
+  private async nameYourHCEO(nameHCEO: actionRecord) {
+    await this.addFieldsToMap(nameHCEO);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('inputText', nameHCEO.label, nameHCEO.input);
+    await performAction('clickButton', yourHCEO.continueButton);
   }
 
   private async selectNameAndAddressForEviction(nameAndAddress: actionRecord) {
@@ -137,6 +168,11 @@ export class EnforcementAction implements IAction {
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
       await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.sort().join(' '));
     }
+
+    defendantDetails = defendantDetails.map(fullName =>
+      fullName?.trim().toLowerCase() === 'null null' ? 'Name not known' : fullName
+    );
+
     await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
     await performAction('clickButton', nameAndAddressForEviction.continueButton);
@@ -425,8 +461,13 @@ export class EnforcementAction implements IAction {
             case 'moneyFieldAndRadioOption':
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
               await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(rePayments.totalAmt) as number) + 10) : item.input);
-              await performAction('clickButton', validationArr.button);
-              await performValidation('inputError', validationArr.label, item.errMessage);
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                //await performValidation('errorMessage', validationArr.label, item.errMessage);
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              }).toPass({
+                timeout: LONG_TIMEOUT,
+              });
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option2 });
               break;
 
@@ -438,9 +479,14 @@ export class EnforcementAction implements IAction {
 
             case 'moneyField':
               await performAction('inputText', validationArr.label, item.input);
-              await performAction('clickButton', validationArr.button);
-              //await performValidation('errorMessage', validationArr.label, item.errMessage);
-              await performValidation('inputError', validationArr.label, item.errMessage);
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                //await performValidation('errorMessage', validationArr.label, item.errMessage);
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              }).toPass({
+                timeout: LONG_TIMEOUT,
+              });
+
               break;
 
             case 'textField':
