@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NonPrefixWarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
@@ -38,7 +38,7 @@ public class EnforcementOrder {
 
     @JsonUnwrapped
     @CCD
-    private NonPrefixWarrantDetails nonPrefixWarrantDetails;
+    private RawWarrantDetails rawWarrantDetails;
 
     @CCD(searchable = false)
     @External
