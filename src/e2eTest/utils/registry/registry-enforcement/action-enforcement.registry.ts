@@ -54,6 +54,7 @@ export class ActionEnforcementRegistry {
     ['accessToProperty', new EnforcementAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
+    ['deleteCaseRole', new CreateCaseAPIAction()],
     ['provideMoneyOwed', new EnforcementAction()],
     ['provideLegalCosts', new EnforcementAction()],
     ['provideLandRegistryFees', new EnforcementAction()],

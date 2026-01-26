@@ -26,3 +26,4 @@ export * from '@data/page-data/page-data-enforcement/languageUsed.page.data';
 export * from '@data/page-data/page-data-enforcement/suspendedOrder.page.data';
 export * from '@data/page-data/page-data-enforcement/statementOfTruth1.page.data';
 export * from '@data/page-data/page-data-enforcement/statementOfTruth2.page.data';
+export * from '@data/page-data/page-data-enforcement/confirmHCEOIsHired.page.data';

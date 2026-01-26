@@ -54,7 +54,7 @@ class HCEOfficerDetailsPageTest extends BasePageTest {
     }
 
     @Test
-    void shouldRejectTextOver6800Characters() {
+    void shouldRejectTextOver120Characters() {
         // Given
         String longText = "a".repeat(BYTE_TEXT_LIMIT + 1);
         PCSCase caseData = PCSCase.builder()
@@ -70,7 +70,7 @@ class HCEOfficerDetailsPageTest extends BasePageTest {
 
         // Then
         String expectedError = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE,
-                                             "Name of your High Court enforcement officer?",
+                                             "Name of your High Court enforcement officer",
                                              "120");
 
         assertThat(response.getErrors()).containsExactly(expectedError);

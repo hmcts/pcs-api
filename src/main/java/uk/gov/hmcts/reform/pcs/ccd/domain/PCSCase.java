@@ -6,6 +6,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -37,7 +38,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 /**
  * The main domain model representing a possessions case.
  */
-@Builder
+@Builder(toBuilder = true)
 @Data
 public class PCSCase {
 
@@ -488,7 +489,7 @@ public class PCSCase {
     @CCD(
         access = {DefendantAccess.class}
     )
-    private DefendantResponse defendantResponse;
+    private PossessionClaimResponse possessionClaimResponse;
 
     @CCD(
         label = "Select an operation to perform.",
@@ -496,4 +497,10 @@ public class PCSCase {
     )
     private DynamicList testCaseSupportFileList;
 
+    @CCD(access = ClaimantAccess.class)
+    private List<ListValue<Document>> allDocuments;
+
+    @CCD(searchable = false)
+    private String formattedDefendantNames;
+    private String formattedPropertyAddress;
 }
