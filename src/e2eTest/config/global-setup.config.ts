@@ -49,7 +49,7 @@ async function authenticateAndSaveState(): Promise<string> {
     await dismissCookieBanner(page, 'analytics');
     await dismissCookieBanner(page, 'hide-success');
 
-    await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(2000);
 
     const cookies = await context.cookies();
