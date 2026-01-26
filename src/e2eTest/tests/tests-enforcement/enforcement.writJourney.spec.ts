@@ -12,7 +12,8 @@ import {
   yourApplication,
   confirmHCEOHired,
   yourHCEO,
-  theNICEWillChoose
+  theNICEWillChoose,
+  moneyOwed, legalCosts, landRegistryFees,
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
@@ -132,6 +133,34 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         label: yourHCEO.nameOfYourHCEOLabel,
         input: yourHCEO.nameOfYourHCEOInput,
       });
+      await performValidation('mainHeader',moneyOwed.mainHeaderPlaceholder);
+      await performAction('clickButton', moneyOwed.continueButton);
+      await performValidation('mainHeader', legalCosts.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.three,
+        inputArray: legalCosts.errorValidationField.errorRadioOption,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        button: legalCosts.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.five,
+        inputArray: legalCosts.errorValidationField.errorMoneyField,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        option2: legalCosts.noRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        button: legalCosts.continueButton
+      });
+      await performAction('provideLegalCosts', {
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        input: legalCosts.howMuchYouWantToReclaimTextInput
+      });
+      await performValidation('mainHeader', landRegistryFees.mainHeaderPlaceholder);
     });
 
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] @PR @regression', async () => {
@@ -154,6 +183,15 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       option: confirmHCEOHired.noRadioOption,
     });
     await performValidation('mainHeader', theNICEWillChoose.mainHeader);
+    await performAction('clickButton', theNICEWillChoose.continueButton);
+    await performValidation('mainHeader',moneyOwed.mainHeaderPlaceholder);
+    await performAction('clickButton', moneyOwed.continueButton);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.noRadioOption
+    });
+    await performValidation('mainHeader', landRegistryFees.mainHeaderPlaceholder);
   });
 
   test('Writ - Apply for a Writ of Possession [General application journey]', {
