@@ -748,7 +748,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
       });
       await performValidation('mainHeader', rePayments.mainHeader);
-      await performAction('validateAmountToRePayTable');
+      await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
       await performAction('provideAmountToRePay', {
         question: rePayments.rePaymentQuestion,
         option: rePayments.rePaymentRadioOptions.none,
@@ -858,7 +858,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
       });
       await performValidation('mainHeader', rePayments.mainHeader);
-      await performAction('validateAmountToRePayTable');
+      await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
       await performAction('provideAmountToRePay', {
         question: rePayments.rePaymentQuestion,
         option: rePayments.rePaymentRadioOptions.none,
