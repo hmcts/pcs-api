@@ -5,7 +5,5 @@ CREATE TABLE defendant_response (
                     response_type  VARCHAR(50) NOT NULL,
                     possession_order_type VARCHAR(30),
                     defence_submitted BOOLEAN NOT NULL,
-                    counterclaim_submitted BOOLEAN NOT NULL,
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
+                    counterclaim_submitted BOOLEAN NOT NULL
 );
