@@ -7,9 +7,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
@@ -18,10 +18,10 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy.RENT_ARREARS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy.RENT_ARREARS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE_GROUND2;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.FLEXIBLE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 
@@ -85,7 +85,7 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             )
             .secureOrFlexiblePossessionGrounds(
                 SecureOrFlexiblePossessionGrounds
-                    .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(NUISANCE_OR_IMMORAL_USE)).build())
+                    .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(NUISANCE_OR_IMMORAL_USE_GROUND2)).build())
             .build();
 
         YesOrNo result = policy.shouldShowRentSection(caseData);
@@ -103,7 +103,10 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             )
             .secureOrFlexiblePossessionGrounds(
                 SecureOrFlexiblePossessionGrounds
-                    .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY)).build())
+                    .builder()
+                    .secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1))
+                    .build()
+            )
             .rentArrearsOrBreachOfTenancy(Set.of(BREACH_OF_TENANCY))
             .build();
 
@@ -138,7 +141,10 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             )
             .secureOrFlexiblePossessionGrounds(
                 SecureOrFlexiblePossessionGrounds
-                    .builder().secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY)).build())
+                    .builder()
+                    .secureOrFlexibleDiscretionaryGrounds(Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1))
+                    .build()
+            )
             .rentArrearsOrBreachOfTenancy(null)
             .build();
 
@@ -152,7 +158,7 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             // Secure Tenancy + Ground 1 + Rent Arrears - Should show Rent Details
             arguments(
                 SECURE_TENANCY,
-                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                 Set.of(RENT_ARREARS),
                 YesOrNo.YES
             ),
@@ -160,7 +166,7 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             // Flexible Tenancy + Ground 1 + Rent Arrears - Should show Rent Details
             arguments(
                 FLEXIBLE_TENANCY,
-                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                 Set.of(RENT_ARREARS),
                 YesOrNo.YES
             ),
@@ -168,7 +174,7 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             // Secure Tenancy + Ground 1 + Breach Only - Should NOT show Rent Details
             arguments(
                 SECURE_TENANCY,
-                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                 Set.of(BREACH_OF_TENANCY),
                 YesOrNo.NO
             ),
@@ -176,7 +182,7 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             // Flexible Tenancy + Ground 1 + Breach Only - Should NOT show Rent Details
             arguments(
                 FLEXIBLE_TENANCY,
-                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                 Set.of(BREACH_OF_TENANCY),
                 YesOrNo.NO
             ),
@@ -184,7 +190,7 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             // Secure Tenancy + Ground 1 + Both Rent and Breach - Should show Rent Details
             arguments(
                 SECURE_TENANCY,
-                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                 Set.of(RENT_ARREARS, BREACH_OF_TENANCY),
                 YesOrNo.YES
             ),
@@ -192,7 +198,7 @@ class SecureFlexibleRentSectionRoutingPolicyTest {
             // Secure Tenancy + Other Grounds Only - Should NOT show Rent Details
             arguments(
                 SECURE_TENANCY,
-                Set.of(NUISANCE_OR_IMMORAL_USE),
+                Set.of(NUISANCE_OR_IMMORAL_USE_GROUND2),
                 Set.of(),
                 YesOrNo.NO
             )

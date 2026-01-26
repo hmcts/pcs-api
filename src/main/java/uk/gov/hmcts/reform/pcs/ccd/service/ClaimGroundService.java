@@ -2,23 +2,23 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsPossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleGroundsReasons;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.NoRentArrearsReasonForGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -38,13 +38,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.RENT_ARREARS_GROUND10;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.RENT_ARREARS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround.RENT_ARREARS_GROUND10;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds.RENT_ARREARS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1;
 
 @Service
 public class ClaimGroundService {
@@ -308,20 +308,20 @@ public class ClaimGroundService {
         possessionGrounds.getSecureOrFlexibleDiscretionaryGrounds().forEach(
             ground -> {
                 String reasonText = switch (ground) {
-                    case RENT_ARREARS_OR_BREACH_OF_TENANCY
+                    case RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1
                         -> breachOfTenancy ? reasons.getBreachOfTenancyGround() : null;
-                    case NUISANCE_OR_IMMORAL_USE -> reasons.getNuisanceOrImmoralUseGround();
-                    case DOMESTIC_VIOLENCE -> reasons.getDomesticViolenceGround();
-                    case RIOT_OFFENCE -> reasons.getRiotOffenceGround();
-                    case PROPERTY_DETERIORATION -> reasons.getPropertyDeteriorationGround();
-                    case FURNITURE_DETERIORATION -> reasons.getFurnitureDeteriorationGround();
-                    case TENANCY_OBTAINED_BY_FALSE_STATEMENT -> reasons.getTenancyByFalseStatementGround();
-                    case PREMIUM_PAID_MUTUAL_EXCHANGE -> reasons.getPremiumMutualExchangeGround();
-                    case UNREASONABLE_CONDUCT_TIED_ACCOMMODATION -> reasons.getUnreasonableConductGround();
-                    case REFUSAL_TO_MOVE_BACK -> reasons.getRefusalToMoveBackGround();
+                    case NUISANCE_OR_IMMORAL_USE_GROUND2 -> reasons.getNuisanceOrImmoralUseGround();
+                    case DOMESTIC_VIOLENCE_GROUND2A -> reasons.getDomesticViolenceGround();
+                    case RIOT_OFFENCE_GROUND2ZA -> reasons.getRiotOffenceGround();
+                    case PROPERTY_DETERIORATION_GROUND3 -> reasons.getPropertyDeteriorationGround();
+                    case FURNITURE_DETERIORATION_GROUND4 -> reasons.getFurnitureDeteriorationGround();
+                    case TENANCY_FALSE_STATEMENT_GROUND5 -> reasons.getTenancyByFalseStatementGround();
+                    case PREMIUM_PAID_GROUND6 -> reasons.getPremiumMutualExchangeGround();
+                    case UNREASONABLE_CONDUCT_GROUND7 -> reasons.getUnreasonableConductGround();
+                    case REFUSAL_TO_MOVE_BACK_GROUND8 -> reasons.getRefusalToMoveBackGround();
                 };
 
-                boolean isRentArrearsGround = (ground == RENT_ARREARS_OR_BREACH_OF_TENANCY
+                boolean isRentArrearsGround = (ground == RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1
                     && rentArrearsOrBreachOfTenancy.contains(RentArrearsOrBreachOfTenancy.RENT_ARREARS));
 
                 claimGroundEntities.add(
@@ -353,11 +353,11 @@ public class ClaimGroundService {
         possessionGrounds.getSecureOrFlexibleDiscretionaryGroundsAlt().forEach(
             discretionaryGroundAlt -> {
                 String reasonText = switch (discretionaryGroundAlt) {
-                    case TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE -> reasons.getTiedAccommodationGround();
-                    case ADAPTED_ACCOMMODATION -> reasons.getAdaptedAccommodationGround();
-                    case HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES -> reasons.getHousingAssocSpecialGround();
-                    case SPECIAL_NEEDS_ACCOMMODATION -> reasons.getSpecialNeedsAccommodationGround();
-                    case UNDER_OCCUPYING_AFTER_SUCCESSION -> reasons.getUnderOccupancySuccessionGround();
+                    case ACCOMMODATION_NEEDED_FOR_EMPLOYEE_GROUND12 -> reasons.getTiedAccommodationGround();
+                    case ADAPTED_ACCOMMODATION_GROUND13 -> reasons.getAdaptedAccommodationGround();
+                    case HOUSING_ASSOCIATION_SPECIAL_GROUND14 -> reasons.getHousingAssocSpecialGround();
+                    case SPECIAL_NEEDS_ACCOMMODATION_GROUND15 -> reasons.getSpecialNeedsAccommodationGround();
+                    case UNDER_OCCUPYING_GROUND15A -> reasons.getUnderOccupancySuccessionGround();
                 };
 
                 claimGroundEntities.add(
@@ -373,10 +373,10 @@ public class ClaimGroundService {
         possessionGrounds.getSecureOrFlexibleMandatoryGroundsAlt().forEach(
             mandatoryGroundAlt -> {
                 String reasonText = switch (mandatoryGroundAlt) {
-                    case OVERCROWDING -> reasons.getOvercrowdingGround();
-                    case LANDLORD_WORKS -> reasons.getLandlordWorksGround();
-                    case PROPERTY_SOLD -> reasons.getPropertySoldGround();
-                    case CHARITABLE_LANDLORD -> reasons.getCharitableLandlordGround();
+                    case OVERCROWDING_GROUND9 -> reasons.getOvercrowdingGround();
+                    case LANDLORD_WORKS_GROUND10 -> reasons.getLandlordWorksGround();
+                    case PROPERTY_SOLD_GROUND10A -> reasons.getPropertySoldGround();
+                    case CHARITABLE_LANDLORD_GROUND11 -> reasons.getCharitableLandlordGround();
                 };
 
                 claimGroundEntities.add(

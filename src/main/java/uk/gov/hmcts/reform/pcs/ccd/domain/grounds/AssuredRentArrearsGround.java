@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.grounds;
 
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
@@ -14,5 +14,5 @@ public enum AssuredRentArrearsGround {
     RENT_ARREARS_GROUND10,
 
     @CCD(label = "Persistent delay in paying rent (ground 11)")
-    PERSISTENT_DELAY_GROUND11;
+    PERSISTENT_DELAY_GROUND11
 }

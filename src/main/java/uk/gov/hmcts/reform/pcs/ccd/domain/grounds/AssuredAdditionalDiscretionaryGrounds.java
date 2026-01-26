@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.grounds;
 
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
@@ -32,7 +32,7 @@ public enum AssuredAdditionalDiscretionaryGrounds {
     EMPLOYEE_LANDLORD_GROUND16,
 
     @CCD(label = "Tenancy obtained by false statement (ground 17)")
-    FALSE_STATEMENT_GROUND17;
+    FALSE_STATEMENT_GROUND17
 }
 
 

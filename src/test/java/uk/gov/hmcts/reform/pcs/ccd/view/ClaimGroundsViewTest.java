@@ -12,16 +12,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimGroundSummary;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.ClaimGroundSummary;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherNoGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
@@ -235,7 +235,7 @@ class ClaimGroundsViewTest {
             argumentSet(
                 "Secure or flexible tenancy discretionary ground",
                 ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY,
-                SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.name(),
+                SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1.name(),
                 "Reason for breach of tenancy ground", // Reason
                 "Rent arrears or breach of the tenancy (ground 1)", // Expected label
                 true // Is rent arrears ground
@@ -243,7 +243,7 @@ class ClaimGroundsViewTest {
             argumentSet(
                 "Secure or flexible tenancy mandatory alternative ground",
                 ClaimGroundCategory.SECURE_OR_FLEXIBLE_MANDATORY_ALT,
-                SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD.name(),
+                SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD_GROUND10A.name(),
                 "Reason for property sold ground", // Reason
                 "Property sold for redevelopment (ground 10A)", // Expected label
                 false // Is rent arrears ground
@@ -251,7 +251,7 @@ class ClaimGroundsViewTest {
             argumentSet(
                 "Secure or flexible tenancy discretionary alternative ground",
                 ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY_ALT,
-                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION.name(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION_GROUND13.name(),
                 "Reason for adapted accomodation ground", // Reason
                 "Adapted accommodation (ground 13)", // Expected label
                 false // Is rent arrears ground

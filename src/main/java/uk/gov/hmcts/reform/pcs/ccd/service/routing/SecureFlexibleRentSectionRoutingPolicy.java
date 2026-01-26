@@ -3,14 +3,14 @@ package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy.RENT_ARREARS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy.RENT_ARREARS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.FLEXIBLE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 
@@ -27,7 +27,7 @@ public class SecureFlexibleRentSectionRoutingPolicy implements RentSectionRoutin
         Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds =
             caseData.getSecureOrFlexiblePossessionGrounds().getSecureOrFlexibleDiscretionaryGrounds();
 
-        if (discretionaryGrounds == null || !discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY)) {
+        if (discretionaryGrounds == null || !discretionaryGrounds.contains(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1)) {
             return YesOrNo.NO;
         }
 
