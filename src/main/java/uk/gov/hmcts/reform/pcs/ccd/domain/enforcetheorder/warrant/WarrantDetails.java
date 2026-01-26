@@ -14,10 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import java.util.Set;
-
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 
 @Builder
 @Data
@@ -38,12 +35,6 @@ public class WarrantDetails {
     @JsonUnwrapped
     @CCD
     private PeopleToEvict peopleToEvict;
-
-    @CCD(
-        label = "Who do you want to evict?",
-        typeOverride = DynamicMultiSelectList
-    )
-    private DynamicMultiSelectStringList selectedDefendants;
 
     @CCD(
         label = "Does anyone living at the property pose a risk to the bailiff?"
