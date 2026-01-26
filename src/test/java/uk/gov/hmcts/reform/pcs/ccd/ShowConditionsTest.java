@@ -30,6 +30,15 @@ class ShowConditionsTest {
         assertThat(showCondition).isEqualTo("testFieldId1=\"GREEN\"");
     }
 
+    @Test
+    void shouldCreateShowConditionForFieldContains() {
+        String fieldId = "testFieldId1";
+
+        String showCondition = ShowConditions.fieldContains(fieldId, TestEnum.BLUE);
+
+        assertThat(showCondition).isEqualTo("testFieldId1CONTAINS\"BLUE\"");
+    }
+
     private enum TestEnum {
         RED,
         GREEN,
