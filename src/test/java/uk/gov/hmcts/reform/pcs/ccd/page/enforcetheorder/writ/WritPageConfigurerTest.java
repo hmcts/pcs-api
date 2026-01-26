@@ -51,7 +51,7 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, ConfirmHCEOfficerPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, hceOfficerDetailsPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, AmountDefendantOwesPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, MoneyOwedPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LandRegistryFeesPage.class, verificationCount);
 
