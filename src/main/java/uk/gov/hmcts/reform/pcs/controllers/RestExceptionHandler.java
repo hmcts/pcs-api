@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 @Slf4j
 @ControllerAdvice
@@ -39,8 +39,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             .body(new Error(ex.getMessage()));
     }
 
-    @ExceptionHandler(InvalidPartyForCaseException.class)
-    public ResponseEntity<Error> handleInvalidParty(InvalidPartyForCaseException ex) {
+    @ExceptionHandler(InvalidPartyForAccessCodeException.class)
+    public ResponseEntity<Error> handleInvalidParty(InvalidPartyForAccessCodeException ex) {
         log.error("Party validation failed", ex);
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
