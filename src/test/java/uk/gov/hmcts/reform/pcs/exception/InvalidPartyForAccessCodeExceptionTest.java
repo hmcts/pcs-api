@@ -4,15 +4,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class InvalidPartyForCaseExceptionTest {
+class InvalidPartyForAccessCodeExceptionTest {
 
     @Test
     void shouldCreateExceptionWithMessage() {
         // Given
-        String message = "Party not found for case";
+        String message = "Invalid party for access code";
 
         // When
-        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(message);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(message);
 
         // Then
         assertThat(exception).isNotNull();
@@ -23,11 +23,11 @@ class InvalidPartyForCaseExceptionTest {
     @Test
     void shouldCreateExceptionWithMessageAndCause() {
         // Given
-        String message = "Party not found for case";
+        String message = "Invalid party for access code";
         Throwable cause = new RuntimeException("Root cause");
 
         // When
-        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(message, cause);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(message, cause);
 
         // Then
         assertThat(exception).isNotNull();
@@ -38,7 +38,7 @@ class InvalidPartyForCaseExceptionTest {
     @Test
     void shouldCreateExceptionWithNullMessage() {
         // When
-        InvalidPartyForCaseException exception = new InvalidPartyForCaseException((String) null);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException((String) null);
 
         // Then
         assertThat(exception).isNotNull();
@@ -49,10 +49,10 @@ class InvalidPartyForCaseExceptionTest {
     @Test
     void shouldCreateExceptionWithMessageAndNullCause() {
         // Given
-        String message = "Party not found for case";
+        String message = "Invalid party for access code";
 
         // When
-        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(message, null);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(message, null);
 
         // Then
         assertThat(exception).isNotNull();
@@ -66,7 +66,7 @@ class InvalidPartyForCaseExceptionTest {
         String message = "";
 
         // When
-        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(message);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(message);
 
         // Then
         assertThat(exception).isNotNull();
@@ -77,12 +77,12 @@ class InvalidPartyForCaseExceptionTest {
     @Test
     void shouldCreateExceptionWithMessageAndCauseChain() {
         // Given
-        String message = "Party not found for case";
+        String message = "Invalid party for access code";
         Throwable rootCause = new IllegalStateException("Root cause");
         Throwable cause = new RuntimeException("Intermediate cause", rootCause);
 
         // When
-        InvalidPartyForCaseException exception = new InvalidPartyForCaseException(message, cause);
+        InvalidPartyForAccessCodeException exception = new InvalidPartyForAccessCodeException(message, cause);
 
         // Then
         assertThat(exception).isNotNull();
