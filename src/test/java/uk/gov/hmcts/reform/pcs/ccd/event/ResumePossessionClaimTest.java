@@ -44,7 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyO
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
@@ -193,7 +193,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     @Mock
-    private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private AssuredNoArrearsGroundsForPossessionPage noRentArrearsGroundsForPossessionOptions;
     @Mock
     private CheckingNotice checkingNotice;
     @Mock

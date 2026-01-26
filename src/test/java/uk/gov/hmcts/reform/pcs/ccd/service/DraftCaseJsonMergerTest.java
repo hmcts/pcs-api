@@ -52,7 +52,7 @@ class DraftCaseJsonMergerTest {
             .applicationWithClaim(VerticalYesNo.YES)
             .claimantType(claimantTypeList)
             .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
-                                                .holidayLetTextArea("some holiday let details")
+                                                .holidayLet("some holiday let details")
                                                 .build())
             .build();
 
@@ -69,16 +69,17 @@ class DraftCaseJsonMergerTest {
             .ignoringFields("introductoryDemotedOrOtherGroundsForPossession.otherGroundDescription",
                             "applicationWithClaim",
                             "claimantType",
-                            "noRentArrearsReasonForGrounds.holidayLetTextArea",
+                            "noRentArrearsReasonForGrounds.holidayLet",
                             "waysToPay",
-                            "enforcementOrder.warrantDetails.selectedDefendants")
+                            "enforcementOrder.warrantDetails.selectedDefendants",
+                            "claimGroundSummaries")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()
                         .getOtherGroundDescription()).isEqualTo("some other ground description");
         assertThat(mergedCaseData.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(mergedCaseData.getClaimantType()).isEqualTo(claimantTypeList);
-        assertThat(mergedCaseData.getNoRentArrearsReasonForGrounds().getHolidayLetTextArea())
+        assertThat(mergedCaseData.getNoRentArrearsReasonForGrounds().getHolidayLet())
             .isEqualTo("some holiday let details");
 
     }
