@@ -14,14 +14,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
@@ -38,12 +39,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
@@ -63,6 +63,8 @@ class EnforceTheOrderTest extends BaseEventTest {
     private EnforcementOrderService enforcementOrderService;
     @Mock
     private WarrantPageConfigurer warrantPageConfigurer;
+    @Mock
+    private WritPageConfigurer writPageConfigurer;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @InjectMocks
@@ -89,7 +91,8 @@ class EnforceTheOrderTest extends BaseEventTest {
         callStartHandler(caseData);
 
         //Then
-        verify(warrantPageConfigurer, times(1)).configurePages(savingPageBuilder);
+        verify(warrantPageConfigurer).configurePages(savingPageBuilder);
+        verify(writPageConfigurer).configurePages(savingPageBuilder);
     }
 
     @Test
@@ -120,7 +123,8 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getFormattedPropertyAddress()).isEqualTo(expectedFormattedPropertyAddress);
+        assertThat(result.getFormattedPropertyAddress())
+                .isEqualTo(expectedFormattedPropertyAddress);
         assertThat(result.getAllDefendants()).hasSize(1);
     }
 
@@ -174,7 +178,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).isEqualTo(expectedListItems);
@@ -202,7 +206,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).isEmpty();
@@ -255,7 +259,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).hasSize(2);

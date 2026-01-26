@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 import java.util.List;
 
@@ -28,10 +30,12 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
         pageBuilder
             .page("changeNameAddress", this::midEvent)
             .pageLabel("You need permission from a judge to change the name and address for the eviction")
-            .showCondition("showChangeNameAddressPage=\"YES\" AND selectEnforcementType=\"WARRANT\"")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                    + " AND warrantShowChangeNameAddressPage=\"Yes\"")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowChangeNameAddressPage, NEVER_SHOW)
+            .done()
             .done()
             .label("changeNameAddress-line-separator", "---")
             .label(
@@ -66,7 +70,8 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
                   </strong>
                 </div>
                 """
-            );
+            )
+            .label("changeNameAddress-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(

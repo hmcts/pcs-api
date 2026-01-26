@@ -10,23 +10,24 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfigurer;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
-import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import java.util.ArrayList;
 import java.util.List;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.enforceTheOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
@@ -38,6 +39,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     // Business requirements to be agreed on for the conditions when this event can be triggered
     private final WarrantPageConfigurer warrantPagesConfigurer;
+    private final WritPageConfigurer writPageConfigurer;
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
     private final DefendantService defendantService;
@@ -55,6 +57,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
                 .showSummary();
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
         warrantPagesConfigurer.configurePages(pageBuilder);
+        writPageConfigurer.configurePages(pageBuilder);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -71,12 +74,12 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
 
     private void populateDefendantSelectionList(PCSCase caseData) {
         EnforcementOrder enforcementOrder = caseData.getEnforcementOrder();
-        WarrantDetails warrantDetails = WarrantDetails.builder().build();
-        enforcementOrder.setWarrantDetails(warrantDetails);
+        RawWarrantDetails warrantDetails = RawWarrantDetails.builder().build();
+        enforcementOrder.setRawWarrantDetails(warrantDetails);
         var allDefendants = caseData.getAllDefendants();
         List<DynamicStringListElement> listItems = defendantService.buildDefendantListItems(allDefendants);
 
-        enforcementOrder.getWarrantDetails().setSelectedDefendants(
+        enforcementOrder.getRawWarrantDetails().setSelectedDefendants(
             DynamicMultiSelectStringList.builder()
                 .value(new ArrayList<>())
                 .listItems(listItems)
