@@ -537,20 +537,19 @@ public class TestingSupportController {
         @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping(
-        value = "/create-casee",
+        value = "/{legislativeCountry}/create-casee",
         consumes = MediaType.APPLICATION_JSON_VALUE,
         produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Map<String, Object>> createPCSCaseViaTestingSupport(
+        @PathVariable String legislativeCountry,
         @RequestHeader(value = AUTHORIZATION) String authorization,
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @RequestBody JsonNode resumePossessionClaimPayload
+        @RequestBody(required = false) JsonNode payloadOverride
     ) {
         try {
-            Long caseId = ccdTestCaseOrchestrator.createCase(
-                authorization,
-                serviceAuthorization
-            );
+            LegislativeCountry country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
+            Long caseId = ccdTestCaseOrchestrator.createCase(authorization,country, payloadOverride);
 
             return ResponseEntity.status(201).body(Map.of(
                 "status", "CREATED",
