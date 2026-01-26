@@ -41,10 +41,11 @@ public class StartEventHandler implements Start<PCSCase, State> {
         PCSCase caseDataFromPayload = eventPayload.caseData();
         UUID authenticatedUserId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
-        PartyEntity defendantEntity = validateAccess(caseReference, authenticatedUserId);
-        PossessionClaimResponse initialResponse = buildInitialResponse(defendantEntity, caseReference);
+//        PartyEntity defendantEntity = validateAccess(caseReference, authenticatedUserId);
+//        PossessionClaimResponse initialResponse = buildInitialResponse(defendantEntity, caseReference);
 
-        return getOrInitializeDraft(caseReference, initialResponse, caseDataFromPayload);
+//        return getOrInitializeDraft(caseReference, initialResponse, caseDataFromPayload);
+        return caseDataFromPayload;
     }
 
     private PartyEntity validateAccess(long caseReference, UUID authenticatedUserId) {

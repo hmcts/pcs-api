@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.page.eventpages.RespondPossessionClaimEventPage;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -57,6 +58,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private AddressMapper addressMapper;
 
+    @Mock
+    private RespondPossessionClaimEventPage respondPossessionClaimEventPage;
+
     @BeforeEach
     void setUp() {
         RespondPossessionClaimDraftService draftService =
@@ -73,7 +77,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         setEventUnderTest(new RespondPossessionClaim(
             startEventHandler,
-            submitEventHandler
+            submitEventHandler,
+            respondPossessionClaimEventPage
         ));
     }
 
