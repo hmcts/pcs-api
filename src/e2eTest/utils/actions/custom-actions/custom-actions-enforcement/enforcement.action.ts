@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test';
 import { performAction, performValidation } from '@utils/controller-enforcement';
-import { IAction, actionData, actionRecord, actionTuple } from '@utils/interfaces/action.interface';
+import { IAction, actionData, actionRecord } from '@utils/interfaces/action.interface';
 import {
   yourApplication,
   nameAndAddressForEviction,
@@ -31,7 +31,8 @@ import {
   yourHCEO
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { createCaseApiData } from '@data/api-data';
+import { LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -420,8 +421,13 @@ export class EnforcementAction implements IAction {
             case 'moneyFieldAndRadioOption':
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
               await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(rePayments.totalAmt) as number) + 10) : item.input);
-              await performAction('clickButton', validationArr.button);
-              await performValidation('inputError', validationArr.label, item.errMessage);
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                //await performValidation('errorMessage', validationArr.label, item.errMessage);
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              }).toPass({
+                timeout: LONG_TIMEOUT,
+              });
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option2 });
               break;
 
@@ -433,9 +439,14 @@ export class EnforcementAction implements IAction {
 
             case 'moneyField':
               await performAction('inputText', validationArr.label, item.input);
-              await performAction('clickButton', validationArr.button);
-              //await performValidation('errorMessage', validationArr.label, item.errMessage);
-              await performValidation('inputError', validationArr.label, item.errMessage);
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                //await performValidation('errorMessage', validationArr.label, item.errMessage);
+                await performValidation('inputError', validationArr.label, item.errMessage);
+              }).toPass({
+                timeout: LONG_TIMEOUT,
+              });
+
               break;
 
             case 'textField':

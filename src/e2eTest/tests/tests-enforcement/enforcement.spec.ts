@@ -396,6 +396,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -498,6 +505,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -622,6 +636,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', yourApplication.mainHeader);
+      await performAction('validateWritOrWarrantFeeAmount', {
+        type: yourApplication.summaryWritOrWarrant,
+        label1: yourApplication.warrantFeeValidationLabel,
+        text1: yourApplication.warrantFeeValidationText,
+        label2: yourApplication.writFeeValidationLabel,
+        text2: yourApplication.writFeeValidationText
+      });
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
@@ -725,6 +746,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', yourApplication.mainHeader);
+      await performAction('validateWritOrWarrantFeeAmount', {
+        type: yourApplication.summaryWritOrWarrant,
+        label1: yourApplication.warrantFeeValidationLabel,
+        text1: yourApplication.warrantFeeValidationText,
+        label2: yourApplication.writFeeValidationLabel,
+        text2: yourApplication.writFeeValidationText
+      });
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfPossession,
