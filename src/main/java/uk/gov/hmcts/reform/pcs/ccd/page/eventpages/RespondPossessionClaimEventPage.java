@@ -16,7 +16,8 @@ public class RespondPossessionClaimEventPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder.page("respondPossessionClaimEventPage", this::midEvent)
-            .pageLabel("Respond To Possession Claim Event Page");
+            .pageLabel("Respond To Possession Claim Event Page")
+            .label("Placeholder", "This Placeholder Is Needed to trigger midevent");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
