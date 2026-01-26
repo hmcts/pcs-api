@@ -123,7 +123,7 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getEnforcementOrder().getFormattedPropertyAddress())
+        assertThat(result.getFormattedPropertyAddress())
                 .isEqualTo(expectedFormattedPropertyAddress);
         assertThat(result.getAllDefendants()).hasSize(1);
     }
@@ -178,7 +178,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).isEqualTo(expectedListItems);
@@ -206,7 +206,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).isEmpty();
@@ -259,7 +259,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             // Then
             verify(defendantService).buildDefendantListItems(allDefendants);
             DynamicMultiSelectStringList selectedDefendants =
-                    enforcementOrder.getWarrantDetails().getSelectedDefendants();
+                    enforcementOrder.getRawWarrantDetails().getSelectedDefendants();
             assertThat(selectedDefendants).isNotNull();
             assertThat(selectedDefendants.getValue()).isEmpty();
             assertThat(selectedDefendants.getListItems()).hasSize(2);

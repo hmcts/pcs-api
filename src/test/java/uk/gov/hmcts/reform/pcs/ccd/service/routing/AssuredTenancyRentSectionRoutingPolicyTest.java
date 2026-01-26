@@ -6,12 +6,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
@@ -22,14 +20,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds.RENT_ARREARS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds.RENT_PAYMENT_DELAY;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds.SUITABLE_ACCOM;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.RENT_ARREARS_GROUND10;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 class AssuredTenancyRentSectionRoutingPolicyTest {
@@ -56,8 +51,8 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     @ParameterizedTest
     @MethodSource("provideRentArrearsYesFlowScenarios")
     void shouldShowRentDetailsForRentArrearsYesFlow(
-        Set<RentArrearsMandatoryGrounds> mandatoryGrounds,
-        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds,
+        Set<AssuredMandatoryGround> mandatoryGrounds,
+        Set<AssuredDiscretionaryGround> discretionaryGrounds,
         YesOrNo expected) {
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDetails(
@@ -82,8 +77,8 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     @ParameterizedTest
     @MethodSource("provideNoRentArrearsFlowScenarios")
     void shouldShowRentDetailsForNoRentArrearsFlow(
-        Set<NoRentArrearsMandatoryGrounds> mandatoryGrounds,
-        Set<NoRentArrearsDiscretionaryGrounds> discretionaryGrounds,
+        Set<AssuredMandatoryGround> mandatoryGrounds,
+        Set<AssuredDiscretionaryGround> discretionaryGrounds,
         YesOrNo expected) {
         PCSCase caseData = PCSCase.builder()
             .tenancyLicenceDetails(
@@ -277,29 +272,29 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
     private static Stream<Arguments> provideNoRentArrearsFlowScenarios() {
         return Stream.of(
             // Ground 8 (SERIOUS_RENT_ARREARS) - Should show Rent Details
-            arguments(Set.of(SERIOUS_RENT_ARREARS), Set.of(), YesOrNo.YES),
+            arguments(Set.of(SERIOUS_RENT_ARREARS_GROUND8), Set.of(), YesOrNo.YES),
 
             // Ground 10 (RENT_ARREARS) - Should show Rent Details
-            arguments(Set.of(), Set.of(RENT_ARREARS), YesOrNo.YES),
+            arguments(Set.of(), Set.of(RENT_ARREARS_GROUND10), YesOrNo.YES),
 
             // Ground 11 (RENT_PAYMENT_DELAY) - Should show Rent Details
-            arguments(Set.of(), Set.of(RENT_PAYMENT_DELAY), YesOrNo.YES),
+            arguments(Set.of(), Set.of(PERSISTENT_DELAY_GROUND11), YesOrNo.YES),
 
             // All rent arrears grounds - Should show Rent Details
             arguments(
-                Set.of(SERIOUS_RENT_ARREARS),
-                Set.of(RENT_ARREARS, RENT_PAYMENT_DELAY),
+                Set.of(SERIOUS_RENT_ARREARS_GROUND8),
+                Set.of(RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11),
                 YesOrNo.YES
             ),
 
             // Non-rent grounds only - Should NOT show Rent Details
-            arguments(Set.of(ANTISOCIAL_BEHAVIOUR), Set.of(), YesOrNo.NO),
-            arguments(Set.of(), Set.of(SUITABLE_ACCOM), YesOrNo.NO),
+            arguments(Set.of(ANTISOCIAL_BEHAVIOUR_GROUND7A), Set.of(), YesOrNo.NO),
+            arguments(Set.of(), Set.of(ALTERNATIVE_ACCOMMODATION_GROUND9), YesOrNo.NO),
 
             // Mixed grounds with rent-related - Should show Rent Details
             arguments(
-                Set.of(SERIOUS_RENT_ARREARS),
-                Set.of(SUITABLE_ACCOM),
+                Set.of(SERIOUS_RENT_ARREARS_GROUND8),
+                Set.of(ALTERNATIVE_ACCOMMODATION_GROUND9),
                 YesOrNo.YES
             ),
 

@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
-import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 import java.util.List;
 import java.util.Optional;
@@ -74,13 +74,13 @@ class PartyAccessCodeLinkValidatorTest {
     }
 
     @Test
-    void shouldReturnParty_WhenPartyBelongsToCase() {
+    void shouldReturnParty_WhenPartyIsADefendant() {
         // GIVEN
         PartyEntity partyEntity = createParty(PARTY_ID, null);
-        List<PartyEntity> partyEntities = List.of(partyEntity);
+        List<PartyEntity> defendantEntities = List.of(partyEntity);
 
         // WHEN
-        PartyEntity result = validator.validatePartyBelongsToCase(partyEntities, PARTY_ID);
+        PartyEntity result = validator.validatePartyIsADefendant(defendantEntities, PARTY_ID);
 
         // THEN
         assertThat(result).isNotNull();
@@ -88,16 +88,16 @@ class PartyAccessCodeLinkValidatorTest {
     }
 
     @Test
-    void shouldThrowInvalidPartyForCaseException_WhenPartyNotInCase() {
+    void shouldThrowException_WhenPartyIsNotADefendant() {
         // GIVEN
+        PartyEntity partyEntity = createParty(PARTY_ID, null);
+        List<PartyEntity> defendantEntities = List.of(partyEntity);
         UUID differentPartyId = UUID.randomUUID();
-        PartyEntity partyEntity = createParty(differentPartyId, null);
-        List<PartyEntity> partyEntities = List.of(partyEntity);
 
         // WHEN + THEN
-        assertThatThrownBy(() -> validator.validatePartyBelongsToCase(partyEntities, PARTY_ID))
-            .isInstanceOf(InvalidPartyForCaseException.class)
-            .hasMessageContaining("Invalid data");
+        assertThatThrownBy(() -> validator.validatePartyIsADefendant(defendantEntities, differentPartyId))
+            .isInstanceOf(InvalidPartyForAccessCodeException.class)
+            .hasMessageContaining("The party this access code was generated for is not a defendant in this case");
     }
 
     @Test

@@ -13,13 +13,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
@@ -179,8 +177,8 @@ class ClaimGroundServiceTest {
             .falseStatementTextArea("False statement reason")
             .build();
 
-        Set<NoRentArrearsMandatoryGrounds> mandatory = EnumSet.allOf(NoRentArrearsMandatoryGrounds.class);
-        Set<NoRentArrearsDiscretionaryGrounds> discretionary = EnumSet.allOf(NoRentArrearsDiscretionaryGrounds.class);
+        Set<AssuredMandatoryGround> mandatory = EnumSet.allOf(AssuredMandatoryGround.class);
+        Set<AssuredDiscretionaryGround> discretionary = EnumSet.allOf(AssuredDiscretionaryGround.class);
 
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
@@ -206,24 +204,24 @@ class ClaimGroundServiceTest {
 
         // Expected pairs: ground ID -> reason
         Map<String, String> expectedReasons = Map.ofEntries(
-            entry("OWNER_OCCUPIER", "Owner occupier reason"),
-            entry("REPOSSESSION_BY_LENDER", "Repossession reason"),
-            entry("HOLIDAY_LET", "Holiday let reason"),
-            entry("STUDENT_LET", "Student let reason"),
-            entry("MINISTER_OF_RELIGION", "Minister of religion reason"),
-            entry("REDEVELOPMENT", "Redevelopment reason"),
-            entry("DEATH_OF_TENANT", "Death of tenant reason"),
-            entry("ANTISOCIAL_BEHAVIOUR", "Antisocial behaviour reason"),
-            entry("NO_RIGHT_TO_RENT", "No right to rent reason"),
-            entry("SUITABLE_ACCOM", "Suitable alternative accommodation reason"),
-            entry("BREACH_OF_TENANCY_CONDITIONS", "Breach of tenancy conditions reason"),
-            entry("PROPERTY_DETERIORATION", "Property deterioration reason"),
-            entry("NUISANCE_OR_ILLEGAL_USE", "Nuisance reason"),
-            entry("DOMESTIC_VIOLENCE", "Domestic violence reason"),
-            entry("OFFENCE_DURING_RIOT", "Offence during riot reason"),
-            entry("FURNITURE_DETERIORATION", "Furniture deterioration reason"),
-            entry("LANDLORD_EMPLOYEE", "Landlord employee reason"),
-            entry("FALSE_STATEMENT", "False statement reason")
+            entry("OWNER_OCCUPIER_GROUND1", "Owner occupier reason"),
+            entry("REPOSSESSION_GROUND2", "Repossession reason"),
+            entry("HOLIDAY_LET_GROUND3", "Holiday let reason"),
+            entry("STUDENT_LET_GROUND4", "Student let reason"),
+            entry("MINISTER_RELIGION_GROUND5", "Minister of religion reason"),
+            entry("REDEVELOPMENT_GROUND6", "Redevelopment reason"),
+            entry("DEATH_OF_TENANT_GROUND7", "Death of tenant reason"),
+            entry("ANTISOCIAL_BEHAVIOUR_GROUND7A", "Antisocial behaviour reason"),
+            entry("NO_RIGHT_TO_RENT_GROUND7B", "No right to rent reason"),
+            entry("ALTERNATIVE_ACCOMMODATION_GROUND9", "Suitable alternative accommodation reason"),
+            entry("BREACH_TENANCY_GROUND12", "Breach of tenancy conditions reason"),
+            entry("DETERIORATION_PROPERTY_GROUND13", "Property deterioration reason"),
+            entry("NUISANCE_ANNOYANCE_GROUND14", "Nuisance reason"),
+            entry("DOMESTIC_VIOLENCE_GROUND14A", "Domestic violence reason"),
+            entry("OFFENCE_RIOT_GROUND14ZA", "Offence during riot reason"),
+            entry("DETERIORATION_FURNITURE_GROUND15", "Furniture deterioration reason"),
+            entry("EMPLOYEE_LANDLORD_GROUND16", "Landlord employee reason"),
+            entry("FALSE_STATEMENT_GROUND17", "False statement reason")
         );
 
         expectedReasons.forEach((groundId, reason) ->
@@ -260,14 +258,14 @@ class ClaimGroundServiceTest {
     @Test
     void shouldReturnClaimGroundEntities_WhenAssuredTenancyRentArrears() {
         // Given
-        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = Set.of(
-            RentArrearsMandatoryGrounds.OWNER_OCCUPIER_GROUND1,
-            RentArrearsMandatoryGrounds.REDEVELOPMENT_GROUND6
+        Set<AssuredMandatoryGround> mandatoryGrounds = Set.of(
+            AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1,
+            AssuredMandatoryGround.REDEVELOPMENT_GROUND6
         );
 
-        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = Set.of(
-            RentArrearsDiscretionaryGrounds.BREACH_TENANCY_GROUND12,
-            RentArrearsDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14
+        Set<AssuredDiscretionaryGround> discretionaryGrounds = Set.of(
+            AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12,
+            AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14
         );
 
         RentArrearsGroundsReasons reasons = RentArrearsGroundsReasons.builder()
