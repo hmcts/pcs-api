@@ -37,13 +37,15 @@ import {
   statementOfTruthTwo
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { defendantDetails } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
+import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
+  moneyMap.clear();
+  fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
@@ -86,6 +88,8 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 test.afterEach(async () => {
+  moneyMap.clear();
+  fieldsMap.clear();
   if (caseInfo.id) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }
@@ -285,9 +289,9 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
       await performAction('provideMoneyOwed', {
         label: moneyOwed.totalAmountOwedTextLabel,
-        input: moneyOwed.totalAmountOwedTextInput
+        input: moneyOwed.totalAmountOwedTextInput,
+        nextPage: legalCosts.mainHeader
       });
-      await performValidation('mainHeader', legalCosts.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: legalCosts.errorValidation,
         validationType: legalCosts.errorValidationType.three,
@@ -310,9 +314,9 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.yesRadioOption,
         label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        input: legalCosts.howMuchYouWantToReclaimTextInput
+        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        nextPage: landRegistryFees.mainHeader
       });
-      await performValidation('mainHeader', landRegistryFees.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: landRegistryFees.errorValidation,
         validationType: landRegistryFees.errorValidationType.three,
@@ -335,7 +339,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.yesRadioOption,
         label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
+        nextPage: rePayments.mainHeader
       });
       await performValidation('mainHeader', rePayments.mainHeader);
       await performAction('validateAmountToRePayTable');
@@ -464,21 +469,22 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performValidation('mainHeader', moneyOwed.mainHeader);
     await performAction('provideMoneyOwed', {
       label: moneyOwed.totalAmountOwedTextLabel,
-      input: moneyOwed.totalAmountOwedTextInput
+      input: moneyOwed.totalAmountOwedTextInput,
+      nextPage: legalCosts.mainHeader
     });
-    await performValidation('mainHeader', legalCosts.mainHeader);
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.noRadioOption,
       label: legalCosts.howMuchYouWantToReclaimTextLabel,
-      input: legalCosts.howMuchYouWantToReclaimTextInput
+      input: legalCosts.howMuchYouWantToReclaimTextInput,
+      nextPage: landRegistryFees.mainHeader
     });
-    await performValidation('mainHeader', landRegistryFees.mainHeader);
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.noRadioOption,
       label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
+      nextPage: rePayments.mainHeader,
     });
     await performValidation('mainHeader', rePayments.mainHeader);
     await performAction('validateAmountToRePayTable');
@@ -569,21 +575,22 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performValidation('mainHeader', moneyOwed.mainHeader);
     await performAction('provideMoneyOwed', {
       label: moneyOwed.totalAmountOwedTextLabel,
-      input: moneyOwed.totalAmountOwedTextInput
+      input: moneyOwed.totalAmountOwedTextInput,
+      nextPage: legalCosts.mainHeader
     });
-    await performValidation('mainHeader', legalCosts.mainHeader);
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.yesRadioOption,
       label: legalCosts.howMuchYouWantToReclaimTextLabel,
-      input: legalCosts.howMuchYouWantToReclaimTextInput
+      input: legalCosts.howMuchYouWantToReclaimTextInput,
+      nextPage: landRegistryFees.mainHeader
     });
-    await performValidation('mainHeader', landRegistryFees.mainHeader);
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.noRadioOption,
       label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
+      nextPage: rePayments.mainHeader,
     });
     await performValidation('mainHeader', rePayments.mainHeader);
     await performAction('validateAmountToRePayTable');
@@ -704,21 +711,22 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', moneyOwed.mainHeader);
       await performAction('provideMoneyOwed', {
         label: moneyOwed.totalAmountOwedTextLabel,
-        input: moneyOwed.totalAmountOwedTextInput
+        input: moneyOwed.totalAmountOwedTextInput,
+        nextPage: legalCosts.mainHeader
       });
-      await performValidation('mainHeader', legalCosts.mainHeader);
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.noRadioOption,
         label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        input: legalCosts.howMuchYouWantToReclaimTextInput
+        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        nextPage: landRegistryFees.mainHeader
       });
-      await performValidation('mainHeader', landRegistryFees.mainHeader);
       await performAction('provideLandRegistryFees', {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.noRadioOption,
         label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
+        nextPage: rePayments.mainHeader,
       });
       await performValidation('mainHeader', rePayments.mainHeader);
       await performAction('validateAmountToRePayTable');
@@ -814,21 +822,22 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', moneyOwed.mainHeader);
       await performAction('provideMoneyOwed', {
         label: moneyOwed.totalAmountOwedTextLabel,
-        input: moneyOwed.totalAmountOwedTextInput
+        input: moneyOwed.totalAmountOwedTextInput,
+        nextPage: legalCosts.mainHeader
       });
-      await performValidation('mainHeader', legalCosts.mainHeader);
       await performAction('provideLegalCosts', {
         question: legalCosts.reclaimLegalCostsQuestion,
         option: legalCosts.noRadioOption,
         label: legalCosts.howMuchYouWantToReclaimTextLabel,
-        input: legalCosts.howMuchYouWantToReclaimTextInput
+        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        nextPage: landRegistryFees.mainHeader
       });
-      await performValidation('mainHeader', landRegistryFees.mainHeader);
       await performAction('provideLandRegistryFees', {
         question: landRegistryFees.landRegistryFeeQuestion,
         option: landRegistryFees.noRadioOption,
         label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
-        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput
+        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
+        nextPage: rePayments.mainHeader,
       });
       await performValidation('mainHeader', rePayments.mainHeader);
       await performAction('validateAmountToRePayTable');

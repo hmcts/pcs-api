@@ -32,7 +32,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
-import { LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -42,8 +42,8 @@ export const addressInfo = {
 };
 
 export let defendantDetails: string[] = [];
-const moneyMap = new Map<string, number>();
-const fieldsMap = new Map<string, string>();
+export const moneyMap = new Map<string, number>();
+export const fieldsMap = new Map<string, string>();
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -342,7 +342,12 @@ export class EnforcementAction implements IAction {
     await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
     const moneyOwedAmt = await this.retrieveAmountFromString(totalMoneyOwed.input as string);
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
-    await performAction('clickButton', moneyOwed.continueButton);
+    await expect(async () => {
+      await performAction('clickButton', moneyOwed.continueButton);
+      await performValidation('mainHeader', totalMoneyOwed.nextPage);
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
   }
 
   private async provideLegalCosts(legalCost: actionRecord) {
@@ -357,22 +362,33 @@ export class EnforcementAction implements IAction {
     } else {
       moneyMap.set(legalCosts.legalCostsFee, 0);
     }
-    await performAction('clickButton', legalCosts.continueButton);
+    await expect(async () => {
+      await performAction('clickButton', legalCosts.continueButton);
+      await performValidation('mainHeader', legalCost.nextPage);
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
   }
 
-  private async provideLandRegistryFees(langRegistry: actionRecord) {
-    await this.addFieldsToMap(langRegistry);
+  private async provideLandRegistryFees(landRegistry: actionRecord) {
+    await this.addFieldsToMap(landRegistry);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: langRegistry.question, option: langRegistry.option });
-    if (langRegistry.option === accessToTheProperty.yesRadioOption) {
-      await performAction('inputText', langRegistry.label, langRegistry.input);
-      const landRegistryFeeAmt = await this.retrieveAmountFromString(langRegistry.input as string);
+    await performAction('clickRadioButton', { question: landRegistry.question, option: landRegistry.option });
+    if (landRegistry.option === accessToTheProperty.yesRadioOption) {
+      await performAction('inputText', landRegistry.label, landRegistry.input);
+      const landRegistryFeeAmt = await this.retrieveAmountFromString(landRegistry.input as string);
       moneyMap.set(landRegistryFees.landRegistryFee, landRegistryFeeAmt);
     } else {
       moneyMap.set(landRegistryFees.landRegistryFee, 0);
     }
-    await performAction('clickButton', landRegistryFees.continueButton);
+    await expect(async () => {
+      await performAction('clickButton', landRegistryFees.continueButton);
+      await performValidation('mainHeader', landRegistry.nextPage);
+    }).toPass({
+      timeout: VERY_LONG_TIMEOUT,
+    });
+
   }
 
   private async validateAmountToRePayTable() {

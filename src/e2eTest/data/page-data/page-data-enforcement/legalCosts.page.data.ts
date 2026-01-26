@@ -1,6 +1,7 @@
 export const legalCosts = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Legal costs',
+  mainHeaderWrit: 'Legal costs (placeholder)',
   reclaimLegalCostsQuestion: 'Do you want to reclaim any legal costs?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
