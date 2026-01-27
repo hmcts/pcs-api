@@ -29,7 +29,7 @@ public class CcdTestCaseOrchestrator {
     private final AuthTokenGenerator s2sAuthTokenGenerator;
     private final CoreCaseDataApi coreCaseDataApi;
 
-    public Long createCase(String idamToken, LegislativeCountry legislativeCountry, JsonNode payloadOverride){
+    public Long createCase(String idamToken, LegislativeCountry legislativeCountry, JsonNode payloadOverride) {
 
         String s2sToken = s2sAuthTokenGenerator.generate();
 
@@ -213,7 +213,7 @@ public class CcdTestCaseOrchestrator {
             "agreementLegalRep": []
           }
         }
-        """;
+                """;
 
             ObjectMapper mapper = new ObjectMapper();
             return (ObjectNode) mapper.readTree(json);
