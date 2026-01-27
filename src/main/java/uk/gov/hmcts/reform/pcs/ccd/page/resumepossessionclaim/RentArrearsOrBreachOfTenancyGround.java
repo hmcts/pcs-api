@@ -6,8 +6,8 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
@@ -17,7 +17,7 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("rentArrearsOrBreachOfTenancyGround", this::midEvent)
-            .pageLabel(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel())
+            .pageLabel(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1.getLabel())
             .showCondition("tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
                                + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                                + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"

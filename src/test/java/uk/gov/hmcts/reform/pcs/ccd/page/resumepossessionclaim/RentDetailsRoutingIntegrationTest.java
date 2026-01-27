@@ -4,23 +4,23 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1;
 
 public class RentDetailsRoutingIntegrationTest {
 
@@ -102,35 +102,35 @@ public class RentDetailsRoutingIntegrationTest {
             // AC03: Secure Tenancy + Ground 1 + Rent Arrears
             arguments(TenancyLicenceType.SECURE_TENANCY,
                      Set.of(), Set.of(),
-                     Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                     Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                      Set.of(RentArrearsOrBreachOfTenancy.RENT_ARREARS),
                      YesOrNo.YES, "AC03: Secure Tenancy + Ground 1 + Rent Arrears"),
 
             // AC04: Flexible Tenancy + Ground 1 + Rent Arrears
             arguments(TenancyLicenceType.FLEXIBLE_TENANCY,
                      Set.of(), Set.of(),
-                     Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                     Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                      Set.of(RentArrearsOrBreachOfTenancy.RENT_ARREARS),
                      YesOrNo.YES, "AC04: Flexible Tenancy + Ground 1 + Rent Arrears"),
 
             // AC05: Secure Tenancy + Ground 1 + Breach Only
             arguments(TenancyLicenceType.SECURE_TENANCY,
                      Set.of(), Set.of(),
-                     Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                     Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                      Set.of(RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY),
                      YesOrNo.NO, "AC05: Secure Tenancy + Ground 1 + Breach Only"),
 
             // AC06: Flexible Tenancy + Ground 1 + Breach Only
             arguments(TenancyLicenceType.FLEXIBLE_TENANCY,
                      Set.of(), Set.of(),
-                     Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY),
+                     Set.of(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1),
                      Set.of(RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY),
                      YesOrNo.NO, "AC06: Flexible Tenancy + Ground 1 + Breach Only"),
 
             // Edge Case: Secure Tenancy + Ground 2 (should not show Rent Details)
             arguments(TenancyLicenceType.SECURE_TENANCY,
                      Set.of(), Set.of(),
-                     Set.of(SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE),
+                     Set.of(SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE_GROUND2),
                      Set.of(),
                      YesOrNo.NO, "Edge Case: Secure Tenancy + Ground 2"),
 
@@ -223,7 +223,7 @@ public class RentDetailsRoutingIntegrationTest {
                 .getSecureOrFlexibleDiscretionaryGrounds() != null
                                 && caseData.getSecureOrFlexiblePossessionGrounds()
                 .getSecureOrFlexibleDiscretionaryGrounds()
-                                    .contains(RENT_ARREARS_OR_BREACH_OF_TENANCY);
+                                    .contains(RENT_ARREARS_OR_BREACH_OF_TENANCY_GROUND1);
 
             if (hasGround1) {
                 boolean hasRentArrears = caseData.getRentArrearsOrBreachOfTenancy() != null

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.grounds;
 
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
@@ -32,7 +32,7 @@ public enum AssuredAdditionalMandatoryGrounds {
     ANTISOCIAL_BEHAVIOUR_GROUND7A,
 
     @CCD(label = "Tenant does not have a right to rent (ground 7B)")
-    NO_RIGHT_TO_RENT_GROUND7B;
+    NO_RIGHT_TO_RENT_GROUND7B
 }
 
 
