@@ -71,6 +71,18 @@ class DraftCaseJsonMergerTest {
                             "claimantType",
                             "noRentArrearsReasonForGrounds.holidayLetTextArea",
                             "waysToPay",
+                            "enforcementOrder.showChangeNameAddressPage",
+                            "enforcementOrder.showPeopleWhoWillBeEvictedPage",
+                            "enforcementOrder.showPeopleYouWantToEvictPage",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.agreementClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.fullNameClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.positionClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.agreementLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.fullNameLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.firmNameLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.positionLegalRep",
                             "enforcementOrder.warrantDetails.selectedDefendants")
             .isEqualTo(existingCaseData);
 
