@@ -24,8 +24,7 @@ import {
   wantToUploadDocuments,
   whatAreYourGroundsForPossession,
   housingPossessionClaim,
-  home,
-  signInOrCreateAnAccount
+  home
 } from '@data/page-data';
 import {
   claimantType,
@@ -49,6 +48,7 @@ import {
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import { dismissCookieBanner } from '@config/cookie-banner';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
@@ -60,14 +60,9 @@ import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 test.use({ storageState: undefined });
 
 test.beforeEach(async ({page, context}) => {
-  // Clear all cookies to ensure a fresh session (no storageState)
   await context.clearCookies();
-  
   initializeExecutor(page);
-  // Navigate to base URL first (needed for localStorage access)
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  
-  // Clear storage after navigating to a real page
   await page.evaluate(() => {
     try {
       localStorage.clear();
@@ -76,15 +71,10 @@ test.beforeEach(async ({page, context}) => {
       // Ignore if storage is not accessible
     }
   });
-  
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
+
+  await dismissCookieBanner(page, 'additional');
   await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
+  await dismissCookieBanner(page, 'analytics');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');

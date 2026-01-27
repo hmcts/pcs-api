@@ -141,6 +141,40 @@ await performValidationGroup(
 yarn test:chrome
 ```
 
+## 7.1 Storage state usage
+
+Tests reuse a saved **storage state** so each run does not log in again. Login and cookie consent are done once in global setup; every test starts with that state.
+
+### How it works
+
+1. **Global setup** (`config/global-setup.config.ts`) runs before all tests. It:
+   - Saves cookies and local storage to **`.auth/storage-state.json`**
+
+2. **Playwright config** (`playwright.config.ts`) uses that file when it exists:
+   - Each test project (e.g. Chrome) gets a new context that is initialised with this state, so the app sees you as already logged in
+
+3. **Test specs** do not perform login. `beforeEach` typically does:
+   - `initializeExecutor(page)`
+   - `performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL)`
+   - then continues to Create case / Find case etc., assuming the session is valid
+
+### File location
+
+- Path: **`src/e2eTest/.auth/storage-state.json`**
+- Created by global setup; contains cookies (and optionally local storage) from the login run.
+- **`.auth/`** is a good candidate for `.gitignore` so credentials and session data are not committed.
+
+### Specs that do not use storage state
+
+**`createCase.saveResume.spec.ts`** calls `test.use({ storageState: undefined })` so it **does not use** the saved storage state.
+
+**Reason:** Those tests validate resume & find-case behaviour from a **fresh session**, including the full sign-out/re-login flow. They need to run without storage state so they can:
+- Start from a clean context (no cookies, no persisted login),
+- Go through login in `beforeEach`,
+- Assert that resume and find-case work after a fresh login.
+
+Using the shared storage state would skip login and cookie consent, so the sign-out/re-login and “resume from clean session” paths would never be exercised.
+
 ## 8. Troubleshooting
 
 | Issue                  | Solution                                    |

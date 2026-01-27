@@ -1,9 +1,11 @@
 import {IdamUtils, ServiceAuthUtils} from '@hmcts/playwright-common';
-import {chromium, Page} from '@playwright/test';
+import {chromium} from '@playwright/test';
 import {accessTokenApiData, s2STokenApiData} from '@data/api-data';
 import {user} from '@data/user-data';
 import * as path from 'path';
 import * as fs from 'fs';
+import {LONG_TIMEOUT} from "../playwright.config";
+import { dismissCookieBanner } from '@config/cookie-banner';
 
 const STORAGE_STATE_PATH = path.join(__dirname, '../.auth/storage-state.json');
 
@@ -15,10 +17,9 @@ async function globalSetupConfig(): Promise<void> {
 
 async function authenticateAndSaveState(): Promise<string> {
   const baseUrl = process.env.MANAGE_CASE_BASE_URL;
-  const userPassword = user.claimantSolicitor.password;
 
   if (!baseUrl) throw new Error('MANAGE_CASE_BASE_URL is not set');
-  if (!user.claimantSolicitor.email || !userPassword) {
+  if (!user.claimantSolicitor.email || !user.claimantSolicitor.password) {
     throw new Error('Login failed: missing credentials. Set IDAM_PCS_USER_PASSWORD.');
   }
 
@@ -31,26 +32,21 @@ async function authenticateAndSaveState(): Promise<string> {
 
   try {
     await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(1500);
 
     await dismissCookieBanner(page, 'additional');
-    await dismissCookieBanner(page, 'hide-success');
 
-    await page.waitForSelector('#username', { timeout: 30000 });
+    await page.waitForSelector('#username', { timeout: LONG_TIMEOUT });
     await page.locator('#username').fill(user.claimantSolicitor.email);
-    await page.locator('#password').fill(userPassword);
+    await page.locator('#password').fill(user.claimantSolicitor.password);
     await page.locator('#login-submit-btn').click();
 
-    await page.waitForURL((url) => !url.href.includes('/login') && !url.href.includes('/sign-in'), { timeout: 30000 });
+    await page.waitForURL((url) => !url.href.includes('/login'), { timeout: LONG_TIMEOUT });
 
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('load');
 
     await dismissCookieBanner(page, 'analytics');
-    await dismissCookieBanner(page, 'hide-success');
 
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('load');
 
     const cookies = await context.cookies();
     const authCookies = cookies.filter(c =>
@@ -81,29 +77,6 @@ async function authenticateAndSaveState(): Promise<string> {
     throw error;
   } finally {
     await browser.close();
-  }
-}
-
-async function dismissCookieBanner(page: Page, type: 'additional' | 'analytics' | 'hide-success'): Promise<void> {
-  try {
-    let btn;
-    if (type === 'additional') {
-      btn = page.locator('#cookie-accept-submit');
-    } else if (type === 'analytics') {
-      btn = page.locator('.govuk-button-group').getByRole('button', { name: 'Accept analytics cookies' });
-    } else if (type === 'hide-success') {
-      btn = page.locator('#cookie-accept-all-success-banner-hide');
-    }
-
-    if (btn) {
-      const isVisible = await btn.isVisible({ timeout: 5000 }).catch(() => false);
-      if (isVisible) {
-        await btn.scrollIntoViewIfNeeded();
-        await btn.click();
-        await page.waitForTimeout(500);
-      }
-    }
-  } catch {
   }
 }
 
