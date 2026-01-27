@@ -45,8 +45,5 @@ public class StatementOfTruthService {
 
         return builder.build();
     }
-
 }
-
-
 
