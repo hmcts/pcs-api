@@ -9,3 +9,6 @@ CREATE TABLE claim_ground (
   description VARCHAR(500),
   is_rent_arrears BOOLEAN
 );
+
+ALTER TABLE pcs_case
+  DROP COLUMN possession_grounds;
