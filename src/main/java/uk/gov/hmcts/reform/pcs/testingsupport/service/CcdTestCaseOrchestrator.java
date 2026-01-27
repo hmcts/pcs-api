@@ -22,7 +22,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 public class CcdTestCaseOrchestrator {
 
-    private static final String CASE_TYPE = "PCS";
+    private static final String CASE_TYPE = "PCS-1237";
     private static final String CREATE_EVENT = "createPossessionClaim";
     private static final String RESUME_EVENT = "resumePossessionClaim";
 
