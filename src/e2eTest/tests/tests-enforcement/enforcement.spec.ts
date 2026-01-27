@@ -371,7 +371,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: rePayments.enterTheAmountTextInput,
         nextPage: languageUsed.mainHeader
       });
-      await performValidation('mainHeader', languageUsed.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: languageUsed.errorValidation,
         validationType: languageUsed.errorValidationType.three,
@@ -547,7 +546,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: rePayments.enterTheAmountTextInput,
       nextPage: languageUsed.mainHeader
     });
-    await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.languageUsedRadioOptions.englishRadioOption
@@ -663,7 +661,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: rePayments.enterTheAmountTextInput,
       nextPage: languageUsed.mainHeader
     });
-    await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
       option: languageUsed.languageUsedRadioOptions.englishRadioOption
@@ -810,7 +807,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: rePayments.enterTheAmountTextInput,
         nextPage: languageUsed.mainHeader
       });
-      await performValidation('mainHeader', languageUsed.mainHeader);
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.languageUsedRadioOptions.englishRadioOption
@@ -932,7 +928,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: rePayments.enterTheAmountTextInput,
         nextPage: languageUsed.mainHeader
       });
-      await performValidation('mainHeader', languageUsed.mainHeader);
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
         option: languageUsed.languageUsedRadioOptions.englishRadioOption
