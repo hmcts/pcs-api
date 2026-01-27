@@ -183,6 +183,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationType: riskPosedByEveryoneAtProperty.errorValidationType.four,
         inputArray: riskPosedByEveryoneAtProperty.errorValidationField.errorCheckBoxOption,
         label: riskPosedByEveryoneAtProperty.kindOfRiskQuestion,
+        checkBox: riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
         button: riskPosedByEveryoneAtProperty.continueButton
       });
       await performAction('selectRiskPosedByEveryoneAtProperty', {
@@ -344,7 +345,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: rePayments.mainHeader
       });
       await performValidation('mainHeader', rePayments.mainHeader);
-      await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
       await performAction('inputErrorValidation', {
         validationReq: rePayments.errorValidation,
         validationType: rePayments.errorValidationType.three,
@@ -367,7 +368,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         question: rePayments.rePaymentQuestion,
         option: rePayments.rePaymentRadioOptions.some,
         label: rePayments.enterTheAmountTextLabel,
-        input: rePayments.enterTheAmountTextInput
+        input: rePayments.enterTheAmountTextInput,
+        nextPage: languageUsed.mainHeader
       });
       await performValidation('mainHeader', languageUsed.mainHeader);
       await performAction('inputErrorValidation', {
@@ -396,7 +398,47 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: suspendedOrder.yesRadioOption
       });
       await performValidation('mainHeader', statementOfTruthOne.mainHeader);
-      await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthOne.mainHeader });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.four,
+        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
+        label: statementOfTruthOne.checkBoxGenericErrorLabel,
+        checkBox: statementOfTruthOne.iCertifyCheckbox,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.three,
+        inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
+        question: statementOfTruthOne.completedByLabel,
+        option: statementOfTruthOne.claimantRadioOption,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.four,
+        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
+        label: statementOfTruthOne.checkBoxGenericErrorLabel,
+        checkBox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.two,
+        inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
+        header: statementOfTruthOne.errors,
+        label: statementOfTruthOne.fullNameHiddenTextLabel,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: statementOfTruthOne.errorValidation,
+        validationType: statementOfTruthOne.errorValidationType.two,
+        inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
+        header: statementOfTruthOne.errors,
+        label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+        button: statementOfTruthOne.continueButton
+      });
+      await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
       await performAction('selectStatementOfTruthOne', {
         selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
         completedBy: statementOfTruthOne.claimantRadioOption,
@@ -443,6 +485,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationType: peopleYouWantToEvict.errorValidationType.four,
       inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
       label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+      checkBox: defendantDetails[0],
       button: peopleYouWantToEvict.continueButton
     });
     await performAction('selectPeopleYouWantToEvict', {
@@ -496,12 +539,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nextPage: rePayments.mainHeader,
     });
     await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
     await performAction('provideAmountToRePay', {
       question: rePayments.rePaymentQuestion,
       option: rePayments.rePaymentRadioOptions.none,
       label: rePayments.enterTheAmountTextLabel,
-      input: rePayments.enterTheAmountTextInput
+      input: rePayments.enterTheAmountTextInput,
+      nextPage: languageUsed.mainHeader
     });
     await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
@@ -514,7 +558,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: suspendedOrder.noRadioOption
     });
     await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
-    await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthTwo.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
     await performAction('selectStatementOfTruthTwo', {
       selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
       completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
@@ -611,12 +655,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       nextPage: rePayments.mainHeader,
     });
     await performValidation('mainHeader', rePayments.mainHeader);
-    await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
     await performAction('provideAmountToRePay', {
       question: rePayments.rePaymentQuestion,
       option: rePayments.rePaymentRadioOptions.all,
       label: rePayments.enterTheAmountTextLabel,
-      input: rePayments.enterTheAmountTextInput
+      input: rePayments.enterTheAmountTextInput,
+      nextPage: languageUsed.mainHeader
     });
     await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
@@ -629,7 +674,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: suspendedOrder.yesRadioOption
     });
     await performValidation('mainHeader', statementOfTruthOne.mainHeader);
-    await performAction('validateAmountToRePayTable',{ headerName: statementOfTruthOne.mainHeader });
+    await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
     await performAction('selectStatementOfTruthOne', {
       selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
       completedBy: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
@@ -703,6 +748,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationType: peopleYouWantToEvict.errorValidationType.four,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+        checkBox: defendantDetails[0],
         button: peopleYouWantToEvict.continueButton
       });
       await performAction('selectPeopleYouWantToEvict', {
@@ -756,12 +802,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: rePayments.mainHeader,
       });
       await performValidation('mainHeader', rePayments.mainHeader);
-      await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
       await performAction('provideAmountToRePay', {
         question: rePayments.rePaymentQuestion,
         option: rePayments.rePaymentRadioOptions.none,
         label: rePayments.enterTheAmountTextLabel,
-        input: rePayments.enterTheAmountTextInput
+        input: rePayments.enterTheAmountTextInput,
+        nextPage: languageUsed.mainHeader
       });
       await performValidation('mainHeader', languageUsed.mainHeader);
       await performAction('selectLanguageUsed', {
@@ -814,6 +861,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationType: peopleYouWantToEvict.errorValidationType.four,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+        checkBox: defendantDetails[0],
         button: peopleYouWantToEvict.continueButton
       });
       await performAction('selectPeopleYouWantToEvict', {
@@ -867,12 +915,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: rePayments.mainHeader,
       });
       await performValidation('mainHeader', rePayments.mainHeader);
-      await performAction('validateAmountToRePayTable',{ headerName: rePayments.mainHeader });
+      await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
       await performAction('provideAmountToRePay', {
         question: rePayments.rePaymentQuestion,
         option: rePayments.rePaymentRadioOptions.none,
         label: rePayments.enterTheAmountTextLabel,
-        input: rePayments.enterTheAmountTextInput
+        input: rePayments.enterTheAmountTextInput,
+        nextPage: languageUsed.mainHeader
       });
       await performValidation('mainHeader', languageUsed.mainHeader);
       await performAction('selectLanguageUsed', {

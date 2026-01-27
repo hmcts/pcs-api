@@ -9,7 +9,8 @@ export class ErrorMessageValidation implements IValidation {
     } else {
       errorMessage = page.locator(`
         h3.error-summary-heading:has-text("${error.header}") + p:has-text("${error.message}"),
-        h3.error-summary-heading:has-text("${error.header}") ~ #errors li:has-text("${error.message}")
+        h3.error-summary-heading:has-text("${error.header}") ~ #errors li:has-text("${error.message}"),
+        a.validation-error:has-text("${error.message}")
       `);
     }
     await expect(errorMessage).toBeVisible();

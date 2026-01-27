@@ -77,7 +77,7 @@ export class EnforcementAction implements IAction {
       ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord, page)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord, page)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord, page)],
-      ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
+      ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord, page)],
       ['validateAmountToRePayTable', () => this.validateAmountToRePayTable(fieldName as actionRecord)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
@@ -405,7 +405,7 @@ export class EnforcementAction implements IAction {
       await performValidation('formLabelValue', moneyField, `${await this.convertCurrencyToString(amount)}`);
     }
   }
-  private async provideAmountToRePay(amtToPay: actionRecord) {
+  private async provideAmountToRePay(amtToPay: actionRecord, page: Page) {
     await this.addFieldsToMap(amtToPay);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -413,7 +413,12 @@ export class EnforcementAction implements IAction {
     if (amtToPay.option === rePayments.rePaymentRadioOptions.some) {
       await performAction('inputText', amtToPay.label, amtToPay.input);
     };
-    await performAction('clickButton', rePayments.continueButton);
+    await expect(async () => {
+      await performAction('clickButton', rePayments.continueButton);
+      await expect(page.locator(`//h1[text()="${amtToPay.nextPage}"]`), `If the ${amtToPay.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
+    }).toPass({
+      timeout: LONG_TIMEOUT,
+    });
   }
 
   private async selectLanguageUsed(languageDetails: actionRecord) {
@@ -434,37 +439,37 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
-      await performAction('check', claimantDetails.selectCheckbox);
-      await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
-      if(claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption){
-        await performAction('check', claimantDetails.iBelieveCheckbox);
-        await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-        await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      }
-      if(claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption){
-        await performAction('check', claimantDetails.signThisStatementCheckbox);
-        await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-        await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-        await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      }
-      await performAction('clickButton', statementOfTruthOne.continueButton);
+    await performAction('check', claimantDetails.selectCheckbox);
+    await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
+    if (claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption) {
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
+    if (claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    await performAction('clickButton', statementOfTruthOne.continueButton);
+  }
 
   private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
-      await performAction('check', claimantDetails.selectCheckbox);
-      await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
-      if(claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption){
-        await performAction('check', claimantDetails.iBelieveCheckbox);
-        await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-        await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      }
-      if(claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption){
-        await performAction('check', claimantDetails.signThisStatementCheckbox);
-        await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-        await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-        await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      }
-      await performAction('clickButton', statementOfTruthOne.continueButton);
+    await performAction('check', claimantDetails.selectCheckbox);
+    await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
+    if (claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption) {
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    if (claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption) {
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    await performAction('clickButton', statementOfTruthOne.continueButton);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
@@ -502,7 +507,6 @@ export class EnforcementAction implements IAction {
               }).toPass({
                 timeout: LONG_TIMEOUT,
               });
-
               break;
 
             case 'textField':
@@ -519,6 +523,7 @@ export class EnforcementAction implements IAction {
             case 'checkBox':
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+              await performAction('check', validationArr.checkBox);
               break;
 
             default:
