@@ -32,7 +32,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
-import { LONG_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -72,9 +72,9 @@ export class EnforcementAction implements IAction {
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
-      ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord)],
-      ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
-      ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
+      ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord, page)],
+      ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord, page)],
+      ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord, page)],
       ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
       ['validateAmountToRePayTable', () => this.validateAmountToRePayTable()],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
@@ -335,7 +335,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', accessToTheProperty.continueButton);
   }
 
-  private async provideMoneyOwed(totalMoneyOwed: actionRecord) {
+  private async provideMoneyOwed(totalMoneyOwed: actionRecord, page: Page) {
     await this.addFieldsToMap(totalMoneyOwed);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -344,13 +344,13 @@ export class EnforcementAction implements IAction {
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
     await expect(async () => {
       await performAction('clickButton', moneyOwed.continueButton);
-      await performValidation('mainHeader', totalMoneyOwed.nextPage);
+      await expect(page.locator(`//h1[text()="${totalMoneyOwed.nextPage}"]`), `Re-Try option when navigation to the ${totalMoneyOwed.nextPage} page is not successful`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
-      timeout: VERY_LONG_TIMEOUT,
+      timeout: LONG_TIMEOUT,
     });
   }
 
-  private async provideLegalCosts(legalCost: actionRecord) {
+  private async provideLegalCosts(legalCost: actionRecord, page: Page) {
     await this.addFieldsToMap(legalCost);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -364,13 +364,13 @@ export class EnforcementAction implements IAction {
     }
     await expect(async () => {
       await performAction('clickButton', legalCosts.continueButton);
-      await performValidation('mainHeader', legalCost.nextPage);
+      await expect(page.locator(`//h1[text()="${legalCost.nextPage}"]`), `Re-Try option when navigation to the ${legalCost.nextPage} page is not successful`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
   }
 
-  private async provideLandRegistryFees(landRegistry: actionRecord) {
+  private async provideLandRegistryFees(landRegistry: actionRecord, page: Page) {
     await this.addFieldsToMap(landRegistry);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -384,7 +384,7 @@ export class EnforcementAction implements IAction {
     }
     await expect(async () => {
       await performAction('clickButton', landRegistryFees.continueButton);
-      await performValidation('mainHeader', landRegistry.nextPage);
+      await expect(page.locator(`//h1[text()="${landRegistry.nextPage}"]`), `Re-Try option when navigation to the ${landRegistry.nextPage} page is not successful`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
       timeout: VERY_LONG_TIMEOUT,
     });
