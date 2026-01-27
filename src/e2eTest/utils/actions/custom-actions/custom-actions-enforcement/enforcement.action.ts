@@ -523,7 +523,7 @@ export class EnforcementAction implements IAction {
     const getCharCount = input.split('You can enter').map(str => str.trim()).filter(str => str.length > 0);
     const charLimitInfo = getCharCount[getCharCount.length - 1].match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
     const amount = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : 0;
-    return amount;
+    return Number(amount.toFixed(2));
   }
 
   private async convertCurrencyToString(amount: number): Promise<string> {
