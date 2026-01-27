@@ -366,7 +366,7 @@ export class EnforcementAction implements IAction {
       await performAction('clickButton', legalCosts.continueButton);
       await expect(page.locator(`//h1[text()="${legalCost.nextPage}"]`), `Re-Try option when navigation to the ${legalCost.nextPage} page is not successful`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
-      timeout: VERY_LONG_TIMEOUT,
+      timeout: LONG_TIMEOUT,
     });
   }
 
@@ -386,7 +386,7 @@ export class EnforcementAction implements IAction {
       await performAction('clickButton', landRegistryFees.continueButton);
       await expect(page.locator(`//h1[text()="${landRegistry.nextPage}"]`), `Re-Try option when navigation to the ${landRegistry.nextPage} page is not successful`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
-      timeout: VERY_LONG_TIMEOUT,
+      timeout: LONG_TIMEOUT,
     });
 
   }
