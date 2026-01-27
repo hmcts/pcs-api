@@ -112,7 +112,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
         return Party.builder()
             .firstName(defendantEntity.getFirstName())
             .lastName(defendantEntity.getLastName())
+            .orgName(defendantEntity.getOrgName())
+            .nameKnown(defendantEntity.getNameKnown())
+            .emailAddress(defendantEntity.getEmailAddress())
             .address(contactAddress)
+            .addressKnown(defendantEntity.getAddressKnown())
+            .addressSameAsProperty(defendantEntity.getAddressSameAsProperty())
+            .phoneNumber(defendantEntity.getPhoneNumber())
             .build();
     }
 
