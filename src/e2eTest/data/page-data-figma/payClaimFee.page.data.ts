@@ -1,12 +1,10 @@
 export const payClaimFee = {
+  makeAClaimCaption: `Make a claim`, // New record
   mainHeader: `Pay claim fee`,
-  cancelLink: `Cancel`,
-  caseNumber1234567891011213Label: `Case number: 1234-5678-9101-1213`,
-  closeAndReturnToCaseLabel: `Close and return to case details`,
-  cymraegToggle: `Cymraeg`,
-  makeAPaymentYouMustLabel: `Make a payment
-
-You must pay the claim fee of £404. Your claim will not progress until this fee has been received. Pay the claim fee.`,
+  makeAPaymentSubHeader: `Make a payment`, // New record
+  makeAPaymentYouMustLabel: `You must pay the claim fee of £404. Your claim will not progress until this fee has been paid.`, // Updated value
+  payTheClaimFeeLink: `Pay the claim fee`, // New record
   pay404ClaimFeeLabel: `Pay £404 claim fee`,
-  previousLabel: `Previous`,
+  closeAndReturnToCaseLabel: `Close and return to case details`,
+  cancelLink: `Cancel`,
 };
