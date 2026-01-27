@@ -13,9 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LandRegistryFe
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.service.FeeValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -25,23 +30,23 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
     private final MoneyConverter moneyConverter;
     private final RepaymentTableRenderer repaymentTableRenderer;
-
+    private FeeValidationService feeValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("landRegistryFees", this::midEvent)
-                .pageLabel("Land Registry fees")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
-                .label("landRegistryFees-content", "---")
-                .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getWarrantDetails)
-                .complex(WarrantDetails::getLandRegistryFees)
-                .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
-                .mandatory(LandRegistryFees::getAmountOfLandRegistryFees, "warrantHaveLandRegistryFeesBeenPaid=\"YES\"")
-                    .done()
-                .done()
-                .label("landRegistryFees-save-and-return", SAVE_AND_RETURN);
+            .page("landRegistryFees", this::midEvent)
+            .pageLabel("Land Registry fees")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+            .label("landRegistryFees-content", "---")
+            .complex(PCSCase::getEnforcementOrder)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getLandRegistryFees)
+            .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
+            .mandatory(LandRegistryFees::getAmountOfLandRegistryFees, "warrantHaveLandRegistryFeesBeenPaid=\"YES\"")
+            .done()
+            .done()
+            .label("landRegistryFees-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -49,78 +54,70 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        BigDecimal totalArrears = getTotalArrears(caseData);
-        BigDecimal landRegistryFee = getLandRegistryFee(caseData);
-        BigDecimal legalCosts = getLegalCosts(caseData);
+        List<String> validationErrors = getValidationErrors(caseData);
 
-        String warrantFeePence = convertWarrantFeeToPence(caseData);
-        BigDecimal totalFees = getTotalFees(caseData, warrantFeePence);
+        if (!validationErrors.isEmpty()) {
+
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(caseData)
+                .errors(validationErrors)
+                .build();
+        }
+
+        BigDecimal totalArrears = caseData.getEnforcementOrder().getWarrantDetails().getMoneyOwedByDefendants()
+            .getAmountOwed();
+        BigDecimal landRegistryFee = caseData.getEnforcementOrder().getWarrantDetails().getLandRegistryFees()
+            .getAmountOfLandRegistryFees();
+        BigDecimal legalCosts = caseData.getEnforcementOrder().getWarrantDetails().getLegalCosts()
+            .getAmountOfLegalCosts();
+        BigDecimal warrantFeePence = convertWarrantFeeToBigDecimal(caseData);
+        BigDecimal totalFees = getTotalFees(totalArrears, landRegistryFee, legalCosts, warrantFeePence);
 
         // Render repayment table with all formatted amounts
+        // Some fee fields are legitimately null when the UI uses YES/NO toggles,
+        // So default them to ZERO before rendering.
         String repaymentTableHtml = repaymentTableRenderer.render(
             totalArrears,
-            legalCosts,
-            landRegistryFee,
+            defaultZero(legalCosts),
+            defaultZero(landRegistryFee),
             caseData.getEnforcementOrder().getWarrantFeeAmount(),
             totalFees
         );
 
         caseData.getEnforcementOrder().getWarrantDetails()
-                .getRepaymentCosts().setRepaymentSummaryMarkdown(repaymentTableHtml);
+            .getRepaymentCosts().setRepaymentSummaryMarkdown(repaymentTableHtml);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
     }
 
-    private BigDecimal getTotalArrears(PCSCase caseData) {
-        String totalArrears = caseData.getEnforcementOrder().getWarrantDetails()
-            .getMoneyOwedByDefendants()
-            .getAmountOwed();
+    private List<String> getValidationErrors(PCSCase caseData) {
+        List<String> errors = new ArrayList<>();
+        LandRegistryFees landRegistryFees = caseData.getEnforcementOrder()
+            .getWarrantDetails().getLandRegistryFees();
 
-        return moneyConverter.convertPenceToBigDecimal(totalArrears);
-    }
-
-    private BigDecimal getLandRegistryFee(PCSCase caseData) {
-        String landRegistryFee = caseData.getEnforcementOrder().getWarrantDetails()
-            .getLandRegistryFees()
-            .getAmountOfLandRegistryFees();
-
-        return moneyConverter.convertPenceToBigDecimal(landRegistryFee);
-    }
-
-    private BigDecimal getLegalCosts(PCSCase caseData) {
-        String legalCosts = caseData.getEnforcementOrder().getWarrantDetails()
-            .getLegalCosts()
-            .getAmountOfLegalCosts();
-
-        return moneyConverter.convertPenceToBigDecimal(legalCosts);
-    }
-
-    private String convertWarrantFeeToPence(PCSCase caseData) {
-        String warrantFee = caseData.getEnforcementOrder().getWarrantFeeAmount();
-        return moneyConverter.convertPoundsToPence(warrantFee);
-    }
-
-    private BigDecimal getTotalFees(PCSCase caseData, String warrantFeePence) {
-        String landRegistryFee = caseData.getEnforcementOrder().getWarrantDetails()
-                .getLandRegistryFees().getAmountOfLandRegistryFees();
-        String legalCosts = caseData.getEnforcementOrder().getWarrantDetails().getLegalCosts().getAmountOfLegalCosts();
-        String totalArrears = caseData.getEnforcementOrder().getWarrantDetails()
-                .getMoneyOwedByDefendants().getAmountOwed();
-
-        String totalAmountInPence = getTotalPence(landRegistryFee, legalCosts, totalArrears, warrantFeePence);
-        return moneyConverter.convertPenceToBigDecimal(totalAmountInPence);
-    }
-
-    private String getTotalPence(String... pennies) {
-        long totalPence = 0;
-        for (String penceStr : pennies) {
-            if (penceStr != null) {
-                long pence = Long.parseLong(penceStr);
-                totalPence += pence;
-            }
+        if (landRegistryFees.getHaveLandRegistryFeesBeenPaid().toBoolean()) {
+            errors.addAll(feeValidationService.validateFee(
+                landRegistryFees.getAmountOfLandRegistryFees(),
+                "Land Registry cost"
+            ));
         }
-        return String.valueOf(totalPence);
+        return errors;
+    }
+
+    private BigDecimal convertWarrantFeeToBigDecimal(PCSCase caseData) {
+        String warrantFee = moneyConverter.convertPoundsToPence(caseData.getEnforcementOrder().getWarrantFeeAmount());
+        return moneyConverter.convertPenceToBigDecimal(warrantFee);
+    }
+
+    private BigDecimal defaultZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
+    }
+
+    private BigDecimal getTotalFees(BigDecimal... fees) {
+        return Arrays.stream(fees)
+            .filter(Objects::nonNull)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

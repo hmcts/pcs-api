@@ -34,7 +34,7 @@ public class FeeValidationServiceTest {
         List<String> errors = feeValidationService.validateFee(fee, "Legal fee");
 
         assertThat(errors)
-            .containsExactly("Legal fee should be more than 0.01 and less than or equal to 1,000,000,000");
+            .containsExactly("Legal fee should be more than 0.01");
     }
 
     @ParameterizedTest
@@ -57,7 +57,7 @@ public class FeeValidationServiceTest {
         List<String> errors = feeValidationService.validateFee(fee, min, max, "Court fee");
 
         assertThat(errors)
-            .containsExactly("Court fee should be more than 0.01 and less than or equal to 1,000,000,000");
+            .containsExactly("Court fee should be more than 0.01");
     }
 
     private static Stream<Arguments> validFees() {

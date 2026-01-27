@@ -16,14 +16,15 @@ public class FeeValidationService {
      * Returns a list of errors; empty list means no errors.
      */
     public List<String> validateFee(BigDecimal fee, String fieldLabel) {
-       return validateFee(fee, MIN_DEFAULT_FEE, MAX_DEFAULT_FEE, fieldLabel);
+
+        return validateFee(fee, MIN_DEFAULT_FEE, MAX_DEFAULT_FEE, fieldLabel);
     }
 
     public List<String> validateFee(BigDecimal fee, BigDecimal min, BigDecimal max,String fieldLabel) {
         List<String> errors = new ArrayList<>();
 
         if (fee == null || fee.compareTo(min) <= 0 || fee.compareTo(max) > 0) {
-            errors.add(fieldLabel + " should be more than 0.01 and less than or equal to 1,000,000,000");
+            errors.add(fieldLabel + " should be more than 0.01");
         }
         return errors;
     }

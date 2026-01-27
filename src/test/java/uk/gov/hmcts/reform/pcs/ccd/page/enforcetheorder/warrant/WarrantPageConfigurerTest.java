@@ -56,6 +56,15 @@ class WarrantPageConfigurerTest extends BasePageTest {
     @Mock
     private LandRegistryFeesPage landRegistryFeesPage;
 
+    @Mock
+    private MoneyOwedPage moneyOwedPage;
+
+    @Mock
+    private LegalCostsPage legalCostsPage;
+
+    @Mock
+    private RepaymentsPage repaymentsPage;
+
     @Test
     @SuppressWarnings("squid:S5961")
     void shouldConfigurePagesInCorrectOrder() {
@@ -87,12 +96,12 @@ class WarrantPageConfigurerTest extends BasePageTest {
         inOrder.verify(pageBuilder).add(propertyAccessDetailsPage);
         inOrder.verify(pageBuilder).add(additionalInformationPage);
 
-        inOrder.verify(pageBuilder).add(isA(MoneyOwedPage.class));
-        inOrder.verify(pageBuilder).add(isA(LegalCostsPage.class));
+        inOrder.verify(pageBuilder).add(moneyOwedPage);
+        inOrder.verify(pageBuilder).add(legalCostsPage);
 
         inOrder.verify(pageBuilder).add(landRegistryFeesPage);
 
-        inOrder.verify(pageBuilder).add(isA(RepaymentsPage.class));
+        inOrder.verify(pageBuilder).add(repaymentsPage);
         inOrder.verify(pageBuilder).add(isA(LanguageUsedPage.class));
         inOrder.verify(pageBuilder).add(isA(SuspendedOrderPage.class));
         inOrder.verify(pageBuilder).add(isA(StatementOfTruthPlaceHolder.class));
