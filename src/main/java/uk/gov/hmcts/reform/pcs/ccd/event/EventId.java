@@ -10,4 +10,5 @@ public enum EventId {
     enforceTheOrder,
     respondPossessionClaim,
     submitDefendantResponse,
+    createTestCase,
 }
