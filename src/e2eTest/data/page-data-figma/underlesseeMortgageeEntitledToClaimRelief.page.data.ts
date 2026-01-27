@@ -1,7 +1,6 @@
 export const underlesseeMortgageeEntitledToClaimRelief = {
   mainHeader: `Underlessee or mortgagee entitled to claim relief against forfeiture`,
   cancelLink: `Cancel`,
-  caseNumberParagraph: `Case number: 1234-5678-9101-1213`,
   continueButton: `Continue`,
   isThereAnUnderlesseeQuestion: `Is there an underlessee or mortgagee entitled to claim relief against forfeiture?`,
   makeAClaimCaption: `Make a claim`,
