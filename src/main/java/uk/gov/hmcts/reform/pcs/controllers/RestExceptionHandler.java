@@ -12,11 +12,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import uk.gov.hmcts.reform.pcs.exception.AccessCodeAlreadyUsedException;
+import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.exception.CaseAssignmentException;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAccessCodeException;
 import uk.gov.hmcts.reform.pcs.exception.InvalidAuthTokenException;
-import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForCaseException;
+import uk.gov.hmcts.reform.pcs.exception.InvalidPartyForAccessCodeException;
 
 @Slf4j
 @ControllerAdvice
@@ -38,8 +39,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             .body(new Error(ex.getMessage()));
     }
 
-    @ExceptionHandler(InvalidPartyForCaseException.class)
-    public ResponseEntity<Error> handleInvalidParty(InvalidPartyForCaseException ex) {
+    @ExceptionHandler(InvalidPartyForAccessCodeException.class)
+    public ResponseEntity<Error> handleInvalidParty(InvalidPartyForAccessCodeException ex) {
         log.error("Party validation failed", ex);
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
@@ -50,6 +51,12 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Error> handleInvalidAuth(InvalidAuthTokenException ex) {
         log.error("Invalid authentication token", ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(CaseAccessException.class)
+    public ResponseEntity<Error> handleCaseAccess(CaseAccessException ex) {
+        log.error("Case access denied", ex);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Error(ex.getMessage()));
     }
 
     @ExceptionHandler(IllegalStateException.class)
