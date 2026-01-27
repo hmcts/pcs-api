@@ -58,8 +58,5 @@ public class StatementOfTruthService {
             .map(StatementOfTruthAgreementLegalRep.AGREED::equals)
             .orElse(false);
     }
-
 }
-
-
 

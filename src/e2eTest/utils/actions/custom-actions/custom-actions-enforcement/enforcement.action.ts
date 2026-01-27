@@ -25,6 +25,8 @@ import {
   peopleYouWantToEvict,
   moneyOwed,
   languageUsed,
+  statementOfTruthOne,
+  statementOfTruthTwo,
   enterDefendantsDOB,
   suspendedOrder,
   confirmHCEOHired,
@@ -76,9 +78,11 @@ export class EnforcementAction implements IAction {
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
       ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
-      ['validateAmountToRePayTable', () => this.validateAmountToRePayTable()],
+      ['validateAmountToRePayTable', () => this.validateAmountToRePayTable(fieldName as actionRecord)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
+      ['selectStatementOfTruthOne', () => this.selectStatementOfTruthOne(fieldName as actionRecord)],
+      ['selectStatementOfTruthTwo', () => this.selectStatementOfTruthTwo(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -375,10 +379,12 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', landRegistryFees.continueButton);
   }
 
-  private async validateAmountToRePayTable() {
+  private async validateAmountToRePayTable(header: actionRecord) {
 
-    const totalAmt = Array.from(moneyMap.values()).reduce((a, b) => a + b, 0);
-    moneyMap.set(rePayments.totalAmt, totalAmt);
+    if (header.headerName === rePayments.mainHeader) {
+      const totalAmt = Array.from(moneyMap.values()).reduce((a, b) => a + b, 0);
+      moneyMap.set(rePayments.totalAmt, totalAmt);
+    };
     for (const [moneyField, amount] of moneyMap) {
       await performValidation('formLabelValue', moneyField, `${await this.convertCurrencyToString(amount)}`);
     }
@@ -409,6 +415,40 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: suspendedOrderPara.question, option: suspendedOrderPara.option });
     await performAction('clickButton', suspendedOrder.continueButton);
 
+  }
+
+  private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
+      await performAction('check', claimantDetails.selectCheckbox);
+      await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
+      if(claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption){
+        await performAction('check', claimantDetails.iBelieveCheckbox);
+        await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+        await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      }
+      if(claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption){
+        await performAction('check', claimantDetails.signThisStatementCheckbox);
+        await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+        await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+        await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      }
+      await performAction('clickButton', statementOfTruthOne.continueButton);
+    }
+
+  private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
+      await performAction('check', claimantDetails.selectCheckbox);
+      await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
+      if(claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption){
+        await performAction('check', claimantDetails.iBelieveCheckbox);
+        await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+        await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      }
+      if(claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption){
+        await performAction('check', claimantDetails.signThisStatementCheckbox);
+        await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+        await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+        await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      }
+      await performAction('clickButton', statementOfTruthOne.continueButton);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
