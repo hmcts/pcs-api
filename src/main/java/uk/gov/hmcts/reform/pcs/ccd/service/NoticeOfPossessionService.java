@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -13,24 +14,28 @@ public class NoticeOfPossessionService {
 
     public NoticeOfPossessionEntity createNoticeOfPossessionEntity(PCSCase pcsCase) {
 
+        NoticeOfPossessionEntity noticeOfPossessionEntity = new NoticeOfPossessionEntity();
+
+        YesOrNo noticeServed = getNoticeServed(pcsCase);
+        noticeOfPossessionEntity.setNoticeServed(noticeServed);
+
+        if (noticeServed == YesOrNo.NO) {
+            return noticeOfPossessionEntity;
+        }
+
         NoticeServedDetails noticeServedDetails = pcsCase.getNoticeServedDetails();
         if (noticeServedDetails == null) {
-            return null;
+            return noticeOfPossessionEntity;
         }
 
         NoticeServiceMethod noticeServiceMethod = noticeServedDetails.getNoticeServiceMethod();
         if (noticeServiceMethod == null) {
-            return null;
+            return noticeOfPossessionEntity;
         }
-
-        NoticeOfPossessionEntity noticeOfPossessionEntity = new NoticeOfPossessionEntity();
 
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
-            noticeOfPossessionEntity.setNoticeServed(walesNoticeDetails.getNoticeServed());
             noticeOfPossessionEntity.setNoticeType(walesNoticeDetails.getTypeOfNoticeServed());
-        } else {
-            noticeOfPossessionEntity.setNoticeServed(pcsCase.getNoticeServed());
         }
 
         noticeOfPossessionEntity.setServingMethod(noticeServiceMethod);
@@ -60,6 +65,15 @@ public class NoticeOfPossessionService {
         }
 
         return noticeOfPossessionEntity;
+    }
+
+    private static YesOrNo getNoticeServed(PCSCase pcsCase) {
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            WalesNoticeDetails walesNoticeDetails = pcsCase.getWalesNoticeDetails();
+            return walesNoticeDetails.getNoticeServed();
+        } else {
+            return pcsCase.getNoticeServed();
+        }
     }
 
 }
