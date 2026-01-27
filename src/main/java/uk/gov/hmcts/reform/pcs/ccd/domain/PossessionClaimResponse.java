@@ -6,8 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Builder
@@ -23,13 +25,13 @@ public class PossessionClaimResponse {
 
     // Claimant-provided fields (read-only, populated from database)
     @CCD
-    private String claimantProvidedLegislativeCountry;
+    private LegislativeCountry claimantProvidedLegislativeCountry;
 
     @CCD
     private String claimantProvidedTenancyType;
 
     @CCD
-    private String claimantProvidedTenancyStartDate;
+    private LocalDate claimantProvidedTenancyStartDate;
 
     @CCD
     private BigDecimal claimantProvidedDailyRentAmount;

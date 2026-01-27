@@ -26,6 +26,7 @@ import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -139,10 +140,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .build();
     }
 
-    private String extractLegislativeCountry(PcsCaseEntity pcsCaseEntity) {
-        return pcsCaseEntity.getLegislativeCountry() != null
-            ? pcsCaseEntity.getLegislativeCountry().name()
-            : null;
+    private LegislativeCountry extractLegislativeCountry(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getLegislativeCountry();
     }
 
     private String extractTenancyType(PcsCaseEntity pcsCaseEntity) {
@@ -153,28 +152,24 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
         if (pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
             return tenancy.getOccupationLicenceTypeWales() != null
-                ? tenancy.getOccupationLicenceTypeWales().name()
+                ? tenancy.getOccupationLicenceTypeWales().getLabel()
                 : null;
         }
 
         return tenancy.getTenancyLicenceType();
     }
 
-    private String extractTenancyStartDate(PcsCaseEntity pcsCaseEntity) {
+    private LocalDate extractTenancyStartDate(PcsCaseEntity pcsCaseEntity) {
         TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
         if (tenancy == null) {
             return null;
         }
 
         if (pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
-            return tenancy.getWalesLicenceStartDate() != null
-                ? tenancy.getWalesLicenceStartDate().toString()
-                : null;
+            return tenancy.getWalesLicenceStartDate();
         }
 
-        return tenancy.getTenancyLicenceDate() != null
-            ? tenancy.getTenancyLicenceDate().toString()
-            : null;
+        return tenancy.getTenancyLicenceDate();
     }
 
     private BigDecimal extractDailyRentAmount(PcsCaseEntity pcsCaseEntity) {
