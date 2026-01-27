@@ -16,6 +16,8 @@ import java.util.function.Function;
 public class TextAreaValidationService {
 
     // Common character limits used across the application
+    public static final int STATEMENT_OF_TRUTH_CHARACTER_LIMIT = 60;
+    public static final int BYTE_TEXT_LIMIT = 120;
     public static final int SHORT_TEXT_LIMIT = 250;
     public static final int MEDIUM_TEXT_LIMIT = 500;
     public static final int LONG_TEXT_LIMIT = 950;
