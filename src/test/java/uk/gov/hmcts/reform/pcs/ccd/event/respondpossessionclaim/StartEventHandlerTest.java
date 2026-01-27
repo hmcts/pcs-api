@@ -122,15 +122,6 @@ class StartEventHandlerTest {
         // Given
         UUID defendantUserId = UUID.randomUUID();
 
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .idamId(defendantUserId)
-            .firstName("John")
-            .lastName("Doe")
-            .build();
-
-        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
-
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
             .build();
@@ -145,8 +136,6 @@ class StartEventHandlerTest {
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
         when(draftService.exists(CASE_REFERENCE)).thenReturn(true);
         when(draftService.load(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(existingDraft);
 
