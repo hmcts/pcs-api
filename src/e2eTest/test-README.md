@@ -135,6 +135,7 @@ await performValidationGroup(
 - IDAM_SYSTEM_USERNAME
 - IDAM_SYSTEM_USER_PASSWORD
 - IDAM_PCS_USER_PASSWORD
+- PCS_SOLICITOR_AUTOMATION_UID
 
 ```bash
 yarn test:chrome
