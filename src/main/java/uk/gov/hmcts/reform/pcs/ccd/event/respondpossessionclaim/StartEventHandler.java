@@ -41,10 +41,14 @@ public class StartEventHandler implements Start<PCSCase, State> {
         PCSCase caseDataFromPayload = eventPayload.caseData();
         UUID authenticatedUserId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
+        if (draftService.exists(caseReference)) {
+            return draftService.load(caseReference, caseDataFromPayload);
+        }
+
         PartyEntity defendantEntity = validateAccess(caseReference, authenticatedUserId);
         PossessionClaimResponse initialResponse = buildInitialResponse(defendantEntity, caseReference);
 
-        return getOrInitializeDraft(caseReference, initialResponse, caseDataFromPayload);
+        return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
     }
 
     private PartyEntity validateAccess(long caseReference, UUID authenticatedUserId) {
@@ -120,14 +124,5 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .addressSameAsProperty(defendantEntity.getAddressSameAsProperty())
             .phoneNumber(defendantEntity.getPhoneNumber())
             .build();
-    }
-
-    private PCSCase getOrInitializeDraft(long caseReference,
-                                          PossessionClaimResponse initialResponse,
-                                          PCSCase caseDataFromPayload) {
-        if (draftService.exists(caseReference)) {
-            return draftService.load(caseReference, caseDataFromPayload);
-        }
-        return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
     }
 }
