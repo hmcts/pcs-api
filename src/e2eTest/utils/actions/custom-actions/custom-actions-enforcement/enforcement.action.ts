@@ -348,7 +348,7 @@ export class EnforcementAction implements IAction {
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
     await expect(async () => {
       await performAction('clickButton', moneyOwed.continueButton);
-      await expect(page.locator(`//h1[text()="${totalMoneyOwed.nextPage}"]`), `Re-Try option when navigation to the ${totalMoneyOwed.nextPage} page is not successful`).toBeVisible({ timeout: SHORT_TIMEOUT });
+      await expect(page.locator(`//h1[text()="${totalMoneyOwed.nextPage}"]`), `If the ${totalMoneyOwed.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
       timeout: LONG_TIMEOUT,
     });
@@ -368,7 +368,7 @@ export class EnforcementAction implements IAction {
     }
     await expect(async () => {
       await performAction('clickButton', legalCosts.continueButton);
-      await expect(page.locator(`//h1[text()="${legalCost.nextPage}"]`), `Re-Try option when navigation to the ${legalCost.nextPage} page is not successful`).toBeVisible({ timeout: SHORT_TIMEOUT });
+      await expect(page.locator(`//h1[text()="${legalCost.nextPage}"]`), `If the ${legalCost.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
       timeout: LONG_TIMEOUT,
     });
@@ -388,7 +388,7 @@ export class EnforcementAction implements IAction {
     }
     await expect(async () => {
       await performAction('clickButton', landRegistryFees.continueButton);
-      await expect(page.locator(`//h1[text()="${landRegistry.nextPage}"]`), `Re-Try option when navigation to the ${landRegistry.nextPage} page is not successful`).toBeVisible({ timeout: SHORT_TIMEOUT });
+      await expect(page.locator(`//h1[text()="${landRegistry.nextPage}"]`), `If the ${landRegistry.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
       timeout: LONG_TIMEOUT,
     });
