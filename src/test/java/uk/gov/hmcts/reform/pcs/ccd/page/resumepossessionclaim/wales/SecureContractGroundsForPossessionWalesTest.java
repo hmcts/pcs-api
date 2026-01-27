@@ -41,9 +41,9 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(discretionaryGrounds)
-                .mandatoryGroundsWales(mandatoryGrounds)
-                .estateManagementGroundsWales(estateGrounds)
+                .discretionaryGrounds(discretionaryGrounds)
+                .mandatoryGrounds(mandatoryGrounds)
+                .estateManagementGrounds(estateGrounds)
                 .build()
             )
             .build();
@@ -86,15 +86,15 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // Only mandatory ground present, should be valid
                 arguments(
                         Set.of(),
-                        Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170),
+                        Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170),
                         Set.of(),
                         false, false, true
                 ),
                 // Multiple discretionary (incl ESTATE_MANAGEMENT_GROUNDS)+ valid estate - should be valid
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
-                                SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
+                            SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                            SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
                         Set.of(),
                         Set.of(EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES),
                         false, false, true
@@ -108,7 +108,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // Discretionary (OTHER_BREACH_OF_CONTRACT) + mandatory (LANDLORD_NOTICE_SECTION_186) - should be valid
                 arguments(
                         Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT),
-                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186),
+                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186),
                         Set.of(),
                         false, false, true
                 )
@@ -128,9 +128,9 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                    .discretionaryGroundsWales(discretionaryGrounds)
-                    .estateManagementGroundsWales(estateManagementGrounds)
-                    .mandatoryGroundsWales(mandatoryGrounds)
+                    .discretionaryGrounds(discretionaryGrounds)
+                    .estateManagementGrounds(estateManagementGrounds)
+                    .mandatoryGrounds(mandatoryGrounds)
                     .build()
                 )
                 .build();
@@ -165,8 +165,8 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // Rent arrears + ASB - show ASB questions page (ASB takes precedence)
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
-                                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR
+                            SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                            SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR
                         ),
                         Set.of(),
                         Set.of(),
@@ -184,8 +184,8 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // Rent arrears + other breach - show reasons for grounds page
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
-                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
+                            SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                            SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
                         ),
                         Set.of(),
                         Set.of(),
@@ -195,8 +195,8 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // ASB + other breach - show reasons for grounds page
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR,
-                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
+                            SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR,
+                            SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
                         ),
                         Set.of(),
                         Set.of(),
@@ -206,9 +206,9 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // Rent arrears + ASB + other breach - show reasons for grounds page
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
-                                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR,
-                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
+                            SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                            SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR,
+                            SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
                         ),
                         Set.of(),
                         Set.of(),
@@ -226,8 +226,8 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // Rent arrears + estate management - show reasons for grounds page
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
-                                SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS
+                            SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                            SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS
                         ),
                         Set.of(EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES),
                         Set.of(),
@@ -237,8 +237,8 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // ASB + estate management - show reasons for grounds page
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR,
-                                SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS
+                            SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR,
+                            SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS
                         ),
                         Set.of(EstateManagementGroundsWales.CHARITIES),
                         Set.of(),
@@ -248,9 +248,9 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 // Rent arrears + ASB + estate management - show reasons for grounds page
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
-                                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR,
-                                SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS
+                            SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                            SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR,
+                            SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS
                         ),
                         Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
                         Set.of(),
@@ -261,7 +261,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 arguments(
                         Set.of(),
                         Set.of(),
-                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186),
+                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186),
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -269,7 +269,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 arguments(
                         Set.of(SecureContractDiscretionaryGroundsWales.RENT_ARREARS),
                         Set.of(),
-                        Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170),
+                        Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170),
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -277,18 +277,18 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 arguments(
                         Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR),
                         Set.of(),
-                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_199),
+                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199),
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
                 // Rent arrears + ASB + mandatory grounds - show reasons for grounds page
                 arguments(
                         Set.of(
-                                SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
-                                SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR
+                            SecureContractDiscretionaryGroundsWales.RENT_ARREARS,
+                            SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR
                         ),
                         Set.of(),
-                        Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191),
+                        Set.of(SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191),
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -296,7 +296,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 arguments(
                         Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT),
                         Set.of(),
-                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186),
+                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186),
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -304,7 +304,7 @@ public class SecureContractGroundsForPossessionWalesTest extends BasePageTest {
                 arguments(
                         Set.of(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS),
                         Set.of(EstateManagementGroundsWales.CHARITIES),
-                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_199),
+                        Set.of(SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199),
                         YesOrNo.NO,
                         YesOrNo.YES
                 )

@@ -23,7 +23,7 @@ public class GroundsForPossessionWales {
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "DiscretionaryGroundWales"
     )
-    private Set<DiscretionaryGroundWales> discretionaryGroundsWales;
+    private Set<DiscretionaryGroundWales> discretionaryGrounds;
 
     @CCD(
         label = "Mandatory grounds",
@@ -31,13 +31,13 @@ public class GroundsForPossessionWales {
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "MandatoryGroundWales"
     )
-    private Set<MandatoryGroundWales> mandatoryGroundsWales;
+    private Set<MandatoryGroundWales> mandatoryGrounds;
 
     @CCD(
         label = "Estate management grounds",
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "EstateManagementGroundsWales"
     )
-    private Set<EstateManagementGroundsWales> estateManagementGroundsWales;
+    private Set<EstateManagementGroundsWales> estateManagementGrounds;
 }
 
