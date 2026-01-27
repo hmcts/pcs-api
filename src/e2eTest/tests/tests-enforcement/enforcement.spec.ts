@@ -821,6 +821,15 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: suspendedOrder.noRadioOption
       });
       await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
+      await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
+      await performAction('selectStatementOfTruthTwo', {
+        selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
+        completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
+        signThisStatementCheckbox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
+        fullNameTextInput: statementOfTruthTwo.fullNameHiddenTextInput,
+        nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextInput,
+        positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput
+      });
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]- only main defendants name known @onlyMain @PR @regression',
@@ -934,5 +943,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         option: suspendedOrder.noRadioOption
       });
       await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
+      await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
+      await performAction('selectStatementOfTruthTwo', {
+        selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
+        completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
+        signThisStatementCheckbox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
+        fullNameTextInput: statementOfTruthTwo.fullNameHiddenTextInput,
+        nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextInput,
+        positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput
+      });
     });
 });
