@@ -24,6 +24,9 @@ public class MoneyOwedPage implements CcdPageConfiguration {
             .label(
                 "amountDefendantOwes-amount-label",
                 """
+                    <p class="govuk-body govuk-!-font-weight-bold">
+                        What is the total amount that the defendants owe you?
+                    </p>
                     <p class="govuk-body govuk-!-margin-bottom-0">
                         You can include:
                         <ul class="govuk-list govuk-list--bullet">
