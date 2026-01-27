@@ -37,7 +37,7 @@ public class MoneyConverter {
         BigDecimal stripped = amount.stripTrailingZeros();
         DecimalFormat decimalFormat = stripped.scale() <= 0 ? new DecimalFormat("0")
             : new DecimalFormat("0.00");
-        return decimalFormat.format(stripped);
+        return CURRENCY_SYMBOL + decimalFormat.format(stripped);
     }
 
 }
