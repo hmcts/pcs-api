@@ -62,7 +62,6 @@ class CaseDefinitionIT extends AbstractPostgresContainerIT {
             arguments(
                 EventId.resumePossessionClaim,
                 List.of(
-                    "startTheService",
                     "resumeClaim",
                     "claimantTypeNotEligibleEngland",
                     "claimantTypeNotEligibleWales",
@@ -74,7 +73,6 @@ class CaseDefinitionIT extends AbstractPostgresContainerIT {
             arguments(
                 EventId.enforceTheOrder,
                 List.of(
-                    "startTheService",
                     "evictionDelayWarning",
                     "checkYourAnswersPlaceHolder",
                     "changeNameAddress"

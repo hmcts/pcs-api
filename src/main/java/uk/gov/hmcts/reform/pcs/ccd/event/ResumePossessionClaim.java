@@ -24,7 +24,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.DummyPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
@@ -178,7 +177,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .showSummary();
 
         savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim)
-            .add(new DummyPage())
             .add(resumeClaim)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
