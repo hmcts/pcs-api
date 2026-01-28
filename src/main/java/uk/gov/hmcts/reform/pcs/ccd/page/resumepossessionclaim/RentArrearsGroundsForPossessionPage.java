@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 /**
@@ -21,7 +21,7 @@ public class RentArrearsGroundsForPossessionPage implements CcdPageConfiguration
                 .showCondition("claimDueToRentArrears=\"Yes\""
                                +  " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND legislativeCountry=\"England\"")
-                .complex(PCSCase::getRentArrearsGroundsForPossession)
+                .complex(PCSCase::getAssuredRentArrearsPossessionGrounds)
                 .label("groundForPossessionRentArrears-info", """
                 ---
                 <p class="govuk-body">You may have already given the defendants notice of your intention to begin
@@ -46,7 +46,7 @@ public class RentArrearsGroundsForPossessionPage implements CcdPageConfiguration
                 <p class="govuk-body">Discretionary ground. The defendants have persistently delayed paying their
                     rent.</p>
                 """)
-                .mandatory(RentArrearsGroundsForPossession::getRentArrearsGrounds)
+                .mandatory(AssuredRentArrearsPossessionGrounds::getRentArrearsGrounds)
                 .done()
                 .mandatory(PCSCase::getHasOtherAdditionalGrounds)
                 .label("groundForPossessionRentArrears-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

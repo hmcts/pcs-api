@@ -31,7 +31,7 @@ public class ClaimService {
 
         AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
 
-        List<ClaimGroundEntity> claimGrounds = claimGroundService.getGroundsWithReason(pcsCase);
+        List<ClaimGroundEntity> claimGrounds = claimGroundService.createClaimGroundEntities(pcsCase);
         ClaimantCircumstances claimantCircumstances = pcsCase.getClaimantCircumstances();
         DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
 
