@@ -75,7 +75,6 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
-    private final ModelMapper modelMapper;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public TestingSupportController(
