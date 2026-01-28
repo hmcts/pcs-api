@@ -139,9 +139,32 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
       await performValidation('mainHeader', moneyOwed.mainHeaderWrit);
       await performAction('clickButton', moneyOwed.continueButton);
-      await performValidation('mainHeader', legalCosts.mainHeaderWrit);
-      await performAction('clickButton', legalCosts.continueButton);
-      await performValidation('mainHeader', landRegistryFees.mainHeader);
+      await performValidation('mainHeader', legalCosts.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.three,
+        inputArray: legalCosts.errorValidationField.errorRadioOption,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        button: legalCosts.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.five,
+        inputArray: legalCosts.errorValidationField.errorMoneyField,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        option2: legalCosts.noRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        button: legalCosts.continueButton
+      });
+      await performAction('provideLegalCosts', {
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        nextPage: landRegistryFees.mainHeader
+      });
       await performAction('inputErrorValidation', {
         validationReq: landRegistryFees.errorValidation,
         validationType: landRegistryFees.errorValidationType.three,
@@ -192,9 +215,14 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('clickButton', theNICEWillChoose.continueButton);
     await performValidation('mainHeader', moneyOwed.mainHeaderWrit);
     await performAction('clickButton', moneyOwed.continueButton);
-    await performValidation('mainHeader', legalCosts.mainHeaderWrit);
-    await performAction('clickButton', legalCosts.continueButton);
-    await performValidation('mainHeader', landRegistryFees.mainHeader);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.noRadioOption,
+      label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      input: legalCosts.howMuchYouWantToReclaimTextInput,
+      nextPage: landRegistryFees.mainHeader
+    });
     await performAction('provideLandRegistryFees', {
       question: landRegistryFees.landRegistryFeeQuestion,
       option: landRegistryFees.noRadioOption,
