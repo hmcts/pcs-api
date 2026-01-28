@@ -397,24 +397,22 @@ public class ClaimGroundService {
         SecureContractGroundsForPossessionWales secureGrounds =
             Optional.ofNullable(pcsCase.getSecureContractGroundsForPossessionWales())
                 .orElse(SecureContractGroundsForPossessionWales.builder()
-                            .discretionaryGroundsWales(Set.of())
-                            .mandatoryGroundsWales(Set.of())
-                            .estateManagementGroundsWales(Set.of())
+                            .discretionaryGrounds(Set.of())
+                            .mandatoryGrounds(Set.of())
+                            .estateManagementGrounds(Set.of())
                             .build());
 
         GroundsForPossessionWales groundsForPossessionWales =
             Optional.ofNullable(pcsCase.getGroundsForPossessionWales())
                 .orElse(GroundsForPossessionWales.builder().build());
 
-        Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGroundsWales();
-        Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGroundsWales();
-        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds =
-            secureGrounds.getMandatoryGroundsWales();
-        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds =
-            secureGrounds.getDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> secureEstateGrounds =
-            secureGrounds.getEstateManagementGroundsWales();
+        Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGrounds();
+        Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGrounds();
+        Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGrounds();
+        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = secureGrounds.getMandatoryGrounds();
+        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds
+            = secureGrounds.getDiscretionaryGrounds();
+        Set<EstateManagementGroundsWales> secureEstateGrounds = secureGrounds.getEstateManagementGrounds();
         GroundsReasonsWales reasons = pcsCase.getGroundsReasonsWales();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
@@ -450,10 +448,10 @@ public class ClaimGroundService {
         if (discretionaryGrounds != null) {
             for (DiscretionaryGroundWales ground : discretionaryGrounds) {
                 String reasonText = reasons != null ? switch (ground) {
-                    case RENT_ARREARS_SECTION_157 -> null;
-                    case ANTISOCIAL_BEHAVIOUR_SECTION_157 -> null;
-                    case OTHER_BREACH_SECTION_157 -> reasons.getOtherBreachSection157Reason();
-                    case ESTATE_MANAGEMENT_GROUNDS_SECTION_160 -> null;
+                    case RENT_ARREARS_S157 -> null;
+                    case ANTISOCIAL_BEHAVIOUR_S157 -> null;
+                    case OTHER_BREACH_S157 -> reasons.getOtherBreachSection157Reason();
+                    case ESTATE_MANAGEMENT_GROUNDS_S160 -> null;
                 } : null;
 
                 entities.add(ClaimGroundEntity.builder()
@@ -489,13 +487,13 @@ public class ClaimGroundService {
         if (secureMandatoryGrounds != null) {
             for (SecureContractMandatoryGroundsWales ground : secureMandatoryGrounds) {
                 String reasonText = reasons != null ? switch (ground) {
-                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170 ->
+                    case FAILURE_TO_GIVE_UP_POSSESSION_S170 ->
                         reasons.getSecureFailureToGiveUpPossessionSection170Reason();
-                    case LANDLORD_NOTICE_SECTION_186 ->
+                    case LANDLORD_NOTICE_S186 ->
                         reasons.getSecureLandlordNoticeSection186Reason();
-                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191 ->
+                    case FAILURE_TO_GIVE_UP_POSSESSION_S191 ->
                         reasons.getSecureFailureToGiveUpPossessionSection191Reason();
-                    case LANDLORD_NOTICE_SECTION_199 ->
+                    case LANDLORD_NOTICE_S199 ->
                         reasons.getSecureLandlordNoticeSection199Reason();
                 } : null;
 
