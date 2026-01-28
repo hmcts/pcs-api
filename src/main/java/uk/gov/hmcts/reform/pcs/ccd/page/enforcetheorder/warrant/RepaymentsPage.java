@@ -69,7 +69,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
         if (repaymentCosts.getRepaymentChoice() == RepaymentPreference.SOME) {
             errors.addAll(feeValidationService.validateFee(
                 repaymentCosts.getAmountOfRepaymentCosts(),
-                "Repayment cost"
+                "Repayment"
             ));
         }
         return errors;

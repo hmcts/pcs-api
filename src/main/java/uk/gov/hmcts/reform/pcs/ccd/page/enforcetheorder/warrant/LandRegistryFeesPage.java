@@ -112,7 +112,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         if (landRegistryFees.getHaveLandRegistryFeesBeenPaid().toBoolean()) {
             errors.addAll(feeValidationService.validateFee(
                 landRegistryFees.getAmountOfLandRegistryFees(),
-                "Land Registry cost"
+                "Land Registry fees"
             ));
         }
         return errors;

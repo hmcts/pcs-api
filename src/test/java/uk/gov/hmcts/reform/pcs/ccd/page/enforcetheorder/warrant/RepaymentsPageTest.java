@@ -77,7 +77,7 @@ class RepaymentsPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        String expectedError = "Repayment cost should be more than 0.01";
+        String expectedError = "Repayment should be more than 0.01";
 
         assertThat(response.getErrors()).containsExactly(expectedError);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()

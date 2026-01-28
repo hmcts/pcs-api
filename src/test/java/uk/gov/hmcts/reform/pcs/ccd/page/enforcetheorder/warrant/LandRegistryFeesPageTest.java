@@ -182,7 +182,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        String expectedError = "Land Registry cost should be more than 0.01";
+        String expectedError = "Land Registry fees should be more than 0.01";
 
         assertThat(response.getErrors()).containsExactly(expectedError);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
