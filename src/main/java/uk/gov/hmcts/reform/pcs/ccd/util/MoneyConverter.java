@@ -3,12 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.util;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 
 @Component
 public class MoneyConverter {
 
-    public static final String CURRENCY_SYMBOL = "£";
+    private static final String CURRENCY_SYMBOL = "£";
 
     public BigDecimal convertPenceToBigDecimal(String penceString) {
         if (penceString == null || penceString.trim().isEmpty()) {
@@ -29,15 +28,4 @@ public class MoneyConverter {
         BigDecimal pence = pounds.movePointRight(2);
         return pence.toPlainString();
     }
-
-    public String formatCurrency(BigDecimal amount) {
-        if (amount == null) {
-            return null;
-        }
-        BigDecimal stripped = amount.stripTrailingZeros();
-        DecimalFormat decimalFormat = stripped.scale() <= 0 ? new DecimalFormat("0")
-            : new DecimalFormat("0.00");
-        return CURRENCY_SYMBOL + decimalFormat.format(stripped);
-    }
-
 }

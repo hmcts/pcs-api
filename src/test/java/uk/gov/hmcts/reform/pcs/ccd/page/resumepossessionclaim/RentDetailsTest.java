@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 
 import java.math.BigDecimal;
 
@@ -20,11 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RentDetailsTest extends BasePageTest {
 
     @Mock
-    private MoneyConverter moneyConverter;
+    private FeeFormatter feeFormatter;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentDetailsPage(moneyConverter));
+        setPageUnderTest(new RentDetailsPage(feeFormatter));
     }
 
     @Test

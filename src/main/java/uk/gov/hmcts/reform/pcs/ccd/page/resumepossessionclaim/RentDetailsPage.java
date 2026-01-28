@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -27,7 +27,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class RentDetailsPage implements CcdPageConfiguration {
 
-    private final MoneyConverter moneyConverter;
+    private final FeeFormatter feeFormatter;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -64,9 +64,8 @@ public class RentDetailsPage implements CcdPageConfiguration {
                 if (rentDetails.getCurrentRent() != null) {
                     BigDecimal rentAmount = rentDetails.getCurrentRent();
                     BigDecimal dailyAmount = calculateDailyRent(rentAmount, rentFrequency);
-
                     rentDetails.setCalculatedDailyCharge(dailyAmount);
-                    rentDetails.setFormattedCalculatedDailyCharge(moneyConverter.formatCurrency(dailyAmount));
+                    rentDetails.setFormattedCalculatedDailyCharge(feeFormatter.formatFee(dailyAmount));
                 }
 
                 // Set flag to NO - DailyRentAmount should show first
@@ -104,5 +103,4 @@ public class RentDetailsPage implements CcdPageConfiguration {
 
         return rentAmount.divide(divisor, 2, RoundingMode.HALF_UP);
     }
-
 }
