@@ -180,7 +180,7 @@ test.describe('[Create Case - England]', async () => {
      await performAction('selectAlternativesToPossession');
      await performValidation('mainHeader', claimingCosts.mainHeader);
      await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -297,7 +297,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -406,7 +406,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -521,7 +521,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -614,7 +614,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
@@ -704,7 +704,7 @@ test.describe('[Create Case - England]', async () => {
       ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -801,7 +801,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForDemotionOrder', reasonsForRequestingADemotionOrder.requestDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -903,7 +903,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -1026,7 +1026,7 @@ test.describe('[Create Case - England]', async () => {
         ,  demotion: reasonsForRequestingASuspensionAndDemotionOrder.requestDemotionOrderQuestion});
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -1138,7 +1138,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
@@ -1225,7 +1225,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('enterReasonForSuspensionOrder', reasonsForRequestingASuspensionOrder.requestSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
     await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {

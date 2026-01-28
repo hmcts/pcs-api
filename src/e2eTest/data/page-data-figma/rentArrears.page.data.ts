@@ -35,6 +35,7 @@ export const rentArrears = {
   discretionaryHousingPaymentCheckBox: `Discretionary Housing Payment`,
   homelessPreventionFundCheckBox: `Homeless prevention fund`,
   otherCheckBox: `Other`,
+  otherPaymentOptionTextInput: 'credit',
   paymentSourceTextLabel: `Payment source`,
   previousButton: `Previous`,
   continueButton: `Continue`,

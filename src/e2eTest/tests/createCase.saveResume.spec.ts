@@ -150,7 +150,7 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: rentArrears.yesOption,
+      rentPaidByOthersOption: rentArrears.yesRadioOption,
       paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
@@ -169,17 +169,17 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesOption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
-      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.no
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
     });
-    await performAction('selectApplications', generalApplication.yesOption);
+    await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption
@@ -283,17 +283,17 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-    await performValidation('mainHeader', additionalReasonsForPossession.mainHeaderCaption);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesOption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
     await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
-      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.no
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
     });
-    await performAction('selectApplications', generalApplication.yesOption);
+    await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {
       question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
       option: claimLanguageUsed.englishLRadioOption

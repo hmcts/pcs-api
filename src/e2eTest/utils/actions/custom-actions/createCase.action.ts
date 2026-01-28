@@ -577,10 +577,10 @@ export class CreateCaseAction implements IAction {
       question: rentArrears.forThePeriodShownOnTheRentStatementHaveAnyRentPaymentsBeenPaidBySomeoneOtherThanTheDefendantsQuestion,
       option: rentArrearsData.rentPaidByOthersOption
     });
-    if (rentArrearsData.rentPaidByOthersOption == rentArrears.yesOption) {
+    if (rentArrearsData.rentPaidByOthersOption == rentArrears.yesRadioOption) {
       await performAction('check', {question: rentArrears.whereHaveThePaymentsComeFromQuestion, option: rentArrearsData.paymentOptions});
       if ((rentArrearsData.paymentOptions as Array<string>).includes(rentArrears.otherCheckBox)) {
-        await performAction('inputText', rentArrears.paymentSourceTextLabel, rentArrears.paymentSourceTextInput);
+        await performAction('inputText', rentArrears.paymentSourceTextLabel, rentArrears.otherPaymentOptionTextInput);
       }
       await performAction('clickButton', rentArrears.continueButton);
     }
@@ -669,7 +669,7 @@ export class CreateCaseAction implements IAction {
       question: documentsData.question,
       option: documentsData.option
     });
-    await performAction('clickButton', uploadAdditionalDocuments.continue);
+    await performAction('clickButton', uploadAdditionalDocuments.continueButton);
   }
 
   private async uploadAdditionalDocs(documentsData: actionRecord) {
@@ -680,11 +680,11 @@ export class CreateCaseAction implements IAction {
         await performActions(
           'Add Document',
           ['uploadFile', document.fileName],
-          ['select', uploadAdditionalDocuments.typeOfDocument, document.type],
-          ['inputText', uploadAdditionalDocuments.shortDescriptionLabel, document.description]
+          ['select', uploadAdditionalDocuments.typeOfDocumentTextLabel, document.type],
+          ['inputText', uploadAdditionalDocuments.shortDescriptionTextLabel, document.description]
         );
       }
-      await performAction('clickButton', uploadAdditionalDocuments.continue);
+      await performAction('clickButton', uploadAdditionalDocuments.continueButton);
     }
   }
 
@@ -713,9 +713,9 @@ export class CreateCaseAction implements IAction {
   private async payClaimFee(params?: { clickLink?: boolean }) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeLabel});
+    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeParagraph});
     if (params?.clickLink === true) {
-      await performAction('clickButton', payClaimFee.pay404ClaimFeeLabel);
+      await performAction('clickButton', payClaimFee.pay404ClaimFeeParagraph);
     }
     await performAction('clickButton', payClaimFee.closeAndReturnToCaseLabel);
   }
@@ -755,8 +755,8 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: additionalReasonsForPossession.IsThereAnyOtherInformationQuestion, option: reasons});
-    if(reasons == additionalReasonsForPossession.yesOption){
-      await performAction('inputText', additionalReasonsForPossession.AdditionalReasonsForPossessionLabel, 'Sample additional reasons text');
+    if(reasons == additionalReasonsForPossession.yesRadioOption){
+      await performAction('inputText', additionalReasonsForPossession.AdditionalReasonsForPossessionTextLabel, 'Sample additional reasons text');
     }
     await performAction('clickButton', additionalReasonsForPossession.continueButton);
   }

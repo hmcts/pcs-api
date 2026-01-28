@@ -22,7 +22,6 @@ export default {
   'resumePossessionClaimrentDetails': 'rentDetails',
   'resumePossessionClaimdailyRentAmount': 'dailyRentAmount',
   'resumePossessionClaimmoneyJudgment': 'moneyJudgment',
-  //new files
   'resumePossessionClaimrentArrears': 'rentArrears',
   'resumePossessionClaimadditionalReasonsForPossession': 'additionalReasonsForPossession',
   'resumePossessionClaimunderlesseeMortgageeEntitledToClaimRelief': 'underlesseeMortgageeEntitledToClaimRelief',
@@ -32,5 +31,6 @@ export default {
   'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',
   'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',
   'resumePossessionClaimstatementOfTruth': 'statementOfTruth',
-  'resumePossessionClaim/confirm': 'payClaimFee'
+  'resumePossessionClaim/confirm': 'payClaimFee',
+  //claimSaved
 };

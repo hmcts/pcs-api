@@ -21,7 +21,6 @@ export * from '@data/page-data-figma/noticeDetails.page.data';
 export * from '@data/page-data-figma/provideMoreDetailsOfClaim.page.data';
 export * from '@data/page-data-figma/rentDetails.page.data';
 export * from '@data/page-data-figma/startTheService.page.data';
-//newly added files
 export * from '@data/page-data-figma/additionalReasonsForPossession.page.data';
 export * from '@data/page-data-figma/generalApplication.page.data';
 export * from '@data/page-data-figma/completingYourClaim.page.data';
