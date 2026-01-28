@@ -12,6 +12,6 @@ export const payClaimFee = {
   clickThroughTheQuestionsParagraph: `Click through the questions.`,
   chooseTheSubmitParagraph: `Choose the 'Submit and pay for my claim now' option when asked how you'd like to complete your claim.`,
   selectThePayTheClaimFeeParagraph: `Select the 'Pay the claim fee' link on he confirmation screen.`,
-  closeAndReturnToCaseLabel: `Close and return to case details`,
+  closeAndReturnToCaseButton: `Close and return to case details`,
   cancelLink: `Cancel`,
 };

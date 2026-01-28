@@ -691,7 +691,6 @@ export class CreateCaseAction implements IAction {
   private async completingYourClaim(option: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performAction('clickRadioButton', {question: completingYourClaim.whatWouldYouLikeToDoNextQuestion, option: option});
     await performAction('clickButton', completingYourClaim.continueButton);
   }
@@ -715,9 +714,9 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeParagraph});
     if (params?.clickLink === true) {
-      await performAction('clickButton', payClaimFee.pay404ClaimFeeParagraph);
+      await performAction('clickButton', payClaimFee.payTheClaimFeeLink);
     }
-    await performAction('clickButton', payClaimFee.closeAndReturnToCaseLabel);
+    await performAction('clickButton', payClaimFee.closeAndReturnToCaseButton);
   }
 
   private async enterTestAddressManually(page: Page, address: actionRecord) {
@@ -756,7 +755,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: additionalReasonsForPossession.IsThereAnyOtherInformationQuestion, option: reasons});
     if(reasons == additionalReasonsForPossession.yesRadioOption){
-      await performAction('inputText', additionalReasonsForPossession.AdditionalReasonsForPossessionTextLabel, 'Sample additional reasons text');
+      await performAction('inputText', additionalReasonsForPossession.AdditionalReasonsForPossessionTextLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleTextInput);
     }
     await performAction('clickButton', additionalReasonsForPossession.continueButton);
   }

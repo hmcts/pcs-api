@@ -7,7 +7,7 @@ export const additionalReasonsForPossession = {
   noRadioOption: `No`,
   AdditionalReasonsForPossessionTextLabel: 'Additional reasons for possession',
   youCanEnterUpToHintText: `You can enter up to 6400 characters`,
-  additionalReasonsForPossessionSampleText: 'This is the sample text for - Is there any other information you’d like to provide about your reasons for possession',
+  additionalReasonsForPossessionSampleTextInput: 'This is the sample text for - Is there any other information you’d like to provide about your reasons for possession',
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
