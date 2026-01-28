@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -22,7 +23,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 public class CcdTestCaseOrchestrator {
 
-    private static final String CASE_TYPE = "PCS-1237";
+    private static final String CASE_TYPE = CaseType.getCaseType();
     private static final String CREATE_EVENT = "createPossessionClaim";
     private static final String RESUME_EVENT = "resumePossessionClaim";
 
@@ -221,7 +222,7 @@ public class CcdTestCaseOrchestrator {
                         "languageUsed": "ENGLISH",
                         "completionNextStep": "SAVE_IT_FOR_LATER"
                     }
-               """;
+                """;
 
             ObjectMapper mapper = new ObjectMapper();
             return (ObjectNode) mapper.readTree(json);
