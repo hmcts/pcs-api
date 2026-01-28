@@ -123,97 +123,105 @@ public class CcdTestCaseOrchestrator {
     private ObjectNode baseResumePossessionClaimPayload() {
         try {
             String json = """
-        {
-          "claimantType": {
-            "value": {
-              "code": "PROVIDER_OF_SOCIAL_HOUSING",
-              "label": "Registered provider of social housing"
-            },
-            "list_items": [
-              { "code": "PRIVATE_LANDLORD", "label": "Private landlord" },
-              { "code": "PROVIDER_OF_SOCIAL_HOUSING", "label": "Registered provider of social housing" },
-              { "code": "MORTGAGE_LENDER", "label": "Mortgage lender" },
-              { "code": "OTHER", "label": "Other" }
-            ],
-            "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
-          },
-          "claimAgainstTrespassers": "NO",
-          "claimantName": "pcs-solicitor1@test.com",
-          "isClaimantNameCorrect": "YES",
-          "claimantContactEmail": "pcs-solicitor1@test.com",
-          "isCorrectClaimantContactEmail": "YES",
-          "orgAddressFound": "No",
-          "organisationAddress": null,
-          "formattedClaimantContactAddress": null,
-          "overriddenClaimantContactAddress": {
-            "AddressLine1": "1 Rse Way",
-            "AddressLine2": "",
-            "AddressLine3": "",
-            "PostTown": "London",
-            "County": "",
-            "Country": "United Kingdom",
-            "PostCode": "SW11 1PD"
-          },
-          "claimantProvidePhoneNumber": "NO",
-          "defendant1": {
-            "nameKnown": "NO",
-            "firstName": null,
-            "lastName": null,
-            "addressKnown": "NO",
-            "addressSameAsPossession": null,
-            "correspondenceAddress": {
-              "AddressLine1": null,
-              "AddressLine2": null,
-              "AddressLine3": null,
-              "PostTown": null,
-              "County": null,
-              "Country": null,
-              "PostCode": null
-            }
-          },
-          "addAnotherDefendant": "NO",
-          "tenancy_TypeOfTenancyLicence": "ASSURED_TENANCY",
-          "tenancy_TenancyLicenceDate": null,
-          "tenancy_TenancyLicenceDocuments": [],
-          "claimDueToRentArrears": "No",
-          "showRentSectionPage": "No",
-          "noRentArrears_ShowGroundReasonPage": "Yes",
-          "noRentArrears_MandatoryGrounds": [ "OWNER_OCCUPIER" ],
-          "noRentArrears_DiscretionaryGrounds": [],
-          "ownerOccupierTextArea": "test",
-          "preActionProtocolCompleted": "NO",
-          "mediationAttempted": "NO",
-          "settlementAttempted": "NO",
-          "noticeServed": "No",
-          "claimantNamePossessiveForm": "pcs-solicitor1@test.com’s",
-          "claimantCircumstancesSelect": "NO",
-          "hasDefendantCircumstancesInfo": "NO",
-          "suspensionOfRTB_ShowHousingActsPage": "No",
-          "demotionOfTenancy_ShowHousingActsPage": "No",
-          "suspensionToBuyDemotionOfTenancyPages": "No",
-          "alternativesToPossession": [],
-          "claimingCostsWanted": "NO",
-          "additionalReasonsForPossession": {
-            "hasReasons": "NO",
-            "reasons": null
-          },
-          "hasUnderlesseeOrMortgagee": "NO",
-          "wantToUploadDocuments": "NO",
-          "applicationWithClaim": "NO",
-          "languageUsed": "ENGLISH",
-          "completionNextStep": "SUBMIT_AND_PAY_NOW",
-          "statementOfTruth": {
-            "completedBy": "CLAIMANT",
-            "fullNameClaimant": "ghjk",
-            "positionClaimant": "bhj",
-            "fullNameLegalRep": null,
-            "firmNameLegalRep": null,
-            "positionLegalRep": null,
-            "agreementClaimant": [ "BELIEVE_TRUE" ],
-            "agreementLegalRep": []
-          }
-        }
-                """;
+                {
+                        "legislativeCountry": "England",
+                        "claimantType": {
+                            "value": {
+                                "code": "PROVIDER_OF_SOCIAL_HOUSING",
+                                "label": "Registered provider of social housing"
+                            },
+                            "list_items": [
+                                {
+                                    "code": "PRIVATE_LANDLORD",
+                                    "label": "Private landlord"
+                                },
+                                {
+                                    "code": "PROVIDER_OF_SOCIAL_HOUSING",
+                                    "label": "Registered provider of social housing"
+                                },
+                                {
+                                    "code": "MORTGAGE_LENDER",
+                                    "label": "Mortgage lender"
+                                },
+                                {
+                                    "code": "OTHER",
+                                    "label": "Other"
+                                }
+                            ],
+                            "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
+                        },
+                        "claimAgainstTrespassers": "NO",
+                        "claimantName": "Possession Claims Solicitor Org",
+                        "isClaimantNameCorrect": "YES",
+                        "claimantContactEmail": "pcs-solicitor1@test.com",
+                        "isCorrectClaimantContactEmail": "YES",
+                        "orgAddressFound": "Yes",
+                        "organisationAddress": {
+                            "AddressLine1": "Ministry Of Justice",
+                            "AddressLine2": "Seventh Floor 102 Petty France",
+                            "PostTown": "London",
+                            "PostCode": "SW1H 9AJ",
+                            "Country": "United Kingdom"
+                        },
+                        "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty\s
+                        France<br>London<br>SW1H 9AJ",
+                        "isCorrectClaimantContactAddress": "YES",
+                        "claimantProvidePhoneNumber": "NO",
+                        "defendant1": {
+                            "nameKnown": "YES",
+                            "firstName": "John",
+                            "lastName": "doe",
+                            "addressKnown": "NO",
+                            "addressSameAsPossession": null,
+                            "correspondenceAddress": {
+                                "AddressLine1": null,
+                                "AddressLine2": null,
+                                "AddressLine3": null,
+                                "PostTown": null,
+                                "County": null,
+                                "Country": null,
+                                "PostCode": null
+                            }
+                        },
+                        "addAnotherDefendant": "NO",
+                        "tenancy_TypeOfTenancyLicence": "ASSURED_TENANCY",
+                        "tenancy_TenancyLicenceDate": null,
+                        "tenancy_TenancyLicenceDocuments": [],
+                        "claimDueToRentArrears": "No",
+                        "showRentSectionPage": "No",
+                        "noRentArrears_ShowGroundReasonPage": "Yes",
+                        "noRentArrears_MandatoryGrounds": [
+                            "REPOSSESSION_GROUND2"
+                        ],
+                        "noRentArrears_DiscretionaryGrounds": [],
+                        "repossessionByLenderTextArea": "test",
+                        "preActionProtocolCompleted": "NO",
+                        "mediationAttempted": "NO",
+                        "settlementAttempted": "NO",
+                        "noticeServed": "No",
+                        "claimantNamePossessiveForm": "Possession Claims Solicitor Org’s",
+                        "claimantCircumstancesSelect": "NO",
+                        "hasDefendantCircumstancesInfo": "NO",
+                        "suspensionOfRTB_ShowHousingActsPage": "Yes",
+                        "demotionOfTenancy_ShowHousingActsPage": "No",
+                        "suspensionToBuyDemotionOfTenancyPages": "No",
+                        "alternativesToPossession": [
+                            "SUSPENSION_OF_RIGHT_TO_BUY"
+                        ],
+                        "suspensionOfRTB_HousingAct": "SECTION_82A_2",
+                        "suspensionOfRTB_Reason": "test",
+                        "claimingCostsWanted": "NO",
+                        "additionalReasonsForPossession": {
+                            "hasReasons": "NO",
+                            "reasons": null
+                        },
+                        "hasUnderlesseeOrMortgagee": "NO",
+                        "wantToUploadDocuments": "NO",
+                        "applicationWithClaim": "NO",
+                        "languageUsed": "ENGLISH",
+                        "completionNextStep": "SAVE_IT_FOR_LATER"
+                    }
+               \s""";
 
             ObjectMapper mapper = new ObjectMapper();
             return (ObjectNode) mapper.readTree(json);
