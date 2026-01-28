@@ -42,12 +42,12 @@ import {
   generalApplication,
   completingYourClaim,
   claimLanguageUsed,
-  underlesseeMortgageeEntitledToClaimRelief
+  underlesseeMortgageeEntitledToClaimRelief,
+  wantToUploadDocuments,
+  statementOfTruth,
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import {wantToUploadDocuments} from "@data/page-data-figma/wantToUploadDocuments.page.data";
-import {statementOfTruth} from "@data/page-data-figma/statementOfTruth.page.data";
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.

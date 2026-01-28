@@ -21,7 +21,7 @@ import {
   propertyDetails,
   underlesseeOrMortgageeDetails,
 } from '@data/page-data';
-import{
+import {
   claimantType,
   claimType,
   claimantInformation,
@@ -42,12 +42,12 @@ import{
   completingYourClaim,
   rentArrears,
   claimLanguageUsed,
-  underlesseeMortgageeEntitledToClaimRelief
+  underlesseeMortgageeEntitledToClaimRelief,
+  wantToUploadDocuments,
+  statementOfTruth,
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import {wantToUploadDocuments} from "@data/page-data-figma/wantToUploadDocuments.page.data";
-import {statementOfTruth} from "@data/page-data-figma/statementOfTruth.page.data";
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);

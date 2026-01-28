@@ -7,7 +7,7 @@ import {LoginAction} from '@utils/actions/custom-actions/login.action';
 import {NavigateToUrlAction} from '@utils/actions/custom-actions/navigateToUrl.action';
 import {CreateCaseAction} from '@utils/actions/custom-actions/createCase.action';
 import {ClickButtonAction} from '@utils/actions/element-actions/clickButton.action';
-import {ClickRadioButtonAction} from '@utils//actions/element-actions/clickRadioButton.action';
+import {ClickRadioButtonAction} from '@utils/actions/element-actions/clickRadioButton.action';
 import {UploadFileAction} from '@utils/actions/element-actions/uploadFile.action';
 import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWales.action';
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';

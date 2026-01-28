@@ -47,11 +47,11 @@ import {
   completingYourClaim,
   rentArrears,
   claimLanguageUsed,
-  payClaimFee
+  payClaimFee,
+  statementOfTruth,
+  uploadAdditionalDocuments,
 } from '@data/page-data-figma';
 import {VERY_LONG_TIMEOUT} from 'playwright.config';
-import {statementOfTruth} from "@data/page-data-figma/statementOfTruth.page.data";
-import {uploadAdditionalDocuments} from "@data/page-data-figma/uploadAdditionalDocuments.page.data";
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };

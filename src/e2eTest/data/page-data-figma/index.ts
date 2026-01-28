@@ -29,3 +29,6 @@ export * from '@data/page-data-figma/rentArrears.page.data';
 export * from '@data/page-data-figma/claimLanguageUsed.page.data';
 export * from '@data/page-data-figma/payClaimFee.page.data';
 export * from '@data/page-data-figma/underlesseeMortgageeEntitledToClaimRelief.page.data';
+export * from '@data/page-data-figma/wantToUploadDocuments.page.data';
+export * from '@data/page-data-figma/statementOfTruth.page.data';
+export * from '@data/page-data-figma/uploadAdditionalDocuments.page.data';
