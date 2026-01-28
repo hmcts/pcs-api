@@ -20,6 +20,11 @@ public class RepaymentTableRenderer {
 
     public String render(BigDecimal totalArrears, BigDecimal legalFees, BigDecimal landRegistryFees,
                          String warrantFeeAmount, BigDecimal totalFees) {
+        return render(totalArrears, legalFees, landRegistryFees, warrantFeeAmount, totalFees, null);
+    }
+
+    public String render(BigDecimal totalArrears, BigDecimal legalFees, BigDecimal landRegistryFees,
+                         String warrantFeeAmount, BigDecimal totalFees, String caption) {
 
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("repaymentTable");
         Writer writer = new StringWriter();
@@ -30,6 +35,7 @@ public class RepaymentTableRenderer {
         context.put("landRegistryFees", landRegistryFees);
         context.put("warrantFeeAmount", warrantFeeAmount);
         context.put("totalFees", totalFees);
+        context.put("caption", caption);
 
         try {
             compiledTemplate.evaluate(writer, context);
