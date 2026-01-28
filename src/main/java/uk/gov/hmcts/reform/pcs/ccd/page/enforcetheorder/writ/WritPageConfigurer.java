@@ -21,7 +21,7 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
             .add(hceOfficerDetailsPage)
             .add(new EnforcementOfficerSelectionPage())
             .add(new AmountDefendantOwesPage())
-            .add(new LegalCostsPlaceholder())
+            .add(new LegalCostsWritPage())
             .add(new LandRegistryFeesPage())
             .add(new RepaymentsPlaceholder());
     }
