@@ -63,6 +63,9 @@ class WarrantPageConfigurerTest extends BasePageTest {
     private LandRegistryFeesPage landRegistryFeesPage;
 
     @Mock
+    private StatementOfTruthPage statementOfTruthPage;
+
+    @Mock
     private DefendantsDOBPage defendantsDOBPage;
 
     @Test
