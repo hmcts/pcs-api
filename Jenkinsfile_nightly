@@ -55,6 +55,10 @@ withNightlyPipeline(type, product, component) {
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
   }
+
+  afterAlways('e2eTest') {
+    postAllureResultsToSlack()
+  }
 }
 
 def validateInputs() {
@@ -78,4 +82,18 @@ def handleEnvironmentSetting() {
   env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
     ? "pr"
     : "chrome"
+}
+
+def postAllureResultsToSlack() {
+  def slackChannel = env.BUILD_NOTICES_SLACK_CHANNEL ?: '#qa-pipeline-status'
+  def msg = sh(
+    script: '''
+      cd src/e2eTest
+      yarn allure-slack-notify --print-only 2>/dev/null || echo ""
+    ''',
+    returnStdout: true
+  ).trim()
+  if (msg) {
+    slackSend(channel: slackChannel, message: msg)
+  }
 }

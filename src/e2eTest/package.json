@@ -13,7 +13,8 @@
     "test:regression": "yarn playwright install && yarn playwright test --project chrome --grep '@regression'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
     "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
-    "test:openAllureReport": "yarn allure open ../../e2e-output"
+    "test:openAllureReport": "yarn allure open ../../e2e-output",
+    "allure-slack-notify": "tsx ./scripts/allure-slack-notifier.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
