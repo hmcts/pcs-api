@@ -164,7 +164,7 @@ public class CcdTestCaseOrchestrator {
                             "PostCode": "SW1H 9AJ",
                             "Country": "United Kingdom"
                         },
-                        "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty\s
+                        "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty \
                         France<br>London<br>SW1H 9AJ",
                         "isCorrectClaimantContactAddress": "YES",
                         "claimantProvidePhoneNumber": "NO",
