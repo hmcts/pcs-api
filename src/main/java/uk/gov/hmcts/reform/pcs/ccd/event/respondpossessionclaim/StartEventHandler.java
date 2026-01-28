@@ -6,11 +6,14 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
@@ -22,6 +25,9 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,10 +47,14 @@ public class StartEventHandler implements Start<PCSCase, State> {
         PCSCase caseDataFromPayload = eventPayload.caseData();
         UUID authenticatedUserId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
+        if (draftService.exists(caseReference)) {
+            return draftService.load(caseReference, caseDataFromPayload);
+        }
+
         PartyEntity defendantEntity = validateAccess(caseReference, authenticatedUserId);
         PossessionClaimResponse initialResponse = buildInitialResponse(defendantEntity, caseReference);
 
-        return getOrInitializeDraft(caseReference, initialResponse, caseDataFromPayload);
+        return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
     }
 
     private PartyEntity validateAccess(long caseReference, UUID authenticatedUserId) {
@@ -89,11 +99,20 @@ public class StartEventHandler implements Start<PCSCase, State> {
     }
 
     private PossessionClaimResponse buildInitialResponse(PartyEntity defendantEntity, long caseReference) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         AddressUK contactAddress = resolveAddress(defendantEntity, caseReference);
         Party party = buildParty(defendantEntity, contactAddress);
 
         return PossessionClaimResponse.builder()
             .party(party)
+            .contactByPhone(extractContactByPhone(defendantEntity))
+            .claimantProvidedLegislativeCountry(extractLegislativeCountry(pcsCaseEntity))
+            .claimantProvidedTenancyType(extractTenancyType(pcsCaseEntity))
+            .claimantProvidedTenancyStartDate(extractTenancyStartDate(pcsCaseEntity))
+            .claimantProvidedDailyRentAmount(extractDailyRentAmount(pcsCaseEntity))
+            .claimantProvidedRentArrearsOwed(extractRentArrearsOwed(pcsCaseEntity))
+            .claimantProvidedNoticeServed(extractNoticeServed(pcsCaseEntity))
+            .claimantProvidedNoticeDate(extractNoticeDate(pcsCaseEntity))
             .build();
     }
 
@@ -122,12 +141,104 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .build();
     }
 
-    private PCSCase getOrInitializeDraft(long caseReference,
-                                          PossessionClaimResponse initialResponse,
-                                          PCSCase caseDataFromPayload) {
-        if (draftService.exists(caseReference)) {
-            return draftService.load(caseReference, caseDataFromPayload);
+    private LegislativeCountry extractLegislativeCountry(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseEntity.getLegislativeCountry();
+    }
+
+    private String extractTenancyType(PcsCaseEntity pcsCaseEntity) {
+        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
+        if (tenancy == null) {
+            return null;
         }
-        return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
+
+        if (pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
+            return tenancy.getOccupationLicenceTypeWales() != null
+                ? tenancy.getOccupationLicenceTypeWales().getLabel()
+                : null;
+        }
+
+        return tenancy.getTenancyLicenceType();
+    }
+
+    private LocalDate extractTenancyStartDate(PcsCaseEntity pcsCaseEntity) {
+        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
+        if (tenancy == null) {
+            return null;
+        }
+
+        if (pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
+            return tenancy.getWalesLicenceStartDate();
+        }
+
+        return tenancy.getTenancyLicenceDate();
+    }
+
+    private BigDecimal extractDailyRentAmount(PcsCaseEntity pcsCaseEntity) {
+        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
+        return tenancy != null ? tenancy.getDailyRentChargeAmount() : null;
+    }
+
+    private BigDecimal extractRentArrearsOwed(PcsCaseEntity pcsCaseEntity) {
+        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
+        return tenancy != null ? tenancy.getTotalRentArrears() : null;
+    }
+
+    private YesOrNo extractContactByPhone(PartyEntity defendantEntity) {
+        VerticalYesNo phoneNumberProvided = defendantEntity.getPhoneNumberProvided();
+
+        if (phoneNumberProvided == null) {
+            return null;
+        }
+
+        return phoneNumberProvided == VerticalYesNo.YES ? YesOrNo.YES : YesOrNo.NO;
+    }
+
+    private YesOrNo extractNoticeServed(PcsCaseEntity pcsCaseEntity) {
+        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
+        if (tenancy == null) {
+            return null;
+        }
+
+        Boolean noticeServed;
+        if (pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
+            noticeServed = tenancy.getWalesNoticeServed();
+        } else {
+            noticeServed = tenancy.getNoticeServed();
+        }
+
+        if (noticeServed == null) {
+            return null;
+        }
+
+        return noticeServed ? YesOrNo.YES : YesOrNo.NO;
+    }
+
+    private LocalDateTime extractNoticeDate(PcsCaseEntity pcsCaseEntity) {
+        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
+        if (tenancy == null) {
+            return null;
+        }
+
+        // Priority order: posted > delivered > handed over > email > other electronic > other
+        if (tenancy.getNoticePostedDate() != null) {
+            return tenancy.getNoticePostedDate().atStartOfDay();
+        }
+        if (tenancy.getNoticeDeliveredDate() != null) {
+            return tenancy.getNoticeDeliveredDate().atStartOfDay();
+        }
+        if (tenancy.getNoticeHandedOverDateTime() != null) {
+            return tenancy.getNoticeHandedOverDateTime();
+        }
+        if (tenancy.getNoticeEmailSentDateTime() != null) {
+            return tenancy.getNoticeEmailSentDateTime();
+        }
+        if (tenancy.getNoticeOtherElectronicDateTime() != null) {
+            return tenancy.getNoticeOtherElectronicDateTime();
+        }
+        if (tenancy.getNoticeOtherDateTime() != null) {
+            return tenancy.getNoticeOtherDateTime();
+        }
+
+        return null;
     }
 }

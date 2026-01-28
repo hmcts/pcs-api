@@ -31,6 +31,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -122,15 +123,6 @@ class StartEventHandlerTest {
         // Given
         UUID defendantUserId = UUID.randomUUID();
 
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .idamId(defendantUserId)
-            .firstName("John")
-            .lastName("Doe")
-            .build();
-
-        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
-
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
             .build();
@@ -145,8 +137,6 @@ class StartEventHandlerTest {
             .build();
 
         when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
         when(draftService.exists(CASE_REFERENCE)).thenReturn(true);
         when(draftService.load(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(existingDraft);
 
@@ -384,6 +374,112 @@ class StartEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getPossessionClaimResponse()).isNotNull();
         assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+    }
+
+    @Test
+    void shouldMapContactByPhoneFromPhoneNumberProvidedWhenYes() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+
+        PartyEntity defendantEntity = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("John")
+            .lastName("Doe")
+            .phoneNumberProvided(VerticalYesNo.YES)
+            .phoneNumber("07700900123")
+            .build();
+
+        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
+        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
+        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
+
+        // When
+        underTest.start(eventPayload);
+
+        // Then
+        verify(draftService).initialize(eq(CASE_REFERENCE), argThat(response ->
+            response.getContactByPhone() == uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES
+        ), any(PCSCase.class));
+    }
+
+    @Test
+    void shouldMapContactByPhoneFromPhoneNumberProvidedWhenNo() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+
+        PartyEntity defendantEntity = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("Jane")
+            .lastName("Smith")
+            .phoneNumberProvided(VerticalYesNo.NO)
+            .build();
+
+        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
+        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
+        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
+
+        // When
+        underTest.start(eventPayload);
+
+        // Then
+        verify(draftService).initialize(eq(CASE_REFERENCE), argThat(response ->
+            response.getContactByPhone() == uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO
+        ), any(PCSCase.class));
+    }
+
+    @Test
+    void shouldMapContactByPhoneAsNullWhenPhoneNumberProvidedIsNull() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+
+        PartyEntity defendantEntity = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("Bob")
+            .lastName("Johnson")
+            .phoneNumberProvided(null)
+            .build();
+
+        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
+        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
+        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
+
+        // When
+        underTest.start(eventPayload);
+
+        // Then
+        verify(draftService).initialize(eq(CASE_REFERENCE), argThat(response ->
+            response.getContactByPhone() == null
+        ), any(PCSCase.class));
     }
 
     private EventPayload<PCSCase, State> createEventPayload() {
