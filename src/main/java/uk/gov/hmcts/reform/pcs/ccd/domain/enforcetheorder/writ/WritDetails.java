@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -43,4 +44,8 @@ public class WritDetails {
         typeOverride = TextArea
     )
     private String highCourtEnforcementOfficerDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private LegalCosts legalCosts;
 }
