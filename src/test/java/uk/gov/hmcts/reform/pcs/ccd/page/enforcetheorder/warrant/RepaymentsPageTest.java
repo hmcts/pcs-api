@@ -84,7 +84,6 @@ class RepaymentsPageTest extends BasePageTest {
                        .getRepaymentCosts().getAmountOfRepaymentCosts()).isEqualTo(invalidFee);
     }
 
-
     private static Stream<Arguments> validFees() {
         return Stream.of(
             Arguments.of(new BigDecimal("100.00")),
@@ -102,6 +101,5 @@ class RepaymentsPageTest extends BasePageTest {
             Arguments.of(BigDecimal.ZERO)
         );
     }
-
 }
 

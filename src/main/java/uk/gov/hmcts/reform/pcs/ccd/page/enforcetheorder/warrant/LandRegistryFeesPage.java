@@ -47,6 +47,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             .mandatory(LandRegistryFees::getAmountOfLandRegistryFees, "warrantHaveLandRegistryFeesBeenPaid=\"YES\"")
             .done()
             .done()
+            .done()
             .label("landRegistryFees-save-and-return", SAVE_AND_RETURN);
     }
 

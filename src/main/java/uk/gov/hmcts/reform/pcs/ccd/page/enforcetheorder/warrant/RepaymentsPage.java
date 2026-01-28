@@ -44,6 +44,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
             .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "warrantRepaymentChoice=\"SOME\"")
             .done()
             .done()
+            .done()
             .label("repayments-save-and-return", SAVE_AND_RETURN);
     }
 
@@ -64,7 +65,6 @@ public class RepaymentsPage implements CcdPageConfiguration {
 
         RepaymentCosts repaymentCosts = caseData.getEnforcementOrder()
             .getWarrantDetails().getRepaymentCosts();
-
 
         if (repaymentCosts.getRepaymentChoice() == RepaymentPreference.SOME) {
             errors.addAll(feeValidationService.validateFee(
