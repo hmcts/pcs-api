@@ -75,6 +75,8 @@ public class TestingSupportController {
     private final PcsCaseService pcsCaseService;
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
+    private final ModelMapper modelMapper;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
@@ -504,7 +506,6 @@ public class TestingSupportController {
 
     private long generateCaseReference() {
         long timestamp = System.currentTimeMillis();
-        SecureRandom secureRandom = new SecureRandom();
         int suffix = secureRandom.nextInt(1000);
         return Long.parseLong(String.format("%d%03d", timestamp, suffix));
     }
