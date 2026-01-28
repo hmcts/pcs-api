@@ -10,6 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LandRegistryFees;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
@@ -73,7 +74,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         BigDecimal warrantFeePence = convertWarrantFeeToBigDecimal(caseData);
         BigDecimal totalFees = getTotalFees(totalArrears, landRegistryFee, legalCosts, warrantFeePence);
 
-        // Render repayment table with all formatted amounts
+        // Render repayment table for Repayments screen (default caption)
         // Some fee fields are legitimately null when the UI uses YES/NO toggles,
         // So default them to ZERO before rendering.
         String repaymentTableHtml = repaymentTableRenderer.render(
@@ -84,8 +85,19 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             totalFees
         );
 
-        caseData.getEnforcementOrder().getWarrantDetails()
-            .getRepaymentCosts().setRepaymentSummaryMarkdown(repaymentTableHtml);
+        // Render repayment table for SOT screen (custom caption)
+        String statementOfTruthRepaymentTableHtml = repaymentTableRenderer.render(
+            totalArrears,
+            defaultZero(legalCosts),
+            defaultZero(landRegistryFee),
+            caseData.getEnforcementOrder().getWarrantFeeAmount(),
+            totalFees,
+            "The payments due"
+        );
+
+        RepaymentCosts repaymentCosts = caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts();
+        repaymentCosts.setRepaymentSummaryMarkdown(repaymentTableHtml);
+        repaymentCosts.setStatementOfTruthRepaymentSummaryMarkdown(statementOfTruthRepaymentTableHtml);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

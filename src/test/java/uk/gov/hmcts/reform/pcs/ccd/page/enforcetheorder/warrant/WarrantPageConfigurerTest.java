@@ -2,20 +2,26 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementApplicationPage;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHelper.verifyAndCount;
 
 @ExtendWith(MockitoExtension.class)
 class WarrantPageConfigurerTest extends BasePageTest {
@@ -57,6 +63,12 @@ class WarrantPageConfigurerTest extends BasePageTest {
     private LandRegistryFeesPage landRegistryFeesPage;
 
     @Mock
+    private StatementOfTruthPage statementOfTruthPage;
+
+    @Mock
+    private DefendantsDOBPage defendantsDOBPage;
+
+    @Mock
     private MoneyOwedPage moneyOwedPage;
 
     @Mock
@@ -76,37 +88,46 @@ class WarrantPageConfigurerTest extends BasePageTest {
         warrantPageConfigurer.configurePages(pageBuilder);
 
         // Then
+        ArgumentCaptor<CcdPageConfiguration> pageCaptor = ArgumentCaptor.forClass(CcdPageConfiguration.class);
         InOrder inOrder = inOrder(pageBuilder);
-        inOrder.verify(pageBuilder).add(isA(EnforcementApplicationPage.class));
-        inOrder.verify(pageBuilder).add(isA(NameAndAddressForEvictionPage.class));
-        inOrder.verify(pageBuilder).add(isA(ChangeNameAddressPage.class));
-        inOrder.verify(pageBuilder).add(isA(PeopleWhoWillBeEvictedPage.class));
-        inOrder.verify(pageBuilder).add(isA(PeopleYouWantToEvictPage.class));
-        inOrder.verify(pageBuilder).add(isA(LivingInThePropertyPage.class));
-        inOrder.verify(pageBuilder).add(isA(EvictionDelayWarningPage.class));
-        inOrder.verify(pageBuilder).add(isA(EvictionRisksPosedPage.class));
-        inOrder.verify(pageBuilder).add(violentAggressiveRiskPage);
-        inOrder.verify(pageBuilder).add(firearmsPossessionRiskPage);
-        inOrder.verify(pageBuilder).add(criminalAntisocialRiskPage);
-        inOrder.verify(pageBuilder).add(verbalOrWrittenThreatsRiskPage);
-        inOrder.verify(pageBuilder).add(protestorGroupRiskPage);
-        inOrder.verify(pageBuilder).add(policeOrSocialServicesRiskPage);
-        inOrder.verify(pageBuilder).add(aggressiveAnimalsRiskPage);
-        inOrder.verify(pageBuilder).add(vulnerableAdultsChildrenPage);
-        inOrder.verify(pageBuilder).add(propertyAccessDetailsPage);
-        inOrder.verify(pageBuilder).add(additionalInformationPage);
+        Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
+        AtomicInteger verificationCount = new AtomicInteger(0);
 
-        inOrder.verify(pageBuilder).add(moneyOwedPage);
-        inOrder.verify(pageBuilder).add(legalCostsPage);
+        verifyAndCount(inOrder, pageBuilder, EnforcementApplicationPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, ChangeNameAddressPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, ConfirmIfDOBKnownPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, defendantsDOBPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, PeopleYouWantToEvictPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LivingInThePropertyPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EvictionDelayWarningPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EvictionRisksPosedPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, violentAggressiveRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, firearmsPossessionRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, criminalAntisocialRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, verbalOrWrittenThreatsRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, protestorGroupRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, policeOrSocialServicesRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, aggressiveAnimalsRiskPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, vulnerableAdultsChildrenPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, propertyAccessDetailsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, additionalInformationPage, verificationCount);
 
-        inOrder.verify(pageBuilder).add(landRegistryFeesPage);
+        verifyAndCount(inOrder, pageBuilder, moneyOwedPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, legalCostsPage, verificationCount);
 
-        inOrder.verify(pageBuilder).add(repaymentsPage);
-        inOrder.verify(pageBuilder).add(isA(LanguageUsedPage.class));
-        inOrder.verify(pageBuilder).add(isA(SuspendedOrderPage.class));
-        inOrder.verify(pageBuilder).add(isA(StatementOfTruthPlaceHolder.class));
-        inOrder.verify(pageBuilder).add(isA(StatementOfTruthPlaceHolder2.class));
+        verifyAndCount(inOrder, pageBuilder, landRegistryFeesPage, verificationCount);
+
+        verifyAndCount(inOrder, pageBuilder, repaymentsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LanguageUsedPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, SuspendedOrderPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, statementOfTruthPage, verificationCount);
+
+        int numberOfPages = pageCaptor.getAllValues().size();
+        assertThat(verificationCount.get()).isEqualTo(numberOfPages);
 
         verifyNoMoreInteractions(pageBuilder);
     }
 }
+
