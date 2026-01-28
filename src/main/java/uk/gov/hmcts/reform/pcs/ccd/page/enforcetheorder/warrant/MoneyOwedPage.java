@@ -22,8 +22,7 @@ public class MoneyOwedPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getMoneyOwedByDefendants)
-            .label(
-                "moneyOwed-amount-label",
+            .label("moneyOwed-amount-label",
                 """
                     <p class="govuk-body govuk-!-margin-bottom-0">
                         You can include:
