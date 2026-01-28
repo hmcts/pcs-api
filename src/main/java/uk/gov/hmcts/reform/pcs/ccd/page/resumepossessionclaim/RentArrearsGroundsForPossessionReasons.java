@@ -22,8 +22,8 @@ import java.util.List;
 @Component
 public class RentArrearsGroundsForPossessionReasons implements CcdPageConfiguration {
 
-    private static final String ADDITIONAL_MANDATORY_GROUNDS = "assuredAdditionalMandatoryGrounds";
-    private static final String ADDITIONAL_DISCRETIONARY_GROUNDS = "assuredAdditionalDiscretionaryGrounds";
+    private static final String ADDITIONAL_MANDATORY_GROUNDS = "rentArrears_AdditionalMandatoryGrounds";
+    private static final String ADDITIONAL_DISCRETIONARY_GROUNDS = "rentArrears_AdditionalDiscretionaryGrounds";
 
     private final TextAreaValidationService textAreaValidationService;
 
@@ -34,7 +34,6 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
             .pageLabel("Reasons for possession")
             .showCondition("claimDueToRentArrears=\"Yes\""
                                + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND showRentArrearsGroundReasonPage=\"Yes\""
                                + " AND hasOtherAdditionalGrounds=\"Yes\""
                                + " AND legislativeCountry=\"England\""
             )

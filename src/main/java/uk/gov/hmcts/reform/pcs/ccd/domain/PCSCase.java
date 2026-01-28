@@ -145,37 +145,13 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "rentArrears_")
     private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
 
-    @CCD
-    private YesOrNo overrideResumedGrounds;
-
     @CCD(
         label = "Do you have any other additional grounds for possession?"
     )
     private YesOrNo hasOtherAdditionalGrounds;
 
-
-
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
-    )
-    private Set<AssuredAdditionalMandatoryGrounds> assuredAdditionalMandatoryGrounds;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
-    )
-    private Set<AssuredAdditionalDiscretionaryGrounds> assuredAdditionalDiscretionaryGrounds;
-
     @JsonUnwrapped
     private RentArrearsGroundsReasons rentArrearsGroundsReasons;
-
-    private YesOrNo showRentArrearsGroundReasonPage;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?"
