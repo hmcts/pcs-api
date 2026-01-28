@@ -221,7 +221,7 @@ public class CcdTestCaseOrchestrator {
                         "languageUsed": "ENGLISH",
                         "completionNextStep": "SAVE_IT_FOR_LATER"
                     }
-               \s""";
+               """;
 
             ObjectMapper mapper = new ObjectMapper();
             return (ObjectNode) mapper.readTree(json);
