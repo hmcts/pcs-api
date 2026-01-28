@@ -5,23 +5,14 @@ import {
   performValidation
 } from '@utils/controller';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { user } from '@data/user-data';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { signInOrCreateAnAccount } from '@data/page-data';
 
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
+  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
 test.afterEach(async () => {
