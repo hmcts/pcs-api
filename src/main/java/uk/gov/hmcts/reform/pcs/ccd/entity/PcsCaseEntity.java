@@ -19,10 +19,8 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
@@ -63,10 +61,6 @@ public class PcsCaseEntity {
 
     private Boolean preActionProtocolCompleted;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "tenancy_licence")
-    private TenancyLicence legacyTenancyLicence;
-
     @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private TenancyLicenceEntity tenancyLicence;
@@ -83,10 +77,6 @@ public class PcsCaseEntity {
     @Builder.Default
     @JsonManagedReference
     private List<ClaimEntity> claims = new ArrayList<>();
-
-    @Column(name = "statement_of_truth")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private StatementOfTruth statementOfTruth;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
     @Builder.Default

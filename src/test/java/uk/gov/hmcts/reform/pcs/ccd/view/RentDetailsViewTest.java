@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 
@@ -62,6 +63,7 @@ class RentDetailsViewTest {
         when(tenancyLicenceEntity.getRentFrequency()).thenReturn(rentPaymentFrequency);
         when(tenancyLicenceEntity.getOtherRentFrequency()).thenReturn(otherRentFrequency);
         when(tenancyLicenceEntity.getRentPerDay()).thenReturn(dailyRent);
+        when(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).thenReturn(VerticalYesNo.NO);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -77,6 +79,7 @@ class RentDetailsViewTest {
         assertThat(rentDetails.getFrequency()).isEqualTo(rentPaymentFrequency);
         assertThat(rentDetails.getOtherFrequency()).isEqualTo(otherRentFrequency);
         assertThat(rentDetails.getDailyCharge()).isEqualTo(dailyRent);
+        assertThat(rentDetails.getPerDayCorrect()).isEqualTo(VerticalYesNo.NO);
     }
 
 }

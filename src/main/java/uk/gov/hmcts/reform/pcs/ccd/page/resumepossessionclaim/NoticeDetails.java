@@ -27,7 +27,7 @@ public class NoticeDetails implements CcdPageConfiguration {
     private final NoticeDetailsService noticeDetailsService;
     private final TextAreaValidationService textAreaValidationService;
 
-    private static final String NOTICE_SERVICE_METHOD_CONDITION = "engNoticeServiceMethod=\"";
+    private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_NoticeServiceMethod=\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

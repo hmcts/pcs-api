@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity;
+package uk.gov.hmcts.reform.pcs.ccd.entity.claim;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
@@ -7,7 +7,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -17,12 +16,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -31,36 +28,28 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tenancy_licence")
-public class TenancyLicenceEntity {
+@Table(name = "statement_of_truth")
+public class StatementOfTruthEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @OneToOne
-    @JoinColumn(name = "case_id")
     @JsonBackReference
-    private PcsCaseEntity pcsCase;
+    private ClaimEntity claim;
 
     @Enumerated(EnumType.STRING)
-    private CombinedLicenceType type;
-
-    private String otherTypeDetails;
-
-    private LocalDate startDate;
-
-    private BigDecimal rentAmount;
-
-    @Enumerated(EnumType.STRING)
-    private RentPaymentFrequency rentFrequency;
-
-    private String otherRentFrequency;
-
-    private BigDecimal rentPerDay;
+    private StatementOfTruthCompletedBy completedBy;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo calculatedDailyRentCorrect;
+    private YesOrNo accepted;
+
+    private String fullName;
+
+    private String firmName;
+
+    private String positionHeld;
 
 }
