@@ -26,7 +26,7 @@ import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandle
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -206,7 +206,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                 .build())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenReturn(matchingDefendant);
@@ -246,7 +246,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
         pcsCaseEntity.getClaims().add(claimEntity);
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false);
@@ -271,7 +271,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .claims(Collections.emptyList())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false);
@@ -314,7 +314,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         pcsCaseEntity.getClaims().add(claimEntity);
         pcsCaseEntity.getParties().add(matchingDefendant);
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(differentUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false);
@@ -451,7 +451,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                 .build())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenReturn(matchingDefendant);
@@ -521,7 +521,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
                 .build())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenReturn(matchingDefendant);
@@ -603,7 +603,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .possessionClaimResponse(draftResponse)
             .build();
 
-        lenient().when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        lenient().when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(true); // Draft already exists - should NOT seed
         when(draftCaseDataService.getUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))

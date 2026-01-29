@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

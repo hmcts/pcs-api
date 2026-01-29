@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
+package uk.gov.hmcts.reform.pcs.ccd.service.party;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
