@@ -579,7 +579,7 @@ export class CreateCaseAction implements IAction {
     if (rentArrearsData.rentPaidByOthersOption == rentArrears.yesRadioOption) {
       await performAction('check', {question: rentArrears.whereHaveThePaymentsComeFromHiddenQuestion, option: rentArrearsData.paymentOptions});
       if ((rentArrearsData.paymentOptions as Array<string>).includes(rentArrears.otherHiddenCheckBox)) {
-        await performAction('inputText', rentArrears.paymentSourceHiddenTextLabel, rentArrears.PaymentSourceHiddenTextInput);
+        await performAction('inputText', rentArrears.paymentSourceHiddenTextLabel, rentArrears.paymentSourceHiddenTextInput);
       }
       await performAction('clickButton', rentArrears.continueButton);
     }
