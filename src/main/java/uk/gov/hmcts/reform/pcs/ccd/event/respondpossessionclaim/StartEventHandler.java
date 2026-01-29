@@ -21,12 +21,20 @@ import java.util.UUID;
 /**
  * Start event handler for RespondPossessionClaim.
  *
- * <p>Orchestrates the initialization of a defendant's response:
- * 1. Checks for existing draft (returns if found)
- * 2. Loads case from database (ONCE)
- * 3. Validates defendant access
- * 4. Maps entity data to domain response
- * 5. Initializes new draft
+ * <p>Handles two distinct flows:
+ *
+ * <p><b>First Time (No Draft):</b>
+ * 1. Load case entity from database (case, parties, tenancy, property address)
+ * 2. Validate defendant has access to this case
+ * 3. Map database entities to domain objects (claimantProvided, defendantProvided)
+ * 4. Create new draft in database with empty response fields
+ * 5. Return populated case data to CCD UI
+ *
+ * <p><b>Second Time (Draft Exists):</b>
+ * 1. Check if draft exists for this user
+ * 2. Load saved draft from database (preserves user's previous answers)
+ * 3. Return merged draft immediately (skips all DB loading and mapping)
+ * 4. User continues where they left off
  */
 @Component
 @Slf4j
@@ -44,23 +52,27 @@ public class StartEventHandler implements Start<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         PCSCase caseDataFromPayload = eventPayload.caseData();
 
-        // Early return if draft already exists
+        // SECOND TIME FLOW: If draft exists, load it and return immediately (skips all DB loading below)
+        // Queries: SELECT case_data FROM draft.draft_case_data WHERE case_reference = ? AND idam_user_id = ?
+        // Returns: Saved draft with user's previous answers preserved
         if (draftService.exists(caseReference)) {
             return draftService.load(caseReference, caseDataFromPayload);
         }
 
+        // FIRST TIME FLOW: No draft exists, populate from database and create new draft
+
         UUID authenticatedUserId = getCurrentUserId();
 
-        // Load case from database (ONCE - previously loaded 3 times!)
+        // Step 1: Load case entity with all related data (case, claims, parties, tenancy, property address)
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
-        // Validate defendant access (throws CaseAccessException if no access)
+        // Step 2: Validate defendant has access to this case (throws CaseAccessException if no access)
         PartyEntity defendantEntity = accessValidator.validateAndGetDefendant(caseEntity, authenticatedUserId);
 
-        // Map entity data to domain response
+        // Step 3: Map database entities to domain objects (claimantProvided, defendantProvided with empty responses)
         PossessionClaimResponse initialResponse = responseMapper.mapFrom(caseEntity, defendantEntity);
 
-        // Initialize and return draft
+        // Step 4: Save to draft table and return populated case data
         return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
     }
 
