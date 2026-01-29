@@ -47,7 +47,7 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
             .done()
             .label("underlesseeMortgagee-add-additional", """
                 ---
-                <h2 class="govuk-heading-m">Additional underlessee or mortgagee?</h2>
+                <h2 class="govuk-heading-m">Additional underlessees or mortgagees</h2>
                 """)
             .mandatory(PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
             .list(PCSCase::getAdditionalUnderlesseeOrMortgagee,
