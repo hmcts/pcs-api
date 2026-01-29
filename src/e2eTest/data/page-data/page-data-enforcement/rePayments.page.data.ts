@@ -1,6 +1,7 @@
 export const rePayments = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Repayments',
+  mainHeaderWrit: 'Repayments (placeholder)',
   rePaymentQuestion: 'How much do you want the defendants to repay?',
   rePaymentRadioOptions: {
     all: 'All of it',
