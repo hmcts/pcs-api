@@ -10,7 +10,7 @@ export default {
   'resumePossessionClaimtenancyLicenceDetails':'tenancyLicenceDetails',
   'resumePossessionClaimgroundForPossessionRentArrears':'groundForPossessionRentArrears',
   'resumePossessionClaimintroductoryDemotedOrOtherGroundsForPossession':'introductoryDemotedOrOtherGroundsForPossession',
-  'resumePossessionClaimpreActionProtocol':'preactionProtocol',
+  'resumePossessionClaimpreActionProtocol':'preActionProtocol',
   'resumePossessionClaimmediationAndSettlement': 'mediationAndSettlement',
   'resumePossessionClaimcheckingNotice': 'checkingNotice',
   'resumePossessionClaimwalesCheckingNotice': 'checkingNotice',
@@ -23,14 +23,13 @@ export default {
   'resumePossessionClaimdailyRentAmount': 'dailyRentAmount',
   'resumePossessionClaimmoneyJudgment': 'moneyJudgment',
   'resumePossessionClaimrentArrears': 'rentArrears',
-  'resumePossessionClaimadditionalReasonsForPossession': 'additionalReasonsForPossession',
-  'resumePossessionClaimunderlesseeMortgageeEntitledToClaimRelief': 'underlesseeMortgageeEntitledToClaimRelief',
-  'resumePossessionClaimwantToUploadDocuments': 'wantToUploadDocuments',
+  'resumePossessionClaimadditionalReasonsForPossession': 'additionalReasonsForPossession',//failed
+  'resumePossessionClaimunderlesseeMortgageeEntitledToClaimRelief': 'underlesseeMortgageeEntitledToClaimRelief',//passed
+  'resumePossessionClaimwantToUploadDocuments': 'wantToUploadDocuments',//failed
   'resumePossessionClaimuploadAdditionalDocuments': 'uploadAdditionalDocuments',
-  'resumePossessionClaimgeneralApplication': 'generalApplication',
-  'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',
-  'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',
-  'resumePossessionClaimstatementOfTruth': 'statementOfTruth',
-  'resumePossessionClaim/confirm': 'payClaimFee',
-  //claimSaved
+  'resumePossessionClaimgeneralApplication': 'generalApplication',//failed
+  'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',//passed
+  'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',//failed
+  'resumePossessionClaimstatementOfTruth': 'statementOfTruth',//failed
+  'confirm': 'payClaimFee',
 };

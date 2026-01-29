@@ -578,9 +578,9 @@ export class CreateCaseAction implements IAction {
       option: rentArrearsData.rentPaidByOthersOption
     });
     if (rentArrearsData.rentPaidByOthersOption == rentArrears.yesRadioOption) {
-      await performAction('check', {question: rentArrears.whereHaveThePaymentsComeFromQuestion, option: rentArrearsData.paymentOptions});
-      if ((rentArrearsData.paymentOptions as Array<string>).includes(rentArrears.otherCheckBox)) {
-        await performAction('inputText', rentArrears.paymentSourceTextLabel, rentArrears.otherPaymentOptionTextInput);
+      await performAction('check', {question: rentArrears.whereHaveThePaymentsComeFromHiddenQuestion, option: rentArrearsData.paymentOptions});
+      if ((rentArrearsData.paymentOptions as Array<string>).includes(rentArrears.otherHiddenCheckBox)) {
+        await performAction('inputText', rentArrears.paymentSourceHiddenTextLabel, rentArrears.PaymentSourceHiddenTextInput);
       }
       await performAction('clickButton', rentArrears.continueButton);
     }
@@ -680,8 +680,8 @@ export class CreateCaseAction implements IAction {
         await performActions(
           'Add Document',
           ['uploadFile', document.fileName],
-          ['select', uploadAdditionalDocuments.typeOfDocumentTextLabel, document.type],
-          ['inputText', uploadAdditionalDocuments.shortDescriptionTextLabel, document.description]
+          ['select', uploadAdditionalDocuments.typeOfDocumentHiddenTextLabel, document.type],
+          ['inputText', uploadAdditionalDocuments.shortDescriptionHiddenTextInput, document.description]
         );
       }
       await performAction('clickButton', uploadAdditionalDocuments.continueButton);
@@ -755,7 +755,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: additionalReasonsForPossession.IsThereAnyOtherInformationQuestion, option: reasons});
     if(reasons == additionalReasonsForPossession.yesRadioOption){
-      await performAction('inputText', additionalReasonsForPossession.AdditionalReasonsForPossessionTextLabel, additionalReasonsForPossession.additionalReasonsForPossessionSampleTextInput);
+      await performAction('inputText', additionalReasonsForPossession.AdditionalReasonsForPossessionHiddenTextLabel, additionalReasonsForPossession.AdditionalReasonsForPossessionHiddenTextInput);
     }
     await performAction('clickButton', additionalReasonsForPossession.continueButton);
   }
