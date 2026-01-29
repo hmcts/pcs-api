@@ -14,12 +14,12 @@ export const rentArrears = {
   addDocumentSubHeader: `Add document`,
   addNewButton: `Add new`,
   uploadADocumentToTheSystemParagraph: `Upload a document to the system`,
-  documentHiddenSubHeader: 'Document',//Recheck
-  documentHiddenLabel: 'Document',//Recheck
+  documentHiddenSubHeader: 'Document',
+  documentHiddenLabel: 'Document',
   removeHiddenButton: `Remove`,
   chooseFileHiddenButton: `Choose file`,
   cancelUploadHiddenButton: `Cancel upload`,
-  noFileChosenHiddenTextLabel: `No file chosen`,//Recheck-not on figma
+  noFileChosenHiddenTextLabel: `No file chosen`,
   rentArrearsSubHeader: `Rent arrears`,
   howMuchAreTheTotalRentArrearsAsShownOnTheRentStatementLabel: `How much are the total rent arrears as shown on the rent statement?`,
   totalRentArrearsTextLabel: `Total rent arrears`,

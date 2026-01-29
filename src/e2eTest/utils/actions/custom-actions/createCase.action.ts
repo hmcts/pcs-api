@@ -760,9 +760,9 @@ export class CreateCaseAction implements IAction {
   private async selectAdditionalReasonsForPossession(reasons: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('clickRadioButton', {question: additionalReasonsForPossession.IsThereAnyOtherInformationQuestion, option: reasons});
+    await performAction('clickRadioButton', {question: additionalReasonsForPossession.isThereAnyOtherInformationQuestion, option: reasons});
     if(reasons == additionalReasonsForPossession.yesRadioOption){
-      await performAction('inputText', additionalReasonsForPossession.AdditionalReasonsForPossessionHiddenTextLabel, additionalReasonsForPossession.AdditionalReasonsForPossessionHiddenTextInput);
+      await performAction('inputText', additionalReasonsForPossession.additionalReasonsForPossessionHiddenTextLabel, additionalReasonsForPossession.additionalReasonsForPossessionHiddenTextInput);
     }
     await performAction('clickButton', additionalReasonsForPossession.continueButton);
   }
