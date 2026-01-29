@@ -40,6 +40,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
+  defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
@@ -77,6 +78,7 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 test.afterEach(async () => {
+  defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
   if (caseInfo.id) {
