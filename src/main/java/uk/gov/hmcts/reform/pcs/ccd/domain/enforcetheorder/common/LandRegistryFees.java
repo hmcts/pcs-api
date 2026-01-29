@@ -33,3 +33,4 @@ public class LandRegistryFees {
     )
     private String amountOfLandRegistryFees;
 }
+
