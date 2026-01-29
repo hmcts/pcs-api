@@ -1,7 +1,6 @@
 export const landRegistryFees = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Land Registry fees',
-  mainHeaderWrit: 'Land Registry fees (placeholder)',
   landRegistryFeeQuestion: 'Have you paid any Land Registry fees?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
