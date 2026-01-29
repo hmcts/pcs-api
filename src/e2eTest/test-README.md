@@ -2,7 +2,7 @@
 
 ## 1. Framework Overview
 
-A structured, maintainable test automation solution built on Playwright that:
+A structured, maintainable test automation solution built on Playwright that::
 
 - Implements Pattern-matching
 - Separates test logic from implementation details
