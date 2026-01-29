@@ -1,25 +1,29 @@
 import { expect, test } from '@playwright/test';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
-import {
-  caseSummary,
-  signInOrCreateAnAccount,
-  user
-} from '@data/page-data';
+import { caseSummary } from '@data/page-data';
 import {
   nameAndAddressForEviction,
   youNeedPermission,
   yourApplication,
   confirmHCEOHired,
   yourHCEO,
-  theNICEWillChoose
+  theNICEWillChoose,
+  landRegistryFees,
+  legalCosts,
+  moneyOwed,
+  rePayments
 } from '@data/page-data/page-data-enforcement';
+import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 
-test.beforeEach(async ({ page },testInfo) => {
+test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
+  moneyMap.clear();
+  fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
     await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
     await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayloadNoDefendants });
@@ -45,20 +49,21 @@ test.beforeEach(async ({ page },testInfo) => {
       payLoad: submitCaseApiData.submitCasePayload
     });
   }
-  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/PCS-${process.env.CHANGE_ID}/${process.env.CASE_NUMBER}#Summary`);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton,
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton,
-  });
+  await performAction('navigateToUrl', `${process.env.MANAGE_CASE_BASE_URL}/cases/case-details/PCS/${process.env.CHANGE_ID ? `PCS-${process.env.CHANGE_ID}` : 'PCS'}/${process.env.CASE_NUMBER}#Summary`);
+  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
   await expect(async () => {
     await page.waitForURL(`${process.env.MANAGE_CASE_BASE_URL}/**/**/**/**/**#Summary`);
   }).toPass({
     timeout: VERY_LONG_TIMEOUT,
   });
+});
+
+test.afterEach(async () => {
+  moneyMap.clear();
+  fieldsMap.clear();
+  if (caseInfo.id) {
+    await performAction('deleteCaseRole', '[CREATOR]');
+  }
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
@@ -132,6 +137,59 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         label: yourHCEO.nameOfYourHCEOLabel,
         input: yourHCEO.nameOfYourHCEOInput,
       });
+      await performValidation('mainHeader', moneyOwed.mainHeaderWrit);
+      await performAction('clickButton', moneyOwed.continueButton);
+      await performValidation('mainHeader', legalCosts.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.three,
+        inputArray: legalCosts.errorValidationField.errorRadioOption,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        button: legalCosts.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: legalCosts.errorValidation,
+        validationType: legalCosts.errorValidationType.five,
+        inputArray: legalCosts.errorValidationField.errorMoneyField,
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        option2: legalCosts.noRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        button: legalCosts.continueButton
+      });
+      await performAction('provideLegalCosts', {
+        question: legalCosts.reclaimLegalCostsQuestion,
+        option: legalCosts.yesRadioOption,
+        label: legalCosts.howMuchYouWantToReclaimTextLabel,
+        input: legalCosts.howMuchYouWantToReclaimTextInput,
+        nextPage: landRegistryFees.mainHeader
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: landRegistryFees.errorValidation,
+        validationType: landRegistryFees.errorValidationType.three,
+        inputArray: landRegistryFees.errorValidationField.errorRadioOption,
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        button: landRegistryFees.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: landRegistryFees.errorValidation,
+        validationType: landRegistryFees.errorValidationType.five,
+        inputArray: landRegistryFees.errorValidationField.errorMoneyField,
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        option2: landRegistryFees.noRadioOption,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        button: landRegistryFees.continueButton
+      });
+      await performAction('provideLandRegistryFees', {
+        question: landRegistryFees.landRegistryFeeQuestion,
+        option: landRegistryFees.yesRadioOption,
+        label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+        input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
+        nextPage: rePayments.mainHeaderWrit
+      });
     });
 
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] @PR @regression', async () => {
@@ -154,6 +212,24 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       option: confirmHCEOHired.noRadioOption,
     });
     await performValidation('mainHeader', theNICEWillChoose.mainHeader);
+    await performAction('clickButton', theNICEWillChoose.continueButton);
+    await performValidation('mainHeader', moneyOwed.mainHeaderWrit);
+    await performAction('clickButton', moneyOwed.continueButton);
+    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performAction('provideLegalCosts', {
+      question: legalCosts.reclaimLegalCostsQuestion,
+      option: legalCosts.noRadioOption,
+      label: legalCosts.howMuchYouWantToReclaimTextLabel,
+      input: legalCosts.howMuchYouWantToReclaimTextInput,
+      nextPage: landRegistryFees.mainHeader
+    });
+    await performAction('provideLandRegistryFees', {
+      question: landRegistryFees.landRegistryFeeQuestion,
+      option: landRegistryFees.noRadioOption,
+      label: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextLabel,
+      input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
+      nextPage: rePayments.mainHeaderWrit
+    });
   });
 
   test('Writ - Apply for a Writ of Possession [General application journey]', {

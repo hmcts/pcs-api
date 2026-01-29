@@ -2,19 +2,24 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.PageConfigurerHelper.verifyAndCount;
 
 @ExtendWith(MockitoExtension.class)
 class WritPageConfigurerTest extends BasePageTest {
@@ -33,16 +38,25 @@ class WritPageConfigurerTest extends BasePageTest {
 
         // When
         writPageConfigurer.configurePages(pageBuilder);
-        InOrder inOrder = Mockito.inOrder(pageBuilder);
 
         // Then
-        inOrder.verify(pageBuilder).add(isA(NameAndAddressForEvictionWritPage.class));
-        inOrder.verify(pageBuilder).add(isA(ChangeNameAddressWritPage.class));
-        inOrder.verify(pageBuilder).add(isA(ConfirmHCEOfficerPage.class));
-        inOrder.verify(pageBuilder).add(hceOfficerDetailsPage);
-        inOrder.verify(pageBuilder).add(isA(EnforcementOfficerSelectionPage.class));
-        inOrder.verify(pageBuilder).add(isA(AmountDefendantOwesPage.class));
+        ArgumentCaptor<CcdPageConfiguration> pageCaptor = ArgumentCaptor.forClass(CcdPageConfiguration.class);
+        InOrder inOrder = Mockito.inOrder(pageBuilder);
+        Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
+        AtomicInteger verificationCount = new AtomicInteger(0);
 
+        verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, ChangeNameAddressWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, ConfirmHCEOfficerPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, hceOfficerDetailsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, AmountDefendantOwesPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LandRegistryFeesPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, RepaymentsPlaceholder.class, verificationCount);
+
+        int numberOfPages = pageCaptor.getAllValues().size();
+        assertThat(verificationCount.get()).isEqualTo(numberOfPages);
 
         verifyNoMoreInteractions(pageBuilder);
     }
