@@ -18,6 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -28,8 +33,11 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 @ExtendWith(MockitoExtension.class)
 class ClaimServiceTest {
@@ -43,14 +51,21 @@ class ClaimServiceTest {
     @Mock
     private HousingActWalesService housingActWalesService;
     @Mock
+    private RentArrearsService rentArrearsService;
+    @Mock
+    private NoticeOfPossessionService noticeOfPossessionService;
+    @Mock
+    private StatementOfTruthService statementOfTruthService;
+    @Mock
     private PCSCase pcsCase;
 
     private ClaimService claimService;
 
     @BeforeEach
     void setUp() {
-        claimService = new ClaimService(claimRepository, claimGroundService,
-                                        possessionAlternativesService, housingActWalesService);
+        claimService = new ClaimService(claimRepository, claimGroundService, possessionAlternativesService,
+                                        housingActWalesService, rentArrearsService, noticeOfPossessionService,
+                                        statementOfTruthService);
     }
 
     @Test
@@ -195,6 +210,91 @@ class ClaimServiceTest {
 
         // Then
         assertThat(createdClaimEntity.getClaimantType()).isEqualTo(claimantType);
+    }
+
+    @Test
+    void shouldSetAlternativesToPossession() {
+        // Given
+        PossessionAlternativesEntity possessionAlternativesEntity = mock(PossessionAlternativesEntity.class);
+        when(possessionAlternativesService.createPossessionAlternativesEntity(pcsCase))
+            .thenReturn(possessionAlternativesEntity);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getPossessionAlternativesEntity()).isEqualTo(possessionAlternativesEntity);
+    }
+
+    @Test
+    void shouldSetWalesHousingActForWalesProperties() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+
+        HousingActWalesEntity housingActWalesEntity = mock(HousingActWalesEntity.class);
+        when(housingActWalesService.createHousingActWalesEntity(pcsCase))
+            .thenReturn(housingActWalesEntity);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getHousingActWales()).isEqualTo(housingActWalesEntity);
+    }
+
+    @Test
+    void shouldNotSetWalesHousingActForNonWalesProperties() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getHousingActWales()).isNull();
+        verify(housingActWalesService, never()).createHousingActWalesEntity(pcsCase);
+    }
+
+    @Test
+    void shouldSetRentArrears() {
+        // Given
+        RentArrearsEntity rentArrearsEntity = mock(RentArrearsEntity.class);
+        when(rentArrearsService.createRentArrearsEntity(pcsCase))
+            .thenReturn(rentArrearsEntity);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getRentArrears()).isEqualTo(rentArrearsEntity);
+    }
+
+    @Test
+    void shouldSetNoticeOfPossession() {
+        // Given
+        NoticeOfPossessionEntity noticeOfPossessionEntity = mock(NoticeOfPossessionEntity.class);
+        when(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase))
+            .thenReturn(noticeOfPossessionEntity);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getNoticeOfPossession()).isEqualTo(noticeOfPossessionEntity);
+    }
+
+    @Test
+    void shouldSetStatementOfTruth() {
+        // Given
+        StatementOfTruthEntity statementOfTruthEntity = mock(StatementOfTruthEntity.class);
+        when(statementOfTruthService.createStatementOfTruthEntity(pcsCase))
+            .thenReturn(statementOfTruthEntity);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getStatementOfTruth()).isEqualTo(statementOfTruthEntity);
     }
 
     private static Stream<Arguments> claimantTypeScenarios() {

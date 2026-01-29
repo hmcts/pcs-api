@@ -38,8 +38,6 @@ class PcsCaseServiceTest {
     private PcsCaseRepository pcsCaseRepository;
     @Mock
     private PcsCaseMergeService pcsCaseMergeService;
-    @Mock
-    private TenancyLicenceService tenancyLicenceService;
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
 
@@ -49,12 +47,10 @@ class PcsCaseServiceTest {
     void setUp() {
         MapperConfig config = new MapperConfig();
         modelMapper = spy(config.modelMapper());
-        tenancyLicenceService = mock(TenancyLicenceService.class);
         underTest = new PcsCaseService(
             pcsCaseRepository,
             pcsCaseMergeService,
-            modelMapper,
-            tenancyLicenceService
+            modelMapper
         );
     }
 

@@ -29,7 +29,10 @@ import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -59,6 +62,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final RentDetailsView rentDetailsView;
     private final AlternativesToPossessionView alternativesToPossessionView;
     private final HousingActWalesView housingActWalesView;
+    private final RentArrearsView rentArrearsView;
+    private final NoticeOfPossessionView noticeOfPossessionView;
+    private final StatementOfTruthView statementOfTruthView;
+
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -94,9 +101,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .noticeServed(pcsCaseEntity.getLegacyTenancyLicence() != null
-                && pcsCaseEntity.getLegacyTenancyLicence().getNoticeServed() != null
-                ? YesOrNo.from(pcsCaseEntity.getLegacyTenancyLicence().getNoticeServed()) : null)
             .allClaimants(partyMap.get(PartyRole.CLAIMANT))
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
@@ -110,6 +114,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
         alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         housingActWalesView.setCaseFields(pcsCase, pcsCaseEntity);
+
+        rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
+        noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
+        statementOfTruthView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -233,13 +241,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                            .build())
                 .build())
             .collect(Collectors.toList());
-    }
-
-    private static String poundsToPence(java.math.BigDecimal pounds) {
-        if (pounds == null) {
-            return null;
-        }
-        return pounds.movePointRight(2).toPlainString();
     }
 
     private void mapBasicClaimFields(PCSCase pcsCase, ClaimEntity claim) {

@@ -33,7 +33,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
 import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -77,6 +80,13 @@ class PCSCaseViewTest {
     private AlternativesToPossessionView alternativesToPossessionView;
     @Mock
     private HousingActWalesView housingActWalesView;
+    @Mock
+    private RentArrearsView rentArrearsView;
+    @Mock
+    private NoticeOfPossessionView noticeOfPossessionView;
+    @Mock
+    private StatementOfTruthView statementOfTruthView;
+
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -89,10 +99,9 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
-        underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                                    modelMapper, draftCaseDataService, caseTitleService,
-                                    tenancyLicenceView, rentDetailsView, alternativesToPossessionView,
-                                    housingActWalesView
+        underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
+                                    caseTitleService, tenancyLicenceView, rentDetailsView, alternativesToPossessionView,
+                                    housingActWalesView, rentArrearsView, noticeOfPossessionView, statementOfTruthView
         );
     }
 
@@ -408,6 +417,9 @@ class PCSCaseViewTest {
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(alternativesToPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(housingActWalesView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     private static Stream<Arguments> complexClaimFieldsScenarios() {
