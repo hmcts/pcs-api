@@ -108,7 +108,7 @@ class PossessionClaimResponseMapperTest {
         ClaimantProvidedInfo claimantProvided = result.getClaimantProvided();
         assertThat(claimantProvided.getParty().getFirstName()).isEqualTo("John");
         assertThat(claimantProvided.getParty().getLastName()).isEqualTo("Doe");
-        assertThat(claimantProvided.getParty().getOrgName()).isEqualTo("Housing Association Ltd");
+        assertThat(claimantProvided.getClaimantOrg()).isEqualTo("Housing Association Ltd");
         assertThat(claimantProvided.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
         assertThat(claimantProvided.getTenancyType()).isEqualTo("Assured tenancy");
         assertThat(claimantProvided.getTenancyStartDate()).isEqualTo(LocalDate.of(2020, 1, 1));
@@ -554,7 +554,7 @@ class PossessionClaimResponseMapperTest {
         PossessionClaimResponse result = underTest.mapFrom(caseEntity, PartyEntity.builder().build());
 
         // Then
-        assertThat(result.getClaimantProvided().getParty().getOrgName()).isEqualTo("Test Landlord Ltd");
+        assertThat(result.getClaimantProvided().getClaimantOrg()).isEqualTo("Test Landlord Ltd");
     }
 
     @Test
@@ -635,8 +635,8 @@ class PossessionClaimResponseMapperTest {
             .isEqualTo(claimantParty.getAddress())
             .isEqualTo(expectedAddress);
 
-        // Additional verification: claimantProvided has routing fields
-        assertThat(claimantParty.getOrgName()).isEqualTo("Test Housing Association Ltd");
+        // Additional verification: claimantProvided has routing fields and claimant org
+        assertThat(result.getClaimantProvided().getClaimantOrg()).isEqualTo("Test Housing Association Ltd");
         assertThat(claimantParty.getNameKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(claimantParty.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
         assertThat(claimantParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);

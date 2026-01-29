@@ -25,6 +25,9 @@ public class ClaimantProvidedInfo {
     private Party party;
 
     @CCD
+    private String claimantOrg;
+
+    @CCD
     private LegislativeCountry legislativeCountry;
 
     @CCD

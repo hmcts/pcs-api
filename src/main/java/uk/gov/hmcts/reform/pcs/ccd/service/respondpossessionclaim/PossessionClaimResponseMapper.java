@@ -79,10 +79,11 @@ public class PossessionClaimResponseMapper {
         AddressUK contactAddress,
         String claimantOrgName
     ) {
-        Party party = buildPartyFromDefendantEntity(defendantEntity, contactAddress, claimantOrgName);
+        Party party = buildPartyFromDefendantEntity(defendantEntity, contactAddress);
 
         return ClaimantProvidedInfo.builder()
             .party(party)
+            .claimantOrg(claimantOrgName)
             .legislativeCountry(caseEntity.getLegislativeCountry())
             .tenancyType(extractTenancyType(caseEntity))
             .tenancyStartDate(extractTenancyStartDate(caseEntity))
@@ -101,8 +102,7 @@ public class PossessionClaimResponseMapper {
         // Reuse the same Party builder as claimantProvided to ensure all fields match on first load
         Party defendantEditableParty = buildPartyFromDefendantEntity(
             defendantEntity,
-            contactAddress,
-            claimantOrgName
+            contactAddress
         );
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
@@ -130,13 +130,11 @@ public class PossessionClaimResponseMapper {
 
     private Party buildPartyFromDefendantEntity(
         PartyEntity defendantEntity,
-        AddressUK contactAddress,
-        String claimantOrgName
+        AddressUK contactAddress
     ) {
         return Party.builder()
             .firstName(defendantEntity.getFirstName())
             .lastName(defendantEntity.getLastName())
-            .orgName(claimantOrgName)
             .nameKnown(defendantEntity.getNameKnown())
             .emailAddress(defendantEntity.getEmailAddress())
             .address(contactAddress)
