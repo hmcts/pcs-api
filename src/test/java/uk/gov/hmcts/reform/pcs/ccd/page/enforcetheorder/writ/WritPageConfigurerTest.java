@@ -6,7 +6,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -51,7 +50,7 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, ConfirmHCEOfficerPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, hceOfficerDetailsPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, AmountDefendantOwesPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, MoneyOwedPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LandRegistryFeesPage.class, verificationCount);
 
