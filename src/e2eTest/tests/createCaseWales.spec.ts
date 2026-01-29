@@ -9,7 +9,6 @@ import {
   addressCheckYourAnswers,
   addressDetails,
   claimantDetailsWales,
-  detailsOfRentArrears,
   occupationContractOrLicenceDetailsWales,
   prohibitedConductStandardContractWales,
   reasonsForPossession,
@@ -18,8 +17,6 @@ import {
   checkYourAnswers,
   propertyDetails,
   underlesseeOrMortgageeDetails,
-  statementOfTruth,
-  housingPossessionClaim,
   home
 } from '@data/page-data';
 import {

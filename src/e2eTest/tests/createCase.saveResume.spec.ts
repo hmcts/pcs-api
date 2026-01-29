@@ -9,19 +9,12 @@ import {
   addressCheckYourAnswers,
   addressDetails,
   checkYourAnswers,
-  completeYourClaim,
-  detailsOfRentArrears,
-  languageUsed,
   propertyDetails,
   reasonsForPossession,
   resumeClaim,
   resumeClaimOptions,
-  statementOfTruth,
-  underlesseeOrMortgageeEntitledToClaim,
   user,
-  wantToUploadDocuments,
   whatAreYourGroundsForPossession,
-  housingPossessionClaim,
   home
 } from '@data/page-data';
 import {

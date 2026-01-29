@@ -9,7 +9,6 @@ import {
   addressCheckYourAnswers,
   addressDetails,
   checkYourAnswers,
-  completeYourClaim,
   housingAct,
   propertyDetails,
   reasonsForPossession,
@@ -19,11 +18,7 @@ import {
   rentArrearsOrBreachOfTenancy,
   statementOfExpressTerms,
   underlesseeOrMortgageeDetails,
-  underlesseeOrMortgageeEntitledToClaim,
-  uploadAdditionalDocs,
-  wantToUploadDocuments,
   whatAreYourGroundsForPossession,
-  detailsOfRentArrears,
   home
 } from '@data/page-data';
 import {
@@ -157,8 +152,8 @@ test.describe('[Create Case - England]', async () => {
      await performAction('provideDetailsOfRentArrears', {
        files: ['rentArrears.pdf'],
        rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: rentArrears.yesRadioOption,
-      paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
+       rentPaidByOthersOption: rentArrears.yesRadioOption,
+       paymentOptions: [rentArrears.universalCreditCheckBox, rentArrears.otherCheckBox]
      });
      await performValidation('mainHeader', moneyJudgment.mainHeader);
      await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
