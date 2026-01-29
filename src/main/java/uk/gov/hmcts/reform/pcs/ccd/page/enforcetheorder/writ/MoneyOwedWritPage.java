@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
-public class MoneyOwedPage implements CcdPageConfiguration {
+public class MoneyOwedWritPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -42,6 +42,9 @@ public class MoneyOwedPage implements CcdPageConfiguration {
                 """
             )
             .mandatory(MoneyOwedByDefendants::getAmountOwed)
+            .done()
+            .done()
+            .done()
             .label("amountDefendantOwes-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
