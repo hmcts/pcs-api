@@ -55,9 +55,6 @@ public class ClaimGroundService {
         if (LegislativeCountry.WALES.equals(pcsCase.getLegislativeCountry())) {
             OccupationLicenceDetailsWales licenceDetails = pcsCase.getOccupationLicenceDetailsWales();
             OccupationLicenceTypeWales licenceType = licenceDetails.getOccupationLicenceTypeWales();
-            if (licenceType == null) {
-                throw new IllegalArgumentException("Licence type must be set for Wales possession claims");
-            }
 
             return switch (licenceType) {
                 case SECURE_CONTRACT -> walesSecureClaimGroundService.createClaimGroundEntities(pcsCase);
@@ -66,12 +63,7 @@ public class ClaimGroundService {
         }
 
         TenancyLicenceDetails tenancyDetails = pcsCase.getTenancyLicenceDetails();
-        TenancyLicenceType tenancyLicenceType = tenancyDetails != null
-            ? tenancyDetails.getTypeOfTenancyLicence() : null;
-
-        if (tenancyLicenceType == null) {
-            throw new IllegalArgumentException("Tenancy type must be set for non-Wales possession claims");
-        }
+        TenancyLicenceType tenancyLicenceType = tenancyDetails.getTypeOfTenancyLicence();
 
         return switch (tenancyLicenceType) {
             case ASSURED_TENANCY -> getAssuredTenancyGroundsWithReason(pcsCase);

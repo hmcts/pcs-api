@@ -67,7 +67,6 @@ public class WalesSecureClaimGroundService {
         }
     }
 
-
     private static void addSecureDiscretionaryGroundEntities(List<ClaimGroundEntity> claimGroundEntities,
                                                              Set<SecureContractDiscretionaryGroundsWales>
                                                                  discretionaryGrounds,
