@@ -716,7 +716,7 @@ export class CreateCaseAction implements IAction {
     if (params?.clickLink === true) {
       await performAction('clickButton', payClaimFee.payTheClaimFeeLink);
     }
-    await performAction('clickButton', payClaimFee.closeAndReturnToCaseButton);
+    await performAction('clickButton', payClaimFee.closeAndReturnToCaseDetailsButton);
   }
 
   private async enterTestAddressManually(page: Page, address: actionRecord) {
