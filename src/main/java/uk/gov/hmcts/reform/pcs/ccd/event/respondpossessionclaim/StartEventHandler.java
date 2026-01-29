@@ -16,8 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClai
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.UUID;
-
 /**
  * Start event handler for RespondPossessionClaim.
  *
@@ -54,29 +52,30 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
         // SECOND TIME FLOW: If draft exists, load it and return immediately (skips all DB loading below)
         // Queries: SELECT case_data FROM draft.draft_case_data WHERE case_reference = ? AND idam_user_id = ?
-        // Returns: Saved draft with user's previous answers preserved
+        // Merges saved draft into incoming payload:
+        //   - possessionClaimResponse: All user's saved data (claimantProvided + defendantProvided)
+        //   - hasUnsubmittedCaseData: YES (indicates draft exists)
+        //   - submitDraftAnswers: User's choice (NO for save draft, YES for final submit)
+        // This preserves defendant's partially completed responses and allows them to continue where they left off
         if (draftService.exists(caseReference)) {
             return draftService.load(caseReference, caseDataFromPayload);
         }
 
         // FIRST TIME FLOW: No draft exists, populate from database and create new draft
 
-        UUID authenticatedUserId = getCurrentUserId();
-
         // Step 1: Load case entity with all related data (case, claims, parties, tenancy, property address)
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
 
         // Step 2: Validate defendant has access to this case (throws CaseAccessException if no access)
-        PartyEntity defendantEntity = accessValidator.validateAndGetDefendant(caseEntity, authenticatedUserId);
+        PartyEntity defendantEntity = accessValidator.validateAndGetDefendant(
+            caseEntity,
+            securityContextService.getCurrentUserId()
+        );
 
         // Step 3: Map database entities to domain objects (claimantProvided, defendantProvided with empty responses)
         PossessionClaimResponse initialResponse = responseMapper.mapFrom(caseEntity, defendantEntity);
 
         // Step 4: Save to draft table and return populated case data
         return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
-    }
-
-    private UUID getCurrentUserId() {
-        return UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
     }
 }

@@ -87,7 +87,7 @@ class StartEventHandlerTest {
             .possessionClaimResponse(initialResponse)
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
@@ -124,7 +124,7 @@ class StartEventHandlerTest {
                 .build())
             .build();
 
-        lenient().when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        lenient().when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(true);
         when(draftService.load(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(existingDraft);
 
@@ -158,7 +158,7 @@ class StartEventHandlerTest {
             .uid(defendantUserId.toString())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
@@ -193,7 +193,7 @@ class StartEventHandlerTest {
             .uid(defendantUserId.toString())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
@@ -219,7 +219,7 @@ class StartEventHandlerTest {
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
@@ -244,7 +244,7 @@ class StartEventHandlerTest {
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
@@ -269,7 +269,7 @@ class StartEventHandlerTest {
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
@@ -302,7 +302,7 @@ class StartEventHandlerTest {
             .uid(defendantUserId.toString())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
@@ -338,7 +338,7 @@ class StartEventHandlerTest {
             .uid(defendantUserId.toString())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
@@ -373,7 +373,7 @@ class StartEventHandlerTest {
             .uid(defendantUserId.toString())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
@@ -408,7 +408,7 @@ class StartEventHandlerTest {
             .uid(defendantUserId.toString())
             .build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
         when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
