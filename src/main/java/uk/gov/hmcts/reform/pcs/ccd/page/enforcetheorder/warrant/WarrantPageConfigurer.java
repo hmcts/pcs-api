@@ -24,6 +24,9 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
     private final LandRegistryFeesPage landRegistryFeesPage;
     private final StatementOfTruthPage statementOfTruthPage;
     private final DefendantsDOBPage defendantsDOBPage;
+    private final MoneyOwedPage moneyOwedPage;
+    private final LegalCostsPage legalCostsPage;
+    private final RepaymentsPage repaymentsPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -48,10 +51,10 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
             .add(vulnerableAdultsChildrenPage)
             .add(propertyAccessDetailsPage)
             .add(additionalInformationPage)
-            .add(new MoneyOwedPage())
-            .add(new LegalCostsPage())
+            .add(moneyOwedPage)
+            .add(legalCostsPage)
             .add(landRegistryFeesPage)
-            .add(new RepaymentsPage())
+            .add(repaymentsPage)
             .add(new LanguageUsedPage())
             .add(new SuspendedOrderPage())
             .add(statementOfTruthPage);

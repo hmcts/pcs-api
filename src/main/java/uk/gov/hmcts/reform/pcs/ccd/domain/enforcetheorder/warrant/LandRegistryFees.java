@@ -9,7 +9,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -28,8 +31,8 @@ public class LandRegistryFees {
 
     @CCD(
         label = "How much did you spend on Land Registry fees?",
-        typeOverride = FieldType.MoneyGBP,
-        min = 1
+        typeOverride = FieldType.MoneyGBP
     )
-    private String amountOfLandRegistryFees;
+    @JacksonMoneyGBP
+    private BigDecimal amountOfLandRegistryFees;
 }
