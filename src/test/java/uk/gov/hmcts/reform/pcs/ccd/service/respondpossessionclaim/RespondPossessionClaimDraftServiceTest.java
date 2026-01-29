@@ -378,4 +378,291 @@ class RespondPossessionClaimDraftServiceTest {
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantProvided()).isNotNull();
     }
 
+    @Test
+    void shouldMergeDefendantProvidedWhenUserEditsOnlyFirstName() {
+        // Given - Existing draft with initial defendant data
+        uk.gov.hmcts.ccd.sdk.type.AddressUK initialAddress = uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
+            .addressLine1("123 Initial Street")
+            .postCode("SW1A 1AA")
+            .build();
+
+        Party initialParty = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .emailAddress("john@example.com")
+            .phoneNumber("07700900000")
+            .address(initialAddress)
+            .build();
+
+        ClaimantProvidedInfo claimantProvided = ClaimantProvidedInfo.builder()
+            .party(Party.builder().orgName("Housing Association Ltd").build())
+            .tenancyType("Assured tenancy")
+            .build();
+
+        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
+            .claimantProvided(claimantProvided)
+            .defendantProvided(DefendantProvided.builder()
+                .contactDetails(DefendantContactDetails.builder()
+                    .party(initialParty)
+                    .contactByPhone(YesOrNo.YES)
+                    .build())
+                .build())
+            .build();
+
+        PCSCase existingDraft = PCSCase.builder()
+            .possessionClaimResponse(existingDraftResponse)
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(existingDraft));
+
+        // Given - User edited ONLY firstName (UI sends back complete defendantProvided with updated firstName)
+        Party updatedParty = Party.builder()
+            .firstName("Jonathan")  // ← CHANGED
+            .lastName("Doe")        // ← UNCHANGED
+            .emailAddress("john@example.com")  // ← UNCHANGED
+            .phoneNumber("07700900000")  // ← UNCHANGED
+            .address(initialAddress)  // ← UNCHANGED
+            .build();
+
+        PossessionClaimResponse userSubmittedResponse = PossessionClaimResponse.builder()
+            .defendantProvided(DefendantProvided.builder()
+                .contactDetails(DefendantContactDetails.builder()
+                    .party(updatedParty)
+                    .contactByPhone(YesOrNo.YES)
+                    .build())
+                .build())
+            .build();
+
+        PCSCase userSubmittedData = PCSCase.builder()
+            .possessionClaimResponse(userSubmittedResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When
+        underTest.save(CASE_REFERENCE, userSubmittedData);
+
+        // Then - Verify merge happened correctly
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE),
+            pcsCaseCaptor.capture(),
+            eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
+
+        // Verify claimantProvided is UNCHANGED (read-only)
+        assertThat(savedResponse.getClaimantProvided()).isEqualTo(claimantProvided);
+        assertThat(savedResponse.getClaimantProvided().getParty().getOrgName())
+            .isEqualTo("Housing Association Ltd");
+
+        // Verify defendantProvided is REPLACED with user's edits
+        Party savedParty = savedResponse.getDefendantProvided().getContactDetails().getParty();
+        assertThat(savedParty.getFirstName()).isEqualTo("Jonathan"); // ← Updated
+        assertThat(savedParty.getLastName()).isEqualTo("Doe");  // ← Same
+        assertThat(savedParty.getEmailAddress()).isEqualTo("john@example.com");  // ← Same
+        assertThat(savedParty.getPhoneNumber()).isEqualTo("07700900000");  // ← Same
+        assertThat(savedParty.getAddress()).isEqualTo(initialAddress);  // ← Same
+    }
+
+    @Test
+    void shouldMergeDefendantProvidedWhenUserEditsOnlyAddress() {
+        // Given - Existing draft with initial defendant data
+        uk.gov.hmcts.ccd.sdk.type.AddressUK initialAddress = uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
+            .addressLine1("123 Initial Street")
+            .postCode("SW1A 1AA")
+            .build();
+
+        Party initialParty = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .emailAddress("john@example.com")
+            .phoneNumber("07700900000")
+            .address(initialAddress)
+            .build();
+
+        ClaimantProvidedInfo claimantProvided = ClaimantProvidedInfo.builder()
+            .party(Party.builder().orgName("Housing Association Ltd").build())
+            .tenancyType("Assured tenancy")
+            .build();
+
+        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
+            .claimantProvided(claimantProvided)
+            .defendantProvided(DefendantProvided.builder()
+                .contactDetails(DefendantContactDetails.builder()
+                    .party(initialParty)
+                    .contactByPhone(YesOrNo.YES)
+                    .build())
+                .build())
+            .build();
+
+        PCSCase existingDraft = PCSCase.builder()
+            .possessionClaimResponse(existingDraftResponse)
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(existingDraft));
+
+        // Given - User edited ONLY address (UI sends back complete defendantProvided with new address)
+        uk.gov.hmcts.ccd.sdk.type.AddressUK newAddress = uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
+            .addressLine1("456 New Street")  // ← CHANGED
+            .addressLine2("Apartment 10B")   // ← NEW
+            .postCode("W1A 1AA")             // ← CHANGED
+            .build();
+
+        Party updatedParty = Party.builder()
+            .firstName("John")       // ← UNCHANGED
+            .lastName("Doe")         // ← UNCHANGED
+            .emailAddress("john@example.com")  // ← UNCHANGED
+            .phoneNumber("07700900000")  // ← UNCHANGED
+            .address(newAddress)     // ← CHANGED
+            .build();
+
+        PossessionClaimResponse userSubmittedResponse = PossessionClaimResponse.builder()
+            .defendantProvided(DefendantProvided.builder()
+                .contactDetails(DefendantContactDetails.builder()
+                    .party(updatedParty)
+                    .contactByPhone(YesOrNo.YES)
+                    .build())
+                .build())
+            .build();
+
+        PCSCase userSubmittedData = PCSCase.builder()
+            .possessionClaimResponse(userSubmittedResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When
+        underTest.save(CASE_REFERENCE, userSubmittedData);
+
+        // Then - Verify merge happened correctly
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE),
+            pcsCaseCaptor.capture(),
+            eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
+
+        // Verify claimantProvided is UNCHANGED (read-only)
+        assertThat(savedResponse.getClaimantProvided()).isEqualTo(claimantProvided);
+        assertThat(savedResponse.getClaimantProvided().getParty().getOrgName())
+            .isEqualTo("Housing Association Ltd");
+
+        // Verify defendantProvided is REPLACED with user's edits
+        Party savedParty = savedResponse.getDefendantProvided().getContactDetails().getParty();
+        assertThat(savedParty.getFirstName()).isEqualTo("John");  // ← Same
+        assertThat(savedParty.getLastName()).isEqualTo("Doe");  // ← Same
+        assertThat(savedParty.getEmailAddress()).isEqualTo("john@example.com");  // ← Same
+        assertThat(savedParty.getPhoneNumber()).isEqualTo("07700900000");  // ← Same
+        assertThat(savedParty.getAddress()).isEqualTo(newAddress);  // ← Updated
+        assertThat(savedParty.getAddress().getAddressLine1()).isEqualTo("456 New Street");
+        assertThat(savedParty.getAddress().getAddressLine2()).isEqualTo("Apartment 10B");
+        assertThat(savedParty.getAddress().getPostCode()).isEqualTo("W1A 1AA");
+    }
+
+    @Test
+    void shouldReplaceEntireDefendantProvidedOnSave() {
+        // Given - Existing draft with defendant data including all 9 Party fields
+        uk.gov.hmcts.ccd.sdk.type.AddressUK initialAddress = uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
+            .addressLine1("123 Initial Street")
+            .postCode("SW1A 1AA")
+            .build();
+
+        Party initialParty = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .orgName("Housing Association Ltd")  // All 9 fields present on first load
+            .nameKnown(VerticalYesNo.YES)
+            .emailAddress("john@example.com")
+            .phoneNumber("07700900000")
+            .address(initialAddress)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
+            .build();
+
+        ClaimantProvidedInfo claimantProvided = ClaimantProvidedInfo.builder()
+            .party(Party.builder()
+                .orgName("Housing Association Ltd")
+                .nameKnown(VerticalYesNo.YES)
+                .build())
+            .tenancyType("Assured tenancy")
+            .build();
+
+        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
+            .claimantProvided(claimantProvided)
+            .defendantProvided(DefendantProvided.builder()
+                .contactDetails(DefendantContactDetails.builder()
+                    .party(initialParty)
+                    .contactByPhone(YesOrNo.YES)
+                    .build())
+                .build())
+            .build();
+
+        PCSCase existingDraft = PCSCase.builder()
+            .possessionClaimResponse(existingDraftResponse)
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(existingDraft));
+
+        // Given - User submits with updated firstName and lastName
+        Party updatedParty = Party.builder()
+            .firstName("Jonathan")  // ← CHANGED
+            .lastName("Smith")      // ← CHANGED
+            .orgName("Housing Association Ltd")  // Same
+            .nameKnown(VerticalYesNo.YES)  // Same (read-only routing flag)
+            .emailAddress("john@example.com")  // Same
+            .phoneNumber("07700900000")  // Same
+            .address(initialAddress)  // Same
+            .addressKnown(VerticalYesNo.YES)  // Same (read-only routing flag)
+            .addressSameAsProperty(VerticalYesNo.NO)  // Same (read-only routing flag)
+            .build();
+
+        PossessionClaimResponse userSubmittedResponse = PossessionClaimResponse.builder()
+            .defendantProvided(DefendantProvided.builder()
+                .contactDetails(DefendantContactDetails.builder()
+                    .party(updatedParty)
+                    .contactByPhone(YesOrNo.YES)
+                    .build())
+                .build())
+            .build();
+
+        PCSCase userSubmittedData = PCSCase.builder()
+            .possessionClaimResponse(userSubmittedResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When
+        underTest.save(CASE_REFERENCE, userSubmittedData);
+
+        // Then - Verify entire defendantProvided is replaced (not field-by-field merge)
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE),
+            pcsCaseCaptor.capture(),
+            eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
+
+        // Verify claimantProvided is UNCHANGED
+        assertThat(savedResponse.getClaimantProvided()).isEqualTo(claimantProvided);
+
+        // Verify defendantProvided is COMPLETELY REPLACED (not merged field-by-field)
+        DefendantProvided savedDefendantProvided = savedResponse.getDefendantProvided();
+        assertThat(savedDefendantProvided).isEqualTo(userSubmittedResponse.getDefendantProvided());
+
+        // Verify updated fields in the replaced defendantProvided
+        Party savedParty = savedDefendantProvided.getContactDetails().getParty();
+        assertThat(savedParty.getFirstName()).isEqualTo("Jonathan");  // ← Updated
+        assertThat(savedParty.getLastName()).isEqualTo("Smith");  // ← Updated
+        assertThat(savedParty.getOrgName()).isEqualTo("Housing Association Ltd");  // Same
+        assertThat(savedParty.getNameKnown()).isEqualTo(VerticalYesNo.YES);  // Same
+        assertThat(savedParty.getAddressKnown()).isEqualTo(VerticalYesNo.YES);  // Same
+        assertThat(savedParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);  // Same
+    }
+
 }

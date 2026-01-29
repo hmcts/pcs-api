@@ -557,6 +557,91 @@ class PossessionClaimResponseMapperTest {
         assertThat(result.getClaimantProvided().getParty().getOrgName()).isEqualTo("Test Landlord Ltd");
     }
 
+    @Test
+    void shouldPopulateBothPartiesWithSameValuesOnFirstLoad() {
+        // Given - Defendant data in database
+        UUID defendantUserId = UUID.randomUUID();
+
+        AddressEntity addressEntity = AddressEntity.builder()
+            .addressLine1("123 Test Street")
+            .addressLine2("Apartment 4B")
+            .postcode("SW1A 1AA")
+            .build();
+
+        PartyEntity defendantEntity = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("John")
+            .lastName("Doe")
+            .nameKnown(VerticalYesNo.YES)
+            .emailAddress("john.doe@example.com")
+            .phoneNumber("07700900123")
+            .phoneNumberProvided(VerticalYesNo.YES)
+            .address(addressEntity)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
+            .build();
+
+        PartyEntity claimantEntity = PartyEntity.builder()
+            .orgName("Test Housing Association Ltd")
+            .build();
+
+        ClaimEntity claimEntity = createClaimWithClaimantAndDefendant(claimantEntity, defendantEntity);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        caseEntity.getClaims().add(claimEntity);
+
+        AddressUK expectedAddress = AddressUK.builder()
+            .addressLine1("123 Test Street")
+            .addressLine2("Apartment 4B")
+            .postCode("SW1A 1AA")
+            .build();
+
+        when(addressMapper.toAddressUK(addressEntity)).thenReturn(expectedAddress);
+
+        // When
+        PossessionClaimResponse result = underTest.mapFrom(caseEntity, defendantEntity);
+
+        // Then - Verify both parties have the same values on first load
+        uk.gov.hmcts.reform.pcs.ccd.domain.Party claimantParty = result.getClaimantProvided().getParty();
+        uk.gov.hmcts.reform.pcs.ccd.domain.Party defendantParty = result.getDefendantProvided()
+            .getContactDetails().getParty();
+
+        // Verify the editable fields match between both parties
+        assertThat(defendantParty.getFirstName())
+            .as("firstName should match on first load")
+            .isEqualTo(claimantParty.getFirstName())
+            .isEqualTo("John");
+
+        assertThat(defendantParty.getLastName())
+            .as("lastName should match on first load")
+            .isEqualTo(claimantParty.getLastName())
+            .isEqualTo("Doe");
+
+        assertThat(defendantParty.getEmailAddress())
+            .as("emailAddress should match on first load")
+            .isEqualTo(claimantParty.getEmailAddress())
+            .isEqualTo("john.doe@example.com");
+
+        assertThat(defendantParty.getPhoneNumber())
+            .as("phoneNumber should match on first load")
+            .isEqualTo(claimantParty.getPhoneNumber())
+            .isEqualTo("07700900123");
+
+        assertThat(defendantParty.getAddress())
+            .as("address should match on first load")
+            .isEqualTo(claimantParty.getAddress())
+            .isEqualTo(expectedAddress);
+
+        // Additional verification: claimantProvided has routing fields
+        assertThat(claimantParty.getOrgName()).isEqualTo("Test Housing Association Ltd");
+        assertThat(claimantParty.getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(claimantParty.getAddressKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(claimantParty.getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
+    }
+
     private ClaimEntity createMinimalClaim() {
         PartyEntity claimant = PartyEntity.builder()
             .orgName("Test Org")

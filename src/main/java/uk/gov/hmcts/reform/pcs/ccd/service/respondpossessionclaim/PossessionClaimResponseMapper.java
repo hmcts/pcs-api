@@ -61,7 +61,11 @@ public class PossessionClaimResponseMapper {
             claimantOrgName
         );
 
-        DefendantProvided defendantProvided = buildDefendantProvidedInfo(defendantEntity, contactAddress);
+        DefendantProvided defendantProvided = buildDefendantProvidedInfo(
+            defendantEntity,
+            contactAddress,
+            claimantOrgName
+        );
 
         return PossessionClaimResponse.builder()
             .claimantProvided(claimantProvided)
@@ -89,8 +93,17 @@ public class PossessionClaimResponseMapper {
             .build();
     }
 
-    private DefendantProvided buildDefendantProvidedInfo(PartyEntity defendantEntity, AddressUK contactAddress) {
-        Party defendantEditableParty = buildDefendantEditableParty(defendantEntity, contactAddress);
+    private DefendantProvided buildDefendantProvidedInfo(
+        PartyEntity defendantEntity,
+        AddressUK contactAddress,
+        String claimantOrgName
+    ) {
+        // Reuse the same Party builder as claimantProvided to ensure all fields match on first load
+        Party defendantEditableParty = buildPartyFromDefendantEntity(
+            defendantEntity,
+            contactAddress,
+            claimantOrgName
+        );
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(defendantEditableParty)
@@ -103,16 +116,6 @@ public class PossessionClaimResponseMapper {
         return DefendantProvided.builder()
             .contactDetails(contactDetails)
             .responses(responses)
-            .build();
-    }
-
-    private Party buildDefendantEditableParty(PartyEntity defendantEntity, AddressUK contactAddress) {
-        return Party.builder()
-            .firstName(defendantEntity.getFirstName())
-            .lastName(defendantEntity.getLastName())
-            .emailAddress(defendantEntity.getEmailAddress())
-            .address(contactAddress)
-            .phoneNumber(defendantEntity.getPhoneNumber())
             .build();
     }
 
