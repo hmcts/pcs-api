@@ -392,7 +392,7 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
-    @JsonUnwrapped(prefix = "groundsForPossessionWales_")
+    @JsonUnwrapped(prefix = "possessionGroundsWales_")
     private GroundsForPossessionWales groundsForPossessionWales;
 
     @JsonUnwrapped
@@ -401,7 +401,7 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
 
-    @JsonUnwrapped(prefix = "secureContract_")
+    @JsonUnwrapped(prefix = "secureGroundsWales_")
     private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
 
     @CCD(
