@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
 
@@ -31,7 +31,11 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return validationError;
         }
 
-        if (caseData.getSubmitDraftAnswers().toBoolean()) {
+        YesOrNo submitFlag = caseData.getSubmitDraftAnswers() != null
+            ? caseData.getSubmitDraftAnswers()
+            : YesOrNo.NO;
+
+        if (submitFlag.toBoolean()) {
             return processFinalSubmit(caseReference, caseData);
         } else {
             return processDraftSubmit(caseReference, caseData);
@@ -40,16 +44,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private SubmitResponse<State> validate(PCSCase caseData, long caseReference) {
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
-        YesOrNo submitFlag = caseData.getSubmitDraftAnswers();
 
         if (response == null) {
             log.error("Submit failed for case {}: possessionClaimResponse is null", caseReference);
             return error("Invalid submission: missing response data");
-        }
-
-        if (submitFlag == null) {
-            log.error("Submit failed for case {}: submitDraftAnswers is null", caseReference);
-            return error("Invalid submission: missing submit flag");
         }
 
         return null;
@@ -70,8 +68,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private SubmitResponse<State> processDraftSubmit(long caseReference, PCSCase caseData) {
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
-        if (response.getParty() == null) {
-            log.error("Draft submit rejected for case {}: party is null", caseReference);
+        if (response.getDefendantProvided() == null
+                || response.getDefendantProvided().getContactDetails() == null
+                || response.getDefendantProvided().getContactDetails().getParty() == null) {
+            log.error("Draft submit rejected for case {}: defendantProvided structure is incomplete", caseReference);
             return error("Invalid response structure. Please refresh the page and try again.");
         }
 

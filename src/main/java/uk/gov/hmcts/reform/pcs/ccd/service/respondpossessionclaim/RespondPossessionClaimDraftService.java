@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
@@ -30,7 +30,7 @@ public class RespondPossessionClaimDraftService {
         return caseDataFromPayload.toBuilder()
             .possessionClaimResponse(draftData.getPossessionClaimResponse())
             .hasUnsubmittedCaseData(draftData.getHasUnsubmittedCaseData())
-            .submitDraftAnswers(YesOrNo.NO)
+            .submitDraftAnswers(draftData.getSubmitDraftAnswers())
             .build();
     }
 
@@ -39,6 +39,7 @@ public class RespondPossessionClaimDraftService {
                                PCSCase caseDataFromPayload) {
         PCSCase filteredDraft = PCSCase.builder()
             .possessionClaimResponse(initialResponse)
+            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, filteredDraft, respondPossessionClaim);
@@ -53,8 +54,14 @@ public class RespondPossessionClaimDraftService {
     }
 
     public void save(long caseReference, PCSCase caseData) {
+        // Build patch with ONLY defendantProvided (no claimantProvided)
+        // Merge logic in DraftCaseDataService will preserve existing claimantProvided
+        PossessionClaimResponse patchResponse = PossessionClaimResponse.builder()
+            .defendantProvided(caseData.getPossessionClaimResponse().getDefendantProvided())
+            .build();
+
         PCSCase draftToSave = PCSCase.builder()
-            .possessionClaimResponse(caseData.getPossessionClaimResponse())
+            .possessionClaimResponse(patchResponse)
             .submitDraftAnswers(caseData.getSubmitDraftAnswers())
             .build();
 
