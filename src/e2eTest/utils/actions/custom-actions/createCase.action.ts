@@ -17,8 +17,7 @@ import {
   whatAreYourGroundsForPossessionWales,
   underlesseeOrMortgageeDetails,
   reasonsForRequestingASuspensionAndDemotionOrder,
-  addressCheckYourAnswers,
-  claimSaved
+  addressCheckYourAnswers
 } from '@data/page-data';
 import {
   claimantType,
@@ -47,7 +46,7 @@ import {
   completingYourClaim,
   rentArrears,
   claimLanguageUsed,
-  payClaimFee,
+  confirm,
   statementOfTruth,
   uploadAdditionalDocuments,
 } from '@data/page-data-figma';
@@ -705,18 +704,26 @@ export class CreateCaseAction implements IAction {
   private async claimSaved() {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performValidation('text', {elementType: 'span', text: claimSaved.claimSavedBanner});
-    await performAction('clickButton', claimSaved.closeAndReturnButton);
+    await performValidation('mainHeader',confirm.claimSavedDynamicHeader);
+    await performValidation('text', {elementType: 'span', text: confirm.claimSavedDynamicLabel});
+    await performValidation('text', {elementType: 'span', text: confirm.aDraftOfYourClaimDynamicParagraph});
+    await performValidation('text', {elementType: 'span', text: confirm.resumeYourClaimDynamicParagraph});
+    await performValidation('text', {elementType: 'span', text: confirm.clickThroughTheQuestionsDynamicParagraph});
+    await performValidation('text', {elementType: 'span', text: confirm.chooseTheSubmitDynamicParagraph});
+    await performValidation('text', {elementType: 'span', text: confirm.selectThePayTheClaimFeeDynamicParagraph});
+    await performAction('clickButton', confirm.closeAndReturnToCaseDetailsButton);
   }
 
   private async payClaimFee(params?: { clickLink?: boolean }) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performValidation('text', {elementType: 'span', text: payClaimFee.pay404ClaimFeeParagraph});
+    await performValidation('mainHeader',confirm.makeAClaimDynamicHeader);
+    await performValidation('heading',confirm.makeAPaymentDynamicSubHeader);
+    await performValidation('text', {elementType: 'span', text: confirm.pay404ClaimFeeDynamicParagraph});
     if (params?.clickLink === true) {
-      await performAction('clickButton', payClaimFee.payTheClaimFeeLink);
+      await performAction('clickButton', confirm.payTheClaimFeeDynamicLink);
     }
-    await performAction('clickButton', payClaimFee.closeAndReturnToCaseDetailsButton);
+    await performAction('clickButton', confirm.closeAndReturnToCaseDetailsButton);
   }
 
   private async enterTestAddressManually(page: Page, address: actionRecord) {

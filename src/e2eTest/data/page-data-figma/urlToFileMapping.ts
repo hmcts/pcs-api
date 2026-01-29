@@ -23,13 +23,13 @@ export default {
   'resumePossessionClaimdailyRentAmount': 'dailyRentAmount',
   'resumePossessionClaimmoneyJudgment': 'moneyJudgment',
   'resumePossessionClaimrentArrears': 'rentArrears',
-  'resumePossessionClaimadditionalReasonsForPossession': 'additionalReasonsForPossession',//failed
-  'resumePossessionClaimunderlesseeMortgageeEntitledToClaimRelief': 'underlesseeMortgageeEntitledToClaimRelief',//passed
-  'resumePossessionClaimwantToUploadDocuments': 'wantToUploadDocuments',//failed
+  'resumePossessionClaimadditionalReasonsForPossession': 'additionalReasonsForPossession',
+  'resumePossessionClaimunderlesseeMortgageeEntitledToClaimRelief': 'underlesseeMortgageeEntitledToClaimRelief',
+  'resumePossessionClaimwantToUploadDocuments': 'wantToUploadDocuments',
   'resumePossessionClaimuploadAdditionalDocuments': 'uploadAdditionalDocuments',
-  'resumePossessionClaimgeneralApplication': 'generalApplication',//failed
-  'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',//passed
-  'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',//failed
-  'resumePossessionClaimstatementOfTruth': 'statementOfTruth',//failed
-  'confirm': 'payClaimFee',
+  'resumePossessionClaimgeneralApplication': 'generalApplication',
+  'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',
+  'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',
+  'resumePossessionClaimstatementOfTruth': 'statementOfTruth',
+  'confirm': 'confirm'
 };

@@ -1,7 +1,7 @@
 export const completingYourClaim = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Completing your claim`,
-  thereAreTwoOptionsForParagraph: `There are two options for what do to next:`,
+  thereAreTwoOptionsForParagraph: `There are two options for what to do next:`,
   signTheStatementParagraph: `sign the statement of truth, check your answers, then submit and pay for your claim now.`,
   checkYourAnswersParagraph: `check your answers and save your claim as a draft. You can return later to sign the statement of truth and submit and pay.`,
   whatWouldYouLikeToDoNextQuestion: `What would you like to do next?`,

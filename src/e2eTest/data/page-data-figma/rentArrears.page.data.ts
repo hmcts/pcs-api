@@ -21,7 +21,7 @@ export const rentArrears = {
   cancelUploadHiddenButton: `Cancel upload`,
   noFileChosenHiddenTextLabel: `No file chosen`,//Recheck-not on figma
   rentArrearsSubHeader: `Rent arrears`,
-  howMuchAreTheTotalRentArrearsAsShownOnTheRentStatementQuestion: `How much are the total rent arrears as shown on the rent statement?`,
+  howMuchAreTheTotalRentArrearsAsShownOnTheRentStatementLabel: `How much are the total rent arrears as shown on the rent statement?`,
   totalRentArrearsTextLabel: `Total rent arrears`,
   currencySymbolTextLabel: `£`,
   forThePeriodShownOnTheRentStatementHaveAnyRentPaymentsBeenPaidBySomeoneOtherThanTheDefendantsQuestion: `For the period shown on the rent statement, have any rent payments been paid by someone other than the defendants?`,

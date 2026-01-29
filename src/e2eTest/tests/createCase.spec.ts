@@ -47,7 +47,6 @@ import {
   completingYourClaim,
   rentArrears,
   claimLanguageUsed,
-  payClaimFee,
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
   statementOfTruth,
