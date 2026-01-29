@@ -5,310 +5,66 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantProvidedInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantContactDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantProvided;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantResponses;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
+/**
+ * Start event handler for RespondPossessionClaim.
+ *
+ * <p>Orchestrates the initialization of a defendant's response:
+ * 1. Checks for existing draft (returns if found)
+ * 2. Loads case from database (ONCE)
+ * 3. Validates defendant access
+ * 4. Maps entity data to domain response
+ * 5. Initializes new draft
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class StartEventHandler implements Start<PCSCase, State> {
 
     private final PcsCaseService pcsCaseService;
-    private final AddressMapper addressMapper;
-    private final RespondPossessionClaimDraftService draftService;
     private final SecurityContextService securityContextService;
+    private final DefendantAccessValidator accessValidator;
+    private final PossessionClaimResponseMapper responseMapper;
+    private final RespondPossessionClaimDraftService draftService;
 
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseDataFromPayload = eventPayload.caseData();
-        UUID authenticatedUserId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
 
+        // Early return if draft already exists
         if (draftService.exists(caseReference)) {
             return draftService.load(caseReference, caseDataFromPayload);
         }
 
-        PartyEntity defendantEntity = validateAccess(caseReference, authenticatedUserId);
-        PossessionClaimResponse initialResponse = buildInitialResponse(defendantEntity, caseReference);
+        UUID authenticatedUserId = getCurrentUserId();
 
+        // Load case from database (ONCE - previously loaded 3 times!)
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+
+        // Validate defendant access (throws CaseAccessException if no access)
+        PartyEntity defendantEntity = accessValidator.validateAndGetDefendant(caseEntity, authenticatedUserId);
+
+        // Map entity data to domain response
+        PossessionClaimResponse initialResponse = responseMapper.mapFrom(caseEntity, defendantEntity);
+
+        // Initialize and return draft
         return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
     }
 
-    private PartyEntity validateAccess(long caseReference, UUID authenticatedUserId) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        List<PartyEntity> defendants = extractDefendants(pcsCaseEntity, caseReference);
-        return findMatchingDefendant(defendants, authenticatedUserId, caseReference);
-    }
-
-    private List<PartyEntity> extractDefendants(PcsCaseEntity pcsCaseEntity, long caseReference) {
-        ClaimEntity mainClaim = pcsCaseEntity.getClaims().stream()
-            .findFirst()
-            .orElseThrow(() -> {
-                log.error("No claim found for case {}", caseReference);
-                return new CaseAccessException("No claim found for this case");
-            });
-
-        List<PartyEntity> defendants = mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
-            .map(ClaimPartyEntity::getParty)
-            .toList();
-
-        if (defendants.isEmpty()) {
-            log.error("No defendants found for case {}", caseReference);
-            throw new CaseAccessException("No defendants associated with this case");
-        }
-
-        return defendants;
-    }
-
-    private PartyEntity findMatchingDefendant(
-            List<PartyEntity> defendants,
-            UUID authenticatedUserId,
-            long caseReference) {
-        return defendants.stream()
-            .filter(defendant -> authenticatedUserId.equals(defendant.getIdamId()))
-            .findFirst()
-            .orElseThrow(() -> {
-                log.error("Access denied: User {} is not linked as a defendant on case {}",
-                    authenticatedUserId, caseReference);
-                return new CaseAccessException("User is not linked as a defendant on this case");
-            });
-    }
-
-    private PossessionClaimResponse buildInitialResponse(PartyEntity defendantEntity, long caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        AddressUK contactAddress = resolveAddress(defendantEntity, caseReference);
-        String claimantOrgName = extractClaimantOrgName(pcsCaseEntity, caseReference);
-
-        ClaimantProvidedInfo claimantProvided = buildClaimantProvidedInfo(
-            defendantEntity,
-            pcsCaseEntity,
-            contactAddress,
-            claimantOrgName
-        );
-        DefendantProvided defendantProvided = buildDefendantProvidedInfo(defendantEntity, contactAddress);
-
-        return PossessionClaimResponse.builder()
-            .claimantProvided(claimantProvided)
-            .defendantProvided(defendantProvided)
-            .build();
-    }
-
-    private ClaimantProvidedInfo buildClaimantProvidedInfo(
-            PartyEntity defendantEntity,
-            PcsCaseEntity pcsCaseEntity,
-            AddressUK contactAddress,
-            String claimantOrgName) {
-        Party party = buildPartyFromDefendantEntity(defendantEntity, contactAddress, claimantOrgName);
-
-        return ClaimantProvidedInfo.builder()
-            .party(party)
-            .legislativeCountry(extractLegislativeCountry(pcsCaseEntity))
-            .tenancyType(extractTenancyType(pcsCaseEntity))
-            .tenancyStartDate(extractTenancyStartDate(pcsCaseEntity))
-            .dailyRentAmount(extractDailyRentAmount(pcsCaseEntity))
-            .rentArrearsOwed(extractRentArrearsOwed(pcsCaseEntity))
-            .noticeServed(extractNoticeServed(pcsCaseEntity))
-            .noticeDate(extractNoticeDate(pcsCaseEntity))
-            .build();
-    }
-
-    private DefendantProvided buildDefendantProvidedInfo(PartyEntity defendantEntity, AddressUK contactAddress) {
-        Party defendantEditableParty = buildDefendantEditableParty(defendantEntity, contactAddress);
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(defendantEditableParty)
-            .contactByPhone(extractContactByPhone(defendantEntity))
-            .build();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .build();
-
-        return DefendantProvided.builder()
-            .contactDetails(contactDetails)
-            .responses(responses)
-            .build();
-    }
-
-    private Party buildDefendantEditableParty(PartyEntity defendantEntity, AddressUK contactAddress) {
-        return Party.builder()
-            .firstName(defendantEntity.getFirstName())
-            .lastName(defendantEntity.getLastName())
-            .emailAddress(defendantEntity.getEmailAddress())
-            .address(contactAddress)
-            .phoneNumber(defendantEntity.getPhoneNumber())
-            .build();
-    }
-
-    private AddressUK resolveAddress(PartyEntity defendantEntity, long caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
-        if (defendantEntity.getAddressSameAsProperty() != null
-            && defendantEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
-            return addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress());
-        } else {
-            return addressMapper.toAddressUK(defendantEntity.getAddress());
-        }
-    }
-
-    private Party buildPartyFromDefendantEntity(
-            PartyEntity defendantEntity,
-            AddressUK contactAddress,
-            String claimantOrgName) {
-        return Party.builder()
-            .firstName(defendantEntity.getFirstName())
-            .lastName(defendantEntity.getLastName())
-            .orgName(claimantOrgName)
-            .nameKnown(defendantEntity.getNameKnown())
-            .emailAddress(defendantEntity.getEmailAddress())
-            .address(contactAddress)
-            .addressKnown(defendantEntity.getAddressKnown())
-            .addressSameAsProperty(defendantEntity.getAddressSameAsProperty())
-            .phoneNumber(defendantEntity.getPhoneNumber())
-            .build();
-    }
-
-    private String extractClaimantOrgName(PcsCaseEntity pcsCaseEntity, long caseReference) {
-        ClaimEntity mainClaim = pcsCaseEntity.getClaims().stream()
-            .findFirst()
-            .orElseThrow(() -> {
-                log.error("No claim found for case {}", caseReference);
-                return new CaseAccessException("No claim found for this case");
-            });
-
-        return mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT)
-            .map(ClaimPartyEntity::getParty)
-            .map(PartyEntity::getOrgName)
-            .findFirst()
-            .orElse(null);
-    }
-
-    private LegislativeCountry extractLegislativeCountry(PcsCaseEntity pcsCaseEntity) {
-        return pcsCaseEntity.getLegislativeCountry();
-    }
-
-    private String extractTenancyType(PcsCaseEntity pcsCaseEntity) {
-        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
-        if (tenancy == null) {
-            return null;
-        }
-
-        if (pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
-            return tenancy.getOccupationLicenceTypeWales() != null
-                ? tenancy.getOccupationLicenceTypeWales().getLabel()
-                : null;
-        }
-
-        return tenancy.getTenancyLicenceType();
-    }
-
-    private LocalDate extractTenancyStartDate(PcsCaseEntity pcsCaseEntity) {
-        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
-        if (tenancy == null) {
-            return null;
-        }
-
-        if (pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
-            return tenancy.getWalesLicenceStartDate();
-        }
-
-        return tenancy.getTenancyLicenceDate();
-    }
-
-    private BigDecimal extractDailyRentAmount(PcsCaseEntity pcsCaseEntity) {
-        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
-        return tenancy != null ? tenancy.getDailyRentChargeAmount() : null;
-    }
-
-    private BigDecimal extractRentArrearsOwed(PcsCaseEntity pcsCaseEntity) {
-        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
-        return tenancy != null ? tenancy.getTotalRentArrears() : null;
-    }
-
-    private YesOrNo extractContactByPhone(PartyEntity defendantEntity) {
-        VerticalYesNo phoneNumberProvided = defendantEntity.getPhoneNumberProvided();
-
-        if (phoneNumberProvided == null) {
-            return null;
-        }
-
-        return phoneNumberProvided == VerticalYesNo.YES ? YesOrNo.YES : YesOrNo.NO;
-    }
-
-    private YesOrNo extractNoticeServed(PcsCaseEntity pcsCaseEntity) {
-        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
-        if (tenancy == null) {
-            return null;
-        }
-
-        Boolean noticeServed;
-        if (pcsCaseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
-            noticeServed = tenancy.getWalesNoticeServed();
-        } else {
-            noticeServed = tenancy.getNoticeServed();
-        }
-
-        if (noticeServed == null) {
-            return null;
-        }
-
-        return noticeServed ? YesOrNo.YES : YesOrNo.NO;
-    }
-
-    private LocalDateTime extractNoticeDate(PcsCaseEntity pcsCaseEntity) {
-        TenancyLicence tenancy = pcsCaseEntity.getTenancyLicence();
-        if (tenancy == null) {
-            return null;
-        }
-
-        // Priority order: posted > delivered > handed over > email > other electronic > other
-        if (tenancy.getNoticePostedDate() != null) {
-            return tenancy.getNoticePostedDate().atStartOfDay();
-        }
-        if (tenancy.getNoticeDeliveredDate() != null) {
-            return tenancy.getNoticeDeliveredDate().atStartOfDay();
-        }
-        if (tenancy.getNoticeHandedOverDateTime() != null) {
-            return tenancy.getNoticeHandedOverDateTime();
-        }
-        if (tenancy.getNoticeEmailSentDateTime() != null) {
-            return tenancy.getNoticeEmailSentDateTime();
-        }
-        if (tenancy.getNoticeOtherElectronicDateTime() != null) {
-            return tenancy.getNoticeOtherElectronicDateTime();
-        }
-        if (tenancy.getNoticeOtherDateTime() != null) {
-            return tenancy.getNoticeOtherDateTime();
-        }
-
-        return null;
+    private UUID getCurrentUserId() {
+        return UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
     }
 }
