@@ -34,7 +34,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData } from '@data/api-data';
-import { LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -44,8 +44,8 @@ export const addressInfo = {
 };
 
 export let defendantDetails: string[] = [];
-const moneyMap = new Map<string, number>();
-const fieldsMap = new Map<string, string>();
+export const moneyMap = new Map<string, number>();
+export const fieldsMap = new Map<string, string>();
 
 export class EnforcementAction implements IAction {
   async execute(page: Page, action: string, fieldName: string | actionRecord, data?: actionData): Promise<void> {
@@ -74,10 +74,10 @@ export class EnforcementAction implements IAction {
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
       ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
       ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
-      ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord)],
-      ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord)],
-      ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord)],
-      ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord)],
+      ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord, page)],
+      ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord, page)],
+      ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord, page)],
+      ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord, page)],
       ['validateAmountToRePayTable', () => this.validateAmountToRePayTable(fieldName as actionRecord)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
@@ -339,17 +339,22 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', accessToTheProperty.continueButton);
   }
 
-  private async provideMoneyOwed(totalMoneyOwed: actionRecord) {
+  private async provideMoneyOwed(totalMoneyOwed: actionRecord, page: Page) {
     await this.addFieldsToMap(totalMoneyOwed);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
     const moneyOwedAmt = await this.retrieveAmountFromString(totalMoneyOwed.input as string);
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
-    await performAction('clickButton', moneyOwed.continueButton);
+    await expect(async () => {
+      await performAction('clickButton', moneyOwed.continueButton);
+      await expect(page.locator(`//h1[text()="${totalMoneyOwed.nextPage}"]`), `If the ${totalMoneyOwed.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
+    }).toPass({
+      timeout: LONG_TIMEOUT,
+    });
   }
 
-  private async provideLegalCosts(legalCost: actionRecord) {
+  private async provideLegalCosts(legalCost: actionRecord, page: Page) {
     await this.addFieldsToMap(legalCost);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -361,22 +366,33 @@ export class EnforcementAction implements IAction {
     } else {
       moneyMap.set(legalCosts.legalCostsFee, 0);
     }
-    await performAction('clickButton', legalCosts.continueButton);
+    await expect(async () => {
+      await performAction('clickButton', legalCosts.continueButton);
+      await expect(page.locator(`//h1[text()="${legalCost.nextPage}"]`), `If the ${legalCost.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
+    }).toPass({
+      timeout: LONG_TIMEOUT,
+    });
   }
 
-  private async provideLandRegistryFees(langRegistry: actionRecord) {
-    await this.addFieldsToMap(langRegistry);
+  private async provideLandRegistryFees(landRegistry: actionRecord, page: Page) {
+    await this.addFieldsToMap(landRegistry);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: langRegistry.question, option: langRegistry.option });
-    if (langRegistry.option === accessToTheProperty.yesRadioOption) {
-      await performAction('inputText', langRegistry.label, langRegistry.input);
-      const landRegistryFeeAmt = await this.retrieveAmountFromString(langRegistry.input as string);
+    await performAction('clickRadioButton', { question: landRegistry.question, option: landRegistry.option });
+    if (landRegistry.option === accessToTheProperty.yesRadioOption) {
+      await performAction('inputText', landRegistry.label, landRegistry.input);
+      const landRegistryFeeAmt = await this.retrieveAmountFromString(landRegistry.input as string);
       moneyMap.set(landRegistryFees.landRegistryFee, landRegistryFeeAmt);
     } else {
       moneyMap.set(landRegistryFees.landRegistryFee, 0);
     }
-    await performAction('clickButton', landRegistryFees.continueButton);
+    await expect(async () => {
+      await performAction('clickButton', landRegistryFees.continueButton);
+      await expect(page.locator(`//h1[text()="${landRegistry.nextPage}"]`), `If the ${landRegistry.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
+    }).toPass({
+      timeout: LONG_TIMEOUT,
+    });
+
   }
 
   private async validateAmountToRePayTable(header: actionRecord) {
@@ -389,7 +405,7 @@ export class EnforcementAction implements IAction {
       await performValidation('formLabelValue', moneyField, `${await this.convertCurrencyToString(amount)}`);
     }
   }
-  private async provideAmountToRePay(amtToPay: actionRecord) {
+  private async provideAmountToRePay(amtToPay: actionRecord, page: Page) {
     await this.addFieldsToMap(amtToPay);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -397,7 +413,12 @@ export class EnforcementAction implements IAction {
     if (amtToPay.option === rePayments.rePaymentRadioOptions.some) {
       await performAction('inputText', amtToPay.label, amtToPay.input);
     };
-    await performAction('clickButton', rePayments.continueButton);
+    await expect(async () => {
+      await performAction('clickButton', rePayments.continueButton);
+      await expect(page.locator(`//h1[text()="${amtToPay.nextPage}"]`), `If the ${amtToPay.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
+    }).toPass({
+      timeout: LONG_TIMEOUT,
+    });
   }
 
   private async selectLanguageUsed(languageDetails: actionRecord) {
@@ -418,37 +439,37 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
-      await performAction('check', claimantDetails.selectCheckbox);
-      await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
-      if(claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption){
-        await performAction('check', claimantDetails.iBelieveCheckbox);
-        await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-        await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      }
-      if(claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption){
-        await performAction('check', claimantDetails.signThisStatementCheckbox);
-        await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-        await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-        await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      }
-      await performAction('clickButton', statementOfTruthOne.continueButton);
+    await performAction('check', claimantDetails.selectCheckbox);
+    await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
+    if (claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption) {
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
+    if (claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    await performAction('clickButton', statementOfTruthOne.continueButton);
+  }
 
   private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
-      await performAction('check', claimantDetails.selectCheckbox);
-      await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
-      if(claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption){
-        await performAction('check', claimantDetails.iBelieveCheckbox);
-        await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-        await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      }
-      if(claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption){
-        await performAction('check', claimantDetails.signThisStatementCheckbox);
-        await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-        await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-        await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-      }
-      await performAction('clickButton', statementOfTruthOne.continueButton);
+    await performAction('check', claimantDetails.selectCheckbox);
+    await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
+    if (claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption) {
+      await performAction('check', claimantDetails.iBelieveCheckbox);
+      await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    if (claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption) {
+      await performAction('check', claimantDetails.signThisStatementCheckbox);
+      await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+      await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    }
+    await performAction('clickButton', statementOfTruthOne.continueButton);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
@@ -486,7 +507,6 @@ export class EnforcementAction implements IAction {
               }).toPass({
                 timeout: LONG_TIMEOUT,
               });
-
               break;
 
             case 'textField':
@@ -503,6 +523,7 @@ export class EnforcementAction implements IAction {
             case 'checkBox':
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+              await performAction('check', validationArr.checkBox);
               break;
 
             default:
@@ -547,7 +568,7 @@ export class EnforcementAction implements IAction {
     const getCharCount = input.split('You can enter').map(str => str.trim()).filter(str => str.length > 0);
     const charLimitInfo = getCharCount[getCharCount.length - 1].match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
     const amount = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : 0;
-    return amount;
+    return Number(amount.toFixed(2));
   }
 
   private async convertCurrencyToString(amount: number): Promise<string> {
