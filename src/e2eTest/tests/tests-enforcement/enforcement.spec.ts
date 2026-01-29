@@ -781,7 +781,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', peopleYouWantToEvict.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: peopleYouWantToEvict.errorValidation,
-        validationType: peopleYouWantToEvict.errorValidationType.four,
+        validationType: peopleYouWantToEvict.errorValidationType.six,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
         checkBox: defendantDetails[0],
@@ -902,7 +902,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', peopleYouWantToEvict.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: peopleYouWantToEvict.errorValidation,
-        validationType: peopleYouWantToEvict.errorValidationType.four,
+        validationType: peopleYouWantToEvict.errorValidationType.six,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
         checkBox: defendantDetails[0],
