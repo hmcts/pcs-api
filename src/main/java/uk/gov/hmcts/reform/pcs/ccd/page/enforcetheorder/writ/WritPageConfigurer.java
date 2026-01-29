@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigure
 @AllArgsConstructor
 public class WritPageConfigurer implements EnforcementPageConfigurer {
     private final HCEOfficerDetailsPage hceOfficerDetailsPage;
+    private final LandRegistryFeesWritPage landRegistryFeesWritPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -20,8 +21,9 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
             .add(new ConfirmHCEOfficerPage())
             .add(hceOfficerDetailsPage)
             .add(new EnforcementOfficerSelectionPage())
-            .add(new AmountDefendantOwesPage())
+            .add(new MoneyOwedWritPage())
             .add(new LegalCostsWritPage())
-            .add(new LandRegistryFeesPage());
+            .add(landRegistryFeesWritPage)
+            .add(new RepaymentsWritPage());
     }
 }

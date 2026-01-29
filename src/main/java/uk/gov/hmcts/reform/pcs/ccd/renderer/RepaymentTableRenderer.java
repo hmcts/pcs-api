@@ -19,21 +19,23 @@ public class RepaymentTableRenderer {
     private final PebbleEngine pebbleEngine;
 
     public String render(BigDecimal totalArrears, BigDecimal legalFees, BigDecimal landRegistryFees,
-                         String warrantFeeAmount, BigDecimal totalFees) {
-        return render(totalArrears, legalFees, landRegistryFees, warrantFeeAmount, totalFees, null);
+                         String feeAmountType, String feeAmount, BigDecimal totalFees, String template) {
+        return render(totalArrears, legalFees, landRegistryFees, feeAmountType, feeAmount, totalFees, null, template);
     }
 
+    @SuppressWarnings("squid:S107")
     public String render(BigDecimal totalArrears, BigDecimal legalFees, BigDecimal landRegistryFees,
-                         String warrantFeeAmount, BigDecimal totalFees, String caption) {
+                         String feeAmountType, String feeAmount, BigDecimal totalFees, String caption,
+                         String template) {
 
-        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate("repaymentTable");
+        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(template);
         Writer writer = new StringWriter();
 
         Map<String, Object> context = new HashMap<>();
         context.put("totalArrears", totalArrears);
         context.put("legalFees", legalFees);
         context.put("landRegistryFees", landRegistryFees);
-        context.put("warrantFeeAmount", warrantFeeAmount);
+        context.put(feeAmountType, feeAmount);
         context.put("totalFees", totalFees);
         context.put("caption", caption);
 
