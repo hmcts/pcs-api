@@ -29,7 +29,9 @@ public class LegalCosts {
 
     @CCD(
             label = "How much do you want to reclaim?",
-            typeOverride = FieldType.MoneyGBP
+            typeOverride = FieldType.MoneyGBP,
+            min = 1,
+            max = 1000
     )
     @JacksonMoneyGBP
     private BigDecimal amountOfLegalCosts;

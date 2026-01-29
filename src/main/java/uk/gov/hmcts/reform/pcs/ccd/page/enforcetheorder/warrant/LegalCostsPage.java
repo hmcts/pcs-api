@@ -67,6 +67,6 @@ public class LegalCostsPage implements CcdPageConfiguration {
                 "Legal cost"
             ));
         }
-        return errors;
+        return List.of();
     }
 }
