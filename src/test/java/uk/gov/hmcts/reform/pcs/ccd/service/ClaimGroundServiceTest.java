@@ -9,6 +9,8 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
@@ -258,14 +260,18 @@ class ClaimGroundServiceTest {
     @Test
     void shouldReturnClaimGroundEntities_WhenAssuredTenancyRentArrears() {
         // Given
-        Set<AssuredMandatoryGround> mandatoryGrounds = Set.of(
-            AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1,
-            AssuredMandatoryGround.REDEVELOPMENT_GROUND6
+        Set<RentArrearsGround> rentArrearsGrounds = Set.of(
+            RentArrearsGround.RENT_ARREARS_GROUND10
         );
 
-        Set<AssuredDiscretionaryGround> discretionaryGrounds = Set.of(
-            AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12,
-            AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14
+        Set<AssuredAdditionalMandatoryGrounds> mandatoryGrounds = Set.of(
+            AssuredAdditionalMandatoryGrounds.OWNER_OCCUPIER_GROUND1,
+            AssuredAdditionalMandatoryGrounds.REDEVELOPMENT_GROUND6
+        );
+
+        Set<AssuredAdditionalDiscretionaryGrounds> discretionaryGrounds = Set.of(
+            AssuredAdditionalDiscretionaryGrounds.BREACH_TENANCY_GROUND12,
+            AssuredAdditionalDiscretionaryGrounds.NUISANCE_ANNOYANCE_GROUND14
         );
 
         RentArrearsGroundsReasons reasons = RentArrearsGroundsReasons.builder()
@@ -284,8 +290,9 @@ class ClaimGroundServiceTest {
             .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsGroundsForPossession(
                 RentArrearsGroundsForPossession.builder()
-                .mandatoryGrounds(mandatoryGrounds)
-                .discretionaryGrounds(discretionaryGrounds)
+                    .rentArrearsGrounds(rentArrearsGrounds)
+                    .additionalMandatoryGrounds(mandatoryGrounds)
+                    .additionalDiscretionaryGrounds(discretionaryGrounds)
                     .build()
             )
             .rentArrearsGroundsReasons(reasons)
@@ -295,16 +302,29 @@ class ClaimGroundServiceTest {
         List<ClaimGroundEntity> result = claimGroundService.getGroundsWithReason(caseData);
 
         // Then
-        assertThat(result).hasSize(mandatoryGrounds.size() + discretionaryGrounds.size());
-
-        Map<String, String> groundAndReason = result.stream()
-            .collect(Collectors.toMap(ClaimGroundEntity::getGroundId, ClaimGroundEntity::getGroundReason));
-
-        assertThat(groundAndReason)
-            .containsEntry("OWNER_OCCUPIER_GROUND1", "Owner occupier needs the property")
-            .containsEntry("REDEVELOPMENT_GROUND6", "Redevelopment planned")
-            .containsEntry("BREACH_TENANCY_GROUND12", "Tenant breached agreement")
-            .containsEntry("NUISANCE_ANNOYANCE_GROUND14", "Tenant caused nuisance");
+        assertThat(result)
+            .usingRecursiveFieldByFieldElementComparator()
+            .containsExactlyInAnyOrder(
+                ClaimGroundEntity.builder()
+                    .groundId("RENT_ARREARS_GROUND10")
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .groundId("OWNER_OCCUPIER_GROUND1")
+                    .groundReason("Owner occupier needs the property")
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .groundId("REDEVELOPMENT_GROUND6")
+                    .groundReason("Redevelopment planned")
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .groundId("BREACH_TENANCY_GROUND12")
+                    .groundReason("Tenant breached agreement")
+                    .build(),
+                ClaimGroundEntity.builder()
+                    .groundId("NUISANCE_ANNOYANCE_GROUND14")
+                    .groundReason("Tenant caused nuisance")
+                    .build()
+            );
     }
 
     @Test
@@ -325,7 +345,9 @@ class ClaimGroundServiceTest {
             .claimDueToRentArrears(YesOrNo.YES)
             .rentArrearsGroundsForPossession(
                 RentArrearsGroundsForPossession.builder()
-                .rentArrearsGrounds(rentArrearsGrounds)
+                    .rentArrearsGrounds(rentArrearsGrounds)
+                    .additionalMandatoryGrounds(Set.of())
+                    .additionalDiscretionaryGrounds(Set.of())
                     .build()
             )
             .build();
