@@ -9,6 +9,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+
+import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -20,8 +23,8 @@ public class MoneyOwedByDefendants {
 
     @CCD(
         label = "What is the total amount that the defendants owe you?",
-        typeOverride = FieldType.MoneyGBP,
-        min = 1
+        typeOverride = FieldType.MoneyGBP
     )
-    private String amountOwed;
+    @JacksonMoneyGBP
+    private BigDecimal amountOwed;
 }
