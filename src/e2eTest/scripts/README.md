@@ -24,7 +24,23 @@ yarn allure-slack-notify --print-only  # Output message only (for Jenkins slackS
 |----------|-------------|
 | `BUILD_NUMBER` | Jenkins build number (default: `local`) |
 | `BUILD_URL` | Jenkins build URL for Allure report link (default: empty) |
-| `SLACK_WEBHOOK_URL` | Optional – for standalone runs; pipeline uses `slackSend` instead |
+| **Channel (same as Jenkins)** | |
+| `SLACK_CHANNEL` | Channel name (e.g. `#qa-pipeline-status`) – use with `SLACK_BOT_TOKEN` |
+| `SLACK_BOT_TOKEN` | Slack Bot User OAuth Token (e.g. `xoxb-...`) – same concept as Jenkins Slack plugin |
+| **Or Incoming Webhook** | |
+| `SLACK_WEBHOOK_URL` | Slack Incoming Webhook URL (e.g. `https://hooks.slack.com/...`) – for webhook-only posting |
+
+### Local run – same channel as Jenkins (#qa-pipeline-status)
+
+Use channel name + Bot token (same mechanism as Jenkins `slackSend`):
+
+```bash
+export SLACK_CHANNEL=#qa-pipeline-status
+export SLACK_BOT_TOKEN=xoxb-your-bot-token   # from Slack app / Jenkins Slack config
+yarn allure-slack-notify
+```
+
+You can also set `SLACK_WEBHOOK_URL=#qa-pipeline-status` and `SLACK_BOT_TOKEN`; the script treats a channel name plus token as “post to this channel via API”.
 
 ### When to Run
 
