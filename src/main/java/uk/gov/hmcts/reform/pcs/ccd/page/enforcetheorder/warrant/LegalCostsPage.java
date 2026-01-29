@@ -24,7 +24,7 @@ import java.util.List;
 @Component
 public class LegalCostsPage implements CcdPageConfiguration {
 
-    private FeeValidationService feeValidationService;
+    private final FeeValidationService feeValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

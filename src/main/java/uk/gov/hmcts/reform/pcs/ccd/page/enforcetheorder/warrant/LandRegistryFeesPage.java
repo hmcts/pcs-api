@@ -31,7 +31,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
     private final MoneyConverter moneyConverter;
     private final RepaymentTableRenderer repaymentTableRenderer;
-    private FeeValidationService feeValidationService;
+    private final FeeValidationService feeValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -66,11 +66,13 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
                 .build();
         }
 
-        BigDecimal totalArrears = caseData.getEnforcementOrder().getWarrantDetails().getMoneyOwedByDefendants()
+        WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
+
+        BigDecimal totalArrears = warrantDetails.getMoneyOwedByDefendants()
             .getAmountOwed();
-        BigDecimal landRegistryFee = caseData.getEnforcementOrder().getWarrantDetails().getLandRegistryFees()
+        BigDecimal landRegistryFee = warrantDetails.getLandRegistryFees()
             .getAmountOfLandRegistryFees();
-        BigDecimal legalCosts = caseData.getEnforcementOrder().getWarrantDetails().getLegalCosts()
+        BigDecimal legalCosts = warrantDetails.getLegalCosts()
             .getAmountOfLegalCosts();
         BigDecimal warrantFeePence = convertWarrantFeeToBigDecimal(caseData);
         BigDecimal totalFees = getTotalFees(totalArrears, landRegistryFee, legalCosts, warrantFeePence);
@@ -80,8 +82,8 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         // So default them to ZERO before rendering.
         String repaymentTableHtml = repaymentTableRenderer.render(
             totalArrears,
-            defaultZero(legalCosts),
-            defaultZero(landRegistryFee),
+            legalCosts,
+            landRegistryFee,
             caseData.getEnforcementOrder().getWarrantFeeAmount(),
             totalFees
         );
@@ -89,14 +91,14 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         // Render repayment table for SOT screen (custom caption)
         String statementOfTruthRepaymentTableHtml = repaymentTableRenderer.render(
             totalArrears,
-            defaultZero(legalCosts),
-            defaultZero(landRegistryFee),
+            legalCosts,
+            landRegistryFee,
             caseData.getEnforcementOrder().getWarrantFeeAmount(),
             totalFees,
             "The payments due"
         );
 
-        RepaymentCosts repaymentCosts = caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts();
+        RepaymentCosts repaymentCosts = warrantDetails.getRepaymentCosts();
         repaymentCosts.setRepaymentSummaryMarkdown(repaymentTableHtml);
         repaymentCosts.setStatementOfTruthRepaymentSummaryMarkdown(statementOfTruthRepaymentTableHtml);
 
@@ -122,10 +124,6 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
     private BigDecimal convertWarrantFeeToBigDecimal(PCSCase caseData) {
         String warrantFee = moneyConverter.convertPoundsToPence(caseData.getEnforcementOrder().getWarrantFeeAmount());
         return moneyConverter.convertPenceToBigDecimal(warrantFee);
-    }
-
-    private BigDecimal defaultZero(BigDecimal value) {
-        return value == null ? BigDecimal.ZERO : value;
     }
 
     private BigDecimal getTotalFees(BigDecimal... fees) {

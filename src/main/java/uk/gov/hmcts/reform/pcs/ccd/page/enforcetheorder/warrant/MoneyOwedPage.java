@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 @Component
 public class MoneyOwedPage implements CcdPageConfiguration {
 
-    private FeeValidationService feeValidationService;
+    private final FeeValidationService feeValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
