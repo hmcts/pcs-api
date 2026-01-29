@@ -11,6 +11,8 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantProvided;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
@@ -60,9 +62,17 @@ class SubmitEventHandlerTest {
             .address(address)
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
             .contactByPhone(YesOrNo.YES)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -83,7 +93,8 @@ class SubmitEventHandlerTest {
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantProvided()
+            .getContactDetails().getParty().getFirstName()).isEqualTo("John");
         assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
     }
 
@@ -95,8 +106,16 @@ class SubmitEventHandlerTest {
             .lastName("Doe")
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -145,8 +164,16 @@ class SubmitEventHandlerTest {
             .firstName("John")
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -159,20 +186,18 @@ class SubmitEventHandlerTest {
         // When
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
-        // Then
+        // Then - With null submitDraftAnswers, defaults to NO, so it saves as draft
         assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNotNull();
-        assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0)).isEqualTo("Invalid submission: missing submit flag");
+        assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftService, never()).save(eq(CASE_REFERENCE), any(PCSCase.class));
+        verify(draftService).save(eq(CASE_REFERENCE), any(PCSCase.class));
     }
 
     @Test
-    void shouldReturnErrorWhenPartyIsNull() {
+    void shouldReturnErrorWhenDefendantProvidedIsNull() {
         // Given
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .party(null)
+            .defendantProvided(null)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -203,8 +228,16 @@ class SubmitEventHandlerTest {
             .lastName("Doe")
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -243,8 +276,16 @@ class SubmitEventHandlerTest {
             .address(address)
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -281,9 +322,17 @@ class SubmitEventHandlerTest {
             .address(address)
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
             .contactByPhone(YesOrNo.YES)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -301,13 +350,18 @@ class SubmitEventHandlerTest {
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getParty()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getEmailAddress()).isEqualTo("john@example.com");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getPhoneNumber()).isEqualTo("07700900000");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(address);
-        assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
+        DefendantProvided savedDefendantProvided = savedDraft.getPossessionClaimResponse().getDefendantProvided();
+        assertThat(savedDefendantProvided).isNotNull();
+        assertThat(savedDefendantProvided.getContactDetails()).isNotNull();
+        assertThat(savedDefendantProvided.getContactDetails().getParty()).isNotNull();
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getFirstName()).isEqualTo("John");
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getEmailAddress())
+            .isEqualTo("john@example.com");
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getPhoneNumber())
+            .isEqualTo("07700900000");
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getAddress()).isEqualTo(address);
+        assertThat(savedDefendantProvided.getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.YES);
         assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
     }
 

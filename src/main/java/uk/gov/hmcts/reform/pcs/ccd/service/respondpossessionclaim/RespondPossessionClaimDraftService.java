@@ -30,7 +30,7 @@ public class RespondPossessionClaimDraftService {
         return caseDataFromPayload.toBuilder()
             .possessionClaimResponse(draftData.getPossessionClaimResponse())
             .hasUnsubmittedCaseData(draftData.getHasUnsubmittedCaseData())
-            .submitDraftAnswers(YesOrNo.NO)
+            .submitDraftAnswers(draftData.getSubmitDraftAnswers())
             .build();
     }
 
@@ -39,6 +39,7 @@ public class RespondPossessionClaimDraftService {
                                PCSCase caseDataFromPayload) {
         PCSCase filteredDraft = PCSCase.builder()
             .possessionClaimResponse(initialResponse)
+            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, filteredDraft, respondPossessionClaim);
@@ -53,13 +54,23 @@ public class RespondPossessionClaimDraftService {
     }
 
     public void save(long caseReference, PCSCase caseData) {
+        // Load existing draft to preserve claimantProvided (read-only for defendants)
+        PCSCase existingDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+            .orElseThrow(() -> new IllegalStateException("Draft not found for case " + caseReference));
+
+        // Preserve the original claimantProvided (read-only) and only update defendantProvided
+        PossessionClaimResponse preservedResponse = PossessionClaimResponse.builder()
+            .claimantProvided(existingDraft.getPossessionClaimResponse().getClaimantProvided())
+            .defendantProvided(caseData.getPossessionClaimResponse().getDefendantProvided())
+            .build();
+
         PCSCase draftToSave = PCSCase.builder()
-            .possessionClaimResponse(caseData.getPossessionClaimResponse())
+            .possessionClaimResponse(preservedResponse)
             .submitDraftAnswers(caseData.getSubmitDraftAnswers())
             .build();
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, draftToSave, respondPossessionClaim);
 
-        log.debug("Draft saved successfully for case {}", caseReference);
+        log.info("Draft saved successfully for case {} - claimantProvided preserved as read-only", caseReference);
     }
 }

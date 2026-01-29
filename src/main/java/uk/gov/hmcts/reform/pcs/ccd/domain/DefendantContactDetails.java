@@ -5,17 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PossessionClaimResponse {
+public class DefendantContactDetails {
 
     @CCD
-    private ClaimantProvidedInfo claimantProvided;
+    private Party party;
 
     @CCD
-    private DefendantProvided defendantProvided;
+    private YesOrNo contactByPhone;
 }
-

@@ -10,12 +10,11 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PossessionClaimResponse {
+public class DefendantProvided {
 
     @CCD
-    private ClaimantProvidedInfo claimantProvided;
+    private DefendantContactDetails contactDetails;
 
     @CCD
-    private DefendantProvided defendantProvided;
+    private DefendantResponses responses;
 }
-

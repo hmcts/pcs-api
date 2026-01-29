@@ -7,9 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -97,7 +97,8 @@ class StartEventHandlerTest {
 
         PCSCase initializedDraft = PCSCase.builder()
             .possessionClaimResponse(PossessionClaimResponse.builder()
-                .party(Party.builder().firstName("John").lastName("Doe").build())
+                .claimantProvided(null)
+                .defendantProvided(null)
                 .build())
             .build();
 
@@ -129,10 +130,8 @@ class StartEventHandlerTest {
 
         PCSCase existingDraft = PCSCase.builder()
             .possessionClaimResponse(PossessionClaimResponse.builder()
-                .party(Party.builder()
-                    .firstName("SavedName")
-                    .emailAddress("saved@example.com")
-                    .build())
+                .claimantProvided(null)
+                .defendantProvided(null)
                 .build())
             .build();
 
@@ -354,7 +353,8 @@ class StartEventHandlerTest {
 
         PCSCase initializedDraft = PCSCase.builder()
             .possessionClaimResponse(PossessionClaimResponse.builder()
-                .party(Party.builder().build())
+                .claimantProvided(null)
+                .defendantProvided(null)
                 .build())
             .build();
 
@@ -373,7 +373,14 @@ class StartEventHandlerTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getPossessionClaimResponse()).isNotNull();
-        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        // Verify defensive programming: Party objects are created even with null data
+        verify(draftService).initialize(eq(CASE_REFERENCE), argThat(response ->
+            response.getClaimantProvided() != null
+                && response.getClaimantProvided().getParty() != null
+                && response.getDefendantProvided() != null
+                && response.getDefendantProvided().getContactDetails() != null
+                && response.getDefendantProvided().getContactDetails().getParty() != null
+        ), any(PCSCase.class));
     }
 
     @Test
@@ -408,7 +415,9 @@ class StartEventHandlerTest {
 
         // Then
         verify(draftService).initialize(eq(CASE_REFERENCE), argThat(response ->
-            response.getContactByPhone() == uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES
+            response.getDefendantProvided() != null
+                && response.getDefendantProvided().getContactDetails() != null
+                && response.getDefendantProvided().getContactDetails().getContactByPhone() == YesOrNo.YES
         ), any(PCSCase.class));
     }
 
@@ -443,7 +452,9 @@ class StartEventHandlerTest {
 
         // Then
         verify(draftService).initialize(eq(CASE_REFERENCE), argThat(response ->
-            response.getContactByPhone() == uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO
+            response.getDefendantProvided() != null
+                && response.getDefendantProvided().getContactDetails() != null
+                && response.getDefendantProvided().getContactDetails().getContactByPhone() == YesOrNo.NO
         ), any(PCSCase.class));
     }
 
@@ -478,7 +489,9 @@ class StartEventHandlerTest {
 
         // Then
         verify(draftService).initialize(eq(CASE_REFERENCE), argThat(response ->
-            response.getContactByPhone() == null
+            response.getDefendantProvided() != null
+                && response.getDefendantProvided().getContactDetails() != null
+                && response.getDefendantProvided().getContactDetails().getContactByPhone() == null
         ), any(PCSCase.class));
     }
 

@@ -8,9 +8,13 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantProvidedInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantProvided;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -78,14 +82,22 @@ class RespondPossessionClaimDraftServiceTest {
             .emailAddress("john@example.com")
             .build();
 
-        PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(draftParty)
             .contactByPhone(YesOrNo.YES)
             .build();
 
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
+            .build();
+
         PCSCase draftData = PCSCase.builder()
             .possessionClaimResponse(draftResponse)
-            .submitDraftAnswers(YesOrNo.YES)
+            .submitDraftAnswers(YesOrNo.NO)
             .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
 
@@ -105,10 +117,13 @@ class RespondPossessionClaimDraftServiceTest {
         // Then - Verify draft data overlays onto payload
         assertThat(result).isNotNull();
         assertThat(result.getPossessionClaimResponse()).isEqualTo(draftResponse);
-        assertThat(result.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
-        assertThat(result.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(result.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
-        assertThat(result.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
+        assertThat(result.getPossessionClaimResponse().getDefendantProvided()
+            .getContactDetails().getParty().getFirstName()).isEqualTo("John");
+        assertThat(result.getPossessionClaimResponse().getDefendantProvided()
+            .getContactDetails().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(result.getPossessionClaimResponse().getDefendantProvided()
+            .getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.YES);
+        assertThat(result.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);  // Drafts always have NO
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
 
         // Then - Verify payload fields are preserved (no data loss from toBuilder)
@@ -144,8 +159,16 @@ class RespondPossessionClaimDraftServiceTest {
             .lastName("Smith")
             .build();
 
-        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
             .build();
 
         // Given - Payload data from CCD (contains fields like legislativeCountry)
@@ -183,7 +206,7 @@ class RespondPossessionClaimDraftServiceTest {
 
         PCSCase patchedDraft = pcsCaseCaptor.getValue();
         assertThat(patchedDraft.getPossessionClaimResponse()).isEqualTo(initialResponse);
-        assertThat(patchedDraft.getSubmitDraftAnswers()).isNull();
+        assertThat(patchedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
         assertThat(patchedDraft.getLegislativeCountry()).isNull(); // Should NOT save payload fields
         assertThat(patchedDraft.getFormattedPropertyAddress()).isNull();
         assertThat(patchedDraft.getFeeAmount()).isNull();
@@ -191,7 +214,27 @@ class RespondPossessionClaimDraftServiceTest {
 
     @Test
     void shouldSaveDraftWithCorrectDataStructure() {
-        // Given
+        // Given - Existing draft with claimantProvided (read-only)
+        Party claimantProvidedParty = Party.builder()
+            .orgName("Original Landlord")
+            .build();
+
+        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
+            .claimantProvided(ClaimantProvidedInfo.builder()
+                .party(claimantProvidedParty)
+                .tenancyType("Assured tenancy")
+                .legislativeCountry(LegislativeCountry.ENGLAND)
+                .build())
+            .build();
+
+        PCSCase existingDraft = PCSCase.builder()
+            .possessionClaimResponse(existingDraftResponse)
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(existingDraft));
+
+        // New data from defendant
         Party party = Party.builder()
             .firstName("John")
             .lastName("Doe")
@@ -199,9 +242,17 @@ class RespondPossessionClaimDraftServiceTest {
             .phoneNumber("07700900000")
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
             .contactByPhone(YesOrNo.YES)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantProvided(defendantProvided)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -221,13 +272,110 @@ class RespondPossessionClaimDraftServiceTest {
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getParty()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getEmailAddress()).isEqualTo("john@example.com");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getPhoneNumber()).isEqualTo("07700900000");
-        assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
+
+        // Verify claimantProvided is preserved (read-only)
+        assertThat(savedDraft.getPossessionClaimResponse().getClaimantProvided()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getClaimantProvided().getParty().getOrgName())
+            .isEqualTo("Original Landlord");
+
+        // Verify defendantProvided is updated
+        DefendantProvided savedDefendantProvided = savedDraft.getPossessionClaimResponse().getDefendantProvided();
+        assertThat(savedDefendantProvided).isNotNull();
+        assertThat(savedDefendantProvided.getContactDetails()).isNotNull();
+        assertThat(savedDefendantProvided.getContactDetails().getParty()).isNotNull();
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getFirstName()).isEqualTo("John");
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getEmailAddress())
+            .isEqualTo("john@example.com");
+        assertThat(savedDefendantProvided.getContactDetails().getParty().getPhoneNumber())
+            .isEqualTo("07700900000");
+        assertThat(savedDefendantProvided.getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.YES);
         assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
+    }
+
+    @Test
+    void shouldPreventClaimantProvidedFromBeingModified() {
+        // Given - Existing draft with original claimantProvided
+        Party originalClaimantParty = Party.builder()
+            .orgName("Original Landlord Ltd")
+            .nameKnown(VerticalYesNo.YES)
+            .build();
+
+        ClaimantProvidedInfo originalClaimantProvided = ClaimantProvidedInfo.builder()
+            .party(originalClaimantParty)
+            .tenancyType("Assured tenancy")
+            .dailyRentAmount(new java.math.BigDecimal("17614"))
+            .rentArrearsOwed(new java.math.BigDecimal("122200"))
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+
+        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
+            .claimantProvided(originalClaimantProvided)
+            .build();
+
+        PCSCase existingDraft = PCSCase.builder()
+            .possessionClaimResponse(existingDraftResponse)
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(existingDraft));
+
+        // Malicious client tries to modify claimantProvided
+        Party tamperedClaimantParty = Party.builder()
+            .orgName("HACKED - Modified Landlord")
+            .nameKnown(VerticalYesNo.NO)
+            .build();
+
+        ClaimantProvidedInfo tamperedClaimantProvided = ClaimantProvidedInfo.builder()
+            .party(tamperedClaimantParty)
+            .tenancyType("HACKED - Different tenancy")
+            .dailyRentAmount(new java.math.BigDecimal("1"))  // Tampered amount
+            .rentArrearsOwed(new java.math.BigDecimal("1"))  // Tampered amount
+            .legislativeCountry(LegislativeCountry.WALES)
+            .build();
+
+        DefendantProvided defendantProvided = DefendantProvided.builder()
+            .contactDetails(DefendantContactDetails.builder()
+                .party(Party.builder().firstName("John").build())
+                .build())
+            .build();
+
+        PossessionClaimResponse tamperedResponse = PossessionClaimResponse.builder()
+            .claimantProvided(tamperedClaimantProvided)  // Attempt to tamper
+            .defendantProvided(defendantProvided)
+            .build();
+
+        PCSCase caseDataWithTamperedClaimant = PCSCase.builder()
+            .possessionClaimResponse(tamperedResponse)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        // When
+        underTest.save(CASE_REFERENCE, caseDataWithTamperedClaimant);
+
+        // Then
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE),
+            pcsCaseCaptor.capture(),
+            eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+
+        // Verify claimantProvided is NOT modified - original values preserved
+        ClaimantProvidedInfo savedClaimantProvided = savedDraft.getPossessionClaimResponse().getClaimantProvided();
+        assertThat(savedClaimantProvided).isNotNull();
+        assertThat(savedClaimantProvided.getParty().getOrgName()).isEqualTo("Original Landlord Ltd");
+        assertThat(savedClaimantProvided.getParty().getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedClaimantProvided.getTenancyType()).isEqualTo("Assured tenancy");
+        assertThat(savedClaimantProvided.getDailyRentAmount())
+            .isEqualByComparingTo(new java.math.BigDecimal("17614"));
+        assertThat(savedClaimantProvided.getRentArrearsOwed())
+            .isEqualByComparingTo(new java.math.BigDecimal("122200"));
+        assertThat(savedClaimantProvided.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+
+        // Verify defendantProvided is updated
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantProvided()).isNotNull();
     }
 
 }

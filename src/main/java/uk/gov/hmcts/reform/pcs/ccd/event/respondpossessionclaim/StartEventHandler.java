@@ -7,6 +7,10 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantProvidedInfo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantProvided;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
@@ -101,18 +105,65 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private PossessionClaimResponse buildInitialResponse(PartyEntity defendantEntity, long caseReference) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         AddressUK contactAddress = resolveAddress(defendantEntity, caseReference);
-        Party party = buildParty(defendantEntity, contactAddress);
+        String claimantOrgName = extractClaimantOrgName(pcsCaseEntity, caseReference);
+
+        ClaimantProvidedInfo claimantProvided = buildClaimantProvidedInfo(
+            defendantEntity,
+            pcsCaseEntity,
+            contactAddress,
+            claimantOrgName
+        );
+        DefendantProvided defendantProvided = buildDefendantProvidedInfo(defendantEntity, contactAddress);
 
         return PossessionClaimResponse.builder()
+            .claimantProvided(claimantProvided)
+            .defendantProvided(defendantProvided)
+            .build();
+    }
+
+    private ClaimantProvidedInfo buildClaimantProvidedInfo(
+            PartyEntity defendantEntity,
+            PcsCaseEntity pcsCaseEntity,
+            AddressUK contactAddress,
+            String claimantOrgName) {
+        Party party = buildPartyFromDefendantEntity(defendantEntity, contactAddress, claimantOrgName);
+
+        return ClaimantProvidedInfo.builder()
             .party(party)
+            .legislativeCountry(extractLegislativeCountry(pcsCaseEntity))
+            .tenancyType(extractTenancyType(pcsCaseEntity))
+            .tenancyStartDate(extractTenancyStartDate(pcsCaseEntity))
+            .dailyRentAmount(extractDailyRentAmount(pcsCaseEntity))
+            .rentArrearsOwed(extractRentArrearsOwed(pcsCaseEntity))
+            .noticeServed(extractNoticeServed(pcsCaseEntity))
+            .noticeDate(extractNoticeDate(pcsCaseEntity))
+            .build();
+    }
+
+    private DefendantProvided buildDefendantProvidedInfo(PartyEntity defendantEntity, AddressUK contactAddress) {
+        Party defendantEditableParty = buildDefendantEditableParty(defendantEntity, contactAddress);
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(defendantEditableParty)
             .contactByPhone(extractContactByPhone(defendantEntity))
-            .claimantProvidedLegislativeCountry(extractLegislativeCountry(pcsCaseEntity))
-            .claimantProvidedTenancyType(extractTenancyType(pcsCaseEntity))
-            .claimantProvidedTenancyStartDate(extractTenancyStartDate(pcsCaseEntity))
-            .claimantProvidedDailyRentAmount(extractDailyRentAmount(pcsCaseEntity))
-            .claimantProvidedRentArrearsOwed(extractRentArrearsOwed(pcsCaseEntity))
-            .claimantProvidedNoticeServed(extractNoticeServed(pcsCaseEntity))
-            .claimantProvidedNoticeDate(extractNoticeDate(pcsCaseEntity))
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .build();
+
+        return DefendantProvided.builder()
+            .contactDetails(contactDetails)
+            .responses(responses)
+            .build();
+    }
+
+    private Party buildDefendantEditableParty(PartyEntity defendantEntity, AddressUK contactAddress) {
+        return Party.builder()
+            .firstName(defendantEntity.getFirstName())
+            .lastName(defendantEntity.getLastName())
+            .emailAddress(defendantEntity.getEmailAddress())
+            .address(contactAddress)
+            .phoneNumber(defendantEntity.getPhoneNumber())
             .build();
     }
 
@@ -127,11 +178,14 @@ public class StartEventHandler implements Start<PCSCase, State> {
         }
     }
 
-    private Party buildParty(PartyEntity defendantEntity, AddressUK contactAddress) {
+    private Party buildPartyFromDefendantEntity(
+            PartyEntity defendantEntity,
+            AddressUK contactAddress,
+            String claimantOrgName) {
         return Party.builder()
             .firstName(defendantEntity.getFirstName())
             .lastName(defendantEntity.getLastName())
-            .orgName(defendantEntity.getOrgName())
+            .orgName(claimantOrgName)
             .nameKnown(defendantEntity.getNameKnown())
             .emailAddress(defendantEntity.getEmailAddress())
             .address(contactAddress)
@@ -139,6 +193,22 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .addressSameAsProperty(defendantEntity.getAddressSameAsProperty())
             .phoneNumber(defendantEntity.getPhoneNumber())
             .build();
+    }
+
+    private String extractClaimantOrgName(PcsCaseEntity pcsCaseEntity, long caseReference) {
+        ClaimEntity mainClaim = pcsCaseEntity.getClaims().stream()
+            .findFirst()
+            .orElseThrow(() -> {
+                log.error("No claim found for case {}", caseReference);
+                return new CaseAccessException("No claim found for this case");
+            });
+
+        return mainClaim.getClaimParties().stream()
+            .filter(claimParty -> claimParty.getRole() == PartyRole.CLAIMANT)
+            .map(ClaimPartyEntity::getParty)
+            .map(PartyEntity::getOrgName)
+            .findFirst()
+            .orElse(null);
     }
 
     private LegislativeCountry extractLegislativeCountry(PcsCaseEntity pcsCaseEntity) {
