@@ -71,6 +71,6 @@ public class RespondPossessionClaimDraftService {
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, draftToSave, respondPossessionClaim);
 
-        log.info("Draft saved successfully for case {} - claimantProvided preserved as read-only", caseReference);
+        log.debug("Draft saved successfully for case {}", caseReference);
     }
 }
