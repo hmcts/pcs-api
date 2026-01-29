@@ -54,18 +54,14 @@ public class RespondPossessionClaimDraftService {
     }
 
     public void save(long caseReference, PCSCase caseData) {
-        // Load existing draft to preserve claimantProvided (read-only for defendants)
-        PCSCase existingDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
-            .orElseThrow(() -> new IllegalStateException("Draft not found for case " + caseReference));
-
-        // Preserve the original claimantProvided (read-only) and only update defendantProvided
-        PossessionClaimResponse preservedResponse = PossessionClaimResponse.builder()
-            .claimantProvided(existingDraft.getPossessionClaimResponse().getClaimantProvided())
+        // Build patch with ONLY defendantProvided (no claimantProvided)
+        // Merge logic in DraftCaseDataService will preserve existing claimantProvided
+        PossessionClaimResponse patchResponse = PossessionClaimResponse.builder()
             .defendantProvided(caseData.getPossessionClaimResponse().getDefendantProvided())
             .build();
 
         PCSCase draftToSave = PCSCase.builder()
-            .possessionClaimResponse(preservedResponse)
+            .possessionClaimResponse(patchResponse)
             .submitDraftAnswers(caseData.getSubmitDraftAnswers())
             .build();
 
