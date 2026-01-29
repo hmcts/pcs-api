@@ -137,9 +137,19 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         label: yourHCEO.nameOfYourHCEOLabel,
         input: yourHCEO.nameOfYourHCEOInput,
       });
-      await performValidation('mainHeader', moneyOwed.mainHeaderWrit);
-      await performAction('clickButton', moneyOwed.continueButton);
-      await performValidation('mainHeader', legalCosts.mainHeader);
+      await performValidation('mainHeader', moneyOwed.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: moneyOwed.errorValidation,
+        validationType: moneyOwed.errorValidationType.one,
+        inputArray: moneyOwed.errorValidationField.errorMoneyField,
+        label: moneyOwed.totalAmountOwedTextLabel,
+        button: moneyOwed.continueButton
+      });
+      await performAction('provideMoneyOwed', {
+        label: moneyOwed.totalAmountOwedTextLabel,
+        input: moneyOwed.totalAmountOwedTextInput,
+        nextPage: legalCosts.mainHeader
+      });
       await performAction('inputErrorValidation', {
         validationReq: legalCosts.errorValidation,
         validationType: legalCosts.errorValidationType.three,
@@ -213,9 +223,19 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
     await performValidation('mainHeader', theNICEWillChoose.mainHeader);
     await performAction('clickButton', theNICEWillChoose.continueButton);
-    await performValidation('mainHeader', moneyOwed.mainHeaderWrit);
-    await performAction('clickButton', moneyOwed.continueButton);
-    await performValidation('mainHeader', legalCosts.mainHeader);
+    await performValidation('mainHeader', moneyOwed.mainHeader);
+    await performAction('inputErrorValidation', {
+      validationReq: moneyOwed.errorValidation,
+      validationType: moneyOwed.errorValidationType.one,
+      inputArray: moneyOwed.errorValidationField.errorMoneyField,
+      label: moneyOwed.totalAmountOwedTextLabel,
+      button: moneyOwed.continueButton
+    });
+    await performAction('provideMoneyOwed', {
+      label: moneyOwed.totalAmountOwedTextLabel,
+      input: moneyOwed.totalAmountOwedTextInput,
+      nextPage: legalCosts.mainHeader
+    });
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.noRadioOption,
