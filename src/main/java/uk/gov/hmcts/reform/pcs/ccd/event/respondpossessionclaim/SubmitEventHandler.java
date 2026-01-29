@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -31,9 +32,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return validationError;
         }
 
-        YesOrNo submitFlag = caseData.getSubmitDraftAnswers() != null
-            ? caseData.getSubmitDraftAnswers()
-            : YesOrNo.NO;
+        YesOrNo submitFlag = Optional.ofNullable(caseData.getSubmitDraftAnswers())
+            .orElse(YesOrNo.NO);
 
         if (submitFlag.toBoolean()) {
             return processFinalSubmit(caseReference, caseData);
