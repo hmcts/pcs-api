@@ -5,7 +5,7 @@ export const moneyOwed = {
   totalAmountOwedTextInput: '9999.99',
   continueButton: 'Continue',
   arrearsAndOtherCosts: 'Arrears and other costs',
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidation: 'YES',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorMoneyField: [
