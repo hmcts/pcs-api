@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -43,7 +43,7 @@ public class RentDetailsRoutingIntegrationTest {
                     .build()
             )
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(noRentArrearsMandatory)
                     .discretionaryGrounds(noRentArrearsDiscretionary)
                     .build()
@@ -151,7 +151,7 @@ public class RentDetailsRoutingIntegrationTest {
                                   .typeOfTenancyLicence(null)
                                   .build()
                           )
-                          .noRentArrearsGroundsOptions(NoRentArrearsGroundsOptions.builder()
+                          .noRentArrearsGroundsOptions(AssuredNoArrearsPossessionGrounds.builder()
                                                            .mandatoryGrounds(Set.of(SERIOUS_RENT_ARREARS_GROUND8))
                                                            .build()
                           )
@@ -165,7 +165,7 @@ public class RentDetailsRoutingIntegrationTest {
                                   .build()
                           )
                           .noRentArrearsGroundsOptions(
-                              NoRentArrearsGroundsOptions.builder()
+                              AssuredNoArrearsPossessionGrounds.builder()
                                   .mandatoryGrounds(Set.of())
                                   .discretionaryGrounds(Set.of())
                                   .build()
@@ -181,7 +181,7 @@ public class RentDetailsRoutingIntegrationTest {
                                   .build()
                           )
                           .noRentArrearsGroundsOptions(
-                              NoRentArrearsGroundsOptions.builder()
+                              AssuredNoArrearsPossessionGrounds.builder()
                                   .mandatoryGrounds(
                                       Set.of(SERIOUS_RENT_ARREARS_GROUND8))
                                   .discretionaryGrounds(

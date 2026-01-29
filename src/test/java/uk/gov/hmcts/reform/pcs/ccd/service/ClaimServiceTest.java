@@ -87,7 +87,7 @@ class ClaimServiceTest {
         when(pcsCase.getLanguageUsed()).thenReturn(LanguageUsed.ENGLISH);
 
         List<ClaimGroundEntity> expectedClaimGrounds = List.of(mock(ClaimGroundEntity.class));
-        when(claimGroundService.getGroundsWithReason(pcsCase)).thenReturn(expectedClaimGrounds);
+        when(claimGroundService.createClaimGroundEntities(pcsCase)).thenReturn(expectedClaimGrounds);
 
         // When
         ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);

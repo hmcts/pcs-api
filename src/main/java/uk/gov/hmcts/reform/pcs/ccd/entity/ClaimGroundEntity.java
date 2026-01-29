@@ -1,8 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,14 +37,17 @@ public class ClaimGroundEntity {
     @JsonBackReference
     private ClaimEntity claim;
 
-    @Column(name = "ground_id")
-    private String groundId;
+    @Enumerated(value = EnumType.STRING)
+    private ClaimGroundCategory category;
 
-    @Column(name = "ground_reason")
-    private String groundReason;
+    private String code;
 
-    @Column(name = "ground_description")
-    private String groundDescription;
+    private String reason;
+
+    private String description;
+
+    private Boolean isRentArrears;
+
 }
 
 

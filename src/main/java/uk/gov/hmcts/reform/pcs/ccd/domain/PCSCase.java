@@ -143,7 +143,7 @@ public class PCSCase {
     private YesOrNo claimDueToRentArrears;
 
     @JsonUnwrapped(prefix = "rentArrears_")
-    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
+    private AssuredRentArrearsPossessionGrounds assuredRentArrearsPossessionGrounds;
 
     @CCD(
         label = "Do you have any other additional grounds for possession?"
@@ -323,9 +323,9 @@ public class PCSCase {
     private VerticalYesNo arrearsJudgmentWanted;
 
     @JsonUnwrapped(prefix = "noRentArrears_")
-    private NoRentArrearsGroundsOptions noRentArrearsGroundsOptions;
+    private AssuredNoArrearsPossessionGrounds noRentArrearsGroundsOptions;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "assuredNoArrearsReasons_")
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     private YesOrNo showRentSectionPage;
@@ -479,4 +479,8 @@ public class PCSCase {
     @CCD(searchable = false)
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
+
 }

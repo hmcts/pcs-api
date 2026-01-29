@@ -5,7 +5,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 /**
  * Enum representing rent arrears grounds for possession claims.
  */
-public enum RentArrearsGround {
+public enum AssuredRentArrearsGround {
 
     @CCD(label = "Serious rent arrears (ground 8)")
     SERIOUS_RENT_ARREARS_GROUND8,

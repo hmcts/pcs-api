@@ -8,7 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.Set;
@@ -28,7 +28,7 @@ class GroundsForPossessionTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(Set.of(AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A))
                     .discretionaryGrounds(
                         Set.of(AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A))
@@ -56,7 +56,7 @@ class GroundsForPossessionTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(Set.of(AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A))
                     .discretionaryGrounds(
                         Set.of(AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A))
