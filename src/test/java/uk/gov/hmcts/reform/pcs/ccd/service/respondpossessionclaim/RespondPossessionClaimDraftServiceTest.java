@@ -214,27 +214,7 @@ class RespondPossessionClaimDraftServiceTest {
 
     @Test
     void shouldSaveDraftWithCorrectDataStructure() {
-        // Given - Existing draft with claimantProvided (read-only)
-        Party claimantProvidedParty = Party.builder()
-            .orgName("Original Landlord")
-            .build();
-
-        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
-            .claimantProvided(ClaimantProvidedInfo.builder()
-                .party(claimantProvidedParty)
-                .tenancyType("Assured tenancy")
-                .legislativeCountry(LegislativeCountry.ENGLAND)
-                .build())
-            .build();
-
-        PCSCase existingDraft = PCSCase.builder()
-            .possessionClaimResponse(existingDraftResponse)
-            .build();
-
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(existingDraft));
-
-        // New data from defendant
+        // Given - New data from defendant
         Party party = Party.builder()
             .firstName("John")
             .lastName("Doe")
@@ -273,12 +253,10 @@ class RespondPossessionClaimDraftServiceTest {
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
 
-        // Verify claimantProvided is preserved (read-only)
-        assertThat(savedDraft.getPossessionClaimResponse().getClaimantProvided()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getClaimantProvided().getParty().getOrgName())
-            .isEqualTo("Original Landlord");
+        // Verify claimantProvided is NOT in patch (will be preserved by merge logic)
+        assertThat(savedDraft.getPossessionClaimResponse().getClaimantProvided()).isNull();
 
-        // Verify defendantProvided is updated
+        // Verify defendantProvided is in the patch
         DefendantProvided savedDefendantProvided = savedDraft.getPossessionClaimResponse().getDefendantProvided();
         assertThat(savedDefendantProvided).isNotNull();
         assertThat(savedDefendantProvided.getContactDetails()).isNotNull();
@@ -295,32 +273,7 @@ class RespondPossessionClaimDraftServiceTest {
 
     @Test
     void shouldPreventClaimantProvidedFromBeingModified() {
-        // Given - Existing draft with original claimantProvided
-        Party originalClaimantParty = Party.builder()
-            .orgName("Original Landlord Ltd")
-            .nameKnown(VerticalYesNo.YES)
-            .build();
-
-        ClaimantProvidedInfo originalClaimantProvided = ClaimantProvidedInfo.builder()
-            .party(originalClaimantParty)
-            .tenancyType("Assured tenancy")
-            .dailyRentAmount(new java.math.BigDecimal("17614"))
-            .rentArrearsOwed(new java.math.BigDecimal("122200"))
-            .legislativeCountry(LegislativeCountry.ENGLAND)
-            .build();
-
-        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
-            .claimantProvided(originalClaimantProvided)
-            .build();
-
-        PCSCase existingDraft = PCSCase.builder()
-            .possessionClaimResponse(existingDraftResponse)
-            .build();
-
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(existingDraft));
-
-        // Malicious client tries to modify claimantProvided
+        // Given - Malicious client tries to modify claimantProvided
         Party tamperedClaimantParty = Party.builder()
             .orgName("HACKED - Modified Landlord")
             .nameKnown(VerticalYesNo.NO)
@@ -362,61 +315,22 @@ class RespondPossessionClaimDraftServiceTest {
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
 
-        // Verify claimantProvided is NOT modified - original values preserved
+        // Verify tampered claimantProvided is NOT in patch (completely ignored)
         ClaimantProvidedInfo savedClaimantProvided = savedDraft.getPossessionClaimResponse().getClaimantProvided();
-        assertThat(savedClaimantProvided).isNotNull();
-        assertThat(savedClaimantProvided.getParty().getOrgName()).isEqualTo("Original Landlord Ltd");
-        assertThat(savedClaimantProvided.getParty().getNameKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedClaimantProvided.getTenancyType()).isEqualTo("Assured tenancy");
-        assertThat(savedClaimantProvided.getDailyRentAmount())
-            .isEqualByComparingTo(new java.math.BigDecimal("17614"));
-        assertThat(savedClaimantProvided.getRentArrearsOwed())
-            .isEqualByComparingTo(new java.math.BigDecimal("122200"));
-        assertThat(savedClaimantProvided.getLegislativeCountry()).isEqualTo(LegislativeCountry.ENGLAND);
+        assertThat(savedClaimantProvided).isNull();
 
-        // Verify defendantProvided is updated
+        // Verify defendantProvided is in the patch
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantProvided()).isNotNull();
     }
 
     @Test
     void shouldMergeDefendantProvidedWhenUserEditsOnlyFirstName() {
-        // Given - Existing draft with initial defendant data
+        // Given - User edited ONLY firstName (UI sends back complete defendantProvided with updated firstName)
         uk.gov.hmcts.ccd.sdk.type.AddressUK initialAddress = uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
             .addressLine1("123 Initial Street")
             .postCode("SW1A 1AA")
             .build();
 
-        Party initialParty = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress("john@example.com")
-            .phoneNumber("07700900000")
-            .address(initialAddress)
-            .build();
-
-        ClaimantProvidedInfo claimantProvided = ClaimantProvidedInfo.builder()
-            .party(Party.builder().orgName("Housing Association Ltd").build())
-            .tenancyType("Assured tenancy")
-            .build();
-
-        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
-            .claimantProvided(claimantProvided)
-            .defendantProvided(DefendantProvided.builder()
-                .contactDetails(DefendantContactDetails.builder()
-                    .party(initialParty)
-                    .contactByPhone(YesOrNo.YES)
-                    .build())
-                .build())
-            .build();
-
-        PCSCase existingDraft = PCSCase.builder()
-            .possessionClaimResponse(existingDraftResponse)
-            .build();
-
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(existingDraft));
-
-        // Given - User edited ONLY firstName (UI sends back complete defendantProvided with updated firstName)
         Party updatedParty = Party.builder()
             .firstName("Jonathan")  // ← CHANGED
             .lastName("Doe")        // ← UNCHANGED
@@ -442,7 +356,7 @@ class RespondPossessionClaimDraftServiceTest {
         // When
         underTest.save(CASE_REFERENCE, userSubmittedData);
 
-        // Then - Verify merge happened correctly
+        // Then - Verify patch contains only defendantProvided
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE),
             pcsCaseCaptor.capture(),
@@ -452,12 +366,10 @@ class RespondPossessionClaimDraftServiceTest {
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
 
-        // Verify claimantProvided is UNCHANGED (read-only)
-        assertThat(savedResponse.getClaimantProvided()).isEqualTo(claimantProvided);
-        assertThat(savedResponse.getClaimantProvided().getParty().getOrgName())
-            .isEqualTo("Housing Association Ltd");
+        // Verify claimantProvided is NOT in patch (merge logic will preserve from DB)
+        assertThat(savedResponse.getClaimantProvided()).isNull();
 
-        // Verify defendantProvided is REPLACED with user's edits
+        // Verify defendantProvided is in the patch with user's edits
         Party savedParty = savedResponse.getDefendantProvided().getContactDetails().getParty();
         assertThat(savedParty.getFirstName()).isEqualTo("Jonathan"); // ← Updated
         assertThat(savedParty.getLastName()).isEqualTo("Doe");  // ← Same
@@ -468,42 +380,6 @@ class RespondPossessionClaimDraftServiceTest {
 
     @Test
     void shouldMergeDefendantProvidedWhenUserEditsOnlyAddress() {
-        // Given - Existing draft with initial defendant data
-        uk.gov.hmcts.ccd.sdk.type.AddressUK initialAddress = uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
-            .addressLine1("123 Initial Street")
-            .postCode("SW1A 1AA")
-            .build();
-
-        Party initialParty = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress("john@example.com")
-            .phoneNumber("07700900000")
-            .address(initialAddress)
-            .build();
-
-        ClaimantProvidedInfo claimantProvided = ClaimantProvidedInfo.builder()
-            .party(Party.builder().orgName("Housing Association Ltd").build())
-            .tenancyType("Assured tenancy")
-            .build();
-
-        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
-            .claimantProvided(claimantProvided)
-            .defendantProvided(DefendantProvided.builder()
-                .contactDetails(DefendantContactDetails.builder()
-                    .party(initialParty)
-                    .contactByPhone(YesOrNo.YES)
-                    .build())
-                .build())
-            .build();
-
-        PCSCase existingDraft = PCSCase.builder()
-            .possessionClaimResponse(existingDraftResponse)
-            .build();
-
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(existingDraft));
-
         // Given - User edited ONLY address (UI sends back complete defendantProvided with new address)
         uk.gov.hmcts.ccd.sdk.type.AddressUK newAddress = uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
             .addressLine1("456 New Street")  // ← CHANGED
@@ -536,7 +412,7 @@ class RespondPossessionClaimDraftServiceTest {
         // When
         underTest.save(CASE_REFERENCE, userSubmittedData);
 
-        // Then - Verify merge happened correctly
+        // Then - Verify patch contains only defendantProvided
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE),
             pcsCaseCaptor.capture(),
@@ -546,12 +422,10 @@ class RespondPossessionClaimDraftServiceTest {
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
 
-        // Verify claimantProvided is UNCHANGED (read-only)
-        assertThat(savedResponse.getClaimantProvided()).isEqualTo(claimantProvided);
-        assertThat(savedResponse.getClaimantProvided().getParty().getOrgName())
-            .isEqualTo("Housing Association Ltd");
+        // Verify claimantProvided is NOT in patch (merge logic will preserve from DB)
+        assertThat(savedResponse.getClaimantProvided()).isNull();
 
-        // Verify defendantProvided is REPLACED with user's edits
+        // Verify defendantProvided is in the patch with user's edits
         Party savedParty = savedResponse.getDefendantProvided().getContactDetails().getParty();
         assertThat(savedParty.getFirstName()).isEqualTo("John");  // ← Same
         assertThat(savedParty.getLastName()).isEqualTo("Doe");  // ← Same
@@ -565,50 +439,12 @@ class RespondPossessionClaimDraftServiceTest {
 
     @Test
     void shouldReplaceEntireDefendantProvidedOnSave() {
-        // Given - Existing draft with defendant data including all 9 Party fields
+        // Given - User submits with updated firstName and lastName
         uk.gov.hmcts.ccd.sdk.type.AddressUK initialAddress = uk.gov.hmcts.ccd.sdk.type.AddressUK.builder()
             .addressLine1("123 Initial Street")
             .postCode("SW1A 1AA")
             .build();
 
-        Party initialParty = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .orgName("Housing Association Ltd")  // All 9 fields present on first load
-            .nameKnown(VerticalYesNo.YES)
-            .emailAddress("john@example.com")
-            .phoneNumber("07700900000")
-            .address(initialAddress)
-            .addressKnown(VerticalYesNo.YES)
-            .addressSameAsProperty(VerticalYesNo.NO)
-            .build();
-
-        ClaimantProvidedInfo claimantProvided = ClaimantProvidedInfo.builder()
-            .party(Party.builder()
-                .orgName("Housing Association Ltd")
-                .nameKnown(VerticalYesNo.YES)
-                .build())
-            .tenancyType("Assured tenancy")
-            .build();
-
-        PossessionClaimResponse existingDraftResponse = PossessionClaimResponse.builder()
-            .claimantProvided(claimantProvided)
-            .defendantProvided(DefendantProvided.builder()
-                .contactDetails(DefendantContactDetails.builder()
-                    .party(initialParty)
-                    .contactByPhone(YesOrNo.YES)
-                    .build())
-                .build())
-            .build();
-
-        PCSCase existingDraft = PCSCase.builder()
-            .possessionClaimResponse(existingDraftResponse)
-            .build();
-
-        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
-            .thenReturn(Optional.of(existingDraft));
-
-        // Given - User submits with updated firstName and lastName
         Party updatedParty = Party.builder()
             .firstName("Jonathan")  // ← CHANGED
             .lastName("Smith")      // ← CHANGED
@@ -638,7 +474,7 @@ class RespondPossessionClaimDraftServiceTest {
         // When
         underTest.save(CASE_REFERENCE, userSubmittedData);
 
-        // Then - Verify entire defendantProvided is replaced (not field-by-field merge)
+        // Then - Verify patch contains ONLY defendantProvided (no claimantProvided)
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE),
             pcsCaseCaptor.capture(),
@@ -648,14 +484,14 @@ class RespondPossessionClaimDraftServiceTest {
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
 
-        // Verify claimantProvided is UNCHANGED
-        assertThat(savedResponse.getClaimantProvided()).isEqualTo(claimantProvided);
+        // Verify claimantProvided is NOT in patch (merge logic will preserve from DB)
+        assertThat(savedResponse.getClaimantProvided()).isNull();
 
-        // Verify defendantProvided is COMPLETELY REPLACED (not merged field-by-field)
+        // Verify defendantProvided is in the patch
         DefendantProvided savedDefendantProvided = savedResponse.getDefendantProvided();
         assertThat(savedDefendantProvided).isEqualTo(userSubmittedResponse.getDefendantProvided());
 
-        // Verify updated fields in the replaced defendantProvided
+        // Verify updated fields in the defendantProvided
         Party savedParty = savedDefendantProvided.getContactDetails().getParty();
         assertThat(savedParty.getFirstName()).isEqualTo("Jonathan");  // ← Updated
         assertThat(savedParty.getLastName()).isEqualTo("Smith");  // ← Updated
