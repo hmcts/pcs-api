@@ -9,10 +9,13 @@ import java.util.UUID;
 
 public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEntity, UUID> {
 
-    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventId(long caseReference, EventId eventId);
+    Optional<DraftCaseDataEntity> findByCaseReferenceAndEventIdAndIdamUserId(
+        long caseReference, EventId eventId, UUID idamUserId);
 
-    boolean existsByCaseReferenceAndEventId(long caseReference, EventId eventId);
+    boolean existsByCaseReferenceAndEventIdAndIdamUserId(
+        long caseReference, EventId eventId, UUID idamUserId);
 
-    void deleteByCaseReferenceAndEventId(long caseReference, EventId eventId);
+    void deleteByCaseReferenceAndEventIdAndIdamUserId(
+        long caseReference, EventId eventId, UUID idamUserId);
 
 }

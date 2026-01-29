@@ -9,7 +9,7 @@ import {
   addressCheckYourAnswers,
   addressDetails,
   checkYourAnswers,
-  home,
+  completeYourClaim,
   housingAct,
   propertyDetails,
   reasonsForPossession,
@@ -17,11 +17,14 @@ import {
   reasonsForRequestingASuspensionAndDemotionOrder,
   reasonsForRequestingASuspensionOrder,
   rentArrearsOrBreachOfTenancy,
-  signInOrCreateAnAccount,
   statementOfExpressTerms,
   underlesseeOrMortgageeDetails,
-  user,
+  underlesseeOrMortgageeEntitledToClaim,
+  uploadAdditionalDocs,
+  wantToUploadDocuments,
   whatAreYourGroundsForPossession,
+  detailsOfRentArrears,
+  home
 } from '@data/page-data';
 import {
   claimantType,
@@ -61,17 +64,10 @@ import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 test.beforeEach(async ({page}) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
 test.afterEach(async () => {

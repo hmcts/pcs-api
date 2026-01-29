@@ -9,14 +9,20 @@ import {
   addressCheckYourAnswers,
   addressDetails,
   checkYourAnswers,
-  home,
+  completeYourClaim,
+  detailsOfRentArrears,
+  languageUsed,
   propertyDetails,
   reasonsForPossession,
   resumeClaim,
   resumeClaimOptions,
-  signInOrCreateAnAccount,
+  statementOfTruth,
+  underlesseeOrMortgageeEntitledToClaim,
   user,
-  whatAreYourGroundsForPossession
+  wantToUploadDocuments,
+  whatAreYourGroundsForPossession,
+  housingPossessionClaim,
+  home
 } from '@data/page-data';
 import {
   claimantType,
@@ -48,24 +54,33 @@ import {
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import { dismissCookieBanner } from '@config/cookie-banner';
 
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
 // When a new page is added/flow changes, basic conditions in this test should be updated accordingly to continue the journey.
-// Due to frequent issues with relogin and “Find Case” (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
+// Due to frequent issues with relogin and "Find Case" (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
 // However, it must be executed locally, and evidence of the passed results should be provided during PR review in case its failing in pipeline.
 
-test.beforeEach(async ({page}) => {
+// Disable global storageState for this file - these tests need to test sign-out/re-login flow
+test.use({ storageState: undefined });
+
+test.beforeEach(async ({page, context}) => {
+  await context.clearCookies();
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      // Ignore if storage is not accessible
+    }
   });
+
+  await dismissCookieBanner(page, 'additional');
   await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
+  await dismissCookieBanner(page, 'analytics');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');

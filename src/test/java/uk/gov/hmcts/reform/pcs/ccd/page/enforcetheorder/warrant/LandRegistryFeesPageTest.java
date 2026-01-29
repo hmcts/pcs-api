@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LandRegistryFees;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
@@ -78,6 +78,14 @@ class LandRegistryFeesPageTest extends BasePageTest {
             warrantFeeAmount,
             expectedTotalFees
         )).thenReturn("<table>Mock Repayment Table</table>");
+        when(repaymentTableRenderer.render(
+            expectedArrears,
+            expectedLegals,
+            expectedLandRegistry,
+            warrantFeeAmount,
+            expectedTotalFees,
+            "The payments due"
+        )).thenReturn("<table>Mock SOT Repayment Table</table>");
 
         // When
         callMidEventHandler(caseData);
@@ -90,9 +98,20 @@ class LandRegistryFeesPageTest extends BasePageTest {
             warrantFeeAmount,
             expectedTotalFees
         );
+        verify(repaymentTableRenderer).render(
+            expectedArrears,
+            expectedLegals,
+            expectedLandRegistry,
+            warrantFeeAmount,
+            expectedTotalFees,
+            "The payments due"
+        );
 
         assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())
             .isEqualTo("<table>Mock Repayment Table</table>");
+        assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts()
+            .getStatementOfTruthRepaymentSummaryMarkdown())
+            .isEqualTo("<table>Mock SOT Repayment Table</table>");
     }
 
     private static Stream<Arguments> repaymentFeeScenarios() {
