@@ -572,7 +572,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('uploadFile', rentArrearsData.files);
-    await performAction('inputText', rentArrears.howMuchAreTheTotalRentArrearsAsShownOnTheRentStatementQuestion, rentArrearsData.rentArrearsAmountOnStatement);
+    await performAction('inputText', rentArrears.totalRentArrearsTextLabel, rentArrearsData.rentArrearsAmountOnStatement);
     await performAction('clickRadioButton', {
       question: rentArrears.forThePeriodShownOnTheRentStatementHaveAnyRentPaymentsBeenPaidBySomeoneOtherThanTheDefendantsQuestion,
       option: rentArrearsData.rentPaidByOthersOption
