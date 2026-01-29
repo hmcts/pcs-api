@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,11 +21,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,23 +35,130 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mock.Strictness.LENIENT;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TenancyLicenceServiceTest {
 
-    private final TenancyLicenceService tenancyLicenceService = new TenancyLicenceService();
-
-    @Mock
-    private PCSCase pcsCaseMock;
-
+    @Mock(strictness = LENIENT)
+    private PCSCase pcsCase;
     @Mock
     private NoticeServedDetails noticeServedDetails;
 
+    private TenancyLicenceService underTest;
+
+    @BeforeEach
+    void setUp() {
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(TenancyLicenceDetails.builder().build());
+
+        underTest = new TenancyLicenceService();
+    }
+
     @Test
-    void shouldSetTenancyLicence() {
-        LocalDate tenancyDate = LocalDate.of(2025, 8, 27);
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+    void shouldSetTenancyLicenceDetails() {
+        // Given
+        TenancyLicenceType tenancyLicenceType = TenancyLicenceType.ASSURED_TENANCY;
+        LocalDate tenancyLicenceDate = mock(LocalDate.class);
+
+        TenancyLicenceDetails tenancyLicenceDetails = TenancyLicenceDetails.builder()
+            .typeOfTenancyLicence(tenancyLicenceType)
+            .tenancyLicenceDate(tenancyLicenceDate)
+            .detailsOfOtherTypeOfTenancyLicence("should be ignored")
+            .build();
+
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyLicenceDetails);
+
+        // When
+        TenancyLicenceEntity tenancyLicenceEntity = underTest.buildTenancyLicenceEntity(pcsCase);
+
+        // Then
+        assertThat(tenancyLicenceEntity.getType()).isEqualTo(tenancyLicenceType);
+        assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
+        assertThat(tenancyLicenceEntity.getStartDate()).isEqualTo(tenancyLicenceDate);
+    }
+
+    @Test
+    void shouldSetTenancyLicenceDetailsForOtherType() {
+        // Given
+        TenancyLicenceType tenancyLicenceType = TenancyLicenceType.OTHER;
+        LocalDate tenancyLicenceDate = mock(LocalDate.class);
+        String otherTenancyType = "other tenancy type";
+
+        TenancyLicenceDetails tenancyLicenceDetails = TenancyLicenceDetails.builder()
+            .typeOfTenancyLicence(tenancyLicenceType)
+            .tenancyLicenceDate(tenancyLicenceDate)
+            .detailsOfOtherTypeOfTenancyLicence(otherTenancyType)
+            .build();
+
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyLicenceDetails);
+
+        // When
+        TenancyLicenceEntity tenancyLicenceEntity = underTest.buildTenancyLicenceEntity(pcsCase);
+
+        // Then
+        assertThat(tenancyLicenceEntity.getType()).isEqualTo(tenancyLicenceType);
+        assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isEqualTo(otherTenancyType);
+        assertThat(tenancyLicenceEntity.getStartDate()).isEqualTo(tenancyLicenceDate);
+    }
+
+    @Test
+    void shouldSetRentDetailsInTenancyLicenceEntity() {
+        // Given
+        BigDecimal rentAmount = new BigDecimal("1.23");
+        BigDecimal dailyCharge = new BigDecimal("4.56");
+        RentPaymentFrequency rentFrequency = RentPaymentFrequency.FORTNIGHTLY;
+
+        RentDetails rentDetails = RentDetails.builder()
+            .currentRent(rentAmount)
+            .dailyCharge(dailyCharge)
+            .frequency(rentFrequency)
+            .otherFrequency("should be ignored")
+            .build();
+
+        when(pcsCase.getRentDetails()).thenReturn(rentDetails);
+
+        // When
+        TenancyLicenceEntity tenancyLicenceEntity = underTest.buildTenancyLicenceEntity(pcsCase);
+
+        // Then
+        assertThat(tenancyLicenceEntity.getRentAmount()).isEqualTo(rentAmount);
+        assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(dailyCharge);
+        assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(rentFrequency);
+        assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
+    }
+
+    @Test
+    void shouldSetRentFrequencyDetailsForOtherFrequency() {
+        // Given
+        BigDecimal rentAmount = new BigDecimal("1.23");
+        BigDecimal dailyCharge = new BigDecimal("4.56");
+        RentPaymentFrequency rentFrequency = RentPaymentFrequency.OTHER;
+        String otherRentFrequency = "other rent frequency";
+
+        RentDetails rentDetails = RentDetails.builder()
+            .currentRent(rentAmount)
+            .dailyCharge(dailyCharge)
+            .frequency(rentFrequency)
+            .otherFrequency(otherRentFrequency)
+            .build();
+
+        when(pcsCase.getRentDetails()).thenReturn(rentDetails);
+
+        // When
+        TenancyLicenceEntity tenancyLicenceEntity = underTest.buildTenancyLicenceEntity(pcsCase);
+
+        // Then
+        assertThat(tenancyLicenceEntity.getRentAmount()).isEqualTo(rentAmount);
+        assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(dailyCharge);
+        assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(rentFrequency);
+        assertThat(tenancyLicenceEntity.getOtherRentFrequency()).isEqualTo(otherRentFrequency);
+    }
+
+    @Test
+    void shouldSetLegacyTenancyLicence() {
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
 
         List<ListValue<Document>> uploadedDocs = Arrays.asList(
             ListValue.<Document>builder().id("1")
@@ -65,25 +172,6 @@ class TenancyLicenceServiceTest {
                            .build())
                 .build()
         );
-
-        // Test tenancy type field
-        TenancyLicenceDetails tenancyDetails =
-            TenancyLicenceDetails.builder()
-                .typeOfTenancyLicence(TenancyLicenceType.ASSURED_TENANCY)
-                .build();
-        assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyDetails),
-            expected -> assertThat(expected.getTenancyLicenceType())
-                .isEqualTo(TenancyLicenceType.ASSURED_TENANCY.getLabel()));
-
-        // Test tenancy date field
-        TenancyLicenceDetails tenancyDetailsWithDate =
-            TenancyLicenceDetails.builder()
-                .tenancyLicenceDate(tenancyDate)
-                .build();
-        assertTenancyLicenceField(
-            pcsCase -> when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyDetailsWithDate),
-            expected -> assertThat(expected.getTenancyLicenceDate()).isEqualTo(tenancyDate));
 
         //Test supporting documents field
         TenancyLicenceDetails tenancyDetailsWithDocs =
@@ -147,35 +235,6 @@ class TenancyLicenceServiceTest {
                 pcsCase -> when(pcsCase.getNoticeServed()).thenReturn(YesOrNo.NO),
                 expected -> assertThat(expected.getNoticeServed()).isFalse());
 
-        // Test rent amount field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-                        .currentRent(new BigDecimal("1200.00"))
-                        .build()),
-                expected -> assertThat(expected.getRentAmount())
-                        .isEqualTo(new BigDecimal("1200.00")));
-
-        // Test rent payment frequency field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-                        .frequency(RentPaymentFrequency.MONTHLY)
-                        .build()),
-                expected -> assertThat(expected.getRentPaymentFrequency()).isEqualTo(RentPaymentFrequency.MONTHLY));
-
-        // Test other rent frequency field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-                        .otherFrequency("Bi-weekly")
-                        .build()),
-                expected -> assertThat(expected.getOtherRentFrequency()).isEqualTo("Bi-weekly"));
-
-        // Test daily rent charge amount field
-        assertTenancyLicenceField(
-                pcsCase -> when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-                        .dailyCharge(new BigDecimal("40.00"))
-                        .build()),
-                expected -> assertThat(expected.getDailyRentChargeAmount()).isEqualTo(new BigDecimal("40.00")));
-
         // Test total rent arrears field
         assertTenancyLicenceField(
                 pcsCase -> when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
@@ -215,8 +274,8 @@ class TenancyLicenceServiceTest {
 
     private void assertTenancyLicenceField(Consumer<PCSCase> setupMock,
             Consumer<TenancyLicence> assertions) {
-        setupMock.accept(pcsCaseMock);
-        TenancyLicence actual = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        setupMock.accept(pcsCase);
+        TenancyLicence actual = underTest.buildTenancyLicence(pcsCase);
         assertions.accept(actual);
     }
 
@@ -224,8 +283,8 @@ class TenancyLicenceServiceTest {
     @MethodSource("dailyRentChargeScenarios")
     void shouldPreferDailyRentCharge(BigDecimal amendedDailyRent, BigDecimal calculatedDailyRent, BigDecimal dailyRent,
                                      BigDecimal expectedAmount) {
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentDetails()).thenReturn(RentDetails.builder()
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
                 .amendedDailyCharge(amendedDailyRent)
                 .calculatedDailyCharge(calculatedDailyRent)
                 .dailyCharge(dailyRent)
@@ -233,19 +292,19 @@ class TenancyLicenceServiceTest {
                 .frequency(RentPaymentFrequency.MONTHLY)
                 .build());
 
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
-        assertThat(result.getDailyRentChargeAmount()).isEqualTo(expectedAmount);
+        TenancyLicenceEntity result = underTest.buildTenancyLicenceEntity(pcsCase);
+        assertThat(result.getRentPerDay()).isEqualTo(expectedAmount);
     }
 
     @Test
     void shouldHandleNullTotalRentArrears() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .total(null)
                 .build());
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getTotalRentArrears()).isNull();
     }
@@ -253,12 +312,12 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSources() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .thirdPartyPaymentSources(Collections.emptyList())
                 .build());
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getThirdPartyPaymentSources()).isEmpty();
     }
@@ -266,12 +325,12 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSources() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .thirdPartyPaymentSources(null)
                 .build());
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getThirdPartyPaymentSources()).isNull();
     }
@@ -279,12 +338,12 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullThirdPartyPaymentSourceOther() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .paymentSourceOther(null)
                 .build());
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getThirdPartyPaymentSourceOther()).isNull();
     }
@@ -292,12 +351,12 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyThirdPartyPaymentSourceOther() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .paymentSourceOther("")
                 .build());
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getThirdPartyPaymentSourceOther()).isEqualTo("");
     }
@@ -305,12 +364,12 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullRentStatementDocuments() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .statementDocuments(null)
                 .build());
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getRentStatementDocuments()).isEmpty();
     }
@@ -318,12 +377,12 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyRentStatementDocuments() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getRentArrears()).thenReturn(RentArrearsSection.builder()
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentArrears()).thenReturn(RentArrearsSection.builder()
                 .statementDocuments(Collections.emptyList())
                 .build());
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getRentStatementDocuments()).isEmpty();
     }
@@ -331,10 +390,10 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleNullNoticeDocuments() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(noticeServedDetails.getNoticeDocuments()).thenReturn(null);
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getNoticeDocuments()).isEmpty();
     }
@@ -342,88 +401,12 @@ class TenancyLicenceServiceTest {
     @Test
     void shouldHandleEmptyNoticeDocuments() {
         // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(noticeServedDetails.getNoticeDocuments()).thenReturn(Collections.emptyList());
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
         // Then
         assertThat(result.getNoticeDocuments()).isEmpty();
-    }
-
-    @Test
-    void shouldMapWalesHousingActDetailsWhenPresent() {
-        // Given
-        LocalDate appointmentDate = LocalDate.of(2024, 3, 15);
-        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
-            .registered(YesNoNotApplicable.YES)
-            .registrationNumber("REG123456")
-            .licensed(YesNoNotApplicable.YES)
-            .licenceNumber("LIC789012")
-            .licensedAgentAppointed(YesNoNotApplicable.YES)
-            .agentFirstName("John")
-            .agentLastName("Smith")
-            .agentLicenceNumber("AGENT345678")
-            .agentAppointmentDate(appointmentDate)
-            .build();
-
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getWalesHousingAct()).thenReturn(walesHousingAct);
-
-        // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
-
-        // Then
-        assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getWalesRegistrationNumber()).isEqualTo("REG123456");
-        assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getWalesLicenceNumber()).isEqualTo("LIC789012");
-        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.YES);
-        assertThat(result.getWalesAgentFirstName()).isEqualTo("John");
-        assertThat(result.getWalesAgentLastName()).isEqualTo("Smith");
-        assertThat(result.getWalesAgentLicenceNumber()).isEqualTo("AGENT345678");
-        assertThat(result.getWalesAgentAppointmentDate()).isEqualTo(appointmentDate);
-    }
-
-    @Test
-    void shouldHandleNullWalesHousingActDetails() {
-        // Given
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getWalesHousingAct()).thenReturn(null);
-
-        // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
-
-        // Then
-        assertThat(result.getWalesRegistered()).isNull();
-        assertThat(result.getWalesRegistrationNumber()).isNull();
-        assertThat(result.getWalesLicensed()).isNull();
-        assertThat(result.getWalesLicenceNumber()).isNull();
-        assertThat(result.getWalesLicensedAgentAppointed()).isNull();
-        assertThat(result.getWalesAgentFirstName()).isNull();
-        assertThat(result.getWalesAgentLastName()).isNull();
-        assertThat(result.getWalesAgentLicenceNumber()).isNull();
-        assertThat(result.getWalesAgentAppointmentDate()).isNull();
-    }
-
-    @Test
-    void shouldHandleWalesHousingActDetailsWithNotApplicableValues() {
-        // Given
-        WalesHousingAct walesHousingAct = WalesHousingAct.builder()
-            .registered(YesNoNotApplicable.NOT_APPLICABLE)
-            .licensed(YesNoNotApplicable.NO)
-            .licensedAgentAppointed(YesNoNotApplicable.NOT_APPLICABLE)
-            .build();
-
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getWalesHousingAct()).thenReturn(walesHousingAct);
-
-        // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
-
-        // Then
-        assertThat(result.getWalesRegistered()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
-        assertThat(result.getWalesLicensed()).isEqualTo(YesNoNotApplicable.NO);
-        assertThat(result.getWalesLicensedAgentAppointed()).isEqualTo(YesNoNotApplicable.NOT_APPLICABLE);
     }
 
     @Test
@@ -435,11 +418,11 @@ class TenancyLicenceServiceTest {
             .noticeServed(YesOrNo.YES)
             .typeOfNoticeServed(typeOfNoticeServed)
             .build();
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getWalesNoticeDetails()).thenReturn(walesNoticeDetails);
 
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
 
         // Then
         assertThat(result.getWalesNoticeServed()).isTrue();
@@ -478,7 +461,7 @@ class TenancyLicenceServiceTest {
             .build();
 
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
 
         // Then - Wales fields populated
         assertThat(result.getOccupationLicenceTypeWales()).isEqualTo(OccupationLicenceTypeWales.SECURE_CONTRACT);
@@ -489,8 +472,6 @@ class TenancyLicenceServiceTest {
         assertThat(result.getWalesLicenceDocuments().get(1).getFilename()).isEqualTo("additional_doc.pdf");
 
         // England fields should be null or empty
-        assertThat(result.getTenancyLicenceType()).isNull();
-        assertThat(result.getTenancyLicenceDate()).isNull();
         assertThat(result.getSupportingDocuments()).isEmpty();
     }
 
@@ -511,7 +492,7 @@ class TenancyLicenceServiceTest {
             .build();
 
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
 
         // Then
         assertThat(result.getOccupationLicenceTypeWales()).isEqualTo(OccupationLicenceTypeWales.STANDARD_CONTRACT);
@@ -529,7 +510,7 @@ class TenancyLicenceServiceTest {
             .build();
 
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCase);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
 
         // Then - Wales fields should be null
         assertThat(result.getOccupationLicenceTypeWales()).isNull();
@@ -558,16 +539,17 @@ class TenancyLicenceServiceTest {
                 .tenancyLicenceDocuments(englandDocs)
                 .build();
 
-        when(pcsCaseMock.getNoticeServedDetails()).thenReturn(noticeServedDetails);
-        when(pcsCaseMock.getTenancyLicenceDetails()).thenReturn(tenancyDetails);
-        when(pcsCaseMock.getOccupationLicenceDetailsWales()).thenReturn(null);
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyDetails);
+        when(pcsCase.getOccupationLicenceDetailsWales()).thenReturn(null);
 
         // When
-        TenancyLicence result = tenancyLicenceService.buildTenancyLicence(pcsCaseMock);
+        TenancyLicenceEntity tenancyLicenceEntity = underTest.buildTenancyLicenceEntity(pcsCase);
+        TenancyLicence result = underTest.buildTenancyLicence(pcsCase);
 
         // Then - England fields populated
-        assertThat(result.getTenancyLicenceType()).isEqualTo("Assured tenancy");
-        assertThat(result.getTenancyLicenceDate()).isEqualTo(tenancyDate);
+        assertThat(tenancyLicenceEntity.getType()).isEqualTo(TenancyLicenceType.ASSURED_TENANCY);
+        assertThat(tenancyLicenceEntity.getStartDate()).isEqualTo(tenancyDate);
         assertThat(result.getSupportingDocuments()).hasSize(1);
 
         // Wales occupation contract fields should be null

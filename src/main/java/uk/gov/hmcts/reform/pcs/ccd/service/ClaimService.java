@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public class ClaimService {
 
     private final ClaimRepository claimRepository;
     private final ClaimGroundService claimGroundService;
+    private final PossessionAlternativesService possessionAlternativesService;
+    private final HousingActWalesService housingActWalesService;
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
 
@@ -61,6 +64,13 @@ public class ClaimService {
             .build();
 
         claimEntity.addClaimGrounds(claimGrounds);
+
+        claimEntity.setPossessionAlternativesEntity(
+            possessionAlternativesService.createPossessionAlternativesEntity(pcsCase));
+
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            claimEntity.setHousingActWales(housingActWalesService.createHousingActWalesEntity(pcsCase));
+        }
 
         claimRepository.save(claimEntity);
 
