@@ -9,7 +9,6 @@ import { ClickRadioButtonAction } from '@utils/actions/element-actions/clickRadi
 import { LoginAction } from '@utils/actions/custom-actions/login.action';
 import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.action';
 import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
-import { handleCookieConsentAction } from '@utils/actions/custom-actions/handleCookieConsent.action';
 import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { ExpandSummaryAction } from '@utils/actions/element-actions';
 import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
@@ -25,7 +24,6 @@ export class ActionEnforcementRegistry {
     ['select', new SelectAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
-    ['handleCookieConsent', new handleCookieConsentAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
     ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
     ['expandSummary', new ExpandSummaryAction()],
@@ -33,6 +31,8 @@ export class ActionEnforcementRegistry {
     ['validateWritOrWarrantFeeAmount', new EnforcementAction()],
     ['validateGetQuoteFromBailiffLink', new EnforcementAction()],
     ['selectApplicationType', new EnforcementAction()],
+    ['selectHaveHiredHCEO', new EnforcementAction()],
+    ['nameYourHCEO', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
     ['confirmDefendantsDOB', new EnforcementAction()],
     ['enterDefendantsDOB', new EnforcementAction()],
@@ -62,6 +62,8 @@ export class ActionEnforcementRegistry {
     ['validateAmountToRePayTable', new EnforcementAction()],
     ['selectLanguageUsed', new EnforcementAction()],
     ['confirmSuspendedOrder', new EnforcementAction()],
+    ['selectStatementOfTruthOne', new EnforcementAction()],
+    ['selectStatementOfTruthTwo', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],
   ]);
