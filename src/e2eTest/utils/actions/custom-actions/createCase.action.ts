@@ -50,7 +50,7 @@ import {
   statementOfTruth,
   uploadAdditionalDocuments,
 } from '@data/page-data-figma';
-import {VERY_LONG_TIMEOUT} from 'playwright.config';
+import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 export let caseNumber: string;
 export let claimantsName: string;
 export let addressInfo: { buildingStreet: string; townCity: string; engOrWalPostcode: string };
@@ -135,7 +135,7 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await page.waitForLoadState('load');
-    await page.locator('.spinner-container').waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
+    await page.locator('.spinner-container').waitFor({ state: 'detached', timeout: MEDIUM_TIMEOUT }).catch(() => {});
     await performAction('clickButton', createCase.start);
   }
 
