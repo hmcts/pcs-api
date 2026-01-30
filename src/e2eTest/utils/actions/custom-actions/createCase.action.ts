@@ -702,15 +702,15 @@ export class CreateCaseAction implements IAction {
   }
 
   private async claimSaved() {
-    await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
-    await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performValidation('mainHeader',confirm.claimSavedDynamicHeader);
-    await performValidation('text', {elementType: 'span', text: confirm.claimSavedDynamicLabel});
-    await performValidation('text', {elementType: 'span', text: confirm.aDraftOfYourClaimDynamicParagraph});
-    await performValidation('text', {elementType: 'span', text: confirm.resumeYourClaimDynamicParagraph});
-    await performValidation('text', {elementType: 'span', text: confirm.clickThroughTheQuestionsDynamicParagraph});
-    await performValidation('text', {elementType: 'span', text: confirm.chooseTheSubmitDynamicParagraph});
-    await performValidation('text', {elementType: 'span', text: confirm.selectThePayTheClaimFeeDynamicParagraph});
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseNumber });
+    await performValidation('text', { elementType: 'paragraph', text: 'Property address: ' + addressInfo.buildingStreet + ', ' + addressInfo.townCity + ', ' + addressInfo.engOrWalPostcode });
+    await performValidation('mainHeader',confirm.makeAClaimDynamicHeader);
+    await performValidation('text', { elementType: 'span', text: confirm.claimSavedDynamicLabel });
+    await performValidation('text', { elementType: 'paragraph', text: confirm.aDraftOfYourClaimDynamicParagraph });
+    await performValidation('text', { elementType: 'listItem', text: confirm.resumeYourClaimDynamicParagraph });
+    await performValidation('text', { elementType: 'listItem', text: confirm.clickThroughTheQuestionsDynamicParagraph });
+    await performValidation('text', { elementType: 'listItem', text: confirm.chooseTheSubmitDynamicParagraph });
+    await performValidation('text', { elementType: 'listItem', text: confirm.selectThePayTheClaimFeeDynamicParagraph });
     await performAction('clickButton', confirm.closeAndReturnToCaseDetailsButton);
   }
 
@@ -718,7 +718,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performValidation('mainHeader',confirm.makeAClaimDynamicHeader);
-    await performValidation('heading',confirm.makeAPaymentDynamicSubHeader);
+    await performValidation('text', {elementType: 'subHeader', text: confirm.makeAPaymentDynamicSubHeader});
     await performValidation('text', {elementType: 'span', text: confirm.pay404ClaimFeeDynamicParagraph});
     if (params?.clickLink === true) {
       await performAction('clickButton', confirm.payTheClaimFeeDynamicLink);
