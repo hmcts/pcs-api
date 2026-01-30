@@ -2,7 +2,7 @@ export const enterDefendantsDOB = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Enter the defendants’ dates of birth',
   defendantsDOBTextLabel: 'What are the defendants’ dates of birth?',
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
   errors: 'Errors',
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {

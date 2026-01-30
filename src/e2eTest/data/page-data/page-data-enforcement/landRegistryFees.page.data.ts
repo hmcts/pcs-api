@@ -8,7 +8,7 @@ export const landRegistryFees = {
   howMuchYouSpendOnLandRegistryFeeTextInput: '10009.19',
   continueButton: 'Continue',
   landRegistryFee: 'Land Registry fees',
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorMoneyField: [
