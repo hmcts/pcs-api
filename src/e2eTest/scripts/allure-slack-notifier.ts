@@ -163,6 +163,29 @@ export function failedTests(tests: AllureTestRecord[]): AllureTestRecord[] {
   );
 }
 
+/** Count tests with duration >= thresholdSeconds (default 10s). */
+export function countSlowTests(
+  tests: AllureTestRecord[],
+  thresholdSeconds: number = 10
+): number {
+  return tests.filter((t) => (t.duration_seconds ?? 0) >= thresholdSeconds).length;
+}
+
+/** Format seconds as human-readable (e.g. 1021.64 → "17m 2s", 3661 → "1h 1m 1s"). */
+export function formatDuration(seconds: number): string {
+  const s = Math.round(seconds);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  if (m < 60) return sec > 0 ? `${m}m ${sec}s` : `${m}m`;
+  const h = Math.floor(m / 60);
+  const min = m % 60;
+  const parts = [`${h}h`];
+  if (min > 0) parts.push(`${min}m`);
+  if (sec > 0) parts.push(`${sec}s`);
+  return parts.join(' ');
+}
+
 // -----------------------------
 // RAG threshold logic (edit to match your standards)
 // -----------------------------
@@ -309,30 +332,47 @@ export function buildSlackMessage(
   reportPathSuffix: string = 'allure/',
   tests: AllureTestRecord[] | null = null,
   topNSlowest: number = 5,
-  maxFailuresToList: number = 8
+  maxFailuresToList: number = 8,
+  slowThresholdSeconds: number = 10
 ): string {
   const rag = ragStatus(summary);
   const reportUrl = buildUrl ? `${buildUrl}${reportPathSuffix}` : '';
   const lines: string[] = [];
 
-  lines.push(`*Automation Test Results* — Build #${buildNumber}  ${rag}`);
-  lines.push(
-    `• Total: *${summary.total}* | ✅ ${summary.passed} | ❌ ${summary.failed} | ⚠️ ${summary.broken} | ⏭️ ${summary.skipped}`
-  );
-  lines.push(
-    `• Pass rate: *${summary.pass_rate}%* | Duration: *${summary.duration_seconds}s*`
-  );
+  // Header + RAG
+  lines.push(`*E2E Test Results* — Build #${buildNumber}  ${rag}`);
+  lines.push('');
+
+  // Link to Allure report from build (prominent)
   if (reportUrl) {
-    lines.push(`• Allure: ${reportUrl}`);
+    lines.push(`*Allure report:* ${reportUrl}`);
+    lines.push('');
   }
+
+  // Status: total, passed, failed, slow, skipped
+  const slowCount =
+    tests && tests.length > 0
+      ? countSlowTests(tests, slowThresholdSeconds)
+      : 0;
+  lines.push('*Status*');
+  lines.push(
+    `Total: *${summary.total}*  ·  ✅ Passed: *${summary.passed}*  ·  ❌ Failed: *${summary.failed}*  ·  🐢 Slow (≥${slowThresholdSeconds}s): *${slowCount}*  ·  ⏭️ Skipped: *${summary.skipped}*`
+  );
+  if (summary.broken > 0) {
+    lines.push(`⚠️ Broken: *${summary.broken}*`);
+  }
+  const durationFormatted = formatDuration(summary.duration_seconds);
+  lines.push(
+    `Pass rate: *${summary.pass_rate}%*  |  Duration: *${durationFormatted}*`
+  );
+  lines.push('');
 
   if (tests && tests.length > 0) {
     const fails = failedTests(tests);
     const slow = topSlowestTests(tests, topNSlowest);
 
     if (fails.length > 0) {
-      lines.push('');
-      lines.push(`*Failures / Broken* (${fails.length}):`);
+      lines.push(`*Failures / Broken* (${fails.length})`);
       for (const t of fails.slice(0, maxFailuresToList)) {
         const msg = (t.message ?? '').trim().replace(/\n/g, ' ');
         const truncated = msg.length > 120 ? msg.slice(0, 120) + '…' : msg;
@@ -342,20 +382,21 @@ export function buildSlackMessage(
         );
       }
       if (fails.length > maxFailuresToList) {
-        lines.push(`• …and ${fails.length - maxFailuresToList} more`);
+        lines.push(`  _…and ${fails.length - maxFailuresToList} more_`);
       }
+      lines.push('');
     }
 
     if (slow.length > 0) {
-      lines.push('');
-      lines.push(`*Top ${slow.length} slowest tests:*`);
+      lines.push(`*Top ${slow.length} slowest tests*`);
       for (const t of slow) {
         lines.push(`• ${t.name} — ${t.duration_seconds}s`);
       }
+      lines.push('');
     }
   }
 
-  return lines.join('\n');
+  return lines.join('\n').trim();
 }
 
 // -----------------------------
