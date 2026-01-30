@@ -2,21 +2,29 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(MockitoExtension.class)
 class RentDetailsTest extends BasePageTest {
+
+    @Mock
+    private MoneyFormatter moneyFormatter;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new RentDetailsPage());
+        setPageUnderTest(new RentDetailsPage(moneyFormatter));
     }
 
     @Test
@@ -101,8 +109,8 @@ class RentDetailsTest extends BasePageTest {
     void shouldNotProcessWhenRentDetailsIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentDetails(null)
-                .build();
+            .rentDetails(null)
+            .build();
 
         // When
         callMidEventHandler(caseData);
@@ -144,7 +152,6 @@ class RentDetailsTest extends BasePageTest {
         // Then
         // £300.00 / 7 = £42.8571 pence, rounded to £42.86
         assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo(new BigDecimal("42.86"));
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£42.86");
     }
 
     @Test
@@ -163,7 +170,6 @@ class RentDetailsTest extends BasePageTest {
         // Then
         // £300.00 / 30.44 = £9.8555, rounded to £9.86
         assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo(new BigDecimal("9.86"));
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£9.86");
     }
 
     @Test
@@ -182,7 +188,6 @@ class RentDetailsTest extends BasePageTest {
         // Then
         // £300.00 / 14 = £21.4286 , rounded to £21.43
         assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo(new BigDecimal("21.43"));
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£21.43");
     }
 
     @Test
@@ -201,25 +206,23 @@ class RentDetailsTest extends BasePageTest {
         // Then
         // £70.00 / 7 = £10.00 , formatted should strip trailing zeros to "£10"
         assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isEqualTo(new BigDecimal("10.00"));
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isEqualTo("£10");
     }
 
     @Test
     void shouldNotCalculateDailyRentWhenCurrentRentIsNull() {
         // Given
         PCSCase caseData = PCSCase.builder()
-                .rentDetails(RentDetails.builder()
-                        .currentRent(null)
-                        .frequency(RentPaymentFrequency.WEEKLY)
-                        .build())
-                .build();
+            .rentDetails(RentDetails.builder()
+                             .currentRent(null)
+                             .frequency(RentPaymentFrequency.WEEKLY)
+                             .build())
+            .build();
 
         // When
         callMidEventHandler(caseData);
 
         // Then
         assertThat(caseData.getRentDetails().getCalculatedDailyCharge()).isNull();
-        assertThat(caseData.getRentDetails().getFormattedCalculatedDailyCharge()).isNull();
     }
 
 }

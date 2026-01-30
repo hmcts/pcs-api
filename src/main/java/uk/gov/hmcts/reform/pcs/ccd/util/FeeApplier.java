@@ -18,7 +18,7 @@ public class FeeApplier {
     public static final String UNABLE_TO_RETRIEVE = "Unable to retrieve";
 
     private final FeeService feeService;
-    private final FeeFormatter feeFormatter;
+    private final MoneyFormatter feeFormatter;
 
     public void applyFeeAmount(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, String> setter) {
         try {
