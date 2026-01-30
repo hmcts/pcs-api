@@ -31,7 +31,7 @@ This will start several containers:
 | IDAM Simulator                    | 5062 |
 | XUI Manage org                    | 3001 |
 
-Once successfully loaded open XUI at http://localhost:3000
+Once  successfully loaded open XUI at http://localhost:3000
 See CftlibConfig.java for users and login details.
 
 By default, this runs with local instance of IDAM and
