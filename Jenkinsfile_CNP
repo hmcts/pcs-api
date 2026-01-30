@@ -107,6 +107,11 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
+  afterAlways('e2eTest:preview') {
+    archiveE2eTestReports()
+    postAllureResultsToSlack()
+  }
+
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
   }
@@ -172,5 +177,22 @@ def archiveE2eTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
-
+// E2E stage notification to QA channel only (build status Fixed/Failed is sent by library to #pcs-tech)
+def postAllureResultsToSlack() {
+  def slackChannel = '#qa-pipeline-status'
+  def msg = sh(
+    script: '''
+      cd src/e2eTest
+      yarn allure-slack-notify --print-only || true
+    ''',
+    returnStdout: true
+  ).trim()
+  if (msg) {
+    slackSend(channel: slackChannel, message: msg)
+  } else {
+    // E2E stage ran but no Allure summary (e.g. failed before report generated) – still notify channel
+    def fallback = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs."
+    slackSend(channel: slackChannel, message: fallback)
+  }
+}
 
