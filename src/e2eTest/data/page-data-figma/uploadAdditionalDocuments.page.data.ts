@@ -3,7 +3,7 @@ export const uploadAdditionalDocuments = {
   mainHeader: `Upload additional documents`,
   youMustSelectParagraph: `You must select the type of document you’re uploading and give it a short description.`,
   beforeYouUploadSubHeader: `Before you upload your documents`,
-  giveYourDocumentHintText: `Give your document a name that explains what it is.`,
+  giveYourDocumentParagraph: `Give your document a name that explains what it is.`,
   addDocumentSubHeader: `Add document`,
   addNewButton: `Add new`,
   uploadADocumentParagraph: `Upload a document to the system`,
