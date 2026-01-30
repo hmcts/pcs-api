@@ -118,7 +118,21 @@ withPipeline(type, product, component) {
 
   afterAlways('e2eTest:aat') {
     archiveE2eTestReports()
+    postAllureResultsToSlack()
   }
+
+  // Fallback: some library versions use generic stage name
+  afterAlways('e2eTest') {
+    archiveE2eTestReports()
+    postAllureResultsToSlack()
+  }
+}
+
+// Fallback when library does not invoke afterAlways: if E2E report exists, send to Slack
+def e2eOutputExists = sh(script: 'test -d e2e-output && echo yes || true', returnStdout: true).trim() == 'yes'
+if (e2eOutputExists) {
+  echo 'E2E report found; sending Slack notification (post-pipeline fallback).'
+  postAllureResultsToSlack()
 }
 
 def setPreviewEnvVars() {

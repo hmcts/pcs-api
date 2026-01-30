@@ -61,6 +61,13 @@ withNightlyPipeline(type, product, component) {
   }
 }
 
+// Fallback when library does not invoke afterAlways: if E2E report exists, send to Slack
+def e2eOutputExists = sh(script: 'test -d e2e-output && echo yes || true', returnStdout: true).trim() == 'yes'
+if (e2eOutputExists) {
+  echo 'E2E report found; sending Slack notification (post-pipeline fallback).'
+  postAllureResultsToSlack()
+}
+
 def validateInputs() {
   if (params.ENVIRONMENT == 'preview' && (!params.PR_NUMBER?.trim())) {
     error("Validation Failed: PR number is required when environment is 'preview'")
@@ -81,7 +88,7 @@ def handleEnvironmentSetting() {
 
   env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
     ? "pr"
-    : "chrome"
+    : "pr"
 }
 
 // E2E stage notification to QA channel only (build status is sent by library via enableSlackNotifications('#pcs-tech'))
