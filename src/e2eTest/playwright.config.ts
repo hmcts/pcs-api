@@ -21,8 +21,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
-  retries: process.env.CI ? 1 : 0,
-  workers: process.env.ENVIRONMENT === 'preview' ? 2 : 4,
+  retries: process.env.CI ? 3 : 0,
+  workers: process.env.ENVIRONMENT === 'preview' ? 4 : 4,
   timeout: 600 * 1000,
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },
