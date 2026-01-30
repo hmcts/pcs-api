@@ -1,0 +1,47 @@
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
+
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
+import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+
+public class MoneyOwedWritPage implements CcdPageConfiguration {
+
+    @Override
+    public void addTo(PageBuilder pageBuilder) {
+        pageBuilder
+            .page("moneyOwedWrit")
+            .pageLabel("The amount the defendants owe you")
+            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .label("moneyOwedWrit-line-separator", "---")
+            .complex(PCSCase::getEnforcementOrder)
+            .complex(EnforcementOrder::getWritDetails)
+            .complex(WritDetails::getMoneyOwedByDefendants)
+            .label(
+                    "moneyOwedWrit-amount-label",
+                    """
+                        <p class="govuk-body govuk-!-margin-bottom-0">
+                            You can include:
+                            <ul class="govuk-list govuk-list--bullet">
+                                <li class="govuk-!-font-size-19">
+                                rent or mortgage arrears</li>
+                                <li class="govuk-!-font-size-19">
+                                the fee you paid to make a possession claim</li>
+                            </ul>
+                        </p>
+                        <p class="govuk-body">
+                            If you do not know the fee you paid to make your possession claim,
+                            <a href="/cases/case-details/${[CASE_REFERENCE]}#Service%20Request" target="_blank">
+                                check the service request tab (opens in a new tab)</a>.
+                            This shows all of the fees you have paid when you made a claim
+                        </p>
+                    """
+            )
+            .mandatory(MoneyOwedByDefendants::getAmountOwed)
+            .label("moneyOwedWrit-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+}

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,9 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
@@ -24,11 +24,11 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegistryFeesPage.WARRANT_FEE_AMOUNT;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegistryFeesPage.TEMPLATE;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.LandRegistryFeesWritPage.WRIT_FEE_AMOUNT;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.LandRegistryFeesWritPage.TEMPLATE;
 
 @ExtendWith(MockitoExtension.class)
-class LandRegistryFeesPageTest extends BasePageTest {
+class LandRegistryFeesWritPageTest extends BasePageTest {
 
     @Mock
     private RepaymentTableRenderer repaymentTableRenderer;
@@ -36,7 +36,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         MoneyConverter moneyConverter = new MoneyConverter();
-        setPageUnderTest(new LandRegistryFeesPage(moneyConverter, repaymentTableRenderer));
+        setPageUnderTest(new LandRegistryFeesWritPage(moneyConverter, repaymentTableRenderer));
     }
 
     @ParameterizedTest
@@ -60,8 +60,8 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantFeeAmount(feeAmount)
-            .warrantDetails(WarrantDetails.builder()
+            .writFeeAmount(feeAmount)
+            .writDetails(WritDetails.builder()
                 .repaymentCosts(RepaymentCosts.builder().build())
                 .landRegistryFees(landRegistryFees)
                 .legalCosts(legalCosts)
@@ -77,7 +77,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
             expectedArrears,
             expectedLegals,
             expectedLandRegistry,
-                WARRANT_FEE_AMOUNT,
+                WRIT_FEE_AMOUNT,
             feeAmount,
             expectedTotalFees,
             TEMPLATE
@@ -86,7 +86,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
             expectedArrears,
             expectedLegals,
             expectedLandRegistry,
-                WARRANT_FEE_AMOUNT,
+                WRIT_FEE_AMOUNT,
             feeAmount,
             expectedTotalFees,
             "The payments due",
@@ -101,7 +101,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
             expectedArrears,
             expectedLegals,
             expectedLandRegistry,
-                WARRANT_FEE_AMOUNT,
+                WRIT_FEE_AMOUNT,
             feeAmount,
             expectedTotalFees,
             TEMPLATE
@@ -110,16 +110,16 @@ class LandRegistryFeesPageTest extends BasePageTest {
             expectedArrears,
             expectedLegals,
             expectedLandRegistry,
-                WARRANT_FEE_AMOUNT,
+                WRIT_FEE_AMOUNT,
             feeAmount,
             expectedTotalFees,
             "The payments due",
             TEMPLATE
         );
 
-        assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())
+        assertThat(caseData.getEnforcementOrder().getWritDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())
             .isEqualTo("<table>Mock Repayment Table</table>");
-        assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts()
+        assertThat(caseData.getEnforcementOrder().getWritDetails().getRepaymentCosts()
             .getStatementOfTruthRepaymentSummaryMarkdown())
             .isEqualTo("<table>Mock SOT Repayment Table</table>");
     }
