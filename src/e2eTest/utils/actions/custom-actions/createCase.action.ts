@@ -67,7 +67,7 @@ export class CreateCaseAction implements IAction {
       ['selectClaimantType', () => this.selectClaimantType(fieldName)],
       ['reloginAndFindTheCase', () => this.reloginAndFindTheCase(fieldName)],
       ['addDefendantDetails', () => this.addDefendantDetails(fieldName as actionRecord)],
-      ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent()],
+      ['selectJurisdictionCaseTypeEvent', () => this.selectJurisdictionCaseTypeEvent(page)],
       ['enterTestAddressManually', () => this.enterTestAddressManually(page, fieldName as actionRecord)],
       ['selectClaimType', () => this.selectClaimType(fieldName)],
       ['selectClaimantName', () => this.selectClaimantName(page,fieldName)],
@@ -129,11 +129,13 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', housingPossessionClaim.continue);
   }
 
-  private async selectJurisdictionCaseTypeEvent() {
+  private async selectJurisdictionCaseTypeEvent(page: Page) {
     await performActions('Case option selection'
       , ['select', createCase.jurisdictionLabel, createCase.possessionsJurisdiction]
       , ['select', createCase.caseTypeLabel, createCase.caseType.civilPossessions]
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
+    await page.waitForLoadState('load');
+    await page.locator('.spinner-container').waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
     await performAction('clickButton', createCase.start);
   }
 
