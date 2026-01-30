@@ -669,7 +669,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         );
 
         PCSCase savedDraft = draftCaptor.getValue();
-        assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
+        // Note: submitDraftAnswers is NOT persisted - it's a transient UI control flag
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
 
         DefendantProvided defendantProvided = savedDraft.getPossessionClaimResponse().getDefendantProvided();
