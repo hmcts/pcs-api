@@ -680,7 +680,7 @@ export class CreateCaseAction implements IAction {
           'Add Document',
           ['uploadFile', document.fileName],
           ['select', uploadAdditionalDocuments.typeOfDocumentHiddenTextLabel, document.type],
-          ['inputText', uploadAdditionalDocuments.shortDescriptionHiddenTextInput, document.description]
+          ['inputText', uploadAdditionalDocuments.shortDescriptionHiddenTextLabel, document.description]
         );
       }
       await performAction('clickButton', uploadAdditionalDocuments.continueButton);
