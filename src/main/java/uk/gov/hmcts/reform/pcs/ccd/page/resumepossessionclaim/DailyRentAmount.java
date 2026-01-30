@@ -30,7 +30,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                             Based on your previous answers, the amount per day that unpaid
                                             rent should be charged at is:
                                             <span class="govuk-body govuk-!-font-weight-bold">
-                                                ${rentDetails_FormattedCalculatedDailyCharge}
+                                                ${[NOCACHE]rentDetails_FormattedCalculatedDailyCharge}
                                             </span>
                                         </p>
                                     </section>
