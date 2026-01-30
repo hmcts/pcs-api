@@ -55,6 +55,10 @@ withNightlyPipeline(type, product, component) {
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
   }
+
+  afterAlways('e2eTest') {
+    postAllureResultsToSlack()
+  }
 }
 
 def validateInputs() {
@@ -78,4 +82,21 @@ def handleEnvironmentSetting() {
   env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
     ? "pr"
     : "chrome"
+}
+
+// E2E stage notification to QA channel only (build status is sent by library via enableSlackNotifications('#pcs-tech'))
+def postAllureResultsToSlack() {
+  def slackChannel = '#qa-pipeline-status'
+  def msg = sh(
+    script: '''
+      cd src/e2eTest
+      yarn allure-slack-notify --print-only 2>&1 || true
+    ''',
+    returnStdout: true
+  ).trim()
+  if (!msg) {
+    msg = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs."
+  }
+  echo "E2E Slack: Posting to ${slackChannel} (${msg.length()} chars)"
+  slackSend(channel: slackChannel, message: msg)
 }

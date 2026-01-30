@@ -183,16 +183,14 @@ def postAllureResultsToSlack() {
   def msg = sh(
     script: '''
       cd src/e2eTest
-      yarn allure-slack-notify --print-only || true
+      yarn allure-slack-notify --print-only 2>&1 || true
     ''',
     returnStdout: true
   ).trim()
-  if (msg) {
-    slackSend(channel: slackChannel, message: msg)
-  } else {
-    // E2E stage ran but no Allure summary (e.g. failed before report generated) – still notify channel
-    def fallback = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs."
-    slackSend(channel: slackChannel, message: fallback)
+  if (!msg) {
+    msg = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs."
   }
+  echo "E2E Slack: Posting to ${slackChannel} (${msg.length()} chars)"
+  slackSend(channel: slackChannel, message: msg)
 }
 

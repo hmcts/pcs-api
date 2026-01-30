@@ -367,42 +367,48 @@ export async function main(): Promise<void> {
   const webhook = (process.env.SLACK_WEBHOOK_URL ?? '').trim();
   const buildNumber = (process.env.BUILD_NUMBER ?? 'local').trim();
   const buildUrl = (process.env.BUILD_URL ?? '').trim();
+  const jobName = (process.env.JOB_NAME ?? 'e2e').trim();
 
-  // Paths: script is in src/e2eTest/scripts/, e2e-output is at project root
+  // Paths: when run from src/e2eTest (Jenkins), cwd is src/e2eTest; e2e-output is at repo root (../../e2e-output)
   const scriptDir = __dirname;
   const e2eTestDir = path.resolve(scriptDir, '..');
-  const projectRoot = path.resolve(e2eTestDir, '../..');
-  // Summary is in e2e-output at project root; fallback to e2eTest dir
+  const projectRootFromScript = path.resolve(e2eTestDir, '../..');
+  const projectRootFromCwd = path.resolve(process.cwd(), '../..');
+  const projectRoot = fs.existsSync(path.join(projectRootFromCwd, 'e2e-output'))
+    ? projectRootFromCwd
+    : projectRootFromScript;
   const baseDir = fs.existsSync(path.join(projectRoot, 'e2e-output'))
     ? projectRoot
     : e2eTestDir;
 
-  // 1) Parse Allure summary.json
-  const summaryPath = findAllureSummaryJson(baseDir);
-  const summary = parseAllureSummary(summaryPath);
-
-  // 2) Optional: parse allure-results for per-test performance / failures
-  let tests: AllureTestRecord[] | null = null;
-  const allureResultsPath = path.join(e2eTestDir, 'allure-results');
+  let msg: string;
   try {
-    tests = parseAllureResults(allureResultsPath);
-  } catch {
-    tests = null;
+    const summaryPath = findAllureSummaryJson(baseDir);
+    const summary = parseAllureSummary(summaryPath);
+    let tests: AllureTestRecord[] | null = null;
+    const allureResultsPath = path.join(e2eTestDir, 'allure-results');
+    try {
+      tests = parseAllureResults(allureResultsPath);
+    } catch {
+      tests = null;
+    }
+    msg = buildSlackMessage(
+      summary,
+      buildNumber,
+      buildUrl,
+      'allure/',
+      tests,
+      5,
+      8
+    );
+  } catch (err) {
+    msg = `E2E stage completed for ${jobName} build ${buildNumber}. Allure report not available – check build logs.${buildUrl ? `\nBuild: ${buildUrl}` : ''}`;
+    if (!printOnly) {
+      console.warn('[WARN] Could not read Allure summary; sending fallback message.', err);
+    }
   }
 
-  // 3) Build Slack message
-  const msg = buildSlackMessage(
-    summary,
-    buildNumber,
-    buildUrl,
-    'allure/',
-    tests,
-    5,
-    8
-  );
-
   if (printOnly) {
-    // Output message only for Jenkins slackSend (no other output)
     process.stdout.write(msg);
     return;
   }
