@@ -136,7 +136,7 @@ export class CreateCaseAction implements IAction {
       , ['select', createCase.eventLabel, createCase.makeAPossessionClaimEvent]);
     await page.waitForLoadState('load');
     await page.locator('.spinner-container').waitFor({ state: 'detached', timeout: MEDIUM_TIMEOUT }).catch(() => {});
-    await performAction('clickButton', createCase.start);
+    await performAction('clickButtonAndVerifyPageNavigation', createCase.start, housingPossessionClaim.mainHeader);
   }
 
   private async selectAddress(page: Page, caseData: actionData) {
