@@ -184,8 +184,9 @@ def archiveE2eTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
+// E2E stage notification to QA channel only (build status Fixed/Failed is sent by library to #pcs-tech)
 def postAllureResultsToSlack() {
-  def slackChannel = env.BUILD_NOTICES_SLACK_CHANNEL ?: '#qa-pipeline-status'
+  def slackChannel = '#pcs-tech'
   def msg = sh(
     script: '''
       cd src/e2eTest

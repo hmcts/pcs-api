@@ -84,8 +84,9 @@ def handleEnvironmentSetting() {
     : "chrome"
 }
 
+// E2E stage notification to QA channel only (build status is sent by library via enableSlackNotifications('#pcs-tech'))
 def postAllureResultsToSlack() {
-  def slackChannel = env.BUILD_NOTICES_SLACK_CHANNEL ?: '#qa-pipeline-status'
+  def slackChannel = '#pcs-tech'
   def msg = sh(
     script: '''
       cd src/e2eTest
