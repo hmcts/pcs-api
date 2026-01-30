@@ -12,7 +12,7 @@ export const statementOfTruth = {
   nameOfFirmHiddenTextInput: `Doe & Co Solicitors`,
   positionOrOfficeHeldHiddenTextLabel: `Position or office held`,
   positionOrOfficeHeldHiddenTextInput: `Solicitor`,
-  previousLink: `Previous`,
+  previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
 }

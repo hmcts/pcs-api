@@ -9,7 +9,7 @@ export const confirm = {
   aDraftOfYourClaimDynamicParagraph: 'A draft of your claim has been saved. Tp sign, submit and pay for your claim:',
   resumeYourClaimDynamicParagraph: `Resume your claim`,
   clickThroughTheQuestionsDynamicParagraph: `Click through the questions.`,
-  chooseTheSubmitDynamicParagraph: `Choose the 'Submit and pay for my claim now' option when asked how you'd like to complete your claim.`,
-  selectThePayTheClaimFeeDynamicParagraph: `Select the 'Pay the claim fee' link on he confirmation screen.`,
+  chooseTheSubmitDynamicParagraph: `Choose the ’Submit and pay for my claim now’ option when asked how you’d like to complete your claim.`,
+  selectThePayTheClaimFeeDynamicParagraph: `Select the ’Pay the claim fee’ link on he confirmation screen.`,
   closeAndReturnToCaseDetailsButton: 'Close and Return to case details',
 };

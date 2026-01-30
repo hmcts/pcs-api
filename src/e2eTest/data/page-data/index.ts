@@ -33,4 +33,3 @@ export * from '@data/page-data/caseSummary.page.data';
 export * from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
 export * from '@data/page-data/prohibitedConductStandardContractWales.page.data';
 export * from '@data/page-data/asbQuestionsWales.page.data';
-export * from '@data/page-data/claimSaved.page.data';
