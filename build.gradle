@@ -4,7 +4,7 @@ import uk.gov.hmcts.rse.CftlibExec
 
 buildscript {
   ext {
-    flywayVersion = '11.20.2'
+    flywayVersion = '11.20.3'
     serenityBddVersion = '5.1.0'
   }
   dependencies {
@@ -16,13 +16,13 @@ plugins {
   id 'application'
   id 'jacoco'
   id 'io.spring.dependency-management' version '1.1.7'
-  id 'org.springframework.boot' version '3.5.9'
+  id 'org.springframework.boot' version '3.5.10'
   id 'com.github.ben-manes.versions' version '0.53.0'
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.2.2.6593'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
   id 'hmcts.ccd.sdk' version '6.6.1'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2000'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2015'
   id 'io.freefair.lombok' version '9.2.0'
   id 'au.com.dius.pact' version '4.6.19'
   /*
@@ -124,6 +124,46 @@ tasks.withType(Test).configureEach {
 
 test {
   failFast = true
+  useJUnitPlatform {
+    excludeTags 'enforcement-domain-entity-alignment'
+  }
+}
+
+tasks.register('architectureValidation', Test) {
+  description = "Runs architecture validation tests (domain-entity alignment checks)"
+  group = "verification"
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
+  useJUnitPlatform {
+    includeTags 'architecture'
+  }
+
+  ignoreFailures = true
+
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+    exceptionFormat = 'full'
+  }
+}
+
+tasks.register('enforcementValidation', Test) {
+  description = "Runs enforcement domain-entity alignment validation"
+  group = "verification"
+  testClassesDirs = sourceSets.test.output.classesDirs
+  classpath = sourceSets.test.runtimeClasspath
+
+  useJUnitPlatform {
+    includeTags 'enforcement-domain-entity-alignment'
+  }
+
+  ignoreFailures = true
+
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+    exceptionFormat = 'full'
+    showStandardStreams = true  // Shows the console output with missing fields
+  }
 }
 
 tasks.register('functional', Test) {
@@ -264,6 +304,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
       "**/entities/**," + "**/model/**"
+    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
   }
 }
 
@@ -292,14 +333,14 @@ repositories {
 
 ext {
   log4JVersion = "2.25.3"
-  logbackVersion = "1.5.25"
+  logbackVersion = "1.5.26"
   testcontainersVersion = "2.0.3"
   testcontainersAdditionsVersion = "1.21.4"
-  springFrameworkBootVersion = "3.5.9"
+  springFrameworkBootVersion = "3.5.10"
   lombokVersion = "1.18.42"
   springSecurityVersion = "7.0.2"
   pactVersion = "4.6.19"
-  tomcatEmbedVersion = "11.0.15"
+  tomcatEmbedVersion = "11.0.18"
   nettyVersion = "4.1.130.Final"
 }
 

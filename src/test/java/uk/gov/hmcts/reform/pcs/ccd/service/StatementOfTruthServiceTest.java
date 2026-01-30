@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 
-import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -58,7 +58,7 @@ class StatementOfTruthServiceTest {
         when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
         when(statementOfTruthDetails.getCompletedBy()).thenReturn(StatementOfTruthCompletedBy.CLAIMANT);
         when(statementOfTruthDetails.getAgreementClaimant())
-            .thenReturn(Arrays.asList(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
+            .thenReturn(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
         when(statementOfTruthDetails.getFullNameClaimant()).thenReturn("John Smith");
         when(statementOfTruthDetails.getPositionClaimant()).thenReturn("Director");
 
@@ -85,7 +85,7 @@ class StatementOfTruthServiceTest {
         when(statementOfTruthDetails.getCompletedBy())
             .thenReturn(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
         when(statementOfTruthDetails.getAgreementLegalRep())
-            .thenReturn(Arrays.asList(StatementOfTruthAgreementLegalRep.AGREED));
+            .thenReturn(List.of(StatementOfTruthAgreementLegalRep.AGREED));
         when(statementOfTruthDetails.getFullNameLegalRep()).thenReturn("Jane Doe");
         when(statementOfTruthDetails.getFirmNameLegalRep()).thenReturn("Smith & Co Solicitors");
         when(statementOfTruthDetails.getPositionLegalRep()).thenReturn("Partner");

@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -67,20 +67,20 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         PCSCase caseData = details.getData();
 
         // Rebuild canonical sets from rent arrears grounds selection
-        Set<RentArrearsMandatoryGrounds> mergedMandatory = new HashSet<>();
-        Set<RentArrearsDiscretionaryGrounds> mergedDiscretionary = new HashSet<>();
+        Set<AssuredMandatoryGround> mergedMandatory = new HashSet<>();
+        Set<AssuredDiscretionaryGround> mergedDiscretionary = new HashSet<>();
         Set<RentArrearsGround> rentArrearsGrounds = caseData.getRentArrearsGroundsForPossession()
             .getRentArrearsGrounds();
 
         if (rentArrearsGrounds != null) {
             if (rentArrearsGrounds.contains(RentArrearsGround.SERIOUS_RENT_ARREARS_GROUND8)) {
-                mergedMandatory.add(RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+                mergedMandatory.add(AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
             }
             if (rentArrearsGrounds.contains(RentArrearsGround.RENT_ARREARS_GROUND10)) {
-                mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10);
+                mergedDiscretionary.add(AssuredDiscretionaryGround.RENT_ARREARS_GROUND10);
             }
             if (rentArrearsGrounds.contains(RentArrearsGround.PERSISTENT_DELAY_GROUND11)) {
-                mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
+                mergedDiscretionary.add(AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
             }
         }
 
@@ -92,7 +92,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             );
 
         for (AssuredAdditionalMandatoryGrounds add : addMandatory) {
-            mergedMandatory.add(RentArrearsMandatoryGrounds.valueOf(add.name()));
+            mergedMandatory.add(AssuredMandatoryGround.valueOf(add.name()));
         }
 
         Set<AssuredAdditionalDiscretionaryGrounds> addDiscretionary =
@@ -102,7 +102,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
             );
 
         for (AssuredAdditionalDiscretionaryGrounds add : addDiscretionary) {
-            mergedDiscretionary.add(RentArrearsDiscretionaryGrounds.valueOf(add.name()));
+            mergedDiscretionary.add(AssuredDiscretionaryGround.valueOf(add.name()));
         }
 
         // Compute selection flags
@@ -126,8 +126,8 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         boolean noRentArrearsGrounds = rentArrearsGrounds == null || rentArrearsGrounds.isEmpty();
         boolean noAdditional = addMandatory.isEmpty() && addDiscretionary.isEmpty();
 
-        Set<RentArrearsMandatoryGrounds> effectiveMandatory = mergedMandatory;
-        Set<RentArrearsDiscretionaryGrounds> effectiveDiscretionary = mergedDiscretionary;
+        Set<AssuredMandatoryGround> effectiveMandatory = mergedMandatory;
+        Set<AssuredDiscretionaryGround> effectiveDiscretionary = mergedDiscretionary;
 
         if (noRentArrearsGrounds && noAdditional) {
             effectiveMandatory = Objects.requireNonNullElse(
@@ -142,11 +142,11 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
         }
 
         boolean hasOtherMandatoryGrounds = effectiveMandatory.stream()
-            .anyMatch(ground -> ground != RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+            .anyMatch(ground -> ground != AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8);
 
         boolean hasOtherDiscretionaryGrounds = effectiveDiscretionary.stream()
-            .anyMatch(ground -> ground != RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10
-                && ground != RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
+            .anyMatch(ground -> ground != AssuredDiscretionaryGround.RENT_ARREARS_GROUND10
+                && ground != AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
 
         caseData.setShowRentArrearsGroundReasonPage(
             YesOrNo.from(hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds)

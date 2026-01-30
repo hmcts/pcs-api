@@ -14,10 +14,9 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import java.util.Set;
-
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicMultiSelectList;
 
 @Builder
 @Data
@@ -38,12 +37,6 @@ public class WarrantDetails {
     @JsonUnwrapped
     @CCD
     private PeopleToEvict peopleToEvict;
-
-    @CCD(
-        label = "Who do you want to evict?",
-        typeOverride = DynamicMultiSelectList
-    )
-    private DynamicMultiSelectStringList selectedDefendants;
 
     @CCD(
         label = "Does anyone living at the property pose a risk to the bailiff?"
@@ -108,10 +101,14 @@ public class WarrantDetails {
             label = "Is your order a suspended order?",
             hint = "If your order is suspended, you will see a different version of the statement of truth on the "
                     + "next page. If you do not know if your order is suspended: save your application as a draft, "
-                    + "return to the case summary page, and then check the tab named ‘Case File View’"
+                    + "return to the case summary page, and then check the tab named 'Case File View'"
     )
     private VerticalYesNo isSuspendedOrder;
 
+    @JsonUnwrapped
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
+    
     @CCD
     @JsonUnwrapped
     private DefendantsDOB defendantsDOB;
