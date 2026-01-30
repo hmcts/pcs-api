@@ -50,9 +50,4 @@ public class EnforcementOrder {
 
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
-
-    @CCD(
-            label = "What do you want to apply for?"
-    )
-    private GeneralApplicationType generalApplicationTypes;
 }

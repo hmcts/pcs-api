@@ -19,7 +19,7 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
             "You cannot continue with this application until you ask the judge for permission "
                     + "to transfer to the High Court";
 
-    private static String markdownText = """
+    private static final String MARKDOWN_TEXT = """
             <p class="govuk-body">You must transfer your claim from the County Court to the High Court before you can
             apply for a writ. You need permission from a judge to do this.</p>
             <p class="govuk-body">Transferring to the High Court means that a High Court Enforcement Officer can carry 
@@ -29,7 +29,7 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
             <h2 class="govuk-heading-m govuk-!-padding-top-0">How to transfer your claim to 
             the High Court</h2>
             <p class="govuk-body">You must make an application if you want to transfer your claim to the High Court.</p>
-            <p><a href="/cases/case-details/${[CASE_REFERENCE]}/trigger/%s" class="govuk-link">
+            <p><a id="cannotApplyForWritInfo-link" class="govuk-link">
             Transfer your claim from the County Court to the High Court</a>
             (make an application)</p>
             """;
@@ -42,7 +42,7 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
             .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW
                     + " AND writHasClaimTransferredToHighCourt=\"No\"")
             .label("cannotApplyForWritInfo-line-separator", "---")
-            .label("cannotApplyForWritInfo-text", markdownText.formatted(generalApplication))
+            .label("cannotApplyForWritInfo-text", MARKDOWN_TEXT.formatted(generalApplication))
             .label("cannotApplyForWritInfo-save-and-return", SAVE_AND_RETURN);
     }
 
