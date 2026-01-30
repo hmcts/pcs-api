@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -30,7 +29,6 @@ public class RespondPossessionClaimDraftService {
         return caseDataFromPayload.toBuilder()
             .possessionClaimResponse(draftData.getPossessionClaimResponse())
             .hasUnsubmittedCaseData(draftData.getHasUnsubmittedCaseData())
-            .submitDraftAnswers(draftData.getSubmitDraftAnswers())
             .build();
     }
 
@@ -39,7 +37,6 @@ public class RespondPossessionClaimDraftService {
                                PCSCase caseDataFromPayload) {
         PCSCase filteredDraft = PCSCase.builder()
             .possessionClaimResponse(initialResponse)
-            .submitDraftAnswers(YesOrNo.NO)
             .build();
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, filteredDraft, respondPossessionClaim);
@@ -49,7 +46,6 @@ public class RespondPossessionClaimDraftService {
 
         return caseDataFromPayload.toBuilder()
             .possessionClaimResponse(initialResponse)
-            .submitDraftAnswers(YesOrNo.NO)
             .build();
     }
 
@@ -62,7 +58,6 @@ public class RespondPossessionClaimDraftService {
 
         PCSCase draftToSave = PCSCase.builder()
             .possessionClaimResponse(patchResponse)
-            .submitDraftAnswers(caseData.getSubmitDraftAnswers())
             .build();
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, draftToSave, respondPossessionClaim);

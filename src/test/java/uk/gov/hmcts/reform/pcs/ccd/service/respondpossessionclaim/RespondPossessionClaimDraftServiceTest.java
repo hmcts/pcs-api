@@ -123,7 +123,6 @@ class RespondPossessionClaimDraftServiceTest {
             .getContactDetails().getParty().getLastName()).isEqualTo("Doe");
         assertThat(result.getPossessionClaimResponse().getDefendantProvided()
             .getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.YES);
-        assertThat(result.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);  // Drafts always have NO
         assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
 
         // Then - Verify payload fields are preserved (no data loss from toBuilder)
@@ -185,7 +184,6 @@ class RespondPossessionClaimDraftServiceTest {
         // Then - Verify initial response overlays onto payload
         assertThat(result).isNotNull();
         assertThat(result.getPossessionClaimResponse()).isEqualTo(initialResponse);
-        assertThat(result.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
 
         // Then - Verify payload fields are preserved (no data loss from toBuilder)
         assertThat(result.getLegislativeCountry()).isEqualTo(LegislativeCountry.WALES);
@@ -206,7 +204,6 @@ class RespondPossessionClaimDraftServiceTest {
 
         PCSCase patchedDraft = pcsCaseCaptor.getValue();
         assertThat(patchedDraft.getPossessionClaimResponse()).isEqualTo(initialResponse);
-        assertThat(patchedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
         assertThat(patchedDraft.getLegislativeCountry()).isNull(); // Should NOT save payload fields
         assertThat(patchedDraft.getFormattedPropertyAddress()).isNull();
         assertThat(patchedDraft.getFeeAmount()).isNull();
@@ -268,7 +265,6 @@ class RespondPossessionClaimDraftServiceTest {
         assertThat(savedDefendantProvided.getContactDetails().getParty().getPhoneNumber())
             .isEqualTo("07700900000");
         assertThat(savedDefendantProvided.getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.YES);
-        assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
     }
 
     @Test

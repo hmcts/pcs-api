@@ -55,8 +55,8 @@ public class StartEventHandler implements Start<PCSCase, State> {
         // Merges saved draft into incoming payload:
         //   - possessionClaimResponse: All user's saved data (claimantProvided + defendantProvided)
         //   - hasUnsubmittedCaseData: YES (indicates draft exists)
-        //   - submitDraftAnswers: User's choice (NO for save draft, YES for final submit)
         // This preserves defendant's partially completed responses and allows them to continue where they left off
+        // Note: submitDraftAnswers is NOT persisted - it's a transient flag sent by UI on each SUBMIT
         if (draftService.exists(caseReference)) {
             return draftService.load(caseReference, caseDataFromPayload);
         }
