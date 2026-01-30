@@ -529,7 +529,7 @@ export class EnforcementAction implements IAction {
 
             case 'checkBoxPageLevel':
               await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', validationArr.header, item.errMessage);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
 

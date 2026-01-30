@@ -786,6 +786,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationType: peopleYouWantToEvict.errorValidationType.six,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+        header: peopleYouWantToEvict.errors,
         checkBox: defendantDetails[0],
         button: peopleYouWantToEvict.continueButton
       });
@@ -907,6 +908,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationType: peopleYouWantToEvict.errorValidationType.six,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+        header: peopleYouWantToEvict.errors,
         checkBox: defendantDetails[0],
         button: peopleYouWantToEvict.continueButton
       });
