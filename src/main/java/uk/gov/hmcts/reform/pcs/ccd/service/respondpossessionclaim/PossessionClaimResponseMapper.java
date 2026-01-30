@@ -11,9 +11,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantProvided;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -162,41 +166,45 @@ public class PossessionClaimResponseMapper {
     }
 
     private String extractTenancyType(PcsCaseEntity caseEntity) {
-        TenancyLicence tenancy = caseEntity.getTenancyLicence();
-        if (tenancy == null) {
+        TenancyLicenceEntity tenancy = caseEntity.getTenancyLicence();
+        if (tenancy == null || tenancy.getType() == null) {
             return null;
         }
 
-        if (caseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
-            return tenancy.getOccupationLicenceTypeWales() != null
-                ? tenancy.getOccupationLicenceTypeWales().getLabel()
-                : null;
-        }
+        CombinedLicenceType combinedType = tenancy.getType();
 
-        return tenancy.getTenancyLicenceType();
+        // Convert CombinedLicenceType to label based on legislative country
+        if (caseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
+            // Wales uses OccupationLicenceTypeWales
+            OccupationLicenceTypeWales walesType = OccupationLicenceTypeWales.from(combinedType);
+            return walesType != null ? walesType.getLabel() : null;
+        } else {
+            // England uses TenancyLicenceType
+            TenancyLicenceType englandType = TenancyLicenceType.from(combinedType);
+            return englandType != null ? englandType.getLabel() : null;
+        }
     }
 
     private LocalDate extractTenancyStartDate(PcsCaseEntity caseEntity) {
-        TenancyLicence tenancy = caseEntity.getTenancyLicence();
+        TenancyLicenceEntity tenancy = caseEntity.getTenancyLicence();
         if (tenancy == null) {
             return null;
         }
 
-        if (caseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
-            return tenancy.getWalesLicenceStartDate();
-        }
-
-        return tenancy.getTenancyLicenceDate();
+        return tenancy.getStartDate();
     }
 
     private BigDecimal extractDailyRentAmount(PcsCaseEntity caseEntity) {
-        TenancyLicence tenancy = caseEntity.getTenancyLicence();
-        return tenancy != null ? tenancy.getDailyRentChargeAmount() : null;
+        TenancyLicenceEntity tenancy = caseEntity.getTenancyLicence();
+        return tenancy != null ? tenancy.getRentPerDay() : null;
     }
 
     private BigDecimal extractRentArrearsOwed(PcsCaseEntity caseEntity) {
-        TenancyLicence tenancy = caseEntity.getTenancyLicence();
-        return tenancy != null ? tenancy.getTotalRentArrears() : null;
+        ClaimEntity claim = caseEntity.getClaims().stream().findFirst().orElse(null);
+        if (claim == null || claim.getRentArrears() == null) {
+            return null;
+        }
+        return claim.getRentArrears().getTotalRentArrears();
     }
 
     private YesOrNo extractContactByPhone(PartyEntity defendantEntity) {
@@ -210,49 +218,28 @@ public class PossessionClaimResponseMapper {
     }
 
     private YesOrNo extractNoticeServed(PcsCaseEntity caseEntity) {
-        TenancyLicence tenancy = caseEntity.getTenancyLicence();
-        if (tenancy == null) {
+        ClaimEntity claim = caseEntity.getClaims().stream().findFirst().orElse(null);
+        if (claim == null || claim.getNoticeOfPossession() == null) {
             return null;
         }
-
-        Boolean noticeServed;
-        if (caseEntity.getLegislativeCountry() == LegislativeCountry.WALES) {
-            noticeServed = tenancy.getWalesNoticeServed();
-        } else {
-            noticeServed = tenancy.getNoticeServed();
-        }
-
-        if (noticeServed == null) {
-            return null;
-        }
-
-        return noticeServed ? YesOrNo.YES : YesOrNo.NO;
+        return claim.getNoticeOfPossession().getNoticeServed();
     }
 
     private LocalDateTime extractNoticeDate(PcsCaseEntity caseEntity) {
-        TenancyLicence tenancy = caseEntity.getTenancyLicence();
-        if (tenancy == null) {
+        ClaimEntity claim = caseEntity.getClaims().stream().findFirst().orElse(null);
+        if (claim == null || claim.getNoticeOfPossession() == null) {
             return null;
         }
 
-        // Priority order: posted > delivered > handed over > email > other electronic > other
-        if (tenancy.getNoticePostedDate() != null) {
-            return tenancy.getNoticePostedDate().atStartOfDay();
+        NoticeOfPossessionEntity notice = claim.getNoticeOfPossession();
+
+        // Priority: use noticeDateTime if available, otherwise convert noticeDate
+        if (notice.getNoticeDateTime() != null) {
+            return notice.getNoticeDateTime();
         }
-        if (tenancy.getNoticeDeliveredDate() != null) {
-            return tenancy.getNoticeDeliveredDate().atStartOfDay();
-        }
-        if (tenancy.getNoticeHandedOverDateTime() != null) {
-            return tenancy.getNoticeHandedOverDateTime();
-        }
-        if (tenancy.getNoticeEmailSentDateTime() != null) {
-            return tenancy.getNoticeEmailSentDateTime();
-        }
-        if (tenancy.getNoticeOtherElectronicDateTime() != null) {
-            return tenancy.getNoticeOtherElectronicDateTime();
-        }
-        if (tenancy.getNoticeOtherDateTime() != null) {
-            return tenancy.getNoticeOtherDateTime();
+
+        if (notice.getNoticeDate() != null) {
+            return notice.getNoticeDate().atStartOfDay();
         }
 
         return null;

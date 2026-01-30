@@ -207,7 +207,7 @@ public class PCSCase {
     )
     private YesOrNo noticeServed;
 
-    @JsonUnwrapped(prefix = "eng")
+    @JsonUnwrapped(prefix = "notice_")
     @CCD
     private NoticeServedDetails noticeServedDetails;
 

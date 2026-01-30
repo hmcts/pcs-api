@@ -10,12 +10,14 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimantProvidedInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantProvided;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CombinedLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
@@ -73,14 +75,23 @@ class PossessionClaimResponseMapperTest {
 
         ClaimEntity claimEntity = createClaimWithClaimantAndDefendant(claimantEntity, defendantEntity);
 
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .tenancyLicenceType("Assured tenancy")
-            .tenancyLicenceDate(LocalDate.of(2020, 1, 1))
-            .dailyRentChargeAmount(new BigDecimal("50.00"))
-            .totalRentArrears(new BigDecimal("1000.00"))
-            .noticeServed(true)
-            .noticePostedDate(LocalDate.of(2024, 6, 1))
+        TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
+            .type(CombinedLicenceType.ASSURED_TENANCY)
+            .startDate(LocalDate.of(2020, 1, 1))
+            .rentPerDay(new BigDecimal("50.00"))
             .build();
+
+        RentArrearsEntity rentArrears = RentArrearsEntity.builder()
+            .totalRentArrears(new BigDecimal("1000.00"))
+            .build();
+
+        NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
+            .noticeServed(YesOrNo.YES)
+            .noticeDateTime(LocalDate.of(2024, 6, 1).atStartOfDay())
+            .build();
+
+        claimEntity.setRentArrears(rentArrears);
+        claimEntity.setNoticeOfPossession(notice);
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
@@ -211,8 +222,8 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapTenancyTypeForEnglandCase() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .tenancyLicenceType("Assured tenancy")
+        TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
+            .type(CombinedLicenceType.ASSURED_TENANCY)
             .build();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
@@ -234,9 +245,8 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapTenancyTypeForWalesCase() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
-            .tenancyLicenceType("Should not use this")
+        TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
+            .type(CombinedLicenceType.SECURE_CONTRACT)
             .build();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
@@ -258,8 +268,8 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapTenancyStartDateForEnglandCase() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .tenancyLicenceDate(LocalDate.of(2020, 1, 1))
+        TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
+            .startDate(LocalDate.of(2020, 1, 1))
             .build();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
@@ -281,9 +291,8 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapTenancyStartDateForWalesCase() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .walesLicenceStartDate(LocalDate.of(2024, 3, 1))
-            .tenancyLicenceDate(LocalDate.of(2020, 1, 1))
+        TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
+            .startDate(LocalDate.of(2024, 3, 1))
             .build();
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
@@ -305,16 +314,18 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapNoticeServedForEnglandCase() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .noticeServed(true)
+        NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
+            .noticeServed(YesOrNo.YES)
             .build();
+
+        ClaimEntity claim = createMinimalClaim();
+        claim.setNoticeOfPossession(notice);
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .legislativeCountry(LegislativeCountry.ENGLAND)
-            .tenancyLicence(tenancy)
             .build();
-        caseEntity.getClaims().add(createMinimalClaim());
+        caseEntity.getClaims().add(claim);
 
         when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
 
@@ -328,17 +339,18 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapNoticeServedForWalesCase() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .walesNoticeServed(true)
-            .noticeServed(false)
+        NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
+            .noticeServed(YesOrNo.YES)
             .build();
+
+        ClaimEntity claim = createMinimalClaim();
+        claim.setNoticeOfPossession(notice);
 
         PcsCaseEntity caseEntity = PcsCaseEntity.builder()
             .caseReference(CASE_REFERENCE)
             .legislativeCountry(LegislativeCountry.WALES)
-            .tenancyLicence(tenancy)
             .build();
-        caseEntity.getClaims().add(createMinimalClaim());
+        caseEntity.getClaims().add(claim);
 
         when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
 
@@ -352,12 +364,18 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapNoticeDateWithPostedDateAsHighestPriority() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .noticePostedDate(LocalDate.of(2024, 6, 1))
-            .noticeDeliveredDate(LocalDate.of(2024, 6, 2))
+        NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
+            .noticeDateTime(LocalDate.of(2024, 6, 1).atStartOfDay())
             .build();
 
-        PcsCaseEntity caseEntity = createCaseWithTenancy(tenancy);
+        ClaimEntity claim = createMinimalClaim();
+        claim.setNoticeOfPossession(notice);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        caseEntity.getClaims().add(claim);
 
         when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
 
@@ -372,12 +390,18 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapNoticeDateWithDeliveredDateWhenPostedDateIsNull() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .noticePostedDate(null)
-            .noticeDeliveredDate(LocalDate.of(2024, 6, 2))
+        NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
+            .noticeDate(LocalDate.of(2024, 6, 2))
             .build();
 
-        PcsCaseEntity caseEntity = createCaseWithTenancy(tenancy);
+        ClaimEntity claim = createMinimalClaim();
+        claim.setNoticeOfPossession(notice);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        caseEntity.getClaims().add(claim);
 
         when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
 
@@ -392,13 +416,18 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapNoticeDateWithHandedOverDateTimeWhenHigherPrioritiesNull() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .noticePostedDate(null)
-            .noticeDeliveredDate(null)
-            .noticeHandedOverDateTime(LocalDateTime.of(2024, 6, 3, 10, 30))
+        NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
+            .noticeDateTime(LocalDateTime.of(2024, 6, 3, 10, 30))
             .build();
 
-        PcsCaseEntity caseEntity = createCaseWithTenancy(tenancy);
+        ClaimEntity claim = createMinimalClaim();
+        claim.setNoticeOfPossession(notice);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        caseEntity.getClaims().add(claim);
 
         when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
 
@@ -413,16 +442,19 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldReturnNullNoticeDateWhenAllDatesAreNull() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .noticePostedDate(null)
-            .noticeDeliveredDate(null)
-            .noticeHandedOverDateTime(null)
-            .noticeEmailSentDateTime(null)
-            .noticeOtherElectronicDateTime(null)
-            .noticeOtherDateTime(null)
+        NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
+            .noticeDate(null)
+            .noticeDateTime(null)
             .build();
 
-        PcsCaseEntity caseEntity = createCaseWithTenancy(tenancy);
+        ClaimEntity claim = createMinimalClaim();
+        claim.setNoticeOfPossession(notice);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        caseEntity.getClaims().add(claim);
 
         when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
 
@@ -493,8 +525,8 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapDailyRentAmount() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
-            .dailyRentChargeAmount(new BigDecimal("75.50"))
+        TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
+            .rentPerDay(new BigDecimal("75.50"))
             .build();
 
         PcsCaseEntity caseEntity = createCaseWithTenancy(tenancy);
@@ -512,11 +544,18 @@ class PossessionClaimResponseMapperTest {
     @Test
     void shouldMapRentArrearsOwed() {
         // Given
-        TenancyLicence tenancy = TenancyLicence.builder()
+        RentArrearsEntity rentArrears = RentArrearsEntity.builder()
             .totalRentArrears(new BigDecimal("5000.00"))
             .build();
 
-        PcsCaseEntity caseEntity = createCaseWithTenancy(tenancy);
+        ClaimEntity claim = createMinimalClaim();
+        claim.setRentArrears(rentArrears);
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+            .caseReference(CASE_REFERENCE)
+            .legislativeCountry(LegislativeCountry.ENGLAND)
+            .build();
+        caseEntity.getClaims().add(claim);
 
         when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
 
@@ -664,7 +703,7 @@ class PossessionClaimResponseMapperTest {
         return caseEntity;
     }
 
-    private PcsCaseEntity createCaseWithTenancy(TenancyLicence tenancy) {
+    private PcsCaseEntity createCaseWithTenancy(TenancyLicenceEntity tenancy) {
         PcsCaseEntity caseEntity = createMinimalCaseEntity();
         caseEntity.setTenancyLicence(tenancy);
         return caseEntity;
