@@ -43,7 +43,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         YesOrNo submitFlag = caseData.getSubmitDraftAnswers();
 
         if (response == null) {
-            log.error("Submit failed for case {}: possessionClaimResponse is null", caseReference);
+            log.error("Sub mit failed for case {}: possessionClaimResponse is null", caseReference);
             return error("Invalid submission: missing response data");
         }
 
