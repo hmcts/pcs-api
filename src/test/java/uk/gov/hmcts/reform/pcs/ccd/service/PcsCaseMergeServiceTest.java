@@ -9,6 +9,7 @@ import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -18,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -30,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 @ExtendWith(MockitoExtension.class)
 class PcsCaseMergeServiceTest {
@@ -42,11 +45,15 @@ class PcsCaseMergeServiceTest {
     private TenancyLicenceService tenancyLicenceService;
     @Mock
     private StatementOfTruthService statementOfTruthService;
+    @Mock
+    private PCSCase pcsCase;
 
     private PcsCaseMergeService underTest;
 
     @BeforeEach
     void setUp() {
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(mock(TenancyLicenceDetails.class));
+
         underTest = new PcsCaseMergeService(securityContextService,
                                             modelMapper,
                                             tenancyLicenceService,
@@ -56,7 +63,6 @@ class PcsCaseMergeServiceTest {
     @Test
     void shouldLeaveFieldsUnchangedWhenPatchingCaseWithNoData() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
 
         when(pcsCase.getCaseManagementLocation()).thenReturn(null);
@@ -65,14 +71,13 @@ class PcsCaseMergeServiceTest {
         underTest.mergeCaseData(pcsCaseEntity, pcsCase);
 
         // Then
-        verify(pcsCaseEntity).setTenancyLicence(any());
+        verify(pcsCaseEntity).setLegacyTenancyLicence(any());
         verify(pcsCaseEntity).setPossessionGrounds(any());
     }
 
     @Test
     void shouldChangeFieldsWhenPatchingCase() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
 
         AddressUK updatedPropertyAddress = mock(AddressUK.class);
@@ -89,8 +94,6 @@ class PcsCaseMergeServiceTest {
 
     @Test
     void shouldCreatePartyWithPcqIdForCurrentUser() {
-        PCSCase pcsCase = mock(PCSCase.class);
-
         UUID userId = UUID.randomUUID();
         String expectedPcqId = UUID.randomUUID().toString();
         String expectedFirstName = "some first name";
@@ -123,8 +126,6 @@ class PcsCaseMergeServiceTest {
 
     @Test
     void shouldUpdateExistingPartyWithPcqIdForCurrentUser() {
-        PCSCase pcsCase = mock(PCSCase.class);
-
         final UUID userId = UUID.randomUUID();
         final String expectedPcqId = UUID.randomUUID().toString();
         final UUID existingPartyId = UUID.randomUUID();
@@ -160,7 +161,6 @@ class PcsCaseMergeServiceTest {
     @Test
     void shouldUpdateCaseManagementLocationWhenNotNull() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
         PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
 
         int location = 13685;
@@ -176,8 +176,6 @@ class PcsCaseMergeServiceTest {
 
     @Test
     void shouldMapWalesStandardContractGroundsToPossessionGrounds() {
-        PCSCase pcsCase = mock(PCSCase.class);
-
         SecureContractGroundsForPossessionWales secureContractGroundsWales =
             mock(SecureContractGroundsForPossessionWales.class);
         when(pcsCase.getSecureContractGroundsForPossessionWales()).thenReturn(secureContractGroundsWales);
@@ -225,8 +223,6 @@ class PcsCaseMergeServiceTest {
 
     @Test
     void shouldMapWalesSecureContractGroundsToPossessionGrounds() {
-        PCSCase pcsCase = mock(PCSCase.class);
-
         SecureContractGroundsForPossessionWales secureContractGroundsWales =
             mock(SecureContractGroundsForPossessionWales.class);
         when(pcsCase.getSecureContractGroundsForPossessionWales()).thenReturn(secureContractGroundsWales);
@@ -269,6 +265,25 @@ class PcsCaseMergeServiceTest {
                 .contains(
                         EstateManagementGroundsWales.BUILDING_WORKS.getLabel(),
                         EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES.getLabel());
+    }
+
+    @Test
+    void shouldSetTenancyLicence() {
+        // Given
+        PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
+        TenancyLicenceDetails tenancyLicenceDetails = TenancyLicenceDetails.builder()
+            .typeOfTenancyLicence(ASSURED_TENANCY)
+            .build();
+
+        when(pcsCase.getTenancyLicenceDetails()).thenReturn(tenancyLicenceDetails);
+        TenancyLicenceEntity tenancyLicenceEntity = mock(TenancyLicenceEntity.class);
+        when(tenancyLicenceService.buildTenancyLicenceEntity(pcsCase)).thenReturn(tenancyLicenceEntity);
+
+        // When
+        underTest.mergeCaseData(pcsCaseEntity, pcsCase);
+
+        // Then
+        assertThat(pcsCaseEntity.getTenancyLicence()).isEqualTo(tenancyLicenceEntity);
     }
 
     private AddressEntity stubAddressUKModelMapper(AddressUK addressUK) {
