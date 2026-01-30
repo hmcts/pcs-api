@@ -15,6 +15,8 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
+            .add(new ToggleClaimSentToHighCourtPlaceholder())
+            .add(new CannotApplyForWritInfoPage())
             .add(new NameAndAddressForEvictionWritPage())
             .add(new ChangeNameAddressWritPage())
             .add(new ConfirmHCEOfficerPage())
