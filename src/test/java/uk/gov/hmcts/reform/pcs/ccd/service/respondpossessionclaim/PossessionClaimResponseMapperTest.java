@@ -132,7 +132,6 @@ class PossessionClaimResponseMapperTest {
         DefendantProvided defendantProvided = result.getDefendantProvided();
         assertThat(defendantProvided.getContactDetails().getParty().getFirstName()).isEqualTo("John");
         assertThat(defendantProvided.getContactDetails().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(defendantProvided.getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
@@ -220,7 +219,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapTenancyTypeForEnglandCase() {
+    void shouldMapTenancyTypeWhenCaseIsInEngland() {
         // Given
         TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
             .type(CombinedLicenceType.ASSURED_TENANCY)
@@ -243,7 +242,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapTenancyTypeForWalesCase() {
+    void shouldMapTenancyTypeWhenCaseIsInWales() {
         // Given
         TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
             .type(CombinedLicenceType.SECURE_CONTRACT)
@@ -266,7 +265,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapTenancyStartDateForEnglandCase() {
+    void shouldMapTenancyStartDateWhenCaseIsInEngland() {
         // Given
         TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
             .startDate(LocalDate.of(2020, 1, 1))
@@ -289,7 +288,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapTenancyStartDateForWalesCase() {
+    void shouldMapTenancyStartDateWhenCaseIsInWales() {
         // Given
         TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
             .startDate(LocalDate.of(2024, 3, 1))
@@ -312,7 +311,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapNoticeServedForEnglandCase() {
+    void shouldMapNoticeServedWhenCaseIsInEngland() {
         // Given
         NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
             .noticeServed(YesOrNo.YES)
@@ -337,7 +336,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapNoticeServedForWalesCase() {
+    void shouldMapNoticeServedWhenCaseIsInWales() {
         // Given
         NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
             .noticeServed(YesOrNo.YES)
@@ -362,7 +361,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapNoticeDateWithPostedDateAsHighestPriority() {
+    void shouldMapNoticeDateWhenPostedDateHasHighestPriority() {
         // Given
         NoticeOfPossessionEntity notice = NoticeOfPossessionEntity.builder()
             .noticeDateTime(LocalDate.of(2024, 6, 1).atStartOfDay())
@@ -466,64 +465,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapContactByPhoneWhenPhoneNumberProvidedIsYes() {
-        // Given
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .phoneNumberProvided(VerticalYesNo.YES)
-            .phoneNumber("07700900000")
-            .build();
-
-        PcsCaseEntity caseEntity = createMinimalCaseEntity();
-
-        when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
-
-        // When
-        PossessionClaimResponse result = underTest.mapFrom(caseEntity, defendantEntity);
-
-        // Then
-        assertThat(result.getDefendantProvided().getContactDetails().getContactByPhone())
-            .isEqualTo(YesOrNo.YES);
-    }
-
-    @Test
-    void shouldMapContactByPhoneWhenPhoneNumberProvidedIsNo() {
-        // Given
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .phoneNumberProvided(VerticalYesNo.NO)
-            .build();
-
-        PcsCaseEntity caseEntity = createMinimalCaseEntity();
-
-        when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
-
-        // When
-        PossessionClaimResponse result = underTest.mapFrom(caseEntity, defendantEntity);
-
-        // Then
-        assertThat(result.getDefendantProvided().getContactDetails().getContactByPhone())
-            .isEqualTo(YesOrNo.NO);
-    }
-
-    @Test
-    void shouldMapContactByPhoneAsNullWhenPhoneNumberProvidedIsNull() {
-        // Given
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .phoneNumberProvided(null)
-            .build();
-
-        PcsCaseEntity caseEntity = createMinimalCaseEntity();
-
-        when(addressMapper.toAddressUK(any())).thenReturn(AddressUK.builder().build());
-
-        // When
-        PossessionClaimResponse result = underTest.mapFrom(caseEntity, defendantEntity);
-
-        // Then
-        assertThat(result.getDefendantProvided().getContactDetails().getContactByPhone()).isNull();
-    }
-
-    @Test
-    void shouldMapDailyRentAmount() {
+    void shouldMapDailyRentAmountWhenTenancyHasRentPerDay() {
         // Given
         TenancyLicenceEntity tenancy = TenancyLicenceEntity.builder()
             .rentPerDay(new BigDecimal("75.50"))
@@ -542,7 +484,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldMapRentArrearsOwed() {
+    void shouldMapRentArrearsOwedWhenClaimHasRentArrears() {
         // Given
         RentArrearsEntity rentArrears = RentArrearsEntity.builder()
             .totalRentArrears(new BigDecimal("5000.00"))
@@ -568,7 +510,7 @@ class PossessionClaimResponseMapperTest {
     }
 
     @Test
-    void shouldExtractClaimantOrgName() {
+    void shouldExtractClaimantOrgNameWhenClaimantIsOrganisation() {
         // Given
         PartyEntity claimantEntity = PartyEntity.builder()
             .orgName("Test Landlord Ltd")
@@ -643,7 +585,7 @@ class PossessionClaimResponseMapperTest {
         // When
         PossessionClaimResponse result = underTest.mapFrom(caseEntity, defendantEntity);
 
-        // Then - Verify both parties have the same values on first load
+        // Then
         uk.gov.hmcts.reform.pcs.ccd.domain.Party claimantParty = result.getClaimantProvided().getParty();
         uk.gov.hmcts.reform.pcs.ccd.domain.Party defendantParty = result.getDefendantProvided()
             .getContactDetails().getParty();

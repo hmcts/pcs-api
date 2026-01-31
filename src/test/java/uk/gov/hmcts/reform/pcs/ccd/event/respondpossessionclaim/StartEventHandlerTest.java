@@ -99,7 +99,9 @@ class StartEventHandlerTest {
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
         verify(responseMapper).mapFrom(pcsCaseEntity, defendantEntity);
-        verify(draftCaseDataService).patchUnsubmittedEventData(eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim));
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
     }
 
     @Test
