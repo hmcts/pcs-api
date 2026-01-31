@@ -5,123 +5,93 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.List;
-import java.util.UUID;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
+/**
+ * Start event handler for RespondPossessionClaim.
+ *
+ * <p>Two flows:
+ * - First time: Load case from DB, map entities, create draft, return to UI
+ * - Second time: Load saved draft, merge with CCD payload, return to UI
+ */
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class StartEventHandler implements Start<PCSCase, State> {
 
     private final PcsCaseService pcsCaseService;
-    private final AddressMapper addressMapper;
-    private final RespondPossessionClaimDraftService draftService;
     private final SecurityContextService securityContextService;
+    private final DefendantAccessValidator accessValidator;
+    private final PossessionClaimResponseMapper responseMapper;
+    private final DraftCaseDataService draftCaseDataService;
 
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        PCSCase caseDataFromPayload = eventPayload.caseData();
-        UUID authenticatedUserId = UUID.fromString(securityContextService.getCurrentUserDetails().getUid());
+        PCSCase caseWithMetadata = eventPayload.caseData();  // Contains case reference, state, dates from CCD
 
-        PartyEntity defendantEntity = validateAccess(caseReference, authenticatedUserId);
-        PossessionClaimResponse initialResponse = buildInitialResponse(defendantEntity, caseReference);
-
-        return getOrInitializeDraft(caseReference, initialResponse, caseDataFromPayload);
-    }
-
-    private PartyEntity validateAccess(long caseReference, UUID authenticatedUserId) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        List<PartyEntity> defendants = extractDefendants(pcsCaseEntity, caseReference);
-        return findMatchingDefendant(defendants, authenticatedUserId, caseReference);
-    }
-
-    private List<PartyEntity> extractDefendants(PcsCaseEntity pcsCaseEntity, long caseReference) {
-        ClaimEntity mainClaim = pcsCaseEntity.getClaims().stream()
-            .findFirst()
-            .orElseThrow(() -> {
-                log.error("No claim found for case {}", caseReference);
-                return new CaseAccessException("No claim found for this case");
-            });
-
-        List<PartyEntity> defendants = mainClaim.getClaimParties().stream()
-            .filter(claimParty -> claimParty.getRole() == PartyRole.DEFENDANT)
-            .map(ClaimPartyEntity::getParty)
-            .toList();
-
-        if (defendants.isEmpty()) {
-            log.error("No defendants found for case {}", caseReference);
-            throw new CaseAccessException("No defendants associated with this case");
+        // Second time: Draft exists - restore defendant's saved answers
+        if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
+            return restoreSavedDraftAnswers(caseReference, caseWithMetadata);
         }
 
-        return defendants;
-    }
+        // First time: Build from database entities
 
-    private PartyEntity findMatchingDefendant(
-            List<PartyEntity> defendants,
-            UUID authenticatedUserId,
-            long caseReference) {
-        return defendants.stream()
-            .filter(defendant -> authenticatedUserId.equals(defendant.getIdamId()))
-            .findFirst()
-            .orElseThrow(() -> {
-                log.error("Access denied: User {} is not linked as a defendant on case {}",
-                    authenticatedUserId, caseReference);
-                return new CaseAccessException("User is not linked as a defendant on this case");
-            });
-    }
+        PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
+        PartyEntity defendantEntity = accessValidator.validateAndGetDefendant(
+            caseEntity,
+            securityContextService.getCurrentUserId()
+        );
 
-    private PossessionClaimResponse buildInitialResponse(PartyEntity defendantEntity, long caseReference) {
-        AddressUK contactAddress = resolveAddress(defendantEntity, caseReference);
-        Party party = buildParty(defendantEntity, contactAddress);
+        // Map database entities to response structure (claimantProvided + defendantProvided)
+        PossessionClaimResponse responseFromDatabase = responseMapper.mapFrom(caseEntity, defendantEntity);
 
-        return PossessionClaimResponse.builder()
-            .party(party)
+        // Save to draft table so defendant can come back later
+        createInitialDraft(caseReference, responseFromDatabase);
+
+        // Return case with response structure for UI
+        return caseWithMetadata.toBuilder()
+            .possessionClaimResponse(responseFromDatabase)
             .build();
     }
 
-    private AddressUK resolveAddress(PartyEntity defendantEntity, long caseReference) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+    // Second time flow: Load defendant's saved answers and add them back into the case
+    // Why merge? Case has metadata (reference, state, dates), draft has defendant's saved answers
+    private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase caseWithMetadata) {
+        PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+            .orElseThrow(() -> new IllegalStateException(
+                "Draft not found for case " + caseReference
+            ));
 
-        if (defendantEntity.getAddressSameAsProperty() != null
-            && defendantEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
-            return addressMapper.toAddressUK(pcsCaseEntity.getPropertyAddress());
-        } else {
-            return addressMapper.toAddressUK(defendantEntity.getAddress());
-        }
+        // Combine: case metadata (base) + saved draft answers (overlay)
+        return caseWithMetadata.toBuilder()
+            .possessionClaimResponse(savedDraft.getPossessionClaimResponse())  // Defendant's saved answers
+            .hasUnsubmittedCaseData(YesOrNo.YES)                                // Flag: has draft
+            .build();  // Everything else (state, reference, dates) from caseWithMetadata
     }
 
-    private Party buildParty(PartyEntity defendantEntity, AddressUK contactAddress) {
-        return Party.builder()
-            .firstName(defendantEntity.getFirstName())
-            .lastName(defendantEntity.getLastName())
-            .address(contactAddress)
-            .build();
-    }
+    // First time flow: Create initial draft so defendant can save progress
+    private void createInitialDraft(long caseReference, PossessionClaimResponse responseFromDatabase) {
+        PCSCase draftWithOnlyResponseData = PCSCase.builder()
+            .possessionClaimResponse(responseFromDatabase)
+            .build();  // Only response data - no metadata (CCD owns that)
 
-    private PCSCase getOrInitializeDraft(long caseReference,
-                                          PossessionClaimResponse initialResponse,
-                                          PCSCase caseDataFromPayload) {
-        if (draftService.exists(caseReference)) {
-            return draftService.load(caseReference, caseDataFromPayload);
-        }
-        return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
+        draftCaseDataService.patchUnsubmittedEventData(
+            caseReference,
+            draftWithOnlyResponseData,
+            respondPossessionClaim
+        );
     }
 }

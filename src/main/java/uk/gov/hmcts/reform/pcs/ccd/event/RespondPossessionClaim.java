@@ -26,7 +26,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         configBuilder
-            .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler::submit, startEventHandler::start)
+            .decentralisedEvent(respondPossessionClaim.name(), submitEventHandler, startEventHandler)
             // TODO: HDPI-3580 - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
             // Temporarily enabled for all states to allow testing before case submission/payment
             .forAllStates()

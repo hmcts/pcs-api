@@ -30,4 +30,6 @@ public class Party {
 
     private String phoneNumber;
 
+    private VerticalYesNo phoneNumberProvided;
+
 }
