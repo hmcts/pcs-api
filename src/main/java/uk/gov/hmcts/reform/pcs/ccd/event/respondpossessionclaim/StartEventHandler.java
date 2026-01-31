@@ -22,7 +22,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 /**
  * Start event handler for RespondPossessionClaim.
  *
- * Two flows:
+ * <p>Two flows:
  * - First time: Load case from DB, map entities, create draft, return to UI
  * - Second time: Load saved draft, merge with CCD payload, return to UI
  */
@@ -97,7 +97,11 @@ public class StartEventHandler implements Start<PCSCase, State> {
             .possessionClaimResponse(responseFromDatabase)
             .build();  // Only response data - no metadata (CCD owns that)
 
-        draftCaseDataService.patchUnsubmittedEventData(caseReference, draftWithOnlyResponseData, respondPossessionClaim);
+        draftCaseDataService.patchUnsubmittedEventData(
+            caseReference,
+            draftWithOnlyResponseData,
+            respondPossessionClaim
+        );
         log.info("=== Draft created for case {}", caseReference);
     }
 }

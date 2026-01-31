@@ -55,6 +55,12 @@ public class PossessionClaimResponseMapper {
      * @return PossessionClaimResponse with claimantProvided and defendantProvided sections
      */
     public PossessionClaimResponse mapFrom(PcsCaseEntity caseEntity, PartyEntity defendantEntity) {
+        log.info("=== MAPPER: Building PossessionClaimResponse from database entities");
+        log.info("=== MAPPER: Case reference: {}", caseEntity.getCaseReference());
+        log.info("=== MAPPER: Defendant - firstName: {}, lastName: {}, nameKnown: {}, addressKnown: {}",
+            defendantEntity.getFirstName(), defendantEntity.getLastName(),
+            defendantEntity.getNameKnown(), defendantEntity.getAddressKnown());
+
         AddressUK contactAddress = resolveAddress(defendantEntity, caseEntity);
         String claimantOrgName = extractClaimantOrgName(caseEntity);
 
@@ -70,6 +76,9 @@ public class PossessionClaimResponseMapper {
             contactAddress,
             claimantOrgName
         );
+
+        log.info("=== MAPPER: Built response - claimantProvided: {}, defendantProvided: {}",
+            claimantProvided != null, defendantProvided != null);
 
         return PossessionClaimResponse.builder()
             .claimantProvided(claimantProvided)
@@ -111,7 +120,6 @@ public class PossessionClaimResponseMapper {
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(defendantEditableParty)
-            .contactByPhone(extractContactByPhone(defendantEntity))
             .build();
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -205,16 +213,6 @@ public class PossessionClaimResponseMapper {
             return null;
         }
         return claim.getRentArrears().getTotalRentArrears();
-    }
-
-    private YesOrNo extractContactByPhone(PartyEntity defendantEntity) {
-        VerticalYesNo phoneNumberProvided = defendantEntity.getPhoneNumberProvided();
-
-        if (phoneNumberProvided == null) {
-            return null;
-        }
-
-        return phoneNumberProvided == VerticalYesNo.YES ? YesOrNo.YES : YesOrNo.NO;
     }
 
     private YesOrNo extractNoticeServed(PcsCaseEntity caseEntity) {
