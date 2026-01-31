@@ -70,8 +70,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private SubmitResponse<State> processDraftSubmit(long caseReference, PCSCase caseData) {
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
-        // Allow partial updates during draft saves (citizen may only send responses without contactDetails)
-        // The merge logic in DraftCaseDataService will preserve existing contactDetails from the draft
+        // Allow partial updates - UI may send only responses OR only contactDetails
+        // The merge logic in DraftCaseDataService will preserve existing fields
         if (response.getDefendantProvided() == null) {
             log.error("Draft submit rejected for case {}: defendantProvided is null", caseReference);
             return error("Invalid response structure. Please refresh the page and try again.");
