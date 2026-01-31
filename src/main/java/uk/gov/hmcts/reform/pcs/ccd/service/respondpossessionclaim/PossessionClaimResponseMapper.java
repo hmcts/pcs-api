@@ -55,12 +55,6 @@ public class PossessionClaimResponseMapper {
      * @return PossessionClaimResponse with claimantProvided and defendantProvided sections
      */
     public PossessionClaimResponse mapFrom(PcsCaseEntity caseEntity, PartyEntity defendantEntity) {
-        log.info("=== MAPPER: Building PossessionClaimResponse from database entities");
-        log.info("=== MAPPER: Case reference: {}", caseEntity.getCaseReference());
-        log.info("=== MAPPER: Defendant - firstName: {}, lastName: {}, nameKnown: {}, addressKnown: {}",
-            defendantEntity.getFirstName(), defendantEntity.getLastName(),
-            defendantEntity.getNameKnown(), defendantEntity.getAddressKnown());
-
         AddressUK contactAddress = resolveAddress(defendantEntity, caseEntity);
         String claimantOrgName = extractClaimantOrgName(caseEntity);
 
@@ -76,9 +70,6 @@ public class PossessionClaimResponseMapper {
             contactAddress,
             claimantOrgName
         );
-
-        log.info("=== MAPPER: Built response - claimantProvided: {}, defendantProvided: {}",
-            claimantProvided != null, defendantProvided != null);
 
         return PossessionClaimResponse.builder()
             .claimantProvided(claimantProvided)

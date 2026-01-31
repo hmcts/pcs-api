@@ -79,7 +79,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         try {
             saveDraftToDatabase(caseReference, caseData);
-            log.debug("Draft saved successfully for case {}", caseReference);
             return success();
         } catch (Exception e) {
             log.error("Failed to save draft for case {}", caseReference, e);
@@ -90,8 +89,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     // Update draft with defendant's latest answers (claimantProvided stays unchanged)
     // Why only defendantProvided? Claimant data is static (came from landlord), defendant data changes
     private void saveDraftToDatabase(long caseReference, PCSCase caseData) {
-        log.info("=== Updating draft with latest answers");
-
         // Extract only defendant's answers (landlord's info doesn't change)
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
             .defendantProvided(caseData.getPossessionClaimResponse().getDefendantProvided())
@@ -102,7 +99,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();  // Only defendant's answers - no case metadata
 
         draftCaseDataService.patchUnsubmittedEventData(caseReference, draftUpdate, respondPossessionClaim);
-        log.info("=== Draft updated for case {}", caseReference);
     }
 
     private SubmitResponse<State> success() {

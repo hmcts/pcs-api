@@ -42,17 +42,12 @@ public class StartEventHandler implements Start<PCSCase, State> {
         long caseReference = eventPayload.caseReference();
         PCSCase caseWithMetadata = eventPayload.caseData();  // Contains case reference, state, dates from CCD
 
-        log.info("=== START CALLBACK === caseReference: {}, userId: {}",
-            caseReference, securityContextService.getCurrentUserId());
-
         // Second time: Draft exists - restore defendant's saved answers
         if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
-            log.info("=== Draft exists - restoring saved answers");
             return restoreSavedDraftAnswers(caseReference, caseWithMetadata);
         }
 
         // First time: Build from database entities
-        log.info("=== No draft - building from database entities");
 
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
         PartyEntity defendantEntity = accessValidator.validateAndGetDefendant(
@@ -80,8 +75,6 @@ public class StartEventHandler implements Start<PCSCase, State> {
                 "Draft not found for case " + caseReference
             ));
 
-        log.info("=== Restoring saved draft answers into case");
-
         // Combine: case metadata (base) + saved draft answers (overlay)
         return caseWithMetadata.toBuilder()
             .possessionClaimResponse(savedDraft.getPossessionClaimResponse())  // Defendant's saved answers
@@ -91,8 +84,6 @@ public class StartEventHandler implements Start<PCSCase, State> {
 
     // First time flow: Create initial draft so defendant can save progress
     private void createInitialDraft(long caseReference, PossessionClaimResponse responseFromDatabase) {
-        log.info("=== Creating initial draft");
-
         PCSCase draftWithOnlyResponseData = PCSCase.builder()
             .possessionClaimResponse(responseFromDatabase)
             .build();  // Only response data - no metadata (CCD owns that)
@@ -102,6 +93,5 @@ public class StartEventHandler implements Start<PCSCase, State> {
             draftWithOnlyResponseData,
             respondPossessionClaim
         );
-        log.info("=== Draft created for case {}", caseReference);
     }
 }
