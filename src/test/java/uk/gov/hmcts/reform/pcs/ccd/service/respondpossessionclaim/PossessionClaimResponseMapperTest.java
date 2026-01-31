@@ -611,6 +611,11 @@ class PossessionClaimResponseMapperTest {
             .isEqualTo(claimantParty.getPhoneNumber())
             .isEqualTo("07700900123");
 
+        assertThat(defendantParty.getPhoneNumberProvided())
+            .as("phoneNumberProvided should match on first load")
+            .isEqualTo(claimantParty.getPhoneNumberProvided())
+            .isEqualTo(VerticalYesNo.YES);
+
         assertThat(defendantParty.getAddress())
             .as("address should match on first load")
             .isEqualTo(claimantParty.getAddress())

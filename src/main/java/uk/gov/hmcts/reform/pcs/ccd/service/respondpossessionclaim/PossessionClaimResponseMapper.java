@@ -144,6 +144,7 @@ public class PossessionClaimResponseMapper {
             .addressKnown(defendantEntity.getAddressKnown())
             .addressSameAsProperty(defendantEntity.getAddressSameAsProperty())
             .phoneNumber(defendantEntity.getPhoneNumber())
+            .phoneNumberProvided(defendantEntity.getPhoneNumberProvided())
             .build();
     }
 
