@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.ClaimantProvide
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantProvided;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
+import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -22,13 +24,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -61,25 +61,28 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private SecurityContextService securityContextService;
 
     @Mock
-    private DefendantAccessValidator accessValidator;
+    private AddressMapper addressMapper;
 
     @Mock
     private PossessionClaimResponseMapper responseMapper;
 
+    @Mock
+    private DefendantAccessValidator accessValidator;
+
     @BeforeEach
     void setUp() {
-        RespondPossessionClaimDraftService draftService =
-            new RespondPossessionClaimDraftService(draftCaseDataService);
-
+        // Create handlers with real dependencies
         StartEventHandler startEventHandler = new StartEventHandler(
             pcsCaseService,
             securityContextService,
             accessValidator,
             responseMapper,
-            draftService
+            draftCaseDataService
         );
 
-        SubmitEventHandler submitEventHandler = new SubmitEventHandler(draftService);
+        SubmitEventHandler submitEventHandler = new SubmitEventHandler(
+            draftCaseDataService
+        );
 
         setEventUnderTest(new RespondPossessionClaim(
             startEventHandler,
@@ -132,7 +135,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .defendantProvided(DefendantProvided.builder()
                 .contactDetails(DefendantContactDetails.builder()
                     .party(party)
-                    .contactByPhone(YesOrNo.YES)
                     .build())
                 .build())
             .build();
@@ -333,7 +335,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantProvided(DefendantProvided.builder()
                 .contactDetails(DefendantContactDetails.builder()
-                    .contactByPhone(YesOrNo.YES)
                     .build())
                 .build())
             .build();
@@ -375,7 +376,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantProvided(DefendantProvided.builder()
                 .contactDetails(DefendantContactDetails.builder()
-                    .contactByPhone(YesOrNo.YES)
                     .build())
                 .build())
             .build();
@@ -649,7 +649,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .defendantProvided(DefendantProvided.builder()
                 .contactDetails(DefendantContactDetails.builder()
                     .party(party)
-                    .contactByPhone(YesOrNo.YES)
                     .build())
                 .build())
             .build();
@@ -673,7 +672,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
 
         DefendantProvided defendantProvided = savedDraft.getPossessionClaimResponse().getDefendantProvided();
-        assertThat(defendantProvided.getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.YES);
         assertThat(defendantProvided.getContactDetails().getParty()).isNotNull();
         assertThat(defendantProvided.getContactDetails().getParty().getFirstName()).isEqualTo("John");
         assertThat(defendantProvided.getContactDetails().getParty().getLastName()).isEqualTo("Doe");
@@ -865,7 +863,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .defendantProvided(DefendantProvided.builder()
                 .contactDetails(DefendantContactDetails.builder()
                     .party(party)
-                    .contactByPhone(YesOrNo.YES)
                     .build())
                 .build())
             .build();
@@ -957,44 +954,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldOmitNullContactByPhoneField() throws Exception {
-        // Given: Response with null contactByPhone
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantProvided(DefendantProvided.builder()
-                .contactDetails(DefendantContactDetails.builder()
-                    .party(party)
-                    .contactByPhone(null)  // Null field
-                    .build())
-                .build())
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        // When: Submitting draft
-        callSubmitHandler(caseData);
-
-        // Then: Verify contactByPhone was omitted
-        ArgumentCaptor<PCSCase> captor = forClass(PCSCase.class);
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(TEST_CASE_REFERENCE),
-            captor.capture(),
-            eq(EventId.respondPossessionClaim)
-        );
-
-        PCSCase savedDraft = captor.getValue();
-        assertThat(savedDraft.getPossessionClaimResponse()
-            .getDefendantProvided().getContactDetails().getContactByPhone()).isNull();
-    }
-
-    @Test
     void shouldIncludeAllNonNullFieldsWhenSerializing() throws Exception {
         // Given: Fully populated response with no nulls
         AddressUK address = AddressUK.builder()
@@ -1023,7 +982,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .defendantProvided(DefendantProvided.builder()
                 .contactDetails(DefendantContactDetails.builder()
                     .party(party)
-                    .contactByPhone(YesOrNo.YES)
                     .build())
                 .build())
             .build();
@@ -1067,9 +1025,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(savedAddress.getCounty()).isEqualTo("Greater London");
         assertThat(savedAddress.getPostCode()).isEqualTo("SW1A 1AA");
         assertThat(savedAddress.getCountry()).isEqualTo("UK");
-
-        assertThat(savedDraft.getPossessionClaimResponse()
-            .getDefendantProvided().getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.YES);
     }
 
     @Test
@@ -1096,7 +1051,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .defendantProvided(DefendantProvided.builder()
                 .contactDetails(DefendantContactDetails.builder()
                     .party(party)
-                    .contactByPhone(YesOrNo.NO)
                     .build())
                 .build())
             .build();
@@ -1129,8 +1083,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(savedAddress.getAddressLine1()).isEqualTo("123 Main Street");
         assertThat(savedAddress.getPostTown()).isEqualTo("London");
         assertThat(savedAddress.getPostCode()).isEqualTo("SW1A 1AA");
-        assertThat(savedDraft.getPossessionClaimResponse()
-            .getDefendantProvided().getContactDetails().getContactByPhone()).isEqualTo(YesOrNo.NO);
 
         // Null fields should remain null (not overwritten)
         assertThat(savedParty.getOrgName()).isNull();
@@ -1152,7 +1104,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .defendantProvided(DefendantProvided.builder()
                 .contactDetails(DefendantContactDetails.builder()
                     .party(party)
-                    .contactByPhone(YesOrNo.YES)
                     .build())
                 .build())
             .build();

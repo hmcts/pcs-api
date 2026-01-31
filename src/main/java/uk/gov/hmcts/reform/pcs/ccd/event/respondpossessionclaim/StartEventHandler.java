@@ -5,34 +5,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 /**
  * Start event handler for RespondPossessionClaim.
  *
- * <p>Handles two distinct flows:
- *
- * <p><b>First Time (No Draft):</b>
- * 1. Load case entity from database (case, parties, tenancy, property address)
- * 2. Validate defendant has access to this case
- * 3. Map database entities to domain objects (claimantProvided, defendantProvided)
- * 4. Create new draft in database with empty response fields
- * 5. Return populated case data to CCD UI
- *
- * <p><b>Second Time (Draft Exists):</b>
- * 1. Check if draft exists for this user
- * 2. Load saved draft from database (preserves user's previous answers)
- * 3. Return merged draft immediately (skips all DB loading and mapping)
- * 4. User continues where they left off
+ * Two flows:
+ * - First time: Load case from DB, map entities, create draft, return to UI
+ * - Second time: Load saved draft, merge with CCD payload, return to UI
  */
 @Component
 @Slf4j
@@ -43,39 +35,69 @@ public class StartEventHandler implements Start<PCSCase, State> {
     private final SecurityContextService securityContextService;
     private final DefendantAccessValidator accessValidator;
     private final PossessionClaimResponseMapper responseMapper;
-    private final RespondPossessionClaimDraftService draftService;
+    private final DraftCaseDataService draftCaseDataService;
 
     @Override
     public PCSCase start(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        PCSCase caseDataFromPayload = eventPayload.caseData();
+        PCSCase caseWithMetadata = eventPayload.caseData();  // Contains case reference, state, dates from CCD
 
-        // SECOND TIME FLOW: If draft exists, load it and return immediately (skips all DB loading below)
-        // Queries: SELECT case_data FROM draft.draft_case_data WHERE case_reference = ? AND idam_user_id = ?
-        // Merges saved draft into incoming payload:
-        //   - possessionClaimResponse: All user's saved data (claimantProvided + defendantProvided)
-        //   - hasUnsubmittedCaseData: YES (indicates draft exists)
-        // This preserves defendant's partially completed responses and allows them to continue where they left off
-        // Note: submitDraftAnswers is NOT persisted - it's a transient flag sent by UI on each SUBMIT
-        if (draftService.exists(caseReference)) {
-            return draftService.load(caseReference, caseDataFromPayload);
+        log.info("=== START CALLBACK === caseReference: {}, userId: {}",
+            caseReference, securityContextService.getCurrentUserId());
+
+        // Second time: Draft exists - restore defendant's saved answers
+        if (draftCaseDataService.hasUnsubmittedCaseData(caseReference, respondPossessionClaim)) {
+            log.info("=== Draft exists - restoring saved answers");
+            return restoreSavedDraftAnswers(caseReference, caseWithMetadata);
         }
 
-        // FIRST TIME FLOW: No draft exists, populate from database and create new draft
+        // First time: Build from database entities
+        log.info("=== No draft - building from database entities");
 
-        // Step 1: Load case entity with all related data (case, claims, parties, tenancy, property address)
         PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
-
-        // Step 2: Validate defendant has access to this case (throws CaseAccessException if no access)
         PartyEntity defendantEntity = accessValidator.validateAndGetDefendant(
             caseEntity,
             securityContextService.getCurrentUserId()
         );
 
-        // Step 3: Map database entities to domain objects (claimantProvided, defendantProvided with empty responses)
-        PossessionClaimResponse initialResponse = responseMapper.mapFrom(caseEntity, defendantEntity);
+        // Map database entities to response structure (claimantProvided + defendantProvided)
+        PossessionClaimResponse responseFromDatabase = responseMapper.mapFrom(caseEntity, defendantEntity);
 
-        // Step 4: Save to draft table and return populated case data
-        return draftService.initialize(caseReference, initialResponse, caseDataFromPayload);
+        // Save to draft table so defendant can come back later
+        createInitialDraft(caseReference, responseFromDatabase);
+
+        // Return case with response structure for UI
+        return caseWithMetadata.toBuilder()
+            .possessionClaimResponse(responseFromDatabase)
+            .build();
+    }
+
+    // Second time flow: Load defendant's saved answers and add them back into the case
+    // Why merge? Case has metadata (reference, state, dates), draft has defendant's saved answers
+    private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase caseWithMetadata) {
+        PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+            .orElseThrow(() -> new IllegalStateException(
+                "Draft not found for case " + caseReference
+            ));
+
+        log.info("=== Restoring saved draft answers into case");
+
+        // Combine: case metadata (base) + saved draft answers (overlay)
+        return caseWithMetadata.toBuilder()
+            .possessionClaimResponse(savedDraft.getPossessionClaimResponse())  // Defendant's saved answers
+            .hasUnsubmittedCaseData(YesOrNo.YES)                                // Flag: has draft
+            .build();  // Everything else (state, reference, dates) from caseWithMetadata
+    }
+
+    // First time flow: Create initial draft so defendant can save progress
+    private void createInitialDraft(long caseReference, PossessionClaimResponse responseFromDatabase) {
+        log.info("=== Creating initial draft");
+
+        PCSCase draftWithOnlyResponseData = PCSCase.builder()
+            .possessionClaimResponse(responseFromDatabase)
+            .build();  // Only response data - no metadata (CCD owns that)
+
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draftWithOnlyResponseData, respondPossessionClaim);
+        log.info("=== Draft created for case {}", caseReference);
     }
 }

@@ -10,17 +10,19 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import java.util.List;
 import java.util.Optional;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {
 
-    private final RespondPossessionClaimDraftService draftService;
+    private final DraftCaseDataService draftCaseDataService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -68,21 +70,39 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private SubmitResponse<State> processDraftSubmit(long caseReference, PCSCase caseData) {
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
-        if (response.getDefendantProvided() == null
-                || response.getDefendantProvided().getContactDetails() == null
-                || response.getDefendantProvided().getContactDetails().getParty() == null) {
-            log.error("Draft submit rejected for case {}: defendantProvided structure is incomplete", caseReference);
+        // Allow partial updates during draft saves (citizen may only send responses without contactDetails)
+        // The merge logic in DraftCaseDataService will preserve existing contactDetails from the draft
+        if (response.getDefendantProvided() == null) {
+            log.error("Draft submit rejected for case {}: defendantProvided is null", caseReference);
             return error("Invalid response structure. Please refresh the page and try again.");
         }
 
         try {
-            draftService.save(caseReference, caseData);
+            saveDraftToDatabase(caseReference, caseData);
             log.debug("Draft saved successfully for case {}", caseReference);
             return success();
         } catch (Exception e) {
             log.error("Failed to save draft for case {}", caseReference, e);
             return error("We couldn't save your response. Please try again or contact support.");
         }
+    }
+
+    // Update draft with defendant's latest answers (claimantProvided stays unchanged)
+    // Why only defendantProvided? Claimant data is static (came from landlord), defendant data changes
+    private void saveDraftToDatabase(long caseReference, PCSCase caseData) {
+        log.info("=== Updating draft with latest answers");
+
+        // Extract only defendant's answers (landlord's info doesn't change)
+        PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
+            .defendantProvided(caseData.getPossessionClaimResponse().getDefendantProvided())
+            .build();  // claimantProvided is null - merge logic in DB will preserve existing
+
+        PCSCase draftUpdate = PCSCase.builder()
+            .possessionClaimResponse(defendantAnswersOnly)
+            .build();  // Only defendant's answers - no case metadata
+
+        draftCaseDataService.patchUnsubmittedEventData(caseReference, draftUpdate, respondPossessionClaim);
+        log.info("=== Draft updated for case {}", caseReference);
     }
 
     private SubmitResponse<State> success() {

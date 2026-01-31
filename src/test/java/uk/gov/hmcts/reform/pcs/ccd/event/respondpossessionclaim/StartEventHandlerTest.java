@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -13,13 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,6 +31,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class StartEventHandlerTest {
@@ -44,7 +47,7 @@ class StartEventHandlerTest {
     @Mock
     private PossessionClaimResponseMapper responseMapper;
     @Mock
-    private RespondPossessionClaimDraftService draftService;
+    private DraftCaseDataService draftCaseDataService;
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
 
@@ -57,7 +60,7 @@ class StartEventHandlerTest {
             securityContextService,
             accessValidator,
             responseMapper,
-            draftService
+            draftCaseDataService
         );
     }
 
@@ -79,21 +82,11 @@ class StartEventHandlerTest {
             .defendantProvided(null)
             .build();
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
-            .build();
-
-        PCSCase initializedDraft = PCSCase.builder()
-            .possessionClaimResponse(initialResponse)
-            .build();
-
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(pcsCaseEntity, defendantEntity)).thenReturn(initialResponse);
-        when(draftService.initialize(eq(CASE_REFERENCE), eq(initialResponse), any(PCSCase.class)))
-            .thenReturn(initializedDraft);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -102,10 +95,11 @@ class StartEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
+        assertThat(result.getPossessionClaimResponse()).isEqualTo(initialResponse);
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
         verify(responseMapper).mapFrom(pcsCaseEntity, defendantEntity);
-        verify(draftService).initialize(eq(CASE_REFERENCE), eq(initialResponse), any(PCSCase.class));
+        verify(draftCaseDataService).patchUnsubmittedEventData(eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim));
     }
 
     @Test
@@ -113,20 +107,20 @@ class StartEventHandlerTest {
         // Given
         UUID defendantUserId = UUID.randomUUID();
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
+        PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
+            .claimantProvided(null)
+            .defendantProvided(null)
             .build();
 
-        PCSCase existingDraft = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder()
-                .claimantProvided(null)
-                .defendantProvided(null)
-                .build())
+        PCSCase savedDraft = PCSCase.builder()
+            .possessionClaimResponse(draftResponse)
+            .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
 
         lenient().when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(true);
-        when(draftService.load(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(existingDraft);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(savedDraft));
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -134,8 +128,10 @@ class StartEventHandlerTest {
         PCSCase result = underTest.start(eventPayload);
 
         // Then
-        assertThat(result).isEqualTo(existingDraft);
-        verify(draftService).load(eq(CASE_REFERENCE), any(PCSCase.class));
+        assertThat(result).isNotNull();
+        assertThat(result.getPossessionClaimResponse()).isEqualTo(draftResponse);
+        assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
     @Test
@@ -159,7 +155,7 @@ class StartEventHandlerTest {
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(pcsCaseEntity, defendantEntity)).thenReturn(initialResponse);
@@ -194,7 +190,7 @@ class StartEventHandlerTest {
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(pcsCaseEntity, defendantEntity)).thenReturn(initialResponse);
@@ -220,7 +216,7 @@ class StartEventHandlerTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenThrow(new CaseAccessException("No claim found for this case"));
@@ -245,7 +241,7 @@ class StartEventHandlerTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenThrow(new CaseAccessException("No defendants associated with this case"));
@@ -270,7 +266,7 @@ class StartEventHandlerTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenThrow(new CaseAccessException("User is not linked as a defendant on this case"));
@@ -303,7 +299,7 @@ class StartEventHandlerTest {
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(pcsCaseEntity, defendantEntity)).thenReturn(initialResponse);
@@ -339,7 +335,7 @@ class StartEventHandlerTest {
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(pcsCaseEntity, defendantEntity)).thenReturn(initialResponse);
@@ -374,7 +370,7 @@ class StartEventHandlerTest {
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(pcsCaseEntity, defendantEntity)).thenReturn(initialResponse);
@@ -409,7 +405,7 @@ class StartEventHandlerTest {
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
         when(responseMapper.mapFrom(pcsCaseEntity, defendantEntity)).thenReturn(initialResponse);
