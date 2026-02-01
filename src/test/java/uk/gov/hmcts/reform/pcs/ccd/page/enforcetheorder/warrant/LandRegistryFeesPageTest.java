@@ -31,20 +31,31 @@ class LandRegistryFeesPageTest extends BasePageTest {
     @Mock
     private RepaymentTableRenderer repaymentTableRenderer;
 
+    @Mock
+    private MoneyConverter moneyConverter;
+
     @BeforeEach
     void setUp() {
-        MoneyConverter moneyConverter = new MoneyConverter();
         setPageUnderTest(new LandRegistryFeesPage(moneyConverter, repaymentTableRenderer));
     }
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
     void shouldFormatRepaymentFeesCorrectly(String landRegistryPence, String legalCostsPence, String rentArrearsPence,
-                                            String warrantFeeAmount, BigDecimal expectedLandRegistry,
-                                            BigDecimal expectedLegals, BigDecimal expectedArrears,
-                                            BigDecimal expectedTotalFees
+                                            String warrantFeeAmount, String warrantFeePence,
+                                            BigDecimal expectedLandRegistry, BigDecimal expectedLegals,
+                                            BigDecimal expectedArrears, BigDecimal expectedTotalFees
     ) {
-        // Given
+        when(moneyConverter.convertPenceToBigDecimal(landRegistryPence)).thenReturn(expectedLandRegistry);
+        when(moneyConverter.convertPenceToBigDecimal(legalCostsPence)).thenReturn(expectedLegals);
+        when(moneyConverter.convertPenceToBigDecimal(rentArrearsPence)).thenReturn(expectedArrears);
+        when(moneyConverter.convertPoundsToPence(warrantFeeAmount)).thenReturn(warrantFeePence);
+
+        // Calculate total pence for the final conversion stub
+        long totalPence = Long.parseLong(landRegistryPence) + Long.parseLong(legalCostsPence)
+            + Long.parseLong(rentArrearsPence) + Long.parseLong(warrantFeePence);
+        when(moneyConverter.convertPenceToBigDecimal(String.valueOf(totalPence))).thenReturn(expectedTotalFees);
+
         LegalCosts legalCosts = LegalCosts.builder()
             .amountOfLegalCosts(legalCostsPence)
             .build();
@@ -117,20 +128,20 @@ class LandRegistryFeesPageTest extends BasePageTest {
     private static Stream<Arguments> repaymentFeeScenarios() {
         return Stream.of(
             Arguments.of(
-                "12300", "10000", "20000", "£404", new BigDecimal("123.00"),
-                new BigDecimal("100.00"), new BigDecimal("200.00"), new BigDecimal("827.00")
+                "12300", "10000", "20000", "£404", "40400",
+                new BigDecimal("123.00"), new BigDecimal("100.00"), new BigDecimal("200.00"), new BigDecimal("827.00")
             ),
             Arguments.of(
-                "1500", "500", "999", "£50", new BigDecimal("15.00"), new BigDecimal("5.00"),
-                new BigDecimal("9.99"), new BigDecimal("79.99")
+                "1500", "500", "999", "£50", "5000",
+                new BigDecimal("15.00"), new BigDecimal("5.00"), new BigDecimal("9.99"), new BigDecimal("79.99")
             ),
             Arguments.of(
-                "0", "0", "0", "£0", new BigDecimal("0.00"), new BigDecimal("0.00"),
-                new BigDecimal("0.00"), new BigDecimal("0.00")
+                "0", "0", "0", "£0", "0",
+                new BigDecimal("0.00"), new BigDecimal("0.00"), new BigDecimal("0.00"), new BigDecimal("0.00")
             ),
             Arguments.of(
-                "10001", "1", "5000", "£0", new BigDecimal("100.01"), new BigDecimal("0.01"),
-                new BigDecimal("50.00"), new BigDecimal("150.02")
+                "10001", "1", "5000", "£0", "0",
+                new BigDecimal("100.01"), new BigDecimal("0.01"), new BigDecimal("50.00"), new BigDecimal("150.02")
             )
         );
     }
