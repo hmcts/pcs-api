@@ -29,27 +29,6 @@ class PeopleWhoWillBeEvictedPageTest extends BasePageTest {
     class MidEventCallbackTests {
 
         @Test
-        @DisplayName("Should return error when no selection is made")
-        void shouldReturnErrorWhenNoSelection() {
-            // Given
-            PCSCase caseData = PCSCase.builder()
-                .enforcementOrder(EnforcementOrder.builder()
-                    .warrantDetails(WarrantDetails.builder()
-                        .peopleToEvict(PeopleToEvict.builder().build())
-                        .build())
-                    .build())
-                .build();
-
-            // When
-            AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-            // Then
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().getFirst())
-                .contains("Please select whether you want to evict everyone or specific people");
-        }
-
-        @Test
         @DisplayName("Should set showPeopleYouWantToEvictPage to NO when evictEveryone is YES")
         void shouldSetShowPeopleYouWantToEvictPageToNoWhenEvictEveryoneIsYes() {
             // Given

@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -35,7 +34,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
             Set<DiscretionaryGroundWales> discretionaryGrounds,
             Set<EstateManagementGroundsWales> estateManagementGrounds,
             Set<MandatoryGroundWales> mandatoryGrounds,
-            List<String> expectedErrors) {
+            String expectedErrorMessage) {
 
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -51,9 +50,9 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                 callMidEventHandler(caseData);
 
         // Then
-        if (expectedErrors != null && !expectedErrors.isEmpty()) {
-            assertThat(response.getErrors())
-                    .containsExactlyInAnyOrderElementsOf(expectedErrors);
+        if (expectedErrorMessage != null) {
+            assertThat(response.getErrorMessageOverride())
+                    .isEqualTo(expectedErrorMessage);
         } else {
             assertThat(response.getErrors()).isNullOrEmpty();
         }
@@ -66,7 +65,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         Set.of(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157),
                         Set.of(),
                         Set.of(),
-                        List.of()
+                        null
                 ),
 
                 // Valid: Discretionary with estate parent + one sub-selection
@@ -74,7 +73,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         Set.of(ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
                         Set.of(EstateManagementGroundsWales.BUILDING_WORKS),
                         Set.of(),
-                        List.of()
+                        null
                 ),
 
                 // Valid: Multiple discretionary incl. estate + sub-selections
@@ -88,7 +87,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                                 EstateManagementGroundsWales.CHARITIES
                         ),
                         Set.of(),
-                        List.of()
+                        null
                 ),
 
                 // Valid: Only mandatory (discretionary empty)
@@ -96,7 +95,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         Set.of(MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181),
-                        List.of()
+                        null
                 ),
 
                 // Valid: Null discretionary but mandatory present
@@ -104,7 +103,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         null,
                         Set.of(),
                         Set.of(MandatoryGroundWales.FAIL_TO_GIVE_UP_S170),
-                        List.of()
+                        null
                 ),
 
                 // Invalid: No grounds at all
@@ -112,7 +111,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         Set.of(),
                         Set.of(),
                         Set.of(),
-                        List.of("Please select at least one ground.")
+                        "Please select at least one ground."
                 ),
 
                 // Invalid: Null discretionary and empty mandatory
@@ -120,7 +119,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         null,
                         Set.of(),
                         Set.of(),
-                        List.of("Please select at least one ground.")
+                        "Please select at least one ground."
                 ),
 
                 // Invalid: Estate parent selected, no sub-selection
@@ -128,9 +127,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         Set.of(ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
                         Set.of(),
                         Set.of(),
-                        List.of(
-                                "Please select at least one ground in ‘Estate management grounds (section 160)’."
-                        )
+                        "Please select at least one ground in ‘Estate management grounds (section 160)’."
                 ),
 
                 // Invalid: Estate parent selected, null sub-selection
@@ -138,9 +135,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         Set.of(ESTATE_MANAGEMENT_GROUNDS_SECTION_160),
                         null,
                         Set.of(),
-                        List.of(
-                                "Please select at least one ground in ‘Estate management grounds (section 160)’."
-                        )
+                        "Please select at least one ground in ‘Estate management grounds (section 160)’."
                 ),
 
                 // Invalid: Multiple discretionary incl. estate, no sub-selection
@@ -151,9 +146,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         ),
                         Set.of(),
                         Set.of(),
-                        List.of(
-                                "Please select at least one ground in ‘Estate management grounds (section 160)’."
-                        )
+                        "Please select at least one ground in ‘Estate management grounds (section 160)’."
                 )
         );
     }

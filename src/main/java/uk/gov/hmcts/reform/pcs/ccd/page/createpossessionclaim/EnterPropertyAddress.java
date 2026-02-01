@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -56,9 +57,10 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         AddressUK propertyAddress = caseData.getPropertyAddress();
 
         List<String> validationErrors = addressValidator.validateAddressFields(propertyAddress);
+
         if (!validationErrors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(validationErrors)
+                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
                 .build();
         }
 

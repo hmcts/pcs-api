@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
-import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
@@ -88,8 +87,8 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         if (discretionaryGrounds.isEmpty() && discretionaryGroundsAlt.isEmpty() && mandatoryGrounds.isEmpty()
             && mandatoryGroundsAlt.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(List.of("Please select at least one ground"))
-                    .build();
+                .errorMessageOverride("Please select at least one ground")
+                .build();
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

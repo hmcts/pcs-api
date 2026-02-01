@@ -40,15 +40,6 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             warrantDetails.setRiskDetails(EnforcementRiskDetails.builder().build());
         }
 
-        // Validate that at least one category is selected
-        if (warrantDetails.getEnforcementRiskCategories() == null
-            || warrantDetails.getEnforcementRiskCategories().isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(data)
-                .errors(java.util.List.of("Select at least one option"))
-                .build();
-        }
-
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
             .build();

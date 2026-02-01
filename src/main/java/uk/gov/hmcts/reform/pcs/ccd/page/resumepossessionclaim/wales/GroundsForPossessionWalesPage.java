@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +94,7 @@ public class GroundsForPossessionWalesPage
         if (!errors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(data)
-                .errors(errors)
+                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
                 .build();
         }
 

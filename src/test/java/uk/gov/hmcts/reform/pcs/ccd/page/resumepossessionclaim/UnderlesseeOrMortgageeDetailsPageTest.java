@@ -54,7 +54,7 @@ class UnderlesseeOrMortgageeDetailsPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+        assertThat(response.getErrorMessageOverride()).isEqualTo("some error 1\nsome error 2");
         verify(underlesseeMortgageeValidator, never()).validateAdditionalUnderlesseeOrMortgagee(anyList());
     }
 
@@ -91,7 +91,8 @@ class UnderlesseeOrMortgageeDetailsPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).containsExactly(errorMessage1, errorMessage2, errorMessage3);
+        assertThat(response.getErrorMessageOverride()).isEqualTo("%s\n%s\n%s",
+                                                                 errorMessage1, errorMessage2, errorMessage3);
 
     }
 

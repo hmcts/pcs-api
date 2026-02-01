@@ -87,7 +87,7 @@ class TextAreaValidationServiceTest {
 
             // Then
             assertThat(errors).hasSize(1);
-            assertThat(errors.get(0)).isEqualTo(
+            assertThat(errors.getFirst()).isEqualTo(
                 String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, fieldLabel, maxCharacters)
             );
         }
@@ -154,7 +154,7 @@ class TextAreaValidationServiceTest {
 
             // Then
             assertThat(errors).hasSize(1);
-            assertThat(errors.get(0)).isEqualTo(
+            assertThat(errors.getFirst()).isEqualTo(
                 String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, fieldLabel, maxCharacters)
             );
         }
@@ -230,7 +230,7 @@ class TextAreaValidationServiceTest {
         void shouldReturnEmptyListWhenObjectIsNull() {
             // When
             List<String> errors = textAreaValidationService.validateSingleField(
-                null, obj -> obj.toString(), "Test Field", 100
+                null, Object::toString, "Test Field", 100
             );
 
             // Then
@@ -265,7 +265,7 @@ class TextAreaValidationServiceTest {
 
             // Then
             assertThat(errors).hasSize(1);
-            assertThat(errors.get(0)).isEqualTo(
+            assertThat(errors.getFirst()).isEqualTo(
                 String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Test Field", 100)
             );
         }
@@ -304,7 +304,7 @@ class TextAreaValidationServiceTest {
 
             // Then
             assertThat(response.getData()).isEqualTo(testData);
-            assertThat(response.getErrors()).containsExactly("Error 1", "Error 2");
+            assertThat(response.getErrorMessageOverride()).isEqualTo("Error 1\nError 2");
         }
 
         @Test
@@ -431,8 +431,8 @@ class TextAreaValidationServiceTest {
         }
 
         @Test
-        @DisplayName("Should create complete validation response with errors")
-        void shouldCreateCompleteValidationResponseWithErrors() {
+        @DisplayName("Should create complete validation response with error message")
+        void shouldCreateCompleteValidationResponseWithErrorMessage() {
             // Given
             String testData = "test case data";
             List<String> validationErrors = textAreaValidationService.validateMultipleTextAreas(
@@ -446,13 +446,12 @@ class TextAreaValidationServiceTest {
 
             // Then
             assertThat(response.getData()).isEqualTo(testData);
-            assertThat(response.getErrors()).hasSize(2);
-            assertThat(response.getErrors().get(0)).isEqualTo(
-                String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Field 1", 100)
-            );
-            assertThat(response.getErrors().get(1)).isEqualTo(
-                String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Field 2", 200)
-            );
+
+            String error1Message = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Field 1", 100);
+            String error2Message = String.format(CHARACTER_LIMIT_ERROR_TEMPLATE, "Field 2", 200);
+
+            assertThat(response.getErrorMessageOverride())
+                .isEqualTo("%s\n%s", error1Message, error2Message);
         }
     }
 }

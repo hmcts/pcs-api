@@ -61,7 +61,7 @@ class DefendantsDetailsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+        assertThat(response.getErrorMessageOverride()).isEqualTo("error 1\nerror 2");
         verify(defendantValidator, never()).validateAdditionalDefendants(anyList());
     }
 
@@ -99,7 +99,8 @@ class DefendantsDetailsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).containsExactly(errorMessage1, errorMessage2, errorMessage3);
+        assertThat(response.getErrorMessageOverride()).isEqualTo("%s\n%s\n%s",
+                                                                 errorMessage1, errorMessage2, errorMessage3);
     }
 
     @ParameterizedTest

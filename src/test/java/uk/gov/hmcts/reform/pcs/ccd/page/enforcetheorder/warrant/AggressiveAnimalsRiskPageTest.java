@@ -76,7 +76,7 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
                                              RiskCategory.AGGRESSIVE_ANIMALS.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }
 

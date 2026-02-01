@@ -77,6 +77,6 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
                                              RiskCategory.PROTEST_GROUP_MEMBER.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }
