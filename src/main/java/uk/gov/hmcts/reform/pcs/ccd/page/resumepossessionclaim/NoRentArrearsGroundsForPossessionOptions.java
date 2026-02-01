@@ -9,12 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
-import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -62,7 +61,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
 
         if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(List.of("Please select at least one ground"))
+                .errorMessageOverride("Please select at least one ground")
                 .build();
         }
 

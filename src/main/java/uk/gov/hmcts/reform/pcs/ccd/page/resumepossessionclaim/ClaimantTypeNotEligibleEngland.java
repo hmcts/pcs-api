@@ -7,8 +7,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import java.util.List;
-
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
@@ -61,7 +59,7 @@ public class ClaimantTypeNotEligibleEngland implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("You’re not eligible for this online service"))
+            .errorMessageOverride("You’re not eligible for this online service")
             .build();
     }
 
