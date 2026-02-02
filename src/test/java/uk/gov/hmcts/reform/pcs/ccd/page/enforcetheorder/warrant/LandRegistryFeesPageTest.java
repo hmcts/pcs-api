@@ -51,6 +51,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
         when(moneyConverter.convertPenceToBigDecimal(rentArrearsPence)).thenReturn(expectedArrears);
         when(moneyConverter.convertPoundsToPence(warrantFeeAmount)).thenReturn(warrantFeePence);
 
+        // Calculate total pence for the final conversion stub
         long totalPence = Long.parseLong(landRegistryPence) + Long.parseLong(legalCostsPence)
             + Long.parseLong(rentArrearsPence) + Long.parseLong(warrantFeePence);
         when(moneyConverter.convertPenceToBigDecimal(String.valueOf(totalPence))).thenReturn(expectedTotalFees);
