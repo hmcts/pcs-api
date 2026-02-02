@@ -61,16 +61,30 @@ withNightlyPipeline(type, product, component) {
   }
 }
 
-// Fallback when library does not invoke afterAlways (no workspace – must not use sh)
-try {
-  def reportUrl = "${env.BUILD_URL}E2E_20Test_20Report/"
-  slackSend(
-    channel: '#qa-pipeline-status',
-    message: "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}.\n*Allure report:* ${reportUrl}"
-  )
-  echo "E2E Slack fallback: sent to #qa-pipeline-status"
-} catch (Exception e) {
-  echo "E2E Slack fallback: slackSend failed – ${e.message}"
+// Fallback: run in node block to get workspace, then notifier + slackSend (no webhook needed)
+node {
+  try {
+    def msg = sh(
+      script: 'cd src/e2eTest && yarn allure-slack-notify --print-only 2>&1 || true',
+      returnStdout: true
+    ).trim()
+    if (!msg) {
+      def reportUrl = "${env.BUILD_URL}E2E_20Test_20Report/"
+      msg = "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}.\n*Allure report:* ${reportUrl}"
+    }
+    slackSend(channel: '#qa-pipeline-status', message: msg)
+    echo "E2E Slack fallback: sent full summary to #qa-pipeline-status"
+  } catch (Exception e) {
+    echo "E2E Slack fallback: failed – ${e.message}"
+    try {
+      slackSend(
+        channel: '#qa-pipeline-status',
+        message: "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
+      )
+    } catch (Exception e2) {
+      echo "E2E Slack fallback: slackSend also failed – ${e2.message}"
+    }
+  }
 }
 
 def validateInputs() {
