@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,11 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.service.FeeValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.math.BigDecimal;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,8 +33,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
     @BeforeEach
     void setUp() {
         MoneyConverter moneyConverter = new MoneyConverter();
-        FeeValidationService feeValidationService = new FeeValidationService();
-        setPageUnderTest(new LandRegistryFeesPage(moneyConverter, repaymentTableRenderer, feeValidationService));
+        setPageUnderTest(new LandRegistryFeesPage(moneyConverter, repaymentTableRenderer));
     }
 
     @ParameterizedTest
@@ -95,36 +91,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        String expectedError = "Land Registry fees should be more than 0.01";
-
-        assertThat(response.getErrors()).containsExactly(expectedError);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                        .getLandRegistryFees().getAmountOfLandRegistryFees()).isEqualTo(invalidFee);
-    }
-
-    private static Stream<Arguments> feeTotals() {
-        return Stream.of(
-            Arguments.of(
-                new BigDecimal("123.00"),
-                new BigDecimal("100.00"),
-                new BigDecimal("200.00"),
-                "£404",
-                new BigDecimal("827.00")
-            ),
-            Arguments.of(
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                "£0",
-                new BigDecimal("0.00")
-            ),
-            Arguments.of(
-                new BigDecimal("5.00"),
-                new BigDecimal("10.00"),
-                null,
-                "£0",
-                new BigDecimal("15.00")
-            )
-        );
     }
 }

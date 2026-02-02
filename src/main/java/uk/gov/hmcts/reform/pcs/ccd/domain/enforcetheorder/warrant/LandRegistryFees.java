@@ -31,7 +31,9 @@ public class LandRegistryFees {
 
     @CCD(
         label = "How much did you spend on Land Registry fees?",
-        typeOverride = FieldType.MoneyGBP
+        typeOverride = FieldType.MoneyGBP,
+        min = 1,
+        max = 1_000_000_000
     )
     @JacksonMoneyGBP
     private BigDecimal amountOfLandRegistryFees;

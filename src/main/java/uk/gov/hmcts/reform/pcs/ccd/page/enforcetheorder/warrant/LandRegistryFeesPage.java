@@ -14,13 +14,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.service.FeeValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -31,7 +28,6 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
     private final MoneyConverter moneyConverter;
     private final RepaymentTableRenderer repaymentTableRenderer;
-    private final FeeValidationService feeValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -56,16 +52,6 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        List<String> validationErrors = getValidationErrors(caseData);
-
-        if (!validationErrors.isEmpty()) {
-
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(validationErrors)
-                .build();
-        }
-
         WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
 
         BigDecimal totalArrears = warrantDetails.getMoneyOwedByDefendants()
@@ -78,8 +64,6 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         BigDecimal totalFees = getTotalFees(totalArrears, landRegistryFee, legalCosts, warrantFeePence);
 
         // Render repayment table for Repayments screen (default caption)
-        // Some fee fields are legitimately null when the UI uses YES/NO toggles,
-        // So default them to ZERO before rendering.
         String repaymentTableHtml = repaymentTableRenderer.render(
             totalArrears,
             legalCosts,
@@ -105,20 +89,6 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
-    }
-
-    private List<String> getValidationErrors(PCSCase caseData) {
-        List<String> errors = new ArrayList<>();
-        LandRegistryFees landRegistryFees = caseData.getEnforcementOrder()
-            .getWarrantDetails().getLandRegistryFees();
-
-        if (landRegistryFees.getHaveLandRegistryFeesBeenPaid().toBoolean()) {
-            errors.addAll(feeValidationService.validateFee(
-                landRegistryFees.getAmountOfLandRegistryFees(),
-                "Land Registry fees"
-            ));
-        }
-        return errors;
     }
 
     private BigDecimal convertWarrantFeeToBigDecimal(PCSCase caseData) {

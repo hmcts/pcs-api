@@ -29,7 +29,9 @@ public class RepaymentCosts {
 
     @CCD(
         label = "Enter the amount that you want the defendants to repay",
-        typeOverride = FieldType.MoneyGBP
+        typeOverride = FieldType.MoneyGBP,
+        min = 1,
+        max = 1_000_000_000
     )
     @JacksonMoneyGBP
     private BigDecimal amountOfRepaymentCosts;

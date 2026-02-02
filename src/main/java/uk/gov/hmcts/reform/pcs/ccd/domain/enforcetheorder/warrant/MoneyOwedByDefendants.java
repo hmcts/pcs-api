@@ -23,7 +23,9 @@ public class MoneyOwedByDefendants {
 
     @CCD(
         label = "What is the total amount that the defendants owe you?",
-        typeOverride = FieldType.MoneyGBP
+        typeOverride = FieldType.MoneyGBP,
+        min = 1,
+        max = 1_000_000_000
     )
     @JacksonMoneyGBP
     private BigDecimal amountOwed;

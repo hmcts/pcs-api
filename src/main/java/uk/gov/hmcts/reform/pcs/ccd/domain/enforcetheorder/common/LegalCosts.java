@@ -31,7 +31,7 @@ public class LegalCosts {
             label = "How much do you want to reclaim?",
             typeOverride = FieldType.MoneyGBP,
             min = 1,
-            max = 1000
+            max = 1_000_000_000
     )
     @JacksonMoneyGBP
     private BigDecimal amountOfLegalCosts;
