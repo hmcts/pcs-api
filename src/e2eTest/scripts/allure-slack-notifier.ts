@@ -100,6 +100,11 @@ export interface AllureTestRecord {
   story: string;
   severity: string;
   message: string;
+  /** Used to deduplicate retries: same test across attempts shares this id */
+  historyId?: string;
+  fullName?: string;
+  /** Start timestamp (ms) for ordering retries – keep latest attempt */
+  start?: number;
 }
 
 export function parseAllureResults(
@@ -132,6 +137,8 @@ export function parseAllureResults(
     const feature = extractLabel(data, 'feature');
     const story = extractLabel(data, 'story');
     const severity = extractLabel(data, 'severity');
+    const historyId = (data.historyId as string) ?? '';
+    const fullName = (data.fullName as string) ?? '';
 
     tests.push({
       name,
@@ -143,6 +150,9 @@ export function parseAllureResults(
       story,
       severity,
       message,
+      historyId: historyId || undefined,
+      fullName: fullName || undefined,
+      start,
     });
   }
   return tests;
@@ -161,6 +171,27 @@ export function failedTests(tests: AllureTestRecord[]): AllureTestRecord[] {
   return tests.filter((t) =>
     ['failed', 'broken'].includes(t.status ?? '')
   );
+}
+
+/**
+ * Deduplicate failed/broken tests by retry: Playwright retries create multiple result files
+ * for the same test. Group by historyId (or fullName/name) and keep only the latest attempt.
+ */
+export function deduplicateFailedTestsByRetry(
+  tests: AllureTestRecord[]
+): AllureTestRecord[] {
+  const failed = failedTests(tests);
+  const byKey = new Map<string, AllureTestRecord>();
+  for (const t of failed) {
+    const key = (t.historyId ?? t.fullName ?? t.name).trim() || t.name;
+    const existing = byKey.get(key);
+    const start = t.start ?? 0;
+    const existingStart = existing?.start ?? 0;
+    if (!existing || start >= existingStart) {
+      byKey.set(key, t);
+    }
+  }
+  return Array.from(byKey.values());
 }
 
 /** Count tests with duration >= thresholdSeconds (default 10s). */
@@ -369,7 +400,7 @@ export function buildSlackMessage(
   lines.push('');
 
   if (tests && tests.length > 0) {
-    const fails = failedTests(tests);
+    const fails = deduplicateFailedTestsByRetry(tests);
     const slow = topSlowestTests(tests, topNSlowest);
 
     if (fails.length > 0) {

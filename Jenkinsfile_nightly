@@ -100,7 +100,7 @@ def archiveE2eTestReports() {
 
 // E2E stage notification to QA channel only (build status is sent by library via enableSlackNotifications)
 def postAllureResultsToSlack() {
-  def slackChannel = '#hdp-qa-team'
+  def slackChannel = '#qa-pipeline-status'
   def raw = sh(
     script: '''
       cd src/e2eTest
