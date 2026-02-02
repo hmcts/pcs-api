@@ -93,6 +93,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
+        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
         type: yourApplication.summaryWritOrWarrant,
         label1: yourApplication.warrantFeeValidationLabel,
         text1: yourApplication.warrantFeeValidationText,
@@ -442,6 +443,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
+      journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
       type: yourApplication.summaryWritOrWarrant,
       label1: yourApplication.warrantFeeValidationLabel,
       text1: yourApplication.warrantFeeValidationText,
@@ -613,6 +615,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
+      journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
       type: yourApplication.summaryWritOrWarrant,
       label1: yourApplication.warrantFeeValidationLabel,
       text1: yourApplication.warrantFeeValidationText,
@@ -754,6 +757,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
+        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
         type: yourApplication.summaryWritOrWarrant,
         label1: yourApplication.warrantFeeValidationLabel,
         text1: yourApplication.warrantFeeValidationText,
@@ -876,6 +880,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
+        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
         type: yourApplication.summaryWritOrWarrant,
         label1: yourApplication.warrantFeeValidationLabel,
         text1: yourApplication.warrantFeeValidationText,
