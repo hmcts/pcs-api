@@ -16,17 +16,6 @@ export function startLogCapture(page: Page, testInfo: TestInfo): void {
   logCaptureByTestId.set(testId, logs);
 }
 
-export async function attachLogToTest(testInfo: TestInfo): Promise<void> {
-  const logs = logCaptureByTestId.get(testInfo.testId);
-  logCaptureByTestId.delete(testInfo.testId);
-
-  if (!logs || logs.length === 0) return;
-
-  const failed = testInfo.status !== 'passed' && testInfo.status !== 'skipped';
-  if (!failed) return;
-
-  await testInfo.attach('Browser console logs', {
-    body: logs.join('\n'),
-    contentType: 'text/plain',
-  });
+export function getLogs(testInfo: TestInfo): string[] {
+  return logCaptureByTestId.get(testInfo.testId) ?? [];
 }
