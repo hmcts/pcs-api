@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -38,3 +38,4 @@ public class LandRegistryFees {
     @JacksonMoneyGBP
     private BigDecimal amountOfLandRegistryFees;
 }
+
