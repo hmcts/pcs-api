@@ -7,9 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -180,10 +178,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         pcsCaseEntity.getClaims().add(claimEntity);
         pcsCaseEntity.getParties().add(matchingDefendant);
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
-            .build();
-
         PossessionClaimResponse mockResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
                 .party(Party.builder()
@@ -223,10 +217,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldThrowCaseAccessExceptionWhenNoDefendantsFound() {
         UUID defendantUserId = UUID.randomUUID();
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
-            .build();
-
         ClaimEntity claimEntity = ClaimEntity.builder()
             .build();
 
@@ -251,10 +241,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Test
     void shouldThrowCaseAccessExceptionWhenNoClaimExists() {
         UUID defendantUserId = UUID.randomUUID();
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
-            .build();
-
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
             .claims(Collections.emptyList())
             .build();
@@ -277,10 +263,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
     void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant() {
         UUID defendantUserId = UUID.randomUUID();
         UUID differentUserId = UUID.randomUUID();
-
-        UserInfo userInfo = UserInfo.builder()
-            .uid(differentUserId.toString())
-            .build();
 
         PartyEntity matchingDefendant = PartyEntity.builder()
             .idamId(defendantUserId)
@@ -420,10 +402,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         pcsCaseEntity.getClaims().add(claimEntity);
         pcsCaseEntity.getParties().add(matchingDefendant);
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
-            .build();
-
         PossessionClaimResponse mockResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
                 .party(Party.builder()
@@ -478,10 +456,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
         pcsCaseEntity.getClaims().add(claimEntity);
         pcsCaseEntity.getParties().add(matchingDefendant);
-
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
-            .build();
 
         AddressUK emptyAddress = AddressUK.builder()
             .addressLine1(null)
@@ -557,10 +531,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
             .build();
         pcsCaseEntity.getClaims().add(claimEntity);
         pcsCaseEntity.getParties().add(matchingDefendant);
-
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
-            .build();
 
         // Mock draft data that user has already saved
         Party draftParty = Party.builder()

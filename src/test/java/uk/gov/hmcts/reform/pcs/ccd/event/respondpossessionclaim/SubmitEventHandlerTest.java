@@ -80,10 +80,10 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
@@ -124,10 +124,10 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
@@ -164,10 +164,10 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
@@ -188,10 +188,10 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
@@ -225,10 +225,10 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(null)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
@@ -251,10 +251,10 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
@@ -406,7 +406,7 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         doThrow(new RuntimeException("Database connection failed"))
             .when(draftCaseDataService).patchUnsubmittedEventData(
@@ -414,7 +414,7 @@ class SubmitEventHandlerTest {
             );
 
         // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
@@ -453,10 +453,10 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
@@ -543,8 +543,8 @@ class SubmitEventHandlerTest {
     }
 
     private void submitAndVerifyDraftSaved(PCSCase caseData) {
-        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
-        SubmitResponse<State> result = underTest.submit(eventPayload);
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+        SubmitResponse<State> result = underTest.submit(payload);
 
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
