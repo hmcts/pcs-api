@@ -107,24 +107,12 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
-  afterAlways('e2eTest:preview') {
-    archiveE2eTestReports()
-    postAllureResultsToSlack()
-  }
-
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
   }
 
   afterAlways('e2eTest:aat') {
     archiveE2eTestReports()
-    postAllureResultsToSlack()
-  }
-
-  // Fallback: some library versions use generic stage name
-  afterAlways('e2eTest') {
-    archiveE2eTestReports()
-    postAllureResultsToSlack()
   }
 }
 
@@ -184,31 +172,5 @@ def archiveE2eTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
-// E2E stage notification to QA channel only (build status Fixed/Failed is sent by library to #pcs-tech)
-def postAllureResultsToSlack() {
-  def slackChannel = '#qa-pipeline-status'
-  def raw = sh(
-    script: '''
-      cd src/e2eTest
-      ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only 2>/dev/null || true
-    ''',
-    returnStdout: true
-  ).trim()
-  // Strip yarn/npx noise (yarn run v1.x, $ tsx ..., Done in X.XXs)
-  def msg = raw.replaceAll(/(?m)^yarn run v[\\d.]+\\s*\\n?/, '')
-    .replaceAll(/(?m)^\\$ tsx[^\\n]*\\n?/, '')
-    .replaceAll(/Done in [\\d.]+s\\.?\\s*/, '')
-    .trim()
-  // Keep only first Allure report line (remove duplicates)
-  def allureLine = msg.find(/\\*Allure report:\\* [^\\n]+/)
-  if (allureLine) {
-    msg = msg.replaceAll(/(?m)^\\*Allure report:\\* [^\\n]+\\s*\\n?/, '')
-    msg = msg.replaceFirst(/(\\*Status\\*)/, "${allureLine}\n\n\$1")
-  }
-  if (!msg) {
-    msg = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs."
-  }
-  echo "E2E Slack: Posting to ${slackChannel} (${msg.length()} chars)"
-  slackSend(channel: slackChannel, message: msg)
-}
+
 

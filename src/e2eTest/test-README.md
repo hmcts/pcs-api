@@ -1,4 +1,4 @@
-# Test Automation Framework Documentations
+# Test Automation Framework Documentation
 
 ## 1. Framework Overview
 
