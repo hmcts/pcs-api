@@ -121,4 +121,3 @@ class WarrantPageConfigurerTest extends BasePageTest {
         verifyNoMoreInteractions(pageBuilder);
     }
 }
-
