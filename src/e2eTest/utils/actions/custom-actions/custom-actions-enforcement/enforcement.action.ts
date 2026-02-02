@@ -34,7 +34,7 @@ import {
   claimSentToHighCourt
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData } from '@data/api-data';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
@@ -459,7 +459,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
     if (claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption) {
       await performAction('check', claimantDetails.iBelieveCheckbox);
-      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, !claimantDetails.fullNameTextInput ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.fullNameTextInput);
       await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
     if (claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
