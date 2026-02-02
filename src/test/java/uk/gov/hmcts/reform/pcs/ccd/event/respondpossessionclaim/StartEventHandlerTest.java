@@ -85,7 +85,7 @@ class StartEventHandlerTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -97,7 +97,7 @@ class StartEventHandlerTest {
         assertThat(result.getPossessionClaimResponse()).isEqualTo(initialResponse);
         verify(pcsCaseService).loadCase(CASE_REFERENCE);
         verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
-        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
@@ -158,7 +158,7 @@ class StartEventHandlerTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -166,7 +166,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload);
 
         // Then
-        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
     @Test
@@ -193,7 +193,7 @@ class StartEventHandlerTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -201,7 +201,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload);
 
         // Then
-        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
     @Test
@@ -302,7 +302,7 @@ class StartEventHandlerTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -310,7 +310,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload);
 
         // Then
-        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
     @Test
@@ -338,7 +338,7 @@ class StartEventHandlerTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -346,7 +346,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload);
 
         // Then
-        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
     @Test
@@ -373,7 +373,7 @@ class StartEventHandlerTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -381,7 +381,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload);
 
         // Then
-        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
     @Test
@@ -408,7 +408,7 @@ class StartEventHandlerTest {
         when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -416,7 +416,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload);
 
         // Then
-        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
     private EventPayload<PCSCase, State> createEventPayload() {
