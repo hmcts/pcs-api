@@ -101,13 +101,24 @@ def archiveE2eTestReports() {
 // E2E stage notification to QA channel only (build status is sent by library via enableSlackNotifications)
 def postAllureResultsToSlack() {
   def slackChannel = '#qa-pipeline-status'
-  def msg = sh(
+  def raw = sh(
     script: '''
       cd src/e2eTest
       ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only 2>/dev/null || true
     ''',
     returnStdout: true
   ).trim()
+  // Strip yarn/npx noise (yarn run v1.x, $ tsx ..., Done in X.XXs)
+  def msg = raw.replaceAll(/(?m)^yarn run v[\\d.]+\\s*\\n?/, '')
+    .replaceAll(/(?m)^\\$ tsx[^\\n]*\\n?/, '')
+    .replaceAll(/Done in [\\d.]+s\\.?\\s*/, '')
+    .trim()
+  // Keep only first Allure report line (remove duplicates)
+  def allureLine = msg.find(/\\*Allure report:\\* [^\\n]+/)
+  if (allureLine) {
+    msg = msg.replaceAll(/(?m)^\\*Allure report:\\* [^\\n]+\\s*\\n?/, '')
+    msg = msg.replaceFirst(/(\\*Status\\*)/, "${allureLine}\n\n\$1")
+  }
   if (!msg) {
     msg = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
