@@ -34,14 +34,15 @@ CREATE TABLE possession_alternatives (
 );
 
 CREATE TABLE tenancy_licence (
-  id                   UUID PRIMARY KEY,
-  version              INT,
-  case_id              UUID REFERENCES pcs_case (id),
-  type                 VARCHAR(40) NOT NULL,
-  other_type_details   VARCHAR(500),
-  start_date           DATE,
-  rent_amount          DECIMAL(18, 2),
-  rent_frequency       VARCHAR(20),
-  other_rent_frequency VARCHAR(60),
-  rent_per_day         DECIMAL(18, 2)
+  id                            UUID PRIMARY KEY,
+  version                       INT,
+  case_id                       UUID REFERENCES pcs_case (id),
+  type                          VARCHAR(40) NOT NULL,
+  other_type_details            VARCHAR(500),
+  start_date                    DATE,
+  rent_amount                   DECIMAL(18, 2),
+  rent_frequency                VARCHAR(20),
+  other_rent_frequency          VARCHAR(60),
+  rent_per_day                  DECIMAL(18, 2),
+  calculated_daily_rent_correct YES_NO
 );
