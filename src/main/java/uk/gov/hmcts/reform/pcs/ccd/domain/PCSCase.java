@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.DefendantAccess;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
@@ -66,7 +67,7 @@ public class PCSCase {
     @JsonUnwrapped
     private ClaimantInformation claimantInformation;
 
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {ClaimantAccess.class})
     private List<ListValue<Party>> allClaimants;
 
     @CCD(
@@ -202,16 +203,18 @@ public class PCSCase {
     private String settlementAttemptedDetails;
 
     @CCD(
-        label = "Have you served notice to the defendants?"
+        label = "Have you served notice to the defendants?",
+        access = {ClaimantAccess.class, CitizenAccess.class}
     )
     private YesOrNo noticeServed;
 
     @JsonUnwrapped(prefix = "notice_")
-    @CCD
+    @CCD(access = {ClaimantAccess.class})
     private NoticeServedDetails noticeServedDetails;
 
     private String caseTitleMarkdown;
 
+    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(
@@ -256,7 +259,7 @@ public class PCSCase {
     private PeriodicContractTermsWales periodicContractTermsWales;
 
     @JsonUnwrapped(prefix = "rentDetails_")
-    @CCD
+    @CCD(access = {ClaimantAccess.class})
     private RentDetails rentDetails;
 
     private RentPaymentFrequency rentSectionPaymentFrequency;
@@ -289,18 +292,18 @@ public class PCSCase {
     /**
      * Combined list of all defendants in the case (i.e. primary defendant + additional defendants).
      */
-    @CCD(access = ClaimantAccess.class)
+    @CCD(access = {ClaimantAccess.class})
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
-    @CCD
+    @CCD(access = {ClaimantAccess.class})
     private TenancyLicenceDetails tenancyLicenceDetails;
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
-    @CCD
+    @CCD(access = {ClaimantAccess.class})
     private RentArrearsSection rentArrears;
 
     @CCD
@@ -423,6 +426,7 @@ public class PCSCase {
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
 
     @JsonUnwrapped(prefix = "wales")
+    @CCD(access = {ClaimantAccess.class})
     private WalesNoticeDetails walesNoticeDetails;
 
     @JsonUnwrapped(prefix = "secureContract_")
@@ -439,7 +443,7 @@ public class PCSCase {
     private YesOrNo showReasonsForGroundsPageWales;
 
     @JsonUnwrapped
-    @CCD
+    @CCD(access = {ClaimantAccess.class})
     private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 
     @JsonUnwrapped

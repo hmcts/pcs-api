@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
 
 @Builder
 @Data
@@ -17,14 +18,14 @@ public class ClaimantInformation {
 
     @CCD(
         label = "Your claimant name registered with My HMCTS is:",
-        access = {CitizenAccess.class}
+        access = {ClaimantAccess.class, CitizenAccess.class}
     )
     @External
     private String claimantName;
 
     @CCD(
         label = "Is this the correct claimant name?",
-        access = {CitizenAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class},
         searchable = false
     )
     private VerticalYesNo isClaimantNameCorrect;
@@ -35,7 +36,7 @@ public class ClaimantInformation {
             Changing your claimant name here only updates it for this claim.
             It does not change your registered claimant name on My HMCTS
             """,
-        access = {CitizenAccess.class},
+        access = {ClaimantAccess.class, CitizenAccess.class},
         typeOverride = FieldType.Text,
         max = 60
     )

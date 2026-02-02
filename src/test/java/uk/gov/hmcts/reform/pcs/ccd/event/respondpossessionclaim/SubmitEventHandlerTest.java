@@ -13,9 +13,13 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantData;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,6 +28,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class SubmitEventHandlerTest {
@@ -31,7 +36,7 @@ class SubmitEventHandlerTest {
     private static final long CASE_REFERENCE = 1234567890L;
 
     @Mock
-    private RespondPossessionClaimDraftService draftService;
+    private DraftCaseDataService draftCaseDataService;
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
 
@@ -42,11 +47,13 @@ class SubmitEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(draftService);
+        underTest = new SubmitEventHandler(draftCaseDataService);
     }
 
+    // ========== DRAFT SAVE FLOW (submitDraftAnswers = NO) ==========
+
     @Test
-    void shouldSaveDraftWhenSubmitDraftAnswersIsNo() {
+    void shouldSaveDraftWhenSubmitFlagIsNo() {
         // Given
         AddressUK address = AddressUK.builder()
             .addressLine1("123 Test Street")
@@ -60,9 +67,16 @@ class SubmitEventHandlerTest {
             .address(address)
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
-            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantData(defendantData)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -79,24 +93,37 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftService).save(eq(CASE_REFERENCE), pcsCaseCaptor.capture());
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
-        assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantData()
+            .getContactDetails().getParty().getFirstName()).isEqualTo("John");
+        // Note: submitDraftAnswers is NOT persisted to draft - it's a transient UI flag
     }
 
+    // ========== FINAL SUBMIT FLOW (submitDraftAnswers = YES) ==========
+
     @Test
-    void shouldNotSaveDraftWhenSubmitDraftAnswersIsYes() {
+    void shouldNotSaveDraftWhenSubmitFlagIsYes() {
         // Given
         Party party = Party.builder()
             .firstName("John")
             .lastName("Doe")
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantData(defendantData)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -113,8 +140,56 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftService, never()).save(eq(CASE_REFERENCE), any(PCSCase.class));
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
     }
+
+    @Test
+    void shouldProcessFinalSubmitWhenSubmitFlagIsYes() {
+        // Given
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .responses(responses)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantData(defendantData)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.YES)
+            .build();
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(eventPayload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
+    }
+
+    // ========== VALIDATION ERROR CASES ==========
 
     @Test
     void shouldReturnErrorWhenPossessionClaimResponseIsNull() {
@@ -135,18 +210,28 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).hasSize(1);
         assertThat(result.getErrors().get(0)).isEqualTo("Invalid submission: missing response data");
 
-        verify(draftService, never()).save(eq(CASE_REFERENCE), any(PCSCase.class));
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
     }
 
     @Test
-    void shouldReturnErrorWhenSubmitDraftAnswersIsNull() {
+    void shouldDefaultToNoAndSaveDraftWhenSubmitFlagIsNull() {
         // Given
         Party party = Party.builder()
             .firstName("John")
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantData(defendantData)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -161,18 +246,18 @@ class SubmitEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNotNull();
-        assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0)).isEqualTo("Invalid submission: missing submit flag");
+        assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftService, never()).save(eq(CASE_REFERENCE), any(PCSCase.class));
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
     }
 
     @Test
-    void shouldReturnErrorWhenPartyIsNull() {
+    void shouldReturnErrorWhenDefendantDataIsNull() {
         // Given
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .party(null)
+            .defendantData(null)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -192,7 +277,146 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors().get(0))
             .isEqualTo("Invalid response structure. Please refresh the page and try again.");
 
-        verify(draftService, never()).save(eq(CASE_REFERENCE), any(PCSCase.class));
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
+    }
+
+    /**
+     * REGRESSION GUARD: These tests will FAIL if validation is made stricter.
+     * DO NOT change validation to require contactDetails != null or party != null.
+     * Partial updates are required for incremental form saves.
+     */
+
+    @Test
+    void shouldAllowPartialUpdateWhenOnlyResponsesProvided() {
+        // Given
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.NO)
+            .oweRentArrears(YesNoNotSure.YES)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .responses(responses)
+            .contactDetails(null)
+            .build();
+
+        // When
+        PCSCase caseData = createDraftSaveCaseData(defendantData);
+
+        // Then
+        submitAndVerifyDraftSaved(caseData);
+    }
+
+    @Test
+    void shouldAllowPartialUpdateWhenOnlyContactDetailsProvided() {
+        // Given
+        Party party = Party.builder()
+            .firstName("Jane")
+            .lastName("Smith")
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .responses(null)
+            .build();
+
+        // When
+        PCSCase caseData = createDraftSaveCaseData(defendantData);
+
+        // Then
+        submitAndVerifyDraftSaved(caseData);
+    }
+
+    @Test
+    void shouldAllowPartialUpdateWhenPartyIsNull() {
+        // Given
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(null)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        // When
+        PCSCase caseData = createDraftSaveCaseData(defendantData);
+
+        // Then
+        submitAndVerifyDraftSaved(caseData);
+    }
+
+    @Test
+    void shouldAllowPartialUpdateWhenOnlySingleResponseFieldProvided() {
+        // Given
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.NO)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .responses(responses)
+            .contactDetails(null)
+            .build();
+
+        // When
+        PCSCase caseData = createDraftSaveCaseData(defendantData);
+
+        // Then
+        submitAndVerifyDraftSaved(caseData);
+    }
+
+    @Test
+    void shouldAllowPartialUpdateWhenOnlyAddressLine1Provided() {
+        // Given
+        AddressUK address = AddressUK.builder()
+            .addressLine1("25 New Street")
+            .build();
+
+        Party party = Party.builder()
+            .address(address)
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .responses(null)
+            .build();
+
+        // When
+        PCSCase caseData = createDraftSaveCaseData(defendantData);
+
+        // Then
+        submitAndVerifyDraftSaved(caseData);
+    }
+
+    @Test
+    void shouldAllowPartialUpdateWhenOnlyFirstNameProvided() {
+        // Given
+        Party party = Party.builder()
+            .firstName("Jane")
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .responses(null)
+            .build();
+
+        // When
+        PCSCase caseData = createDraftSaveCaseData(defendantData);
+
+        // Then
+        submitAndVerifyDraftSaved(caseData);
     }
 
     @Test
@@ -203,8 +427,16 @@ class SubmitEventHandlerTest {
             .lastName("Doe")
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantData(defendantData)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -215,7 +447,9 @@ class SubmitEventHandlerTest {
         EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         doThrow(new RuntimeException("Database connection failed"))
-            .when(draftService).save(eq(CASE_REFERENCE), any(PCSCase.class));
+            .when(draftCaseDataService).patchUnsubmittedEventData(
+                eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+            );
 
         // When
         SubmitResponse<State> result = underTest.submit(eventPayload);
@@ -243,8 +477,16 @@ class SubmitEventHandlerTest {
             .address(address)
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantData(defendantData)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -261,7 +503,9 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftService).save(eq(CASE_REFERENCE), any(PCSCase.class));
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
     }
 
     @Test
@@ -281,9 +525,16 @@ class SubmitEventHandlerTest {
             .address(address)
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(party)
-            .contactByPhone(YesOrNo.YES)
+            .build();
+
+        DefendantData defendantData = DefendantData.builder()
+            .contactDetails(contactDetails)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantData(defendantData)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -297,23 +548,52 @@ class SubmitEventHandlerTest {
         underTest.submit(eventPayload);
 
         // Then
-        verify(draftService).save(eq(CASE_REFERENCE), pcsCaseCaptor.capture());
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getParty()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getFirstName()).isEqualTo("John");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getEmailAddress()).isEqualTo("john@example.com");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getPhoneNumber()).isEqualTo("07700900000");
-        assertThat(savedDraft.getPossessionClaimResponse().getParty().getAddress()).isEqualTo(address);
-        assertThat(savedDraft.getPossessionClaimResponse().getContactByPhone()).isEqualTo(YesOrNo.YES);
-        assertThat(savedDraft.getSubmitDraftAnswers()).isEqualTo(YesOrNo.NO);
+        DefendantData savedDefendantData = savedDraft.getPossessionClaimResponse().getDefendantData();
+        assertThat(savedDefendantData).isNotNull();
+        assertThat(savedDefendantData.getContactDetails()).isNotNull();
+        assertThat(savedDefendantData.getContactDetails().getParty()).isNotNull();
+        assertThat(savedDefendantData.getContactDetails().getParty().getFirstName()).isEqualTo("John");
+        assertThat(savedDefendantData.getContactDetails().getParty().getLastName()).isEqualTo("Doe");
+        assertThat(savedDefendantData.getContactDetails().getParty().getEmailAddress())
+            .isEqualTo("john@example.com");
+        assertThat(savedDefendantData.getContactDetails().getParty().getPhoneNumber())
+            .isEqualTo("07700900000");
+        assertThat(savedDefendantData.getContactDetails().getParty().getAddress()).isEqualTo(address);
+        // Note: submitDraftAnswers is NOT persisted to draft - it's a transient UI flag
     }
 
     private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
         return eventPayload;
+    }
+
+    private PCSCase createDraftSaveCaseData(DefendantData defendantData) {
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantData(defendantData)
+            .build();
+
+        return PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+    }
+
+    private void submitAndVerifyDraftSaved(PCSCase caseData) {
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+        SubmitResponse<State> result = underTest.submit(eventPayload);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
     }
 }

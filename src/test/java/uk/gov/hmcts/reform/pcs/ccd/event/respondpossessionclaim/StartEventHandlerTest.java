@@ -6,34 +6,32 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
-import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.Collections;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @ExtendWith(MockitoExtension.class)
 class StartEventHandlerTest {
@@ -43,11 +41,13 @@ class StartEventHandlerTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private AddressMapper addressMapper;
-    @Mock
-    private RespondPossessionClaimDraftService draftService;
-    @Mock
     private SecurityContextService securityContextService;
+    @Mock
+    private DefendantAccessValidator accessValidator;
+    @Mock
+    private PossessionClaimResponseMapper responseMapper;
+    @Mock
+    private DraftCaseDataService draftCaseDataService;
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
 
@@ -57,9 +57,10 @@ class StartEventHandlerTest {
     void setUp() {
         underTest = new StartEventHandler(
             pcsCaseService,
-            addressMapper,
-            draftService,
-            securityContextService
+            securityContextService,
+            accessValidator,
+            responseMapper,
+            draftCaseDataService
         );
     }
 
@@ -68,44 +69,23 @@ class StartEventHandlerTest {
         // Given
         UUID defendantUserId = UUID.randomUUID();
 
-        AddressEntity addressEntity = AddressEntity.builder()
-            .addressLine1("123 Test Street")
-            .postTown("London")
-            .postcode("SW1A 1AA")
-            .build();
-
-        AddressUK expectedAddress = AddressUK.builder()
-            .addressLine1("123 Test Street")
-            .postTown("London")
-            .postCode("SW1A 1AA")
-            .build();
-
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
             .firstName("John")
             .lastName("Doe")
-            .address(addressEntity)
             .build();
 
-        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
+        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder()
+            .defendantData(null)
             .build();
 
-        PCSCase initializedDraft = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder()
-                .party(Party.builder().firstName("John").lastName("Doe").build())
-                .build())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(addressMapper.toAddressUK(addressEntity)).thenReturn(expectedAddress);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
-        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class)))
-            .thenReturn(initializedDraft);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -114,7 +94,13 @@ class StartEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
-        verify(draftService).initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class));
+        assertThat(result.getPossessionClaimResponse()).isEqualTo(initialResponse);
+        verify(pcsCaseService).loadCase(CASE_REFERENCE);
+        verify(accessValidator).validateAndGetDefendant(pcsCaseEntity, defendantUserId);
+        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
     }
 
     @Test
@@ -122,33 +108,19 @@ class StartEventHandlerTest {
         // Given
         UUID defendantUserId = UUID.randomUUID();
 
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .idamId(defendantUserId)
-            .firstName("John")
-            .lastName("Doe")
+        PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
+            .defendantData(null)
             .build();
 
-        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
-
-        UserInfo userInfo = UserInfo.builder()
-            .uid(defendantUserId.toString())
+        PCSCase savedDraft = PCSCase.builder()
+            .possessionClaimResponse(draftResponse)
+            .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
 
-        PCSCase existingDraft = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder()
-                .party(Party.builder()
-                    .firstName("SavedName")
-                    .emailAddress("saved@example.com")
-                    .build())
-                .build())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(true);
-        when(draftService.load(eq(CASE_REFERENCE), any(PCSCase.class))).thenReturn(existingDraft);
+        lenient().when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(true);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(savedDraft));
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -156,8 +128,10 @@ class StartEventHandlerTest {
         PCSCase result = underTest.start(eventPayload);
 
         // Then
-        assertThat(result).isEqualTo(existingDraft);
-        verify(draftService).load(eq(CASE_REFERENCE), any(PCSCase.class));
+        assertThat(result).isNotNull();
+        assertThat(result.getPossessionClaimResponse()).isEqualTo(draftResponse);
+        assertThat(result.getHasUnsubmittedCaseData()).isEqualTo(YesOrNo.YES);
+        verify(draftCaseDataService).getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim);
     }
 
     @Test
@@ -165,44 +139,26 @@ class StartEventHandlerTest {
         // Given
         UUID defendantUserId = UUID.randomUUID();
 
-        AddressEntity propertyAddressEntity = AddressEntity.builder()
-            .addressLine1("456 Property Street")
-            .postTown("Manchester")
-            .postcode("M1 1AA")
-            .build();
-
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
             .firstName("Jane")
             .lastName("Smith")
-            .address(null)
             .addressSameAsProperty(VerticalYesNo.YES)
             .build();
 
-        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
-        pcsCaseEntity.setPropertyAddress(propertyAddressEntity);
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder().build();
 
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
             .build();
 
-        PCSCase initializedDraft = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder().build())
-            .build();
-
-        AddressUK propertyAddress = AddressUK.builder()
-            .addressLine1("456 Property Street")
-            .postTown("Manchester")
-            .postCode("M1 1AA")
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(addressMapper.toAddressUK(propertyAddressEntity)).thenReturn(propertyAddress);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
-        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class)))
-            .thenReturn(initializedDraft);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -210,7 +166,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload);
 
         // Then
-        verify(addressMapper).toAddressUK(propertyAddressEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
     }
 
     @Test
@@ -218,43 +174,26 @@ class StartEventHandlerTest {
         // Given
         UUID defendantUserId = UUID.randomUUID();
 
-        AddressEntity defendantAddressEntity = AddressEntity.builder()
-            .addressLine1("789 Defendant Street")
-            .postTown("Birmingham")
-            .postcode("B1 1AA")
-            .build();
-
-        AddressUK defendantAddress = AddressUK.builder()
-            .addressLine1("789 Defendant Street")
-            .postTown("Birmingham")
-            .postCode("B1 1AA")
-            .build();
-
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
             .firstName("Bob")
             .lastName("Johnson")
-            .address(defendantAddressEntity)
             .addressSameAsProperty(VerticalYesNo.NO)
             .build();
 
-        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder().build();
 
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
             .build();
 
-        PCSCase initializedDraft = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder().build())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(addressMapper.toAddressUK(defendantAddressEntity)).thenReturn(defendantAddress);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
-        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class)))
-            .thenReturn(initializedDraft);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
@@ -262,7 +201,7 @@ class StartEventHandlerTest {
         underTest.start(eventPayload);
 
         // Then
-        verify(addressMapper).toAddressUK(defendantAddressEntity);
+        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
     }
 
     @Test
@@ -274,13 +213,15 @@ class StartEventHandlerTest {
             .uid(defendantUserId.toString())
             .build();
 
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder()
-            .claims(Collections.emptyList())
-            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
+            .thenThrow(new CaseAccessException("No claim found for this case"));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(PCSCase.builder().build());
 
         // When / Then
         assertThatThrownBy(() -> underTest.start(eventPayload))
@@ -297,14 +238,15 @@ class StartEventHandlerTest {
             .uid(defendantUserId.toString())
             .build();
 
-        ClaimEntity claimEntity = ClaimEntity.builder()
-            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
+            .thenThrow(new CaseAccessException("No defendants associated with this case"));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(PCSCase.builder().build());
 
         // When / Then
         assertThatThrownBy(() -> underTest.start(eventPayload))
@@ -316,24 +258,20 @@ class StartEventHandlerTest {
     void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant() {
         // Given
         UUID defendantUserId = UUID.randomUUID();
-        UUID differentUserId = UUID.randomUUID();
 
         UserInfo userInfo = UserInfo.builder()
-            .uid(differentUserId.toString())
+            .uid(defendantUserId.toString())
             .build();
 
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .idamId(defendantUserId)
-            .firstName("John")
-            .lastName("Doe")
-            .build();
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
-        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
+            .thenThrow(new CaseAccessException("User is not linked as a defendant on this case"));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
+        when(eventPayload.caseData()).thenReturn(PCSCase.builder().build());
 
         // When / Then
         assertThatThrownBy(() -> underTest.start(eventPayload))
@@ -350,40 +288,135 @@ class StartEventHandlerTest {
             .idamId(defendantUserId)
             .firstName(null)
             .lastName(null)
-            .address(null)
             .build();
 
-        ClaimEntity claimEntity = createClaimWithDefendant(defendantEntity);
-        PcsCaseEntity pcsCaseEntity = createCaseWithClaim(claimEntity);
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder().build();
 
         UserInfo userInfo = UserInfo.builder()
             .uid(defendantUserId.toString())
             .build();
 
-        AddressUK emptyAddress = AddressUK.builder().build();
-
-        PCSCase initializedDraft = PCSCase.builder()
-            .possessionClaimResponse(PossessionClaimResponse.builder()
-                .party(Party.builder().build())
-                .build())
-            .build();
-
-        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(addressMapper.toAddressUK(null)).thenReturn(emptyAddress);
-        when(draftService.exists(CASE_REFERENCE)).thenReturn(false);
-        when(draftService.initialize(eq(CASE_REFERENCE), any(PossessionClaimResponse.class), any(PCSCase.class)))
-            .thenReturn(initializedDraft);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
 
         EventPayload<PCSCase, State> eventPayload = createEventPayload();
 
         // When
-        PCSCase result = underTest.start(eventPayload);
+        underTest.start(eventPayload);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getPossessionClaimResponse()).isNotNull();
-        assertThat(result.getPossessionClaimResponse().getParty()).isNotNull();
+        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+    }
+
+    @Test
+    void shouldMapContactByPhoneFromPhoneNumberProvidedWhenYes() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+
+        PartyEntity defendantEntity = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("John")
+            .lastName("Doe")
+            .phoneNumberProvided(VerticalYesNo.YES)
+            .phoneNumber("07700900123")
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder().build();
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
+
+        // When
+        underTest.start(eventPayload);
+
+        // Then
+        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+    }
+
+    @Test
+    void shouldMapContactByPhoneFromPhoneNumberProvidedWhenNo() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+
+        PartyEntity defendantEntity = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("Jane")
+            .lastName("Smith")
+            .phoneNumberProvided(VerticalYesNo.NO)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder().build();
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
+
+        // When
+        underTest.start(eventPayload);
+
+        // Then
+        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
+    }
+
+    @Test
+    void shouldMapContactByPhoneAsNullWhenPhoneNumberProvidedIsNull() {
+        // Given
+        UUID defendantUserId = UUID.randomUUID();
+
+        PartyEntity defendantEntity = PartyEntity.builder()
+            .idamId(defendantUserId)
+            .firstName("Bob")
+            .lastName("Johnson")
+            .phoneNumberProvided(null)
+            .build();
+
+        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
+
+        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder().build();
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(defendantUserId.toString())
+            .build();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
+        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
+        when(responseMapper.mapFrom(any(PCSCase.class), defendantEntity)).thenReturn(initialResponse);
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload();
+
+        // When
+        underTest.start(eventPayload);
+
+        // Then
+        verify(responseMapper).mapFrom(any(PCSCase.class), defendantEntity);
     }
 
     private EventPayload<PCSCase, State> createEventPayload() {
@@ -391,21 +424,5 @@ class StartEventHandlerTest {
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(caseData);
         return eventPayload;
-    }
-
-    private ClaimEntity createClaimWithDefendant(PartyEntity defendant) {
-        ClaimEntity claimEntity = ClaimEntity.builder().build();
-        ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
-            .party(defendant)
-            .role(PartyRole.DEFENDANT)
-            .build();
-        claimEntity.getClaimParties().add(claimPartyEntity);
-        return claimEntity;
-    }
-
-    private PcsCaseEntity createCaseWithClaim(ClaimEntity claim) {
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-        pcsCaseEntity.getClaims().add(claim);
-        return pcsCaseEntity;
     }
 }
