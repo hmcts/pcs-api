@@ -68,15 +68,6 @@ class WarrantPageConfigurerTest extends BasePageTest {
     @Mock
     private DefendantsDOBPage defendantsDOBPage;
 
-    @Mock
-    private MoneyOwedPage moneyOwedPage;
-
-    @Mock
-    private LegalCostsPage legalCostsPage;
-
-    @Mock
-    private RepaymentsPage repaymentsPage;
-
     @Test
     @SuppressWarnings("squid:S5961")
     void shouldConfigurePagesInCorrectOrder() {
@@ -114,12 +105,12 @@ class WarrantPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, propertyAccessDetailsPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, additionalInformationPage, verificationCount);
 
-        verifyAndCount(inOrder, pageBuilder, moneyOwedPage, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, legalCostsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, MoneyOwedPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LegalCostsPage.class, verificationCount);
 
         verifyAndCount(inOrder, pageBuilder, landRegistryFeesPage, verificationCount);
 
-        verifyAndCount(inOrder, pageBuilder, repaymentsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, RepaymentsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsedPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, SuspendedOrderPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, statementOfTruthPage, verificationCount);

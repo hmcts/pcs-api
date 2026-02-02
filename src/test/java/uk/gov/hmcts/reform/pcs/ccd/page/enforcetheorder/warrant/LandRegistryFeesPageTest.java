@@ -3,13 +3,11 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
@@ -21,8 +19,11 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class LandRegistryFeesPageTest extends BasePageTest {
@@ -37,19 +38,31 @@ class LandRegistryFeesPageTest extends BasePageTest {
     }
 
     @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.FeeValidationTestArguments#validFees")
-    void shouldAcceptFees(BigDecimal validFee) {
+    @MethodSource("repaymentFeeScenarios")
+    void shouldRenderTableCorrectly(String warrantFeeAmount, BigDecimal landRegistryAmount,
+                                            BigDecimal legalCostsAmount, BigDecimal rentArrearsAmount,
+                                            BigDecimal expectedTotalFees
+    ) {
         // Given
+        LegalCosts legalCosts = LegalCosts.builder()
+            .amountOfLegalCosts(legalCostsAmount)
+            .build();
+
+        LandRegistryFees landRegistryFees = LandRegistryFees.builder()
+            .amountOfLandRegistryFees(landRegistryAmount)
+            .build();
+
+        MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
+            .amountOwed(rentArrearsAmount)
+            .build();
+
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantFeeAmount("£404")
+            .warrantFeeAmount(warrantFeeAmount)
             .warrantDetails(WarrantDetails.builder()
                                 .repaymentCosts(RepaymentCosts.builder().build())
-                                .landRegistryFees(LandRegistryFees.builder()
-                                                      .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
-                                                      .amountOfLandRegistryFees(validFee)
-                                                      .build())
-                                .legalCosts(LegalCosts.builder().build())
-                                .moneyOwedByDefendants(MoneyOwedByDefendants.builder().build())
+                                .landRegistryFees(landRegistryFees)
+                                .legalCosts(legalCosts)
+                                .moneyOwedByDefendants(moneyOwedByDefendants)
                                 .build())
             .build();
 
@@ -57,41 +70,67 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .enforcementOrder(enforcementOrder)
             .build();
 
+        when(repaymentTableRenderer.render(
+            rentArrearsAmount,
+            legalCostsAmount,
+            landRegistryAmount,
+            warrantFeeAmount,
+            expectedTotalFees
+        )).thenReturn("<table>Mock Repayment Table</table>");
+        when(repaymentTableRenderer.render(
+            rentArrearsAmount,
+            legalCostsAmount,
+            landRegistryAmount,
+            warrantFeeAmount,
+            expectedTotalFees,
+            "The payments due"
+        )).thenReturn("<table>Mock SOT Repayment Table</table>");
+
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                       .getLandRegistryFees().getAmountOfLandRegistryFees()).isEqualTo(validFee);
+        verify(repaymentTableRenderer).render(
+            rentArrearsAmount,
+            legalCostsAmount,
+            landRegistryAmount,
+            warrantFeeAmount,
+            expectedTotalFees
+        );
+        verify(repaymentTableRenderer).render(
+            rentArrearsAmount,
+            legalCostsAmount,
+            landRegistryAmount,
+            warrantFeeAmount,
+            expectedTotalFees,
+            "The payments due"
+        );
+
+        assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())
+            .isEqualTo("<table>Mock Repayment Table</table>");
+        assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts()
+                       .getStatementOfTruthRepaymentSummaryMarkdown())
+            .isEqualTo("<table>Mock SOT Repayment Table</table>");
     }
 
-    @ParameterizedTest
-    @MethodSource("uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.FeeValidationTestArguments#invalidFees")
-    void shouldAcceptInvalidFees(BigDecimal invalidFee) {
-        // Given
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantFeeAmount("£404")
-            .warrantDetails(WarrantDetails.builder()
-                                .repaymentCosts(RepaymentCosts.builder().build())
-                                .landRegistryFees(LandRegistryFees.builder()
-                                                      .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
-                                                      .amountOfLandRegistryFees(invalidFee)
-                                .build())
-                                .legalCosts(LegalCosts.builder().build())
-                                .moneyOwedByDefendants(MoneyOwedByDefendants.builder().build())
-                                .build())
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .enforcementOrder(enforcementOrder)
-            .build();
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                       .getLandRegistryFees().getAmountOfLandRegistryFees()).isEqualTo(invalidFee);
+    private static Stream<Arguments> repaymentFeeScenarios() {
+        return Stream.of(
+            Arguments.of(
+              "£404", new BigDecimal("123.00"),
+                new BigDecimal("100.00"), new BigDecimal("200.00"), new BigDecimal("827.00")
+            ),
+            Arguments.of(
+                "£50", new BigDecimal("15.00"), new BigDecimal("5.00"),
+                new BigDecimal("9.99"), new BigDecimal("79.99")
+            ),
+            Arguments.of(
+                "£0", new BigDecimal("0.00"), new BigDecimal("0.00"),
+                new BigDecimal("0.00"), new BigDecimal("0.00")
+            ),
+            Arguments.of(
+                "£0", new BigDecimal("100.01"), new BigDecimal("0.01"),
+                new BigDecimal("50.00"), new BigDecimal("150.02")
+            )
+        );
     }
 }
