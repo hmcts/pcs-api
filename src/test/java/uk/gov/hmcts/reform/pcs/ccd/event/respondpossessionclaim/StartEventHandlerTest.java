@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
@@ -22,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -195,67 +199,34 @@ class StartEventHandlerTest {
         verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
-    @Test
-    void shouldThrowCaseAccessExceptionWhenNoClaimExists() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("caseAccessExceptionScenarios")
+    void shouldThrowCaseAccessExceptionForInvalidAccess(String scenario, String exceptionMessage) {
         // Given
         UUID defendantUserId = UUID.randomUUID();
-
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
+        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(false);
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
-            .thenThrow(new CaseAccessException("No claim found for this case"));
+            .thenThrow(new CaseAccessException(exceptionMessage));
         when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
         when(eventPayload.caseData()).thenReturn(PCSCase.builder().build());
 
         // When / Then
         assertThatThrownBy(() -> underTest.start(eventPayload))
             .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No claim found for this case");
+            .hasMessage(exceptionMessage);
     }
 
-    @Test
-    void shouldThrowCaseAccessExceptionWhenNoDefendantsFound() {
-        // Given
-        UUID defendantUserId = UUID.randomUUID();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
-            .thenThrow(new CaseAccessException("No defendants associated with this case"));
-        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
-        when(eventPayload.caseData()).thenReturn(PCSCase.builder().build());
-
-        // When / Then
-        assertThatThrownBy(() -> underTest.start(eventPayload))
-            .isInstanceOf(CaseAccessException.class)
-            .hasMessage("No defendants associated with this case");
-    }
-
-    @Test
-    void shouldThrowCaseAccessExceptionWhenUserIsNotDefendant() {
-        // Given
-        UUID defendantUserId = UUID.randomUUID();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
-            .thenThrow(new CaseAccessException("User is not linked as a defendant on this case"));
-        when(eventPayload.caseReference()).thenReturn(CASE_REFERENCE);
-        when(eventPayload.caseData()).thenReturn(PCSCase.builder().build());
-
-        // When / Then
-        assertThatThrownBy(() -> underTest.start(eventPayload))
-            .isInstanceOf(CaseAccessException.class)
-            .hasMessage("User is not linked as a defendant on this case");
+    private static Stream<Arguments> caseAccessExceptionScenarios() {
+        return Stream.of(
+            Arguments.of("No claim found", "No claim found for this case"),
+            Arguments.of("No defendants found", "No defendants associated with this case"),
+            Arguments.of("User not defendant", "User is not linked as a defendant on this case")
+        );
     }
 
     @Test
@@ -288,17 +259,23 @@ class StartEventHandlerTest {
         verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
-    @Test
-    void shouldMapContactByPhoneFromPhoneNumberProvidedWhenYes() {
+    @ParameterizedTest(name = "phoneNumberProvided={0}, phoneNumber={1}")
+    @MethodSource("phoneNumberScenarios")
+    void shouldMapDefendantWithVariousPhoneNumberProvided(
+        VerticalYesNo phoneNumberProvided,
+        String phoneNumber,
+        String firstName,
+        String lastName
+    ) {
         // Given
         UUID defendantUserId = UUID.randomUUID();
 
         PartyEntity defendantEntity = PartyEntity.builder()
             .idamId(defendantUserId)
-            .firstName("John")
-            .lastName("Doe")
-            .phoneNumberProvided(VerticalYesNo.YES)
-            .phoneNumber("07700900123")
+            .firstName(firstName)
+            .lastName(lastName)
+            .phoneNumberProvided(phoneNumberProvided)
+            .phoneNumber(phoneNumber)
             .build();
 
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
@@ -320,66 +297,12 @@ class StartEventHandlerTest {
         verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
     }
 
-    @Test
-    void shouldMapContactByPhoneFromPhoneNumberProvidedWhenNo() {
-        // Given
-        UUID defendantUserId = UUID.randomUUID();
-
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .idamId(defendantUserId)
-            .firstName("Jane")
-            .lastName("Smith")
-            .phoneNumberProvided(VerticalYesNo.NO)
-            .build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-
-        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder().build();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
-
-        EventPayload<PCSCase, State> payload = createEventPayload();
-
-        // When
-        underTest.start(payload);
-
-        // Then
-        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
-    }
-
-    @Test
-    void shouldMapContactByPhoneAsNullWhenPhoneNumberProvidedIsNull() {
-        // Given
-        UUID defendantUserId = UUID.randomUUID();
-
-        PartyEntity defendantEntity = PartyEntity.builder()
-            .idamId(defendantUserId)
-            .firstName("Bob")
-            .lastName("Johnson")
-            .phoneNumberProvided(null)
-            .build();
-
-        PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
-
-        PossessionClaimResponse initialResponse = PossessionClaimResponse.builder().build();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
-        when(draftCaseDataService.hasUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim)).thenReturn(false);
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId)).thenReturn(defendantEntity);
-        when(responseMapper.mapFrom(any(PCSCase.class), eq(defendantEntity))).thenReturn(initialResponse);
-
-        EventPayload<PCSCase, State> payload = createEventPayload();
-
-        // When
-        underTest.start(payload);
-
-        // Then
-        verify(responseMapper).mapFrom(any(PCSCase.class), eq(defendantEntity));
+    private static Stream<Arguments> phoneNumberScenarios() {
+        return Stream.of(
+            Arguments.of(VerticalYesNo.YES, "07700900123", "John", "Doe"),
+            Arguments.of(VerticalYesNo.NO, null, "Jane", "Smith"),
+            Arguments.of(null, null, "Bob", "Johnson")
+        );
     }
 
     private EventPayload<PCSCase, State> createEventPayload() {
