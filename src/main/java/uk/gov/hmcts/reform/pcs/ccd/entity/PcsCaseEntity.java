@@ -64,7 +64,12 @@ public class PcsCaseEntity {
     private Boolean preActionProtocolCompleted;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    private TenancyLicence tenancyLicence;
+    @Column(name = "tenancy_licence")
+    private TenancyLicence legacyTenancyLicence;
+
+    @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private TenancyLicenceEntity tenancyLicence;
 
     @JdbcTypeCode(SqlTypes.JSON)
     private PossessionGrounds possessionGrounds;
@@ -87,6 +92,18 @@ public class PcsCaseEntity {
     @Builder.Default
     @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
+
+    public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
+        if (this.tenancyLicence != null) {
+            this.tenancyLicence.setPcsCase(null);
+        }
+
+        this.tenancyLicence = tenancyLicence;
+
+        if (this.tenancyLicence != null) {
+            this.tenancyLicence.setPcsCase(this);
+        }
+    }
 
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);

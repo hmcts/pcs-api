@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -28,6 +27,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
+import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -52,6 +55,10 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final ModelMapper modelMapper;
     private final DraftCaseDataService draftCaseDataService;
     private final CaseTitleService caseTitleService;
+    private final TenancyLicenceView tenancyLicenceView;
+    private final RentDetailsView rentDetailsView;
+    private final AlternativesToPossessionView alternativesToPossessionView;
+    private final HousingActWalesView housingActWalesView;
 
     /**
      * Invoked by CCD to load PCS cases by reference.
@@ -87,9 +94,9 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .propertyAddress(convertAddress(pcsCaseEntity.getPropertyAddress()))
             .legislativeCountry(pcsCaseEntity.getLegislativeCountry())
             .caseManagementLocation(pcsCaseEntity.getCaseManagementLocation())
-            .noticeServed(pcsCaseEntity.getTenancyLicence() != null
-                && pcsCaseEntity.getTenancyLicence().getNoticeServed() != null
-                ? YesOrNo.from(pcsCaseEntity.getTenancyLicence().getNoticeServed()) : null)
+            .noticeServed(pcsCaseEntity.getLegacyTenancyLicence() != null
+                && pcsCaseEntity.getLegacyTenancyLicence().getNoticeServed() != null
+                ? YesOrNo.from(pcsCaseEntity.getLegacyTenancyLicence().getNoticeServed()) : null)
             .allClaimants(partyMap.get(PartyRole.CLAIMANT))
             .allDefendants(partyMap.get(PartyRole.DEFENDANT))
             .allUnderlesseeOrMortgagees(partyMap.get(PartyRole.UNDERLESSEE_OR_MORTGAGEE))
@@ -97,8 +104,12 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
-        setRentDetails(pcsCase, pcsCaseEntity);
         setClaimFields(pcsCase, pcsCaseEntity);
+
+        tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
+        rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
+        alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
+        housingActWalesView.setCaseFields(pcsCase, pcsCaseEntity);
 
         return pcsCase;
     }
@@ -135,17 +146,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setUserPcqIdSet(YesOrNo.from(pcqIdSet));
 
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
-    }
-
-    private void setRentDetails(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        if (pcsCaseEntity.getTenancyLicence() != null) {
-            pcsCase.setRentDetails(RentDetails.builder()
-                .currentRent(pcsCaseEntity.getTenancyLicence().getRentAmount())
-                .frequency(pcsCaseEntity.getTenancyLicence().getRentPaymentFrequency())
-                .otherFrequency(pcsCaseEntity.getTenancyLicence().getOtherRentFrequency())
-                .dailyCharge(pcsCaseEntity.getTenancyLicence().getDailyRentChargeAmount())
-                .build());
-        }
     }
 
     private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {

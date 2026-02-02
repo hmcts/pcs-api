@@ -22,14 +22,6 @@ public class TenancyLicence {
 
     private Boolean noticeServed;
 
-    private BigDecimal rentAmount;
-
-    private RentPaymentFrequency rentPaymentFrequency;
-
-    private String otherRentFrequency;
-
-    private BigDecimal dailyRentChargeAmount;
-
     // Notice details fields
     private String noticeServiceMethod;
     private LocalDate noticePostedDate;
@@ -41,12 +33,6 @@ public class TenancyLicence {
     private LocalDateTime noticeOtherElectronicDateTime;
     private LocalDateTime noticeOtherDateTime;
     private String noticeOtherExplanation;
-
-    private String tenancyLicenceType;
-
-    private String detailsOfOtherTypeOfTenancyLicence;
-
-    private LocalDate tenancyLicenceDate;
 
     private List<Document> supportingDocuments;
 
