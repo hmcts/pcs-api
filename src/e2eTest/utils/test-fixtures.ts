@@ -14,7 +14,6 @@ test.beforeEach(async ({ page }, testInfo) => {
   startLogCapture(page, testInfo);
 });
 
-// Attach in afterEach (runs before fixture teardown) – appears as separate item, before stdout
 test.afterEach(async ({}, testInfo) => {
   await attachLogToTest(testInfo);
 });
