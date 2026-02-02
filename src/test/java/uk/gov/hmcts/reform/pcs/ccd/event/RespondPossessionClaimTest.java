@@ -200,7 +200,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenReturn(matchingDefendant);
-        when(responseMapper.mapFrom(any(PCSCase.class), matchingDefendant)).thenReturn(mockResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
 
@@ -444,7 +444,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenReturn(matchingDefendant);
-        when(responseMapper.mapFrom(any(PCSCase.class), matchingDefendant)).thenReturn(mockResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
 
@@ -511,7 +511,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
         when(accessValidator.validateAndGetDefendant(pcsCaseEntity, defendantUserId))
             .thenReturn(matchingDefendant);
-        when(responseMapper.mapFrom(any(PCSCase.class), matchingDefendant)).thenReturn(mockResponse);
+        when(responseMapper.mapFrom(any(PCSCase.class), eq(matchingDefendant))).thenReturn(mockResponse);
         when(draftCaseDataService.hasUnsubmittedCaseData(TEST_CASE_REFERENCE, EventId.respondPossessionClaim))
             .thenReturn(false); // No draft exists yet - should seed
 
