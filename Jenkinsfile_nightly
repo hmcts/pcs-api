@@ -61,11 +61,15 @@ withNightlyPipeline(type, product, component) {
   }
 }
 
-// Fallback when library does not invoke afterAlways: if E2E report exists, send to Slack
-def e2eOutputExists = sh(script: 'test -d e2e-output && echo yes || true', returnStdout: true).trim() == 'yes'
-if (e2eOutputExists) {
-  echo 'E2E report found; sending Slack notification (post-pipeline fallback).'
-  postAllureResultsToSlack()
+// Fallback when library does not invoke afterAlways (no workspace – must not use sh)
+try {
+  slackSend(
+    channel: '#qa-pipeline-status',
+    message: "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}. See Jenkins for Allure report."
+  )
+  echo "E2E Slack fallback: sent to #qa-pipeline-status"
+} catch (Exception e) {
+  echo "E2E Slack fallback: slackSend failed – ${e.message}"
 }
 
 def validateInputs() {
