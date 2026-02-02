@@ -204,7 +204,7 @@ public class PCSCase {
 
     @CCD(
         label = "Have you served notice to the defendants?",
-        access = {ClaimantAccess.class, CitizenAccess.class}
+        access = {CitizenAccess.class}
     )
     private YesOrNo noticeServed;
 
@@ -214,7 +214,7 @@ public class PCSCase {
 
     private String caseTitleMarkdown;
 
-    @CCD(access = {ClaimantAccess.class, CitizenAccess.class})
+    @CCD(access = {CitizenAccess.class})
     private LegislativeCountry legislativeCountry;
 
     @CCD(
