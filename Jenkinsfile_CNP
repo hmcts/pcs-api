@@ -128,17 +128,6 @@ withPipeline(type, product, component) {
   }
 }
 
-// Fallback when library does not invoke afterAlways (no workspace here – must not use sh)
-try {
-  slackSend(
-    channel: '#qa-pipeline-status',
-    message: "E2E pipeline completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}. See Jenkins for Allure report."
-  )
-  echo "E2E Slack fallback: sent to #qa-pipeline-status"
-} catch (Exception e) {
-  echo "E2E Slack fallback: slackSend failed – ${e.message}"
-}
-
 def setPreviewEnvVars() {
   env.MANAGE_CASE_BASE_URL = "https://xui-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
   env.ENVIRONMENT= "preview"
@@ -201,7 +190,7 @@ def postAllureResultsToSlack() {
   def msg = sh(
     script: '''
       cd src/e2eTest
-      yarn allure-slack-notify --print-only 2>&1 || true
+      ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only 2>/dev/null || true
     ''',
     returnStdout: true
   ).trim()

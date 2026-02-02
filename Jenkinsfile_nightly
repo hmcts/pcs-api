@@ -63,17 +63,6 @@ withNightlyPipeline(type, product, component) {
   }
 }
 
-// Fallback: workspace unavailable here (cleaned or different agent) – send link only
-try {
-  slackSend(
-    channel: '#qa-pipeline-status',
-    message: "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
-  )
-  echo "E2E Slack fallback: sent to #qa-pipeline-status"
-} catch (Exception e) {
-  echo "E2E Slack fallback: slackSend failed – ${e.message}"
-}
-
 def validateInputs() {
   if (params.ENVIRONMENT == 'preview' && (!params.PR_NUMBER?.trim())) {
     error("Validation Failed: PR number is required when environment is 'preview'")
@@ -115,7 +104,7 @@ def postAllureResultsToSlack() {
   def msg = sh(
     script: '''
       cd src/e2eTest
-      yarn allure-slack-notify --print-only 2>&1 || true
+      ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only 2>/dev/null || true
     ''',
     returnStdout: true
   ).trim()

@@ -349,22 +349,23 @@ export function buildSlackMessage(
     lines.push('');
   }
 
-  // Status: total, passed, failed, slow, skipped
+  // Status: one metric per line
   const slowCount =
     tests && tests.length > 0
       ? countSlowTests(tests, slowThresholdSeconds)
       : 0;
+  const durationFormatted = formatDuration(summary.duration_seconds);
   lines.push('*Status*');
-  lines.push(
-    `Total: *${summary.total}*  ·  ✅ Passed: *${summary.passed}*  ·  ❌ Failed: *${summary.failed}*  ·  🐢 Slow (≥${slowThresholdSeconds}s): *${slowCount}*  ·  ⏭️ Skipped: *${summary.skipped}*`
-  );
+  lines.push(`Total: *${summary.total}*`);
+  lines.push(`✅ Passed: *${summary.passed}*`);
+  lines.push(`❌ Failed: *${summary.failed}*`);
+  lines.push(`🐢 Slow (≥${slowThresholdSeconds}s): *${slowCount}*`);
+  lines.push(`⏭️ Skipped: *${summary.skipped}*`);
   if (summary.broken > 0) {
     lines.push(`⚠️ Broken: *${summary.broken}*`);
   }
-  const durationFormatted = formatDuration(summary.duration_seconds);
-  lines.push(
-    `Pass rate: *${summary.pass_rate}%*  |  Duration: *${durationFormatted}*`
-  );
+  lines.push(`Pass rate: *${summary.pass_rate}%*`);
+  lines.push(`Duration: *${durationFormatted}*`);
   lines.push('');
 
   if (tests && tests.length > 0) {
