@@ -18,6 +18,7 @@ public class RentDetailsView {
                 .frequency(tenancyLicence.getRentFrequency())
                 .otherFrequency(tenancyLicence.getOtherRentFrequency())
                 .dailyCharge(tenancyLicence.getRentPerDay())
+                .perDayCorrect(tenancyLicence.getCalculatedDailyRentCorrect())
                 .build();
 
             pcsCase.setRentDetails(rentDetails);
