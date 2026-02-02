@@ -23,6 +23,9 @@ public class ClaimService {
     private final ClaimGroundService claimGroundService;
     private final PossessionAlternativesService possessionAlternativesService;
     private final HousingActWalesService housingActWalesService;
+    private final RentArrearsService rentArrearsService;
+    private final NoticeOfPossessionService noticeOfPossessionService;
+    private final StatementOfTruthService statementOfTruthService;
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
 
@@ -71,6 +74,10 @@ public class ClaimService {
         if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
             claimEntity.setHousingActWales(housingActWalesService.createHousingActWalesEntity(pcsCase));
         }
+
+        claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));
+        claimEntity.setNoticeOfPossession(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase));
+        claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
 
         claimRepository.save(claimEntity);
 
