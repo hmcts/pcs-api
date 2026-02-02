@@ -8,7 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantData;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -77,19 +77,19 @@ class PossessionClaimResponseMapperTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getDefendantData()).isNotNull();
+        assertThat(result.getDefendantContactDetails()).isNotNull();
 
-        DefendantData defendantData = result.getDefendantData();
-        assertThat(defendantData.getContactDetails()).isNotNull();
-        assertThat(defendantData.getContactDetails().getParty().getFirstName()).isEqualTo("John");
-        assertThat(defendantData.getContactDetails().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(defendantData.getContactDetails().getParty().getEmailAddress()).isEqualTo("john@example.com");
-        assertThat(defendantData.getContactDetails().getParty().getPhoneNumber()).isEqualTo("07700900000");
-        assertThat(defendantData.getContactDetails().getParty().getAddress()).isEqualTo(expectedAddress);
-        assertThat(defendantData.getContactDetails().getParty().getNameKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(defendantData.getContactDetails().getParty().getAddressKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(defendantData.getContactDetails().getParty().getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
-        assertThat(defendantData.getContactDetails().getParty().getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
+        DefendantContactDetails contactDetails = result.getDefendantContactDetails();
+        assertThat(contactDetails).isNotNull();
+        assertThat(contactDetails.getParty().getFirstName()).isEqualTo("John");
+        assertThat(contactDetails.getParty().getLastName()).isEqualTo("Doe");
+        assertThat(contactDetails.getParty().getEmailAddress()).isEqualTo("john@example.com");
+        assertThat(contactDetails.getParty().getPhoneNumber()).isEqualTo("07700900000");
+        assertThat(contactDetails.getParty().getAddress()).isEqualTo(expectedAddress);
+        assertThat(contactDetails.getParty().getNameKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(contactDetails.getParty().getAddressKnown()).isEqualTo(VerticalYesNo.YES);
+        assertThat(contactDetails.getParty().getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
+        assertThat(contactDetails.getParty().getAddressSameAsProperty()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
@@ -115,7 +115,7 @@ class PossessionClaimResponseMapperTest {
         PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
 
         // Then
-        assertThat(result.getDefendantData().getContactDetails().getParty().getAddress())
+        assertThat(result.getDefendantContactDetails().getParty().getAddress())
             .isEqualTo(propertyAddress);
     }
 
@@ -155,7 +155,7 @@ class PossessionClaimResponseMapperTest {
 
         // Then
         verify(addressMapper).toAddressUK(defendantAddress);
-        assertThat(result.getDefendantData().getContactDetails().getParty().getAddress())
+        assertThat(result.getDefendantContactDetails().getParty().getAddress())
             .isEqualTo(expectedAddress);
     }
 
@@ -177,7 +177,7 @@ class PossessionClaimResponseMapperTest {
         PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
 
         // Then
-        assertThat(result.getDefendantData()).isNotNull();
+        assertThat(result.getDefendantContactDetails()).isNotNull();
         verify(addressMapper).toAddressUK(null);
     }
 
@@ -199,7 +199,7 @@ class PossessionClaimResponseMapperTest {
         PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
 
         // Then
-        assertThat(result.getDefendantData().getResponses()).isNotNull();
+        assertThat(result.getDefendantResponses()).isNotNull();
     }
 
     @Test
@@ -239,8 +239,8 @@ class PossessionClaimResponseMapperTest {
         PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
 
         // Then
-        uk.gov.hmcts.reform.pcs.ccd.domain.Party defendantParty = result.getDefendantData()
-            .getContactDetails().getParty();
+        uk.gov.hmcts.reform.pcs.ccd.domain.Party defendantParty = result.getDefendantContactDetails()
+            .getParty();
 
         assertThat(defendantParty.getFirstName()).isEqualTo("John");
         assertThat(defendantParty.getLastName()).isEqualTo("Doe");

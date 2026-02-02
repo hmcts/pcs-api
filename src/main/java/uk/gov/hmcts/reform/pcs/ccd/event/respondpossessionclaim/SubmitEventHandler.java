@@ -73,9 +73,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private SubmitResponse<State> processDraftSubmit(long caseReference, PCSCase caseData) {
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
-        // Validate defendantData exists (UI should always send this structure)
-        if (response.getDefendantData() == null) {
-            log.error("Draft submit rejected for case {}: defendantData is null", caseReference);
+        // Validate defendant contact details exists (UI should always send this structure)
+        if (response.getDefendantContactDetails() == null) {
+            log.error("Draft submit rejected for case {}: defendantContactDetails is null", caseReference);
             return error("Invalid response structure. Please refresh the page and try again.");
         }
 
@@ -94,18 +94,21 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     }
 
     /**
-     * Builds partial update containing ONLY defendant's answers.
+     * Builds partial update containing ONLY defendant's contact details and responses.
      *
      * <p>
      * Why partial? UI may send only defendant responses OR only contact details.
      * Partial update preserves existing fields via deep merge:
-     * - Sends: defendantData only
-     * - patchUnsubmittedEventData merges: preserves existing defendantData fields
+     * - Sends: defendant contact details and responses only
+     * - patchUnsubmittedEventData merges: preserves existing fields
      * - Result: defendant's new answers merged with existing defendant data
      */
     private PCSCase buildDefendantOnlyUpdate(PCSCase caseData) {
+        PossessionClaimResponse response = caseData.getPossessionClaimResponse();
+
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
-            .defendantData(caseData.getPossessionClaimResponse().getDefendantData())
+            .defendantContactDetails(response.getDefendantContactDetails())
+            .defendantResponses(response.getDefendantResponses())
             .build();
 
         return PCSCase.builder()

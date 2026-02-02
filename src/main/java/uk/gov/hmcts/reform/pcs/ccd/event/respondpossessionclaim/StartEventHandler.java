@@ -63,7 +63,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
         // Claim data already visible in pcsCase via CitizenAccess
         PossessionClaimResponse response = responseMapper.mapFrom(pcsCase, matchedDefendant);
 
-        // Save initial draft (only defendantData, not claim data)
+        // Save initial draft (only defendant contact details and responses, not claim data)
         createInitialDraft(caseReference, response);
 
         return pcsCase.toBuilder()
@@ -95,8 +95,9 @@ public class StartEventHandler implements Start<PCSCase, State> {
     /**
      * Creates initial draft in draft table so defendant can save progress.
      *
-     * <p>Only saves defendantData (editable defendant data). Claim data comes from view classes
-     * on each START callback. Case metadata (state, dates) is managed by CCD, not stored in draft.
+     * <p>Only saves defendant contact details and responses (editable defendant data). Claim data
+     * comes from view classes on each START callback. Case metadata (state, dates) is managed by
+     * CCD, not stored in draft.
      */
     private void createInitialDraft(long caseReference, PossessionClaimResponse response) {
         PCSCase draftWithOnlyResponseData = PCSCase.builder()

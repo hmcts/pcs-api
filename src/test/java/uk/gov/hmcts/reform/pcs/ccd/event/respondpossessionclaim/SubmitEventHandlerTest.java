@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -71,12 +70,9 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .build();
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(defendantData)
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(DefendantResponses.builder().build())
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -99,8 +95,8 @@ class SubmitEventHandlerTest {
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantData()
-            .getContactDetails().getParty().getFirstName()).isEqualTo("John");
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails()
+            .getParty().getFirstName()).isEqualTo("John");
         // Note: submitDraftAnswers is NOT persisted to draft - it's a transient UI flag
     }
 
@@ -118,12 +114,9 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .build();
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(defendantData)
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(DefendantResponses.builder().build())
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -161,13 +154,9 @@ class SubmitEventHandlerTest {
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .responses(responses)
-            .build();
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(defendantData)
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(responses)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -226,12 +215,9 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .build();
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(defendantData)
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(DefendantResponses.builder().build())
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -257,7 +243,7 @@ class SubmitEventHandlerTest {
     void shouldReturnErrorWhenDefendantDataIsNull() {
         // Given
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(null)
+            .defendantContactDetails(null)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -296,13 +282,12 @@ class SubmitEventHandlerTest {
             .oweRentArrears(YesNoNotSure.YES)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .responses(responses)
-            .contactDetails(null)
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(null)
             .build();
 
         // When
-        PCSCase caseData = createDraftSaveCaseData(defendantData);
+        PCSCase caseData = createDraftSaveCaseData(contactDetails, responses);
 
         // Then
         submitAndVerifyDraftSaved(caseData);
@@ -320,13 +305,8 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .responses(null)
-            .build();
-
         // When
-        PCSCase caseData = createDraftSaveCaseData(defendantData);
+        PCSCase caseData = createDraftSaveCaseData(contactDetails, null);
 
         // Then
         submitAndVerifyDraftSaved(caseData);
@@ -339,12 +319,8 @@ class SubmitEventHandlerTest {
             .party(null)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .build();
-
         // When
-        PCSCase caseData = createDraftSaveCaseData(defendantData);
+        PCSCase caseData = createDraftSaveCaseData(contactDetails, null);
 
         // Then
         submitAndVerifyDraftSaved(caseData);
@@ -357,13 +333,12 @@ class SubmitEventHandlerTest {
             .tenancyTypeCorrect(YesNoNotSure.NO)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .responses(responses)
-            .contactDetails(null)
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(null)
             .build();
 
         // When
-        PCSCase caseData = createDraftSaveCaseData(defendantData);
+        PCSCase caseData = createDraftSaveCaseData(contactDetails, responses);
 
         // Then
         submitAndVerifyDraftSaved(caseData);
@@ -384,13 +359,8 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .responses(null)
-            .build();
-
         // When
-        PCSCase caseData = createDraftSaveCaseData(defendantData);
+        PCSCase caseData = createDraftSaveCaseData(contactDetails, null);
 
         // Then
         submitAndVerifyDraftSaved(caseData);
@@ -407,13 +377,8 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .responses(null)
-            .build();
-
         // When
-        PCSCase caseData = createDraftSaveCaseData(defendantData);
+        PCSCase caseData = createDraftSaveCaseData(contactDetails, null);
 
         // Then
         submitAndVerifyDraftSaved(caseData);
@@ -431,12 +396,9 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .build();
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(defendantData)
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(DefendantResponses.builder().build())
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -481,12 +443,9 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .build();
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(defendantData)
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(DefendantResponses.builder().build())
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -529,12 +488,9 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        DefendantData defendantData = DefendantData.builder()
-            .contactDetails(contactDetails)
-            .build();
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(defendantData)
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(DefendantResponses.builder().build())
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -554,17 +510,17 @@ class SubmitEventHandlerTest {
 
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        DefendantData savedDefendantData = savedDraft.getPossessionClaimResponse().getDefendantData();
-        assertThat(savedDefendantData).isNotNull();
-        assertThat(savedDefendantData.getContactDetails()).isNotNull();
-        assertThat(savedDefendantData.getContactDetails().getParty()).isNotNull();
-        assertThat(savedDefendantData.getContactDetails().getParty().getFirstName()).isEqualTo("John");
-        assertThat(savedDefendantData.getContactDetails().getParty().getLastName()).isEqualTo("Doe");
-        assertThat(savedDefendantData.getContactDetails().getParty().getEmailAddress())
+        DefendantContactDetails savedContactDetails = savedDraft.getPossessionClaimResponse()
+            .getDefendantContactDetails();
+        assertThat(savedContactDetails).isNotNull();
+        assertThat(savedContactDetails.getParty()).isNotNull();
+        assertThat(savedContactDetails.getParty().getFirstName()).isEqualTo("John");
+        assertThat(savedContactDetails.getParty().getLastName()).isEqualTo("Doe");
+        assertThat(savedContactDetails.getParty().getEmailAddress())
             .isEqualTo("john@example.com");
-        assertThat(savedDefendantData.getContactDetails().getParty().getPhoneNumber())
+        assertThat(savedContactDetails.getParty().getPhoneNumber())
             .isEqualTo("07700900000");
-        assertThat(savedDefendantData.getContactDetails().getParty().getAddress()).isEqualTo(address);
+        assertThat(savedContactDetails.getParty().getAddress()).isEqualTo(address);
         // Note: submitDraftAnswers is NOT persisted to draft - it's a transient UI flag
     }
 
@@ -574,9 +530,10 @@ class SubmitEventHandlerTest {
         return eventPayload;
     }
 
-    private PCSCase createDraftSaveCaseData(DefendantData defendantData) {
+    private PCSCase createDraftSaveCaseData(DefendantContactDetails contactDetails, DefendantResponses responses) {
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantData(defendantData)
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(responses != null ? responses : DefendantResponses.builder().build())
             .build();
 
         return PCSCase.builder()

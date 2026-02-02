@@ -78,7 +78,7 @@ class StartEventHandlerTest {
         PcsCaseEntity pcsCaseEntity = PcsCaseEntity.builder().build();
 
         PossessionClaimResponse initialResponse = PossessionClaimResponse.builder()
-            .defendantData(null)
+            .defendantContactDetails(null).defendantResponses(null)
             .build();
 
         when(securityContextService.getCurrentUserId()).thenReturn(defendantUserId);
@@ -109,7 +109,7 @@ class StartEventHandlerTest {
         UUID defendantUserId = UUID.randomUUID();
 
         PossessionClaimResponse draftResponse = PossessionClaimResponse.builder()
-            .defendantData(null)
+            .defendantContactDetails(null).defendantResponses(null)
             .build();
 
         PCSCase savedDraft = PCSCase.builder()
