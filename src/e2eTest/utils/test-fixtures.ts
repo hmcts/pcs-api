@@ -3,13 +3,20 @@ import { startLogCapture, attachLogToTest } from '@utils/test-logger';
 
 export const test = base.extend<{ _consoleLogCapture: void }>({
   _consoleLogCapture: [
-    async ({ page }, use, testInfo) => {
-      startLogCapture(page, testInfo);
+    async ({ page }, use) => {
       await use();
-      await attachLogToTest(testInfo);
     },
     { auto: true },
   ],
+});
+
+test.beforeEach(async ({ page }, testInfo) => {
+  startLogCapture(page, testInfo);
+});
+
+// Attach in afterEach (runs before fixture teardown) – appears as separate item, before stdout
+test.afterEach(async ({}, testInfo) => {
+  await attachLogToTest(testInfo);
 });
 
 export { expect } from '@playwright/test';

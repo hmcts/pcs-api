@@ -1,7 +1,3 @@
-/**
- * Captures browser console logs during E2E tests and attaches to Allure on failure only.
- * Uses testInfo.attach() so it appears in After Hooks after stdout.
- */
 import type { Page } from '@playwright/test';
 import type { TestInfo } from '@playwright/test';
 
