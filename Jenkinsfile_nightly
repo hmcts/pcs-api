@@ -56,23 +56,22 @@ withNightlyPipeline(type, product, component) {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
   }
 
-  afterAlways('e2eTest') {
+  // Library uses 'E2eTest' (capital E) in sectionNightlyTests – must match exactly
+  afterAlways('E2eTest') {
+    archiveE2eTestReports()
     postAllureResultsToSlack()
   }
 }
 
-// Fallback: run notifier in same workspace (use full path – sh may not inherit dir)
-node {
-  def ws = env.WORKSPACE
-  def msg = sh(
-    script: "cd '${ws}/src/e2eTest' && yarn allure-slack-notify --print-only 2>&1 || true",
-    returnStdout: true
-  ).trim()
-  if (!msg || msg.contains("can't cd") || msg.contains('No such file') || msg.contains('not found')) {
-    msg = "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
-  }
-  slackSend(channel: '#qa-pipeline-status', message: msg)
+// Fallback: workspace unavailable here (cleaned or different agent) – send link only
+try {
+  slackSend(
+    channel: '#qa-pipeline-status',
+    message: "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
+  )
   echo "E2E Slack fallback: sent to #qa-pipeline-status"
+} catch (Exception e) {
+  echo "E2E Slack fallback: slackSend failed – ${e.message}"
 }
 
 def validateInputs() {
@@ -98,7 +97,19 @@ def handleEnvironmentSetting() {
     : "pr"
 }
 
-// E2E stage notification to QA channel only (build status is sent by library via enableSlackNotifications('#pcs-tech'))
+def archiveE2eTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "e2e-output",
+    reportFiles: 'index.html',
+    reportName: 'E2E Test Report'
+  ])
+  steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
+}
+
+// E2E stage notification to QA channel only (build status is sent by library via enableSlackNotifications)
 def postAllureResultsToSlack() {
   def slackChannel = '#qa-pipeline-status'
   def msg = sh(
@@ -109,7 +120,7 @@ def postAllureResultsToSlack() {
     returnStdout: true
   ).trim()
   if (!msg) {
-    msg = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs."
+    msg = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
   echo "E2E Slack: Posting to ${slackChannel} (${msg.length()} chars)"
   slackSend(channel: slackChannel, message: msg)
