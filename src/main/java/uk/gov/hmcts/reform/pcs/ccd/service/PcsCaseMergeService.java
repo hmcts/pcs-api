@@ -46,7 +46,10 @@ public class PcsCaseMergeService {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
         }
 
-        pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
+        if (pcsCase.getTenancyLicenceDetails().getTypeOfTenancyLicence() != null) {
+            pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicenceEntity(pcsCase));
+        }
+        pcsCaseEntity.setLegacyTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
         pcsCaseEntity.setPossessionGrounds(buildPossessionGrounds(pcsCase));
         pcsCaseEntity.setStatementOfTruth(statementOfTruthService.buildStatementOfTruth(pcsCase));
     }

@@ -18,7 +18,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -39,19 +38,24 @@ class ClaimServiceTest {
     private ClaimRepository claimRepository;
     @Mock
     private ClaimGroundService claimGroundService;
+    @Mock
+    private PossessionAlternativesService possessionAlternativesService;
+    @Mock
+    private HousingActWalesService housingActWalesService;
+    @Mock
+    private PCSCase pcsCase;
 
     private ClaimService claimService;
 
     @BeforeEach
     void setUp() {
-        claimService = new ClaimService(claimRepository, claimGroundService);
+        claimService = new ClaimService(claimRepository, claimGroundService,
+                                        possessionAlternativesService, housingActWalesService);
     }
 
     @Test
     void shouldCreateMainClaim() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-
         when(pcsCase.getClaimAgainstTrespassers()).thenReturn(VerticalYesNo.YES);
         when(pcsCase.getClaimDueToRentArrears()).thenReturn(YesOrNo.NO);
         when(pcsCase.getClaimingCostsWanted()).thenReturn(VerticalYesNo.YES);
@@ -96,9 +100,6 @@ class ClaimServiceTest {
     @Test
     void shouldCreateMainClaim_WithAdditionalReasonsWhenPresent() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-        PartyEntity claimantPartyEntity = new PartyEntity();
-
         AdditionalReasons additionalReasons = mock(AdditionalReasons.class);
         when(pcsCase.getAdditionalReasonsForPossession()).thenReturn(additionalReasons);
         when(additionalReasons.getReasons()).thenReturn("some additional reasons");
@@ -115,8 +116,6 @@ class ClaimServiceTest {
     @Test
     void shouldCreateMainClaim_WithDefendantCircumstancesDetails() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-
         VerticalYesNo defendantInfoProvided = VerticalYesNo.YES;
         String circumstancesInfo = "Some circumstance Info";
 
@@ -136,8 +135,6 @@ class ClaimServiceTest {
     @Test
     void shouldCreateMainClaim_WithClaimantCircumstancesDetails() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-
         VerticalYesNo claimantInfoProvided = VerticalYesNo.NO;
         String circumstancesInfo = "example circumstance Info";
 
@@ -157,8 +154,6 @@ class ClaimServiceTest {
     @Test
     void shouldCreateMainClaim_WithoutClaimantTypeDetailsWhenNull() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-
         when(pcsCase.getClaimantType()).thenReturn(null);
 
         // When
@@ -171,8 +166,6 @@ class ClaimServiceTest {
     @Test
     void shouldCreateMainClaim_WithoutClaimantTypeDetailsWhenValueCodeIsNull() {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-
         DynamicStringList claimantTypeList = mock(DynamicStringList.class);
         when(claimantTypeList.getValueCode()).thenReturn(null);
         when(pcsCase.getClaimantType()).thenReturn(claimantTypeList);
@@ -188,8 +181,6 @@ class ClaimServiceTest {
     @MethodSource("claimantTypeScenarios")
     void shouldCreateMainClaim_WithClaimantTypeDetails(ClaimantType claimantType) {
         // Given
-        PCSCase pcsCase = mock(PCSCase.class);
-
         DynamicStringList claimantTypeList = DynamicStringList.builder()
             .value(DynamicStringListElement.builder()
                        .code(claimantType.name())
