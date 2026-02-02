@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.CannotApplyForWritInfoPage.ERROR_MESSAGE;
 
 @DisplayName("CannotApplyForWritInfoPage tests")
 class CannotApplyForWritInfoPageTest extends BasePageTest {
@@ -38,8 +39,7 @@ class CannotApplyForWritInfoPageTest extends BasePageTest {
             // Then
             assertThat(response.getErrors()).isNotEmpty();
             assertThat(response.getErrors().getFirst())
-                    .contains("You cannot continue with this application until you ask the judge for permission"
-                    + " to transfer to the High Court");
+                    .contains(ERROR_MESSAGE);
         }
     }
 }

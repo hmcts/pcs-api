@@ -282,7 +282,7 @@ jacocoTestReport {
 }
 
 tasks.named('sonarqube') {
-   dependsOn jacocoTestReport
+  dependsOn jacocoTestReport
 }
 
 tasks.named('check') {

@@ -10,12 +10,9 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrW
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.generalApplication;
-import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
-
 public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
 
-    private static final String ERROR_MESSAGE =
+    static final String ERROR_MESSAGE =
             "You cannot continue with this application until you ask the judge for permission "
                     + "to transfer to the High Court";
 
@@ -26,8 +23,8 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
             out the eviction.</p>
             <p class="govuk-body">Once you have permission to transfer to the High Court, you 
             can return to this service and apply for a writ.</p>
-            <h2 class="govuk-heading-m govuk-!-padding-top-0">How to transfer your claim to 
-            the High Court</h2>
+            <p class="govuk-body govuk-!-font-weight-bold">How to transfer your claim to 
+            the High Court</p>
             <p class="govuk-body">You must make an application if you want to transfer your claim to the High Court.</p>
             <p><a id="cannotApplyForWritInfo-link" class="govuk-link">
             Transfer your claim from the County Court to the High Court</a>
@@ -42,8 +39,7 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
             .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW
                     + " AND writHasClaimTransferredToHighCourt=\"No\"")
             .label("cannotApplyForWritInfo-line-separator", "---")
-            .label("cannotApplyForWritInfo-text", MARKDOWN_TEXT.formatted(generalApplication))
-            .label("cannotApplyForWritInfo-save-and-return", SAVE_AND_RETURN);
+            .label("cannotApplyForWritInfo-text", MARKDOWN_TEXT);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(
