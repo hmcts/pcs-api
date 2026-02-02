@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from '@utils/test-fixtures';
 import {
   initializeExecutor,
   performAction,
@@ -6,19 +6,15 @@ import {
 } from '@utils/controller';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { startLogCapture, attachLogToTest } from '@utils/test-logger';
-
-test.beforeEach(async ({ page }, testInfo) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
-  startLogCapture(page, testInfo);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
-test.afterEach(async ({}, testInfo) => {
-  await attachLogToTest(testInfo);
+test.afterEach(async () => {
   if (caseInfo.id) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }

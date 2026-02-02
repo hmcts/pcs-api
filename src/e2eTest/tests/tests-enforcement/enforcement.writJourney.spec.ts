@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '@utils/test-fixtures';
 import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
@@ -18,12 +18,9 @@ import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
-import { startLogCapture, attachLogToTest } from '@utils/test-logger';
-
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
-  startLogCapture(page, testInfo);
   moneyMap.clear();
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
@@ -60,8 +57,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 
-test.afterEach(async ({}, testInfo) => {
-  await attachLogToTest(testInfo);
+test.afterEach(async () => {
   moneyMap.clear();
   fieldsMap.clear();
   if (caseInfo.id) {

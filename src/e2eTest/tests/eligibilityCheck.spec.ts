@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from '@utils/test-fixtures';
 import {
   addressCheckYourAnswers,
   addressDetails,
@@ -20,11 +20,8 @@ import {
 } from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-import { startLogCapture, attachLogToTest } from '@utils/test-logger';
-
-test.beforeEach(async ({ page }, testInfo) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
-  startLogCapture(page, testInfo);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
@@ -32,8 +29,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
-test.afterEach(async ({}, testInfo) => {
-  await attachLogToTest(testInfo);
+test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }

@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from '@utils/test-fixtures';
 import {
   initializeExecutor,
   performAction,
@@ -49,8 +49,6 @@ import {
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
 import { dismissCookieBanner } from '@config/cookie-banner';
-import { startLogCapture, attachLogToTest } from '@utils/test-logger';
-
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
 // When a new page is added/flow changes, basic conditions in this test should be updated accordingly to continue the journey.
@@ -60,10 +58,9 @@ import { startLogCapture, attachLogToTest } from '@utils/test-logger';
 // Disable global storageState for this file - these tests need to test sign-out/re-login flow
 test.use({ storageState: undefined });
 
-test.beforeEach(async ({ page, context }, testInfo) => {
+test.beforeEach(async ({ page, context }) => {
   await context.clearCookies();
   initializeExecutor(page);
-  startLogCapture(page, testInfo);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await page.evaluate(() => {
     try {
@@ -82,8 +79,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   await performAction('housingPossessionClaim');
 });
 
-test.afterEach(async ({}, testInfo) => {
-  await attachLogToTest(testInfo);
+test.afterEach(async () => {
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }
