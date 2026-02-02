@@ -36,10 +36,12 @@ import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { startLogCapture, attachLogToTest } from '@utils/test-logger';
 
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
+  startLogCapture(page, testInfo);
   moneyMap.clear();
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
@@ -76,7 +78,8 @@ test.beforeEach(async ({ page }, testInfo) => {
   });
 });
 
-test.afterEach(async () => {
+test.afterEach(async ({}, testInfo) => {
+  await attachLogToTest(testInfo);
   moneyMap.clear();
   fieldsMap.clear();
   if (caseInfo.id) {

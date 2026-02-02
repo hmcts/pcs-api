@@ -47,9 +47,11 @@ import{
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import { startLogCapture, attachLogToTest } from '@utils/test-logger';
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
+  startLogCapture(page, testInfo);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
@@ -57,7 +59,8 @@ test.beforeEach(async ({page}) => {
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
-test.afterEach(async () => {
+test.afterEach(async ({}, testInfo) => {
+  await attachLogToTest(testInfo);
   if (caseNumber) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }

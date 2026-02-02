@@ -6,16 +6,19 @@ import {
 } from '@utils/controller';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
+import { startLogCapture, attachLogToTest } from '@utils/test-logger';
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
+  startLogCapture(page, testInfo);
   await performAction('createCaseAPI', { data: createCaseApiData.createCasePayload });
   await performAction('submitCaseAPI', { data: submitCaseApiData.submitCasePayload });
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
-test.afterEach(async () => {
+test.afterEach(async ({}, testInfo) => {
+  await attachLogToTest(testInfo);
   if (caseInfo.id) {
     await performAction('deleteCaseRole', '[CREATOR]');
   }
