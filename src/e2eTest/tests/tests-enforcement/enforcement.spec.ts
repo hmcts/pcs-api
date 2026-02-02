@@ -40,6 +40,7 @@ import { VERY_LONG_TIMEOUT } from 'playwright.config';
 test.beforeEach(async ({ page }, testInfo) => {
   initializeExecutor(page);
   initializeEnforcementExecutor(page);
+  defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
   if (testInfo.title.includes('@noDefendants')) {
@@ -77,6 +78,7 @@ test.beforeEach(async ({ page }, testInfo) => {
 });
 
 test.afterEach(async () => {
+  defendantDetails.length = 0;
   moneyMap.clear();
   fieldsMap.clear();
   if (caseInfo.id) {
@@ -91,6 +93,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
+        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
         type: yourApplication.summaryWritOrWarrant,
         label1: yourApplication.warrantFeeValidationLabel,
         text1: yourApplication.warrantFeeValidationText,
@@ -440,6 +443,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
+      journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
       type: yourApplication.summaryWritOrWarrant,
       label1: yourApplication.warrantFeeValidationLabel,
       text1: yourApplication.warrantFeeValidationText,
@@ -469,9 +473,10 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performValidation('mainHeader', peopleYouWantToEvict.mainHeader);
     await performAction('inputErrorValidation', {
       validationReq: peopleYouWantToEvict.errorValidation,
-      validationType: peopleYouWantToEvict.errorValidationType.four,
+      validationType: peopleYouWantToEvict.errorValidationType.six,
       inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
       label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+      header: peopleYouWantToEvict.errors,
       checkBox: defendantDetails[0],
       button: peopleYouWantToEvict.continueButton
     });
@@ -544,6 +549,56 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       option: suspendedOrder.noRadioOption
     });
     await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthTwo.errorValidation,
+      validationType: statementOfTruthTwo.errorValidationType.four,
+      inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
+      label: statementOfTruthTwo.checkBoxGenericErrorLabel,
+      //header: statementOfTruthTwo.errors,
+      checkBox: statementOfTruthTwo.iCertifyCheckbox,
+      button: statementOfTruthTwo.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthTwo.errorValidation,
+      validationType: statementOfTruthTwo.errorValidationType.three,
+      inputArray: statementOfTruthTwo.errorValidationField.errorRadioOption,
+      question: statementOfTruthTwo.completedByLabel,
+      option: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
+      button: statementOfTruthTwo.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthTwo.errorValidation,
+      validationType: statementOfTruthTwo.errorValidationType.four,
+      inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
+      label: statementOfTruthTwo.checkBoxGenericErrorLabel,
+      //header: statementOfTruthTwo.errors,
+      checkBox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
+      button: statementOfTruthTwo.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthTwo.errorValidation,
+      validationType: statementOfTruthTwo.errorValidationType.two,
+      inputArray: statementOfTruthTwo.errorValidationField.errorTextField1,
+      header: statementOfTruthTwo.errors,
+      label: statementOfTruthTwo.fullNameHiddenTextLabel,
+      button: statementOfTruthTwo.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthTwo.errorValidation,
+      validationType: statementOfTruthTwo.errorValidationType.two,
+      inputArray: statementOfTruthTwo.errorValidationField.errorTextField2,
+      header: statementOfTruthTwo.errors,
+      label: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
+      button: statementOfTruthTwo.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthTwo.errorValidation,
+      validationType: statementOfTruthTwo.errorValidationType.two,
+      inputArray: statementOfTruthTwo.errorValidationField.errorTextField3,
+      header: statementOfTruthTwo.errors,
+      label: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
+      button: statementOfTruthTwo.continueButton
+    });
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
     await performAction('selectStatementOfTruthTwo', {
       selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
@@ -560,6 +615,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
     await performAction('validateWritOrWarrantFeeAmount', {
+      journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
       type: yourApplication.summaryWritOrWarrant,
       label1: yourApplication.warrantFeeValidationLabel,
       text1: yourApplication.warrantFeeValidationText,
@@ -701,6 +757,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
+        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
         type: yourApplication.summaryWritOrWarrant,
         label1: yourApplication.warrantFeeValidationLabel,
         text1: yourApplication.warrantFeeValidationText,
@@ -730,9 +787,10 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', peopleYouWantToEvict.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: peopleYouWantToEvict.errorValidation,
-        validationType: peopleYouWantToEvict.errorValidationType.four,
+        validationType: peopleYouWantToEvict.errorValidationType.six,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+        header: peopleYouWantToEvict.errors,
         checkBox: defendantDetails[0],
         button: peopleYouWantToEvict.continueButton
       });
@@ -822,6 +880,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('clickButton', caseSummary.go);
       await performValidation('mainHeader', yourApplication.mainHeader);
       await performAction('validateWritOrWarrantFeeAmount', {
+        journey: yourApplication.typeOfApplicationOptions.warrantOfPossession,
         type: yourApplication.summaryWritOrWarrant,
         label1: yourApplication.warrantFeeValidationLabel,
         text1: yourApplication.warrantFeeValidationText,
@@ -851,9 +910,10 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('mainHeader', peopleYouWantToEvict.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: peopleYouWantToEvict.errorValidation,
-        validationType: peopleYouWantToEvict.errorValidationType.four,
+        validationType: peopleYouWantToEvict.errorValidationType.six,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
+        header: peopleYouWantToEvict.errors,
         checkBox: defendantDetails[0],
         button: peopleYouWantToEvict.continueButton
       });
