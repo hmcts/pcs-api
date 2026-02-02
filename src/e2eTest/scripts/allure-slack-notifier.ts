@@ -433,17 +433,23 @@ export async function main(): Promise<void> {
     } catch {
       tests = null;
     }
+    const reportPathSuffix =
+      (process.env.ALLURE_REPORT_PATH_SUFFIX ?? 'E2E_20Test_20Report/').trim() ||
+      'E2E_20Test_20Report/';
     msg = buildSlackMessage(
       summary,
       buildNumber,
       buildUrl,
-      'allure/',
+      reportPathSuffix,
       tests,
       5,
       8
     );
   } catch (err) {
-    msg = `E2E stage completed for ${jobName} build ${buildNumber}. Allure report not available – check build logs.${buildUrl ? `\nBuild: ${buildUrl}` : ''}`;
+    const reportUrl = buildUrl
+      ? `${buildUrl}${process.env.ALLURE_REPORT_PATH_SUFFIX ?? 'E2E_20Test_20Report/'}`
+      : '';
+    msg = `E2E stage completed for ${jobName} build ${buildNumber}. Allure report not available – check build logs.${reportUrl ? `\n*Allure report:* ${reportUrl}` : buildUrl ? `\n*Build:* ${buildUrl}` : ''}`;
     if (!printOnly) {
       console.warn('[WARN] Could not read Allure summary; sending fallback message.', err);
     }

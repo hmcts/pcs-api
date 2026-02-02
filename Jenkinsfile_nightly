@@ -45,7 +45,7 @@ def secrets = [
 
 withNightlyPipeline(type, product, component) {
   validateInputs()
-  enableSlackNotifications('#pcs-tech')
+  enableSlackNotifications('#qa-pipeline-status')
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
@@ -63,9 +63,10 @@ withNightlyPipeline(type, product, component) {
 
 // Fallback when library does not invoke afterAlways (no workspace – must not use sh)
 try {
+  def reportUrl = "${env.BUILD_URL}E2E_20Test_20Report/"
   slackSend(
     channel: '#qa-pipeline-status',
-    message: "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}. See Jenkins for Allure report."
+    message: "Nightly E2E completed: ${env.JOB_NAME} #${env.BUILD_NUMBER}.\n*Allure report:* ${reportUrl}"
   )
   echo "E2E Slack fallback: sent to #qa-pipeline-status"
 } catch (Exception e) {
