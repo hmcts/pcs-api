@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
@@ -45,7 +45,7 @@ class RentSectionRoutingServiceTest {
             )
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(null)
                     .discretionaryGrounds(null)
                     .build()
@@ -98,7 +98,7 @@ class RentSectionRoutingServiceTest {
             )
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(Set.of(SERIOUS_RENT_ARREARS_GROUND8))
                     .discretionaryGrounds(null)
                     .build()
