@@ -13,6 +13,9 @@ export class TextValidation implements IValidation {
       case 'heading':
         data.elementType = 'h1.govuk-heading-l';
         break;
+      case 'subHeader':
+        data.elementType = 'h3';
+        break;
       case 'paragraph':
         data.elementType = 'p';
         break;

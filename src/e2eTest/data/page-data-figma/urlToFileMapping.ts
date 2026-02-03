@@ -10,7 +10,7 @@ export default {
   'resumePossessionClaimtenancyLicenceDetails':'tenancyLicenceDetails',
   'resumePossessionClaimgroundForPossessionRentArrears':'groundForPossessionRentArrears',
   'resumePossessionClaimintroductoryDemotedOrOtherGroundsForPossession':'introductoryDemotedOrOtherGroundsForPossession',
-  'resumePossessionClaimpreActionProtocol':'preactionProtocol',
+  'resumePossessionClaimpreActionProtocol':'preActionProtocol',
   'resumePossessionClaimmediationAndSettlement': 'mediationAndSettlement',
   'resumePossessionClaimcheckingNotice': 'checkingNotice',
   'resumePossessionClaimwalesCheckingNotice': 'checkingNotice',
@@ -21,5 +21,15 @@ export default {
   'resumePossessionClaimclaimingCosts': 'claimingCosts',
   'resumePossessionClaimrentDetails': 'rentDetails',
   'resumePossessionClaimdailyRentAmount': 'dailyRentAmount',
-  'resumePossessionClaimmoneyJudgment': 'moneyJudgment'
+  'resumePossessionClaimmoneyJudgment': 'moneyJudgment',
+  'resumePossessionClaimrentArrears': 'rentArrears',
+  'resumePossessionClaimadditionalReasonsForPossession': 'additionalReasonsForPossession',
+  'resumePossessionClaimunderlesseeMortgageeEntitledToClaimRelief': 'underlesseeMortgageeEntitledToClaimRelief',
+  'resumePossessionClaimwantToUploadDocuments': 'wantToUploadDocuments',
+  'resumePossessionClaimuploadAdditionalDocuments': 'uploadAdditionalDocuments',
+  'resumePossessionClaimgeneralApplication': 'generalApplication',
+  'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',
+  'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',
+  'resumePossessionClaimstatementOfTruth': 'statementOfTruth',
+  'confirm': 'confirm'
 };
