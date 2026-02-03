@@ -63,8 +63,6 @@ ccd:
       enabled: true
   ccd-definition-store-api:
     java:
-      imagePullPolicy: Always
-      image: hmctspublic.azurecr.io/ccd/data-store-api:pr-2780
       devmemoryRequests: '1024Mi'
       devmemoryLimits: '2048Mi'
       devcpuRequests: '500m'
@@ -89,6 +87,7 @@ ccd:
               alias: DEFINITION_STORE_IDAM_KEY
   ccd-data-store-api:
     java:
+      image: hmctspublic.azurecr.io/ccd/data-store-api:pr-2780
       imagePullPolicy: Always
       devmemoryRequests: '1524Mi'
       devmemoryLimits: '2048Mi'
