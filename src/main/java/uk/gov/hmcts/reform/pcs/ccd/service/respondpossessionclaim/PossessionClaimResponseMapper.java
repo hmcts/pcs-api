@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -95,7 +94,7 @@ public class PossessionClaimResponseMapper {
     /*
      * Extracts organisation names from claimant parties.
      * allClaimants is pre-filtered to PartyRole.CLAIMANT by PCSCaseView.
-     * Supports multiple claimants and filters out null/empty org names.
+     * Supports multiple claimants, preserving original party IDs.
      * Returns ListValue-wrapped strings for CCD collection compatibility.
      */
     private List<ListValue<String>> extractClaimantOrganisations(PCSCase pcsCase) {
@@ -106,16 +105,10 @@ public class PossessionClaimResponseMapper {
             return List.of();
         }
 
-        List<String> orgNames = allClaimants.stream()
-            .map(ListValue::getValue)
-            .map(Party::getOrgName)
-            .filter(StringUtils::isNotBlank)
-            .toList();
-
-        return java.util.stream.IntStream.range(0, orgNames.size())
-            .mapToObj(i -> ListValue.<String>builder()
-                .id("claimant-org-" + (i + 1))
-                .value(orgNames.get(i))
+        return allClaimants.stream()
+            .map(claimant -> ListValue.<String>builder()
+                .id(claimant.getId())
+                .value(claimant.getValue().getOrgName())
                 .build())
             .toList();
     }
