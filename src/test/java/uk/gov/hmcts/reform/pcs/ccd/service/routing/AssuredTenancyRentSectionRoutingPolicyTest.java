@@ -8,7 +8,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
@@ -76,7 +76,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
             )
             .claimDueToRentArrears(YesOrNo.NO)
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(mandatoryGrounds)
                     .discretionaryGrounds(discretionaryGrounds)
                     .build()
@@ -97,7 +97,7 @@ class AssuredTenancyRentSectionRoutingPolicyTest {
                     .build()
             )
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(null)
                     .discretionaryGrounds(null)
                     .build()
