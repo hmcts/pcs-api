@@ -259,7 +259,7 @@ public class PCSCase {
     private PeriodicContractTermsWales periodicContractTermsWales;
 
     @JsonUnwrapped(prefix = "rentDetails_")
-    @CCD(access = {ClaimantAccess.class})
+    @CCD
     private RentDetails rentDetails;
 
     private RentPaymentFrequency rentSectionPaymentFrequency;
@@ -296,14 +296,14 @@ public class PCSCase {
     private List<ListValue<Party>> allDefendants;
 
     @JsonUnwrapped(prefix = "tenancy_")
-    @CCD(access = {ClaimantAccess.class})
+    @CCD
     private TenancyLicenceDetails tenancyLicenceDetails;
 
     @CCD(searchable = false)
     private String nextStepsMarkdown;
 
     @JsonUnwrapped(prefix = "rentArrears_")
-    @CCD(access = {ClaimantAccess.class})
+    @CCD
     private RentArrearsSection rentArrears;
 
     @CCD
@@ -426,7 +426,6 @@ public class PCSCase {
     private SuspensionOfRightToBuyDemotionOfTenancy  suspensionOfRightToBuyDemotionOfTenancy;
 
     @JsonUnwrapped(prefix = "wales")
-    @CCD(access = {ClaimantAccess.class})
     private WalesNoticeDetails walesNoticeDetails;
 
     @JsonUnwrapped(prefix = "secureContract_")
@@ -443,7 +442,7 @@ public class PCSCase {
     private YesOrNo showReasonsForGroundsPageWales;
 
     @JsonUnwrapped
-    @CCD(access = {ClaimantAccess.class})
+    @CCD
     private OccupationLicenceDetailsWales occupationLicenceDetailsWales;
 
     @JsonUnwrapped
