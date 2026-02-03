@@ -85,7 +85,7 @@ spring:
             client-id: ${IDAM_CLIENT_ID:pcs-api}
             client-secret: ${IDAM_CLIENT_SECRET}
             authorization-grant-type: password
-            scope: ${IDAM_PRD_ADMIN_SCOPE:openid profile roles}
+            scope: openid,profile,roles
         provider:
           prd-admin:
             token-uri: ${IDAM_API_URL:http://localhost:5062}/o/token
