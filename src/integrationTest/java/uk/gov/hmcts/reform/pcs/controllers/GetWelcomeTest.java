@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("integration")
 class GetWelcomeTest extends AbstractPostgresContainerIT {
 
-
     @Autowired
     private transient MockMvc mockMvc;
 
