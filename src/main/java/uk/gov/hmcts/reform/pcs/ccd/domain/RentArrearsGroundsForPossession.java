@@ -20,12 +20,6 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 public class RentArrearsGroundsForPossession {
 
     @CCD(
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround"
-    )
-    private Set<RentArrearsGround> copyOfRentArrearsGrounds;
-
-    @CCD(
         label = "What are your grounds for possession?",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
@@ -37,17 +31,17 @@ public class RentArrearsGroundsForPossession {
         label = "Mandatory grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredMandatoryGround"
+        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
     )
-    private Set<AssuredMandatoryGround> mandatoryGrounds;
+    private Set<AssuredAdditionalMandatoryGrounds> additionalMandatoryGrounds;
 
-    // Additional grounds checkboxes - Discretionary
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredDiscretionaryGround"
+        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
     )
-    private Set<AssuredDiscretionaryGround> discretionaryGrounds;
+    private Set<AssuredAdditionalDiscretionaryGrounds> additionalDiscretionaryGrounds;
+
 }
 
