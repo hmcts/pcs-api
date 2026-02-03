@@ -18,6 +18,16 @@ export function startLogCapture(page: Page, testInfo: TestInfo): void {
   logCaptureByTestId.set(testId, logs);
 }
 
+export async function logToBrowser(page: Page, message: string): Promise<void> {
+  try {
+    await page.evaluate((msg) => {
+      console.log(`[E2E] ${msg}`);
+    }, message);
+  } catch {
+    // Page may be destroyed or navigation in progress; ignore
+  }
+}
+
 export async function attachLogToTest(testInfo: TestInfo): Promise<void> {
   const logs = logCaptureByTestId.get(testInfo.testId);
   logCaptureByTestId.delete(testInfo.testId);
