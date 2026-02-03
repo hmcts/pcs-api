@@ -22,6 +22,7 @@ BOOT-INF/
 *.ipr
 
 ### VS Code ###
+.vscode/
 
 .DS_Store
 
