@@ -25,7 +25,6 @@ DO $$
     END IF;
   END $$;
 
--- Drop the enforcement schema
 DROP SCHEMA IF EXISTS enforcement CASCADE;
 
 -- Verify
