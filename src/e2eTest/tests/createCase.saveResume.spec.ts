@@ -8,22 +8,13 @@ import {
 import {
   addressCheckYourAnswers,
   addressDetails,
-  additionalReasonsForPossession,
-  applications,
   checkYourAnswers,
-  completeYourClaim,
-  detailsOfRentArrears,
-  languageUsed,
   propertyDetails,
   reasonsForPossession,
   resumeClaim,
   resumeClaimOptions,
-  statementOfTruth,
-  underlesseeOrMortgageeEntitledToClaim,
   user,
-  wantToUploadDocuments,
   whatAreYourGroundsForPossession,
-  housingPossessionClaim,
   home
 } from '@data/page-data';
 import {
@@ -44,7 +35,15 @@ import {
   moneyJudgment,
   noticeDetails,
   rentDetails,
-  checkingNotice
+  checkingNotice,
+  rentArrears,
+  additionalReasonsForPossession,
+  generalApplication,
+  completingYourClaim,
+  claimLanguageUsed,
+  underlesseeMortgageeEntitledToClaimRelief,
+  wantToUploadDocuments,
+  statementOfTruth,
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -154,12 +153,12 @@ test.describe('[Create Case - With resume claim options]', async () => {
       unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
-    await performValidation('mainHeader', detailsOfRentArrears.mainHeader);
+    await performValidation('mainHeader', rentArrears.mainHeader);
     await performAction('provideDetailsOfRentArrears', {
       files: ['rentArrears.pdf'],
       rentArrearsAmountOnStatement: '1000',
-      rentPaidByOthersOption: detailsOfRentArrears.yes,
-      paymentOptions: [detailsOfRentArrears.universalCreditOption, detailsOfRentArrears.paymentOtherOption]
+      rentPaidByOthersOption: rentArrears.yesRadioOption,
+      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
     });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
     await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
@@ -178,21 +177,21 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.no});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
-      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.no
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
     });
-    await performAction('selectApplications', applications.yes);
+    await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {
-      question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.english
+      question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
+      option: claimLanguageUsed.englishLRadioOption
     });
-    await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
+    await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
     await performAction('selectStatementOfTruth', {
       completedBy: statementOfTruth.claimantRadioOption,
       iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
@@ -292,21 +291,21 @@ test.describe('[Create Case - With resume claim options]', async () => {
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-      question: underlesseeOrMortgageeEntitledToClaim.entitledToClaimRelief,
-      option: underlesseeOrMortgageeEntitledToClaim.no});
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
-      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.no
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
     });
-    await performAction('selectApplications', applications.yes);
+    await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {
-      question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.english
+      question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
+      option: claimLanguageUsed.englishLRadioOption
     });
-    await performAction('completingYourClaim', completeYourClaim.saveItForLater);
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
     await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
