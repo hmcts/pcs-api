@@ -23,7 +23,7 @@ public class CurrencyFilter implements Filter {
     public Object apply(Object input, Map<String, Object> args, PebbleTemplate self, EvaluationContext context,
                         int lineNumber) {
         if (input == null) {
-            return "£0"; // Reset £0
+            return "£0";
         }
 
         if (!(input instanceof BigDecimal amount)) {

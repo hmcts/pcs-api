@@ -13,6 +13,9 @@ import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 
 import java.math.BigDecimal;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
+
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -24,8 +27,8 @@ public class MoneyOwedByDefendants {
     @CCD(
         label = "What is the total amount that the defendants owe you?",
         typeOverride = FieldType.MoneyGBP,
-        min = 1,
-        max = 1_000_000_000
+        min = MIN_MONETARY_AMOUNT,
+        max = MAX_MONETARY_AMOUNT
     )
     @JacksonMoneyGBP
     private BigDecimal amountOwed;
