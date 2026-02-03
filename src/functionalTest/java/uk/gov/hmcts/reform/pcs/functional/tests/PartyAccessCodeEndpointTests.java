@@ -85,7 +85,6 @@ class PartyAccessCodeEndpointTests extends BaseApi {
 
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
-        apiSteps.ccdCaseIsCreated("england");
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType.citizenUser);
         apiSteps.theRequestContainsThePathParameter("caseReference", caseReference.toString());
