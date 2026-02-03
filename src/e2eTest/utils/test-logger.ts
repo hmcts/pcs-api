@@ -27,15 +27,18 @@ export async function logToBrowser(page: Page, message: string): Promise<void> {
 }
 
 export async function attachLogToTest(testInfo: TestInfo): Promise<void> {
-  const logs = logCaptureByTestId.get(testInfo.testId);
-  logCaptureByTestId.delete(testInfo.testId);
-
-  if (!logs || logs.length === 0) return;
-
   const failed = testInfo.status !== 'passed' && testInfo.status !== 'skipped';
   if (!failed) return;
 
-  const content = logs.join('\n');
+  const logs = logCaptureByTestId.get(testInfo.testId) ?? [];
+  logCaptureByTestId.delete(testInfo.testId);
+
+  const content =
+    logs.length > 0
+      ? logs.join('\n')
+      : 'No browser console output was captured. This can happen if the test failed before page load, the page was destroyed early, or the test retried in a new worker (logs from the previous attempt are not carried over).';
+
+  await allure.parameter('Browser logs', 'See "Browser console logs" attachment under After Hooks at the end of the report', { excluded: true });
   await allure.step('Browser console logs', async () => {
     await allure.attachment('Browser console logs', content, ContentType.TEXT);
   });
