@@ -9,7 +9,7 @@ import {
   userIneligible,
   home
 } from '@data/page-data';
-import{
+import {
   claimantType,
   claimType,
 } from '@data/page-data-figma';
