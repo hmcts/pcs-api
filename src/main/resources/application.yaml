@@ -83,7 +83,7 @@ spring:
         registration:
           prd-admin:
             client-id: ${IDAM_CLIENT_ID:pcs-api}
-            client-secret: ${IDAM_CLIENT_SECRET}
+            client-secret: ${IDAM_CLIENT_SECRET:dummy-secret-for-local}
             authorization-grant-type: password
             scope: openid,profile,roles
         provider:
