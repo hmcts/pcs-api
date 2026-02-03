@@ -2,8 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -12,6 +14,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+
+import java.util.List;
 
 /**
  * Maps view-populated PCSCase and matched defendant to PossessionClaimResponse.
@@ -29,15 +33,19 @@ public class PossessionClaimResponseMapper {
     /**
      * Maps view-populated PCSCase and matched defendant to PossessionClaimResponse.
      *
-     * @param pcsCase View-populated case with claim data from view classes (TenancyLicenceView, RentDetailsView, etc.)
+     * @param pcsCase View-populated case with allClaimants (PartyRole.CLAIMANT only)
      * @param matchedDefendant The matched defendant entity from DefendantAccessValidator
-     * @return PossessionClaimResponse with initialized contact details and empty responses
+     * @return PossessionClaimResponse with claimant orgs, contact details, and responses
      */
     public PossessionClaimResponse mapFrom(PCSCase pcsCase, PartyEntity matchedDefendant) {
         DefendantContactDetails contactDetails = buildContactDetails(pcsCase, matchedDefendant);
         DefendantResponses responses = DefendantResponses.builder().build();
 
+        // Extract org names from CLAIMANT-role parties (pre-filtered by PCSCaseView.getPartyMap)
+        List<ListValue<String>> claimantOrgs = extractClaimantOrganisations(pcsCase);
+
         return PossessionClaimResponse.builder()
+            .claimantOrganisations(claimantOrgs)
             .defendantContactDetails(contactDetails)
             .defendantResponses(responses)
             .build();
@@ -82,5 +90,33 @@ public class PossessionClaimResponseMapper {
         } else {
             return addressMapper.toAddressUK(defendantEntity.getAddress());
         }
+    }
+
+    /*
+     * Extracts organisation names from claimant parties.
+     * allClaimants is pre-filtered to PartyRole.CLAIMANT by PCSCaseView.
+     * Supports multiple claimants and filters out null/empty org names.
+     * Returns ListValue-wrapped strings for CCD collection compatibility.
+     */
+    private List<ListValue<String>> extractClaimantOrganisations(PCSCase pcsCase) {
+        List<ListValue<Party>> allClaimants = pcsCase.getAllClaimants();
+
+        if (allClaimants == null || allClaimants.isEmpty()) {
+            log.warn("No claimant parties found in case, returning empty organisation list");
+            return List.of();
+        }
+
+        List<String> orgNames = allClaimants.stream()
+            .map(ListValue::getValue)
+            .map(Party::getOrgName)
+            .filter(StringUtils::isNotBlank)
+            .toList();
+
+        return java.util.stream.IntStream.range(0, orgNames.size())
+            .mapToObj(i -> ListValue.<String>builder()
+                .id("claimant-org-" + (i + 1))
+                .value(orgNames.get(i))
+                .build())
+            .toList();
     }
 }
