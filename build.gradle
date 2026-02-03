@@ -294,22 +294,18 @@ sonarqube {
     property "sonar.projectName", "Reform :: pcs-api"
     property "sonar.projectKey", "uk.gov.hmcts.reform:pcs-api"
     property "sonar.exclusions", ".github/workflows/publish-openapi.yaml"
-    property "sonar.newCode.exclusions",
-      "**/uk/gov/hmcts/reform/pcs/testingsupport/**"
-    property "sonar.coverage.exclusions",
-      "**/config/**/*Configuration.java," +
-        "**/*Constants.java," +
-        "**/model/*.java," +
-        "**/uk/gov/hmcts/reform/pcs/Application.java," +
-        "**/uk/gov/hmcts/reform/pcs/config/*.java," +
-        "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
-        "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
-        "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
-        "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
-        "**/uk/gov/hmcts/reform/pcs/ccd/page/enforcetheorder/**/*PageConfigurer.java," +
-        "**/entities/**," +
-        "**/model/**," +
-        "**/uk/gov/hmcts/reform/pcs/testingsupport/**"
+    property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
+      "**/*Constants.java," +
+      "**/model/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/Application.java," +
+      "**/uk/gov/hmcts/reform/pcs/config/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+      "**/entities/**," + "**/model/**"
+    property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
+    property "sonar.newCode.exclusions", "**/uk/gov/hmcts/reform/pcs/testingsupport/**"
   }
 }
 
