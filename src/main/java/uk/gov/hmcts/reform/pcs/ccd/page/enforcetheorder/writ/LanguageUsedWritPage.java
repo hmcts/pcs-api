@@ -25,6 +25,7 @@ public class LanguageUsedWritPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWritDetails)
             .mandatory(WritDetails::getEnforcementLanguageUsed)
             .done()
+            .done()
             .label("languageUsedWrit-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
