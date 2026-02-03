@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
@@ -23,7 +24,12 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -37,10 +43,11 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
+import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
@@ -55,7 +62,11 @@ public class TestingSupportController {
     private final Task<Void> helloWorldTask;
     private final DocAssemblyService docAssemblyService;
     private final EligibilityService eligibilityService;
+    private final PcsCaseRepository pcsCaseRepository;
+    private final PartyAccessCodeRepository partyAccessCodeRepository;
+    private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     public TestingSupportController(
         SchedulerClient schedulerClient,
@@ -66,12 +77,17 @@ public class TestingSupportController {
         PartyRepository partyRepository,
         PartyAccessCodeRepository partyAccessCodeRepository,
         PcsCaseService pcsCaseService,
-        AccessCodeGenerationService accessCodeGenerationService, CcdTestCaseOrchestrator ccdTestCaseOrchestrator
+        AccessCodeGenerationService accessCodeGenerationService,
+        CcdTestCaseOrchestrator ccdTestCaseOrchestrator,
+        ModelMapper modelMapper
     ) {
         this.schedulerClient = schedulerClient;
         this.helloWorldTask = helloWorldTask;
         this.docAssemblyService = docAssemblyService;
         this.eligibilityService = eligibilityService;
+        this.pcsCaseRepository = pcsCaseRepository;
+        this.partyAccessCodeRepository = partyAccessCodeRepository;
+        this.modelMapper = modelMapper;
         this.ccdTestCaseOrchestrator = ccdTestCaseOrchestrator;
     }
 
@@ -299,6 +315,93 @@ public class TestingSupportController {
         @RequestParam(value = "legislativeCountry", required = false) LegislativeCountry legislativeCountry
     ) {
         return eligibilityService.checkEligibility(postcode, legislativeCountry);
+    }
+
+    @Operation(
+        summary = "Get all pins associated with a case"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pins Returned"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/pins/{caseReference}")
+    public ResponseEntity<Map<String, Party>> getPins(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "Case reference to find pins for", required = true)
+        @PathVariable long caseReference
+    ) {
+        try {
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+                pcsCaseEntity.getId()
+            );
+
+            //map partyId to party
+            Map<UUID, PartyEntity> partyByPartyId = pcsCaseEntity.getParties().stream()
+                .collect(Collectors.toMap(
+                    PartyEntity::getId,
+                    Function.identity(),
+                    (existing, incoming) -> {
+                        throw new IllegalStateException("Duplicate partyId: " + existing.getId());
+                    }
+                ));
+
+            Map<String, Party> minimalPartyMap = new HashMap<>();
+
+            for (var accessCodeObject : accessCodes) {
+                //for each access code return the matching defendant's name and address
+
+                String accessCode = accessCodeObject.getCode();
+                UUID partyId = accessCodeObject.getPartyId();
+
+                PartyEntity matched = partyByPartyId.get(partyId);
+                if (matched == null) {
+                    throw new IllegalStateException("Party is not found on Case. PartyID = " + partyId);
+                }
+
+                AddressUK addressUK;
+
+                if (!matched.getAddressKnown().toBoolean()) {
+                    addressUK = null;
+                } else if (matched.getAddressSameAsProperty().toBoolean()) {
+                    addressUK = modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class);
+                } else {
+                    addressUK = modelMapper.map(matched.getAddress(), AddressUK.class);
+                }
+
+                Party minimalParty = Party.builder()
+                    .firstName(matched.getFirstName())
+                    .lastName(matched.getLastName())
+                    .address(addressUK)
+                    .build();
+
+                minimalPartyMap.put(accessCode, minimalParty);
+            }
+
+            return ResponseEntity.ok(minimalPartyMap);
+        } catch (Exception e) {
+            log.error("Failed to get Access codes / Pins {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    private long generateCaseReference() {
+        long timestamp = System.currentTimeMillis();
+        int suffix = secureRandom.nextInt(1000);
+        return Long.parseLong(String.format("%d%03d", timestamp, suffix));
     }
 
     @Operation(
