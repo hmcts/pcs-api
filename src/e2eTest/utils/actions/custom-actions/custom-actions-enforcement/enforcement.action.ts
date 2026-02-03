@@ -503,7 +503,6 @@ export class EnforcementAction implements IAction {
               await performAction('inputText', validationArr.label, item.input);
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
-                console.log('button clicked')
                 //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
                 await performValidation('inputError', validationArr.label, item.errMessage);
               }).toPass({
