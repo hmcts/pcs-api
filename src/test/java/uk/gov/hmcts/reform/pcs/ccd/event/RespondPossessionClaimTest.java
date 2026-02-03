@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantContactPreferencesService;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -49,6 +50,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private DraftCaseDataService draftCaseDataService;
 
     @Mock
+    private DefendantContactPreferencesService defendantContactPreferencesService;
+
+    @Mock
     private PcsCaseService pcsCaseService;
 
     @Mock
@@ -69,7 +73,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             securityContextService
         );
 
-        SubmitEventHandler submitEventHandler = new SubmitEventHandler(draftService);
+        SubmitEventHandler submitEventHandler =
+            new SubmitEventHandler(draftService, defendantContactPreferencesService);
 
         setEventUnderTest(new RespondPossessionClaim(
             startEventHandler,
