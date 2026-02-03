@@ -4,7 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 /**
@@ -23,6 +23,6 @@ public class StatementOfTruthPlaceholderWritPage implements CcdPageConfiguration
             .label("statementOfTruthWritPlaceholder-content", "---")
             .done()
             .done()
-            .label("statementOfTruthWritPlaceholder-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("statementOfTruthWritPlaceholder-saveAndReturn", SAVE_AND_RETURN);
     }
 }
