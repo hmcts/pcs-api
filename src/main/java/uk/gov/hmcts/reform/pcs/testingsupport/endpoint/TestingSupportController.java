@@ -278,7 +278,7 @@ public class TestingSupportController {
             responseCode = "500",
             description = "Internal server error",
             content = @Content()
-        )
+            )
     })
     @GetMapping(value = "/claim-eligibility", produces = MediaType.APPLICATION_JSON_VALUE)
     public EligibilityResult getPostcodeEligibility(
