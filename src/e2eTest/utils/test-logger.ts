@@ -23,8 +23,8 @@ export async function logToBrowser(page: Page, message: string): Promise<void> {
     await page.evaluate((msg) => {
       console.log(`[E2E] ${msg}`);
     }, message);
-  } catch {
-    // Page may be destroyed or navigation in progress; ignore
+  } catch (err) {
+    console.warn('[E2E] Could not log to browser console (page may be destroyed or navigating):', (err as Error).message);
   }
 }
 
