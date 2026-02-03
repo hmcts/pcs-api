@@ -11,8 +11,8 @@ export const test = base.extend<{ _consoleLogCapture: void }>({
 
       const logs = getLogs(testInfo);
       if (logs.length > 0 && testInfo.status !== 'passed' && testInfo.status !== 'skipped') {
-        await allure.parameter('BrowserConsoleLogs', 'See attachments under After Hooks → Fixture "_consoleLogCapture"');
         await allure.step('Browser Console Logs', async () => {
+          await allure.attachment('browser-console.log', logs.join('\n'), 'text/plain');
         });
       }
     },
