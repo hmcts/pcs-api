@@ -24,6 +24,8 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
             .add(new MoneyOwedWritPage())
             .add(new LegalCostsWritPage())
             .add(landRegistryFeesWritPage)
-            .add(new RepaymentsWritPage());
+            .add(new RepaymentsWritPage())
+            .add(new LanguageUsedWritPage())
+            .add(new StatementOfTruthPlaceholderWritPage());
     }
 }
