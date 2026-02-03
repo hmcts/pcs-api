@@ -10,10 +10,11 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,10 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -57,6 +55,7 @@ import java.util.stream.Collectors;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
+@AllArgsConstructor
 @RestController
 @RequestMapping("/testing-support")
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
@@ -72,29 +71,6 @@ public class TestingSupportController {
     private final ModelMapper modelMapper;
     private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final SecureRandom secureRandom = new SecureRandom();
-
-    public TestingSupportController(
-        SchedulerClient schedulerClient,
-        @Qualifier("helloWorldTask") Task<Void> helloWorldTask,
-        DocAssemblyService docAssemblyService,
-        EligibilityService eligibilityService,
-        PcsCaseRepository pcsCaseRepository,
-        PartyRepository partyRepository,
-        PartyAccessCodeRepository partyAccessCodeRepository,
-        PcsCaseService pcsCaseService,
-        AccessCodeGenerationService accessCodeGenerationService,
-        CcdTestCaseOrchestrator ccdTestCaseOrchestrator,
-        ModelMapper modelMapper
-    ) {
-        this.schedulerClient = schedulerClient;
-        this.helloWorldTask = helloWorldTask;
-        this.docAssemblyService = docAssemblyService;
-        this.eligibilityService = eligibilityService;
-        this.pcsCaseRepository = pcsCaseRepository;
-        this.partyAccessCodeRepository = partyAccessCodeRepository;
-        this.modelMapper = modelMapper;
-        this.ccdTestCaseOrchestrator = ccdTestCaseOrchestrator;
-    }
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -232,72 +208,72 @@ public class TestingSupportController {
                             name = "Eligible postcode",
                             description = "Result for a match with an eligible postcode",
                             value = """
-                                     {
-                                           "status": "ELIGIBLE",
-                                           "epimsId": 12345,
-                                           "legislativeCountry": "England"
-                                     }
-                                """
-                        ),
+                                 {
+                                       "status": "ELIGIBLE",
+                                       "epimsId": 12345,
+                                       "legislativeCountry": "England"
+                                 }
+                            """
+                            ),
                         @ExampleObject(
                             name = "Ineligible postcode",
                             description = "Result for a match with an ineligible postcode",
                             value = """
-                                    {
-                                      "status": "NOT_ELIGIBLE",
-                                      "epimsId": 45678,
-                                      "legislativeCountry": "Wales"
-                                    }
-                                """
-                        ),
+                                {
+                                  "status": "NOT_ELIGIBLE",
+                                  "epimsId": 45678,
+                                  "legislativeCountry": "Wales"
+                                }
+                            """
+                            ),
                         @ExampleObject(
                             name = "Postcode that is cross-border",
                             description = "Result for a match with a cross border postcode, that needs "
                                 + "the legistalative country to be specified as well",
                             value = """
-                                    {
-                                        "status": "LEGISLATIVE_COUNTRY_REQUIRED",
-                                        "legislativeCountries" : [
-                                            "England",
-                                            "Wales"
-                                        ]
-                                    }
-                                """
-                        ),
+                                {
+                                    "status": "LEGISLATIVE_COUNTRY_REQUIRED",
+                                    "legislativeCountries" : [
+                                        "England",
+                                        "Wales"
+                                    ]
+                                }
+                            """
+                            ),
                         @ExampleObject(
                             name = "No match found for postcode",
                             description = "No match found in the DB for the provided postcode.",
                             value = """
-                                    {
-                                        "status": "NO_MATCH_FOUND"
-                                    }
-                                """
-                        ),
+                                {
+                                    "status": "NO_MATCH_FOUND"
+                                }
+                            """
+                            ),
                         @ExampleObject(
                             name = "Multiple matches found for postcode",
                             description = "Multiple matches found in the DB for the provided postcode.",
                             value = """
-                                    {
-                                        "status": "MULTIPLE_MATCHES_FOUND"
-                                    }
-                                """
-                        ),
+                                {
+                                    "status": "MULTIPLE_MATCHES_FOUND"
+                                }
+                            """
+                            ),
                     })
             }),
         @ApiResponse(responseCode = "400",
             description = "Missing or blank postcode query parameter",
             content = @Content()
-        ),
+            ),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized - Invalid or missing authorization token",
             content = @Content()
-        ),
+            ),
         @ApiResponse(
             responseCode = "403",
             description = "Forbidden - Invalid or missing service authorization token",
             content = @Content()
-        ),
+            ),
         @ApiResponse(
             responseCode = "500",
             description = "Internal server error",
@@ -404,12 +380,6 @@ public class TestingSupportController {
         }
     }
 
-    private long generateCaseReference() {
-        long timestamp = System.currentTimeMillis();
-        int suffix = secureRandom.nextInt(1000);
-        return Long.parseLong(String.format("%d%03d", timestamp, suffix));
-    }
-
     @Operation(
         summary = "Create a PCS case via testing support",
         description = "Testing support endpoint that orchestrates the CCD calls required to create a case."
@@ -432,44 +402,15 @@ public class TestingSupportController {
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestBody(required = false) JsonNode payloadMerge
     ) {
-        LegislativeCountry country;
-        try {
-            country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "error", "BAD_REQUEST",
-                "message", "Unsupported legislative country: " + legislativeCountry
-            ));
-        }
+        LegislativeCountry country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
 
-        try {
-            Map<String, Object> result =
-                ccdTestCaseOrchestrator.createCase(authorization, country, payloadMerge);
+        Map<String, Object> result = ccdTestCaseOrchestrator.createCase(authorization, country, payloadMerge);
 
-            Map<String, Object> body = new LinkedHashMap<>();
-            body.put("status", "CREATED");
-            body.put("caseId", result.get("caseId"));
-            body.put("caseDetails", result.get("caseDetails"));
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", "CREATED");
+        body.put("caseId", result.get("caseId"));
+        body.put("caseDetails", result.get("caseDetails"));
 
-            return ResponseEntity.status(201).body(body);
-
-        } catch (feign.FeignException.Unauthorized e) {
-            return ResponseEntity.status(401).body(Map.of(
-                "error", "UNAUTHORIZED",
-                "message", "Invalid or expired authorization token"
-            ));
-
-        } catch (feign.FeignException.Forbidden e) {
-            return ResponseEntity.status(403).body(Map.of(
-                "error", "FORBIDDEN",
-                "message", "Service authorization failed"
-            ));
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of(
-                "error", "INTERNAL_SERVER_ERROR",
-                "message", "Failed to create CCD case"
-            ));
-        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 }

@@ -145,14 +145,14 @@ public class CcdTestCaseOrchestrator {
                 .postTown("London")
                 .county("Greater London")
                 .postCode("W3 7RX")
-                .county("United Kingdom")
+                .country("United Kingdom")
                 .build();
 
             case WALES -> AddressUK.builder()
                 .addressLine1("2 Pentre Street")
                 .postTown("Caerdydd")
                 .postCode("CF11 6QX")
-                .county("Deyrnas Unedig")
+                .country("Deyrnas Unedig")
                 .build();
 
             default -> throw new IllegalArgumentException(

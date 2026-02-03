@@ -87,11 +87,9 @@ class TestingSupportControllerTest {
     void setUp() {
         underTest = new TestingSupportController(schedulerClient, helloWorldTask,
                                                  docAssemblyService, eligibilityService,
-                                                 pcsCaseRepository, partyRepository,
-                                                 partyAccessCodeRepository, pcsCaseService,
-                                                 accessCodeGenerationService, ccdTestCaseOrchestrator,
-                                                 modelMapper
-        );
+                                                 pcsCaseRepository, partyAccessCodeRepository,
+                                                 modelMapper, ccdTestCaseOrchestrator
+                );
     }
 
     @SuppressWarnings("unchecked")
