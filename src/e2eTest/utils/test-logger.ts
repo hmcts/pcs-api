@@ -20,9 +20,7 @@ export function startLogCapture(page: Page, testInfo: TestInfo): void {
 
 export async function logToBrowser(page: Page, message: string): Promise<void> {
   try {
-    await page.evaluate((msg) => {
-      console.log(`[E2E] ${msg}`);
-    }, message);
+    await page.evaluate((msg) => {console.log(`[E2E] ${msg}`);}, message);
   } catch (err) {
     console.warn('[E2E] Could not log to browser console (page may be destroyed or navigating):', (err as Error).message);
   }
