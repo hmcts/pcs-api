@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final DraftCaseDataService draftCaseDataService;
+    private final ImmutablePartyFieldValidator immutableFieldValidator;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -80,6 +82,29 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             log.error("Draft submit rejected for case {}: both defendantContactDetails and defendantResponses are null",
                 caseReference);
             return error("Invalid submission: no data to save");
+        }
+
+        // Validate immutable fields are not sent when contact details provided
+        if (response.getDefendantContactDetails() != null
+            && response.getDefendantContactDetails().getParty() != null) {
+
+            List<String> violations = immutableFieldValidator.findImmutableFieldViolations(
+                response.getDefendantContactDetails().getParty(),
+                caseReference
+            );
+
+            if (!violations.isEmpty()) {
+                log.error("Draft submit rejected for case {}: immutable field violations: {}",
+                    caseReference, violations);
+
+                List<String> errors = violations.stream()
+                    .map(field -> "Invalid submission: immutable field must not be sent: " + field)
+                    .toList();
+
+                return SubmitResponse.<State>builder()
+                    .errors(errors)
+                    .build();
+            }
         }
 
         try {

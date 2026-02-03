@@ -18,7 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +41,8 @@ class SubmitEventHandlerTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
+    private ImmutablePartyFieldValidator immutableFieldValidator;
+    @Mock
     private EventPayload<PCSCase, State> eventPayload;
 
     @Captor
@@ -46,7 +52,7 @@ class SubmitEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(draftCaseDataService);
+        underTest = new SubmitEventHandler(draftCaseDataService, immutableFieldValidator);
     }
 
     // ========== DRAFT SAVE FLOW (submitDraftAnswers = NO) ==========
@@ -268,6 +274,135 @@ class SubmitEventHandlerTest {
             .isEqualTo("Invalid submission: no data to save");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
+    }
+
+    @Test
+    void shouldRejectDraftWhenImmutableFieldNameKnownIsSent() {
+        // Given - Party with immutable field nameKnown
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .nameKnown(VerticalYesNo.YES)  // Immutable field with value
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        when(immutableFieldValidator.findImmutableFieldViolations(party, CASE_REFERENCE))
+            .thenReturn(List.of("nameKnown"));
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result.getErrors())
+            .as("Must reject when immutable field is sent")
+            .hasSize(1)
+            .contains("Invalid submission: immutable field must not be sent: nameKnown");
+
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
+    }
+
+    @Test
+    void shouldRejectDraftWhenMultipleImmutableFieldsSent() {
+        // Given - Party with multiple immutable fields
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .nameKnown(VerticalYesNo.YES)
+            .addressKnown(VerticalYesNo.YES)
+            .addressSameAsProperty(VerticalYesNo.NO)
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        when(immutableFieldValidator.findImmutableFieldViolations(party, CASE_REFERENCE))
+            .thenReturn(List.of("nameKnown", "addressKnown", "addressSameAsProperty"));
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result.getErrors())
+            .as("Must reject when multiple immutable fields sent")
+            .hasSize(3)
+            .containsExactlyInAnyOrder(
+                "Invalid submission: immutable field must not be sent: nameKnown",
+                "Invalid submission: immutable field must not be sent: addressKnown",
+                "Invalid submission: immutable field must not be sent: addressSameAsProperty"
+            );
+
+        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        );
+    }
+
+    @Test
+    void shouldAcceptDraftWhenOnlyEditableFieldsSent() {
+        // Given - Party with ONLY editable fields (no immutable fields)
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .emailAddress("john@example.com")
+            .phoneNumber("07700900000")
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        when(immutableFieldValidator.findImmutableFieldViolations(party, CASE_REFERENCE))
+            .thenReturn(List.of());  // No violations
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result.getErrors())
+            .as("Should accept when no immutable fields sent")
+            .isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }

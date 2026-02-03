@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
@@ -67,6 +68,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private DefendantAccessValidator accessValidator;
 
+    @Mock
+    private ImmutablePartyFieldValidator immutableFieldValidator;
+
     @BeforeEach
     void setUp() {
         // Create handlers with real dependencies
@@ -79,7 +83,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         );
 
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
-            draftCaseDataService
+            draftCaseDataService,
+            immutableFieldValidator
         );
 
         setEventUnderTest(new RespondPossessionClaim(
