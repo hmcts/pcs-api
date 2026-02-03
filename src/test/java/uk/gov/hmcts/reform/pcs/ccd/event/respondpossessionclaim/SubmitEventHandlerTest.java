@@ -240,10 +240,11 @@ class SubmitEventHandlerTest {
     }
 
     @Test
-    void shouldReturnErrorWhenDefendantDataIsNull() {
-        // Given
+    void shouldReturnErrorWhenBothContactDetailsAndResponsesAreNull() {
+        // Given - Both defendantContactDetails and defendantResponses are null
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
+            .defendantResponses(null)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -256,23 +257,124 @@ class SubmitEventHandlerTest {
         // When
         SubmitResponse<State> result = underTest.submit(payload);
 
-        // Then
+        // Then - Must reject when both fields are null
         assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNotNull();
-        assertThat(result.getErrors()).hasSize(1);
+        assertThat(result.getErrors())
+            .as("Must return error when both fields are null")
+            .isNotNull()
+            .hasSize(1);
         assertThat(result.getErrors().get(0))
-            .isEqualTo("Invalid response structure. Please refresh the page and try again.");
+            .as("Error message should indicate no data to save")
+            .isEqualTo("Invalid submission: no data to save");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }
 
-    /**
-     * REGRESSION GUARD: These tests will FAIL if validation is made stricter.
-     * DO NOT change validation to require contactDetails != null or party != null.
-     * Partial updates are required for incremental form saves.
-     */
+    // ========== INDEPENDENT FIELD SUBMISSION TESTS ==========
+
+    @Test
+    void shouldAllowSubmitWithOnlyDefendantResponses() {
+        // Given - Only defendantResponses, defendantContactDetails is null
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .oweRentArrears(YesNoNotSure.NO)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(null)
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then - Must succeed when only responses provided
+        assertThat(result)
+            .as("Submit must succeed when only defendantResponses provided")
+            .isNotNull();
+        assertThat(result.getErrors())
+            .as("No errors when defendantContactDetails=null and defendantResponses!=null")
+            .isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails())
+            .as("defendantContactDetails should remain null when not provided")
+            .isNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
+            .as("defendantResponses should be saved")
+            .isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
+            .getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
+    }
+
+    @Test
+    void shouldAllowSubmitWithOnlyDefendantContactDetails() {
+        // Given - Only defendantContactDetails, defendantResponses is null
+        Party party = Party.builder()
+            .firstName("Jane")
+            .lastName("Doe")
+            .emailAddress("jane@example.com")
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(null)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then - Must succeed when only contact details provided
+        assertThat(result)
+            .as("Submit must succeed when only defendantContactDetails provided")
+            .isNotNull();
+        assertThat(result.getErrors())
+            .as("No errors when defendantResponses=null and defendantContactDetails!=null")
+            .isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails())
+            .as("defendantContactDetails should be saved")
+            .isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantContactDetails()
+            .getParty().getFirstName()).isEqualTo("Jane");
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
+            .as("defendantResponses should remain null when not provided")
+            .isNull();
+    }
+
+    // ========== PARTIAL FIELD UPDATE TESTS ==========
+    // REGRESSION GUARD: Validation must allow partial party fields (e.g., only firstName, only address).
 
     @Test
     void shouldAllowPartialUpdateWhenOnlyResponsesProvided() {

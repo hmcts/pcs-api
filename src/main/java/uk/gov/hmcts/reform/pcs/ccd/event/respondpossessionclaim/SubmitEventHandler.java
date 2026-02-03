@@ -73,10 +73,13 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private SubmitResponse<State> processDraftSubmit(long caseReference, PCSCase caseData) {
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
-        // Validate defendant contact details exists (UI should always send this structure)
-        if (response.getDefendantContactDetails() == null) {
-            log.error("Draft submit rejected for case {}: defendantContactDetails is null", caseReference);
-            return error("Invalid response structure. Please refresh the page and try again.");
+        // Validate at least one of contact details or responses is provided
+        // Frontend can send: only contact, only responses, or both
+        if (response.getDefendantContactDetails() == null
+            && response.getDefendantResponses() == null) {
+            log.error("Draft submit rejected for case {}: both defendantContactDetails and defendantResponses are null",
+                caseReference);
+            return error("Invalid submission: no data to save");
         }
 
         try {

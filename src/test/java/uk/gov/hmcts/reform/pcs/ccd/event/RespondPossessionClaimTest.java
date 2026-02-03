@@ -654,9 +654,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Test
     void shouldReturnErrorWhenDefendantDataIsNull() {
-        // Given: possessionClaimResponse exists but defendantContactDetails is null
+        // Given: possessionClaimResponse exists but both defendantContactDetails and defendantResponses are null
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(null)  // No defendant contact details provided
+            .defendantResponses(null)  // No defendant responses provided
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -671,7 +672,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
         assertThat(response.getErrors().get(0))
-            .isEqualTo("Invalid response structure. Please refresh the page and try again.");
+            .isEqualTo("Invalid submission: no data to save");
 
         // And: should NOT save draft
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
