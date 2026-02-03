@@ -44,7 +44,7 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
+
         pageUnderTest = new NoRentArrearsGroundsForPossessionReason(textAreaValidationService);
         setPageUnderTest(pageUnderTest);
     }
@@ -67,24 +67,24 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
-                    .ownerOccupierTextArea("Owner occupier reason")
-                    .repossessionByLenderTextArea("Repossession reason")
-                    .holidayLetTextArea("Holiday let reason")
-                    .studentLetTextArea("Student let reason")
-                    .ministerOfReligionTextArea("Minister reason")
-                    .redevelopmentTextArea("Redevelopment reason")
-                    .deathOfTenantTextArea("Death of tenant reason")
-                    .antisocialBehaviourTextArea("Antisocial behaviour reason")
-                    .noRightToRentTextArea("No right to rent reason")
-                    .suitableAccomTextArea("Suitable accommodation reason")
-                    .breachOfTenancyConditionsTextArea("Breach of tenancy reason")
-                    .propertyDeteriorationTextArea("Property deterioration reason")
-                    .nuisanceOrIllegalUseTextArea("Nuisance reason")
-                    .domesticViolenceTextArea("Domestic violence reason")
-                    .offenceDuringRiotTextArea("Offence during riot reason")
-                    .furnitureDeteriorationTextArea("Furniture deterioration reason")
-                    .landlordEmployeeTextArea("Landlord employee reason")
-                    .falseStatementTextArea("False statement reason")
+                    .ownerOccupier("Owner occupier reason")
+                    .repossessionByLender("Repossession reason")
+                    .holidayLet("Holiday let reason")
+                    .studentLet("Student let reason")
+                    .ministerOfReligion("Minister reason")
+                    .redevelopment("Redevelopment reason")
+                    .deathOfTenant("Death of tenant reason")
+                    .antisocialBehaviour("Antisocial behaviour reason")
+                    .noRightToRent("No right to rent reason")
+                    .suitableAlternativeAccomodation("Suitable accommodation reason")
+                    .breachOfTenancyConditions("Breach of tenancy reason")
+                    .propertyDeterioration("Property deterioration reason")
+                    .nuisanceOrIllegalUse("Nuisance reason")
+                    .domesticViolence("Domestic violence reason")
+                    .offenceDuringRiot("Offence during riot reason")
+                    .furnitureDeterioration("Furniture deterioration reason")
+                    .landlordEmployee("Landlord employee reason")
+                    .falseStatement("False statement reason")
                     .build())
                 .build();
 
@@ -134,8 +134,8 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
-                    .ownerOccupierTextArea("Only owner occupier reason")
-                    .repossessionByLenderTextArea("Only repossession reason")
+                    .ownerOccupier("Only owner occupier reason")
+                    .repossessionByLender("Only repossession reason")
                     .build())
                 .build();
 
@@ -153,10 +153,10 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
-                    .ownerOccupierTextArea("Owner occupier")
-                    .holidayLetTextArea("Holiday let")
-                    .deathOfTenantTextArea("Death of tenant")
-                    .antisocialBehaviourTextArea("Antisocial behaviour")
+                    .ownerOccupier("Owner occupier")
+                    .holidayLet("Holiday let")
+                    .deathOfTenant("Death of tenant")
+                    .antisocialBehaviour("Antisocial behaviour")
                     .build())
                 .build();
 
@@ -174,10 +174,10 @@ class NoRentArrearsGroundsForPossessionReasonTest extends BasePageTest {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
-                    .suitableAccomTextArea("Suitable accommodation")
-                    .breachOfTenancyConditionsTextArea("Breach of tenancy")
-                    .propertyDeteriorationTextArea("Property deterioration")
-                    .nuisanceOrIllegalUseTextArea("Nuisance")
+                    .suitableAlternativeAccomodation("Suitable accommodation")
+                    .breachOfTenancyConditions("Breach of tenancy")
+                    .propertyDeterioration("Property deterioration")
+                    .nuisanceOrIllegalUse("Nuisance")
                     .build())
                 .build();
 
