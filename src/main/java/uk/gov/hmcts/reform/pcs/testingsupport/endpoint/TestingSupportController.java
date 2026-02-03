@@ -137,7 +137,8 @@ public class TestingSupportController {
             log.info("Scheduled Hello World task with ID: {} to execute at: {}", taskId, executionTime);
             return ResponseEntity.ok(String.format(
                 "Hello World task scheduled successfully with ID: %s, execution time: %s",
-                taskId, executionTime));
+                taskId, executionTime
+            ));
         } catch (Exception e) {
             log.error("Failed to schedule Hello World task", e);
             return ResponseEntity.internalServerError()
@@ -231,77 +232,77 @@ public class TestingSupportController {
                             name = "Eligible postcode",
                             description = "Result for a match with an eligible postcode",
                             value = """
-                                 {
-                                       "status": "ELIGIBLE",
-                                       "epimsId": 12345,
-                                       "legislativeCountry": "England"
-                                 }
-                            """
-                            ),
+                                     {
+                                           "status": "ELIGIBLE",
+                                           "epimsId": 12345,
+                                           "legislativeCountry": "England"
+                                     }
+                                """
+                        ),
                         @ExampleObject(
                             name = "Ineligible postcode",
                             description = "Result for a match with an ineligible postcode",
                             value = """
-                                {
-                                  "status": "NOT_ELIGIBLE",
-                                  "epimsId": 45678,
-                                  "legislativeCountry": "Wales"
-                                }
-                            """
-                            ),
+                                    {
+                                      "status": "NOT_ELIGIBLE",
+                                      "epimsId": 45678,
+                                      "legislativeCountry": "Wales"
+                                    }
+                                """
+                        ),
                         @ExampleObject(
                             name = "Postcode that is cross-border",
                             description = "Result for a match with a cross border postcode, that needs "
                                 + "the legistalative country to be specified as well",
                             value = """
-                                {
-                                    "status": "LEGISLATIVE_COUNTRY_REQUIRED",
-                                    "legislativeCountries" : [
-                                        "England",
-                                        "Wales"
-                                    ]
-                                }
-                            """
-                            ),
+                                    {
+                                        "status": "LEGISLATIVE_COUNTRY_REQUIRED",
+                                        "legislativeCountries" : [
+                                            "England",
+                                            "Wales"
+                                        ]
+                                    }
+                                """
+                        ),
                         @ExampleObject(
                             name = "No match found for postcode",
                             description = "No match found in the DB for the provided postcode.",
                             value = """
-                                {
-                                    "status": "NO_MATCH_FOUND"
-                                }
-                            """
-                            ),
+                                    {
+                                        "status": "NO_MATCH_FOUND"
+                                    }
+                                """
+                        ),
                         @ExampleObject(
                             name = "Multiple matches found for postcode",
                             description = "Multiple matches found in the DB for the provided postcode.",
                             value = """
-                                {
-                                    "status": "MULTIPLE_MATCHES_FOUND"
-                                }
-                            """
-                            ),
+                                    {
+                                        "status": "MULTIPLE_MATCHES_FOUND"
+                                    }
+                                """
+                        ),
                     })
             }),
         @ApiResponse(responseCode = "400",
             description = "Missing or blank postcode query parameter",
             content = @Content()
-            ),
+        ),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized - Invalid or missing authorization token",
             content = @Content()
-            ),
+        ),
         @ApiResponse(
             responseCode = "403",
             description = "Forbidden - Invalid or missing service authorization token",
             content = @Content()
-            ),
+        ),
         @ApiResponse(
             responseCode = "500",
             description = "Internal server error",
             content = @Content()
-            )
+        )
     })
     @GetMapping(value = "/claim-eligibility", produces = MediaType.APPLICATION_JSON_VALUE)
     public EligibilityResult getPostcodeEligibility(
@@ -431,17 +432,17 @@ public class TestingSupportController {
         @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
         @RequestBody(required = false) JsonNode payloadMerge
     ) {
+        LegislativeCountry country;
         try {
-            LegislativeCountry country;
-            try {
-                country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "error", "BAD_REQUEST",
-                    "message", "Unsupported legislative country: " + legislativeCountry
-                ));
-            }
+            country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "BAD_REQUEST",
+                "message", "Unsupported legislative country: " + legislativeCountry
+            ));
+        }
 
+        try {
             Map<String, Object> result =
                 ccdTestCaseOrchestrator.createCase(authorization, country, payloadMerge);
 
