@@ -4,7 +4,7 @@ import { startLogCapture, getLogs } from '@utils/test-logger';
 
 export const test = base.extend<{ _consoleLogCapture: void }>({
   _consoleLogCapture: [
-    async ({ page }, use, testInfo) => {
+      async ({ page }, use, testInfo) => {
       startLogCapture(page, testInfo);
 
       await use();
@@ -13,11 +13,6 @@ export const test = base.extend<{ _consoleLogCapture: void }>({
       if (logs.length > 0 && testInfo.status !== 'passed' && testInfo.status !== 'skipped') {
         await allure.parameter('BrowserConsoleLogs', 'See attachments under After Hooks → Fixture "_consoleLogCapture"');
         await allure.step('Browser Console Logs', async () => {
-          await allure.attachment(
-            'Browser console logs',
-            logs.join('\n'),
-            'text/plain'
-          );
         });
       }
     },
