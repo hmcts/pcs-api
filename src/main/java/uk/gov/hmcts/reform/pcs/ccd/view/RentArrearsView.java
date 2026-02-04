@@ -46,6 +46,8 @@ public class RentArrearsView {
         rentArrears.setThirdPartyPaymentSources(thirdPartyPaymentSources);
 
         pcsCase.setRentArrears(rentArrears);
+
+        pcsCase.setArrearsJudgmentWanted(rentArrearsEntity.getArrearsJudgmentWanted());
     }
 
     private static Optional<ClaimEntity> getMainClaim(PcsCaseEntity pcsCaseEntity) {

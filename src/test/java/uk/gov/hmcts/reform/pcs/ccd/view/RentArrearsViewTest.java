@@ -93,7 +93,7 @@ class RentArrearsViewTest {
         when(rentArrearsEntity.getThirdPartyPaymentsMade()).thenReturn(VerticalYesNo.YES);
         when(rentArrearsEntity.getThirdPartyPaymentSources()).thenReturn(thirdPartyPaymentSources);
         when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
-        when(rentArrearsEntity.getTotalRentArrears()).thenReturn(totalRentArrears);
+        when(rentArrearsEntity.getArrearsJudgmentWanted()).thenReturn(VerticalYesNo.YES);
 
         // When
         underTest.setCaseFields(pcsCase, pcsCaseEntity);
@@ -111,6 +111,8 @@ class RentArrearsViewTest {
             ThirdPartyPaymentSource.OTHER
         );
         assertThat(rentArrears.getPaymentSourceOther()).isEqualTo(otherPaymentSourceDescription);
+
+        verify(pcsCase).setArrearsJudgmentWanted(VerticalYesNo.YES);
     }
 
 }
