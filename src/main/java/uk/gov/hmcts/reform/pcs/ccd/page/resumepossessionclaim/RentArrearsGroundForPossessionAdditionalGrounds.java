@@ -8,8 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
@@ -42,9 +42,9 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
               <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
             </p>
             """)
-            .complex(PCSCase::getRentArrearsGroundsForPossession)
-                .optional(RentArrearsGroundsForPossession::getAdditionalMandatoryGrounds)
-                .optional(RentArrearsGroundsForPossession::getAdditionalDiscretionaryGrounds)
+            .complex(PCSCase::getAssuredRentArrearsPossessionGrounds)
+                .optional(AssuredRentArrearsPossessionGrounds::getAdditionalMandatoryGrounds)
+                .optional(AssuredRentArrearsPossessionGrounds::getAdditionalDiscretionaryGrounds)
             .done()
             .label("groundForPossessionAdditionalGrounds-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -53,7 +53,7 @@ public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageC
                                                                  CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
-        RentArrearsGroundsForPossession groundsForPossession = caseData.getRentArrearsGroundsForPossession();
+        AssuredRentArrearsPossessionGrounds groundsForPossession = caseData.getAssuredRentArrearsPossessionGrounds();
 
         Set<AssuredAdditionalMandatoryGrounds> additionalMandatoryGrounds
             = groundsForPossession.getAdditionalMandatoryGrounds();

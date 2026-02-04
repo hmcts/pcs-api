@@ -17,15 +17,15 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class RentArrearsGroundsForPossession {
+public class AssuredRentArrearsPossessionGrounds {
 
     @CCD(
         label = "What are your grounds for possession?",
         hint = "Select all that apply",
         typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround"
+        typeParameterOverride = "AssuredRentArrearsGround"
     )
-    private Set<RentArrearsGround> rentArrearsGrounds;
+    private Set<AssuredRentArrearsGround> rentArrearsGrounds;
 
     @CCD(
         label = "Mandatory grounds",
