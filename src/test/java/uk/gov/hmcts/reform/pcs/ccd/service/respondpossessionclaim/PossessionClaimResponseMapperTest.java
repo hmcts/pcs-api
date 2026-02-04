@@ -291,7 +291,7 @@ class PossessionClaimResponseMapperTest {
         assertThat(response.getClaimantOrganisations())
             .hasSize(1);
         assertThat(response.getClaimantOrganisations().get(0).getId())
-            .isEqualTo("claimant-org-1");
+            .isEqualTo("claimant-1");
         assertThat(response.getClaimantOrganisations().get(0).getValue())
             .isEqualTo("ABC Housing Association");
     }
@@ -332,17 +332,17 @@ class PossessionClaimResponseMapperTest {
 
         // Then: All organisations extracted in order and wrapped in ListValue
         assertThat(response.getClaimantOrganisations()).hasSize(3);
-        assertThat(response.getClaimantOrganisations().get(0).getId()).isEqualTo("claimant-org-1");
+        assertThat(response.getClaimantOrganisations().get(0).getId()).isEqualTo("claimant-1");
         assertThat(response.getClaimantOrganisations().get(0).getValue()).isEqualTo("Primary Landlord Ltd");
-        assertThat(response.getClaimantOrganisations().get(1).getId()).isEqualTo("claimant-org-2");
+        assertThat(response.getClaimantOrganisations().get(1).getId()).isEqualTo("claimant-2");
         assertThat(response.getClaimantOrganisations().get(1).getValue()).isEqualTo("Secondary Housing Corp");
-        assertThat(response.getClaimantOrganisations().get(2).getId()).isEqualTo("claimant-org-3");
+        assertThat(response.getClaimantOrganisations().get(2).getId()).isEqualTo("claimant-3");
         assertThat(response.getClaimantOrganisations().get(2).getValue()).isEqualTo("Third Party Association");
     }
 
     @Test
-    @DisplayName("Should filter out null and empty organisation names")
-    void shouldFilterOutNullAndEmptyOrganisations() {
+    @DisplayName("Should include null and empty organisation names without filtering")
+    void shouldIncludeNullAndEmptyOrganisations() {
         // Given: CLAIMANT parties with mixed valid, null, and empty orgNames
         List<ListValue<Party>> allClaimants = List.of(
             ListValue.<Party>builder()
@@ -382,12 +382,18 @@ class PossessionClaimResponseMapperTest {
         // When
         PossessionClaimResponse response = underTest.mapFrom(pcsCase, matchedDefendant);
 
-        // Then: Only valid non-empty orgs returned wrapped in ListValue
-        assertThat(response.getClaimantOrganisations()).hasSize(2);
-        assertThat(response.getClaimantOrganisations().get(0).getId()).isEqualTo("claimant-org-1");
+        // Then: All orgs returned wrapped in ListValue (including null/empty - no filtering)
+        assertThat(response.getClaimantOrganisations()).hasSize(5);
+        assertThat(response.getClaimantOrganisations().get(0).getId()).isEqualTo("claimant-1");
         assertThat(response.getClaimantOrganisations().get(0).getValue()).isEqualTo("Valid Org");
-        assertThat(response.getClaimantOrganisations().get(1).getId()).isEqualTo("claimant-org-2");
-        assertThat(response.getClaimantOrganisations().get(1).getValue()).isEqualTo("Another Valid Org");
+        assertThat(response.getClaimantOrganisations().get(1).getId()).isEqualTo("claimant-2");
+        assertThat(response.getClaimantOrganisations().get(1).getValue()).isNull();
+        assertThat(response.getClaimantOrganisations().get(2).getId()).isEqualTo("claimant-3");
+        assertThat(response.getClaimantOrganisations().get(2).getValue()).isEqualTo("");
+        assertThat(response.getClaimantOrganisations().get(3).getId()).isEqualTo("claimant-4");
+        assertThat(response.getClaimantOrganisations().get(3).getValue()).isEqualTo("   ");
+        assertThat(response.getClaimantOrganisations().get(4).getId()).isEqualTo("claimant-5");
+        assertThat(response.getClaimantOrganisations().get(4).getValue()).isEqualTo("Another Valid Org");
     }
 
     @Test
