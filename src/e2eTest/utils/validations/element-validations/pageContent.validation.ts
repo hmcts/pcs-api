@@ -2,12 +2,12 @@ import { Page } from '@playwright/test';
 import { IValidation } from '@utils/interfaces';
 import * as fs from 'fs';
 import * as path from 'path';
-import { cyaValidation, CYAStore } from '../custom-validations/CYA/cyaPage.validation';
+import { cyaValidation, CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 const ELEMENT_TYPES = [
   'Button', 'Link', 'Header', 'Caption', 'Checkbox', 'Question',
   'RadioOption', 'SelectLabel', 'SelectOption', 'HintText',
-  'TextLabel', 'Paragraph'
+  'TextLabel', 'Paragraph', 'Tab'
 ] as const;
 
 type ValidationResult = { element: string; expected: string; status: 'pass' | 'fail' };

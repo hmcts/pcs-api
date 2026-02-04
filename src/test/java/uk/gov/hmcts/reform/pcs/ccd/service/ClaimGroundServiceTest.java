@@ -360,6 +360,34 @@ class ClaimGroundServiceTest {
     }
 
     @Test
+    void shouldIgnoreNullAddiitonalGrounds_WhenAssuredTenancyAndRentArrears() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+            .claimDueToRentArrears(YesOrNo.YES)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .typeOfTenancyLicence(ASSURED_TENANCY)
+                    .build()
+            )
+            .assuredRentArrearsPossessionGrounds(
+                AssuredRentArrearsPossessionGrounds.builder()
+                    .rentArrearsGrounds(Set.of(AssuredRentArrearsGround.RENT_ARREARS_GROUND10))
+                    .additionalMandatoryGrounds(null)
+                    .additionalDiscretionaryGrounds(null)
+                    .build()
+            )
+            .build();
+
+        // When
+        List<ClaimGroundEntity> groundEntities = underTest.createClaimGroundEntities(caseData);
+
+        // Then
+        assertThat(groundEntities)
+            .map(ClaimGroundEntity::getCode)
+            .containsExactly("RENT_ARREARS_GROUND10");
+    }
+
+    @Test
     void shouldIgnoreNullGrounds_WhenAssuredTenancyNoRentArrears() {
         // Given
         PCSCase caseData = PCSCase.builder()
@@ -657,6 +685,42 @@ class ClaimGroundServiceTest {
                     .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_MANDATORY_ALT)
                     .code("CHARITABLE_LANDLORD")
                     .reason("Reason from getCharitableLandlordGround")
+                    .isRentArrears(false)
+                    .build()
+            );
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = TenancyLicenceType.class, names = {"SECURE_TENANCY", "FLEXIBLE_TENANCY"})
+    void shouldReturnClaimGroundEntities_WhenSecureOrFlexibleAndNoArrearsOrBreach(TenancyLicenceType tenancyType) {
+        // Given
+        Set<SecureOrFlexibleDiscretionaryGrounds> discretionaryGrounds
+            = Set.of(SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION);
+
+        PCSCase caseData = PCSCase.builder()
+            .tenancyLicenceDetails(TenancyLicenceDetails.builder().typeOfTenancyLicence(tenancyType).build())
+            .secureOrFlexiblePossessionGrounds(
+                SecureOrFlexiblePossessionGrounds.builder()
+                    .secureOrFlexibleDiscretionaryGrounds(discretionaryGrounds)
+                    .secureOrFlexibleMandatoryGrounds(Set.of())
+                    .secureOrFlexibleDiscretionaryGroundsAlt(Set.of())
+                    .secureOrFlexibleMandatoryGroundsAlt(Set.of())
+                    .build()
+            )
+            .secureOrFlexibleGroundsReasons(mock(SecureOrFlexibleGroundsReasons.class))
+            .rentArrearsOrBreachOfTenancy(null)
+            .build();
+
+        // When
+        List<ClaimGroundEntity> result = underTest.createClaimGroundEntities(caseData);
+
+        // Then
+        assertThat(result)
+            .usingRecursiveFieldByFieldElementComparator()
+            .containsExactlyInAnyOrder(
+                ClaimGroundEntity.builder()
+                    .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                    .code("FURNITURE_DETERIORATION")
                     .isRentArrears(false)
                     .build()
             );
