@@ -28,7 +28,7 @@ export default defineConfig({
   expect: { timeout: 30 * 1000 },
   use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },
   /* Report slow tests if they take longer than 5 mins */
-  reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
+  reportSlowTests: { max: 15, threshold: 4 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),
   globalTeardown: require.resolve('./config/global-teardown.config'),
   reporter: [
