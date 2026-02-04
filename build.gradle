@@ -5,7 +5,7 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '11.20.3'
-    serenityBddVersion = '5.1.0'
+    serenityBddVersion = '5.2.2'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -21,8 +21,8 @@ plugins {
   id 'org.flywaydb.flyway' version "$flywayVersion"
   id 'org.sonarqube' version '7.2.2.6593'
   id 'net.serenity-bdd.serenity-gradle-plugin' version "$serenityBddVersion"
-  id 'hmcts.ccd.sdk' version '6.6.1'
-  id 'com.github.hmcts.rse-cft-lib' version '0.19.2015'
+  id 'hmcts.ccd.sdk' version '6.6.2'
+  id 'com.github.hmcts.rse-cft-lib' version '0.19.2017'
   id 'io.freefair.lombok' version '9.2.0'
   id 'au.com.dius.pact' version '4.6.19'
   /*
@@ -208,6 +208,9 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
+  ccd {
+    runtimeIndexing = false // To avoid issues when TestContainers DB is shutdown
+  }
 }
 
 tasks.register('smoke', Test) {
@@ -333,7 +336,7 @@ repositories {
 
 ext {
   log4JVersion = "2.25.3"
-  logbackVersion = "1.5.26"
+  logbackVersion = "1.5.27"
   testcontainersVersion = "2.0.3"
   testcontainersAdditionsVersion = "1.21.4"
   springFrameworkBootVersion = "3.5.10"
@@ -389,7 +392,7 @@ dependencies {
   implementation group: 'commons-fileupload', name: 'commons-fileupload', version: '1.6.0'
   implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.20.0'
   implementation group: 'org.projectlombok', name: 'lombok', version: lombokVersion
-  implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.7.0'
+  implementation group: 'com.github.kagkarlsson', name: 'db-scheduler-spring-boot-starter', version: '16.7.1'
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: tomcatEmbedVersion
   implementation group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: tomcatEmbedVersion
   annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombokVersion

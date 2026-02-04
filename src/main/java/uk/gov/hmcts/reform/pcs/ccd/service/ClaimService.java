@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ClaimRepository;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.List;
 
@@ -20,12 +21,17 @@ public class ClaimService {
 
     private final ClaimRepository claimRepository;
     private final ClaimGroundService claimGroundService;
+    private final PossessionAlternativesService possessionAlternativesService;
+    private final HousingActWalesService housingActWalesService;
+    private final RentArrearsService rentArrearsService;
+    private final NoticeOfPossessionService noticeOfPossessionService;
+    private final StatementOfTruthService statementOfTruthService;
 
     public ClaimEntity createMainClaimEntity(PCSCase pcsCase) {
 
         AdditionalReasons additionalReasons = pcsCase.getAdditionalReasonsForPossession();
 
-        List<ClaimGroundEntity> claimGrounds = claimGroundService.getGroundsWithReason(pcsCase);
+        List<ClaimGroundEntity> claimGrounds = claimGroundService.createClaimGroundEntities(pcsCase);
         ClaimantCircumstances claimantCircumstances = pcsCase.getClaimantCircumstances();
         DefendantCircumstances defendantCircumstances = pcsCase.getDefendantCircumstances();
 
@@ -61,6 +67,17 @@ public class ClaimService {
             .build();
 
         claimEntity.addClaimGrounds(claimGrounds);
+
+        claimEntity.setPossessionAlternativesEntity(
+            possessionAlternativesService.createPossessionAlternativesEntity(pcsCase));
+
+        if (pcsCase.getLegislativeCountry() == LegislativeCountry.WALES) {
+            claimEntity.setHousingActWales(housingActWalesService.createHousingActWalesEntity(pcsCase));
+        }
+
+        claimEntity.setRentArrears(rentArrearsService.createRentArrearsEntity(pcsCase));
+        claimEntity.setNoticeOfPossession(noticeOfPossessionService.createNoticeOfPossessionEntity(pcsCase));
+        claimEntity.setStatementOfTruth(statementOfTruthService.createStatementOfTruthEntity(pcsCase));
 
         claimRepository.save(claimEntity);
 
