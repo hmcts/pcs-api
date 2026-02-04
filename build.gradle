@@ -208,6 +208,9 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
+  ccd {
+    runtimeIndexing = false // To avoid issues when TestContainers DB is shutdown
+  }
 }
 
 tasks.register('smoke', Test) {
