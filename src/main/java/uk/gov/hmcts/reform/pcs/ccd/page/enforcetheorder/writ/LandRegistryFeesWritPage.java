@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -15,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
@@ -24,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWar
 public class LandRegistryFeesWritPage implements CcdPageConfiguration {
 
     private final RepaymentTableRenderer repaymentTableRenderer;
+    private final FeeFormatter feeFormatter;
 
     public static final String WRIT_FEE_AMOUNT = "writFeeAmount";
     static final String TEMPLATE = "repaymentTableWrit";
@@ -57,7 +58,8 @@ public class LandRegistryFeesWritPage implements CcdPageConfiguration {
                 .totalArrearsPence(writDetails.getMoneyOwedByDefendants().getAmountOwed())
                 .legalFeesPence(writDetails.getLegalCosts().getAmountOfLegalCosts())
                 .landRegistryFeesPence(writDetails.getLandRegistryFees().getAmountOfLandRegistryFees())
-                .feeAmount(getFeeAmountWithoutCurrencySymbol(caseData.getEnforcementOrder().getWritFeeAmount()))
+                .feeAmount(feeFormatter.getFeeAmountWithoutCurrencySymbol(
+                        caseData.getEnforcementOrder().getWritFeeAmount(), CURRENCY_SYMBOL))
                 .feeAmountType(WRIT_FEE_AMOUNT)
                 .build();
 
@@ -83,12 +85,5 @@ public class LandRegistryFeesWritPage implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
                 .data(caseData)
                 .build();
-    }
-
-    private String getFeeAmountWithoutCurrencySymbol(String feeAmount) {
-        if (StringUtils.hasText(feeAmount) && feeAmount.startsWith(CURRENCY_SYMBOL)) {
-            return feeAmount.substring(1);
-        }
-        return feeAmount;
     }
 }

@@ -17,12 +17,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegistryFeesPage.CURRENCY_SYMBOL;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegistryFeesPage.WARRANT_FEE_AMOUNT;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegistryFeesPage.TEMPLATE;
 
@@ -31,29 +33,31 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
     @Mock
     private RepaymentTableRenderer repaymentTableRenderer;
+    @Mock
+    private FeeFormatter feeFormatter;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new LandRegistryFeesPage(repaymentTableRenderer));
+        setPageUnderTest(new LandRegistryFeesPage(repaymentTableRenderer, feeFormatter));
     }
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
-    void shouldFormatRepaymentFeesCorrectly(EnforcementCosts enforcementCosts) {
+    void shouldFormatRepaymentFeesCorrectly(final EnforcementCosts enforcementCosts, final String expectedFeeAmount) {
         // Given
-        LegalCosts legalCosts = LegalCosts.builder()
+        final LegalCosts legalCosts = LegalCosts.builder()
             .amountOfLegalCosts(enforcementCosts.getLegalFeesPence())
             .build();
 
-        LandRegistryFees landRegistryFees = LandRegistryFees.builder()
+        final LandRegistryFees landRegistryFees = LandRegistryFees.builder()
             .amountOfLandRegistryFees(enforcementCosts.getLandRegistryFeesPence())
             .build();
 
-        MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
+        final MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
             .amountOwed(enforcementCosts.getTotalArrearsPence())
             .build();
 
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+        final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
             .warrantFeeAmount(enforcementCosts.getFeeAmount())
             .warrantDetails(WarrantDetails.builder()
                 .repaymentCosts(RepaymentCosts.builder().build())
@@ -63,9 +67,12 @@ class LandRegistryFeesPageTest extends BasePageTest {
                 .build())
             .build();
 
-        PCSCase caseData = PCSCase.builder()
+        final PCSCase caseData = PCSCase.builder()
             .enforcementOrder(enforcementOrder)
             .build();
+
+        when(feeFormatter.getFeeAmountWithoutCurrencySymbol(
+                enforcementCosts.getFeeAmount(), CURRENCY_SYMBOL)).thenReturn(expectedFeeAmount);
 
         when(repaymentTableRenderer.render(
             enforcementCosts,
@@ -101,13 +108,13 @@ class LandRegistryFeesPageTest extends BasePageTest {
     private static Stream<Arguments> repaymentFeeScenarios() {
         return Stream.of(
             Arguments.of(
-                new EnforcementCosts("12300", "10000", "20000", "404", WARRANT_FEE_AMOUNT)),
+                new EnforcementCosts("12300", "10000", "20000", "404", WARRANT_FEE_AMOUNT), "404"),
             Arguments.of(
-                new EnforcementCosts("1500", "500", "999", "50", WARRANT_FEE_AMOUNT)),
+                new EnforcementCosts("1500", "500", "999", "50", WARRANT_FEE_AMOUNT), "50"),
             Arguments.of(
-                new EnforcementCosts("0", "0", "0", "0", WARRANT_FEE_AMOUNT)),
+                new EnforcementCosts("0", "0", "0", "0", WARRANT_FEE_AMOUNT), "0"),
             Arguments.of(
-                new EnforcementCosts("10001", "1", "5000", "0", WARRANT_FEE_AMOUNT))
+                new EnforcementCosts("10001", "1", "5000", "0", WARRANT_FEE_AMOUNT), "0")
         );
     }
 }
