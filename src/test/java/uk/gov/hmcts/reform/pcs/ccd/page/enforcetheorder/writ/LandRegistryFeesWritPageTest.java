@@ -14,11 +14,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
-import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,32 +34,27 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        MoneyConverter moneyConverter = new MoneyConverter();
-        setPageUnderTest(new LandRegistryFeesWritPage(moneyConverter, repaymentTableRenderer));
+        setPageUnderTest(new LandRegistryFeesWritPage(repaymentTableRenderer));
     }
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
-    void shouldFormatRepaymentFeesCorrectly(String landRegistryPence, String legalCostsPence, String rentArrearsPence,
-                                            String feeAmount, BigDecimal expectedLandRegistry,
-                                            BigDecimal expectedLegals, BigDecimal expectedArrears,
-                                            BigDecimal expectedTotalFees
-    ) {
+    void shouldFormatRepaymentFeesCorrectly(EnforcementCosts enforcementCosts) {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
-            .amountOfLegalCosts(legalCostsPence)
+            .amountOfLegalCosts(enforcementCosts.getLegalFeesPence())
             .build();
 
         LandRegistryFees landRegistryFees = LandRegistryFees.builder()
-            .amountOfLandRegistryFees(landRegistryPence)
+            .amountOfLandRegistryFees(enforcementCosts.getLandRegistryFeesPence())
             .build();
 
         MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
-            .amountOwed(rentArrearsPence)
+            .amountOwed(enforcementCosts.getTotalArrearsPence())
             .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .writFeeAmount(feeAmount)
+            .writFeeAmount(enforcementCosts.getFeeAmount())
             .writDetails(WritDetails.builder()
                 .repaymentCosts(RepaymentCosts.builder().build())
                 .landRegistryFees(landRegistryFees)
@@ -74,21 +68,11 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
             .build();
 
         when(repaymentTableRenderer.render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-                WRIT_FEE_AMOUNT,
-            feeAmount,
-            expectedTotalFees,
+            enforcementCosts,
             TEMPLATE
         )).thenReturn("<table>Mock Repayment Table</table>");
         when(repaymentTableRenderer.render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-                WRIT_FEE_AMOUNT,
-            feeAmount,
-            expectedTotalFees,
+            enforcementCosts,
             "The payments due",
             TEMPLATE
         )).thenReturn("<table>Mock SOT Repayment Table</table>");
@@ -98,21 +82,11 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
 
         // Then
         verify(repaymentTableRenderer).render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-                WRIT_FEE_AMOUNT,
-            feeAmount,
-            expectedTotalFees,
+            enforcementCosts,
             TEMPLATE
         );
         verify(repaymentTableRenderer).render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-                WRIT_FEE_AMOUNT,
-            feeAmount,
-            expectedTotalFees,
+            enforcementCosts,
             "The payments due",
             TEMPLATE
         );
@@ -126,22 +100,14 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
 
     private static Stream<Arguments> repaymentFeeScenarios() {
         return Stream.of(
-            Arguments.of(
-                "12300", "10000", "20000", "£404", new BigDecimal("123.00"),
-                new BigDecimal("100.00"), new BigDecimal("200.00"), new BigDecimal("827.00")
-            ),
-            Arguments.of(
-                "1500", "500", "999", "£50", new BigDecimal("15.00"), new BigDecimal("5.00"),
-                new BigDecimal("9.99"), new BigDecimal("79.99")
-            ),
-            Arguments.of(
-                "0", "0", "0", "£0", new BigDecimal("0.00"), new BigDecimal("0.00"),
-                new BigDecimal("0.00"), new BigDecimal("0.00")
-            ),
-            Arguments.of(
-                "10001", "1", "5000", "£0", new BigDecimal("100.01"), new BigDecimal("0.01"),
-                new BigDecimal("50.00"), new BigDecimal("150.02")
-            )
+                Arguments.of(
+                        new EnforcementCosts("12300", "10000", "20000", "404", WRIT_FEE_AMOUNT)),
+                Arguments.of(
+                        new EnforcementCosts("1500", "500", "999", "50", WRIT_FEE_AMOUNT)),
+                Arguments.of(
+                        new EnforcementCosts("0", "0", "0", "0", WRIT_FEE_AMOUNT)),
+                Arguments.of(
+                        new EnforcementCosts("10001", "1", "5000", "0", WRIT_FEE_AMOUNT))
         );
     }
 }
