@@ -16,11 +16,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
@@ -64,9 +61,6 @@ public class PcsCaseEntity {
     @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
     @JsonManagedReference
     private TenancyLicenceEntity tenancyLicence;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private PossessionGrounds possessionGrounds;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default

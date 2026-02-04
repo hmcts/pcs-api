@@ -5,7 +5,7 @@ import uk.gov.hmcts.rse.CftlibExec
 buildscript {
   ext {
     flywayVersion = '11.20.3'
-    serenityBddVersion = '5.2.1'
+    serenityBddVersion = '5.2.2'
   }
   dependencies {
     classpath("org.flywaydb:flyway-database-postgresql:$flywayVersion")
@@ -208,6 +208,9 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
+  ccd {
+    runtimeIndexing = false // To avoid issues when TestContainers DB is shutdown
+  }
 }
 
 tasks.register('smoke', Test) {
