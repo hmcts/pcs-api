@@ -30,6 +30,14 @@ class YesOrNoConverterTest {
     }
 
     @ParameterizedTest
+    @MethodSource("booleanToYesOrNoScenarios")
+    void shouldConvertBooleanToYesOrNo(Boolean value, YesOrNo expectedResult) {
+        YesOrNo actualResult = YesOrNoConverter.toYesOrNo(value);
+
+        assertThat(actualResult).isEqualTo(expectedResult);
+    }
+
+    @ParameterizedTest
     @MethodSource("yesOrNoToVerticalYesNoScenarios")
     void shouldConvertYesOrNoToVerticalYesNo(YesOrNo yesOrNo, VerticalYesNo expectedResult) {
         VerticalYesNo actualResult = YesOrNoConverter.toVerticalYesNo(yesOrNo);
@@ -49,6 +57,14 @@ class YesOrNoConverterTest {
         return Stream.of(
             arguments(VerticalYesNo.YES, true),
             arguments(VerticalYesNo.NO, false),
+            arguments(null, null)
+        );
+    }
+
+    private static Stream<Arguments> booleanToYesOrNoScenarios() {
+        return Stream.of(
+            arguments(true, YesOrNo.YES),
+            arguments(false, YesOrNo.NO),
             arguments(null, null)
         );
     }
