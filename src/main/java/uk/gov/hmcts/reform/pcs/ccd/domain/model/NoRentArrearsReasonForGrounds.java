@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.model;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +14,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class NoRentArrearsReasonForGrounds {
 
     // Ground 1
@@ -21,7 +24,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String ownerOccupierTextArea;
+    private String ownerOccupier;
 
     // Ground 2
     @CCD(
@@ -31,7 +34,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String repossessionByLenderTextArea;
+    private String repossessionByLender;
 
     // Ground 3
     @CCD(
@@ -40,7 +43,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String holidayLetTextArea;
+    private String holidayLet;
 
     // Ground 4
     @CCD(
@@ -49,7 +52,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String studentLetTextArea;
+    private String studentLet;
 
     // Ground 5
     @CCD(
@@ -59,7 +62,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String ministerOfReligionTextArea;
+    private String ministerOfReligion;
 
     // Ground 6
     @CCD(
@@ -69,7 +72,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String redevelopmentTextArea;
+    private String redevelopment;
 
     // Ground 7
     @CCD(
@@ -78,7 +81,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String deathOfTenantTextArea;
+    private String deathOfTenant;
 
     // Ground 7A
     @CCD(
@@ -87,7 +90,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String antisocialBehaviourTextArea;
+    private String antisocialBehaviour;
 
     // Ground 7B
     @CCD(
@@ -97,7 +100,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String noRightToRentTextArea;
+    private String noRightToRent;
 
     // Ground 9
     @CCD(
@@ -107,7 +110,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String suitableAccomTextArea;
+    private String suitableAlternativeAccomodation;
 
     // Ground 12
     @CCD(
@@ -117,7 +120,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String breachOfTenancyConditionsTextArea;
+    private String breachOfTenancyConditions;
 
     // Ground 13
     @CCD(
@@ -127,7 +130,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String propertyDeteriorationTextArea;
+    private String propertyDeterioration;
 
     // Ground 14
     @CCD(
@@ -137,7 +140,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String nuisanceOrIllegalUseTextArea;
+    private String nuisanceOrIllegalUse;
 
     // Ground 14A
     @CCD(
@@ -146,7 +149,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String domesticViolenceTextArea;
+    private String domesticViolence;
 
     // Ground 14ZA
     @CCD(
@@ -155,7 +158,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String offenceDuringRiotTextArea;
+    private String offenceDuringRiot;
 
     // Ground 15
     @CCD(
@@ -164,7 +167,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String furnitureDeteriorationTextArea;
+    private String furnitureDeterioration;
 
     // Ground 16
     @CCD(
@@ -173,7 +176,7 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String landlordEmployeeTextArea;
+    private String landlordEmployee;
 
     // Ground 17
     @CCD(
@@ -183,5 +186,5 @@ public class NoRentArrearsReasonForGrounds {
                 + "You can enter up to 500 characters",
             typeOverride = TextArea
     )
-    private String falseStatementTextArea;
+    private String falseStatement;
 }
