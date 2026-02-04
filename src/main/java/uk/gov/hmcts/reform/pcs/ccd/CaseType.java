@@ -26,7 +26,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
 
     public static String getCaseType() {
-        return withChangeId(CASE_TYPE_ID, "_PR_");
+        return withChangeId(CASE_TYPE_ID, "-PR-");
     }
 
     public static String getJurisdictionId() {
