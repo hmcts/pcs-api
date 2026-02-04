@@ -5,6 +5,7 @@ import { ActionRegistry } from '@utils/registry/action.registry';
 import { ValidationRegistry } from '@utils/registry/validation.registry';
 import { AxeUtils} from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
+import { logToBrowser } from '@utils/test-logger';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
@@ -97,6 +98,7 @@ export async function performAction(action: string, fieldName?: actionData | act
 
   await test.step(stepText, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
+    await logToBrowser(executor.page, stepText);
   });
   await validatePageIfNavigated(action);
 }
