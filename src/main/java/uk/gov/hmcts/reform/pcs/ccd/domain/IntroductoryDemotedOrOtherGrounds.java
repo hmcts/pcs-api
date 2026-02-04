@@ -2,11 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum IntroductoryDemotedOrOtherGrounds implements HasLabel {
+public enum IntroductoryDemotedOrOtherGrounds implements PossessionGroundEnum {
 
     RENT_ARREARS("Rent arrears"),
     ANTI_SOCIAL("Antisocial behaviour"),
@@ -15,4 +14,10 @@ public enum IntroductoryDemotedOrOtherGrounds implements HasLabel {
     OTHER("Other");
 
     private final String label;
+
+    @Override
+    public int getRank() {
+        return this.ordinal();
+    }
+
 }

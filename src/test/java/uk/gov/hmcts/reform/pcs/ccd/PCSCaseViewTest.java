@@ -32,6 +32,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -75,6 +76,8 @@ class PCSCaseViewTest {
     @Mock
     private TenancyLicenceView tenancyLicenceView;
     @Mock
+    private ClaimGroundsView claimGroundsView;
+    @Mock
     private RentDetailsView rentDetailsView;
     @Mock
     private AlternativesToPossessionView alternativesToPossessionView;
@@ -100,8 +103,9 @@ class PCSCaseViewTest {
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
-                                    caseTitleService, tenancyLicenceView, rentDetailsView, alternativesToPossessionView,
-                                    housingActWalesView, rentArrearsView, noticeOfPossessionView, statementOfTruthView
+                                    caseTitleService, tenancyLicenceView, claimGroundsView, rentDetailsView,
+                                    alternativesToPossessionView, housingActWalesView, rentArrearsView,
+                                    noticeOfPossessionView, statementOfTruthView
         );
     }
 
@@ -414,6 +418,7 @@ class PCSCaseViewTest {
 
         // Then
         verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(alternativesToPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(housingActWalesView).setCaseFields(pcsCase, pcsCaseEntity);

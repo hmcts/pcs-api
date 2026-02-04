@@ -2,14 +2,13 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 /**
  * Discretionary grounds for assured tenancy possession claims.
  */
 @AllArgsConstructor
 @Getter
-public enum AssuredDiscretionaryGround implements HasLabel {
+public enum AssuredDiscretionaryGround implements PossessionGroundEnum {
 
     ALTERNATIVE_ACCOMMODATION_GROUND9("Suitable alternative accommodation (ground 9)"),
     RENT_ARREARS_GROUND10("Rent arrears (ground 10)"),
@@ -24,4 +23,10 @@ public enum AssuredDiscretionaryGround implements HasLabel {
     FALSE_STATEMENT_GROUND17("Tenancy obtained by false statement (ground 17)");
 
     private final String label;
+
+    @Override
+    public int getRank() {
+        return this.ordinal();
+    }
+
 }
