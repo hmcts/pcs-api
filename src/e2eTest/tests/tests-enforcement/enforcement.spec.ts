@@ -554,7 +554,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationType: statementOfTruthTwo.errorValidationType.four,
       inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
       label: statementOfTruthTwo.checkBoxGenericErrorLabel,
-      //header: statementOfTruthTwo.errors,
       checkBox: statementOfTruthTwo.iCertifyCheckbox,
       button: statementOfTruthTwo.continueButton
     });
@@ -571,7 +570,6 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationType: statementOfTruthTwo.errorValidationType.four,
       inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
       label: statementOfTruthTwo.checkBoxGenericErrorLabel,
-      //header: statementOfTruthTwo.errors,
       checkBox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
       button: statementOfTruthTwo.continueButton
     });
