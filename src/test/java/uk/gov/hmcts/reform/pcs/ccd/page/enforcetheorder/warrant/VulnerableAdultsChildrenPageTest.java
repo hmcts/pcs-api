@@ -56,13 +56,13 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
 
         // Then
         if (expectsError) {
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().getFirst())
+            assertThat(response.getErrorMessageOverride())
                     .contains("In ‘How are they vulnerable?’, you have entered more than the maximum number "
                             + "of characters")
                     .contains("6,800");
         } else {
-            assertThat(response.getErrors()).isEmpty();
+            assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
+            assertThat(response.getErrors()).isNullOrEmpty();
         }
     }
 
@@ -130,7 +130,9 @@ class VulnerableAdultsChildrenPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
+
         assertThat(response.getData().getEnforcementOrder().getRawWarrantDetails()
                 .getVulnerableAdultsChildren().getVulnerableReasonText())
                 .isEqualTo(vulnerableReasonText);
