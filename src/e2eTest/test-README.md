@@ -56,6 +56,12 @@ The framework's modular design consists of these key layers:
 | **Registry**            | `utils/registry/`                        | Maintains component registration and lookup system               |
 | **Documentation**       | `testREADME.md` + `update-testReadMe.ts` | Auto-updating framework documentation system                     |
 
+### 2.1 Browser Console Log Fixtures
+
+Tests use `utils/test-fixtures.ts`, which extends Playwright's test with automatic browser console capture.
+On failure only, logs are attached to the Allure report under an Allure step named "Browser console logs".
+Specs import `test` from `@utils/test-fixtures` instead of `@playwright/test` to enable this.
+
 ## 3. Getting Started
 
 ### Prerequisites
