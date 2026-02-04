@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
@@ -25,8 +25,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldErrorWhenNoAdditionalGroundsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGroundsForPossession(
-                RentArrearsGroundsForPossession.builder()
+            .assuredRentArrearsPossessionGrounds(
+                AssuredRentArrearsPossessionGrounds.builder()
                     .additionalMandatoryGrounds(Set.of())
                     .additionalDiscretionaryGrounds(Set.of())
                     .build()
@@ -44,8 +44,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldNotErrorWhenAdditionalMandatoryGroundsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGroundsForPossession(
-                RentArrearsGroundsForPossession.builder()
+            .assuredRentArrearsPossessionGrounds(
+                AssuredRentArrearsPossessionGrounds.builder()
                     .additionalMandatoryGrounds(
                         Set.of(AssuredAdditionalMandatoryGrounds.REDEVELOPMENT_GROUND6)
                     )
@@ -65,8 +65,8 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
     void shouldNotErrorWhenAdditionalDiscretionaryGroundsSelected() {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .rentArrearsGroundsForPossession(
-                RentArrearsGroundsForPossession.builder()
+            .assuredRentArrearsPossessionGrounds(
+                AssuredRentArrearsPossessionGrounds.builder()
                     .additionalMandatoryGrounds(Set.of())
                     .additionalDiscretionaryGrounds(
                         Set.of(AssuredAdditionalDiscretionaryGrounds.BREACH_TENANCY_GROUND12)
