@@ -186,10 +186,10 @@ export function deduplicateFailedTestsByRetry(
   return Array.from(byKey.values());
 }
 
-/** Count tests with duration >= thresholdSeconds (default 10s). */
+/** Count tests with duration >= thresholdSeconds. Matches Playwright reportSlowTests.threshold (5 min). */
 export function countSlowTests(
   tests: AllureTestRecord[],
-  thresholdSeconds: number = 10
+  thresholdSeconds: number = 4 * 60
 ): number {
   return tests.filter((t) => (t.duration_seconds ?? 0) >= thresholdSeconds).length;
 }
@@ -346,9 +346,9 @@ export function buildSlackMessage(
   buildUrl: string,
   reportPathSuffix: string = 'allure/',
   tests: AllureTestRecord[] | null = null,
-  topNSlowest: number = 5,
+  topNSlowest: number = 15,
   maxFailuresToList: number = 8,
-  slowThresholdSeconds: number = 10
+  slowThresholdSeconds: number = 5 * 60
 ): string {
   const rag = ragStatus(summary);
   const reportUrl = buildUrl ? `${buildUrl}${reportPathSuffix}` : '';
@@ -374,7 +374,7 @@ export function buildSlackMessage(
   lines.push(`Total: *${summary.total}*`);
   lines.push(`✅ Passed: *${summary.passed}*`);
   lines.push(`❌ Failed: *${summary.failed}*`);
-  lines.push(`🐢 Slow (≥${slowThresholdSeconds}s): *${slowCount}*`);
+  lines.push(`🐢 Slow (≥${formatDuration(slowThresholdSeconds)}): *${slowCount}*`);
   lines.push(`⏭️ Skipped: *${summary.skipped}*`);
   if (summary.broken > 0) {
     lines.push(`⚠️ Broken: *${summary.broken}*`);
@@ -441,7 +441,7 @@ export function getSlackMessage(): string {
     } catch {
       /* ignore */
     }
-    return buildSlackMessage(summary, buildNumber, buildUrl, reportSuffix, tests, 5, 8);
+    return buildSlackMessage(summary, buildNumber, buildUrl, reportSuffix, tests, 15, 8);
   } catch {
     const reportUrl = buildUrl ? `${buildUrl}${reportSuffix}` : '';
     return `E2E stage completed for ${jobName} build ${buildNumber}. Allure report not available – check build logs.${reportUrl ? `\n*Allure report:* ${reportUrl}` : buildUrl ? `\n*Build:* ${buildUrl}` : ''}`;
