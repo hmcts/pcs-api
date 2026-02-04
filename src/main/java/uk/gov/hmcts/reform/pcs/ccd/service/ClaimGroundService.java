@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -95,17 +96,21 @@ public class ClaimGroundService {
         Set<AssuredMandatoryGround> combinedMandatoryGrounds = new HashSet<>();
         Set<AssuredDiscretionaryGround> combinedDiscretionaryGrounds = new HashSet<>();
 
-        additionalMandatoryGrounds.forEach(
-            additionalMandatoryGround -> combinedMandatoryGrounds.add(
-                AssuredMandatoryGround.valueOf(additionalMandatoryGround.name())
-            )
-        );
+        if (additionalMandatoryGrounds != null) {
+            additionalMandatoryGrounds.forEach(
+                additionalMandatoryGround -> combinedMandatoryGrounds.add(
+                    AssuredMandatoryGround.valueOf(additionalMandatoryGround.name())
+                )
+            );
+        }
 
-        additionalDiscretionaryGrounds.forEach(
-            additionalDiscretionaryGround -> combinedDiscretionaryGrounds.add(
-                AssuredDiscretionaryGround.valueOf(additionalDiscretionaryGround.name())
-            )
-        );
+        if (additionalDiscretionaryGrounds != null) {
+            additionalDiscretionaryGrounds.forEach(
+                additionalDiscretionaryGround -> combinedDiscretionaryGrounds.add(
+                    AssuredDiscretionaryGround.valueOf(additionalDiscretionaryGround.name())
+                )
+            );
+        }
 
         RentArrearsGroundsReasons reasons = pcsCase.getRentArrearsGroundsReasons();
 
@@ -302,7 +307,9 @@ public class ClaimGroundService {
 
         SecureOrFlexibleGroundsReasons reasons = pcsCase.getSecureOrFlexibleGroundsReasons();
 
-        Set<RentArrearsOrBreachOfTenancy> rentArrearsOrBreachOfTenancy = pcsCase.getRentArrearsOrBreachOfTenancy();
+        Set<RentArrearsOrBreachOfTenancy> rentArrearsOrBreachOfTenancy
+            = Objects.requireNonNullElse(pcsCase.getRentArrearsOrBreachOfTenancy(), Set.of());
+
         boolean breachOfTenancy = rentArrearsOrBreachOfTenancy.contains(BREACH_OF_TENANCY);
 
         possessionGrounds.getSecureOrFlexibleDiscretionaryGrounds().forEach(
@@ -409,10 +416,12 @@ public class ClaimGroundService {
         Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGrounds();
         Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGrounds();
         Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGrounds();
-        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = secureGrounds.getMandatoryGrounds();
-        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds
-            = secureGrounds.getDiscretionaryGrounds();
-        Set<EstateManagementGroundsWales> secureEstateGrounds = secureGrounds.getEstateManagementGrounds();
+        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds =
+            secureGrounds.getMandatoryGrounds();
+        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds =
+            secureGrounds.getDiscretionaryGrounds();
+        Set<EstateManagementGroundsWales> secureEstateGrounds =
+            secureGrounds.getEstateManagementGrounds();
         GroundsReasonsWales reasons = pcsCase.getGroundsReasonsWales();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
