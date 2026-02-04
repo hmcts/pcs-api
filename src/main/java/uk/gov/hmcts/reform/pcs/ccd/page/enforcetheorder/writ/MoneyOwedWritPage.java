@@ -42,6 +42,9 @@ public class MoneyOwedWritPage implements CcdPageConfiguration {
                     """
             )
             .mandatory(MoneyOwedByDefendants::getAmountOwed)
+            .done()
+            .done()
+            .done()
             .label("moneyOwedWrit-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

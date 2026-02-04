@@ -36,6 +36,13 @@ class MoneyConverterTest {
         assertThat(formattedPence).isEqualTo(expectedPence);
     }
 
+    @ParameterizedTest
+    @MethodSource("totalPenceScenarios")
+    void shouldCalculateTotalPence(String expected, String[] inputs) {
+        String result = underTest.getTotalPence(inputs);
+        assertThat(result).isEqualTo(expected);
+    }
+
     private static Stream<Arguments> penceToBigDecimalScenarios() {
         return Stream.of(
             Arguments.arguments("1500", new BigDecimal("15.00")),
@@ -52,14 +59,23 @@ class MoneyConverterTest {
 
     private static Stream<Arguments> poundToPenceScenarios() {
         return Stream.of(
-            arguments("£15", "1500"),
-            arguments("£15.01", "1501"),
-            arguments("£15.99", "1599"),
-            arguments("£0.15", "15"),
-            arguments("£150", "15000"),
-            arguments("£150.40", "15040"),
+            arguments("15", "1500"),
+            arguments("15.01", "1501"),
+            arguments("15.99", "1599"),
+            arguments("0.15", "15"),
+            arguments("150", "15000"),
+            arguments("150.40", "15040"),
             arguments(null, "0"),
             arguments("", "0")
+        );
+    }
+
+    private static Stream<Arguments> totalPenceScenarios() {
+        return Stream.of(
+                arguments("600", new String[] { "100", "200", "300" }),
+                arguments("200", new String[] { "150", null, "50", "0" }),
+                arguments("0", new String[] { }),
+                arguments("922337203685477600", new String[] { "0", "922337203685477580", "20" })
         );
     }
 }

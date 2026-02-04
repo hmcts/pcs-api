@@ -10,7 +10,6 @@ export const rentDetails = {
   monthlyRadioOption: `Monthly`,
   otherRadioOption: `Other`,
   enterFrequencyHiddenTextLabel: `Enter frequency`,
-  pleaseSpecifyTheFrequencyHiddenHintText: `Please specify the frequency`,
   enterFrequencyHiddenTextInput: `fortnightly`,
   enterTheAmountPerDayHiddenTextLabel: `Enter the amount per day that unpaid rent should be charged at`,
   iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',

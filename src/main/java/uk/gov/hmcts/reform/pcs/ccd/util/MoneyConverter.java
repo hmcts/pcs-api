@@ -1,16 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 
 @Component
 public class MoneyConverter {
 
-    private static final String CURRENCY_SYMBOL = "£";
-
     public BigDecimal convertPenceToBigDecimal(String penceString) {
-        if (penceString == null || penceString.trim().isEmpty()) {
+        if (!StringUtils.hasText(penceString)) {
             return BigDecimal.ZERO;
         }
 
@@ -20,12 +19,22 @@ public class MoneyConverter {
     }
 
     public String convertPoundsToPence(String amount) {
-        if (amount == null || amount.trim().isEmpty()) {
+        if (!StringUtils.hasText(amount)) {
             return "0";
         }
-        String cleansed = amount.replace(CURRENCY_SYMBOL, "").trim();
-        BigDecimal pounds = new BigDecimal(cleansed);
+        BigDecimal pounds = new BigDecimal(amount);
         BigDecimal pence = pounds.movePointRight(2);
         return pence.toPlainString();
+    }
+
+    public String getTotalPence(String... pennies) {
+        long totalPence = 0;
+        for (String penceStr : pennies) {
+            if (StringUtils.hasText(penceStr)) {
+                long pence = Long.parseLong(penceStr);
+                totalPence += pence;
+            }
+        }
+        return String.valueOf(totalPence);
     }
 }

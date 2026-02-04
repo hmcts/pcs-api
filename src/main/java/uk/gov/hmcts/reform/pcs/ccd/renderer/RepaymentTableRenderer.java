@@ -4,40 +4,30 @@ import io.pebbletemplates.pebble.PebbleEngine;
 import io.pebbletemplates.pebble.template.PebbleTemplate;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.exception.TemplateRenderingException;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 
 @AllArgsConstructor
 @Component
 public class RepaymentTableRenderer {
-    private final PebbleEngine pebbleEngine;
 
-    public String render(BigDecimal totalArrears, BigDecimal legalFees, BigDecimal landRegistryFees,
-                         String feeAmountType, String feeAmount, BigDecimal totalFees, String template) {
-        return render(totalArrears, legalFees, landRegistryFees, feeAmountType, feeAmount, totalFees, null, template);
+    private final PebbleEngine pebbleEngine;
+    private final RepaymentTableHelper repaymentTableHelper;
+
+    public String render(EnforcementCosts enforcementCosts, String template) {
+        return render(enforcementCosts, null, template);
     }
 
-    @SuppressWarnings("squid:S107")
-    public String render(BigDecimal totalArrears, BigDecimal legalFees, BigDecimal landRegistryFees,
-                         String feeAmountType, String feeAmount, BigDecimal totalFees, String caption,
-                         String template) {
-
+    public String render(EnforcementCosts enforcementCosts, String caption, String template) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(template);
         Writer writer = new StringWriter();
 
-        Map<String, Object> context = new HashMap<>();
-        context.put("totalArrears", totalArrears);
-        context.put("legalFees", legalFees);
-        context.put("landRegistryFees", landRegistryFees);
-        context.put(feeAmountType, feeAmount);
-        context.put("totalFees", totalFees);
-        context.put("caption", caption);
+        Map<String, Object> context = repaymentTableHelper.getContext(enforcementCosts, caption);
 
         try {
             compiledTemplate.evaluate(writer, context);

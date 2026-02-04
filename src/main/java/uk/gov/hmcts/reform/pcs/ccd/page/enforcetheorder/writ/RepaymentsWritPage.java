@@ -30,6 +30,7 @@ public class RepaymentsWritPage implements CcdPageConfiguration {
             .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "writRepaymentChoice=\"SOME\"")
             .done()
             .done()
+            .done()
             .label("repayments-writ-save-and-return", SAVE_AND_RETURN);
     }
 }
