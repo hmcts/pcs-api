@@ -46,6 +46,8 @@ public class PCSCase {
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+    public static final int MIN_MONETARY_AMOUNT = 1;
+    public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
     @CCD(
         access = {DefendantAccess.class}
@@ -206,7 +208,7 @@ public class PCSCase {
     )
     private YesOrNo noticeServed;
 
-    @JsonUnwrapped(prefix = "eng")
+    @JsonUnwrapped(prefix = "notice_")
     @CCD
     private NoticeServedDetails noticeServedDetails;
 

@@ -1,7 +1,9 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.api.ComplexType;
 
@@ -12,6 +14,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @Data
 @Builder
 @ComplexType(generate = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class StatementOfTruthDetails {
 
     @CCD(label = "Completed by")
