@@ -23,7 +23,7 @@ public class RepaymentTableRenderer {
         return render(enforcementCosts, null, template);
     }
 
-    public String render(EnforcementCosts enforcementCosts, String template, String caption) {
+    public String render(EnforcementCosts enforcementCosts, String caption, String template) {
         PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(template);
         Writer writer = new StringWriter();
 
