@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -16,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -24,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 public class LandRegistryFeesPage implements CcdPageConfiguration {
 
     private final RepaymentTableRenderer repaymentTableRenderer;
+    private final FeeFormatter feeFormatter;
 
     public static final String WARRANT_FEE_AMOUNT = "warrantFeeAmount";
     static final String TEMPLATE = "repaymentTableWarrant";
@@ -55,10 +56,10 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
                 .totalArrearsPence(warrantDetails.getMoneyOwedByDefendants().getAmountOwed())
                 .legalFeesPence(warrantDetails.getLegalCosts().getAmountOfLegalCosts())
                 .landRegistryFeesPence(warrantDetails.getLandRegistryFees().getAmountOfLandRegistryFees())
-                .feeAmount(getFeeAmountWithoutCurrencySymbol(caseData.getEnforcementOrder().getWarrantFeeAmount()))
+                .feeAmount(feeFormatter.getFeeAmountWithoutCurrencySymbol(
+                        caseData.getEnforcementOrder().getWarrantFeeAmount(), CURRENCY_SYMBOL))
                 .feeAmountType(WARRANT_FEE_AMOUNT)
                 .build();
-
 
         RepaymentCosts repaymentCosts = caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts();
 
@@ -78,12 +79,5 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
-    }
-
-    private String getFeeAmountWithoutCurrencySymbol(String feeAmount) {
-        if (StringUtils.hasText(feeAmount) && feeAmount.startsWith(CURRENCY_SYMBOL)) {
-            return feeAmount.substring(1);
-        }
-        return feeAmount;
     }
 }
