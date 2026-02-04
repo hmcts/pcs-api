@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from '@utils/test-fixtures';
 import {
   addressCheckYourAnswers,
   addressDetails,
@@ -9,7 +9,7 @@ import {
   userIneligible,
   home
 } from '@data/page-data';
-import{
+import {
   claimantType,
   claimType,
 } from '@data/page-data-figma';
@@ -20,8 +20,7 @@ import {
 } from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('clickTab', home.createCaseTab);
