@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@HDPI-4026-e2e-POD-logs")
+@Library("Infrastructure")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
