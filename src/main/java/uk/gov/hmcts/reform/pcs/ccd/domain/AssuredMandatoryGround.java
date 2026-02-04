@@ -2,14 +2,13 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 /**
  * Mandatory grounds for assured tenancy possession claims.
  */
 @AllArgsConstructor
 @Getter
-public enum AssuredMandatoryGround implements HasLabel {
+public enum AssuredMandatoryGround implements PossessionGroundEnum {
 
     OWNER_OCCUPIER_GROUND1("Owner occupier (ground 1)"),
     REPOSSESSION_GROUND2("Repossession by the landlord’s mortgage lender (ground 2)"),
@@ -23,4 +22,10 @@ public enum AssuredMandatoryGround implements HasLabel {
     SERIOUS_RENT_ARREARS_GROUND8("Serious rent arrears (ground 8)");
 
     private final String label;
+
+    @Override
+    public int getRank() {
+        return this.ordinal();
+    }
+
 }

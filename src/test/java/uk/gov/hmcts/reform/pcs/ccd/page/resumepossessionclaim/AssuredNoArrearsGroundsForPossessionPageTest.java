@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.Set;
@@ -23,11 +23,11 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
+class AssuredNoArrearsGroundsForPossessionPageTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new NoRentArrearsGroundsForPossessionOptions());
+        setPageUnderTest(new AssuredNoArrearsGroundsForPossessionPage());
     }
 
     @Test
@@ -46,7 +46,7 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(expectedMandatory)
                     .discretionaryGrounds(expectedDiscretionary)
                     .build()
@@ -80,7 +80,7 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         );
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(expectedMandatory)
                     .discretionaryGrounds(expectedDiscretionary)
                     .build()
@@ -111,7 +111,7 @@ class NoRentArrearsGroundsForPossessionOptionsTest extends BasePageTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
+                AssuredNoArrearsPossessionGrounds.builder()
                     .mandatoryGrounds(mandatoryGrounds)
                     .discretionaryGrounds(discretionaryGrounds)
                     .build()
