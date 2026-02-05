@@ -38,10 +38,6 @@ public class DefendantResponses {
     @CCD
     private LocalDate noticeReceivedDate;
 
-    /**
-     * Indicates whether the defendant has received free legal advice.
-     * Used for statistical tracking; does not affect claim outcome.
-     */
     @CCD
     private YesNoPreferNotToSay hasReceivedFreeLegalAdvice;
 }
