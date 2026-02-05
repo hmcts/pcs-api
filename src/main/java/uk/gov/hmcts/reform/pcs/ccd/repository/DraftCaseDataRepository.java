@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 
@@ -15,6 +16,7 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     boolean existsByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 
+    @Modifying
     void deleteByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 
