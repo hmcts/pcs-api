@@ -182,17 +182,6 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             .mandatory(GroundsReasonsWales::getLandlordNoticePeriodicS178Reason,
                 "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_PERIODIC_S178\"")
 
-            .label("wales-seriousArrearsPeriodicS181-label", """
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Contract-holder under a periodic standard contract seriously in arrears with rent (section 181)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_PERIODIC_S181\"")
-            .mandatory(GroundsReasonsWales::getSeriousArrearsPeriodicS181Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_PERIODIC_S181\"")
-
             .label("wales-landlordNoticeFtEndS186-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice in connection with end of fixed term given (section 186)
@@ -203,17 +192,6 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_FT_END_S186\"")
             .mandatory(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
                 "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_FT_END_S186\"")
-
-            .label("wales-seriousArrearsFixedTermS187-label", """
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Contract-holder under a fixed term standard contract seriously in arrears with rent (section 187)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_FIXED_TERM_S187\"")
-            .mandatory(GroundsReasonsWales::getSeriousArrearsFixedTermS187Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_FIXED_TERM_S187\"")
 
             .label("wales-failToGiveUpBreakNoticeS191-label","""
                 <h2 class="govuk-heading-l" tabindex="0">

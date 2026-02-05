@@ -11,12 +11,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+// Grounds for possession Standard Contract and Other Contract
 @Component
 @Slf4j
 public class GroundsForPossessionWalesPage
@@ -68,7 +70,7 @@ public class GroundsForPossessionWalesPage
         }
 
         Set<DiscretionaryGroundWales> discretionaryGrounds = grounds.getDiscretionaryGroundsWales();
-        var mandatoryGrounds = grounds.getMandatoryGroundsWales();
+        Set<MandatoryGroundWales> mandatoryGrounds = grounds.getMandatoryGroundsWales();
         var estateManagementGrounds = grounds.getEstateManagementGroundsWales();
 
         boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
@@ -98,9 +100,12 @@ public class GroundsForPossessionWalesPage
         }
 
         // ASB/Reasons routing (from master)
-        boolean hasRentArrears = hasDiscretionary
-                && discretionaryGrounds != null
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157);
+        boolean hasRentArrears = discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157)
+                || mandatoryGrounds != null
+                    && mandatoryGrounds.contains(MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181)
+                || mandatoryGrounds != null
+                    && mandatoryGrounds.contains(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187);
         boolean hasASB = hasDiscretionary
                 && discretionaryGrounds != null
                 && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
@@ -111,8 +116,13 @@ public class GroundsForPossessionWalesPage
                 && discretionaryGrounds != null
                 && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160);
 
+        boolean hasMandatoryWithoutArrears = mandatoryGrounds != null
+                && mandatoryGrounds.stream()
+                .anyMatch(ground -> ground != MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181
+                        && ground != MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187);
+
         // Determine if there are "other options" (anything that's not rent arrears or ASB)
-        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatory;
+        boolean hasOtherOptions = hasOtherBreach || hasEstateManagement || hasMandatoryWithoutArrears;
 
         // Routing rules based on options selected
         if (hasRentArrears && !hasASB && !hasOtherOptions) {
