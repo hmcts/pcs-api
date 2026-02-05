@@ -21,9 +21,10 @@ export class CreateCaseAPIAction implements IAction {
 
   private async createCaseAPI(caseData: actionData): Promise<void> {
     const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
-    process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
-    const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
     try {
+      process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
+      const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
+
       const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
         data: createCasePayloadData,
         event: { id: createCaseApiData.createCaseEventName },
@@ -56,9 +57,9 @@ export class CreateCaseAPIAction implements IAction {
 
   private async submitCaseAPI(caseData: actionData): Promise<void> {
     const submitCaseApi = Axios.create(submitCaseEventTokenApiData.submitCaseEventTokenApiInstance());
-    process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
-    const submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
     try {
+      process.env.SUBMIT_EVENT_TOKEN = (await submitCaseApi.get(submitCaseEventTokenApiData.submitCaseEventTokenApiEndPoint())).data.token;
+      const submitCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
       const submitResponse = await submitCaseApi.post(submitCaseApiData.submitCaseApiEndPoint(), {
         data: submitCasePayloadData,
         event: { id: submitCaseApiData.submitCaseEventName },
@@ -83,6 +84,7 @@ export class CreateCaseAPIAction implements IAction {
       console.error("Path:", body?.path);
       console.error("Timestamp:", body?.timestamp);
       console.error("Full response body:", JSON.stringify(body, null, 2));
+      
       if (!status) {
         throw new Error('Submission failed: no response from server.');
       }
