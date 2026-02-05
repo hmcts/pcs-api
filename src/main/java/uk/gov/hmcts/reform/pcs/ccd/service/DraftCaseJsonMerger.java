@@ -30,6 +30,14 @@ public class DraftCaseJsonMerger {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Peforms a merge of case data from `patchJson` onto `baseJson`.
+     * @param baseJson The JSON string to merge onto
+     * @param patchJson The updated JSON data to apply
+     * @return A string containing the merged JSON
+     * @throws JsonProcessingException If the JSON strings could not be parsed or written back
+     *     to a string value after being combined
+     */
     public String mergeJson(String baseJson, String patchJson) throws JsonProcessingException {
         JsonNode base = objectMapper.readValue(baseJson, JsonNode.class);
         JsonNode patch = objectMapper.readValue(patchJson, JsonNode.class);
