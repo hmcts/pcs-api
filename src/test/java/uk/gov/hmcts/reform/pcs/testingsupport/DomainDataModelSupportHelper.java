@@ -17,7 +17,7 @@ class DomainDataModelSupportHelper {
     private final Set<Class<?>> processedClasses = new HashSet<>();
     private final Map<String, List<CCDFieldInfo>> ccdFieldsByClass = new HashMap<>();
     private final Set<Class<?>> ignoredClassesFromMissing = new HashSet<>();
-    private final Set<String> ignoredFieldsFromMissing = new HashSet<>();
+    private final Set<String> ignoreFieldsFromMissing = new HashSet<>();
 
     @SuppressWarnings("rawtypes")
     public DomainDataModelSupportHelper(Class clazz) {
@@ -29,7 +29,7 @@ class DomainDataModelSupportHelper {
     }
 
     public void addFieldsToIgnore(String... fieldNames) {
-        ignoredFieldsFromMissing.addAll(Arrays.asList(fieldNames));
+        ignoreFieldsFromMissing.addAll(Arrays.asList(fieldNames));
     }
 
     public List<MissingCCDFieldInfo> findMissingCCDFields(Class<?> entityClass) {
@@ -37,10 +37,13 @@ class DomainDataModelSupportHelper {
         collectEntityFieldNames(entityClass, entityFieldNames, new HashSet<>());
         List<MissingCCDFieldInfo> missingFields = new ArrayList<>();
         ccdFieldsByClass.forEach((className, ccdFields) -> {
-            for (CCDFieldInfo ccdField : ccdFields) {
-                if (!entityFieldNames.contains(ccdField.fieldName)
-                    && !ignoredFieldsFromMissing.contains(ccdField.fieldName)) {
-                    missingFields.add(new MissingCCDFieldInfo(className, ccdField));
+            if (!ignoredClassesFromMissing.stream()
+                .filter(c -> c.getSimpleName().equalsIgnoreCase(className)).findAny().isPresent()) {
+                for (CCDFieldInfo ccdField : ccdFields) {
+                    if (!entityFieldNames.contains(ccdField.fieldName)
+                        && !ignoreFieldsFromMissing.contains(ccdField.fieldName)) {
+                        missingFields.add(new MissingCCDFieldInfo(className, ccdField));
+                    }
                 }
             }
         });
@@ -141,16 +144,17 @@ class DomainDataModelSupportHelper {
         List<CCDFieldInfo> ccdFields = new ArrayList<>();
         for (Field field : fields) {
             if (field.isAnnotationPresent(CCD.class)) {
-                CCD ccdAnnotation = field.getAnnotation(CCD.class);
-                CCDFieldInfo fieldInfo = new CCDFieldInfo(field.getName(), field.getType(), ccdAnnotation);
-                ccdFields.add(fieldInfo);
                 if (isCompositeType(field.getType())) {
                     identifyCCDFields(field.getType());
+                } else {
+                    CCD ccdAnnotation = field.getAnnotation(CCD.class);
+                    CCDFieldInfo fieldInfo = new CCDFieldInfo(field.getName(), field.getType(), ccdAnnotation);
+                    ccdFields.add(fieldInfo);
                 }
             }
         }
 
-        if (!ccdFields.isEmpty()) {
+        if (!ccdFields.isEmpty() && !ignoredClassesFromMissing.contains(clazz)) {
             ccdFieldsByClass.put(clazz.getSimpleName(), ccdFields);
         }
         return ccdFieldsByClass;
