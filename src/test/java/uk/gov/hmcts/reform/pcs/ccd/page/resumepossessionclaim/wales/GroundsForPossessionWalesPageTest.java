@@ -103,7 +103,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                 arguments(
                         null,
                         Set.of(),
-                        Set.of(MandatoryGroundWales.FAIL_TO_GIVE_UP_S170),
+                        Set.of(MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170),
                         List.of()
                 ),
 
@@ -216,7 +216,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                 ),
                 // Only other breach - show reasons for grounds page
                 arguments(
-                        Set.of(DiscretionaryGroundWales.OTHER_BREACH_S157),
+                        Set.of(DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157),
                         Set.of(),
                         Set.of(),
                         YesOrNo.NO,
@@ -226,7 +226,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                 arguments(
                         Set.of(
                                 DiscretionaryGroundWales.RENT_ARREARS_S157,
-                                DiscretionaryGroundWales.OTHER_BREACH_S157
+                                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
                         ),
                         Set.of(),
                         Set.of(),
@@ -237,7 +237,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                 arguments(
                         Set.of(
                                 DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157,
-                                DiscretionaryGroundWales.OTHER_BREACH_S157
+                                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
                         ),
                         Set.of(),
                         Set.of(),
@@ -249,7 +249,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         Set.of(
                                 DiscretionaryGroundWales.RENT_ARREARS_S157,
                                 DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157,
-                                DiscretionaryGroundWales.OTHER_BREACH_S157
+                                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
                         ),
                         Set.of(),
                         Set.of(),
@@ -310,7 +310,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                 arguments(
                         Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157),
                         Set.of(),
-                        Set.of(MandatoryGroundWales.FAIL_TO_GIVE_UP_S170),
+                        Set.of(MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170),
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
@@ -335,7 +335,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                 ),
                 // Other breach + mandatory grounds - show reasons for grounds page
                 arguments(
-                        Set.of(DiscretionaryGroundWales.OTHER_BREACH_S157),
+                        Set.of(DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157),
                         Set.of(),
                         Set.of(MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191),
                         YesOrNo.NO,
