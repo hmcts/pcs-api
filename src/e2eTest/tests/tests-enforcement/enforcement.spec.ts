@@ -691,7 +691,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
       await performValidation('mainHeader', youNeedPermission.mainHeader);
       await performAction('clickButton', youNeedPermission.continueButton);
-      await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreated, message: youNeedPermission.errMessage });
+      await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreatedErrorMessage, message: youNeedPermission.errMessage });
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @PR @regression',

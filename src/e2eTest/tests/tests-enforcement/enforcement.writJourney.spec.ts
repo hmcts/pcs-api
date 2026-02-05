@@ -253,6 +253,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
       await performValidation('mainHeader', youNeedPermission.mainHeader);
       await performAction('clickButton', youNeedPermission.continueButton);
-      await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreated, message: youNeedPermission.errMessage });
+      await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreatedErrorMessage, message: youNeedPermission.errMessage });
     });
 });
