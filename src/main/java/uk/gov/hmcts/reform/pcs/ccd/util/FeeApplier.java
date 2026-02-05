@@ -31,4 +31,13 @@ public class FeeApplier {
         }
     }
 
+    public void applyFeeAmountUnformatted(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, BigDecimal> setter) {
+        try {
+            BigDecimal feeAmount = feeService.getFee(feeType).getFeeAmount();
+            setter.accept(pcsCase, feeAmount != null ? feeAmount : new BigDecimal(0));
+        } catch (Exception e) {
+            log.error("Error while getting {} fee", feeType.name(), e);
+            pcsCase.getEnforcementOrder().setWarrantFeeAmount(new BigDecimal(0));
+        }
+    }
 }

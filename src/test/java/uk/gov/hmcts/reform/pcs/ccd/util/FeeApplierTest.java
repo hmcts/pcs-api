@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
@@ -30,18 +29,14 @@ class FeeApplierTest extends BaseEventTest {
     @Mock
     private FeeService feeService;
 
-    @Spy
-    private FeeFormatter feeFormatter;
-
     @Test
-    void shouldSetFormattedFeeWhenFeeServiceReturnsFee() {
+    void shouldSetUnFormattedFeeWhenFeeServiceReturnsFee() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeType feeType = ENFORCEMENT_WARRANT_FEE;
         BigDecimal feeAmount = BigDecimal.valueOf(123.45);
-        final String expectedFormattedFee = "£123.45";
 
         when(feeService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
             FeeDetails
@@ -49,15 +44,15 @@ class FeeApplierTest extends BaseEventTest {
                 .feeAmount(feeAmount)
                 .build()
         );
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
+        BiConsumer<PCSCase, BigDecimal> setter = (caseData, fee) -> caseData
             .getEnforcementOrder().setWarrantFeeAmount(fee);
 
         // When
-        underTest.applyFeeAmount(pcsCase, feeType, setter);
+        underTest.applyFeeAmountUnformatted(pcsCase, feeType, setter);
 
         // Then
         verify(feeService).getFee(feeType);
-        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
+        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(feeAmount);
     }
 
     @Test
@@ -67,19 +62,19 @@ class FeeApplierTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
-        final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
+        final BigDecimal expectedDefaultFee = new BigDecimal("0");
 
         when(feeService.getFee(feeType))
             .thenThrow(new RuntimeException("Fee service error"));
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
+        BiConsumer<PCSCase, BigDecimal> setter = (caseData, fee) -> caseData
             .getEnforcementOrder().setWarrantFeeAmount(fee);
 
         // When
-        underTest.applyFeeAmount(pcsCase, feeType, setter);
+        underTest.applyFeeAmountUnformatted(pcsCase, feeType, setter);
 
         // Then
         verify(feeService).getFee(feeType);
-        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
+        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedDefaultFee);
     }
 
     @Test
@@ -89,17 +84,17 @@ class FeeApplierTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
-        final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
+        final BigDecimal expectedFee = new BigDecimal("0");
 
         when(feeService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(null);
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
+        BiConsumer<PCSCase, BigDecimal> setter = (caseData, fee) -> caseData
             .getEnforcementOrder().setWarrantFeeAmount(fee);
 
         // When
-        underTest.applyFeeAmount(pcsCase, feeType, setter);
+        underTest.applyFeeAmountUnformatted(pcsCase, feeType, setter);
 
         // Then
         verify(feeService).getFee(feeType);
-        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
+        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFee);
     }
 }

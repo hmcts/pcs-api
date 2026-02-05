@@ -15,7 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -24,11 +23,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 public class LandRegistryFeesPage implements CcdPageConfiguration {
 
     private final RepaymentTableRenderer repaymentTableRenderer;
-    private final FeeFormatter feeFormatter;
 
     public static final String WARRANT_FEE_AMOUNT = "warrantFeeAmount";
     static final String TEMPLATE = "repaymentTableWarrant";
-    static final String CURRENCY_SYMBOL = "£";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -53,11 +50,10 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
 
         EnforcementCosts enforcementCosts = EnforcementCosts.builder()
-                .totalArrearsPence(warrantDetails.getMoneyOwedByDefendants().getAmountOwed())
-                .legalFeesPence(warrantDetails.getLegalCosts().getAmountOfLegalCosts())
-                .landRegistryFeesPence(warrantDetails.getLandRegistryFees().getAmountOfLandRegistryFees())
-                .feeAmount(feeFormatter.getFeeAmountWithoutCurrencySymbol(
-                        caseData.getEnforcementOrder().getWarrantFeeAmount(), CURRENCY_SYMBOL))
+                .totalArrears(warrantDetails.getMoneyOwedByDefendants().getAmountOwed())
+                .legalFees(warrantDetails.getLegalCosts().getAmountOfLegalCosts())
+                .landRegistryFees(warrantDetails.getLandRegistryFees().getAmountOfLandRegistryFees())
+                .feeAmount(caseData.getEnforcementOrder().getWarrantFeeAmount())
                 .feeAmountType(WARRANT_FEE_AMOUNT)
                 .build();
 

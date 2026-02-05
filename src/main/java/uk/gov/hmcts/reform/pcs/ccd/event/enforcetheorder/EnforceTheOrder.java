@@ -88,16 +88,13 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private void applyWarrantFeeAmount(PCSCase pcsCase) {
-        feeApplier.applyFeeAmount(
-            pcsCase,
+        feeApplier.applyFeeAmountUnformatted(pcsCase,
             FeeType.ENFORCEMENT_WARRANT_FEE,
-            (caseData, fee) -> caseData.getEnforcementOrder().setWarrantFeeAmount(fee)
-        );
+            (caseData, fee) -> caseData.getEnforcementOrder().setWarrantFeeAmount(fee));
     }
 
     private void applyWritFeeAmount(PCSCase pcsCase) {
-        feeApplier.applyFeeAmount(
-            pcsCase,
+        feeApplier.applyFeeAmountUnformatted(pcsCase,
             FeeType.ENFORCEMENT_WRIT_FEE,
             (caseData, fee) -> caseData.getEnforcementOrder().setWritFeeAmount(fee)
         );

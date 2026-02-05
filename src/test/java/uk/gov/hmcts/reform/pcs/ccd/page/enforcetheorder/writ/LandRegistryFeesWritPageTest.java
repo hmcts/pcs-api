@@ -17,14 +17,13 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 
+import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.LandRegistryFeesWritPage.CURRENCY_SYMBOL;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.LandRegistryFeesWritPage.WRIT_FEE_AMOUNT;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.LandRegistryFeesWritPage.TEMPLATE;
 
@@ -33,28 +32,26 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
 
     @Mock
     private RepaymentTableRenderer repaymentTableRenderer;
-    @Mock
-    private FeeFormatter feeFormatter;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new LandRegistryFeesWritPage(repaymentTableRenderer, feeFormatter));
+        setPageUnderTest(new LandRegistryFeesWritPage(repaymentTableRenderer));
     }
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
-    void shouldFormatRepaymentFeesCorrectly(final EnforcementCosts enforcementCosts, final String expectedFeeAmount) {
+    void shouldFormatRepaymentFeesCorrectly(final EnforcementCosts enforcementCosts) {
         // Given
         final LegalCosts legalCosts = LegalCosts.builder()
-            .amountOfLegalCosts(enforcementCosts.getLegalFeesPence())
+            .amountOfLegalCosts(enforcementCosts.getLegalFees())
             .build();
 
         final LandRegistryFees landRegistryFees = LandRegistryFees.builder()
-            .amountOfLandRegistryFees(enforcementCosts.getLandRegistryFeesPence())
+            .amountOfLandRegistryFees(enforcementCosts.getLandRegistryFees())
             .build();
 
         final MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
-            .amountOwed(enforcementCosts.getTotalArrearsPence())
+            .amountOwed(enforcementCosts.getTotalArrears())
             .build();
 
         final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
@@ -70,9 +67,6 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
         final PCSCase caseData = PCSCase.builder()
             .enforcementOrder(enforcementOrder)
             .build();
-
-        when(feeFormatter.getFeeAmountWithoutCurrencySymbol(
-                enforcementCosts.getFeeAmount(), CURRENCY_SYMBOL)).thenReturn(expectedFeeAmount);
 
         when(repaymentTableRenderer.render(
             enforcementCosts,
@@ -108,13 +102,17 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
     private static Stream<Arguments> repaymentFeeScenarios() {
         return Stream.of(
                 Arguments.of(
-                        new EnforcementCosts("12300", "10000", "20000", "404", WRIT_FEE_AMOUNT), "404"),
+                        new EnforcementCosts(new BigDecimal("123"), new BigDecimal("100"), new BigDecimal("200"),
+                                new BigDecimal("404"), WRIT_FEE_AMOUNT)),
                 Arguments.of(
-                        new EnforcementCosts("1500", "500", "999", "50", WRIT_FEE_AMOUNT), "50"),
+                        new EnforcementCosts(new BigDecimal("15"), new BigDecimal("5"), new BigDecimal("9.99"),
+                                new BigDecimal(".50"), WRIT_FEE_AMOUNT)),
                 Arguments.of(
-                        new EnforcementCosts("0", "0", "0", "0", WRIT_FEE_AMOUNT), "0"),
+                        new EnforcementCosts(new BigDecimal("0"), new BigDecimal("0"), new BigDecimal("0"),
+                                new BigDecimal("0"), WRIT_FEE_AMOUNT)),
                 Arguments.of(
-                        new EnforcementCosts("10001", "1", "5000", "0", WRIT_FEE_AMOUNT), "0")
+                        new EnforcementCosts(new BigDecimal("100.01"), new BigDecimal("0.01"), new BigDecimal("50.00"),
+                                new BigDecimal("0"), WRIT_FEE_AMOUNT))
         );
     }
 }
