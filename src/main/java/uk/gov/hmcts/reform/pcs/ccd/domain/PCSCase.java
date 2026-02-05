@@ -143,39 +143,15 @@ public class PCSCase {
     private YesOrNo claimDueToRentArrears;
 
     @JsonUnwrapped(prefix = "rentArrears_")
-    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
-
-    @CCD
-    private YesOrNo overrideResumedGrounds;
+    private AssuredRentArrearsPossessionGrounds assuredRentArrearsPossessionGrounds;
 
     @CCD(
         label = "Do you have any other additional grounds for possession?"
     )
     private YesOrNo hasOtherAdditionalGrounds;
 
-
-
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
-    )
-    private Set<AssuredAdditionalMandatoryGrounds> assuredAdditionalMandatoryGrounds;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
-    )
-    private Set<AssuredAdditionalDiscretionaryGrounds> assuredAdditionalDiscretionaryGrounds;
-
     @JsonUnwrapped
     private RentArrearsGroundsReasons rentArrearsGroundsReasons;
-
-    private YesOrNo showRentArrearsGroundReasonPage;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?"
@@ -347,9 +323,9 @@ public class PCSCase {
     private VerticalYesNo arrearsJudgmentWanted;
 
     @JsonUnwrapped(prefix = "noRentArrears_")
-    private NoRentArrearsGroundsOptions noRentArrearsGroundsOptions;
+    private AssuredNoArrearsPossessionGrounds noRentArrearsGroundsOptions;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "assuredNoArrearsReasons_")
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     private YesOrNo showRentSectionPage;
@@ -503,4 +479,8 @@ public class PCSCase {
     @CCD(searchable = false)
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
+
 }

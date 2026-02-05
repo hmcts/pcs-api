@@ -2,11 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm implements HasLabel {
+public enum SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm implements PossessionGroundEnum {
 
     TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE("Tied accommodation needed for another employee (ground 12)"),
     ADAPTED_ACCOMMODATION("Adapted accommodation (ground 13)"),
@@ -15,5 +14,10 @@ public enum SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm implements Has
     UNDER_OCCUPYING_AFTER_SUCCESSION("Under occupying after succession (ground 15A)");
 
     private final String label;
+
+    @Override
+    public int getRank() {
+        return this.ordinal();
+    }
 
 }

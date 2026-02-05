@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 
 import java.util.Set;
 
@@ -17,21 +18,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class RentArrearsGroundsForPossession {
-
-    @CCD(
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround"
-    )
-    private Set<RentArrearsGround> copyOfRentArrearsGrounds;
-
-    @CCD(
-        label = "What are your grounds for possession?",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "RentArrearsGround"
-    )
-    private Set<RentArrearsGround> rentArrearsGrounds;
+public class AssuredNoArrearsPossessionGrounds {
 
     @CCD(
         label = "Mandatory grounds",
@@ -41,7 +28,6 @@ public class RentArrearsGroundsForPossession {
     )
     private Set<AssuredMandatoryGround> mandatoryGrounds;
 
-    // Additional grounds checkboxes - Discretionary
     @CCD(
         label = "Discretionary grounds",
         hint = "Select all that apply",
@@ -49,5 +35,7 @@ public class RentArrearsGroundsForPossession {
         typeParameterOverride = "AssuredDiscretionaryGround"
     )
     private Set<AssuredDiscretionaryGround> discretionaryGrounds;
+    private YesOrNo showGroundReasonPage;
+
 }
 
