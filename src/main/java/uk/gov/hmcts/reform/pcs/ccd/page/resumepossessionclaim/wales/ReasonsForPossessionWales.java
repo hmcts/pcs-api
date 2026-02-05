@@ -467,18 +467,8 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
-                grounds.getSeriousArrearsPeriodicS181Reason(),
-                MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
                 grounds.getLandlordNoticeFtEndS186Reason(),
                 MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
-                grounds.getSeriousArrearsFixedTermS187Reason(),
-                MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
