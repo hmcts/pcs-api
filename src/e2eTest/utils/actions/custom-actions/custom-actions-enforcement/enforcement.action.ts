@@ -95,8 +95,14 @@ export class EnforcementAction implements IAction {
     await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
     await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
     await performAction('expandSummary', summaryOption.type);
-    const warrantFeeAmt = await this.retrieveAmountFromString(summaryOption.text1 as string);
-    moneyMap.set(yourApplication.typeofFee.warrantOfPossessionFee, warrantFeeAmt);
+    const warrantJourney = summaryOption.journey === 'Warrant of possession';
+    const feeType = warrantJourney
+      ? yourApplication.typeofFee.warrantOfPossessionFee
+      : yourApplication.typeofFee.writOfPossessionFee;
+      
+    const writOrWarrantFeeAmt = warrantJourney ? await this.retrieveAmountFromString(summaryOption.text1 as string) : await this.retrieveAmountFromString(summaryOption.text2 as string);
+
+    moneyMap.set(feeType,writOrWarrantFeeAmt);
   }
 
   private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
@@ -484,10 +490,10 @@ export class EnforcementAction implements IAction {
               await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(rePayments.totalAmt) as number) + 10) : item.input);
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
-                //await performValidation('errorMessage', validationArr.label, item.errMessage);
+                // await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
                 await performValidation('inputError', validationArr.label, item.errMessage);
               }).toPass({
-                timeout: LONG_TIMEOUT,
+                timeout: VERY_LONG_TIMEOUT,
               });
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option2 });
               break;
@@ -502,10 +508,10 @@ export class EnforcementAction implements IAction {
               await performAction('inputText', validationArr.label, item.input);
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
-                //await performValidation('errorMessage', validationArr.label, item.errMessage);
+                //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
                 await performValidation('inputError', validationArr.label, item.errMessage);
               }).toPass({
-                timeout: LONG_TIMEOUT,
+                timeout: VERY_LONG_TIMEOUT,
               });
               break;
 
@@ -523,6 +529,13 @@ export class EnforcementAction implements IAction {
             case 'checkBox':
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              await performAction('check', validationArr.checkBox);
+              break;
+
+            case 'checkBoxPageLevel':
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
 
