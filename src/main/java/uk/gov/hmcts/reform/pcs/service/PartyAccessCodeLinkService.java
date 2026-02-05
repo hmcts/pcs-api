@@ -59,6 +59,10 @@ public class PartyAccessCodeLinkService {
         );
 
         partyEntity.setIdamId(idamUserId);
+        partyEntity.setEmailAddress(userInfo.getSub());
+
+        log.info("Linked party {} to IDAM user {} with email {}",
+                partyId, idamUserId, userInfo.getSub());
 
         try {
             caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());

@@ -87,7 +87,7 @@ class PossessionClaimResponseMapperTest {
         assertThat(contactDetails).isNotNull();
         assertThat(contactDetails.getParty().getFirstName()).isEqualTo("John");
         assertThat(contactDetails.getParty().getLastName()).isEqualTo("Doe");
-        assertThat(contactDetails.getParty().getEmailAddress()).isEqualTo("john@example.com");
+        assertThat(contactDetails.getParty().getEmailAddress()).isNull(); // Email not exposed to citizens
         assertThat(contactDetails.getParty().getPhoneNumber()).isEqualTo("07700900000");
         assertThat(contactDetails.getParty().getAddress()).isEqualTo(expectedAddress);
         assertThat(contactDetails.getParty().getNameKnown()).isEqualTo(VerticalYesNo.YES);
@@ -249,7 +249,7 @@ class PossessionClaimResponseMapperTest {
         assertThat(defendantParty.getFirstName()).isEqualTo("John");
         assertThat(defendantParty.getLastName()).isEqualTo("Doe");
         assertThat(defendantParty.getNameKnown()).isEqualTo(VerticalYesNo.YES);
-        assertThat(defendantParty.getEmailAddress()).isEqualTo("john.doe@example.com");
+        assertThat(defendantParty.getEmailAddress()).isNull(); // Email not exposed to citizens
         assertThat(defendantParty.getPhoneNumber()).isEqualTo("07700900123");
         assertThat(defendantParty.getPhoneNumberProvided()).isEqualTo(VerticalYesNo.YES);
         assertThat(defendantParty.getAddress()).isEqualTo(expectedAddress);
