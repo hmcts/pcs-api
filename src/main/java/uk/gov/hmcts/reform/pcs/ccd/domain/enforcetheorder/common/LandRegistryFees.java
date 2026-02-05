@@ -42,3 +42,4 @@ public class LandRegistryFees {
     private BigDecimal amountOfLandRegistryFees;
 }
 
+
