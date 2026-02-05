@@ -8,6 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -36,4 +37,11 @@ public class DefendantResponses {
 
     @CCD
     private LocalDate noticeReceivedDate;
+
+    /**
+     * Indicates whether the defendant has received free legal advice.
+     * Used for statistical tracking; does not affect claim outcome.
+     */
+    @CCD
+    private YesNoPreferNotToSay hasReceivedFreeLegalAdvice;
 }
