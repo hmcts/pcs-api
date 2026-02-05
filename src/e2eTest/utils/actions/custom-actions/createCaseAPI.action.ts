@@ -47,7 +47,6 @@ export class CreateCaseAPIAction implements IAction {
       console.error("Timestamp:", body?.timestamp);
       console.error("Full response body:", JSON.stringify(body, null, 2));
 
-
       if (!status) {
         throw new Error(`Case creation failed: no response from server`);
       }
