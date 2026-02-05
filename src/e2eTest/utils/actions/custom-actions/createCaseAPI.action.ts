@@ -36,22 +36,21 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.state = createResponse.data.state;
     } catch (error: any) {
       const status = error?.response?.status;
-      const responseData = error?.response?.data;
-      const body = error?.response?.data;
+      const responseBody = error?.response?.data;
 
       console.error("=== ERROR RESPONSE ===");
       console.error("HTTP Status:", status);
-      console.error("Exception:", body?.exception);
-      console.error("Error:", body?.error);
-      console.error("Message:", body?.message);
-      console.error("Path:", body?.path);
-      console.error("Timestamp:", body?.timestamp);
-      console.error("Full response body:", JSON.stringify(body, null, 2));
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
 
       if (!status) {
         throw new Error(`Case creation failed: no response from server`);
       }
-      throw new Error(`Case creation failed with status ${status}.Response received is ${responseData}}`);
+      throw new Error(`Case creation failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
 
@@ -70,25 +69,24 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.state = submitResponse.data.state;
     } catch (error: any) {
       const status = error?.response?.status;
-      const responseData = error?.response?.data;
-      const body = error?.response?.data;
+      const responseBody = error?.response?.data;
       if (status === 404) {
         console.error(submitCaseApiData.submitCasePayload);
         throw new Error(`Submission failed: endpoint not found (404).please check the payload above \n ${error}`);
       }
       console.error("=== ERROR RESPONSE ===");
       console.error("HTTP Status:", status);
-      console.error("Exception:", body?.exception);
-      console.error("Error:", body?.error);
-      console.error("Message:", body?.message);
-      console.error("Path:", body?.path);
-      console.error("Timestamp:", body?.timestamp);
-      console.error("Full response body:", JSON.stringify(body, null, 2));
-      
+      console.error("Exception:", responseBody?.exception);
+      console.error("Error:", responseBody?.error);
+      console.error("Message:", responseBody?.message);
+      console.error("Path:", responseBody?.path);
+      console.error("Timestamp:", responseBody?.timestamp);
+      console.error("Full response body:", JSON.stringify(responseBody, null, 2));
+
       if (!status) {
         throw new Error('Submission failed: no response from server.');
       }
-      throw new Error(`Submission failed with status ${status}.Response received is ${responseData}}`);
+      throw new Error(`Submission failed with status ${status}.Response received is ${responseBody?.message}}`);
     }
   }
 
