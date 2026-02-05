@@ -1,16 +1,15 @@
-import { test } from '@playwright/test';
+import { test } from '@utils/test-fixtures';
 import {
   addressCheckYourAnswers,
   addressDetails,
   borderPostcode,
   canNotUseOnlineService,
-  home,
+  housingPossessionClaim,
   propertyIneligible,
-  signInOrCreateAnAccount,
-  user,
-  userIneligible
+  userIneligible,
+  home
 } from '@data/page-data';
-import{
+import {
   claimantType,
   claimType,
 } from '@data/page-data-figma';
@@ -20,24 +19,20 @@ import {
   performValidation
 } from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
-
-test.beforeEach(async ({page}) => {
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAdditionalCookiesButton,
-    hide: signInOrCreateAnAccount.hideThisCookieMessageButton
-  });
-  await performAction('login', user.claimantSolicitor);
-  await performAction('handleCookieConsent', {
-    accept: signInOrCreateAnAccount.acceptAnalyticsCookiesButton
-  });
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
+  // Login and cookie consent are handled globally via storageState in global-setup.config.ts
 });
 
 test.afterEach(async () => {
+  if (caseNumber) {
+    await performAction('deleteCaseRole', '[CREATOR]');
+  }
   PageContentValidation.finaliseTest();
 });
 
@@ -60,6 +55,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
   });
 
   test('Cross border - Verify postcode page for England and Scotland content @regression', async () => {
@@ -88,6 +84,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
   });
 
   test('Cross border England - Verify postcode not assigned to court - Can not use this service page @PR @regression', async () => {
@@ -107,6 +104,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
     await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
+    await performAction('extractCaseIdFromAlert');
   });
 
   test('England - Verify postcode not assigned to court - Can not use this service page', async () => {

@@ -37,7 +37,7 @@ public class RentDetails {
 
     @CCD(
         label = "Enter frequency",
-        hint = "Please specify the frequency"
+        max = 60
     )
     private String otherFrequency;
 

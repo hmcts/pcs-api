@@ -9,8 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.LandRegistryFees;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
@@ -31,7 +33,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         pageBuilder
                 .page("landRegistryFees", this::midEvent)
                 .pageLabel("Land Registry fees")
-                .showCondition("selectEnforcementType=\"WARRANT\"")
+                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
                 .label("landRegistryFees-content", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
@@ -55,7 +57,9 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         String warrantFeePence = convertWarrantFeeToPence(caseData);
         BigDecimal totalFees = getTotalFees(caseData, warrantFeePence);
 
-        // Render repayment table with all formatted amounts
+        RepaymentCosts repaymentCosts = caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts();
+
+        // Render repayment table for Repayments screen (default caption)
         String repaymentTableHtml = repaymentTableRenderer.render(
             totalArrears,
             legalCosts,
@@ -64,8 +68,18 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             totalFees
         );
 
-        caseData.getEnforcementOrder().getWarrantDetails()
-                .getRepaymentCosts().setRepaymentSummaryMarkdown(repaymentTableHtml);
+        // Render repayment table for SOT screen (custom caption)
+        String statementOfTruthRepaymentTableHtml = repaymentTableRenderer.render(
+            totalArrears,
+            legalCosts,
+            landRegistryFee,
+            caseData.getEnforcementOrder().getWarrantFeeAmount(),
+            totalFees,
+            "The payments due"
+        );
+
+        repaymentCosts.setRepaymentSummaryMarkdown(repaymentTableHtml);
+        repaymentCosts.setStatementOfTruthRepaymentSummaryMarkdown(statementOfTruthRepaymentTableHtml);
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

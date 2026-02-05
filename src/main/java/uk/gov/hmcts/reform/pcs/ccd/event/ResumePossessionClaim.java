@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
@@ -49,7 +50,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemote
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MoneyJudgment;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
@@ -83,9 +84,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -153,13 +155,14 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final AddressFormatter addressFormatter;
     private final RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
     private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
-    private final NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private final AssuredNoArrearsGroundsForPossessionPage noRentArrearsGroundsForPossessionOptions;
     private final CheckingNotice checkingNotice;
     private final WalesCheckingNotice walesCheckingNotice;
     private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
+    private final DocumentService documentService;
     private final CaseAssignmentService caseAssignmentService;
 
     @Override
@@ -303,6 +306,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         boolean hasUnsubmittedCaseData = draftCaseDataService
             .hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
+        log.debug("Draft data check result: caseReference={}, hasUnsubmittedData={}",
+            caseReference, hasUnsubmittedCaseData);
+
         caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
     }
 
@@ -317,10 +323,13 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         }
     }
 
-    private SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
+    public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
 
         ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
+        List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
+        pcsCaseEntity.addDocuments(documentEntities);
+        claimEntity.addClaimDocuments(documentEntities);
         pcsCaseEntity.addClaim(claimEntity);
 
         partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
@@ -329,12 +338,16 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
-        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
-        String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
+        log.debug("Deleting draft data after claim submission: caseReference={}, eventId={}",
+            caseReference, resumePossessionClaim);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
+        log.debug("Draft data deleted successfully");
+
+        String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
+        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
+        String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
@@ -387,7 +400,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulerClient.scheduleIfNotExists(
             ACCESS_CODE_TASK_DESCRIPTOR
-            .instance(taskId)
+                .instance(taskId)
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );

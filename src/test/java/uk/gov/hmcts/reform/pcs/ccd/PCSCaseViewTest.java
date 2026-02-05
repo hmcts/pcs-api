@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyId;
@@ -30,6 +31,14 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
+import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.RentDetailsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.StatementOfTruthView;
+import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
@@ -64,6 +73,23 @@ class PCSCaseViewTest {
     private DraftCaseDataService draftCaseDataService;
     @Mock
     private CaseTitleService caseTitleService;
+    @Mock
+    private TenancyLicenceView tenancyLicenceView;
+    @Mock
+    private ClaimGroundsView claimGroundsView;
+    @Mock
+    private RentDetailsView rentDetailsView;
+    @Mock
+    private AlternativesToPossessionView alternativesToPossessionView;
+    @Mock
+    private HousingActWalesView housingActWalesView;
+    @Mock
+    private RentArrearsView rentArrearsView;
+    @Mock
+    private NoticeOfPossessionView noticeOfPossessionView;
+    @Mock
+    private StatementOfTruthView statementOfTruthView;
+
     @Mock(strictness = LENIENT)
     private PcsCaseEntity pcsCaseEntity;
     @Mock
@@ -76,8 +102,10 @@ class PCSCaseViewTest {
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
         when(pcsCaseEntity.getClaims()).thenReturn(List.of(claimEntity));
 
-        underTest = new PCSCaseView(pcsCaseRepository, securityContextService,
-                                    modelMapper, draftCaseDataService, caseTitleService
+        underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
+                                    caseTitleService, tenancyLicenceView, claimGroundsView, rentDetailsView,
+                                    alternativesToPossessionView, housingActWalesView, rentArrearsView,
+                                    noticeOfPossessionView, statementOfTruthView
         );
     }
 
@@ -228,6 +256,44 @@ class PCSCaseViewTest {
 
     }
 
+    @Test
+    void shouldReturnEmptyListWhenNoDocumentsExist() {
+        // Given
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of());
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getAllDocuments()).isEmpty();
+    }
+
+    @Test
+    void shouldMapDocuments() {
+        // Given
+        DocumentEntity entity1 = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("doc1.pdf")
+            .url("url1")
+            .build();
+
+        DocumentEntity entity2 = DocumentEntity.builder()
+            .id(UUID.randomUUID())
+            .fileName("doc2.pdf")
+            .url("url2")
+            .build();
+
+        when(pcsCaseEntity.getDocuments()).thenReturn(List.of(entity1,entity2));
+
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        //Then
+        assertThat(pcsCase.getAllDocuments()).hasSize(2);
+        assertThat(pcsCase.getAllDocuments()).extracting(lv -> lv.getValue().getFilename())
+            .containsExactly("doc1.pdf", "doc2.pdf");
+    }
+
     private static ListValue<Party> asListValue(UUID id, Party party) {
         return ListValue.<Party>builder().id(id.toString()).value(party).build();
     }
@@ -343,6 +409,22 @@ class PCSCaseViewTest {
         assertThat(pcsCase.getDefendantCircumstances()).isNull();
         assertThat(pcsCase.getAdditionalReasonsForPossession()).isNull();
         assertThat(pcsCase.getClaimantType()).isNull();
+    }
+
+    @Test
+    void shouldSetCaseFieldsInViewHelpers() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        verify(tenancyLicenceView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(claimGroundsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(alternativesToPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(housingActWalesView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
     private static Stream<Arguments> complexClaimFieldsScenarios() {

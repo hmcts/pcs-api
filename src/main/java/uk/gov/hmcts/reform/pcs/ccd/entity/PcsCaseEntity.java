@@ -16,14 +16,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
-import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
@@ -64,11 +58,9 @@ public class PcsCaseEntity {
 
     private Boolean preActionProtocolCompleted;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    private TenancyLicence tenancyLicence;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private PossessionGrounds possessionGrounds;
+    @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private TenancyLicenceEntity tenancyLicence;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
@@ -80,13 +72,22 @@ public class PcsCaseEntity {
     @JsonManagedReference
     private List<ClaimEntity> claims = new ArrayList<>();
 
-    @Column(name = "party_documents")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private List<PartyDocumentDto> partyDocuments;
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private List<DocumentEntity> documents = new ArrayList<>();
 
-    @Column(name = "statement_of_truth")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private StatementOfTruth statementOfTruth;
+    public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
+        if (this.tenancyLicence != null) {
+            this.tenancyLicence.setPcsCase(null);
+        }
+
+        this.tenancyLicence = tenancyLicence;
+
+        if (this.tenancyLicence != null) {
+            this.tenancyLicence.setPcsCase(this);
+        }
+    }
 
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
@@ -96,5 +97,12 @@ public class PcsCaseEntity {
     public void addParty(PartyEntity party) {
         parties.add(party);
         party.setPcsCase(this);
+    }
+
+    public void addDocuments(List<DocumentEntity> documents) {
+        for (DocumentEntity document : documents) {
+            document.setPcsCase(this);
+            this.documents.add(document);
+        }
     }
 }

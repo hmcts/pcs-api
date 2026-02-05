@@ -20,8 +20,6 @@ public class PcsCaseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final PcsCaseMergeService pcsCaseMergeService;
     private final ModelMapper modelMapper;
-    private final TenancyLicenceService tenancyLicenceService;
-    private final PartyDocumentsService partyDocumentsService;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -47,8 +45,6 @@ public class PcsCaseService {
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
         pcsCaseEntity.setPropertyAddress(addressEntity);
-        pcsCaseEntity.setTenancyLicence(tenancyLicenceService.buildTenancyLicence(pcsCase));
-        pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
 
         pcsCaseRepository.save(pcsCaseEntity);
     }
@@ -63,7 +59,6 @@ public class PcsCaseService {
 
     public void mergeCaseData(PcsCaseEntity pcsCaseEntity, PCSCase pcsCase) {
         pcsCaseMergeService.mergeCaseData(pcsCaseEntity, pcsCase);
-        pcsCaseEntity.setPartyDocuments(partyDocumentsService.buildPartyDocuments(pcsCase));
     }
 
     public PcsCaseEntity loadCase(long caseReference) {

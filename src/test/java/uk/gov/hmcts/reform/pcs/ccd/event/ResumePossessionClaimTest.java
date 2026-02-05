@@ -44,7 +44,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyO
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
@@ -68,6 +68,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPo
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
@@ -192,7 +193,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
     @Mock
-    private NoRentArrearsGroundsForPossessionOptions noRentArrearsGroundsForPossessionOptions;
+    private AssuredNoArrearsGroundsForPossessionPage noRentArrearsGroundsForPossessionOptions;
     @Mock
     private CheckingNotice checkingNotice;
     @Mock
@@ -203,6 +204,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private FeeService feeService;
     @Mock
     private FeeFormatter feeFormatter;
+    @Mock
+    private DocumentService documentService;
     @Mock
     private CaseAssignmentService caseAssignmentService;
 
@@ -231,7 +234,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
             rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter, caseAssignmentService
+            underlesseeOrMortgageePage, feeService, feeFormatter,documentService, caseAssignmentService
         );
 
         setEventUnderTest(underTest);
@@ -641,9 +644,16 @@ class ResumePossessionClaimTest extends BaseEventTest {
             // Given
             stubFeeService();
 
+            ClaimEntity claimEntity = mock(ClaimEntity.class);
+            when(claimService.createMainClaimEntity(any()))
+                .thenReturn(claimEntity);
+
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
+
+            when(documentService.createAllDocuments(any()))
+                .thenReturn(List.of());
 
             // When
             callSubmitHandler(caseData);
@@ -767,5 +777,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             return taskDataList.getFirst();
         }
+
+
     }
 }

@@ -6,6 +6,8 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
@@ -36,7 +38,7 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 /**
  * The main domain model representing a possessions case.
  */
-@Builder
+@Builder(toBuilder = true)
 @Data
 public class PCSCase {
 
@@ -73,8 +75,6 @@ public class PCSCase {
     )
     @External
     private AddressUK propertyAddress;
-
-    private String formattedPropertyAddress;
 
     @CCD(searchable = false)
     private YesOrNo showCrossBorderPage;
@@ -143,39 +143,15 @@ public class PCSCase {
     private YesOrNo claimDueToRentArrears;
 
     @JsonUnwrapped(prefix = "rentArrears_")
-    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
-
-    @CCD
-    private YesOrNo overrideResumedGrounds;
+    private AssuredRentArrearsPossessionGrounds assuredRentArrearsPossessionGrounds;
 
     @CCD(
         label = "Do you have any other additional grounds for possession?"
     )
     private YesOrNo hasOtherAdditionalGrounds;
 
-
-
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
-    )
-    private Set<AssuredAdditionalMandatoryGrounds> assuredAdditionalMandatoryGrounds;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
-    )
-    private Set<AssuredAdditionalDiscretionaryGrounds> assuredAdditionalDiscretionaryGrounds;
-
     @JsonUnwrapped
     private RentArrearsGroundsReasons rentArrearsGroundsReasons;
-
-    private YesOrNo showRentArrearsGroundReasonPage;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?"
@@ -206,7 +182,7 @@ public class PCSCase {
     )
     private YesOrNo noticeServed;
 
-    @JsonUnwrapped(prefix = "eng")
+    @JsonUnwrapped(prefix = "notice_")
     @CCD
     private NoticeServedDetails noticeServedDetails;
 
@@ -347,9 +323,9 @@ public class PCSCase {
     private VerticalYesNo arrearsJudgmentWanted;
 
     @JsonUnwrapped(prefix = "noRentArrears_")
-    private NoRentArrearsGroundsOptions noRentArrearsGroundsOptions;
+    private AssuredNoArrearsPossessionGrounds noRentArrearsGroundsOptions;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "assuredNoArrearsReasons_")
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     private YesOrNo showRentSectionPage;
@@ -489,9 +465,22 @@ public class PCSCase {
     @CCD(
         access = {DefendantAccess.class}
     )
-    private DefendantResponse defendantResponse;
+    private PossessionClaimResponse possessionClaimResponse;
+
+    @CCD(
+        label = "Select an operation to perform.",
+        typeOverride = DynamicRadioList
+    )
+    private DynamicList testCaseSupportFileList;
+
+    @CCD(access = ClaimantAccess.class)
+    private List<ListValue<Document>> allDocuments;
 
     @CCD(searchable = false)
     private String formattedDefendantNames;
+    private String formattedPropertyAddress;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
 
 }

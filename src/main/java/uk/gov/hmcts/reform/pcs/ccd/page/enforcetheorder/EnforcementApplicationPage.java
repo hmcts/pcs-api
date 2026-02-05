@@ -83,9 +83,11 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("enforcementApplication", this::midEvent)
-                .pageLabel("Your application")
-                .label("enforcementApplication-content", "---")
+            .page("enforcementApplication", this::midEvent)
+            .pageLabel("Your application")
+            .label("enforcementApplication-content", "---")
+            .readonly(PCSCase::getFormattedDefendantNames, NEVER_SHOW, true)
+            .readonly(PCSCase::getFormattedPropertyAddress, NEVER_SHOW, true)
             .complex(PCSCase::getEnforcementOrder)
             .mandatory(EnforcementOrder::getSelectEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
@@ -97,16 +99,14 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> before) {
-        PCSCase pcsCase = before.getData();
         PCSCase data = details.getData();
-        setFormattedDefendantNames(pcsCase.getAllDefendants(), data);
+        setFormattedDefendantNames(data.getAllDefendants(), data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data).build();
     }
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
         if (defendants != null && !defendants.isEmpty()) {
-            pcsCase.setAllDefendants(defendants);
             pcsCase.setFormattedDefendantNames(defendants.stream()
                 .map(defendant ->
                     defendant.getValue().getFirstName() + " " + defendant.getValue().getLastName()
@@ -114,7 +114,5 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                 .collect(Collectors.joining("\n")));
         }
     }
-
-
 
 }

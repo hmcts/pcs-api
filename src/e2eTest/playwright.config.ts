@@ -1,4 +1,6 @@
 import * as process from 'node:process';
+import * as path from 'path';
+import * as fs from 'fs';
 
 import {defineConfig, devices} from '@playwright/test';
 
@@ -10,7 +12,8 @@ export const LONG_TIMEOUT = 30000;
 export const VERY_LONG_TIMEOUT = 60000;
 export const actionRetries = 5;
 export const waitForPageRedirectionTimeout = SHORT_TIMEOUT;
-const env = process.env.ENVIRONMENT?.toLowerCase() || 'preview';
+const STORAGE_STATE_PATH = path.join(__dirname, '.auth/storage-state.json');
+const storageStateConfig = fs.existsSync(STORAGE_STATE_PATH) ? { storageState: STORAGE_STATE_PATH } : {};
 
 export default defineConfig({
   testDir: 'tests/',
@@ -19,10 +22,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 3 : 0,
-  workers: env === 'preview' ? 1 : 4,
+  //Configure workers by environment: AAT is fixed at 4 workers; preview worker count can be adjusted based on preview performance
+  workers: process.env.ENVIRONMENT === 'preview' ? 2 : 4,
   timeout: 600 * 1000,
-  expect: { timeout: 60 * 1000 },
-  use: { actionTimeout: 60 * 1000, navigationTimeout: 60 * 1000 },
+  expect: { timeout: 30 * 1000 },
+  use: { actionTimeout: 40 * 1000,  navigationTimeout: 40 * 1000, ...storageStateConfig },
   /* Report slow tests if they take longer than 5 mins */
   reportSlowTests: { max: 15, threshold: 5 * 60 * 1000 },
   globalSetup: require.resolve('./config/global-setup.config'),

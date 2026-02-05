@@ -4,17 +4,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementClaimant;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementLegalRep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
-import uk.gov.hmcts.reform.pcs.ccd.model.StatementOfTruth;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
 
-import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
 
 @ExtendWith(MockitoExtension.class)
 class StatementOfTruthServiceTest {
@@ -33,7 +36,7 @@ class StatementOfTruthServiceTest {
         when(pcsCase.getStatementOfTruth()).thenReturn(null);
 
         // When
-        StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
+        StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
 
         // Then
         assertThat(result).isNull();
@@ -46,7 +49,7 @@ class StatementOfTruthServiceTest {
         when(statementOfTruthDetails.getCompletedBy()).thenReturn(null);
 
         // When
-        StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
+        StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
 
         // Then
         assertThat(result).isNull();
@@ -56,26 +59,22 @@ class StatementOfTruthServiceTest {
     void shouldBuildStatementOfTruthForClaimant() {
         // Given
         when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
-        when(statementOfTruthDetails.getCompletedBy()).thenReturn(StatementOfTruthCompletedBy.CLAIMANT);
+        when(statementOfTruthDetails.getCompletedBy()).thenReturn(CLAIMANT);
         when(statementOfTruthDetails.getAgreementClaimant())
-            .thenReturn(Arrays.asList(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
+            .thenReturn(List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE));
         when(statementOfTruthDetails.getFullNameClaimant()).thenReturn("John Smith");
         when(statementOfTruthDetails.getPositionClaimant()).thenReturn("Director");
 
         // When
-        StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
+        StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.CLAIMANT);
-        assertThat(result.getAgreementClaimant()).isEqualTo(StatementOfTruthAgreementClaimant.BELIEVE_TRUE);
-        assertThat(result.getFullNameClaimant()).isEqualTo("John Smith");
-        assertThat(result.getPositionClaimant()).isEqualTo("Director");
-        // Legal rep fields should be null
-        assertThat(result.getAgreementLegalRep()).isNull();
-        assertThat(result.getFullNameLegalRep()).isNull();
-        assertThat(result.getFirmNameLegalRep()).isNull();
-        assertThat(result.getPositionLegalRep()).isNull();
+        assertThat(result.getCompletedBy()).isEqualTo(CLAIMANT);
+        assertThat(result.getAccepted()).isEqualTo(YesOrNo.YES);
+        assertThat(result.getFullName()).isEqualTo("John Smith");
+        assertThat(result.getPositionHeld()).isEqualTo("Director");
+        assertThat(result.getFirmName()).isNull();
     }
 
     @Test
@@ -85,26 +84,49 @@ class StatementOfTruthServiceTest {
         when(statementOfTruthDetails.getCompletedBy())
             .thenReturn(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
         when(statementOfTruthDetails.getAgreementLegalRep())
-            .thenReturn(Arrays.asList(StatementOfTruthAgreementLegalRep.AGREED));
+            .thenReturn(List.of(StatementOfTruthAgreementLegalRep.AGREED));
         when(statementOfTruthDetails.getFullNameLegalRep()).thenReturn("Jane Doe");
         when(statementOfTruthDetails.getFirmNameLegalRep()).thenReturn("Smith & Co Solicitors");
         when(statementOfTruthDetails.getPositionLegalRep()).thenReturn("Partner");
 
         // When
-        StatementOfTruth result = statementOfTruthService.buildStatementOfTruth(pcsCase);
+        StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getCompletedBy()).isEqualTo(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
-        assertThat(result.getAgreementLegalRep()).isEqualTo(StatementOfTruthAgreementLegalRep.AGREED);
-        assertThat(result.getFullNameLegalRep()).isEqualTo("Jane Doe");
-        assertThat(result.getFirmNameLegalRep()).isEqualTo("Smith & Co Solicitors");
-        assertThat(result.getPositionLegalRep()).isEqualTo("Partner");
-        // Claimant fields should be null
-        assertThat(result.getAgreementClaimant()).isNull();
-        assertThat(result.getFullNameClaimant()).isNull();
-        assertThat(result.getPositionClaimant()).isNull();
+        assertThat(result.getAccepted()).isEqualTo(YesOrNo.YES);
+        assertThat(result.getFullName()).isEqualTo("Jane Doe");
+        assertThat(result.getFirmName()).isEqualTo("Smith & Co Solicitors");
+        assertThat(result.getPositionHeld()).isEqualTo("Partner");
     }
 
+    @Test
+    void shouldNotSetAcceptedFlagWhenClaimantDidNotAgree() {
+        // Given
+        when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
+        when(statementOfTruthDetails.getCompletedBy()).thenReturn(CLAIMANT);
+        when(statementOfTruthDetails.getAgreementClaimant()).thenReturn(List.of());
+
+        // When
+        StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
+
+        // Then
+        assertThat(result.getAccepted()).isNull();
+    }
+
+    @Test
+    void shouldNotSetAcceptedFlagWhenLegalRepDidNotAgree() {
+        // Given
+        when(pcsCase.getStatementOfTruth()).thenReturn(statementOfTruthDetails);
+        when(statementOfTruthDetails.getCompletedBy()).thenReturn(LEGAL_REPRESENTATIVE);
+        when(statementOfTruthDetails.getAgreementLegalRep()).thenReturn(List.of());
+
+        // When
+        StatementOfTruthEntity result = statementOfTruthService.createStatementOfTruthEntity(pcsCase);
+
+        // Then
+        assertThat(result.getAccepted()).isNull();
+    }
 }
 

@@ -52,7 +52,7 @@ class DraftCaseJsonMergerTest {
             .applicationWithClaim(VerticalYesNo.YES)
             .claimantType(claimantTypeList)
             .noRentArrearsReasonForGrounds(NoRentArrearsReasonForGrounds.builder()
-                                                .holidayLetTextArea("some holiday let details")
+                                                .holidayLet("some holiday let details")
                                                 .build())
             .build();
 
@@ -69,18 +69,29 @@ class DraftCaseJsonMergerTest {
             .ignoringFields("introductoryDemotedOrOtherGroundsForPossession.otherGroundDescription",
                             "applicationWithClaim",
                             "claimantType",
-                            "noRentArrearsReasonForGrounds.holidayLetTextArea",
+                            "noRentArrearsReasonForGrounds.holidayLet",
                             "waysToPay",
+                            "claimGroundSummaries",
                             "enforcementOrder.showChangeNameAddressPage",
                             "enforcementOrder.showPeopleWhoWillBeEvictedPage",
-                            "enforcementOrder.showPeopleYouWantToEvictPage")
+                            "enforcementOrder.showPeopleYouWantToEvictPage",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.agreementClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.fullNameClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.positionClaimant",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.agreementLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.fullNameLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.firmNameLegalRep",
+                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.positionLegalRep",
+                            "enforcementOrder.warrantDetails.selectedDefendants")
             .isEqualTo(existingCaseData);
 
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()
                         .getOtherGroundDescription()).isEqualTo("some other ground description");
         assertThat(mergedCaseData.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
         assertThat(mergedCaseData.getClaimantType()).isEqualTo(claimantTypeList);
-        assertThat(mergedCaseData.getNoRentArrearsReasonForGrounds().getHolidayLetTextArea())
+        assertThat(mergedCaseData.getNoRentArrearsReasonForGrounds().getHolidayLet())
             .isEqualTo("some holiday let details");
 
     }

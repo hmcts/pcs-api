@@ -7,11 +7,10 @@ import {LoginAction} from '@utils/actions/custom-actions/login.action';
 import {NavigateToUrlAction} from '@utils/actions/custom-actions/navigateToUrl.action';
 import {CreateCaseAction} from '@utils/actions/custom-actions/createCase.action';
 import {ClickButtonAction} from '@utils/actions/element-actions/clickButton.action';
-import {ClickRadioButtonAction} from '@utils//actions/element-actions/clickRadioButton.action';
+import {ClickRadioButtonAction} from '@utils/actions/element-actions/clickRadioButton.action';
 import {UploadFileAction} from '@utils/actions/element-actions/uploadFile.action';
 import {CreateCaseWalesAction} from '@utils/actions/custom-actions/createCaseWales.action';
 import {SearchCaseAction} from '@utils/actions/custom-actions/searchCase.action';
-import {handleCookieConsentAction} from '@utils/actions/custom-actions/handleCookieConsent.action';
 import {signOutAction} from '@utils/actions/custom-actions/signOut.action';
 import {ClickLinkAndVerifyNewTabTitleAction} from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import {CreateCaseAPIAction} from '@utils/actions/custom-actions/createCaseAPI.action';
@@ -31,7 +30,6 @@ export class ActionRegistry {
     ['createUserAndLogin', new LoginAction()],
     ['login', new LoginAction()],
     ['navigateToUrl', new NavigateToUrlAction()],
-    ['handleCookieConsent', new handleCookieConsentAction()],
     ['signOut', new signOutAction()],
     ['uploadFile', new UploadFileAction()],
     ['selectAddress', new CreateCaseAction()],
@@ -45,6 +43,7 @@ export class ActionRegistry {
     ['enterTestAddressManually', new CreateCaseAction()],
     ['createCaseAPI', new CreateCaseAPIAction()],
     ['submitCaseAPI', new CreateCaseAPIAction()],
+    ['deleteCaseRole', new CreateCaseAPIAction()],
     ['selectClaimType', new CreateCaseAction()],
     ['selectClaimantName', new CreateCaseAction()],
     ['selectClaimantDetails', new CreateCaseWalesAction()],

@@ -4,11 +4,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 
 import java.util.Set;
@@ -28,10 +28,10 @@ class GroundsForPossessionTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
-                    .mandatoryGrounds(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+                AssuredNoArrearsPossessionGrounds.builder()
+                    .mandatoryGrounds(Set.of(AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A))
                     .discretionaryGrounds(
-                        Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
+                        Set.of(AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A))
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.YES)
@@ -56,10 +56,10 @@ class GroundsForPossessionTest extends BasePageTest {
         CaseDetails<PCSCase, State> caseDetails = new CaseDetails<>();
         PCSCase caseData = PCSCase.builder()
             .noRentArrearsGroundsOptions(
-                NoRentArrearsGroundsOptions.builder()
-                    .mandatoryGrounds(Set.of(NoRentArrearsMandatoryGrounds.ANTISOCIAL_BEHAVIOUR))
+                AssuredNoArrearsPossessionGrounds.builder()
+                    .mandatoryGrounds(Set.of(AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A))
                     .discretionaryGrounds(
-                        Set.of(NoRentArrearsDiscretionaryGrounds.DOMESTIC_VIOLENCE))
+                        Set.of(AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A))
                     .build()
             )
             .claimDueToRentArrears(YesOrNo.NO)
