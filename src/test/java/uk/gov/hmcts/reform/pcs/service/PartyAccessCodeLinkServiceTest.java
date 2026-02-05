@@ -59,6 +59,10 @@ class PartyAccessCodeLinkServiceTest {
         return new UserInfo(null, USER_ID.toString(), null, null, null, List.of());
     }
 
+    private UserInfo createUserWithEmail(String email) {
+        return new UserInfo(email, USER_ID.toString(), null, null, null, List.of());
+    }
+
     private PartyEntity createParty(UUID partyId, UUID idamUserId) {
         PartyEntity partyEntity = new PartyEntity();
         partyEntity.setId(partyId);
@@ -111,6 +115,75 @@ class PartyAccessCodeLinkServiceTest {
 
         // THEN
         assertThat(defendantEntity.getIdamId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void shouldStoreEmailFromIdam_WhenLinkingAccessCode() {
+        // GIVEN
+        UUID caseId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+        String userEmail = "defendant@example.com";
+
+        PartyEntity defendantEntity = createParty(partyId, null);
+        PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(partyId)
+            .code(ACCESS_CODE)
+            .build();
+
+        final UserInfo userWithEmail = createUserWithEmail(userEmail);
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(caseAssignmentService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
+            mock(CaseAssignmentUserRolesResponse.class));
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
+            .thenReturn(defendantEntity);
+        doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity);
+        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
+            List.of(defendantEntity), partyId, USER_ID);
+
+        // WHEN
+        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, userWithEmail);
+
+        // THEN
+        assertThat(defendantEntity.getIdamId()).isEqualTo(USER_ID);
+        assertThat(defendantEntity.getEmailAddress()).isEqualTo(userEmail);
+    }
+
+    @Test
+    void shouldHandleNullEmail_WhenLinkingAccessCode() {
+        // GIVEN
+        UUID caseId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+
+        PartyEntity defendantEntity = createParty(partyId, null);
+        PcsCaseEntity caseEntity = createCaseWithDefendants(caseId, List.of(defendantEntity));
+
+        PartyAccessCodeEntity pac = PartyAccessCodeEntity.builder()
+            .partyId(partyId)
+            .code(ACCESS_CODE)
+            .build();
+
+        final UserInfo userWithNullEmail = createUserWithEmail(null);
+
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+        when(caseAssignmentService.assignDefendantRole(Mockito.anyLong(), Mockito.anyString())).thenReturn(
+            mock(CaseAssignmentUserRolesResponse.class));
+        when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
+        when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
+            .thenReturn(defendantEntity);
+        doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity);
+        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
+            List.of(defendantEntity), partyId, USER_ID);
+
+        // WHEN
+        service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, userWithNullEmail);
+
+        // THEN
+        assertThat(defendantEntity.getIdamId()).isEqualTo(USER_ID);
+        assertThat(defendantEntity.getEmailAddress()).isNull();
     }
 
     @Test

@@ -14,6 +14,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -579,6 +580,126 @@ class SubmitEventHandlerTest {
 
         // Then
         submitAndVerifyDraftSaved(caseData);
+    }
+
+    @Test
+    void shouldSaveDraftWithLegalAdvicePreferNotToSay() {
+        // Given
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .hasReceivedFreeLegalAdvice(YesNoPreferNotToSay.PREFER_NOT_TO_SAY)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(null)
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
+            .isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
+            .getHasReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.PREFER_NOT_TO_SAY);
+    }
+
+    @Test
+    void shouldSaveDraftWithLegalAdviceYes() {
+        // Given
+        DefendantResponses responses = DefendantResponses.builder()
+            .hasReceivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(null)
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
+            .isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
+            .getHasReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
+    }
+
+    @Test
+    void shouldAllowSubmitWithOnlyLegalAdviceField() {
+        // Given - Only legal advice field, no other defendant responses
+        DefendantResponses responses = DefendantResponses.builder()
+            .hasReceivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(null)
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then - Must succeed when only legal advice field provided
+        assertThat(result)
+            .as("Submit must succeed when only legal advice field provided")
+            .isNotNull();
+        assertThat(result.getErrors())
+            .as("No errors when only legal advice field provided")
+            .isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
+            .as("defendantResponses should be saved")
+            .isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
+            .getHasReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.NO);
     }
 
     @Test
