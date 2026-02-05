@@ -226,7 +226,7 @@ public class PCSCase {
         hint = "You can enter up to 250 characters",
         typeOverride = TextArea
     )
-    private String prohibitedConductWalesWhyMakingClaim;
+    private String prohibitedConductWalesClaimDetails;
 
     @CCD
     private PeriodicContractTermsWales periodicContractTermsWales;
