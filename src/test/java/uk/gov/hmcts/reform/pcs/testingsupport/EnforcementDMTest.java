@@ -28,8 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the enforcement domain and entity models remain synchronized.
  * Category: Domain Entity Validation
  */
-@Tag("architecture")
-@Tag("enforcement-domain-entity-alignment")
+//@Tag("architecture")
+//@Tag("enforcement-domain-entity-alignment")
 class EnforcementDMTest {
 
     private DomainDataModelSupportHelper domainDataModelSupportHelper;
