@@ -5,15 +5,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class EnforcementCosts {
 
-    private String totalArrearsPence;
-    private String legalFeesPence;
-    private String landRegistryFeesPence;
-    private String feeAmount;
+    private BigDecimal totalArrears;
+    private BigDecimal legalFees;
+    private BigDecimal landRegistryFees;
+    private BigDecimal feeAmount;
     private String feeAmountType;
 }

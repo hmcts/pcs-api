@@ -43,7 +43,8 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
             .getPropertyAccessDetails().getClarificationOnAccessDifficultyText())
             .isEqualTo(SHORTEST_VALID_TEXT);
@@ -68,7 +69,8 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEmpty();
+        assertThat(response.getErrorMessageOverride()).isNullOrEmpty();
+        assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getPropertyAccessDetails().getClarificationOnAccessDifficultyText()).isEqualTo(
                         SHORTEST_VALID_TEXT.repeat(6800));
@@ -97,6 +99,6 @@ class PropertyAccessDetailsPageTest extends BasePageTest {
                                              "Explain why it’s difficult to access the property",
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }

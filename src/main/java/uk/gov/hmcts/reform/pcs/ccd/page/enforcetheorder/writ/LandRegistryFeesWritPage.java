@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
@@ -24,11 +23,9 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWar
 public class LandRegistryFeesWritPage implements CcdPageConfiguration {
 
     private final RepaymentTableRenderer repaymentTableRenderer;
-    private final FeeFormatter feeFormatter;
 
     public static final String WRIT_FEE_AMOUNT = "writFeeAmount";
     static final String TEMPLATE = "repaymentTableWrit";
-    static final String CURRENCY_SYMBOL = "£";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -55,11 +52,10 @@ public class LandRegistryFeesWritPage implements CcdPageConfiguration {
         WritDetails writDetails = caseData.getEnforcementOrder().getWritDetails();
 
         EnforcementCosts enforcementCosts = EnforcementCosts.builder()
-                .totalArrearsPence(writDetails.getMoneyOwedByDefendants().getAmountOwed())
-                .legalFeesPence(writDetails.getLegalCosts().getAmountOfLegalCosts())
-                .landRegistryFeesPence(writDetails.getLandRegistryFees().getAmountOfLandRegistryFees())
-                .feeAmount(feeFormatter.getFeeAmountWithoutCurrencySymbol(
-                        caseData.getEnforcementOrder().getWritFeeAmount(), CURRENCY_SYMBOL))
+                .totalArrears(writDetails.getMoneyOwedByDefendants().getAmountOwed())
+                .legalFees(writDetails.getLegalCosts().getAmountOfLegalCosts())
+                .landRegistryFees(writDetails.getLandRegistryFees().getAmountOfLandRegistryFees())
+                .feeAmount(caseData.getEnforcementOrder().getWritFeeAmount())
                 .feeAmountType(WRIT_FEE_AMOUNT)
                 .build();
 
