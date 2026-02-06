@@ -157,9 +157,9 @@ class ContactPreferencesTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         //Then
-        assertThat(response.getErrors())
+        assertThat(response.getErrorMessageOverride())
             .isNotEmpty()
-            .anyMatch(error -> error.contains("more than the maximum number of characters"));
+            .contains("more than the maximum number of characters");
 
     }
 }
