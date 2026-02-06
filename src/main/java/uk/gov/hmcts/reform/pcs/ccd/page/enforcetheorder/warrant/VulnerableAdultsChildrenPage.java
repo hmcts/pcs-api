@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdul
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,9 +69,9 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         List<String> errors = getValidationErrors(data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(data)
-                .errors(errors)
-                .build();
+            .data(data)
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
+            .build();
     }
 
     private List<String> getValidationErrors(PCSCase data) {
