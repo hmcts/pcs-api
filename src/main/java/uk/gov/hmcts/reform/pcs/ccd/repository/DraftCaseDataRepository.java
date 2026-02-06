@@ -18,7 +18,7 @@ public interface DraftCaseDataRepository extends JpaRepository<DraftCaseDataEnti
     boolean existsByCaseReferenceAndEventIdAndIdamUserId(
         long caseReference, EventId eventId, UUID idamUserId);
 
-    @Modifying
+    @Modifying(clearAutomatically = true)
     @Query("DELETE FROM DraftCaseDataEntity d "
         + "WHERE d.caseReference = :caseReference AND d.eventId = :eventId AND d.idamUserId = :idamUserId")
     void deleteByCaseReferenceAndEventIdAndIdamUserId(@Param("caseReference") long caseReference,
