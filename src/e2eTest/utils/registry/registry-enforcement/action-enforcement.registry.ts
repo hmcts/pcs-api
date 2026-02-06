@@ -31,6 +31,7 @@ export class ActionEnforcementRegistry {
     ['validateWritOrWarrantFeeAmount', new EnforcementAction()],
     ['validateGetQuoteFromBailiffLink', new EnforcementAction()],
     ['selectApplicationType', new EnforcementAction()],
+    ['confirmClaimTransferredToHighCourt', new EnforcementAction()],
     ['selectHaveHiredHCEO', new EnforcementAction()],
     ['nameYourHCEO', new EnforcementAction()],
     ['selectNameAndAddressForEviction', new EnforcementAction()],
