@@ -1,7 +1,7 @@
 CREATE TABLE asb_prohibited_conduct (
   id                                 UUID PRIMARY KEY,
   version                            INT,
-  claim_id                           UUID REFERENCES claim (id),
+  claim_id                           UUID UNIQUE REFERENCES claim (id),
   antisocial_behaviour               YES_NO,
   antisocial_behaviour_details       VARCHAR(500),
   illegal_purposes                   YES_NO,
