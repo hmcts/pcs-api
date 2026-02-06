@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.List;
 
@@ -150,7 +151,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                 List<String> validationErrors = addressValidator.validateAddressFields(contactAddress);
                 if (!validationErrors.isEmpty()) {
                     return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .errors(validationErrors)
+                        .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
                         .build();
                 }
             }
