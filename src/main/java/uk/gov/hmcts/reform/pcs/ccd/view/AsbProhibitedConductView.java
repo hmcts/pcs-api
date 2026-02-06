@@ -37,7 +37,9 @@ public class AsbProhibitedConductView {
         pcsCase.setAsbQuestionsWales(asbDetails);
     }
 
-    private static void setProhibitedConductFields(PCSCase pcsCase, AsbProhibitedConductEntity asbProhibitedConductEntity) {
+    private static void setProhibitedConductFields(PCSCase pcsCase,
+                                                   AsbProhibitedConductEntity asbProhibitedConductEntity) {
+
         pcsCase.setProhibitedConductWalesClaim(asbProhibitedConductEntity.getClaimingStandardContract());
         pcsCase.setProhibitedConductWalesClaimDetails(asbProhibitedConductEntity.getClaimingStandardContractDetails());
 
