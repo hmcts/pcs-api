@@ -83,23 +83,24 @@ class FeeApplierTest extends BaseEventTest {
     }
 
     @Test
-    void shouldSetDefaultFeeWhenFeeServiceReturnsNull() {
-        // Given
-        PCSCase pcsCase = PCSCase.builder()
-            .enforcementOrder(EnforcementOrder.builder().build())
-            .build();
-        FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
+    void shouldSetUnableToRetrieveWhenFeeServiceReturnsNull() {
+        PCSCase pcsCase = PCSCase.builder().build();
+        FeeType feeType = FeeType.CASE_ISSUE_FEE;
         final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
+        FeeDetails feeDetails = FeeDetails.builder()
+            .feeAmount(null)
+            .build();
 
-        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(null);
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
-            .getEnforcementOrder().setWarrantFeeAmount(fee);
+        when(feeService.getFee(feeType)).thenReturn(feeDetails);
+        when(feeFormatter.formatFee(null)).thenReturn(null);
+
+        BiConsumer<PCSCase, String> setter = PCSCase::setFeeAmount;
 
         // When
         underTest.applyFeeAmount(pcsCase, feeType, setter);
 
         // Then
         verify(feeService).getFee(feeType);
-        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
+        assertThat(pcsCase.getFeeAmount()).isEqualTo(expectedFormattedFee);
     }
 }

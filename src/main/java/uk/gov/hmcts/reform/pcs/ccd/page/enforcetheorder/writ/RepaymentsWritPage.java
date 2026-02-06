@@ -1,36 +1,36 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
-public class RepaymentsPage implements CcdPageConfiguration {
+public class RepaymentsWritPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("repayments")
+            .page("repayments-writ")
             .pageLabel("Repayments")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
-            .label("repayments-content", "---")
+            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .label("repayments-writ-content", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
-            .complex(EnforcementOrder::getWarrantDetails)
-            .complex(WarrantDetails::getRepaymentCosts)
+            .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .complex(EnforcementOrder::getWritDetails)
+            .complex(WritDetails::getRepaymentCosts)
             .readonly(RepaymentCosts::getRepaymentSummaryMarkdown, NEVER_SHOW, true)
-            .label("repayments-table-content", "${warrantRepaymentSummaryMarkdown}")
+            .label("repayments-writ-table-content", "${writRepaymentSummaryMarkdown}")
             .mandatory(RepaymentCosts::getRepaymentChoice)
-            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "warrantRepaymentChoice=\"SOME\"")
+            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "writRepaymentChoice=\"SOME\"")
             .done()
             .done()
             .done()
-            .label("repayments-save-and-return", SAVE_AND_RETURN);
+            .label("repayments-writ-save-and-return", SAVE_AND_RETURN);
     }
 }
