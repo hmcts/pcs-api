@@ -21,7 +21,7 @@ import java.util.UUID;
 import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
-@Table(schema = "enforcement", name = "enf_case")
+@Table(name = "enf_case")
 @Getter
 @Setter
 public class EnforcementOrderEntity {
