@@ -30,18 +30,19 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("landRegistryFees", this::midEvent)
-                .pageLabel("Land Registry fees")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
-                .label("landRegistryFees-content", "---")
-                .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getWarrantDetails)
-                .complex(WarrantDetails::getLandRegistryFees)
-                .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
-                .mandatory(LandRegistryFees::getAmountOfLandRegistryFees, "warrantHaveLandRegistryFeesBeenPaid=\"YES\"")
-                    .done()
-                .done()
-                .label("landRegistryFees-save-and-return", SAVE_AND_RETURN);
+            .page("landRegistryFees", this::midEvent)
+            .pageLabel("Land Registry fees")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+            .label("landRegistryFees-content", "---")
+            .complex(PCSCase::getEnforcementOrder)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getLandRegistryFees)
+            .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
+            .mandatory(LandRegistryFees::getAmountOfLandRegistryFees, "warrantHaveLandRegistryFeesBeenPaid=\"YES\"")
+            .done()
+            .done()
+            .done()
+            .label("landRegistryFees-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
