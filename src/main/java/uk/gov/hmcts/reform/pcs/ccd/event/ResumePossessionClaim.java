@@ -90,7 +90,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
@@ -161,8 +161,9 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final ASBQuestionsWales asbQuestionsWales;
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final FeeService feeService;
-    private final FeeFormatter feeFormatter;
+    private final MoneyFormatter moneyFormatter;
     private final DocumentService documentService;
+    private final RentDetailsPage rentDetailsPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -209,7 +210,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(checkingNotice)
             .add(walesCheckingNotice)
             .add(noticeDetails)
-            .add(new RentDetailsPage())
+            .add(rentDetailsPage)
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
@@ -345,7 +346,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
-        String caseIssueFee = feeFormatter.formatFee(feeDetails.getFeeAmount());
+        String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
