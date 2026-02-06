@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
@@ -31,7 +32,8 @@ class ContactPreferencesTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ContactPreferences(addressValidator));
+        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
+        setPageUnderTest(new ContactPreferences(addressValidator,textAreaValidationService));
     }
 
     @Test
@@ -111,5 +113,53 @@ class ContactPreferencesTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNull();
         verifyNoInteractions(addressValidator);
+    }
+
+    @Test
+    void shouldValidateEmailWhenCorrectLength() {
+        //Given
+        ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            .orgAddressFound(YesOrNo.YES)
+            .isCorrectClaimantContactAddress(VerticalYesNo.YES)
+            .overriddenClaimantContactAddress(null)
+            .isCorrectClaimantContactEmail(VerticalYesNo.NO)
+            .overriddenClaimantContactEmail("John.Smith@hotmail.com")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantContactPreferences(contactPreferences)
+            .build();
+
+        //When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //Then
+        assertThat(response.getErrors()).isNull();
+    }
+
+    @Test
+    void shouldValidateEmailWhenTooLong() {
+        //Given
+        String longEmail = "John.Smith@hotmail.com".repeat(4);
+        ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            .orgAddressFound(YesOrNo.YES)
+            .isCorrectClaimantContactAddress(VerticalYesNo.YES)
+            .overriddenClaimantContactAddress(null)
+            .isCorrectClaimantContactEmail(VerticalYesNo.NO)
+            .overriddenClaimantContactEmail(longEmail)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantContactPreferences(contactPreferences)
+            .build();
+
+        //When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //Then
+        assertThat(response.getErrors())
+            .isNotEmpty()
+            .anyMatch(error -> error.contains("more than the maximum number of characters"));
+
     }
 }

@@ -14,7 +14,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -24,6 +26,8 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class ContactPreferences implements CcdPageConfiguration {
 
     private final AddressValidator addressValidator;
+    private final TextAreaValidationService textAreaValidationService;
+    private static final String EMAIL_LABEL = "Enter email address";
 
     private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
     private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
@@ -140,22 +144,29 @@ public class ContactPreferences implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
-
+        List<String> validationErrors = new ArrayList<>();
         ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
         if (contactPreferences != null) {
             VerticalYesNo isCorrectClaimantContactAddress = contactPreferences.getIsCorrectClaimantContactAddress();
+            String newEmail = contactPreferences.getOverriddenClaimantContactEmail();
             if (isCorrectClaimantContactAddress == VerticalYesNo.NO
                 || contactPreferences.getOrgAddressFound() == YesOrNo.NO) {
                 AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress();
-                List<String> validationErrors = addressValidator.validateAddressFields(contactAddress);
-                if (!validationErrors.isEmpty()) {
-                    return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .errors(validationErrors)
-                        .build();
-                }
+                validationErrors.addAll(addressValidator.validateAddressFields(contactAddress));
+
+            }
+            if (newEmail != null) {
+                validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
+                    newEmail, EMAIL_LABEL, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
+                );
             }
         }
 
+        if (!validationErrors.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errors(validationErrors)
+                .build();
+        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)
             .build();
