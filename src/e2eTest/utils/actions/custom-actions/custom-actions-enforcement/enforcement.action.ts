@@ -95,6 +95,8 @@ export class EnforcementAction implements IAction {
     await performValidation('formLabelValue', summaryOption.label1, summaryOption.text1);
     await performValidation('formLabelValue', summaryOption.label2, summaryOption.text2);
     await performAction('expandSummary', summaryOption.type);
+    const warrantFeeAmt = await this.retrieveAmountFromString(summaryOption.text1 as string);
+    moneyMap.set(yourApplication.typeofFee.warrantOfPossessionFee, warrantFeeAmt);
     const warrantJourney = summaryOption.journey === 'Warrant of possession';
     const feeType = warrantJourney
       ? yourApplication.typeofFee.warrantOfPossessionFee
