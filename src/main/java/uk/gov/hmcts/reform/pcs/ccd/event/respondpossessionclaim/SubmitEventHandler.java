@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantContactPreferencesService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.RespondPossessionClaimDraftService;
 
 import java.util.List;
@@ -19,23 +20,30 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SubmitEventHandler implements Submit<PCSCase, State> {
 
-    private final RespondPossessionClaimDraftService draftService;
+    private final RespondPossessionClaimDraftService draftCaseDataService;
+    private final DefendantContactPreferencesService defendantContactPreferencesService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
+        PossessionClaimResponse defendantResponse = eventPayload.caseData().getPossessionClaimResponse();
+        YesOrNo submitDraft = eventPayload.caseData().getSubmitDraftAnswers();
+
 
         SubmitResponse<State> validationError = validate(caseData, caseReference);
         if (validationError != null) {
             return validationError;
         }
 
-        if (caseData.getSubmitDraftAnswers().toBoolean()) {
-            return processFinalSubmit(caseReference, caseData);
-        } else {
-            return processDraftSubmit(caseReference, caseData);
+        if (defendantResponse != null && submitDraft != null) {
+            if (caseData.getSubmitDraftAnswers().toBoolean()) {
+                return processFinalSubmit(caseReference, caseData, defendantResponse);
+            } else {
+                return processDraftSubmit(caseReference, caseData);
+            }
         }
+        return SubmitResponse.defaultResponse();
     }
 
     private SubmitResponse<State> validate(PCSCase caseData, long caseReference) {
@@ -55,7 +63,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return null;
     }
 
-    private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
+    private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData,
+                                                     PossessionClaimResponse defendantResponse) {
         log.info("Processing final submission for case {}", caseReference);
 
         //TODO: find draft data using idam user and case reference and event
@@ -63,6 +72,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         //TODO: Store defendant response to database
         //This will be implemented in a future ticket.
         //Note that defendants will be stored in a list
+        defendantContactPreferencesService.saveContactPreferences(defendantResponse);
+        log.info("Successfully saved defendant response for case: {}", caseReference);
 
         return success();
     }
@@ -76,7 +87,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
 
         try {
-            draftService.save(caseReference, caseData);
+
+            draftCaseDataService.save(
+                caseReference, caseData);
+
             log.debug("Draft saved successfully for case {}", caseReference);
             return success();
         } catch (Exception e) {

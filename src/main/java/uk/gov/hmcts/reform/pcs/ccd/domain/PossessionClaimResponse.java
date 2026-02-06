@@ -15,6 +15,16 @@ public class PossessionClaimResponse {
     @CCD
     private YesOrNo contactByPhone;
 
+    private YesOrNo contactByEmail;
+    private YesOrNo contactByText;
+    private YesOrNo contactByPost;
+
+    private String email;
+
+    private String address;
+
+    private String phoneNumber;
+
     @CCD
     private Party party;
 }
