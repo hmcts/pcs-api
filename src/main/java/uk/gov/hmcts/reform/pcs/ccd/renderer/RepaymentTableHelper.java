@@ -20,7 +20,7 @@ public class RepaymentTableHelper {
         BigDecimal legalFees = enforcementCosts.getLegalFees();
         BigDecimal landRegistryFees = enforcementCosts.getLandRegistryFees();
         BigDecimal feeAmount = enforcementCosts.getFeeAmount();
-        BigDecimal totalFees = BigDecimal.ZERO.add(totalArrears).add(legalFees).add(landRegistryFees).add(feeAmount);
+        BigDecimal totalFees = totalArrears.add(legalFees).add(landRegistryFees).add(feeAmount);
 
         Map<String, Object> context = new HashMap<>();
         context.put("totalArrears", totalArrears);
