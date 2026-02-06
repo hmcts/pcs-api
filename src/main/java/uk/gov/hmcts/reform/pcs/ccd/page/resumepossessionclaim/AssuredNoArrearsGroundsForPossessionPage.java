@@ -11,10 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoRentArrearsGroundsOptions;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
-import java.util.List;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -22,21 +21,21 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @Slf4j
 @Component
-public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfiguration {
+public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("noRentArrearsGroundsForPossessionOptions", this::midEvent)
+            .page("assuredNoArrearsGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession?")
             .showCondition("claimDueToRentArrears=\"No\" AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                              + " AND legislativeCountry=\"England\""
             )
             .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)
             .complex(PCSCase::getNoRentArrearsGroundsOptions)
-            .readonly(NoRentArrearsGroundsOptions::getShowGroundReasonPage, NEVER_SHOW)
+            .readonly(AssuredNoArrearsPossessionGrounds::getShowGroundReasonPage, NEVER_SHOW)
             .label(
-                "noRentArrearsGroundsForPossessionOptions-information", """
+                "assuredNoArrearsGroundsForPossession-information", """
                     ---
                     <p>You may have already given the defendants notice of your intention to begin possession
                     proceedings. If you have, you should have written the grounds you’re making your claim under.
@@ -46,10 +45,10 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
                       <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
                     </p>"""
             )
-            .optional(NoRentArrearsGroundsOptions::getMandatoryGrounds)
-            .optional(NoRentArrearsGroundsOptions::getDiscretionaryGrounds)
+            .optional(AssuredNoArrearsPossessionGrounds::getMandatoryGrounds)
+            .optional(AssuredNoArrearsPossessionGrounds::getDiscretionaryGrounds)
             .done()
-            .label("noRentArrearsGroundsForPossessionOptions-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("assuredNoArrearsGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -62,7 +61,7 @@ public class NoRentArrearsGroundsForPossessionOptions implements CcdPageConfigur
 
         if (mandatoryGrounds.isEmpty() && discretionaryGrounds.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(List.of("Please select at least one ground"))
+                .errorMessageOverride("Please select at least one ground")
                 .build();
         }
 

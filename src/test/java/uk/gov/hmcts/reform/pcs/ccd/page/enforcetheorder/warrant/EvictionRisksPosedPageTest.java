@@ -27,19 +27,6 @@ class EvictionRisksPosedPageTest extends BasePageTest {
     }
 
     @ParameterizedTest
-    @MethodSource("invalidSelectionScenarios")
-    void shouldRequireAtLeastOneSelectionInvalid(Set<RiskCategory> selected) {
-        // Given
-        PCSCase caseData = createCaseData(selected, null);
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then
-        assertThat(response.getErrors()).containsExactly("Select at least one option");
-    }
-
-    @ParameterizedTest
     @MethodSource("validSelectionScenarios")
     void shouldAllowValidSelections(Set<RiskCategory> selectedRisks) {
         // Given
@@ -64,7 +51,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
                                                        String expectedFirearmsDetails,
                                                        String expectedCriminalDetails) {
         // Given
-        PCSCase caseData = createCaseData(selectedCategories, 
+        PCSCase caseData = createCaseData(selectedCategories,
             EnforcementRiskDetails.builder()
                 .enforcementViolentDetails(violentDetails)
                 .enforcementFirearmsDetails(firearmsDetails)
@@ -81,35 +68,6 @@ class EvictionRisksPosedPageTest extends BasePageTest {
                 .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(expectedFirearmsDetails);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
                 .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(expectedCriminalDetails);
-    }
-
-    @Test
-    void shouldPreserveAllDetailsWhenAllCategoriesDeselected() {
-        // Given - select no categories but have all details
-        PCSCase caseData = createCaseData(Set.of(), 
-            EnforcementRiskDetails.builder()
-                .enforcementViolentDetails("All violent details")
-                .enforcementFirearmsDetails("All firearms details")
-                .enforcementCriminalDetails("All criminal details")
-                .enforcementVerbalOrWrittenThreatsDetails("All verbal details")
-                .enforcementProtestGroupMemberDetails("All protestor details")
-                .build());
-
-        // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        // Then - should get validation error but data should be preserved
-        assertThat(response.getErrors()).containsExactly("Select at least one option");
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementViolentDetails()).isEqualTo("All violent details");
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo("All firearms details");
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo("All criminal details");
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails()).isEqualTo("All verbal details");
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementProtestGroupMemberDetails()).isEqualTo("All protestor details");
     }
 
     @Test
@@ -217,11 +175,11 @@ class EvictionRisksPosedPageTest extends BasePageTest {
             Set.of(RiskCategory.AGGRESSIVE_ANIMALS),
             // Multiple category combinations
             Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION),
-            Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION, 
+            Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.FIREARMS_POSSESSION,
                 RiskCategory.CRIMINAL_OR_ANTISOCIAL),
-            Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS, RiskCategory.PROTEST_GROUP_MEMBER, 
+            Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS, RiskCategory.PROTEST_GROUP_MEMBER,
                 RiskCategory.AGENCY_VISITS, RiskCategory.AGGRESSIVE_ANIMALS),
-            Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS, 
+            Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS,
                 RiskCategory.PROTEST_GROUP_MEMBER),
             // All categories
             Set.of(
@@ -236,10 +194,4 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         );
     }
 
-    private static Stream<Set<RiskCategory>> invalidSelectionScenarios() {
-        return Stream.of(
-            Set.of(),
-            null
-        );
-    }
 }

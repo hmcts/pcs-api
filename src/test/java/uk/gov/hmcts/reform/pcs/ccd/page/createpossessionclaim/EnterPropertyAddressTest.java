@@ -212,14 +212,14 @@ class EnterPropertyAddressTest extends BasePageTest {
             .propertyAddress(propertyAddress)
             .build();
 
-        List<String> expectedValidationErrors = List.of("error 1", "error 2");
-        when(addressValidator.validateAddressFields(propertyAddress)).thenReturn(expectedValidationErrors);
+        List<String> validationErrors = List.of("error 1", "error 2");
+        when(addressValidator.validateAddressFields(propertyAddress)).thenReturn(validationErrors);
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+        assertThat(response.getErrorMessageOverride()).isEqualTo("error 1\nerror 2");
     }
 
     private static Stream<Arguments> invalidLegislativeCountryScenarios() {

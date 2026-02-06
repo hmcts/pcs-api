@@ -57,7 +57,7 @@ public class SecureOrFlexibleGroundsForPossessionTest extends BasePageTest {
 
         // Then
         if (expectError) {
-            assertThat(response.getErrors()).containsExactly("Please select at least one ground");
+            assertThat(response.getErrorMessageOverride()).isEqualTo("Please select at least one ground");
         } else {
 
             assertThat(updatedCaseData.getShowReasonsForGroundsPage()).isEqualTo(expectedShowReasonsPage);
