@@ -53,21 +53,15 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-
         PCSCase caseData = details.getData();
 
         List<String> errors = validateDocumentDescription(caseData.getAdditionalDocuments(), DESCRIPTION_LABEL);
-        if (!errors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
-                .build();
-        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", errors))
             .data(caseData)
             .build();
     }
-
 
     public List<String> validateDocumentDescription(
         List<ListValue<AdditionalDocument>> additionalDocs,
@@ -84,6 +78,5 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
         }
         return validationErrors;
     }
-
 
 }
