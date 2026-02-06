@@ -37,7 +37,7 @@ public class FeeApplier {
             setter.accept(pcsCase, feeAmount != null ? feeAmount : BigDecimal.ZERO);
         } catch (Exception e) {
             log.error("Error while getting {} fee", feeType.name(), e);
-            pcsCase.getEnforcementOrder().setWarrantFeeAmount(BigDecimal.ZERO);
+            setter.accept(pcsCase, BigDecimal.ZERO);
         }
     }
 }

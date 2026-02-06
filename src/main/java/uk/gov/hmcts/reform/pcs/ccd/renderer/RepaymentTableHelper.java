@@ -33,7 +33,7 @@ public class RepaymentTableHelper {
         return context;
     }
 
-    private static BigDecimal safe(BigDecimal value) {
+    private BigDecimal safe(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
     }
 }
