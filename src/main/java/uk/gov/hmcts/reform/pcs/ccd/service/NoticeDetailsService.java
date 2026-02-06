@@ -19,9 +19,9 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class NoticeDetailsService {
-    
+
     private final TextAreaValidationService textAreaValidationService;
-    
+
     // Error message constants
     private static final String INVALID_DATETIME_ERROR = "Enter a valid date and time in the format DD MM YYYY HH MM";
     private static final String FUTURE_DATETIME_ERROR = "The date and time cannot be today or in the future";
@@ -29,6 +29,7 @@ public class NoticeDetailsService {
     private static final String NOTICE_SERVICE_METHOD_REQUIRED = "You must select how you served the notice";
     private static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     private static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
+    private static final String NAME_OF_PERSON_DOCUMENT_LEFT_WITH = "Name of person the document was left with";
 
 
     /**
@@ -85,7 +86,13 @@ public class NoticeDetailsService {
                 noticeServedDetails.getNoticeOtherExplanation(),
                 NOTICE_OTHER_EXPLANATION_LABEL,
                 TextAreaValidationService.SHORT_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                noticeServedDetails.getNoticePersonName(),
+                NAME_OF_PERSON_DOCUMENT_LEFT_WITH,
+                TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT
             )
+
         ));
 
         return errors;
@@ -126,7 +133,7 @@ public class NoticeDetailsService {
         if (date == null) {
             return false;
         }
-        
+
         LocalDate today = LocalDate.now();
         return date.isEqual(today) || date.isAfter(today);
     }
@@ -144,7 +151,7 @@ public class NoticeDetailsService {
         if (dateTime == null) {
             return false;
         }
-        
+
         LocalDateTime now = LocalDateTime.now();
         return dateTime.toLocalDate().isEqual(now.toLocalDate()) || dateTime.isAfter(now);
     }

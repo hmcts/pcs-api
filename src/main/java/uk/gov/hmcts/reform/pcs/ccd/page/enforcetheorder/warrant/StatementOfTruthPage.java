@@ -124,7 +124,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
         textAreaValidationService.validateTextArea(
             value,
             label,
-            TextAreaValidationService.STATEMENT_OF_TRUTH_CHARACTER_LIMIT,
+            TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT,
             errors
         );
     }
