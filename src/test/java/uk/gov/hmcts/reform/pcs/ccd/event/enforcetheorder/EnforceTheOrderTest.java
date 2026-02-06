@@ -281,7 +281,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             BiConsumer<PCSCase, BigDecimal> setter = invocation.getArgument(2);
             setter.accept(pcs, expectedFee);
             return null;
-        }).when(feeApplier).applyFeeAmountUnformatted(
+        }).when(feeApplier).applyFeeAmount(
             any(PCSCase.class),
             any(FeeType.class),
             any()
@@ -292,7 +292,7 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFee);
-        verify(feeApplier).applyFeeAmountUnformatted(eq(caseData), eq(fee), any());
+        verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
     }
 
     @ParameterizedTest
@@ -311,7 +311,7 @@ class EnforceTheOrderTest extends BaseEventTest {
                 setter.accept(pcs, expectedDefaultFee);
             }
             return null;
-        }).when(feeApplier).applyFeeAmountUnformatted(
+        }).when(feeApplier).applyFeeAmount(
             eq(caseData),
             any(FeeType.class),
             any());
@@ -321,7 +321,7 @@ class EnforceTheOrderTest extends BaseEventTest {
 
         // Then
         assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedDefaultFee);
-        verify(feeApplier).applyFeeAmountUnformatted(eq(caseData), eq(fee), any());
+        verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
     }
 
     private static Stream<Arguments> enforcementFeeScenarios() {

@@ -77,7 +77,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
             BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
             setter.accept(pcs, expectedFormattedFee);
             return null;
-        }).when(feeApplier).applyFeeAmount(
+        }).when(feeApplier).applyFormattedFeeAmount(
             eq(caseData),
             eq(FeeType.CASE_ISSUE_FEE),
             any()
@@ -86,7 +86,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         assertThat(result.getFeeAmount()).isEqualTo(expectedFormattedFee);
-        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
+        verify(feeApplier).applyFormattedFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
 
     }
 
@@ -105,7 +105,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
                 setter.accept(pcs, expectedFeesMessage);
             }
             return null;
-        }).when(feeApplier).applyFeeAmount(
+        }).when(feeApplier).applyFormattedFeeAmount(
             eq(caseData),
             any(FeeType.class),
             any());
@@ -113,7 +113,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         assertThat(result.getFeeAmount()).isEqualTo(expectedFeesMessage);
-        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
+        verify(feeApplier).applyFormattedFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
     }
 
 }
