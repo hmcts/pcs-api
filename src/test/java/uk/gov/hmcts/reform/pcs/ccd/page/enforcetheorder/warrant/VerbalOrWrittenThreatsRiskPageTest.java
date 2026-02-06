@@ -76,6 +76,6 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
                                              RiskCategory.VERBAL_OR_WRITTEN_THREATS.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }
