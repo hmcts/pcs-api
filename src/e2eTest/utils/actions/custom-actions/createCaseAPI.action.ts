@@ -23,15 +23,36 @@ export class CreateCaseAPIAction implements IAction {
     const createCaseApi = Axios.create(createCaseEventTokenApiData.createCaseEventTokenApiInstance());
     process.env.CREATE_EVENT_TOKEN = (await createCaseApi.get(createCaseEventTokenApiData.createCaseEventTokenApiEndPoint)).data.token;
     const createCasePayloadData = typeof caseData === "object" && "data" in caseData ? caseData.data : caseData;
-    const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
-      data: createCasePayloadData,
-      event: { id: createCaseApiData.createCaseEventName },
-      event_token: process.env.CREATE_EVENT_TOKEN,
-    });
-    process.env.CASE_NUMBER = createResponse.data.id;
-    caseInfo.id = createResponse.data.id;
-    caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
-    caseInfo.state = createResponse.data.state;
+    try {
+      const createResponse = await createCaseApi.post(createCaseApiData.createCaseApiEndPoint, {
+        data: createCasePayloadData,
+        event: { id: createCaseApiData.createCaseEventName },
+        event_token: process.env.CREATE_EVENT_TOKEN,
+      });
+      process.env.CASE_NUMBER = createResponse.data.id;
+      caseInfo.id = createResponse.data.id;
+      caseInfo.fid = createResponse.data.id.replace(/(.{4})(?=.)/g, "$1-");
+      caseInfo.state = createResponse.data.state;
+    } catch (error: any) {
+      const status = error?.response?.status;
+      const responseData = error?.response?.data;
+      const body = error?.response?.data;
+
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", body?.exception);
+      console.error("Error:", body?.error);
+      console.error("Message:", body?.message);
+      console.error("Path:", body?.path);
+      console.error("Timestamp:", body?.timestamp);
+      console.error("Full response body:", JSON.stringify(body, null, 2));
+
+
+      if (!status) {
+        throw new Error(`Case creation failed: no response from server`);
+      }
+      throw new Error(`Case creation failed with status ${status}.Response received is ${responseData}}`);
+    }
   }
 
   private async submitCaseAPI(caseData: actionData): Promise<void> {
@@ -49,15 +70,24 @@ export class CreateCaseAPIAction implements IAction {
       caseInfo.state = submitResponse.data.state;
     } catch (error: any) {
       const status = error?.response?.status;
+      const responseData = error?.response?.data;
+      const body = error?.response?.data;
       if (status === 404) {
         console.error(submitCaseApiData.submitCasePayload);
         throw new Error(`Submission failed: endpoint not found (404).please check the payload above \n ${error}`);
-
       }
+      console.error("=== ERROR RESPONSE ===");
+      console.error("HTTP Status:", status);
+      console.error("Exception:", body?.exception);
+      console.error("Error:", body?.error);
+      console.error("Message:", body?.message);
+      console.error("Path:", body?.path);
+      console.error("Timestamp:", body?.timestamp);
+      console.error("Full response body:", JSON.stringify(body, null, 2));
       if (!status) {
         throw new Error('Submission failed: no response from server.');
       }
-      throw new Error(`Submission failed with status ${status}.`);
+      throw new Error(`Submission failed with status ${status}.Response received is ${responseData}}`);
     }
   }
 

@@ -4,7 +4,7 @@ export const confirmDefendantsDOB = {
   defendantsDOBQuestion: 'Do you know the defendants’ dates of birth?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidation: 'YES',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [

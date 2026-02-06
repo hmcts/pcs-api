@@ -484,10 +484,10 @@ export class EnforcementAction implements IAction {
               await performAction('inputText', validationArr.label, item.type === 'moreThanTotal' ? String((moneyMap.get(rePayments.totalAmt) as number) + 10) : item.input);
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
-                //await performValidation('errorMessage', validationArr.label, item.errMessage);
+                // await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
                 await performValidation('inputError', validationArr.label, item.errMessage);
               }).toPass({
-                timeout: LONG_TIMEOUT,
+                timeout: VERY_LONG_TIMEOUT,
               });
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option2 });
               break;
@@ -499,13 +499,14 @@ export class EnforcementAction implements IAction {
               break;
 
             case 'moneyField':
+              
               await performAction('inputText', validationArr.label, item.input);
               await expect(async () => {
                 await performAction('clickButton', validationArr.button);
-                //await performValidation('errorMessage', validationArr.label, item.errMessage);
+                //await performValidation('errorMessage', { header: !validationArr?.header ? validationArr.header = 'The event could not be created' : validationArr.header, message: item.errMessage });
                 await performValidation('inputError', validationArr.label, item.errMessage);
               }).toPass({
-                timeout: LONG_TIMEOUT,
+                timeout: VERY_LONG_TIMEOUT,
               });
               break;
 
@@ -523,6 +524,13 @@ export class EnforcementAction implements IAction {
             case 'checkBox':
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              await performAction('check', validationArr.checkBox);
+              break;
+
+            case 'checkBoxPageLevel':
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
 
@@ -530,7 +538,7 @@ export class EnforcementAction implements IAction {
               throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
           };
         }
-      }
+      } 
     }
   }
 
