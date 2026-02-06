@@ -68,7 +68,7 @@ public class WritDetails {
     @CCD(
         label = "Which language did you use to complete this service?",
         hint = "If someone else helped you to answer a question in this service, "
-            + "ask them if they answered any questions in Welsh. We'll use this to "
+            + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
     private LanguageUsed enforcementLanguageUsed;
