@@ -18,7 +18,7 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
 
     private static final String MARKDOWN_TEXT = """
             <p class="govuk-body">You must transfer your claim from the County Court to the High Court before you can
-            apply for a writ. You need permission from a judge to do this.</p>
+            apply for a writ. You need permission from the court to do this.</p>
             <p class="govuk-body">Transferring to the High Court means that a High Court Enforcement Officer can carry 
             out the eviction.</p>
             <p class="govuk-body">Once you have permission to transfer to the High Court, you 

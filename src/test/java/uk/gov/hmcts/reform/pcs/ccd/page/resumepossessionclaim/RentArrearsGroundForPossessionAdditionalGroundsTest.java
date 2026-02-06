@@ -37,7 +37,7 @@ class RentArrearsGroundForPossessionAdditionalGroundsTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).containsExactly("Please select at least one ground");
+        assertThat(response.getErrorMessageOverride()).isEqualTo("Please select at least one ground");
     }
 
     @Test
