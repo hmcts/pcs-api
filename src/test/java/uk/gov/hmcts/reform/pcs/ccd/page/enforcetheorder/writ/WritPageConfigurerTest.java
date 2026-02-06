@@ -57,6 +57,7 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, landRegistryFeesWritPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, RepaymentsWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LanguageUsedPlaceholder.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
