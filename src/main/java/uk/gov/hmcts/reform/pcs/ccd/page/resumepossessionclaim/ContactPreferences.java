@@ -156,7 +156,8 @@ public class ContactPreferences implements CcdPageConfiguration {
 
             }
             String overriddenEmail = contactPreferences.getOverriddenClaimantContactEmail();
-            if (overriddenEmail != null) {
+            VerticalYesNo isCorrectEmailAddress = contactPreferences.getIsCorrectClaimantContactEmail();
+            if (isCorrectEmailAddress == VerticalYesNo.NO && overriddenEmail != null) {
                 validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
                     overriddenEmail, EMAIL_LABEL, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
                 );
