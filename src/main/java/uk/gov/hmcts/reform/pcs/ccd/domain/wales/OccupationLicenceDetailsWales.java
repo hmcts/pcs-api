@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,7 +26,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class OccupationLicenceDetailsWales {
 
     @CCD(
-        label = "What type of occupation contract or licence is in place?"
+        label = "What type of occupation contract or licence is in place?",
+        access = {CitizenAccess.class}
     )
     private OccupationLicenceTypeWales occupationLicenceTypeWales;
 
@@ -38,7 +40,8 @@ public class OccupationLicenceDetailsWales {
 
     @CCD(
         label = "What date did the occupation contract or licence begin?",
-        hint = "For example, 16 4 2021"
+        hint = "For example, 16 4 2021",
+        access = {CitizenAccess.class}
     )
     private LocalDate licenceStartDate;
 
