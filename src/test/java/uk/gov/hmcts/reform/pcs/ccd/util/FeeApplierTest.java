@@ -31,7 +31,7 @@ class FeeApplierTest extends BaseEventTest {
     private FeeService feeService;
 
     @Spy
-    private FeeFormatter feeFormatter;
+    private MoneyFormatter feeFormatter;
 
     @Test
     void shouldSetFormattedFeeWhenFeeServiceReturnsFee() {

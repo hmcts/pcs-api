@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
@@ -34,11 +34,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
     @Mock
     private RepaymentTableRenderer repaymentTableRenderer;
     @Mock
-    private FeeFormatter feeFormatter;
+    private MoneyFormatter moneyFormatter;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new LandRegistryFeesPage(repaymentTableRenderer, feeFormatter));
+        setPageUnderTest(new LandRegistryFeesPage(repaymentTableRenderer, moneyFormatter));
     }
 
     @ParameterizedTest
@@ -72,7 +72,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .enforcementOrder(enforcementOrder)
             .build();
 
-        when(feeFormatter.deformatFee(caseData.getEnforcementOrder().getWarrantFeeAmount()))
+        when(moneyFormatter.deformatFee(caseData.getEnforcementOrder().getWarrantFeeAmount()))
                 .thenReturn(enforcementCosts.getFeeAmount());
         when(repaymentTableRenderer.render(
             enforcementCosts,
