@@ -55,7 +55,7 @@ class ContactPreferencesTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+        assertThat(response.getErrorMessageOverride()).isEqualTo("error 1\nerror 2");
     }
 
     @Test
@@ -70,14 +70,14 @@ class ContactPreferencesTest extends BasePageTest {
             .claimantContactPreferences(contactPreferences)
             .build();
 
-        List<String> expectedErrors = List.of("addressLine1 missing");
-        when(addressValidator.validateAddressFields(null)).thenReturn(expectedErrors);
+        String expectedError = "addressLine1 missing";
+        when(addressValidator.validateAddressFields(null)).thenReturn(List.of(expectedError));
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEqualTo(expectedErrors);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
         verify(addressValidator).validateAddressFields(null);
     }
 

@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -164,7 +165,7 @@ public class ContactPreferences implements CcdPageConfiguration {
 
         if (!validationErrors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(validationErrors)
+                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
                 .build();
         }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
