@@ -127,21 +127,15 @@ class PartyServiceTest {
             assertThat(createdClaimant.getOrgName()).isEqualTo(expectedClaimantName);
         }
 
-        @Test
-        void shouldUseClaimantNameIfCorrect() {
+        @ParameterizedTest
+        @MethodSource("claimantNameScenarios")
+        void shouldSetClaimantNameFromCorrectField(ClaimantInformation claimantInformation,
+                                                   String expectedClaimantName,
+                                                   YesOrNo nameOverridden) {
             // Given
-            String expectedClaimantName = "Claimant name";
-            String overriddenName = "Overridden name";
-
             ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
                 .claimantContactEmail("test@test.com")
                 .claimantProvidePhoneNumber(VerticalYesNo.NO)
-                .build();
-
-            ClaimantInformation claimantInformation = ClaimantInformation.builder()
-                .claimantName(expectedClaimantName)
-                .overriddenClaimantName(overriddenName)
-                .isClaimantNameCorrect(VerticalYesNo.YES)
                 .build();
 
             when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
@@ -155,43 +149,49 @@ class PartyServiceTest {
             PartyEntity createdClaimant = partyEntityCaptor.getValue();
 
             assertThat(createdClaimant.getOrgName()).isEqualTo(expectedClaimantName);
-            assertThat(createdClaimant.getNameOverridden()).isEqualTo(YesOrNo.NO);
+            assertThat(createdClaimant.getNameOverridden()).isEqualTo(nameOverridden);
 
             verify(pcsCaseEntity).addParty(createdClaimant);
-            verify(partyRepository).save(createdClaimant);
         }
 
-        @Test
-        void shouldCreateClaimantWithOverriddenName() {
-            // Given
-            String claimantName = "Claimant name";
-            String expectedOverriddenName = "Overridden name";
-
-            ClaimantContactPreferences claimantContactPreferences = ClaimantContactPreferences.builder()
-                .claimantContactEmail("test@test.com")
-                .claimantProvidePhoneNumber(VerticalYesNo.NO)
-                .build();
-
-            ClaimantInformation claimantInformation = ClaimantInformation.builder()
-                .claimantName(claimantName)
-                .overriddenClaimantName(expectedOverriddenName)
-                .isClaimantNameCorrect(VerticalYesNo.NO)
-                .build();
-
-            when(pcsCase.getClaimantInformation()).thenReturn(claimantInformation);
-            when(pcsCase.getClaimantContactPreferences()).thenReturn(claimantContactPreferences);
-
-            // When
-            underTest.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
-
-            // Then
-            verify(claimEntity).addParty(partyEntityCaptor.capture(), eq(PartyRole.CLAIMANT));
-            PartyEntity createdClaimant = partyEntityCaptor.getValue();
-
-            assertThat(createdClaimant.getOrgName()).isEqualTo(expectedOverriddenName);
-            assertThat(createdClaimant.getNameOverridden()).isEqualTo(YesOrNo.YES);
-
-            verify(pcsCaseEntity).addParty(createdClaimant);
+        private static Stream<Arguments> claimantNameScenarios() {
+            return Stream.of(
+                argumentSet(
+                    "fallback name",
+                    ClaimantInformation.builder()
+                        .claimantName("org name")
+                        .fallbackClaimantName("fallback name")
+                        .overriddenClaimantName("overridden name")
+                        .orgNameFound(YesOrNo.NO)
+                        .build(),
+                    "fallback name",
+                    YesOrNo.YES
+                ),
+                argumentSet(
+                    "overridden name",
+                    ClaimantInformation.builder()
+                        .claimantName("org name")
+                        .fallbackClaimantName("fallback name")
+                        .overriddenClaimantName("overridden name")
+                        .orgNameFound(YesOrNo.YES)
+                        .isClaimantNameCorrect(VerticalYesNo.NO)
+                        .build(),
+                    "overridden name",
+                    YesOrNo.YES
+                ),
+                argumentSet(
+                    "org name",
+                    ClaimantInformation.builder()
+                        .claimantName("org name")
+                        .fallbackClaimantName("fallback name")
+                        .overriddenClaimantName("overridden name")
+                        .orgNameFound(YesOrNo.YES)
+                        .isClaimantNameCorrect(VerticalYesNo.YES)
+                        .build(),
+                    "org name",
+                    YesOrNo.NO
+                )
+            );
         }
 
         @Test

@@ -34,9 +34,11 @@ import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
@@ -44,7 +46,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyO
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
@@ -67,7 +68,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -170,6 +170,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private OrganisationService organisationService;
     @Mock
+    private ClaimantInformationPage claimantInformationPage;
+    @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageePage;
@@ -208,8 +210,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private DocumentService documentService;
     @Mock
-    private CaseAssignmentService caseAssignmentService;
-    @Mock
     private RentDetailsPage rentDetailsPage;
 
     @BeforeEach
@@ -232,12 +232,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
-            demotionOfTenancyOrderReason, organisationService, claimantDetailsWalesPage, prohibitedConductWalesPage,
-            schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage, groundsForPossessionWales,
-            secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
-            rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
+            demotionOfTenancyOrderReason, organisationService, claimantInformationPage, claimantDetailsWalesPage,
+            prohibitedConductWalesPage, schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage,
+            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
+            addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter,documentService, caseAssignmentService, rentDetailsPage
+            underlesseeOrMortgageePage, feeService, feeFormatter,documentService, rentDetailsPage
         );
 
         setEventUnderTest(underTest);
@@ -282,16 +282,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
             // Given
-            String userEmail = "user@test.com";
             String orgName = "ACME Org Ltd";
-
-            when(userDetails.getSub()).thenReturn(userEmail);
             when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(orgName);
-
-            AddressUK organisationAddress = mock(AddressUK.class);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
-            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
-                .thenReturn("formatted org address");
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -302,23 +294,16 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getClaimantName()).isEqualTo(orgName);
-            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail()).isEqualTo(userEmail);
+            ClaimantInformation claimantInformation = updatedCaseData.getClaimantInformation();
+
+            assertThat(claimantInformation.getOrgNameFound()).isEqualTo(YesOrNo.YES);
+            assertThat(claimantInformation.getClaimantName()).isEqualTo(orgName);
         }
 
         @Test
-        void shouldFallbackToUserEmailWhenOrganisationNameNotAvailable() {
+        void shouldSetFlagWhenOrganisationNameNotAvailable() {
             // Given
-            String userEmail = "user@test.com";
-
-            when(userDetails.getSub()).thenReturn(userEmail);
             when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-
-            AddressUK organisationAddress = mock(AddressUK.class);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
-
-            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
-                .thenReturn("formatted org address");
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -329,8 +314,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getClaimantName())
-                .isEqualTo(userEmail); // HDPI-3582 will fix this
+            ClaimantInformation claimantInformation = updatedCaseData.getClaimantInformation();
+
+            assertThat(claimantInformation.getOrgNameFound()).isEqualTo(YesOrNo.NO);
+            assertThat(claimantInformation.getClaimantName()).isNull();
         }
 
         @Test
