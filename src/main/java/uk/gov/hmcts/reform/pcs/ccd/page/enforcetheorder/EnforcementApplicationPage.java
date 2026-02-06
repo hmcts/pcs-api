@@ -29,7 +29,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body govuk-!-font-weight-bold">If you choose a warrant of possession</p>
                             <p class="govuk-body govuk-!-margin-bottom-1">If you apply for a warrant:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">it costs £${warrantFeeAmount} to apply</li>
+                              <li class="govuk-!-font-size-19">it costs ${warrantFeeAmount} to apply</li>
                               <li class="govuk-!-font-size-19">it’s free to hire a County Court bailiff</li>
                               <li class="govuk-!-font-size-19">you may have to wait longer for the eviction
                               (this depends on the court you apply to)</li>
@@ -51,7 +51,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             </ul>
                             <p class="govuk-body govuk-!-margin-bottom-1">If you apply for a writ:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">it costs £${writFeeAmount} to apply</li>
+                              <li class="govuk-!-font-size-19">it costs ${writFeeAmount} to apply</li>
                               <li class="govuk-!-font-size-19"><a href="https://www.hceoa.org.uk/choosing-a-hceo"
                               rel="noreferrer noopener"
                               target="_blank" class="govuk-link">you can get a quote from a bailiff to find out how

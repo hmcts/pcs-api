@@ -20,7 +20,7 @@ public class FeeApplier {
     private final FeeService feeService;
     private final FeeFormatter feeFormatter;
 
-    public void applyFormattedFeeAmount(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, String> setter) {
+    public void applyFeeAmount(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, String> setter) {
         try {
             BigDecimal feeAmount = feeService.getFee(feeType).getFeeAmount();
             String formatted = feeFormatter.formatFee(feeAmount);
@@ -28,16 +28,6 @@ public class FeeApplier {
         } catch (Exception e) {
             log.error("Error while getting {} fee", feeType.name(), e);
             setter.accept(pcsCase, UNABLE_TO_RETRIEVE);
-        }
-    }
-
-    public void applyFeeAmount(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, BigDecimal> setter) {
-        try {
-            BigDecimal feeAmount = feeService.getFee(feeType).getFeeAmount();
-            setter.accept(pcsCase, feeAmount != null ? feeAmount : BigDecimal.ZERO);
-        } catch (Exception e) {
-            log.error("Error while getting {} fee", feeType.name(), e);
-            setter.accept(pcsCase, BigDecimal.ZERO);
         }
     }
 }

@@ -8,13 +8,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
-
-import java.math.BigDecimal;
 
 /**
  * The main domain model representing an enforcement order.
@@ -44,17 +40,12 @@ public class EnforcementOrder {
     @CCD
     private RawWarrantDetails rawWarrantDetails;
 
-    @CCD(
-            searchable = false,
-            typeOverride = FieldType.MoneyGBP)
+    @CCD(searchable = false)
     @External
-    @JacksonMoneyGBP
-    private BigDecimal warrantFeeAmount;
+    private String warrantFeeAmount;
 
-    @CCD(
-            searchable = false,
-            typeOverride = FieldType.MoneyGBP)
+    @CCD(searchable = false)
     @External
-    @JacksonMoneyGBP
-    private BigDecimal writFeeAmount;
+    private String writFeeAmount;
+
 }
