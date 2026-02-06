@@ -18,7 +18,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -132,4 +134,50 @@ public class EnforcementWarrantEntity {
 
     @Column(name = "defendants_dob_details")
     private String defendantsDOBDetails;
+
+    // Risk Assessment
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "any_risk_to_bailiff")
+    private YesNoNotSure anyRiskToBailiff;
+
+    @Column(name = "enforcement_risk_categories")
+    private String enforcementRiskCategories;
+
+    // Vulnerable People (from RawWarrantDetails)
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "vulnerable_people_present")
+    private YesNoNotSure vulnerablePeoplePresent;
+
+    // Statement of Truth
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "statement_of_truth_completed_by")
+    private StatementOfTruthCompletedBy completedBy;
+
+    @Column(name = "statement_of_truth_agreement_claimant")
+    private String agreementClaimant;
+
+    @Column(name = "statement_of_truth_full_name_claimant")
+    private String fullNameClaimant;
+
+    @Column(name = "statement_of_truth_position_claimant")
+    private String positionClaimant;
+
+    @Column(name = "statement_of_truth_agreement_legal_rep")
+    private String agreementLegalRep;
+
+    @Column(name = "statement_of_truth_full_name_legal_rep")
+    private String fullNameLegalRep;
+
+    @Column(name = "statement_of_truth_firm_name_legal_rep")
+    private String firmNameLegalRep;
+
+    @Column(name = "statement_of_truth_position_legal_rep")
+    private String positionLegalRep;
+
+    @Column(name = "statement_of_truth_certification")
+    private String certification;
+
 }
