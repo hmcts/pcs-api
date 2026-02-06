@@ -26,15 +26,15 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
 public class LegalCosts {
 
     @CCD(
-            label = "Do you want to reclaim any legal costs?"
+        label = "Do you want to reclaim any legal costs?"
     )
     private VerticalYesNo areLegalCostsToBeClaimed;
 
     @CCD(
-            label = "How much do you want to reclaim?",
-            typeOverride = FieldType.MoneyGBP,
-            min = MIN_MONETARY_AMOUNT,
-            max = MAX_MONETARY_AMOUNT
+        label = "How much do you want to reclaim?",
+        typeOverride = FieldType.MoneyGBP,
+        min = MIN_MONETARY_AMOUNT,
+        max = MAX_MONETARY_AMOUNT
     )
     @JacksonMoneyGBP
     private BigDecimal amountOfLegalCosts;
