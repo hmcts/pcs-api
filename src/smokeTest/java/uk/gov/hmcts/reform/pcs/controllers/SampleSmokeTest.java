@@ -1,51 +1,65 @@
 package uk.gov.hmcts.reform.pcs.controllers;
 
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import org.junit.jupiter.api.Assertions;
+import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import uk.gov.hmcts.reform.authorisation.filters.ServiceAuthFilter;
-import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 
-import static io.restassured.RestAssured.given;
+import java.util.Collections;
+import java.util.Map;
 
-@TestPropertySource(properties = {
-    "spring.flyway.enabled=false"
-})
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+import static org.assertj.core.api.Assertions.assertThat;
+
 class SampleSmokeTest {
-    protected static final String CONTENT_TYPE_VALUE = "application/json";
 
-    @Autowired
-    protected AuthTokenGenerator s2sAuthTokenGenerator;
+    private static final String BASE_URL = System.getenv().getOrDefault("TEST_URL", "http://localhost:8080");
+    private static final String S2S_URL = System.getenv().getOrDefault("IDAM_S2S_AUTH_URL", "http://localhost:4502");
 
-    @Value("${TEST_URL:http://localhost:8080}")
-    private String testUrl;
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    private String s2sToken;
+
 
     @BeforeEach
     public void setUp() {
-        RestAssured.baseURI = testUrl;
-        RestAssured.useRelaxedHTTPSValidation();
+        s2sToken = getS2sToken(restTemplate);
     }
 
     @Test
     void smokeTest() {
-        String s2sToken = s2sAuthTokenGenerator.generate();
-        Response response = given()
-            .contentType(ContentType.JSON)
-            .header(ServiceAuthFilter.AUTHORISATION, s2sToken)
-            .when()
-            .get()
-            .then()
-            .extract().response();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+        headers.set(ServiceAuthFilter.AUTHORISATION, s2sToken);
 
-        Assertions.assertEquals(200, response.statusCode());
-        Assertions.assertTrue(response.asString().startsWith("Welcome"));
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+
+        ResponseEntity<Greeting> response = restTemplate.exchange(
+            BASE_URL, HttpMethod.GET, requestEntity, Greeting.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody().getMessage()).startsWith("Welcome");
     }
+
+    private String getS2sToken(RestTemplate restTemplate) {
+        return restTemplate
+            .postForObject(
+                S2S_URL + "/testing-support/lease",
+                Map.of("microservice", "pcs-api"),
+                String.class
+            );
+    }
+
+    @Getter
+    @SuppressWarnings("unused")
+    private static class Greeting {
+        private String message;
+    }
+
 }
