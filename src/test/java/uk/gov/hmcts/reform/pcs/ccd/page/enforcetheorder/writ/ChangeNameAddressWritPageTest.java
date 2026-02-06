@@ -36,9 +36,9 @@ class ChangeNameAddressWritPageTest extends BasePageTest {
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
             // Then
-            assertThat(response.getErrors()).isNotEmpty();
-            assertThat(response.getErrors().getFirst())
-                .contains("You cannot continue with this application until you ask the judge for permission");
+            assertThat(response.getErrorMessageOverride())
+                .isEqualTo("You cannot continue with this application until you ask the judge for "
+                               + "permission to change the name and address.");
         }
     }
 }

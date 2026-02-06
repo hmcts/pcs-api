@@ -78,6 +78,6 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
                                              RiskCategory.CRIMINAL_OR_ANTISOCIAL.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }
