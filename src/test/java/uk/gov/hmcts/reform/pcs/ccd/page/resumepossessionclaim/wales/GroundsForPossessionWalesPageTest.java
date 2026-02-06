@@ -315,6 +315,19 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         YesOrNo.NO,
                         YesOrNo.NO
                 ),
+
+                // Rent arrears types (157 + S187) + ASB only - show ASB page then pre-action
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
+                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157
+                        ),
+                        Set.of(),
+                        Set.of(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187),
+                        YesOrNo.YES,
+                        YesOrNo.NO
+                ),
+                
                 // Rent arrears + other option (mandatory) - show reasons for grounds page
                 arguments(
                         Set.of(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157),
@@ -331,7 +344,7 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
-                
+
                 // Other breach + mandatory grounds - show reasons for grounds page
                 arguments(
                         Set.of(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157),
