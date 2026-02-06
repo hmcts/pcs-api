@@ -529,7 +529,7 @@ class NoticeDetailsServiceTest {
             LocalDateTime pastDateTime = LocalDateTime.now().minusDays(1);
 
             // Create a name that exceeds 60 characters
-            String longName = "Jack".repeat(16);
+            String longName = "J".repeat(61);
 
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)

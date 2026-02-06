@@ -143,32 +143,28 @@ public class ContactPreferences implements CcdPageConfiguration {
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-
         PCSCase caseData = details.getData();
         List<String> validationErrors = new ArrayList<>();
         ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
+
         if (contactPreferences != null) {
             VerticalYesNo isCorrectClaimantContactAddress = contactPreferences.getIsCorrectClaimantContactAddress();
-            String newEmail = contactPreferences.getOverriddenClaimantContactEmail();
             if (isCorrectClaimantContactAddress == VerticalYesNo.NO
                 || contactPreferences.getOrgAddressFound() == YesOrNo.NO) {
                 AddressUK contactAddress = contactPreferences.getOverriddenClaimantContactAddress();
                 validationErrors.addAll(addressValidator.validateAddressFields(contactAddress));
 
             }
-            if (newEmail != null) {
+            String overriddenEmail = contactPreferences.getOverriddenClaimantContactEmail();
+            if (overriddenEmail != null) {
                 validationErrors.addAll(textAreaValidationService.validateSingleTextArea(
-                    newEmail, EMAIL_LABEL, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
+                    overriddenEmail, EMAIL_LABEL, TextAreaValidationService.EXTRA_SHORT_TEXT_LIMIT)
                 );
             }
         }
 
-        if (!validationErrors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
-                .build();
-        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
             .data(caseData)
             .build();
 

@@ -158,7 +158,6 @@ class ContactPreferencesTest extends BasePageTest {
 
         //Then
         assertThat(response.getErrorMessageOverride())
-            .isNotEmpty()
             .contains("more than the maximum number of characters");
 
     }
