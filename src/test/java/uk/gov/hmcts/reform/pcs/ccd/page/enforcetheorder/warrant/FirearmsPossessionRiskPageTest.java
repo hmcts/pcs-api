@@ -76,6 +76,6 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
                                              RiskCategory.FIREARMS_POSSESSION.getText(),
                                              "6,800");
 
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 }

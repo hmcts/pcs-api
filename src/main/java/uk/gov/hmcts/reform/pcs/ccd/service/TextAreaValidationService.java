@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class TextAreaValidationService {
             T caseData, List<String> validationErrors) {
         return AboutToStartOrSubmitResponse.<T, S>builder()
             .data(caseData)
-            .errors((validationErrors != null && !validationErrors.isEmpty()) ? validationErrors : null)
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
             .build();
     }
 

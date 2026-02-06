@@ -137,10 +137,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('selectClaimantType', claimantType.mortgageLenderRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+      header: userIneligible.eventNotCreated, message: userIneligible.notEligibleForOnlineService
     });
     await performValidation('text', {
       "text": userIneligible.exitBackHintText,
@@ -164,10 +161,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+      header: userIneligible.eventNotCreated, message: userIneligible.notEligibleForOnlineService
     });
     await performValidation('text', {
       "text": userIneligible.exitBackHintText,
@@ -191,10 +185,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+      header: userIneligible.eventNotCreated, message: userIneligible.notEligibleForOnlineService
     });
     await performValidation('text', {
       "text": userIneligible.exitBackHintText,
@@ -216,10 +207,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('selectClaimType', claimType.yesRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+      header: userIneligible.eventNotCreated, message: userIneligible.notEligibleForOnlineService
     });
     await performValidation('text', {
       "text": userIneligible.exitBackHintText,
