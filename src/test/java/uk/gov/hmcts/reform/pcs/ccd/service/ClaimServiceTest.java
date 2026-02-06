@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AsbProhibitedConductEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
@@ -51,6 +52,8 @@ class ClaimServiceTest {
     @Mock
     private HousingActWalesService housingActWalesService;
     @Mock
+    private AsbProhibitedConductService asbProhibitedConductService;
+    @Mock
     private RentArrearsService rentArrearsService;
     @Mock
     private NoticeOfPossessionService noticeOfPossessionService;
@@ -64,8 +67,8 @@ class ClaimServiceTest {
     @BeforeEach
     void setUp() {
         claimService = new ClaimService(claimRepository, claimGroundService, possessionAlternativesService,
-                                        housingActWalesService, rentArrearsService, noticeOfPossessionService,
-                                        statementOfTruthService);
+                                        housingActWalesService, asbProhibitedConductService, rentArrearsService,
+                                        noticeOfPossessionService, statementOfTruthService);
     }
 
     @Test
@@ -253,6 +256,35 @@ class ClaimServiceTest {
         // Then
         assertThat(createdClaimEntity.getHousingActWales()).isNull();
         verify(housingActWalesService, never()).createHousingActWalesEntity(pcsCase);
+    }
+
+    @Test
+    void shouldSetAsbProhibitedConductForWalesProperties() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(WALES);
+
+        AsbProhibitedConductEntity asbProhibitedConductEntity = mock(AsbProhibitedConductEntity.class);
+        when(asbProhibitedConductService.createAsbProhibitedConductEntity(pcsCase))
+            .thenReturn(asbProhibitedConductEntity);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getAsbProhibitedConductEntity()).isEqualTo(asbProhibitedConductEntity);
+    }
+
+    @Test
+    void shouldNotSSetAsbProhibitedConductForNonWalesProperties() {
+        // Given
+        when(pcsCase.getLegislativeCountry()).thenReturn(ENGLAND);
+
+        // When
+        ClaimEntity createdClaimEntity = claimService.createMainClaimEntity(pcsCase);
+
+        // Then
+        assertThat(createdClaimEntity.getAsbProhibitedConductEntity()).isNull();
+        verify(asbProhibitedConductService, never()).createAsbProhibitedConductEntity(pcsCase);
     }
 
     @Test
