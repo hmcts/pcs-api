@@ -108,11 +108,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
                 new EnforcementCosts(new BigDecimal("15"), new BigDecimal("5"), new BigDecimal("9.99"),
                         new BigDecimal(".50"), WARRANT_FEE_AMOUNT)),
             Arguments.of(
-                new EnforcementCosts(new BigDecimal("0"), new BigDecimal("0"), new BigDecimal("0"),
-                        new BigDecimal("0"), WARRANT_FEE_AMOUNT)),
+                new EnforcementCosts(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                        BigDecimal.ZERO, WARRANT_FEE_AMOUNT)),
             Arguments.of(
                 new EnforcementCosts(new BigDecimal("100.01"), new BigDecimal("0.01"), new BigDecimal("50.00"),
-                        new BigDecimal("0"), WARRANT_FEE_AMOUNT))
+                        BigDecimal.ZERO, WARRANT_FEE_AMOUNT))
         );
     }
 }

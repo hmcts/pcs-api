@@ -16,10 +16,10 @@ public class RepaymentTableHelper {
     private final FeeFormatter feeFormatter;
 
     Map<String, Object> getContext(EnforcementCosts enforcementCosts, String caption) {
-        BigDecimal totalArrears = enforcementCosts.getTotalArrears();
-        BigDecimal legalFees = enforcementCosts.getLegalFees();
-        BigDecimal landRegistryFees = enforcementCosts.getLandRegistryFees();
-        BigDecimal feeAmount = enforcementCosts.getFeeAmount();
+        BigDecimal totalArrears = safe(enforcementCosts.getTotalArrears());
+        BigDecimal legalFees = safe(enforcementCosts.getLegalFees());
+        BigDecimal landRegistryFees = safe(enforcementCosts.getLandRegistryFees());
+        BigDecimal feeAmount = safe(enforcementCosts.getFeeAmount());
         BigDecimal totalFees = totalArrears.add(legalFees).add(landRegistryFees).add(feeAmount);
 
         Map<String, Object> context = new HashMap<>();
@@ -31,5 +31,9 @@ public class RepaymentTableHelper {
         context.put("caption", caption);
 
         return context;
+    }
+
+    private static BigDecimal safe(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 }

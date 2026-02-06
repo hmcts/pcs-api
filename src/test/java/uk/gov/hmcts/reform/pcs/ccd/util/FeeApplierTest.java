@@ -127,7 +127,7 @@ class FeeApplierTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
-        final BigDecimal expectedDefaultFee = new BigDecimal("0");
+        final BigDecimal expectedDefaultFee = BigDecimal.ZERO;
 
         when(feeService.getFee(feeType))
             .thenThrow(new RuntimeException("Fee service error"));
@@ -149,7 +149,7 @@ class FeeApplierTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
-        final BigDecimal expectedFee = new BigDecimal("0");
+        final BigDecimal expectedFee = BigDecimal.ZERO;
 
         FeeDetails feeDetails = FeeDetails.builder()
                 .feeAmount(null)

@@ -274,7 +274,7 @@ class EnforceTheOrderTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
 
-        BigDecimal expectedFee = new BigDecimal("0");
+        BigDecimal expectedFee = BigDecimal.ZERO;
 
         doAnswer(invocation -> {
             PCSCase pcs = invocation.getArgument(0);
@@ -300,7 +300,7 @@ class EnforceTheOrderTest extends BaseEventTest {
     void shouldSetDefaultFeeWhenFeeServiceFails(FeeType fee, Function<EnforcementOrder, BigDecimal> feeGetter) {
         // Given
         PCSCase caseData = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
-        BigDecimal expectedDefaultFee = new BigDecimal("0");
+        BigDecimal expectedDefaultFee = BigDecimal.ZERO;
 
         doAnswer(invocation -> {
             PCSCase pcs = invocation.getArgument(0);
