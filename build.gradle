@@ -309,6 +309,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
       "**/entities/**," + "**/model/**"
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
+    property "sonar.newCode.exclusions", "**/uk/gov/hmcts/reform/pcs/testingsupport/**"
   }
 }
 

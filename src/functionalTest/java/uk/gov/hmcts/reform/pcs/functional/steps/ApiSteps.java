@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
@@ -22,6 +23,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerat
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;
 
 public class ApiSteps {
 
@@ -33,6 +35,8 @@ public class ApiSteps {
     private static String unauthorisedS2sToken;
     public static String systemUserIdamToken;
     public static String citizenUserIdamToken;
+    public static String solicitorUserIdamToken;
+    Long caseId;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -43,6 +47,7 @@ public class ApiSteps {
 
         systemUserIdamToken = PcsIdamTokenClient.generateToken(systemUser);
         citizenUserIdamToken = PcsIdamTokenClient.generateToken(citizenUser);
+        solicitorUserIdamToken = PcsIdamTokenClient.generateToken(solicitorUser);
 
         SerenityRest.given().baseUri(baseUrl);
     }
@@ -141,6 +146,7 @@ public class ApiSteps {
         String userToken = switch (user) {
             case systemUser -> systemUserIdamToken;
             case citizenUser -> citizenUserIdamToken;
+            case solicitorUser -> solicitorUserIdamToken;
         };
 
         request = request.header(TestConstants.AUTHORIZATION, "Bearer " + userToken);
@@ -162,4 +168,38 @@ public class ApiSteps {
         request = request.body(body);
     }
 
+    @Step("a case for {0} is created")
+    public Long ccdCaseIsCreated(String legislativeCountry) {
+        caseId = SerenityRest.given()
+            .baseUri(baseUrl)
+            .contentType(ContentType.JSON)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .pathParam("legislativeCountry", legislativeCountry)
+            .when()
+            .post(Endpoints.CreateTestCase.getResource())
+            .then()
+            .statusCode(201)
+            .extract()
+            .path("caseId");
+
+        return caseId;
+    }
+
+    @Step("a pin is fetched")
+    public String accessCodeIsFetched(Long caseReference) {
+        Map<String, Object> pins = SerenityRest.given()
+            .baseUri(baseUrl)
+            .contentType(ContentType.JSON)
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .pathParam("caseReference", caseReference)
+            .when()
+            .get(Endpoints.GetPins.getResource())
+            .then()
+            .statusCode(200)
+            .extract()
+            .as(new TypeRef<Map<String, Object>>() {});
+
+        return pins.keySet().iterator().next();
+    }
 }
