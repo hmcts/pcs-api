@@ -75,7 +75,8 @@ class CaseDefinitionIT extends AbstractPostgresContainerIT {
                 List.of(
                     "evictionDelayWarning",
                     "checkYourAnswersPlaceHolder",
-                    "changeNameAddress"
+                    "changeNameAddress",
+                    "cannotApplyForWritInfo"
                 )
 
             )
