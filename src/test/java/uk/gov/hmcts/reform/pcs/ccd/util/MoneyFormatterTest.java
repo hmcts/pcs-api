@@ -12,13 +12,13 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-class FeeFormatterTest {
+class MoneyFormatterTest {
 
-    private FeeFormatter underTest;
+    private MoneyFormatter underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new FeeFormatter();
+        underTest = new MoneyFormatter();
     }
 
     @Test
