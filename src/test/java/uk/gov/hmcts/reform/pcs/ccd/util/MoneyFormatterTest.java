@@ -41,13 +41,13 @@ class MoneyFormatterTest {
 
     @ParameterizedTest(name = "Input: {0} | Expected: {1}")
     @CsvSource({
-            "£10.50,  10.50",
-            "£100,    100",
-            "£0.01,   0.01",
-            "10.50,   ",      // No £ sign -> returns null
-            "$10.50,  ",      // Wrong currency -> returns null
-            "£abc,    ",      // Invalid number -> returns null
-            ",        "       // Null input -> returns null
+        "£10.50,  10.50",
+        "£100,    100",
+        "£0.01,   0.01",
+        "10.50,   ",      // No £ sign -> returns null
+        "$10.50,  ",      // Wrong currency -> returns null
+        "£abc,    ",      // Invalid number -> returns null
+        ",        "       // Null input -> returns null
     })
     void testDeformatFeeScenarios(String input, String expected) {
         BigDecimal result = underTest.deformatFee(input);
