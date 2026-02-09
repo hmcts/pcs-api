@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.RENT_ARREARS_SECTION_157;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.RENT_ARREARS_S157;
 
 @Component
 public class StandardOrOtherWalesRentSectionRoutingPolicy implements WalesRentSectionRoutingPolicy {
@@ -20,11 +20,11 @@ public class StandardOrOtherWalesRentSectionRoutingPolicy implements WalesRentSe
         if (grounds == null) {
             return YesOrNo.NO;
         }
-        Set<DiscretionaryGroundWales> discretionary = grounds.getDiscretionaryGroundsWales();
+        Set<DiscretionaryGroundWales> discretionary = grounds.getDiscretionaryGrounds();
         if (discretionary == null) {
             return YesOrNo.NO;
         }
-        return YesOrNo.from(discretionary.contains(RENT_ARREARS_SECTION_157));
+        return YesOrNo.from(discretionary.contains(RENT_ARREARS_S157));
     }
 
     @Override

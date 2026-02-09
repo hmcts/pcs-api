@@ -30,10 +30,11 @@ import {
   enterDefendantsDOB,
   suspendedOrder,
   confirmHCEOHired,
-  yourHCEO
+  yourHCEO,
+  claimSentToHighCourt
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { createCaseApiData } from '@data/api-data';
+import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
@@ -53,6 +54,7 @@ export class EnforcementAction implements IAction {
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
       ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
+      ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord)],
       ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord)],
       ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord)],
       ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord)],
@@ -117,6 +119,14 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
     await performAction('clickButton', yourApplication.continueButton);
+  }
+
+  private async confirmClaimTransferredToHighCourt(transfer: actionRecord) {
+    await this.addFieldsToMap(transfer);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    await performAction('clickRadioButton', { question: transfer.question, option: transfer.option });
+    await performAction('clickButton', claimSentToHighCourt.continueButton);
   }
 
   private async getDefendantDetails(defendantsDetails: actionRecord) {
@@ -449,7 +459,7 @@ export class EnforcementAction implements IAction {
     await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
     if (claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption) {
       await performAction('check', claimantDetails.iBelieveCheckbox);
-      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, !claimantDetails.fullNameTextInput ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.fullNameTextInput);
       await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
     }
     if (claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {

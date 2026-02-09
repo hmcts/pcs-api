@@ -553,7 +553,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationType: statementOfTruthTwo.errorValidationType.four,
       inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
       label: statementOfTruthTwo.checkBoxGenericErrorLabel,
-      //header: statementOfTruthTwo.errors,
+      header: statementOfTruthTwo.errors,
       checkBox: statementOfTruthTwo.iCertifyCheckbox,
       button: statementOfTruthTwo.continueButton
     });
@@ -747,7 +747,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
       await performValidation('mainHeader', youNeedPermission.mainHeader);
       await performAction('clickButton', youNeedPermission.continueButton);
-      await performValidation('errorMessage', { header: youNeedPermission.errors, message: youNeedPermission.errMessage });
+      await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreatedErrorMessage, message: youNeedPermission.errMessage });
     });
 
   test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @PR @regression',

@@ -12,7 +12,9 @@ import {
   landRegistryFees,
   legalCosts,
   moneyOwed,
-  rePayments
+  rePayments,
+  claimSentToHighCourt,
+  youCannotApplyForWrit
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -99,6 +101,19 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
+      });
+      await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: claimSentToHighCourt.errorValidation,
+        validationType: claimSentToHighCourt.errorValidationType.three,
+        inputArray: claimSentToHighCourt.errorValidationField.errorRadioOption,
+        question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
+        option: claimSentToHighCourt.yesRadioOption,
+        button: claimSentToHighCourt.continueButton
+      });
+      await performAction('confirmClaimTransferredToHighCourt', {
+        question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
+        option: claimSentToHighCourt.yesRadioOption,
       });
       await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
       await performAction('inputErrorValidation', {
@@ -221,6 +236,11 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
     });
+    await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
+    await performAction('confirmClaimTransferredToHighCourt', {
+      question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
+      option: claimSentToHighCourt.yesRadioOption,
+    });
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
@@ -263,6 +283,24 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
   });
 
+  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @PR @regression', async () => {
+    await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
+    await performAction('clickButton', caseSummary.go);
+    await performValidation('mainHeader', yourApplication.mainHeader);
+    await performAction('selectApplicationType', {
+      question: yourApplication.typeOfApplicationQuestion,
+      option: yourApplication.typeOfApplicationOptions.writOfPossession,
+    });
+    await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
+    await performAction('confirmClaimTransferredToHighCourt', {
+      question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
+      option: claimSentToHighCourt.noRadioOption,
+    });
+    await performValidation('mainHeader', youCannotApplyForWrit.mainHeader);
+    await performAction('clickButton', youCannotApplyForWrit.continueButton);
+    await performValidation('errorMessage', { header: youCannotApplyForWrit.errors, message: youCannotApplyForWrit.errMessage });
+  });
+
   test('Writ - Apply for a Writ of Possession [General application journey]', {
     annotation: {
       type: 'issue',
@@ -277,6 +315,11 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
       });
+      await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
+      await performAction('confirmClaimTransferredToHighCourt', {
+        question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
+        option: claimSentToHighCourt.yesRadioOption,
+      });
       await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
@@ -285,6 +328,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
       await performValidation('mainHeader', youNeedPermission.mainHeader);
       await performAction('clickButton', youNeedPermission.continueButton);
-      await performValidation('errorMessage', { header: youNeedPermission.errors, message: youNeedPermission.errMessage });
+      await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreatedErrorMessage, message: youNeedPermission.errMessage });
     });
 });
