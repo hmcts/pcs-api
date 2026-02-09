@@ -65,11 +65,11 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
 
         PCSCase caseData = PCSCase.builder()
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(discretionaryGrounds)
+                .discretionaryGrounds(discretionaryGrounds)
                 .build())
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                    .discretionaryGroundsWales(secureDiscretionaryGrounds)
+                    .discretionaryGrounds(secureDiscretionaryGrounds)
                     .build()
             )
             .build();
@@ -84,7 +84,7 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
         return Stream.of(
             // ASB in discretionaryGroundsWales only - should show ASB questions page
             arguments(
-                Set.of(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157),
+                Set.of(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157),
                 null,
                 YesOrNo.YES
             ),
@@ -97,8 +97,8 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
             // ASB with other grounds in discretionaryGroundsWales - should show ASB questions page
             arguments(
                 Set.of(
-                    DiscretionaryGroundWales.RENT_ARREARS_SECTION_157,
-                    DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157
+                    DiscretionaryGroundWales.RENT_ARREARS_S157,
+                    DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157
                 ),
                 null,
                 YesOrNo.YES
@@ -114,7 +114,7 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
             ),
             // Only non-ASB in discretionaryGroundsWales - should not show ASB questions page
             arguments(
-                Set.of(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157),
+                Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157),
                 null,
                 YesOrNo.NO
             ),
