@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
@@ -64,7 +65,8 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
         EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcementOrderEntity);
-        if (SelectEnforcementType.WARRANT == enforcementOrder.getSelectEnforcementType()) {
+        if (SelectEnforcementType.WARRANT == enforcementOrder.getSelectEnforcementType()
+            && enforcementOrder.getWarrantDetails() != null) {
             storeWarrant(enforcementOrder, saved);
         }
 
