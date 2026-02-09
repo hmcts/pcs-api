@@ -101,10 +101,10 @@ export class EnforcementAction implements IAction {
     const feeType = warrantJourney
       ? yourApplication.typeofFee.warrantOfPossessionFee
       : yourApplication.typeofFee.writOfPossessionFee;
-
+      
     const writOrWarrantFeeAmt = warrantJourney ? await this.retrieveAmountFromString(summaryOption.text1 as string) : await this.retrieveAmountFromString(summaryOption.text2 as string);
 
-    moneyMap.set(feeType, writOrWarrantFeeAmt);
+    moneyMap.set(feeType,writOrWarrantFeeAmt);
   }
 
   private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
