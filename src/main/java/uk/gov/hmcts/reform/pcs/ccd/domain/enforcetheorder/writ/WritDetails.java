@@ -38,7 +38,7 @@ public class WritDetails {
     @JsonUnwrapped
     @CCD
     private LandRegistryFees landRegistryFees;
-    
+
     @CCD(
         label = "Have you hired a High Court enforcement officer?"
     )
@@ -58,4 +58,10 @@ public class WritDetails {
     @JsonUnwrapped
     @CCD
     private MoneyOwedByDefendants moneyOwedByDefendants;
+    
+    @CCD(
+        searchable = false,
+        label = "Has the claim been transferred to the High Court?"
+    )
+    private YesOrNo hasClaimTransferredToHighCourt;
 }
