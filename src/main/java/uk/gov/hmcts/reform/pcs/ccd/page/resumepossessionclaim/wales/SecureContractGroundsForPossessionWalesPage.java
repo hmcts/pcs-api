@@ -1,23 +1,21 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Set;
-
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+
+import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS_S160;
@@ -77,15 +75,14 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
         if (discretionaryGrounds.contains(ESTATE_MANAGEMENT_GROUNDS_S160)
                 && estateManagement.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(
-                        List.of("Please select at least one ground in ‘Estate management grounds (section 160)’.")
-                    )
+                    .errorMessageOverride(
+                        "Please select at least one ground in ‘Estate management grounds (section 160)’.")
                     .build();
         }
 
         if (discretionaryGrounds.isEmpty() && mandatoryGrounds.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(List.of("Please select at least one ground"))
+                    .errorMessageOverride("Please select at least one ground")
                     .build();
         }
         // ASB/Reasons routing (from master - conditional logic)
