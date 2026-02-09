@@ -1,4 +1,3 @@
-import {test} from '@playwright/test';
 import {
   initializeExecutor,
   performAction,
@@ -54,8 +53,9 @@ import {
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import { test } from '@utils/test-fixtures';
 
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('clickTab', home.createCaseTab);
