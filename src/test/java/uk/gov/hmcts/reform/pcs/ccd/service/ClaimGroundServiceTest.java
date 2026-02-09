@@ -774,7 +774,7 @@ class ClaimGroundServiceTest {
             MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2
         );
         Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
-            DiscretionaryGroundWales.OTHER_BREACH_SECTION_157
+            DiscretionaryGroundWales.OTHER_BREACH_S157
         );
         Set<EstateManagementGroundsWales> estateGrounds = Set.of(
             EstateManagementGroundsWales.BUILDING_WORKS,
@@ -788,10 +788,10 @@ class ClaimGroundServiceTest {
             EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
         );
         Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = Set.of(
-            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170,
-            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186,
-            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191,
-            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_199
+            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170,
+            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186,
+            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191,
+            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
         );
         Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds = Set.of(
             SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
@@ -826,14 +826,14 @@ class ClaimGroundServiceTest {
         PCSCase caseData = PCSCase.builder()
             .legislativeCountry(LegislativeCountry.WALES)
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                .mandatoryGroundsWales(mandatoryGrounds)
-                .discretionaryGroundsWales(discretionaryGrounds)
-                .estateManagementGroundsWales(estateGrounds)
+                .mandatoryGrounds(mandatoryGrounds)
+                .discretionaryGrounds(discretionaryGrounds)
+                .estateManagementGrounds(estateGrounds)
                 .build())
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                    .mandatoryGroundsWales(secureMandatoryGrounds)
-                    .discretionaryGroundsWales(secureDiscretionaryGrounds)
+                    .mandatoryGrounds(secureMandatoryGrounds)
+                    .discretionaryGrounds(secureDiscretionaryGrounds)
                     .build()
             )
 
@@ -860,7 +860,7 @@ class ClaimGroundServiceTest {
             .containsEntry("FAIL_TO_GIVE_UP_BREAK_NOTICE_S191", "Fail to give up break notice S191")
             .containsEntry("LANDLORD_BREAK_CLAUSE_S199", "Landlord break clause S199")
             .containsEntry("CONVERTED_FIXED_TERM_SCH12_25B2", "Converted fixed term Sch12 25B2")
-            .containsEntry("OTHER_BREACH_SECTION_157", "Other breach section 157")
+            .containsEntry("OTHER_BREACH_S157", "Other breach section 157")
             .containsEntry("BUILDING_WORKS", "Building works")
             .containsEntry("REDEVELOPMENT_SCHEMES", "Redevelopment schemes")
             .containsEntry("CHARITIES", "Charities")
@@ -870,10 +870,10 @@ class ClaimGroundServiceTest {
             .containsEntry("RESERVE_SUCCESSORS", "Reserve successors")
             .containsEntry("JOINT_CONTRACT_HOLDERS", "Joint contract holders")
             .containsEntry("OTHER_ESTATE_MANAGEMENT_REASONS", "Other estate management reasons")
-            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170", "Secure failure S170")
-            .containsEntry("LANDLORD_NOTICE_SECTION_186", "Secure landlord notice S186")
-            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191", "Secure failure S191")
-            .containsEntry("LANDLORD_NOTICE_SECTION_199", "Secure landlord notice S199")
+            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_S170", "Secure failure S170")
+            .containsEntry("LANDLORD_NOTICE_S186", "Secure landlord notice S186")
+            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_S191", "Secure failure S191")
+            .containsEntry("LANDLORD_NOTICE_S199", "Secure landlord notice S199")
             .containsEntry("OTHER_BREACH_OF_CONTRACT", "Secure other breach");
     }
 
@@ -896,7 +896,7 @@ class ClaimGroundServiceTest {
                     .build()
             )
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                .mandatoryGroundsWales(mandatoryGrounds)
+                .mandatoryGrounds(mandatoryGrounds)
                 .build())
             .groundsReasonsWales(reasons)
             .build();
