@@ -14,7 +14,7 @@ import {
   moneyOwed,
   rePayments,
   statementOfTruthOne,
-  languageUsed
+  languageUsed,
   claimSentToHighCourt,
   youCannotApplyForWrit
 } from '@data/page-data/page-data-enforcement';
