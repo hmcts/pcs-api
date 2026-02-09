@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
 import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -50,8 +51,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 
 @ExtendWith(MockitoExtension.class)
 class EnforceTheOrderTest extends BaseEventTest {
-
-    private static final int FEE_AMOUNT = 1000;
 
     @Mock
     private AddressFormatter addressFormatter;
@@ -269,18 +268,18 @@ class EnforceTheOrderTest extends BaseEventTest {
 
     @ParameterizedTest
     @MethodSource("enforcementFeeScenarios")
-    void shouldSetFeeAmountOnStart(FeeType fee, Function<EnforcementOrder, String> feeGetter) {
+    void shouldSetFeeAmountOnStart(FeeType fee, Function<EnforcementOrder, BigDecimal> feeGetter) {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
 
-        String expectedFormattedFee = "£" + (1 + FEE_AMOUNT);
+        BigDecimal expectedFee = BigDecimal.ZERO;
 
         doAnswer(invocation -> {
             PCSCase pcs = invocation.getArgument(0);
-            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
-            setter.accept(pcs, expectedFormattedFee);
+            BiConsumer<PCSCase, BigDecimal> setter = invocation.getArgument(2);
+            setter.accept(pcs, expectedFee);
             return null;
         }).when(feeApplier).applyFeeAmount(
             any(PCSCase.class),
@@ -292,24 +291,24 @@ class EnforceTheOrderTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFormattedFee);
+        assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFee);
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
     }
 
     @ParameterizedTest
     @MethodSource("enforcementFeeScenarios")
-    void shouldSetDefaultFeeWhenFeeServiceFails(FeeType fee, Function<EnforcementOrder, String> feeGetter) {
+    void shouldSetDefaultFeeWhenFeeServiceFails(FeeType fee, Function<EnforcementOrder, BigDecimal> feeGetter) {
         // Given
         PCSCase caseData = PCSCase.builder().enforcementOrder(EnforcementOrder.builder().build()).build();
-        String expectedFeesMessage = FeeApplier.UNABLE_TO_RETRIEVE;
+        BigDecimal expectedDefaultFee = BigDecimal.ZERO;
 
         doAnswer(invocation -> {
             PCSCase pcs = invocation.getArgument(0);
-            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
+            BiConsumer<PCSCase, BigDecimal> setter = invocation.getArgument(2);
             try {
                 throw new RuntimeException("Fee not found");
             } catch (RuntimeException e) {
-                setter.accept(pcs, expectedFeesMessage);
+                setter.accept(pcs, expectedDefaultFee);
             }
             return null;
         }).when(feeApplier).applyFeeAmount(
@@ -321,7 +320,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         PCSCase result = callStartHandler(caseData);
 
         // Then
-        assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedFeesMessage);
+        assertThat(feeGetter.apply(result.getEnforcementOrder())).isEqualTo(expectedDefaultFee);
         verify(feeApplier).applyFeeAmount(eq(caseData), eq(fee), any());
     }
 
@@ -330,12 +329,12 @@ class EnforceTheOrderTest extends BaseEventTest {
             argumentSet(
                 "Writ fee",
                 FeeType.ENFORCEMENT_WRIT_FEE,
-                (Function<EnforcementOrder, String>) EnforcementOrder::getWritFeeAmount
+                (Function<EnforcementOrder, BigDecimal>) EnforcementOrder::getWritFeeAmount
             ),
             argumentSet(
                 "Warrant fee",
                 FeeType.ENFORCEMENT_WARRANT_FEE,
-                (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount
+                (Function<EnforcementOrder, BigDecimal>) EnforcementOrder::getWarrantFeeAmount
             )
         );
     }

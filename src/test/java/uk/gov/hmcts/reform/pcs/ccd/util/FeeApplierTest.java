@@ -19,29 +19,89 @@ import java.util.function.BiConsumer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.CASE_ISSUE_FEE;
 import static uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType.ENFORCEMENT_WARRANT_FEE;
 
 @ExtendWith(MockitoExtension.class)
 class FeeApplierTest extends BaseEventTest {
 
+    @Mock
+    private FeeService feeService;
+    @Spy
+    private FeeFormatter feeFormatter;
     @InjectMocks
     private FeeApplier underTest;
 
-    @Mock
-    private FeeService feeService;
-
-    @Spy
-    private FeeFormatter feeFormatter;
-
     @Test
     void shouldSetFormattedFeeWhenFeeServiceReturnsFee() {
+        // Given
+        PCSCase pcsCase = PCSCase.builder().build();
+        FeeType feeType = CASE_ISSUE_FEE;
+        BigDecimal feeAmount = BigDecimal.valueOf(9999.99);
+        final String expectedFormattedFee = "£9999.99";
+
+        when(feeService.getFee(feeType)).thenReturn(
+                FeeDetails.builder()
+                    .feeAmount(feeAmount)
+                    .build());
+        BiConsumer<PCSCase, String> setter = PCSCase::setFeeAmount;
+
+        // When
+        underTest.applyFormattedFeeAmount(pcsCase, feeType, setter);
+
+        // Then
+        verify(feeService).getFee(feeType);
+        assertThat(pcsCase.getFeeAmount()).isEqualTo(expectedFormattedFee);
+    }
+
+    @Test
+    void shouldSetUnableToRetrieveWhenFeeServiceThrows() {
+        PCSCase pcsCase = PCSCase.builder().build();
+        FeeType feeType = FeeType.CASE_ISSUE_FEE;
+        final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
+
+        when(feeService.getFee(feeType))
+                .thenThrow(new RuntimeException("Fee service error"));
+        BiConsumer<PCSCase, String> setter = PCSCase::setFeeAmount;
+
+        // When
+        underTest.applyFormattedFeeAmount(pcsCase, feeType, setter);
+
+        // Then
+        verify(feeService).getFee(feeType);
+        assertThat(pcsCase.getFeeAmount()).isEqualTo(expectedFormattedFee);
+    }
+
+    @Test
+    void shouldSetUnableToRetrieveWhenFeeServiceReturnsNull() {
+        PCSCase pcsCase = PCSCase.builder().build();
+        FeeType feeType = FeeType.CASE_ISSUE_FEE;
+        final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
+        FeeDetails feeDetails = FeeDetails.builder()
+                        .feeAmount(null)
+                                .build();
+
+        when(feeService.getFee(feeType)).thenReturn(feeDetails);
+        when(feeFormatter.formatFee(null)).thenReturn(null);
+
+        BiConsumer<PCSCase, String> setter = PCSCase::setFeeAmount;
+
+        // When
+        underTest.applyFormattedFeeAmount(pcsCase, feeType, setter);
+
+        // Then
+        verify(feeService).getFee(feeType);
+        assertThat(pcsCase.getFeeAmount()).isEqualTo(expectedFormattedFee);
+    }
+
+    @Test
+    void shouldSetUnFormattedFeeWhenFeeServiceReturnsFee() {
         // Given
         PCSCase pcsCase = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeType feeType = ENFORCEMENT_WARRANT_FEE;
         BigDecimal feeAmount = BigDecimal.valueOf(123.45);
-        final String expectedFormattedFee = "£123.45";
 
         when(feeService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(
             FeeDetails
@@ -49,7 +109,7 @@ class FeeApplierTest extends BaseEventTest {
                 .feeAmount(feeAmount)
                 .build()
         );
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
+        BiConsumer<PCSCase, BigDecimal> setter = (caseData, fee) -> caseData
             .getEnforcementOrder().setWarrantFeeAmount(fee);
 
         // When
@@ -57,7 +117,7 @@ class FeeApplierTest extends BaseEventTest {
 
         // Then
         verify(feeService).getFee(feeType);
-        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
+        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(feeAmount);
     }
 
     @Test
@@ -67,11 +127,11 @@ class FeeApplierTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
-        final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
+        final BigDecimal expectedDefaultFee = BigDecimal.ZERO;
 
         when(feeService.getFee(feeType))
             .thenThrow(new RuntimeException("Fee service error"));
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
+        BiConsumer<PCSCase, BigDecimal> setter = (caseData, fee) -> caseData
             .getEnforcementOrder().setWarrantFeeAmount(fee);
 
         // When
@@ -79,7 +139,7 @@ class FeeApplierTest extends BaseEventTest {
 
         // Then
         verify(feeService).getFee(feeType);
-        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
+        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedDefaultFee);
     }
 
     @Test
@@ -89,10 +149,14 @@ class FeeApplierTest extends BaseEventTest {
             .enforcementOrder(EnforcementOrder.builder().build())
             .build();
         FeeType feeType = FeeType.ENFORCEMENT_WARRANT_FEE;
-        final String expectedFormattedFee = FeeApplier.UNABLE_TO_RETRIEVE;
+        final BigDecimal expectedFee = BigDecimal.ZERO;
 
-        when(feeService.getFee(ENFORCEMENT_WARRANT_FEE)).thenReturn(null);
-        BiConsumer<PCSCase, String> setter = (caseData, fee) -> caseData
+        FeeDetails feeDetails = FeeDetails.builder()
+                .feeAmount(null)
+                .build();
+
+        when(feeService.getFee(feeType)).thenReturn(feeDetails);
+        BiConsumer<PCSCase, BigDecimal> setter = (caseData, fee) -> caseData
             .getEnforcementOrder().setWarrantFeeAmount(fee);
 
         // When
@@ -100,6 +164,6 @@ class FeeApplierTest extends BaseEventTest {
 
         // Then
         verify(feeService).getFee(feeType);
-        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFormattedFee);
+        assertThat(pcsCase.getEnforcementOrder().getWarrantFeeAmount()).isEqualTo(expectedFee);
     }
 }

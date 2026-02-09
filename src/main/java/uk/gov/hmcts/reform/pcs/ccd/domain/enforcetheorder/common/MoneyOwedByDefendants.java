@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -9,6 +9,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+
+import java.math.BigDecimal;
+
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MAX_MONETARY_AMOUNT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase.MIN_MONETARY_AMOUNT;
 
 @Data
 @Builder
@@ -21,7 +27,9 @@ public class MoneyOwedByDefendants {
     @CCD(
         label = "What is the total amount that the defendants owe you?",
         typeOverride = FieldType.MoneyGBP,
-        min = 1
+        min = MIN_MONETARY_AMOUNT,
+        max = MAX_MONETARY_AMOUNT
     )
-    private String amountOwed;
+    @JacksonMoneyGBP
+    private BigDecimal amountOwed;
 }
