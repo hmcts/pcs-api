@@ -1,4 +1,4 @@
-import { test } from '@playwright/test';
+import { test } from '@utils/test-fixtures';
 import {
   addressCheckYourAnswers,
   addressDetails,
@@ -20,8 +20,7 @@ import {
 } from '@utils/controller';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
-
-test.beforeEach(async ({page}) => {
+test.beforeEach(async ({ page }) => {
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
   await performAction('clickTab', home.createCaseTab);
@@ -138,10 +137,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('selectClaimantType', claimantType.mortgageLenderRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+      header: userIneligible.eventNotCreated, message: userIneligible.notEligibleForOnlineService
     });
     await performValidation('text', {
       "text": userIneligible.exitBackHintText,
@@ -165,10 +161,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+      header: userIneligible.eventNotCreated, message: userIneligible.notEligibleForOnlineService
     });
     await performValidation('text', {
       "text": userIneligible.exitBackHintText,
@@ -192,10 +185,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+      header: userIneligible.eventNotCreated, message: userIneligible.notEligibleForOnlineService
     });
     await performValidation('text', {
       "text": userIneligible.exitBackHintText,
@@ -217,10 +207,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('selectClaimType', claimType.yesRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {
-      header: userIneligible.eventNotCreated, message: userIneligible.unableToProceed
-    });
-    await performValidation('errorMessage', {
-      header: userIneligible.errors, message: userIneligible.notEligibleForOnlineService
+      header: userIneligible.eventNotCreated, message: userIneligible.notEligibleForOnlineService
     });
     await performValidation('text', {
       "text": userIneligible.exitBackHintText,

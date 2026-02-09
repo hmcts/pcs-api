@@ -1,25 +1,26 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Set;
-
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+
+import java.util.Set;
 
 @Component
 public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfiguration {
+
+    private static final String DISCRETIONARY_GROUNDS = "secureGroundsWales_DiscretionaryGrounds";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -41,10 +42,12 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                </p>
                """)
             .complex(PCSCase::getSecureContractGroundsForPossessionWales)
-                .optional(SecureContractGroundsForPossessionWales::getDiscretionaryGroundsWales)
-                .optional(SecureContractGroundsForPossessionWales::getEstateManagementGroundsWales,
-                        "secureContract_DiscretionaryGroundsWalesCONTAINS\"ESTATE_MANAGEMENT_GROUNDS\"")
-                .optional(SecureContractGroundsForPossessionWales::getMandatoryGroundsWales)
+                .optional(SecureContractGroundsForPossessionWales::getDiscretionaryGrounds)
+                .optional(SecureContractGroundsForPossessionWales::getEstateManagementGrounds,
+                          ShowConditions.fieldContains(DISCRETIONARY_GROUNDS,
+                                               SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
+                )
+                .optional(SecureContractGroundsForPossessionWales::getMandatoryGrounds)
                 .done()
                 .label("secureOrFlexibleGroundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -55,26 +58,25 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
         PCSCase caseData = details.getData();
 
         Set<SecureContractDiscretionaryGroundsWales> discretionaryGrounds =
-            caseData.getSecureContractGroundsForPossessionWales().getDiscretionaryGroundsWales();
+            caseData.getSecureContractGroundsForPossessionWales().getDiscretionaryGrounds();
 
         Set<SecureContractMandatoryGroundsWales> mandatoryGrounds = caseData
-            .getSecureContractGroundsForPossessionWales().getMandatoryGroundsWales();
+            .getSecureContractGroundsForPossessionWales().getMandatoryGrounds();
 
         Set<EstateManagementGroundsWales> estateManagement = caseData
-            .getSecureContractGroundsForPossessionWales().getEstateManagementGroundsWales();
+            .getSecureContractGroundsForPossessionWales().getEstateManagementGrounds();
 
         if (discretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ESTATE_MANAGEMENT_GROUNDS)
                 && estateManagement.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(
-                        List.of("Please select at least one ground in ‘Estate management grounds (section 160)’.")
-                    )
+                    .errorMessageOverride(
+                        "Please select at least one ground in ‘Estate management grounds (section 160)’.")
                     .build();
         }
 
         if (discretionaryGrounds.isEmpty() && mandatoryGrounds.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(List.of("Please select at least one ground"))
+                    .errorMessageOverride("Please select at least one ground")
                     .build();
         }
         // ASB/Reasons routing (from master - conditional logic)

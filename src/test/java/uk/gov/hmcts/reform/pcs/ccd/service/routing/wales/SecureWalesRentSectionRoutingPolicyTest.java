@@ -44,7 +44,7 @@ class SecureWalesRentSectionRoutingPolicyTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(EnumSet.of(RENT_ARREARS))
+                .discretionaryGrounds(EnumSet.of(RENT_ARREARS))
                     .build()
             )
             .build();
@@ -62,7 +62,7 @@ class SecureWalesRentSectionRoutingPolicyTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(EnumSet.of(ANTISOCIAL_BEHAVIOUR))
+                .discretionaryGrounds(EnumSet.of(ANTISOCIAL_BEHAVIOUR))
                     .build()
             )
             .build();
@@ -80,7 +80,7 @@ class SecureWalesRentSectionRoutingPolicyTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(null)
+                .discretionaryGrounds(null)
                     .build()
         )
             .build();

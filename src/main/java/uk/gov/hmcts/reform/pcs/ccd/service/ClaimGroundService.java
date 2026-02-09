@@ -2,13 +2,19 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
@@ -21,29 +27,36 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static feign.Util.isNotBlank;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.RENT_ARREARS_GROUND10;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.RENT_ARREARS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherNoGrounds.NO_GROUNDS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy.BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 
 @Service
 public class ClaimGroundService {
 
-    public List<ClaimGroundEntity> getGroundsWithReason(PCSCase pcsCase) {
+    public List<ClaimGroundEntity> createClaimGroundEntities(PCSCase pcsCase) {
         // Check if Wales first - Wales uses OccupationLicenceTypeWales, not TenancyLicenceType
         if (LegislativeCountry.WALES.equals(pcsCase.getLegislativeCountry())) {
             return getWalesGroundsWithReason(pcsCase);
         }
 
-        TenancyLicenceDetails tenancyDetails =
-            pcsCase.getTenancyLicenceDetails();
+        TenancyLicenceDetails tenancyDetails = pcsCase.getTenancyLicenceDetails();
         TenancyLicenceType tenancyLicenceType = tenancyDetails != null
             ? tenancyDetails.getTypeOfTenancyLicence() : null;
 
@@ -71,69 +84,104 @@ public class ClaimGroundService {
 
     private List<ClaimGroundEntity> assuredTenancyRentArrearsGroundsWithReason(PCSCase pcsCase) {
 
-        Set<RentArrearsGround> rentArrearsGrounds = pcsCase.getRentArrearsGroundsForPossession()
-            .getRentArrearsGrounds();
-        Set<AssuredMandatoryGround> mandatoryGrounds = pcsCase.getRentArrearsGroundsForPossession()
-            .getMandatoryGrounds();
-        Set<AssuredDiscretionaryGround> discretionaryGrounds = pcsCase.getRentArrearsGroundsForPossession()
-            .getDiscretionaryGrounds();
-        RentArrearsGroundsReasons grounds = pcsCase.getRentArrearsGroundsReasons();
+        AssuredRentArrearsPossessionGrounds groundsForPossession = pcsCase.getAssuredRentArrearsPossessionGrounds();
 
-        List<ClaimGroundEntity> entities = new ArrayList<>();
+        Set<AssuredRentArrearsGround> rentArrearsGrounds = groundsForPossession.getRentArrearsGrounds();
 
-        if (mandatoryGrounds == null && discretionaryGrounds == null) {
-            rentArrearsGrounds.forEach(rentArrearsGround -> {
-                entities.add(ClaimGroundEntity.builder()
-                                 .groundId(rentArrearsGround.name())
-                                 .build());
-            });
-            return entities;
+        Set<AssuredAdditionalMandatoryGrounds> additionalMandatoryGrounds
+            = groundsForPossession.getAdditionalMandatoryGrounds();
+        Set<AssuredAdditionalDiscretionaryGrounds> additionalDiscretionaryGrounds
+            = groundsForPossession.getAdditionalDiscretionaryGrounds();
+
+        Set<AssuredMandatoryGround> combinedMandatoryGrounds = new HashSet<>();
+        Set<AssuredDiscretionaryGround> combinedDiscretionaryGrounds = new HashSet<>();
+
+        if (additionalMandatoryGrounds != null) {
+            additionalMandatoryGrounds.forEach(
+                additionalMandatoryGround -> combinedMandatoryGrounds.add(
+                    AssuredMandatoryGround.valueOf(additionalMandatoryGround.name())
+                )
+            );
         }
 
-        if (mandatoryGrounds != null) {
-            for (AssuredMandatoryGround ground : mandatoryGrounds) {
-                String reasonText = switch (ground) {
-                    case OWNER_OCCUPIER_GROUND1 -> grounds.getOwnerOccupierReason();
-                    case REPOSSESSION_GROUND2 -> grounds.getRepossessionByLenderReason();
-                    case HOLIDAY_LET_GROUND3 -> grounds.getHolidayLetReason();
-                    case STUDENT_LET_GROUND4 -> grounds.getStudentLetReason();
-                    case MINISTER_RELIGION_GROUND5 -> grounds.getMinisterOfReligionReason();
-                    case REDEVELOPMENT_GROUND6 -> grounds.getRedevelopmentReason();
-                    case DEATH_OF_TENANT_GROUND7 -> grounds.getDeathOfTenantReason();
-                    case ANTISOCIAL_BEHAVIOUR_GROUND7A -> grounds.getAntisocialBehaviourReason();
-                    case NO_RIGHT_TO_RENT_GROUND7B -> grounds.getNoRightToRentReason();
-                    case SERIOUS_RENT_ARREARS_GROUND8 -> null;
-                };
+        if (additionalDiscretionaryGrounds != null) {
+            additionalDiscretionaryGrounds.forEach(
+                additionalDiscretionaryGround -> combinedDiscretionaryGrounds.add(
+                    AssuredDiscretionaryGround.valueOf(additionalDiscretionaryGround.name())
+                )
+            );
+        }
 
-                entities.add(ClaimGroundEntity.builder()
-                                 .groundId(ground.name())
-                                 .groundReason(reasonText)
-                                 .build());
+        RentArrearsGroundsReasons reasons = pcsCase.getRentArrearsGroundsReasons();
+
+        List<ClaimGroundEntity> claimGroundEntities = new ArrayList<>();
+
+        for (AssuredRentArrearsGround rentArrearsGround : rentArrearsGrounds) {
+            switch (rentArrearsGround) {
+                case SERIOUS_RENT_ARREARS_GROUND8:
+                    // Ground 8 is mandatory
+                    combinedMandatoryGrounds.add(SERIOUS_RENT_ARREARS_GROUND8);
+                    break;
+                case RENT_ARREARS_GROUND10:
+                    // Ground 10 is discretionary
+                    combinedDiscretionaryGrounds.add(RENT_ARREARS_GROUND10);
+                    break;
+                case PERSISTENT_DELAY_GROUND11:
+                    // Ground 11 is discretionary
+                    combinedDiscretionaryGrounds.add(AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
+                    break;
             }
         }
 
-        if (discretionaryGrounds != null) {
-            for (AssuredDiscretionaryGround ground : discretionaryGrounds) {
-                String reasonText = switch (ground) {
-                    case ALTERNATIVE_ACCOMMODATION_GROUND9 -> grounds.getSuitableAltAccommodationReason();
-                    case RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11 -> null;
-                    case BREACH_TENANCY_GROUND12 -> grounds.getBreachOfTenancyConditionsReason();
-                    case DETERIORATION_PROPERTY_GROUND13 -> grounds.getPropertyDeteriorationReason();
-                    case NUISANCE_ANNOYANCE_GROUND14 -> grounds.getNuisanceAnnoyanceReason();
-                    case DOMESTIC_VIOLENCE_GROUND14A -> grounds.getDomesticViolenceReason();
-                    case OFFENCE_RIOT_GROUND14ZA -> grounds.getOffenceDuringRiotReason();
-                    case DETERIORATION_FURNITURE_GROUND15 -> grounds.getFurnitureDeteriorationReason();
-                    case EMPLOYEE_LANDLORD_GROUND16 -> grounds.getEmployeeOfLandlordReason();
-                    case FALSE_STATEMENT_GROUND17 ->  grounds.getTenancyByFalseStatementReason();
-                };
+        for (AssuredMandatoryGround ground : combinedMandatoryGrounds) {
+            String reasonText = switch (ground) {
+                case OWNER_OCCUPIER_GROUND1 -> reasons.getOwnerOccupierReason();
+                case REPOSSESSION_GROUND2 -> reasons.getRepossessionByLenderReason();
+                case HOLIDAY_LET_GROUND3 -> reasons.getHolidayLetReason();
+                case STUDENT_LET_GROUND4 -> reasons.getStudentLetReason();
+                case MINISTER_RELIGION_GROUND5 -> reasons.getMinisterOfReligionReason();
+                case REDEVELOPMENT_GROUND6 -> reasons.getRedevelopmentReason();
+                case DEATH_OF_TENANT_GROUND7 -> reasons.getDeathOfTenantReason();
+                case ANTISOCIAL_BEHAVIOUR_GROUND7A -> reasons.getAntisocialBehaviourReason();
+                case NO_RIGHT_TO_RENT_GROUND7B -> reasons.getNoRightToRentReason();
+                case SERIOUS_RENT_ARREARS_GROUND8 -> null;
+            };
 
-                entities.add(ClaimGroundEntity.builder()
-                                 .groundId(ground.name())
-                                 .groundReason(reasonText)
-                                 .build());
-            }
+            boolean isRentArrearsGround = (ground == SERIOUS_RENT_ARREARS_GROUND8);
+
+            claimGroundEntities.add(ClaimGroundEntity.builder()
+                                        .category(ClaimGroundCategory.ASSURED_MANDATORY)
+                                        .code(ground.name())
+                                        .reason(reasonText)
+                                        .isRentArrears(isRentArrearsGround)
+                                        .build());
         }
-        return entities;
+
+        for (AssuredDiscretionaryGround ground : combinedDiscretionaryGrounds) {
+            String reasonText = switch (ground) {
+                case ALTERNATIVE_ACCOMMODATION_GROUND9 -> reasons.getSuitableAltAccommodationReason();
+                case RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11 -> null;
+                case BREACH_TENANCY_GROUND12 -> reasons.getBreachOfTenancyConditionsReason();
+                case DETERIORATION_PROPERTY_GROUND13 -> reasons.getPropertyDeteriorationReason();
+                case NUISANCE_ANNOYANCE_GROUND14 -> reasons.getNuisanceAnnoyanceReason();
+                case DOMESTIC_VIOLENCE_GROUND14A -> reasons.getDomesticViolenceReason();
+                case OFFENCE_RIOT_GROUND14ZA -> reasons.getOffenceDuringRiotReason();
+                case DETERIORATION_FURNITURE_GROUND15 -> reasons.getFurnitureDeteriorationReason();
+                case EMPLOYEE_LANDLORD_GROUND16 -> reasons.getEmployeeOfLandlordReason();
+                case FALSE_STATEMENT_GROUND17 -> reasons.getTenancyByFalseStatementReason();
+            };
+
+            boolean isRentArrearsGround = (ground == RENT_ARREARS_GROUND10 || ground == PERSISTENT_DELAY_GROUND11);
+
+            claimGroundEntities.add(ClaimGroundEntity.builder()
+                                        .category(ClaimGroundCategory.ASSURED_DISCRETIONARY)
+                                        .code(ground.name())
+                                        .reason(reasonText)
+                                        .isRentArrears(isRentArrearsGround)
+                                        .build());
+        }
+
+        return claimGroundEntities;
     }
 
     private List<ClaimGroundEntity> assuredTenancyNoRentArrearsGroundsWithReason(PCSCase pcsCase) {
@@ -141,28 +189,32 @@ public class ClaimGroundService {
         Set<AssuredMandatoryGround> mandatoryGrounds = pcsCase.getNoRentArrearsGroundsOptions().getMandatoryGrounds();
         Set<AssuredDiscretionaryGround> discretionaryGrounds = pcsCase
                 .getNoRentArrearsGroundsOptions().getDiscretionaryGrounds();
-        NoRentArrearsReasonForGrounds grounds = pcsCase.getNoRentArrearsReasonForGrounds();
+        NoRentArrearsReasonForGrounds reasons = pcsCase.getNoRentArrearsReasonForGrounds();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
         if (mandatoryGrounds != null) {
             for (AssuredMandatoryGround ground : mandatoryGrounds) {
                 String reasonText = switch (ground) {
-                    case OWNER_OCCUPIER_GROUND1 -> grounds.getOwnerOccupierTextArea();
-                    case REPOSSESSION_GROUND2 -> grounds.getRepossessionByLenderTextArea();
-                    case HOLIDAY_LET_GROUND3 -> grounds.getHolidayLetTextArea();
-                    case STUDENT_LET_GROUND4 -> grounds.getStudentLetTextArea();
-                    case MINISTER_RELIGION_GROUND5 -> grounds.getMinisterOfReligionTextArea();
-                    case REDEVELOPMENT_GROUND6 -> grounds.getRedevelopmentTextArea();
-                    case DEATH_OF_TENANT_GROUND7 -> grounds.getDeathOfTenantTextArea();
-                    case ANTISOCIAL_BEHAVIOUR_GROUND7A -> grounds.getAntisocialBehaviourTextArea();
-                    case NO_RIGHT_TO_RENT_GROUND7B -> grounds.getNoRightToRentTextArea();
+                    case OWNER_OCCUPIER_GROUND1 -> reasons.getOwnerOccupier();
+                    case REPOSSESSION_GROUND2 -> reasons.getRepossessionByLender();
+                    case HOLIDAY_LET_GROUND3 -> reasons.getHolidayLet();
+                    case STUDENT_LET_GROUND4 -> reasons.getStudentLet();
+                    case MINISTER_RELIGION_GROUND5 -> reasons.getMinisterOfReligion();
+                    case REDEVELOPMENT_GROUND6 -> reasons.getRedevelopment();
+                    case DEATH_OF_TENANT_GROUND7 -> reasons.getDeathOfTenant();
+                    case ANTISOCIAL_BEHAVIOUR_GROUND7A -> reasons.getAntisocialBehaviour();
+                    case NO_RIGHT_TO_RENT_GROUND7B -> reasons.getNoRightToRent();
                     case SERIOUS_RENT_ARREARS_GROUND8 -> null;
                 };
 
+                boolean isRentArrearsGround = (ground == SERIOUS_RENT_ARREARS_GROUND8);
+
                 entities.add(ClaimGroundEntity.builder()
-                                 .groundId(ground.name())
-                                 .groundReason(reasonText)
+                                 .category(ClaimGroundCategory.ASSURED_MANDATORY)
+                                 .code(ground.name())
+                                 .reason(reasonText)
+                                 .isRentArrears(isRentArrearsGround)
                                  .build());
             }
         }
@@ -170,21 +222,25 @@ public class ClaimGroundService {
         if (discretionaryGrounds != null) {
             for (AssuredDiscretionaryGround ground : discretionaryGrounds) {
                 String reasonText = switch (ground) {
-                    case ALTERNATIVE_ACCOMMODATION_GROUND9 -> grounds.getSuitableAccomTextArea();
+                    case ALTERNATIVE_ACCOMMODATION_GROUND9 -> reasons.getSuitableAlternativeAccomodation();
                     case RENT_ARREARS_GROUND10, PERSISTENT_DELAY_GROUND11 -> null;
-                    case BREACH_TENANCY_GROUND12 -> grounds.getBreachOfTenancyConditionsTextArea();
-                    case DETERIORATION_PROPERTY_GROUND13 -> grounds.getPropertyDeteriorationTextArea();
-                    case NUISANCE_ANNOYANCE_GROUND14 -> grounds.getNuisanceOrIllegalUseTextArea();
-                    case DOMESTIC_VIOLENCE_GROUND14A -> grounds.getDomesticViolenceTextArea();
-                    case OFFENCE_RIOT_GROUND14ZA -> grounds.getOffenceDuringRiotTextArea();
-                    case DETERIORATION_FURNITURE_GROUND15 -> grounds.getFurnitureDeteriorationTextArea();
-                    case EMPLOYEE_LANDLORD_GROUND16 -> grounds.getLandlordEmployeeTextArea();
-                    case FALSE_STATEMENT_GROUND17 -> grounds.getFalseStatementTextArea();
+                    case BREACH_TENANCY_GROUND12 -> reasons.getBreachOfTenancyConditions();
+                    case DETERIORATION_PROPERTY_GROUND13 -> reasons.getPropertyDeterioration();
+                    case NUISANCE_ANNOYANCE_GROUND14 -> reasons.getNuisanceOrIllegalUse();
+                    case DOMESTIC_VIOLENCE_GROUND14A -> reasons.getDomesticViolence();
+                    case OFFENCE_RIOT_GROUND14ZA -> reasons.getOffenceDuringRiot();
+                    case DETERIORATION_FURNITURE_GROUND15 -> reasons.getFurnitureDeterioration();
+                    case EMPLOYEE_LANDLORD_GROUND16 -> reasons.getLandlordEmployee();
+                    case FALSE_STATEMENT_GROUND17 -> reasons.getFalseStatement();
                 };
 
+                boolean isRentArrearsGround = (ground == RENT_ARREARS_GROUND10 || ground == PERSISTENT_DELAY_GROUND11);
+
                 entities.add(ClaimGroundEntity.builder()
-                                 .groundId(ground.name())
-                                 .groundReason(reasonText)
+                                 .category(ClaimGroundCategory.ASSURED_DISCRETIONARY)
+                                 .code(ground.name())
+                                 .reason(reasonText)
+                                 .isRentArrears(isRentArrearsGround)
                                  .build());
             }
         }
@@ -192,52 +248,155 @@ public class ClaimGroundService {
         return entities;
     }
 
-    private List<ClaimGroundEntity> getIntroductoryDemotedOtherTenancyGroundsWithReason(
-        PCSCase pcsCase) {
-        Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds =
-            pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds();
-
-        IntroductoryDemotedOtherGroundReason reasons = pcsCase.getIntroductoryDemotedOtherGroundReason();
+    private List<ClaimGroundEntity> getIntroductoryDemotedOtherTenancyGroundsWithReason(PCSCase pcsCase) {
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
-        if (introductoryDemotedOrOtherGrounds != null) {
-            for (IntroductoryDemotedOrOtherGrounds ground : introductoryDemotedOrOtherGrounds) {
-                String reasonText = switch (ground) {
-                    case ABSOLUTE_GROUNDS -> reasons.getAbsoluteGrounds();
-                    case ANTI_SOCIAL -> reasons.getAntiSocialBehaviourGround();
-                    case BREACH_OF_THE_TENANCY -> reasons.getBreachOfTheTenancyGround();
-                    case OTHER -> reasons.getOtherGround();
-                    case RENT_ARREARS -> null;
-                };
 
-                String groundDescription = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
-                    ? pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription() : null;
+        VerticalYesNo hasGrounds = pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession()
+            .getHasIntroductoryDemotedOtherGroundsForPossession();
 
-                entities.add(
-                    ClaimGroundEntity.builder()
-                        .groundId(ground.name())
-                        .groundReason(reasonText)
-                        .groundDescription(groundDescription)
-                        .build());
+        if (hasGrounds == VerticalYesNo.YES) {
+            Set<IntroductoryDemotedOrOtherGrounds> introductoryDemotedOrOtherGrounds =
+                pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getIntroductoryDemotedOrOtherGrounds();
+
+            IntroductoryDemotedOtherGroundReason reasons = pcsCase.getIntroductoryDemotedOtherGroundReason();
+
+            if (introductoryDemotedOrOtherGrounds != null) {
+                for (IntroductoryDemotedOrOtherGrounds ground : introductoryDemotedOrOtherGrounds) {
+                    String reasonText = switch (ground) {
+                        case ABSOLUTE_GROUNDS -> reasons.getAbsoluteGrounds();
+                        case ANTI_SOCIAL -> reasons.getAntiSocialBehaviourGround();
+                        case BREACH_OF_THE_TENANCY -> reasons.getBreachOfTheTenancyGround();
+                        case OTHER -> reasons.getOtherGround();
+                        case RENT_ARREARS -> null;
+                    };
+
+                    String groundDescription = ground.equals(IntroductoryDemotedOrOtherGrounds.OTHER)
+                        ? pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession().getOtherGroundDescription()
+                        : null;
+
+                    boolean isRentArrearsGround = (ground == RENT_ARREARS);
+
+                    entities.add(
+                        ClaimGroundEntity.builder()
+                            .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER)
+                            .code(ground.name())
+                            .reason(reasonText)
+                            .description(groundDescription)
+                            .isRentArrears(isRentArrearsGround)
+                            .build());
+                }
             }
-        }
-        if (pcsCase.getIntroductoryDemotedOrOtherGroundsForPossession()
-            .getHasIntroductoryDemotedOtherGroundsForPossession() == VerticalYesNo.NO
-            && isNotBlank(reasons.getNoGrounds())) {
-
+        } else {
             entities.add(
                 ClaimGroundEntity.builder()
-                    .groundId(NO_GROUNDS.name())
-                    .groundReason(pcsCase.getIntroductoryDemotedOtherGroundReason().getNoGrounds())
+                    .category(ClaimGroundCategory.INTRODUCTORY_DEMOTED_OTHER_NO_GROUNDS)
+                    .code(NO_GROUNDS.name())
+                    .reason(pcsCase.getIntroductoryDemotedOtherGroundReason().getNoGrounds())
+                    .isRentArrears(false)
                     .build());
         }
 
         return entities;
     }
 
-    //TODO - Integrate Secure/Flexible grounds, currently being saved as JSONB
     private List<ClaimGroundEntity> getSecureFlexibleTenancyGroundsWithReason(PCSCase pcsCase) {
-        return List.of();
+        SecureOrFlexiblePossessionGrounds possessionGrounds = pcsCase.getSecureOrFlexiblePossessionGrounds();
+
+        List<ClaimGroundEntity> claimGroundEntities = new ArrayList<>();
+
+        SecureOrFlexibleGroundsReasons reasons = pcsCase.getSecureOrFlexibleGroundsReasons();
+
+        Set<RentArrearsOrBreachOfTenancy> rentArrearsOrBreachOfTenancy
+            = Objects.requireNonNullElse(pcsCase.getRentArrearsOrBreachOfTenancy(), Set.of());
+
+        boolean breachOfTenancy = rentArrearsOrBreachOfTenancy.contains(BREACH_OF_TENANCY);
+
+        possessionGrounds.getSecureOrFlexibleDiscretionaryGrounds().forEach(
+            ground -> {
+                String reasonText = switch (ground) {
+                    case RENT_ARREARS_OR_BREACH_OF_TENANCY
+                        -> breachOfTenancy ? reasons.getBreachOfTenancyGround() : null;
+                    case NUISANCE_OR_IMMORAL_USE -> reasons.getNuisanceOrImmoralUseGround();
+                    case DOMESTIC_VIOLENCE -> reasons.getDomesticViolenceGround();
+                    case RIOT_OFFENCE -> reasons.getRiotOffenceGround();
+                    case PROPERTY_DETERIORATION -> reasons.getPropertyDeteriorationGround();
+                    case FURNITURE_DETERIORATION -> reasons.getFurnitureDeteriorationGround();
+                    case TENANCY_OBTAINED_BY_FALSE_STATEMENT -> reasons.getTenancyByFalseStatementGround();
+                    case PREMIUM_PAID_MUTUAL_EXCHANGE -> reasons.getPremiumMutualExchangeGround();
+                    case UNREASONABLE_CONDUCT_TIED_ACCOMMODATION -> reasons.getUnreasonableConductGround();
+                    case REFUSAL_TO_MOVE_BACK -> reasons.getRefusalToMoveBackGround();
+                };
+
+                boolean isRentArrearsGround = (ground == RENT_ARREARS_OR_BREACH_OF_TENANCY
+                    && rentArrearsOrBreachOfTenancy.contains(RentArrearsOrBreachOfTenancy.RENT_ARREARS));
+
+                claimGroundEntities.add(
+                    ClaimGroundEntity.builder()
+                        .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY)
+                        .code(ground.name())
+                        .reason(reasonText)
+                        .isRentArrears(isRentArrearsGround)
+                        .build());
+            }
+        );
+
+        possessionGrounds.getSecureOrFlexibleMandatoryGrounds().forEach(
+            mandatoryGround -> {
+                String reasonText = switch (mandatoryGround) {
+                    case ANTI_SOCIAL -> reasons.getAntiSocialGround();
+                };
+
+                claimGroundEntities.add(
+                    ClaimGroundEntity.builder()
+                        .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_MANDATORY)
+                        .code(mandatoryGround.name())
+                        .reason(reasonText)
+                        .isRentArrears(false)
+                        .build());
+            }
+        );
+
+        possessionGrounds.getSecureOrFlexibleDiscretionaryGroundsAlt().forEach(
+            discretionaryGroundAlt -> {
+                String reasonText = switch (discretionaryGroundAlt) {
+                    case TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE -> reasons.getTiedAccommodationGround();
+                    case ADAPTED_ACCOMMODATION -> reasons.getAdaptedAccommodationGround();
+                    case HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES -> reasons.getHousingAssocSpecialGround();
+                    case SPECIAL_NEEDS_ACCOMMODATION -> reasons.getSpecialNeedsAccommodationGround();
+                    case UNDER_OCCUPYING_AFTER_SUCCESSION -> reasons.getUnderOccupancySuccessionGround();
+                };
+
+                claimGroundEntities.add(
+                    ClaimGroundEntity.builder()
+                        .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_DISCRETIONARY_ALT)
+                        .code(discretionaryGroundAlt.name())
+                        .reason(reasonText)
+                        .isRentArrears(false)
+                        .build());
+            }
+        );
+
+        possessionGrounds.getSecureOrFlexibleMandatoryGroundsAlt().forEach(
+            mandatoryGroundAlt -> {
+                String reasonText = switch (mandatoryGroundAlt) {
+                    case OVERCROWDING -> reasons.getOvercrowdingGround();
+                    case LANDLORD_WORKS -> reasons.getLandlordWorksGround();
+                    case PROPERTY_SOLD -> reasons.getPropertySoldGround();
+                    case CHARITABLE_LANDLORD -> reasons.getCharitableLandlordGround();
+                };
+
+                claimGroundEntities.add(
+                    ClaimGroundEntity.builder()
+                        .category(ClaimGroundCategory.SECURE_OR_FLEXIBLE_MANDATORY_ALT)
+                        .code(mandatoryGroundAlt.name())
+                        .reason(reasonText)
+                        .isRentArrears(false)
+                        .build());
+            }
+        );
+
+        return claimGroundEntities;
     }
 
     private List<ClaimGroundEntity> getWalesGroundsWithReason(PCSCase pcsCase) {
@@ -245,25 +404,25 @@ public class ClaimGroundService {
         SecureContractGroundsForPossessionWales secureGrounds =
             Optional.ofNullable(pcsCase.getSecureContractGroundsForPossessionWales())
                 .orElse(SecureContractGroundsForPossessionWales.builder()
-                            .discretionaryGroundsWales(Set.of())
-                            .mandatoryGroundsWales(Set.of())
-                            .estateManagementGroundsWales(Set.of())
+                            .discretionaryGrounds(Set.of())
+                            .mandatoryGrounds(Set.of())
+                            .estateManagementGrounds(Set.of())
                             .build());
 
         GroundsForPossessionWales groundsForPossessionWales =
             Optional.ofNullable(pcsCase.getGroundsForPossessionWales())
                 .orElse(GroundsForPossessionWales.builder().build());
 
-        Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGroundsWales();
-        Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGroundsWales();
+        Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGrounds();
+        Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGrounds();
+        Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGrounds();
         Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds =
-            secureGrounds.getMandatoryGroundsWales();
+            secureGrounds.getMandatoryGrounds();
         Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds =
-            secureGrounds.getDiscretionaryGroundsWales();
+            secureGrounds.getDiscretionaryGrounds();
         Set<EstateManagementGroundsWales> secureEstateGrounds =
-            secureGrounds.getEstateManagementGroundsWales();
-        GroundsReasonsWales grounds = pcsCase.getGroundsReasonsWales();
+            secureGrounds.getEstateManagementGrounds();
+        GroundsReasonsWales reasons = pcsCase.getGroundsReasonsWales();
 
         List<ClaimGroundEntity> entities = new ArrayList<>();
 
@@ -276,20 +435,20 @@ public class ClaimGroundService {
         // Standard/Other Contract - Mandatory grounds
         if (mandatoryGrounds != null) {
             for (MandatoryGroundWales ground : mandatoryGrounds) {
-                String reasonText = grounds != null ? switch (ground) {
-                    case FAIL_TO_GIVE_UP_S170 -> grounds.getFailToGiveUpS170Reason();
-                    case LANDLORD_NOTICE_PERIODIC_S178 -> grounds.getLandlordNoticePeriodicS178Reason();
-                    case SERIOUS_ARREARS_PERIODIC_S181 -> grounds.getSeriousArrearsPeriodicS181Reason();
-                    case LANDLORD_NOTICE_FT_END_S186 -> grounds.getLandlordNoticeFtEndS186Reason();
-                    case SERIOUS_ARREARS_FIXED_TERM_S187 -> grounds.getSeriousArrearsFixedTermS187Reason();
-                    case FAIL_TO_GIVE_UP_BREAK_NOTICE_S191 -> grounds.getFailToGiveUpBreakNoticeS191Reason();
-                    case LANDLORD_BREAK_CLAUSE_S199 -> grounds.getLandlordBreakClauseS199Reason();
-                    case CONVERTED_FIXED_TERM_SCH12_25B2 -> grounds.getConvertedFixedTermSch1225B2Reason();
+                String reasonText = reasons != null ? switch (ground) {
+                    case FAIL_TO_GIVE_UP_S170 -> reasons.getFailToGiveUpS170Reason();
+                    case LANDLORD_NOTICE_PERIODIC_S178 -> reasons.getLandlordNoticePeriodicS178Reason();
+                    case SERIOUS_ARREARS_PERIODIC_S181 -> reasons.getSeriousArrearsPeriodicS181Reason();
+                    case LANDLORD_NOTICE_FT_END_S186 -> reasons.getLandlordNoticeFtEndS186Reason();
+                    case SERIOUS_ARREARS_FIXED_TERM_S187 -> reasons.getSeriousArrearsFixedTermS187Reason();
+                    case FAIL_TO_GIVE_UP_BREAK_NOTICE_S191 -> reasons.getFailToGiveUpBreakNoticeS191Reason();
+                    case LANDLORD_BREAK_CLAUSE_S199 -> reasons.getLandlordBreakClauseS199Reason();
+                    case CONVERTED_FIXED_TERM_SCH12_25B2 -> reasons.getConvertedFixedTermSch1225B2Reason();
                 } : null;
 
                 entities.add(ClaimGroundEntity.builder()
-                    .groundId(ground.name())
-                    .groundReason(reasonText)
+                    .code(ground.name())
+                    .reason(reasonText)
                     .build());
             }
         }
@@ -297,16 +456,16 @@ public class ClaimGroundService {
         // Standard/Other Contract - Discretionary grounds
         if (discretionaryGrounds != null) {
             for (DiscretionaryGroundWales ground : discretionaryGrounds) {
-                String reasonText = grounds != null ? switch (ground) {
-                    case RENT_ARREARS_SECTION_157 -> null;
-                    case ANTISOCIAL_BEHAVIOUR_SECTION_157 -> null;
-                    case OTHER_BREACH_SECTION_157 -> grounds.getOtherBreachSection157Reason();
-                    case ESTATE_MANAGEMENT_GROUNDS_SECTION_160 -> null;
+                String reasonText = reasons != null ? switch (ground) {
+                    case RENT_ARREARS_S157 -> null;
+                    case ANTISOCIAL_BEHAVIOUR_S157 -> null;
+                    case OTHER_BREACH_S157 -> reasons.getOtherBreachSection157Reason();
+                    case ESTATE_MANAGEMENT_GROUNDS_S160 -> null;
                 } : null;
 
                 entities.add(ClaimGroundEntity.builder()
-                    .groundId(ground.name())
-                    .groundReason(reasonText)
+                    .code(ground.name())
+                    .reason(reasonText)
                     .build());
             }
         }
@@ -314,21 +473,21 @@ public class ClaimGroundService {
         // Standard/Other Contract - Estate Management grounds
         if (estateGrounds != null) {
             for (EstateManagementGroundsWales ground : estateGrounds) {
-                String reasonText = grounds != null ? switch (ground) {
-                    case BUILDING_WORKS -> grounds.getBuildingWorksReason();
-                    case REDEVELOPMENT_SCHEMES -> grounds.getRedevelopmentSchemesReason();
-                    case CHARITIES -> grounds.getCharitiesReason();
-                    case DISABLED_SUITABLE_DWELLING -> grounds.getDisabledSuitableDwellingReason();
-                    case HOUSING_ASSOCIATIONS_AND_TRUSTS -> grounds.getHousingAssociationsAndTrustsReason();
-                    case SPECIAL_NEEDS_DWELLINGS -> grounds.getSpecialNeedsDwellingsReason();
-                    case RESERVE_SUCCESSORS -> grounds.getReserveSuccessorsReason();
-                    case JOINT_CONTRACT_HOLDERS -> grounds.getJointContractHoldersReason();
-                    case OTHER_ESTATE_MANAGEMENT_REASONS -> grounds.getOtherEstateManagementReasonsReason();
+                String reasonText = reasons != null ? switch (ground) {
+                    case BUILDING_WORKS -> reasons.getBuildingWorksReason();
+                    case REDEVELOPMENT_SCHEMES -> reasons.getRedevelopmentSchemesReason();
+                    case CHARITIES -> reasons.getCharitiesReason();
+                    case DISABLED_SUITABLE_DWELLING -> reasons.getDisabledSuitableDwellingReason();
+                    case HOUSING_ASSOCIATIONS_AND_TRUSTS -> reasons.getHousingAssociationsAndTrustsReason();
+                    case SPECIAL_NEEDS_DWELLINGS -> reasons.getSpecialNeedsDwellingsReason();
+                    case RESERVE_SUCCESSORS -> reasons.getReserveSuccessorsReason();
+                    case JOINT_CONTRACT_HOLDERS -> reasons.getJointContractHoldersReason();
+                    case OTHER_ESTATE_MANAGEMENT_REASONS -> reasons.getOtherEstateManagementReasonsReason();
                 } : null;
 
                 entities.add(ClaimGroundEntity.builder()
-                    .groundId(ground.name())
-                    .groundReason(reasonText)
+                    .code(ground.name())
+                    .reason(reasonText)
                     .build());
             }
         }
@@ -336,20 +495,20 @@ public class ClaimGroundService {
         // Secure Contract - Mandatory grounds
         if (secureMandatoryGrounds != null) {
             for (SecureContractMandatoryGroundsWales ground : secureMandatoryGrounds) {
-                String reasonText = grounds != null ? switch (ground) {
-                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170 ->
-                        grounds.getSecureFailureToGiveUpPossessionSection170Reason();
-                    case LANDLORD_NOTICE_SECTION_186 ->
-                        grounds.getSecureLandlordNoticeSection186Reason();
-                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191 ->
-                        grounds.getSecureFailureToGiveUpPossessionSection191Reason();
-                    case LANDLORD_NOTICE_SECTION_199 ->
-                        grounds.getSecureLandlordNoticeSection199Reason();
+                String reasonText = reasons != null ? switch (ground) {
+                    case FAILURE_TO_GIVE_UP_POSSESSION_S170 ->
+                        reasons.getSecureFailureToGiveUpPossessionSection170Reason();
+                    case LANDLORD_NOTICE_S186 ->
+                        reasons.getSecureLandlordNoticeSection186Reason();
+                    case FAILURE_TO_GIVE_UP_POSSESSION_S191 ->
+                        reasons.getSecureFailureToGiveUpPossessionSection191Reason();
+                    case LANDLORD_NOTICE_S199 ->
+                        reasons.getSecureLandlordNoticeSection199Reason();
                 } : null;
 
                 entities.add(ClaimGroundEntity.builder()
-                    .groundId(ground.name())
-                    .groundReason(reasonText)
+                    .code(ground.name())
+                    .reason(reasonText)
                     .build());
             }
         }
@@ -357,16 +516,16 @@ public class ClaimGroundService {
         // Secure Contract - Discretionary grounds
         if (secureDiscretionaryGrounds != null) {
             for (SecureContractDiscretionaryGroundsWales ground : secureDiscretionaryGrounds) {
-                String reasonText = grounds != null ? switch (ground) {
+                String reasonText = reasons != null ? switch (ground) {
                     case RENT_ARREARS -> null;
                     case ANTISOCIAL_BEHAVIOUR -> null;
-                    case OTHER_BREACH_OF_CONTRACT -> grounds.getSecureOtherBreachOfContractReason();
+                    case OTHER_BREACH_OF_CONTRACT -> reasons.getSecureOtherBreachOfContractReason();
                     case ESTATE_MANAGEMENT_GROUNDS -> null;
                 } : null;
 
                 entities.add(ClaimGroundEntity.builder()
-                    .groundId(ground.name())
-                    .groundReason(reasonText)
+                    .code(ground.name())
+                    .reason(reasonText)
                     .build());
             }
         }
@@ -374,21 +533,21 @@ public class ClaimGroundService {
         // Secure Contract - Estate Management grounds
         if (secureEstateGrounds != null) {
             for (EstateManagementGroundsWales ground : secureEstateGrounds) {
-                String reasonText = grounds != null ? switch (ground) {
-                    case BUILDING_WORKS -> grounds.getSecureBuildingWorksReason();
-                    case REDEVELOPMENT_SCHEMES -> grounds.getSecureRedevelopmentSchemesReason();
-                    case CHARITIES -> grounds.getSecureCharitiesReason();
-                    case DISABLED_SUITABLE_DWELLING -> grounds.getSecureDisabledSuitableDwellingReason();
-                    case HOUSING_ASSOCIATIONS_AND_TRUSTS -> grounds.getSecureHousingAssociationsAndTrustsReason();
-                    case SPECIAL_NEEDS_DWELLINGS -> grounds.getSecureSpecialNeedsDwellingsReason();
-                    case RESERVE_SUCCESSORS -> grounds.getSecureReserveSuccessorsReason();
-                    case JOINT_CONTRACT_HOLDERS -> grounds.getSecureJointContractHoldersReason();
-                    case OTHER_ESTATE_MANAGEMENT_REASONS -> grounds.getSecureOtherEstateManagementReasonsReason();
+                String reasonText = reasons != null ? switch (ground) {
+                    case BUILDING_WORKS -> reasons.getSecureBuildingWorksReason();
+                    case REDEVELOPMENT_SCHEMES -> reasons.getSecureRedevelopmentSchemesReason();
+                    case CHARITIES -> reasons.getSecureCharitiesReason();
+                    case DISABLED_SUITABLE_DWELLING -> reasons.getSecureDisabledSuitableDwellingReason();
+                    case HOUSING_ASSOCIATIONS_AND_TRUSTS -> reasons.getSecureHousingAssociationsAndTrustsReason();
+                    case SPECIAL_NEEDS_DWELLINGS -> reasons.getSecureSpecialNeedsDwellingsReason();
+                    case RESERVE_SUCCESSORS -> reasons.getSecureReserveSuccessorsReason();
+                    case JOINT_CONTRACT_HOLDERS -> reasons.getSecureJointContractHoldersReason();
+                    case OTHER_ESTATE_MANAGEMENT_REASONS -> reasons.getSecureOtherEstateManagementReasonsReason();
                 } : null;
 
                 entities.add(ClaimGroundEntity.builder()
-                    .groundId(ground.name())
-                    .groundReason(reasonText)
+                    .code(ground.name())
+                    .reason(reasonText)
                     .build());
             }
         }

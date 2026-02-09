@@ -46,6 +46,8 @@ public class PCSCase {
     public static final String NOTICE_EMAIL_EXPLANATION_LABEL = "Explain how it was served by email";
     public static final String NOTICE_OTHER_EXPLANATION_LABEL = "Explain what the other means were";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
+    public static final int MIN_MONETARY_AMOUNT = 1;
+    public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
     @CCD(
         access = {DefendantAccess.class}
@@ -143,39 +145,15 @@ public class PCSCase {
     private YesOrNo claimDueToRentArrears;
 
     @JsonUnwrapped(prefix = "rentArrears_")
-    private RentArrearsGroundsForPossession rentArrearsGroundsForPossession;
-
-    @CCD
-    private YesOrNo overrideResumedGrounds;
+    private AssuredRentArrearsPossessionGrounds assuredRentArrearsPossessionGrounds;
 
     @CCD(
         label = "Do you have any other additional grounds for possession?"
     )
     private YesOrNo hasOtherAdditionalGrounds;
 
-
-
-
-    @CCD(
-        label = "Mandatory grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalMandatoryGrounds"
-    )
-    private Set<AssuredAdditionalMandatoryGrounds> assuredAdditionalMandatoryGrounds;
-
-    @CCD(
-        label = "Discretionary grounds",
-        hint = "Select all that apply",
-        typeOverride = MultiSelectList,
-        typeParameterOverride = "AssuredAdditionalDiscretionaryGrounds"
-    )
-    private Set<AssuredAdditionalDiscretionaryGrounds> assuredAdditionalDiscretionaryGrounds;
-
     @JsonUnwrapped
     private RentArrearsGroundsReasons rentArrearsGroundsReasons;
-
-    private YesOrNo showRentArrearsGroundReasonPage;
 
     @CCD(
         label = "Have you attempted mediation with the defendants?"
@@ -347,9 +325,9 @@ public class PCSCase {
     private VerticalYesNo arrearsJudgmentWanted;
 
     @JsonUnwrapped(prefix = "noRentArrears_")
-    private NoRentArrearsGroundsOptions noRentArrearsGroundsOptions;
+    private AssuredNoArrearsPossessionGrounds noRentArrearsGroundsOptions;
 
-    @JsonUnwrapped
+    @JsonUnwrapped(prefix = "assuredNoArrearsReasons_")
     private NoRentArrearsReasonForGrounds noRentArrearsReasonForGrounds;
 
     private YesOrNo showRentSectionPage;
@@ -416,7 +394,7 @@ public class PCSCase {
     )
     private CompletionNextStep completionNextStep;
 
-    @JsonUnwrapped(prefix = "groundsForPossessionWales_")
+    @JsonUnwrapped(prefix = "possessionGroundsWales_")
     private GroundsForPossessionWales groundsForPossessionWales;
 
     @JsonUnwrapped
@@ -425,7 +403,7 @@ public class PCSCase {
     @JsonUnwrapped(prefix = "wales")
     private WalesNoticeDetails walesNoticeDetails;
 
-    @JsonUnwrapped(prefix = "secureContract_")
+    @JsonUnwrapped(prefix = "secureGroundsWales_")
     private SecureContractGroundsForPossessionWales secureContractGroundsForPossessionWales;
 
     @CCD(
@@ -503,4 +481,8 @@ public class PCSCase {
     @CCD(searchable = false)
     private String formattedDefendantNames;
     private String formattedPropertyAddress;
+
+    @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
+    private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
+
 }

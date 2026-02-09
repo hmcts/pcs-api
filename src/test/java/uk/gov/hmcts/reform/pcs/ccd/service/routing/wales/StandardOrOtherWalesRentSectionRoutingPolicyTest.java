@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.RENT_ARREARS_SECTION_157;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.RENT_ARREARS_S157;
 
 class StandardOrOtherWalesRentSectionRoutingPolicyTest {
 
@@ -54,7 +54,7 @@ class StandardOrOtherWalesRentSectionRoutingPolicyTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(Set.of(RENT_ARREARS_SECTION_157))
+                .discretionaryGrounds(Set.of(RENT_ARREARS_S157))
                 .build())
             .build();
 
@@ -70,7 +70,7 @@ class StandardOrOtherWalesRentSectionRoutingPolicyTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(Set.of(ANTISOCIAL_BEHAVIOUR_SECTION_157))
+                .discretionaryGrounds(Set.of(ANTISOCIAL_BEHAVIOUR_S157))
                 .build())
             .build();
 
@@ -86,7 +86,7 @@ class StandardOrOtherWalesRentSectionRoutingPolicyTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(null)
+                .discretionaryGrounds(null)
                 .build())
             .build();
 

@@ -9,9 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
-import java.util.List;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @AllArgsConstructor
 @Component
@@ -112,7 +111,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                    CaseDetails<PCSCase, State> detailsBefore) {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("Property not eligible for this online service"))
+            .errorMessageOverride("Property not eligible for this online service")
             .build();
     }
 
