@@ -63,4 +63,9 @@ public class WritDetails {
     @JsonUnwrapped
     @CCD
     private RepaymentCosts repaymentCosts;
+    @CCD(
+        searchable = false,
+        label = "Has the claim been transferred to the High Court?"
+    )
+    private YesOrNo hasClaimTransferredToHighCourt;
 }
