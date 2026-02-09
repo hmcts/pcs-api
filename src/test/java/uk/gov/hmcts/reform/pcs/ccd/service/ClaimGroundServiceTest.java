@@ -1,10 +1,11 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -33,26 +34,21 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.ground.WalesSecureClaimGroundService;
+import uk.gov.hmcts.reform.pcs.ccd.service.ground.WalesStandardClaimGroundService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.ABSOLUTE_GROUNDS;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.ANTI_SOCIAL;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOrOtherGrounds.BREACH_OF_THE_TENANCY;
@@ -64,8 +60,17 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENA
 @ExtendWith(MockitoExtension.class)
 class ClaimGroundServiceTest {
 
-    @InjectMocks
-    private ClaimGroundService claimGroundService;
+    @Mock
+    private WalesSecureClaimGroundService walesSecureClaimGroundService;
+    @Mock
+    private WalesStandardClaimGroundService walesStandardClaimGroundService;
+
+    private ClaimGroundService underTest;
+
+    @BeforeEach
+    void setUp() {
+        underTest = new ClaimGroundService(walesSecureClaimGroundService, walesStandardClaimGroundService);
+    }
 
     @ParameterizedTest
     @EnumSource(value = TenancyLicenceType.class, names = {"INTRODUCTORY_TENANCY", "DEMOTED_TENANCY", "OTHER"})
@@ -109,7 +114,7 @@ class ClaimGroundServiceTest {
         caseDetails.setData(caseData);
 
         // When
-        List<ClaimGroundEntity> entities = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> entities = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(entities)
@@ -178,7 +183,7 @@ class ClaimGroundServiceTest {
             .build();
 
         // When
-        List<ClaimGroundEntity> entities = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> entities = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(entities)
@@ -217,7 +222,7 @@ class ClaimGroundServiceTest {
             )
             .build();
 
-        List<ClaimGroundEntity> entities = claimGroundService.createClaimGroundEntities(
+        List<ClaimGroundEntity> entities = underTest.createClaimGroundEntities(
             caseData
         );
 
@@ -374,7 +379,7 @@ class ClaimGroundServiceTest {
             .build();
 
         // When
-        List<ClaimGroundEntity> groundEntities = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> groundEntities = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(groundEntities)
@@ -400,7 +405,7 @@ class ClaimGroundServiceTest {
             .build();
 
         // When
-        List<ClaimGroundEntity> groundEntities = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> groundEntities = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(groundEntities).isEmpty();
@@ -448,7 +453,7 @@ class ClaimGroundServiceTest {
             .build();
 
         // When
-        List<ClaimGroundEntity> result = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> result = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(result)
@@ -512,7 +517,7 @@ class ClaimGroundServiceTest {
             .build();
 
         // When
-        List<ClaimGroundEntity> result = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> result = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(result)
@@ -556,7 +561,7 @@ class ClaimGroundServiceTest {
             .build();
 
         // When
-        List<ClaimGroundEntity> result = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> result = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(result)
@@ -707,7 +712,7 @@ class ClaimGroundServiceTest {
             .build();
 
         // When
-        List<ClaimGroundEntity> result = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> result = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(result)
@@ -745,7 +750,7 @@ class ClaimGroundServiceTest {
             .build();
 
         // When
-        List<ClaimGroundEntity> result = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> result = underTest.createClaimGroundEntities(caseData);
 
         // Then
         assertThat(result)
@@ -761,152 +766,57 @@ class ClaimGroundServiceTest {
     }
 
     @Test
-    void shouldReturnClaimGroundEntities_WhenWalesGrounds() {
+    void shouldDelegateToWalesSecureClaimGroundService() {
         // Given
-        Set<MandatoryGroundWales> mandatoryGrounds = Set.of(
-            MandatoryGroundWales.FAIL_TO_GIVE_UP_S170,
-            MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178,
-            MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181,
-            MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186,
-            MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187,
-            MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191,
-            MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199,
-            MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2
-        );
-        Set<DiscretionaryGroundWales> discretionaryGrounds = Set.of(
-            DiscretionaryGroundWales.OTHER_BREACH_S157
-        );
-        Set<EstateManagementGroundsWales> estateGrounds = Set.of(
-            EstateManagementGroundsWales.BUILDING_WORKS,
-            EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES,
-            EstateManagementGroundsWales.CHARITIES,
-            EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING,
-            EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS,
-            EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS,
-            EstateManagementGroundsWales.RESERVE_SUCCESSORS,
-            EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS,
-            EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
-        );
-        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds = Set.of(
-            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170,
-            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186,
-            SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191,
-            SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
-        );
-        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds = Set.of(
-            SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT
-        );
+        PCSCase caseData = mock(PCSCase.class);
 
-        GroundsReasonsWales reasons = GroundsReasonsWales.builder()
-            .failToGiveUpS170Reason("Failure to give up S170")
-            .landlordNoticePeriodicS178Reason("Landlord notice periodic S178")
-            .seriousArrearsPeriodicS181Reason("Serious arrears periodic S181")
-            .landlordNoticeFtEndS186Reason("Landlord notice FT end S186")
-            .seriousArrearsFixedTermS187Reason("Serious arrears fixed term S187")
-            .failToGiveUpBreakNoticeS191Reason("Fail to give up break notice S191")
-            .landlordBreakClauseS199Reason("Landlord break clause S199")
-            .convertedFixedTermSch1225B2Reason("Converted fixed term Sch12 25B2")
-            .otherBreachSection157Reason("Other breach section 157")
-            .buildingWorksReason("Building works")
-            .redevelopmentSchemesReason("Redevelopment schemes")
-            .charitiesReason("Charities")
-            .disabledSuitableDwellingReason("Disabled suitable dwelling")
-            .housingAssociationsAndTrustsReason("Housing associations and trusts")
-            .specialNeedsDwellingsReason("Special needs dwellings")
-            .reserveSuccessorsReason("Reserve successors")
-            .jointContractHoldersReason("Joint contract holders")
-            .otherEstateManagementReasonsReason("Other estate management reasons")
-            .secureFailureToGiveUpPossessionSection170Reason("Secure failure S170")
-            .secureLandlordNoticeSection186Reason("Secure landlord notice S186")
-            .secureFailureToGiveUpPossessionSection191Reason("Secure failure S191")
-            .secureLandlordNoticeSection199Reason("Secure landlord notice S199")
-            .secureOtherBreachOfContractReason("Secure other breach")
+        OccupationLicenceDetailsWales secureTenancyLicence = OccupationLicenceDetailsWales.builder()
+            .occupationLicenceTypeWales(OccupationLicenceTypeWales.SECURE_CONTRACT)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.WALES)
-            .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                .mandatoryGrounds(mandatoryGrounds)
-                .discretionaryGrounds(discretionaryGrounds)
-                .estateManagementGrounds(estateGrounds)
-                .build())
-            .secureContractGroundsForPossessionWales(
-                SecureContractGroundsForPossessionWales.builder()
-                    .mandatoryGrounds(secureMandatoryGrounds)
-                    .discretionaryGrounds(secureDiscretionaryGrounds)
-                    .build()
-            )
+        when(caseData.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(caseData.getOccupationLicenceDetailsWales()).thenReturn(secureTenancyLicence);
 
-            .groundsReasonsWales(reasons)
-            .build();
+        List<ClaimGroundEntity> expectedClaimGroundEntities = List.of(
+            mock(ClaimGroundEntity.class),
+            mock(ClaimGroundEntity.class)
+        );
+
+        when(walesSecureClaimGroundService.createClaimGroundEntities(caseData)).thenReturn(expectedClaimGroundEntities);
 
         // When
-        List<ClaimGroundEntity> result = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> actualClaimGroundEntities = underTest.createClaimGroundEntities(caseData);
 
         // Then
-        int expectedSize = mandatoryGrounds.size() + discretionaryGrounds.size() + estateGrounds.size()
-            + secureMandatoryGrounds.size() + secureDiscretionaryGrounds.size();
-        assertThat(result).hasSize(expectedSize);
-
-        Map<String, String> groundAndReason = result.stream()
-            .collect(Collectors.toMap(ClaimGroundEntity::getCode, ClaimGroundEntity::getReason));
-
-        assertThat(groundAndReason)
-            .containsEntry("FAIL_TO_GIVE_UP_S170", "Failure to give up S170")
-            .containsEntry("LANDLORD_NOTICE_PERIODIC_S178", "Landlord notice periodic S178")
-            .containsEntry("SERIOUS_ARREARS_PERIODIC_S181", "Serious arrears periodic S181")
-            .containsEntry("LANDLORD_NOTICE_FT_END_S186", "Landlord notice FT end S186")
-            .containsEntry("SERIOUS_ARREARS_FIXED_TERM_S187", "Serious arrears fixed term S187")
-            .containsEntry("FAIL_TO_GIVE_UP_BREAK_NOTICE_S191", "Fail to give up break notice S191")
-            .containsEntry("LANDLORD_BREAK_CLAUSE_S199", "Landlord break clause S199")
-            .containsEntry("CONVERTED_FIXED_TERM_SCH12_25B2", "Converted fixed term Sch12 25B2")
-            .containsEntry("OTHER_BREACH_S157", "Other breach section 157")
-            .containsEntry("BUILDING_WORKS", "Building works")
-            .containsEntry("REDEVELOPMENT_SCHEMES", "Redevelopment schemes")
-            .containsEntry("CHARITIES", "Charities")
-            .containsEntry("DISABLED_SUITABLE_DWELLING", "Disabled suitable dwelling")
-            .containsEntry("HOUSING_ASSOCIATIONS_AND_TRUSTS", "Housing associations and trusts")
-            .containsEntry("SPECIAL_NEEDS_DWELLINGS", "Special needs dwellings")
-            .containsEntry("RESERVE_SUCCESSORS", "Reserve successors")
-            .containsEntry("JOINT_CONTRACT_HOLDERS", "Joint contract holders")
-            .containsEntry("OTHER_ESTATE_MANAGEMENT_REASONS", "Other estate management reasons")
-            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_S170", "Secure failure S170")
-            .containsEntry("LANDLORD_NOTICE_S186", "Secure landlord notice S186")
-            .containsEntry("FAILURE_TO_GIVE_UP_POSSESSION_S191", "Secure failure S191")
-            .containsEntry("LANDLORD_NOTICE_S199", "Secure landlord notice S199")
-            .containsEntry("OTHER_BREACH_OF_CONTRACT", "Secure other breach");
+        assertThat(actualClaimGroundEntities).isEqualTo(expectedClaimGroundEntities);
     }
 
-    @Test
-    void shouldHandleWalesBeforeTenancyTypeCheck() {
+    @ParameterizedTest
+    @EnumSource(value = OccupationLicenceTypeWales.class, names = {"STANDARD_CONTRACT", "OTHER"})
+    void shouldDelegateToWalesStandardClaimGroundService(OccupationLicenceTypeWales licenceType) {
         // Given
-        Set<MandatoryGroundWales> mandatoryGrounds = Set.of(
-            MandatoryGroundWales.FAIL_TO_GIVE_UP_S170
+        PCSCase caseData = mock(PCSCase.class);
+
+        OccupationLicenceDetailsWales secureTenancyLicence = OccupationLicenceDetailsWales.builder()
+            .occupationLicenceTypeWales(licenceType)
+            .build();
+
+        when(caseData.getLegislativeCountry()).thenReturn(LegislativeCountry.WALES);
+        when(caseData.getOccupationLicenceDetailsWales()).thenReturn(secureTenancyLicence);
+
+        List<ClaimGroundEntity> expectedClaimGroundEntities = List.of(
+            mock(ClaimGroundEntity.class),
+            mock(ClaimGroundEntity.class)
         );
 
-        GroundsReasonsWales reasons = GroundsReasonsWales.builder()
-            .failToGiveUpS170Reason("Test reason")
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .legislativeCountry(LegislativeCountry.WALES)
-            .tenancyLicenceDetails(
-                TenancyLicenceDetails.builder()
-                    .typeOfTenancyLicence(null)
-                    .build()
-            )
-            .groundsForPossessionWales(GroundsForPossessionWales.builder()
-                .mandatoryGrounds(mandatoryGrounds)
-                .build())
-            .groundsReasonsWales(reasons)
-            .build();
+        when(walesStandardClaimGroundService.createClaimGroundEntities(caseData))
+            .thenReturn(expectedClaimGroundEntities);
 
         // When
-        List<ClaimGroundEntity> result = claimGroundService.createClaimGroundEntities(caseData);
+        List<ClaimGroundEntity> actualClaimGroundEntities = underTest.createClaimGroundEntities(caseData);
 
         // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.getFirst().getCode()).isEqualTo("FAIL_TO_GIVE_UP_S170");
-        assertThat(result.getFirst().getReason()).isEqualTo("Test reason");
+        assertThat(actualClaimGroundEntities).isEqualTo(expectedClaimGroundEntities);
     }
+
 }
