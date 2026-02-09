@@ -10,10 +10,10 @@ public class LanguageUsedPlaceholder implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("languageUsed")
-            .pageLabel("Confirm if you completed this service in Welsh' screen (placeholder)")
+            .page("languageUsedWrit")
+            .pageLabel("Language used (placeholder)")
             .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
-            .label("languageUsed-separator", "---")
-            .label("languageUsed-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("languageUsedWrit-separator", "---")
+            .label("languageUsedWrit-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
@@ -23,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWar
 public class LandRegistryFeesWritPage implements CcdPageConfiguration {
 
     private final RepaymentTableRenderer repaymentTableRenderer;
+    private final MoneyFormatter moneyFormatter;
 
     public static final String WRIT_FEE_AMOUNT = "writFeeAmount";
     static final String TEMPLATE = "repaymentTableWrit";
@@ -55,31 +57,27 @@ public class LandRegistryFeesWritPage implements CcdPageConfiguration {
                 .totalArrears(writDetails.getMoneyOwedByDefendants().getAmountOwed())
                 .legalFees(writDetails.getLegalCosts().getAmountOfLegalCosts())
                 .landRegistryFees(writDetails.getLandRegistryFees().getAmountOfLandRegistryFees())
-                .feeAmount(caseData.getEnforcementOrder().getWritFeeAmount())
+                .feeAmount(moneyFormatter.deformatFee(caseData.getEnforcementOrder().getWritFeeAmount()))
                 .feeAmountType(WRIT_FEE_AMOUNT)
                 .build();
-
 
         RepaymentCosts repaymentCosts = caseData.getEnforcementOrder().getWritDetails().getRepaymentCosts();
 
         // Render repayment table for Repayments screen (default caption)
-        String repaymentTableHtml = repaymentTableRenderer.render(
+        repaymentCosts.setRepaymentSummaryMarkdown(repaymentTableRenderer.render(
                 enforcementCosts,
                 TEMPLATE
-        );
+        ));
 
         // Render repayment table for SOT screen (custom caption)
-        String statementOfTruthRepaymentTableHtml = repaymentTableRenderer.render(
+        repaymentCosts.setStatementOfTruthRepaymentSummaryMarkdown(repaymentTableRenderer.render(
                 enforcementCosts,
                 "The payments due",
                 TEMPLATE
-        );
-
-        repaymentCosts.setRepaymentSummaryMarkdown(repaymentTableHtml);
-        repaymentCosts.setStatementOfTruthRepaymentSummaryMarkdown(statementOfTruthRepaymentTableHtml);
+        ));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .build();
+            .data(caseData)
+            .build();
     }
 }

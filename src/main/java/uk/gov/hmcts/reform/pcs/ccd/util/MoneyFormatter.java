@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
-public class FeeFormatter {
+public class MoneyFormatter {
 
     public String formatFee(BigDecimal amount) {
         if (amount == null) {
@@ -17,6 +17,18 @@ public class FeeFormatter {
         }
 
         return "£" + amount.toPlainString();
+    }
+
+    public BigDecimal deformatFee(String amount) {
+        if (amount == null || !amount.startsWith("£")) {
+            return null;
+        }
+
+        try {
+            return new BigDecimal(amount.substring(1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private boolean hasZeroPence(BigDecimal amount) {

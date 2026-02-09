@@ -63,7 +63,7 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private void applyCaseIssueFeeAmount(PCSCase pcsCase) {
-        feeApplier.applyFormattedFeeAmount(
+        feeApplier.applyFeeAmount(
             pcsCase,
             FeeType.CASE_ISSUE_FEE,
             PCSCase::setFeeAmount

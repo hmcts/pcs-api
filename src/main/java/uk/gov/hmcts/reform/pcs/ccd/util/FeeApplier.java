@@ -18,26 +18,16 @@ public class FeeApplier {
     public static final String UNABLE_TO_RETRIEVE = "Unable to retrieve";
 
     private final FeeService feeService;
-    private final FeeFormatter feeFormatter;
+    private final MoneyFormatter moneyFormatter;
 
-    public void applyFormattedFeeAmount(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, String> setter) {
+    public void applyFeeAmount(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, String> setter) {
         try {
             BigDecimal feeAmount = feeService.getFee(feeType).getFeeAmount();
-            String formatted = feeFormatter.formatFee(feeAmount);
+            String formatted = moneyFormatter.formatFee(feeAmount);
             setter.accept(pcsCase, formatted != null ? formatted : UNABLE_TO_RETRIEVE);
         } catch (Exception e) {
             log.error("Error while getting {} fee", feeType.name(), e);
             setter.accept(pcsCase, UNABLE_TO_RETRIEVE);
-        }
-    }
-
-    public void applyFeeAmount(PCSCase pcsCase, FeeType feeType, BiConsumer<PCSCase, BigDecimal> setter) {
-        try {
-            BigDecimal feeAmount = feeService.getFee(feeType).getFeeAmount();
-            setter.accept(pcsCase, feeAmount != null ? feeAmount : BigDecimal.ZERO);
-        } catch (Exception e) {
-            log.error("Error while getting {} fee", feeType.name(), e);
-            setter.accept(pcsCase, BigDecimal.ZERO);
         }
     }
 }

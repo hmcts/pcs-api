@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -23,6 +24,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 public class LandRegistryFeesPage implements CcdPageConfiguration {
 
     private final RepaymentTableRenderer repaymentTableRenderer;
+    private final MoneyFormatter moneyFormatter;
 
     public static final String WARRANT_FEE_AMOUNT = "warrantFeeAmount";
     static final String TEMPLATE = "repaymentTableWarrant";
@@ -54,7 +56,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
                 .totalArrears(warrantDetails.getMoneyOwedByDefendants().getAmountOwed())
                 .legalFees(warrantDetails.getLegalCosts().getAmountOfLegalCosts())
                 .landRegistryFees(warrantDetails.getLandRegistryFees().getAmountOfLandRegistryFees())
-                .feeAmount(caseData.getEnforcementOrder().getWarrantFeeAmount())
+                .feeAmount(moneyFormatter.deformatFee(caseData.getEnforcementOrder().getWarrantFeeAmount()))
                 .feeAmountType(WARRANT_FEE_AMOUNT)
                 .build();
 

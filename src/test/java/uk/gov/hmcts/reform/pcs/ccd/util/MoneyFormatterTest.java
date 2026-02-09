@@ -4,21 +4,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-class FeeFormatterTest {
+class MoneyFormatterTest {
 
-    private FeeFormatter underTest;
+    private MoneyFormatter underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new FeeFormatter();
+        underTest = new MoneyFormatter();
     }
 
     @Test
@@ -34,6 +37,26 @@ class FeeFormatterTest {
         String formattedFee = underTest.formatFee(feeAmount);
 
         assertThat(formattedFee).isEqualTo(expectedFormattedFee);
+    }
+
+    @ParameterizedTest(name = "Input: {0} | Expected: {1}")
+    @CsvSource({
+        "£10.50,  10.50",
+        "£100,    100",
+        "£0.01,   0.01",
+        "10.50,   ",      // No £ sign -> returns null
+        "$10.50,  ",      // Wrong currency -> returns null
+        "£abc,    ",      // Invalid number -> returns null
+        ",        "       // Null input -> returns null
+    })
+    void testDeformatFeeScenarios(String input, String expected) {
+        BigDecimal result = underTest.deformatFee(input);
+
+        if (expected == null) {
+            assertNull(result);
+        } else {
+            assertEquals(new BigDecimal(expected), result);
+        }
     }
 
     private static Stream<Arguments> feeScenarios() {
