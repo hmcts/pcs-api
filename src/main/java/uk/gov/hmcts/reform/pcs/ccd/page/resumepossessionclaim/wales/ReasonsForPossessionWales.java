@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -32,6 +33,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @Component
 public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
+    private static final String STANDARD_MANDATORY_GROUNDS = "possessionGroundsWales_MandatoryGrounds";
+    private static final String STANDARD_DISCRETIONARY_GROUNDS = "possessionGroundsWales_DiscretionaryGrounds";
+    private static final String STANDARD_ESTATE_MANAGEMENT_GROUNDS = "possessionGroundsWales_EstateManagementGrounds";
+    private static final String SECURE_MANDATORY_GROUNDS = "secureGroundsWales_MandatoryGrounds";
+    private static final String SECURE_DISCRETIONARY_GROUNDS = "secureGroundsWales_DiscretionaryGrounds";
+    private static final String SECURE_ESTATE_MANAGEMENT_GROUNDS = "secureGroundsWales_EstateManagementGrounds";
+
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
@@ -52,9 +60,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_DiscretionaryGroundsWalesCONTAINS\"OTHER_BREACH_SECTION_157\"")
+                """, ShowConditions.fieldContains(STANDARD_DISCRETIONARY_GROUNDS,
+                                                  DiscretionaryGroundWales.OTHER_BREACH_S157
+            ))
             .mandatory(GroundsReasonsWales::getOtherBreachSection157Reason,
-                "groundsForPossessionWales_DiscretionaryGroundsWalesCONTAINS\"OTHER_BREACH_SECTION_157\"")
+                       ShowConditions.fieldContains(STANDARD_DISCRETIONARY_GROUNDS,
+                                                    DiscretionaryGroundWales.OTHER_BREACH_S157
+                       ))
 
             // ---------- Standard/Other Contract - Estate Management grounds ----------
             .label("wales-buildingWorks-label","""
@@ -64,9 +76,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"BUILDING_WORKS\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.BUILDING_WORKS))
             .mandatory(GroundsReasonsWales::getBuildingWorksReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"BUILDING_WORKS\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.BUILDING_WORKS))
 
             .label("wales-redevelopmentSchemes-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -75,9 +89,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"REDEVELOPMENT_SCHEMES\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES))
             .mandatory(GroundsReasonsWales::getRedevelopmentSchemesReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"REDEVELOPMENT_SCHEMES\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES))
 
             .label("wales-charities-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -86,9 +102,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"CHARITIES\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.CHARITIES))
             .mandatory(GroundsReasonsWales::getCharitiesReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"CHARITIES\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.CHARITIES))
 
             .label("wales-disabledSuitableDwelling-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -97,9 +115,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"DISABLED_SUITABLE_DWELLING\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING))
             .mandatory(GroundsReasonsWales::getDisabledSuitableDwellingReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"DISABLED_SUITABLE_DWELLING\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING))
 
             .label("wales-housingAssociationsAndTrusts-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -108,11 +128,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS"
-                    + "\"HOUSING_ASSOCIATIONS_AND_TRUSTS\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS))
             .mandatory(GroundsReasonsWales::getHousingAssociationsAndTrustsReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS"
-                    + "\"HOUSING_ASSOCIATIONS_AND_TRUSTS\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS))
 
             .label("wales-specialNeedsDwellings-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -121,9 +141,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"SPECIAL_NEEDS_DWELLINGS\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS))
             .mandatory(GroundsReasonsWales::getSpecialNeedsDwellingsReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"SPECIAL_NEEDS_DWELLINGS\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS))
 
             .label("wales-reserveSuccessors-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -132,9 +154,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"RESERVE_SUCCESSORS\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.RESERVE_SUCCESSORS))
             .mandatory(GroundsReasonsWales::getReserveSuccessorsReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"RESERVE_SUCCESSORS\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.RESERVE_SUCCESSORS))
 
             .label("wales-jointContractHolders-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -143,9 +167,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"JOINT_CONTRACT_HOLDERS\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS))
             .mandatory(GroundsReasonsWales::getJointContractHoldersReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"JOINT_CONTRACT_HOLDERS\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS))
 
             .label("wales-otherEstateManagementReasons-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -154,10 +180,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS"
-                    + "\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
+                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS))
             .mandatory(GroundsReasonsWales::getOtherEstateManagementReasonsReason,
-                "groundsForPossessionWales_EstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
+                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS))
 
             // ---------- Standard/Other Contract - Mandatory grounds ----------
             .label("wales-failToGiveUpS170-label","""
@@ -167,9 +194,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_S170\"")
+                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                  MandatoryGroundWales.FAIL_TO_GIVE_UP_S170))
             .mandatory(GroundsReasonsWales::getFailToGiveUpS170Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_S170\"")
+                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                    MandatoryGroundWales.FAIL_TO_GIVE_UP_S170))
 
             .label("wales-landlordNoticePeriodicS178-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -178,9 +207,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_PERIODIC_S178\"")
+                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                  MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178))
             .mandatory(GroundsReasonsWales::getLandlordNoticePeriodicS178Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_PERIODIC_S178\"")
+                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                    MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178))
 
             .label("wales-seriousArrearsPeriodicS181-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -189,9 +220,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_PERIODIC_S181\"")
+                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                  MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181))
             .mandatory(GroundsReasonsWales::getSeriousArrearsPeriodicS181Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_PERIODIC_S181\"")
+                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                    MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181))
 
             .label("wales-landlordNoticeFtEndS186-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -200,9 +233,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_FT_END_S186\"")
+                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                  MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186))
             .mandatory(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_FT_END_S186\"")
+                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                    MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186))
 
             .label("wales-seriousArrearsFixedTermS187-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -211,9 +246,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_FIXED_TERM_S187\"")
+                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                  MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187))
             .mandatory(GroundsReasonsWales::getSeriousArrearsFixedTermS187Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"SERIOUS_ARREARS_FIXED_TERM_S187\"")
+                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                    MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187))
 
             .label("wales-failToGiveUpBreakNoticeS191-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -223,9 +260,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_BREAK_NOTICE_S191\"")
+                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                  MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191))
             .mandatory(GroundsReasonsWales::getFailToGiveUpBreakNoticeS191Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"FAIL_TO_GIVE_UP_BREAK_NOTICE_S191\"")
+                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                    MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191))
 
             .label("wales-landlordBreakClauseS199-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -234,9 +273,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_BREAK_CLAUSE_S199\"")
+                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                  MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
             .mandatory(GroundsReasonsWales::getLandlordBreakClauseS199Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"LANDLORD_BREAK_CLAUSE_S199\"")
+                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                    MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
 
             .label("wales-convertedFixedTermSch1225B2-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -246,9 +287,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"CONVERTED_FIXED_TERM_SCH12_25B2\"")
+                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                  MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2))
             .mandatory(GroundsReasonsWales::getConvertedFixedTermSch1225B2Reason,
-                "groundsForPossessionWales_MandatoryGroundsWalesCONTAINS\"CONVERTED_FIXED_TERM_SCH12_25B2\"")
+                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
+                                                    MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2))
 
 
             // ---------- Secure Contract - Discretionary grounds ----------
@@ -259,9 +302,12 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_DiscretionaryGroundsWalesCONTAINS\"OTHER_BREACH_OF_CONTRACT\"")
+                """,
+                   ShowConditions.fieldContains(SECURE_DISCRETIONARY_GROUNDS,
+                                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT))
             .mandatory(GroundsReasonsWales::getSecureOtherBreachOfContractReason,
-                "secureContract_DiscretionaryGroundsWalesCONTAINS\"OTHER_BREACH_OF_CONTRACT\"")
+                       ShowConditions.fieldContains(SECURE_DISCRETIONARY_GROUNDS,
+                                                    SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT))
 
             // ---------- Secure Contract - Estate Management grounds ----------
             .label("wales-secure-buildingWorks-label", """
@@ -271,9 +317,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"BUILDING_WORKS\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.BUILDING_WORKS))
             .mandatory(GroundsReasonsWales::getSecureBuildingWorksReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"BUILDING_WORKS\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.BUILDING_WORKS))
 
             .label("wales-secure-redevelopmentSchemes-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -282,9 +330,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"REDEVELOPMENT_SCHEMES\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES))
             .mandatory(GroundsReasonsWales::getSecureRedevelopmentSchemesReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"REDEVELOPMENT_SCHEMES\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES))
 
             .label("wales-secure-charities-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -293,9 +343,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"CHARITIES\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.CHARITIES))
             .mandatory(GroundsReasonsWales::getSecureCharitiesReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"CHARITIES\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.CHARITIES))
 
             .label("wales-secure-disabledSuitableDwelling-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -304,9 +356,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"DISABLED_SUITABLE_DWELLING\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING))
             .mandatory(GroundsReasonsWales::getSecureDisabledSuitableDwellingReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"DISABLED_SUITABLE_DWELLING\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING))
 
             .label("wales-secure-housingAssociationsAndTrusts-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -315,9 +369,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"HOUSING_ASSOCIATIONS_AND_TRUSTS\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS))
             .mandatory(GroundsReasonsWales::getSecureHousingAssociationsAndTrustsReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"HOUSING_ASSOCIATIONS_AND_TRUSTS\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS))
 
             .label("wales-secure-specialNeedsDwellings-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -326,9 +382,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"SPECIAL_NEEDS_DWELLINGS\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS))
             .mandatory(GroundsReasonsWales::getSecureSpecialNeedsDwellingsReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"SPECIAL_NEEDS_DWELLINGS\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS))
 
             .label("wales-secure-reserveSuccessors-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -337,9 +395,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"RESERVE_SUCCESSORS\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.RESERVE_SUCCESSORS))
             .mandatory(GroundsReasonsWales::getSecureReserveSuccessorsReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"RESERVE_SUCCESSORS\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.RESERVE_SUCCESSORS))
 
             .label("wales-secure-jointContractHolders-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -348,9 +408,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"JOINT_CONTRACT_HOLDERS\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS))
             .mandatory(GroundsReasonsWales::getSecureJointContractHoldersReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"JOINT_CONTRACT_HOLDERS\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS))
 
             .label("wales-secure-otherEstateManagementReasons-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -359,9 +421,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_EstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
+                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                  EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS))
             .mandatory(GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason,
-                "secureContract_EstateManagementGroundsWalesCONTAINS\"OTHER_ESTATE_MANAGEMENT_REASONS\"")
+                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                                                    EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS))
 
             // ---------- Secure Contract - Mandatory grounds ----------
             .label("wales-secure-failureToGiveUpPossessionSection170-label", """
@@ -371,10 +435,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170\"")
+                """, ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
+                                           SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170))
             .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason,
-                "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170\"")
-
+                       ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
+                                           SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170))
             .label("wales-secure-landlordNoticeSection186-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice in connection with end of fixed term given (section 186)
@@ -382,9 +447,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_186\"")
+                """, ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
+                                                  SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
+            ))
             .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection186Reason,
-                "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_186\"")
+                       ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
+                                                    SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
+                       ))
 
             .label("wales-secure-failureToGiveUpPossessionSection191-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -394,9 +463,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191\"")
+                """, ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
+                                                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191)
+            )
             .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason,
-                "secureContract_MandatoryGroundsWalesCONTAINS\"FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191\"")
+                       ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
+                                                 SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191)
+            )
 
             .label("wales-secure-landlordNoticeSection199-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -405,9 +478,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_199\"")
+                """, ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
+                                                  SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
+            ))
             .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection199Reason,
-                "secureContract_MandatoryGroundsWalesCONTAINS\"LANDLORD_NOTICE_SECTION_199\"")
+                       ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
+                                                    SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
+                       ))
 
             .done()
             .label("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -436,25 +513,25 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         GroundsForPossessionWales groundsForPossessionWales =
             Optional.ofNullable(caseData.getGroundsForPossessionWales())
                 .orElse(GroundsForPossessionWales.builder()
-                            .discretionaryGroundsWales(Set.of())
-                            .mandatoryGroundsWales(Set.of())
-                            .estateManagementGroundsWales(Set.of())
+                            .discretionaryGrounds(Set.of())
+                            .mandatoryGrounds(Set.of())
+                            .estateManagementGrounds(Set.of())
                             .build());
-        var discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGroundsWales();
+        var discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGrounds();
 
 
         SecureContractGroundsForPossessionWales grounds =
             Optional.ofNullable(caseData.getSecureContractGroundsForPossessionWales())
                 .orElse(SecureContractGroundsForPossessionWales.builder()
-                            .discretionaryGroundsWales(Set.of())
-                            .mandatoryGroundsWales(Set.of())
-                            .estateManagementGroundsWales(Set.of())
+                            .discretionaryGrounds(Set.of())
+                            .mandatoryGrounds(Set.of())
+                            .estateManagementGrounds(Set.of())
                             .build());
 
-        var secureDiscretionaryGrounds = grounds.getDiscretionaryGroundsWales();
+        var secureDiscretionaryGrounds = grounds.getDiscretionaryGrounds();
 
         boolean hasASBStandard = discretionaryGrounds != null
-            && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
+            && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157);
         boolean hasASBSecure = secureDiscretionaryGrounds != null
             && secureDiscretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
 
@@ -526,7 +603,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getOtherBreachSection157Reason(),
-                DiscretionaryGroundWales.OTHER_BREACH_SECTION_157.getLabel(),
+                DiscretionaryGroundWales.OTHER_BREACH_S157.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };
@@ -588,22 +665,22 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getSecureFailureToGiveUpPossessionSection170Reason(),
-                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170.getLabel(),
+                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getSecureLandlordNoticeSection186Reason(),
-                SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_186.getLabel(),
+                SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getSecureFailureToGiveUpPossessionSection191Reason(),
-                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191.getLabel(),
+                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
                 grounds.getSecureLandlordNoticeSection199Reason(),
-                SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_SECTION_199.getLabel(),
+                SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };
