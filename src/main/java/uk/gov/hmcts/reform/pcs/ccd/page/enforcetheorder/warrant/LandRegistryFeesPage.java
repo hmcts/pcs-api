@@ -17,6 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Objects;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -27,22 +29,22 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
     private final MoneyConverter moneyConverter;
     private final RepaymentTableRenderer repaymentTableRenderer;
 
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("landRegistryFees", this::midEvent)
-                .pageLabel("Land Registry fees")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
-                .label("landRegistryFees-content", "---")
-                .complex(PCSCase::getEnforcementOrder)
-                .complex(EnforcementOrder::getWarrantDetails)
-                .complex(WarrantDetails::getLandRegistryFees)
-                .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
-                .mandatory(LandRegistryFees::getAmountOfLandRegistryFees, "warrantHaveLandRegistryFeesBeenPaid=\"YES\"")
-                    .done()
-                .done()
-                .label("landRegistryFees-save-and-return", SAVE_AND_RETURN);
+            .page("landRegistryFees", this::midEvent)
+            .pageLabel("Land Registry fees")
+            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+            .label("landRegistryFees-content", "---")
+            .complex(PCSCase::getEnforcementOrder)
+            .complex(EnforcementOrder::getWarrantDetails)
+            .complex(WarrantDetails::getLandRegistryFees)
+            .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
+            .mandatory(LandRegistryFees::getAmountOfLandRegistryFees, "warrantHaveLandRegistryFeesBeenPaid=\"YES\"")
+            .done()
+            .done()
+            .done()
+            .label("landRegistryFees-save-and-return", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -50,14 +52,16 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
 
         PCSCase caseData = details.getData();
 
-        BigDecimal totalArrears = getTotalArrears(caseData);
-        BigDecimal landRegistryFee = getLandRegistryFee(caseData);
-        BigDecimal legalCosts = getLegalCosts(caseData);
+        WarrantDetails warrantDetails = caseData.getEnforcementOrder().getWarrantDetails();
 
-        String warrantFeePence = convertWarrantFeeToPence(caseData);
-        BigDecimal totalFees = getTotalFees(caseData, warrantFeePence);
-
-        RepaymentCosts repaymentCosts = caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts();
+        BigDecimal totalArrears = warrantDetails.getMoneyOwedByDefendants()
+            .getAmountOwed();
+        BigDecimal landRegistryFee = warrantDetails.getLandRegistryFees()
+            .getAmountOfLandRegistryFees();
+        BigDecimal legalCosts = warrantDetails.getLegalCosts()
+            .getAmountOfLegalCosts();
+        BigDecimal warrantFeePence = convertWarrantFeeToBigDecimal(caseData);
+        BigDecimal totalFees = getTotalFees(totalArrears, landRegistryFee, legalCosts, warrantFeePence);
 
         // Render repayment table for Repayments screen (default caption)
         String repaymentTableHtml = repaymentTableRenderer.render(
@@ -78,6 +82,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             "The payments due"
         );
 
+        RepaymentCosts repaymentCosts = warrantDetails.getRepaymentCosts();
         repaymentCosts.setRepaymentSummaryMarkdown(repaymentTableHtml);
         repaymentCosts.setStatementOfTruthRepaymentSummaryMarkdown(statementOfTruthRepaymentTableHtml);
 
@@ -86,54 +91,14 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
             .build();
     }
 
-    private BigDecimal getTotalArrears(PCSCase caseData) {
-        String totalArrears = caseData.getEnforcementOrder().getWarrantDetails()
-            .getMoneyOwedByDefendants()
-            .getAmountOwed();
-
-        return moneyConverter.convertPenceToBigDecimal(totalArrears);
+    private BigDecimal convertWarrantFeeToBigDecimal(PCSCase caseData) {
+        String warrantFee = moneyConverter.convertPoundsToPence(caseData.getEnforcementOrder().getWarrantFeeAmount());
+        return moneyConverter.convertPenceToBigDecimal(warrantFee);
     }
 
-    private BigDecimal getLandRegistryFee(PCSCase caseData) {
-        String landRegistryFee = caseData.getEnforcementOrder().getWarrantDetails()
-            .getLandRegistryFees()
-            .getAmountOfLandRegistryFees();
-
-        return moneyConverter.convertPenceToBigDecimal(landRegistryFee);
-    }
-
-    private BigDecimal getLegalCosts(PCSCase caseData) {
-        String legalCosts = caseData.getEnforcementOrder().getWarrantDetails()
-            .getLegalCosts()
-            .getAmountOfLegalCosts();
-
-        return moneyConverter.convertPenceToBigDecimal(legalCosts);
-    }
-
-    private String convertWarrantFeeToPence(PCSCase caseData) {
-        String warrantFee = caseData.getEnforcementOrder().getWarrantFeeAmount();
-        return moneyConverter.convertPoundsToPence(warrantFee);
-    }
-
-    private BigDecimal getTotalFees(PCSCase caseData, String warrantFeePence) {
-        String landRegistryFee = caseData.getEnforcementOrder().getWarrantDetails()
-                .getLandRegistryFees().getAmountOfLandRegistryFees();
-        String legalCosts = caseData.getEnforcementOrder().getWarrantDetails().getLegalCosts().getAmountOfLegalCosts();
-        String totalArrears = caseData.getEnforcementOrder().getWarrantDetails()
-                .getMoneyOwedByDefendants().getAmountOwed();
-
-        String totalAmountInPence = getTotalPence(landRegistryFee, legalCosts, totalArrears, warrantFeePence);
-        return moneyConverter.convertPenceToBigDecimal(totalAmountInPence);
-    }
-
-    private String getTotalPence(String... pennies) {
-        long totalPence = 0;
-        for (String penceStr : pennies) {
-            if (penceStr != null) {
-                long pence = Long.parseLong(penceStr);
-                totalPence += pence;
-            }
-        }
-        return String.valueOf(totalPence);
+    private BigDecimal getTotalFees(BigDecimal... fees) {
+        return Arrays.stream(fees)
+            .filter(Objects::nonNull)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }
