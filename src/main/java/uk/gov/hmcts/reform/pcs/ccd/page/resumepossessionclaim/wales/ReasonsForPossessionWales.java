@@ -61,11 +61,11 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     Why are you making a claim for possession under this ground?
                 </h3>
                 """, ShowConditions.fieldContains(STANDARD_DISCRETIONARY_GROUNDS,
-                                                  DiscretionaryGroundWales.OTHER_BREACH_S157
+                                                  DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
             ))
             .mandatory(GroundsReasonsWales::getOtherBreachSection157Reason,
                        ShowConditions.fieldContains(STANDARD_DISCRETIONARY_GROUNDS,
-                                                    DiscretionaryGroundWales.OTHER_BREACH_S157
+                                                    DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
                        ))
 
             // ---------- Standard/Other Contract - Estate Management grounds ----------
@@ -195,10 +195,12 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     Why are you making a claim for possession under this ground?
                 </h3>
                 """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.FAIL_TO_GIVE_UP_S170))
+                                                  MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
+            ))
             .mandatory(GroundsReasonsWales::getFailToGiveUpS170Reason,
                        ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.FAIL_TO_GIVE_UP_S170))
+                                                    MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
+                       ))
 
             .label("wales-landlordNoticePeriodicS178-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -304,10 +306,12 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 </h3>
                 """,
                    ShowConditions.fieldContains(SECURE_DISCRETIONARY_GROUNDS,
-                                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT))
+                                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157
+                   ))
             .mandatory(GroundsReasonsWales::getSecureOtherBreachOfContractReason,
                        ShowConditions.fieldContains(SECURE_DISCRETIONARY_GROUNDS,
-                                                    SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT))
+                                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157
+                       ))
 
             // ---------- Secure Contract - Estate Management grounds ----------
             .label("wales-secure-buildingWorks-label", """
@@ -533,7 +537,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         boolean hasASBStandard = discretionaryGrounds != null
             && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157);
         boolean hasASBSecure = secureDiscretionaryGrounds != null
-            && secureDiscretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR);
+            && secureDiscretionaryGrounds.contains(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157);
 
         return hasASBStandard || hasASBSecure;
     }
@@ -557,7 +561,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getFailToGiveUpS170Reason(),
-                MandatoryGroundWales.FAIL_TO_GIVE_UP_S170.getLabel(),
+                MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
@@ -603,7 +607,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getOtherBreachSection157Reason(),
-                DiscretionaryGroundWales.OTHER_BREACH_S157.getLabel(),
+                DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };
@@ -691,7 +695,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         return new TextAreaValidationService.FieldValidation[] {
             TextAreaValidationService.FieldValidation.of(
                 grounds.getSecureOtherBreachOfContractReason(),
-                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT.getLabel(),
+                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             )
         };
