@@ -63,7 +63,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Create Case - Wales]', async () => {
-  test('Wales - Secure contract - Rent arrears only @PR @regression', async () => {
+  test('Wales - Standard Contract - Rent arrears only @PR @regression', async () => {
     await performAction('enterTestAddressManually', {
       buildingAndStreet: addressDetails.walesBuildingAndStreetTextInput,
       townOrCity: addressDetails.walesTownOrCityTextInput,
@@ -96,7 +96,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
+      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract,
       day: occupationContractOrLicenceDetailsWales.dayInput,
       month: occupationContractOrLicenceDetailsWales.monthInput,
       year: occupationContractOrLicenceDetailsWales.yearInput,
@@ -105,7 +105,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('clickLinkAndVerifyNewTabTitle', whatAreYourGroundsForPossessionWales.moreInfoLink, whatAreYourGroundsForPossessionWales.understandingThePossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears]
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performValidation('text', {"text": preactionProtocol.communityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
@@ -328,7 +328,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
-      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour],
+      discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour, whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
     await performAction('selectAsb', {
       asbChoice: asbQuestionsWales.yesRadioOption, giveDetailsOfAsb: asbQuestionsWales.giveDetailsOfAsbHiddenTextInput,
