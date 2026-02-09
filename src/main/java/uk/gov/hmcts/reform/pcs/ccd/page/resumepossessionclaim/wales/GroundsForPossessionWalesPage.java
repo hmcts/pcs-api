@@ -107,7 +107,7 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
         boolean hasASB = hasDiscretionary
                 && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157);
         boolean hasOtherBreach = hasDiscretionary
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_S157);
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157);
         boolean hasEstateManagement = hasDiscretionary
                 && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160);
 
