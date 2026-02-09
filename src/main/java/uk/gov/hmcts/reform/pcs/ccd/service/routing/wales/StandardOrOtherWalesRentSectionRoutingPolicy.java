@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.RENT_ARREARS_SECTION_157;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.RENT_ARREARS_S157;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181;
 
@@ -23,10 +23,10 @@ public class StandardOrOtherWalesRentSectionRoutingPolicy implements WalesRentSe
         if (grounds == null) {
             return YesOrNo.NO;
         }
-        Set<DiscretionaryGroundWales> discretionary = grounds.getDiscretionaryGroundsWales();
-        Set<MandatoryGroundWales> mandatory = grounds.getMandatoryGroundsWales();
+        Set<DiscretionaryGroundWales> discretionary = grounds.getDiscretionaryGrounds();
+        Set<MandatoryGroundWales> mandatory = grounds.getMandatoryGrounds();
         boolean rentArrearsDiscretionary = discretionary != null
-                && discretionary.contains(RENT_ARREARS_SECTION_157);
+                && discretionary.contains(RENT_ARREARS_S157);
         boolean rentArrearsMandatory = mandatory != null
                 && (mandatory.contains(SERIOUS_ARREARS_PERIODIC_S181)
                 || mandatory.contains(SERIOUS_ARREARS_FIXED_TERM_S187));

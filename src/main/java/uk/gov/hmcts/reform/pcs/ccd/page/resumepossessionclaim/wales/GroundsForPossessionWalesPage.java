@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -22,8 +23,9 @@ import java.util.Set;
 // Grounds for possession Standard Contract and Other Contract
 @Component
 @Slf4j
-public class GroundsForPossessionWalesPage
-    implements CcdPageConfiguration {
+public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
+
+    private static final String DISCRETIONARY_GROUNDS = "possessionGroundsWales_DiscretionaryGrounds";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -46,13 +48,14 @@ public class GroundsForPossessionWalesPage
                 """
             )
             .complex(PCSCase::getGroundsForPossessionWales)
-                .optional(GroundsForPossessionWales::getDiscretionaryGroundsWales)
+                .optional(GroundsForPossessionWales::getDiscretionaryGrounds)
                 .optional(
-                    GroundsForPossessionWales::getEstateManagementGroundsWales,
-                    "groundsForPossessionWales_DiscretionaryGroundsWales CONTAINS "
-                        + "\"ESTATE_MANAGEMENT_GROUNDS_SECTION_160\""
+                    GroundsForPossessionWales::getEstateManagementGrounds,
+                    ShowConditions.fieldContains(DISCRETIONARY_GROUNDS,
+                                                 DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160
+                    )
                 )
-                .optional(GroundsForPossessionWales::getMandatoryGroundsWales)
+                .optional(GroundsForPossessionWales::getMandatoryGrounds)
                 .done()
             .label("groundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -70,9 +73,9 @@ public class GroundsForPossessionWalesPage
             data.setGroundsForPossessionWales(grounds);
         }
 
-        Set<DiscretionaryGroundWales> discretionaryGrounds = grounds.getDiscretionaryGroundsWales();
-        Set<MandatoryGroundWales> mandatoryGrounds = grounds.getMandatoryGroundsWales();
-        var estateManagementGrounds = grounds.getEstateManagementGroundsWales();
+        Set<DiscretionaryGroundWales> discretionaryGrounds = grounds.getDiscretionaryGrounds();
+        Set<MandatoryGroundWales> mandatoryGrounds = grounds.getMandatoryGrounds();
+        var estateManagementGrounds = grounds.getEstateManagementGrounds();
 
         boolean hasDiscretionary = discretionaryGrounds != null && !discretionaryGrounds.isEmpty();
         boolean hasMandatory = mandatoryGrounds != null && !mandatoryGrounds.isEmpty();
@@ -84,7 +87,7 @@ public class GroundsForPossessionWalesPage
 
         // if Estate management parent ticked, require sub-selection
         if (discretionaryGrounds != null
-            && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160)) {
+            && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160)) {
 
             boolean hasEstate = estateManagementGrounds != null && !estateManagementGrounds.isEmpty();
 
@@ -101,21 +104,17 @@ public class GroundsForPossessionWalesPage
         }
 
         // ASB/Reasons routing (from master)
-        boolean hasRentArrears = discretionaryGrounds != null
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_SECTION_157)
-                || mandatoryGrounds != null
-                    && mandatoryGrounds.contains(MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181)
-                || mandatoryGrounds != null
-                    && mandatoryGrounds.contains(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187);
+        boolean hasRentArrears = (discretionaryGrounds != null
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.RENT_ARREARS_S157))
+                || (mandatoryGrounds != null
+                    && (mandatoryGrounds.contains(MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181)
+                    || mandatoryGrounds.contains(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187)));
         boolean hasASB = hasDiscretionary
-                && discretionaryGrounds != null
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_SECTION_157);
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157);
         boolean hasOtherBreach = hasDiscretionary
-                && discretionaryGrounds != null
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_SECTION_157);
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157);
         boolean hasEstateManagement = hasDiscretionary
-                && discretionaryGrounds != null
-                && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_SECTION_160);
+                && discretionaryGrounds.contains(DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160);
 
         boolean hasMandatoryWithoutArrears = mandatoryGrounds != null
                 && mandatoryGrounds.stream()
