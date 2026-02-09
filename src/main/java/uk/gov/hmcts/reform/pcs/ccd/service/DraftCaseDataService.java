@@ -54,20 +54,14 @@ public class DraftCaseDataService {
         if (optionalCaseData.isPresent()) {
             log.debug("Found draft case data for caseReference={}, eventId={}, userId={}",
                 caseReference, eventId, userId);
-
             String caseDataJson = optionalCaseData.get().getCaseData();
             optionalCaseData = Optional.empty();
-
             pcsCase = parseCaseDataJson(caseDataJson);
-            caseDataJson = null;
-
             setUnsubmittedDataFlag(pcsCase);
-
         } else {
             log.debug("No draft case data found for caseReference={}, eventId={}, userId={}",
                 caseReference, eventId, userId);
         }
-
         return Optional.ofNullable(pcsCase);
     }
 
