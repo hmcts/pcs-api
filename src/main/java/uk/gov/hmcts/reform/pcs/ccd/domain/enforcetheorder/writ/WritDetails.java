@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFee
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
-
 @Builder
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
