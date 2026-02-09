@@ -30,7 +30,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
             .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "warrantRepaymentChoice=\"SOME\"")
             .done()
             .done()
+            .done()
             .label("repayments-save-and-return", SAVE_AND_RETURN);
     }
-
 }

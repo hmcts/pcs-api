@@ -3,7 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -15,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.MoneyOwedByDef
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.RepaymentFee;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyConverter;
 
@@ -22,8 +22,8 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class LandRegistryFeesPageTest extends BasePageTest {
@@ -39,32 +39,28 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
-    void shouldFormatRepaymentFeesCorrectly(String landRegistryPence, String legalCostsPence, String rentArrearsPence,
-                                            String warrantFeeAmount, BigDecimal expectedLandRegistry,
-                                            BigDecimal expectedLegals, BigDecimal expectedArrears,
-                                            BigDecimal expectedTotalFees
-    ) {
+    void shouldRenderTableCorrectly(RepaymentFee fee) {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
-            .amountOfLegalCosts(legalCostsPence)
+            .amountOfLegalCosts(fee.legalCostsAmount())
             .build();
 
         LandRegistryFees landRegistryFees = LandRegistryFees.builder()
-            .amountOfLandRegistryFees(landRegistryPence)
+            .amountOfLandRegistryFees(fee.landRegistryAmount())
             .build();
 
         MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
-            .amountOwed(rentArrearsPence)
+            .amountOwed(fee.rentArrearsAmount())
             .build();
 
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantFeeAmount(warrantFeeAmount)
+            .warrantFeeAmount(fee.warrantFeeAmount())
             .warrantDetails(WarrantDetails.builder()
-                .repaymentCosts(RepaymentCosts.builder().build())
-                .landRegistryFees(landRegistryFees)
-                .legalCosts(legalCosts)
-                .moneyOwedByDefendants(moneyOwedByDefendants)
-                .build())
+                                .repaymentCosts(RepaymentCosts.builder().build())
+                                .landRegistryFees(landRegistryFees)
+                                .legalCosts(legalCosts)
+                                .moneyOwedByDefendants(moneyOwedByDefendants)
+                                .build())
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -72,18 +68,18 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .build();
 
         when(repaymentTableRenderer.render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-            warrantFeeAmount,
-            expectedTotalFees
+            fee.rentArrearsAmount(),
+            fee.legalCostsAmount(),
+            fee.landRegistryAmount(),
+            fee.warrantFeeAmount(),
+            fee.expectedTotalFees()
         )).thenReturn("<table>Mock Repayment Table</table>");
         when(repaymentTableRenderer.render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-            warrantFeeAmount,
-            expectedTotalFees,
+            fee.rentArrearsAmount(),
+            fee.legalCostsAmount(),
+            fee.landRegistryAmount(),
+            fee.warrantFeeAmount(),
+            fee.expectedTotalFees(),
             "The payments due"
         )).thenReturn("<table>Mock SOT Repayment Table</table>");
 
@@ -92,44 +88,44 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
         // Then
         verify(repaymentTableRenderer).render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-            warrantFeeAmount,
-            expectedTotalFees
+            fee.rentArrearsAmount(),
+            fee.legalCostsAmount(),
+            fee.landRegistryAmount(),
+            fee.warrantFeeAmount(),
+            fee.expectedTotalFees()
         );
         verify(repaymentTableRenderer).render(
-            expectedArrears,
-            expectedLegals,
-            expectedLandRegistry,
-            warrantFeeAmount,
-            expectedTotalFees,
+            fee.rentArrearsAmount(),
+            fee.legalCostsAmount(),
+            fee.landRegistryAmount(),
+            fee.warrantFeeAmount(),
+            fee.expectedTotalFees(),
             "The payments due"
         );
 
         assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())
             .isEqualTo("<table>Mock Repayment Table</table>");
         assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts()
-            .getStatementOfTruthRepaymentSummaryMarkdown())
+                       .getStatementOfTruthRepaymentSummaryMarkdown())
             .isEqualTo("<table>Mock SOT Repayment Table</table>");
     }
 
-    private static Stream<Arguments> repaymentFeeScenarios() {
+    private static Stream<RepaymentFee> repaymentFeeScenarios() {
         return Stream.of(
-            Arguments.of(
-                "12300", "10000", "20000", "£404", new BigDecimal("123.00"),
+            new RepaymentFee(
+              "£404", new BigDecimal("123.00"),
                 new BigDecimal("100.00"), new BigDecimal("200.00"), new BigDecimal("827.00")
             ),
-            Arguments.of(
-                "1500", "500", "999", "£50", new BigDecimal("15.00"), new BigDecimal("5.00"),
+            new RepaymentFee(
+                "£50", new BigDecimal("15.00"), new BigDecimal("5.00"),
                 new BigDecimal("9.99"), new BigDecimal("79.99")
             ),
-            Arguments.of(
-                "0", "0", "0", "£0", new BigDecimal("0.00"), new BigDecimal("0.00"),
+            new RepaymentFee(
+                "£0", new BigDecimal("0.00"), new BigDecimal("0.00"),
                 new BigDecimal("0.00"), new BigDecimal("0.00")
             ),
-            Arguments.of(
-                "10001", "1", "5000", "£0", new BigDecimal("100.01"), new BigDecimal("0.01"),
+            new RepaymentFee(
+                "£0", new BigDecimal("100.01"), new BigDecimal("0.01"),
                 new BigDecimal("50.00"), new BigDecimal("150.02")
             )
         );
