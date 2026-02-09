@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import java.math.BigDecimal;
 import java.util.stream.Stream;
@@ -32,15 +33,18 @@ class LandRegistryFeesPageTest extends BasePageTest {
 
     @Mock
     private RepaymentTableRenderer repaymentTableRenderer;
+    @Mock
+    private MoneyFormatter moneyFormatter;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new LandRegistryFeesPage(repaymentTableRenderer));
+        setPageUnderTest(new LandRegistryFeesPage(repaymentTableRenderer, moneyFormatter));
     }
 
     @ParameterizedTest
     @MethodSource("repaymentFeeScenarios")
-    void shouldFormatRepaymentFeesCorrectly(final EnforcementCosts enforcementCosts) {
+    void shouldFormatRepaymentFeesCorrectly(final EnforcementCosts enforcementCosts,
+                                            final String expectedFormattedFee) {
         // Given
         final LegalCosts legalCosts = LegalCosts.builder()
             .amountOfLegalCosts(enforcementCosts.getLegalFees())
@@ -55,7 +59,7 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .build();
 
         final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .warrantFeeAmount(enforcementCosts.getFeeAmount())
+            .warrantFeeAmount(expectedFormattedFee)
             .warrantDetails(WarrantDetails.builder()
                 .repaymentCosts(RepaymentCosts.builder().build())
                 .landRegistryFees(landRegistryFees)
@@ -68,6 +72,8 @@ class LandRegistryFeesPageTest extends BasePageTest {
             .enforcementOrder(enforcementOrder)
             .build();
 
+        when(moneyFormatter.deformatFee(caseData.getEnforcementOrder().getWarrantFeeAmount()))
+                .thenReturn(enforcementCosts.getFeeAmount());
         when(repaymentTableRenderer.render(
             enforcementCosts,
             TEMPLATE
@@ -103,16 +109,16 @@ class LandRegistryFeesPageTest extends BasePageTest {
         return Stream.of(
             Arguments.of(
                 new EnforcementCosts(new BigDecimal("123"), new BigDecimal("100"), new BigDecimal("200"),
-                        new BigDecimal("404"), WARRANT_FEE_AMOUNT)),
+                        new BigDecimal("404"), WARRANT_FEE_AMOUNT), "£404"),
             Arguments.of(
                 new EnforcementCosts(new BigDecimal("15"), new BigDecimal("5"), new BigDecimal("9.99"),
-                        new BigDecimal(".50"), WARRANT_FEE_AMOUNT)),
+                        new BigDecimal(".50"), WARRANT_FEE_AMOUNT), "£0.50"),
             Arguments.of(
                 new EnforcementCosts(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
-                        BigDecimal.ZERO, WARRANT_FEE_AMOUNT)),
+                        BigDecimal.ZERO, WARRANT_FEE_AMOUNT), "£0"),
             Arguments.of(
                 new EnforcementCosts(new BigDecimal("100.01"), new BigDecimal("0.01"), new BigDecimal("50.00"),
-                        BigDecimal.ZERO, WARRANT_FEE_AMOUNT))
+                        BigDecimal.ZERO, WARRANT_FEE_AMOUNT), "£0")
         );
     }
 }

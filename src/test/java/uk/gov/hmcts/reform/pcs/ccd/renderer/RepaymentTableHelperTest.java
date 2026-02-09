@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
-import uk.gov.hmcts.reform.pcs.ccd.util.FeeFormatter;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -23,7 +23,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegis
 class RepaymentTableHelperTest {
 
     @Mock
-    private FeeFormatter feeFormatter;
+    private MoneyFormatter moneyFormatter;
 
     @InjectMocks
     private RepaymentTableHelper repaymentTableHelper;
@@ -33,7 +33,7 @@ class RepaymentTableHelperTest {
     void getContext_shouldBuildMapAndCallConverter(EnforcementCosts enforcementCosts, String expectedFormattedFee,
                                                    BigDecimal expectedTotalFees) {
 
-        when(feeFormatter.formatFee(enforcementCosts.getFeeAmount())).thenReturn(expectedFormattedFee);
+        when(moneyFormatter.formatFee(enforcementCosts.getFeeAmount())).thenReturn(expectedFormattedFee);
 
         Map<String, Object> context = repaymentTableHelper.getContext(enforcementCosts, "My caption");
 

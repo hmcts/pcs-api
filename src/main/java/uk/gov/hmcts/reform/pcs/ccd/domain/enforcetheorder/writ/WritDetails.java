@@ -72,4 +72,9 @@ public class WritDetails {
             + "make sure your claim is processed correctly"
     )
     private LanguageUsed enforcementLanguageUsed;
+    @CCD(
+        searchable = false,
+        label = "Has the claim been transferred to the High Court?"
+    )
+    private YesOrNo hasClaimTransferredToHighCourt;
 }
