@@ -339,20 +339,22 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         schedulePartyAccessCodeGeneration(caseReference);
 
-        log.debug("Deleting draft data after claim submission: caseReference={}, eventId={}",
-            caseReference, resumePossessionClaim);
-
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
-
-        log.debug("Draft data deleted successfully");
-
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
+
+        deleteDraftData(caseReference);
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
             .state(State.PENDING_CASE_ISSUED)
             .build();
+    }
+
+    private void deleteDraftData(long caseReference) {
+        log.debug("Deleting draft data after claim submission: caseReference={}, eventId={}",
+                  caseReference, resumePossessionClaim);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
+        log.debug("Draft data deleted successfully");
     }
 
     private SubmitResponse<State> saveForLater() {

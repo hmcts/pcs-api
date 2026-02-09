@@ -2,7 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
@@ -21,10 +20,11 @@ import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
@@ -105,10 +105,10 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
 
     PCSCase loadTestPcsCase(String label) {
         PCSCase loadedCase;
-        try {
-            Resource testResource = testCaseSupportHelper.getTestResource(label);
-            String jsonString = StreamUtils.copyToString(testResource.getInputStream(), StandardCharsets.UTF_8);
+        try (InputStream inputStream = testCaseSupportHelper.getTestResource(label).getInputStream()) {
+            String jsonString = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
             loadedCase = draftCaseDataService.parseCaseDataJson(jsonString);
+            jsonString = null; // deliberate
         } catch (IOException e) {
             throw new TestCaseSupportException(e);
         }

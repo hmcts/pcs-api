@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -47,21 +48,27 @@ public class DraftCaseDataService {
         log.info("Getting unsubmitted draft data: caseReference={}, eventId={}, userId={}",
             caseReference, eventId, userId);
 
-        Optional<PCSCase> optionalCaseData = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
-                .map(DraftCaseDataEntity::getCaseData)
-                .map(this::parseCaseDataJson)
-                .map(this::setUnsubmittedDataFlag);
-
+        Optional<DraftCaseDataEntity> optionalCaseData = draftCaseDataRepository
+            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
+        PCSCase pcsCase = null;
         if (optionalCaseData.isPresent()) {
             log.debug("Found draft case data for caseReference={}, eventId={}, userId={}",
                 caseReference, eventId, userId);
+
+            String caseDataJson = optionalCaseData.get().getCaseData();
+            optionalCaseData = Optional.empty();
+
+            pcsCase = parseCaseDataJson(caseDataJson);
+            caseDataJson = null;
+
+            setUnsubmittedDataFlag(pcsCase);
+
         } else {
             log.debug("No draft case data found for caseReference={}, eventId={}, userId={}",
                 caseReference, eventId, userId);
         }
 
-        return optionalCaseData;
+        return Optional.ofNullable(pcsCase);
     }
 
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
@@ -117,7 +124,7 @@ public class DraftCaseDataService {
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
         log.info("Deleting draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
