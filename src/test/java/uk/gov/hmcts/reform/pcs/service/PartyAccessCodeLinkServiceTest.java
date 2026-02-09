@@ -24,7 +24,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -105,10 +104,6 @@ class PartyAccessCodeLinkServiceTest {
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
         when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
             .thenReturn(defendantEntity);
-        // validatePartyNotAlreadyLinked and validateUserNotLinkedToAnotherParty are void methods
-        doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity);
-        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
-            List.of(defendantEntity), partyId, USER_ID);
 
         // WHEN
         service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser);
@@ -140,9 +135,6 @@ class PartyAccessCodeLinkServiceTest {
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
         when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
             .thenReturn(defendantEntity);
-        doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity);
-        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
-            List.of(defendantEntity), partyId, USER_ID);
 
         // WHEN
         service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, userWithEmail);
@@ -174,9 +166,6 @@ class PartyAccessCodeLinkServiceTest {
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
         when(validator.validatePartyIsADefendant(List.of(defendantEntity), partyId))
             .thenReturn(defendantEntity);
-        doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity);
-        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
-            List.of(defendantEntity), partyId, USER_ID);
 
         // WHEN
         service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, userWithNullEmail);
@@ -256,9 +245,6 @@ class PartyAccessCodeLinkServiceTest {
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
         when(validator.validatePartyIsADefendant(allDefendants, partyId2))
             .thenReturn(defendantEntity2);
-        // validatePartyNotAlreadyLinked passes
-        doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity2);
-        // validateUserNotLinkedToAnotherParty throws exception
         doThrow(new AccessCodeAlreadyUsedException(
             "This user ID is already linked to another party in this case."))
             .when(validator).validateUserNotLinkedToAnotherParty(
@@ -293,10 +279,6 @@ class PartyAccessCodeLinkServiceTest {
         when(validator.validateAccessCode(caseId, ACCESS_CODE)).thenReturn(pac);
         when(validator.validatePartyIsADefendant(allDefendants, partyId2))
             .thenReturn(defendantEntity2);
-        // All validations pass
-        doNothing().when(validator).validatePartyNotAlreadyLinked(defendantEntity2);
-        doNothing().when(validator).validateUserNotLinkedToAnotherParty(
-            allDefendants, partyId2, USER_ID);
 
         // WHEN
         service.linkPartyByAccessCode(CASE_REFERENCE, ACCESS_CODE, testUser);

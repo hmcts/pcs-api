@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -24,6 +27,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -582,13 +586,22 @@ class SubmitEventHandlerTest {
         submitAndVerifyDraftSaved(caseData);
     }
 
-    @Test
-    void shouldSaveDraftWithLegalAdvicePreferNotToSay() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("legalAdviceTestCases")
+    void shouldSaveDraftWithLegalAdviceField(
+        String testName,
+        YesNoPreferNotToSay legalAdviceValue,
+        YesNoNotSure additionalField
+    ) {
         // Given
-        DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
-            .hasReceivedFreeLegalAdvice(YesNoPreferNotToSay.PREFER_NOT_TO_SAY)
-            .build();
+        DefendantResponses.DefendantResponsesBuilder responsesBuilder = DefendantResponses.builder()
+            .receivedFreeLegalAdvice(legalAdviceValue);
+
+        if (additionalField != null) {
+            responsesBuilder.tenancyTypeCorrect(additionalField);
+        }
+
+        DefendantResponses responses = responsesBuilder.build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
@@ -618,88 +631,18 @@ class SubmitEventHandlerTest {
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
             .isNotNull();
         assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
-            .getHasReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.PREFER_NOT_TO_SAY);
+            .getReceivedFreeLegalAdvice()).isEqualTo(legalAdviceValue);
     }
 
-    @Test
-    void shouldSaveDraftWithLegalAdviceYes() {
-        // Given
-        DefendantResponses responses = DefendantResponses.builder()
-            .hasReceivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(null)
-            .defendantResponses(responses)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNullOrEmpty();
-
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+    private static Stream<Arguments> legalAdviceTestCases() {
+        return Stream.of(
+            Arguments.of("Legal advice PREFER_NOT_TO_SAY with other fields",
+                YesNoPreferNotToSay.PREFER_NOT_TO_SAY, YesNoNotSure.YES),
+            Arguments.of("Legal advice YES only",
+                YesNoPreferNotToSay.YES, null),
+            Arguments.of("Legal advice NO only",
+                YesNoPreferNotToSay.NO, null)
         );
-
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
-            .isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
-            .getHasReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.YES);
-    }
-
-    @Test
-    void shouldAllowSubmitWithOnlyLegalAdviceField() {
-        // Given - Only legal advice field, no other defendant responses
-        DefendantResponses responses = DefendantResponses.builder()
-            .hasReceivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(null)
-            .defendantResponses(responses)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then - Must succeed when only legal advice field provided
-        assertThat(result)
-            .as("Submit must succeed when only legal advice field provided")
-            .isNotNull();
-        assertThat(result.getErrors())
-            .as("No errors when only legal advice field provided")
-            .isNullOrEmpty();
-
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
-
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
-            .as("defendantResponses should be saved")
-            .isNotNull();
-        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
-            .getHasReceivedFreeLegalAdvice()).isEqualTo(YesNoPreferNotToSay.NO);
     }
 
     @Test

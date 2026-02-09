@@ -20,7 +20,6 @@ public class Party {
 
     private VerticalYesNo nameKnown;
 
-    // emailAddress: NO CitizenAccess annotation - stored in DB but NOT exposed to citizens
     private String emailAddress;
 
     private AddressUK address;

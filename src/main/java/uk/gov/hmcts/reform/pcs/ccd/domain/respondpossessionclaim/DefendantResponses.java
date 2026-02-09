@@ -39,5 +39,5 @@ public class DefendantResponses {
     private LocalDate noticeReceivedDate;
 
     @CCD
-    private YesNoPreferNotToSay hasReceivedFreeLegalAdvice;
+    private YesNoPreferNotToSay receivedFreeLegalAdvice;
 }
