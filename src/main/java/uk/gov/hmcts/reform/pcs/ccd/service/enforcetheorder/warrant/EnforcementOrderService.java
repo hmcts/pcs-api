@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
@@ -66,8 +67,10 @@ public class EnforcementOrderService {
 
         enforcementOrderRepository.save(enforcementOrderEntity);
 
-        EnforcementRiskProfileEntity riskProfile = mapToRiskProfile(enforcementOrderEntity, enforcementOrder);
-        enforcementRiskProfileRepository.save(riskProfile);
+        if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WARRANT) {
+            EnforcementRiskProfileEntity riskProfile = mapToRiskProfile(enforcementOrderEntity, enforcementOrder);
+            enforcementRiskProfileRepository.save(riskProfile);
+        }
     }
 
     private EnforcementRiskProfileEntity mapToRiskProfile(
