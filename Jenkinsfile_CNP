@@ -45,7 +45,6 @@ withPipeline(type, product, component) {
   enableDbMigration('pcs')
 
   onPR() {
-    env.CASE_TYPE_SUFFIX="${CHANGE_ID}"
     enablePactAs([
       AppPipelineDsl.PactRoles.CONSUMER,
       AppPipelineDsl.PactRoles.CONSUMER_DEPLOY_CHECK
