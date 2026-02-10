@@ -1,28 +1,28 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
-import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
-
-public class MoneyOwedPage implements CcdPageConfiguration {
+public class MoneyOwedWritPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("moneyOwed")
+            .page("amountDefendantOwes")
             .pageLabel("The amount the defendants owe you")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
-            .label("moneyOwed-line-separator", "---")
+            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .label("amountDefendantOwes-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
-            .complex(EnforcementOrder::getWarrantDetails)
-            .complex(WarrantDetails::getMoneyOwedByDefendants)
-            .label("moneyOwed-amount-label",
+            .complex(EnforcementOrder::getWritDetails)
+            .complex(WritDetails::getMoneyOwedByDefendants)
+            .label(
+                "amountDefendantOwes-amount-label",
                 """
                     <p class="govuk-body govuk-!-margin-bottom-0">
                         You can include:
@@ -40,8 +40,11 @@ public class MoneyOwedPage implements CcdPageConfiguration {
                         This shows all of the fees you have paid when you made a claim
                     </p>
                 """
-                )
+            )
             .mandatory(MoneyOwedByDefendants::getAmountOwed)
-            .label("moneyOwed-save-and-return", SAVE_AND_RETURN);
+            .done()
+            .done()
+            .done()
+            .label("amountDefendantOwes-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
