@@ -14,37 +14,37 @@ public class MoneyOwedWritPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("moneyOwedWrit")
+            .page("amountDefendantOwes")
             .pageLabel("The amount the defendants owe you")
             .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
-            .label("moneyOwedWrit-line-separator", "---")
+            .label("amountDefendantOwes-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .complex(WritDetails::getMoneyOwedByDefendants)
             .label(
-                    "moneyOwedWrit-amount-label",
-                    """
-                        <p class="govuk-body govuk-!-margin-bottom-0">
-                            You can include:
-                            <ul class="govuk-list govuk-list--bullet">
-                                <li class="govuk-!-font-size-19">
-                                rent or mortgage arrears</li>
-                                <li class="govuk-!-font-size-19">
-                                the fee you paid to make a possession claim</li>
-                            </ul>
-                        </p>
-                        <p class="govuk-body">
-                            If you do not know the fee you paid to make your possession claim,
-                            <a href="/cases/case-details/${[CASE_REFERENCE]}#Service%20Request" target="_blank">
-                                check the service request tab (opens in a new tab)</a>.
-                            This shows all of the fees you have paid when you made a claim
-                        </p>
-                    """
+                "amountDefendantOwes-amount-label",
+                """
+                    <p class="govuk-body govuk-!-margin-bottom-0">
+                        You can include:
+                        <ul class="govuk-list govuk-list--bullet">
+                            <li class="govuk-!-font-size-19">
+                            rent or mortgage arrears</li>
+                            <li class="govuk-!-font-size-19">
+                            the fee you paid to make a possession claim</li>
+                        </ul>
+                    </p>
+                    <p class="govuk-body">
+                        If you do not know the fee you paid to make your possession claim,
+                        <a href="/cases/case-details/${[CASE_REFERENCE]}#Service%20Request" target="_blank">
+                            check the service request tab (opens in a new tab)</a>.
+                        This shows all of the fees you have paid when you made a claim
+                    </p>
+                """
             )
             .mandatory(MoneyOwedByDefendants::getAmountOwed)
             .done()
             .done()
             .done()
-            .label("moneyOwedWrit-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("amountDefendantOwes-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
