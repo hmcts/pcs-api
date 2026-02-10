@@ -71,7 +71,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] @PR @regression',
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] @enforcement @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -220,7 +220,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
     });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] @PR @regression', async () => {
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
@@ -283,7 +283,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
   });
 
-  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @PR @regression', async () => {
+  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);

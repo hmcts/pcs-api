@@ -63,7 +63,7 @@ export class ActionEnforcementRegistry {
     ['validateAmountToRePayTable', new EnforcementAction()],
     ['selectLanguageUsed', new EnforcementAction()],
     ['confirmSuspendedOrder', new EnforcementAction()],
-    ['selectStatementOfTruthOne', new EnforcementAction()],
+    ['selectStatementOfTruth', new EnforcementAction()],
     ['selectStatementOfTruthTwo', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],

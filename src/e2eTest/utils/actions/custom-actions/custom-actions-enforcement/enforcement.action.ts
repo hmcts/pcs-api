@@ -83,7 +83,7 @@ export class EnforcementAction implements IAction {
       ['validateAmountToRePayTable', () => this.validateAmountToRePayTable(fieldName as actionRecord)],
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
-      ['selectStatementOfTruthOne', () => this.selectStatementOfTruthOne(fieldName as actionRecord)],
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
       ['selectStatementOfTruthTwo', () => this.selectStatementOfTruthTwo(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
@@ -101,10 +101,10 @@ export class EnforcementAction implements IAction {
     const feeType = warrantJourney
       ? yourApplication.typeofFee.warrantOfPossessionFee
       : yourApplication.typeofFee.writOfPossessionFee;
-      
+
     const writOrWarrantFeeAmt = warrantJourney ? await this.retrieveAmountFromString(summaryOption.text1 as string) : await this.retrieveAmountFromString(summaryOption.text2 as string);
 
-    moneyMap.set(feeType,writOrWarrantFeeAmt);
+    moneyMap.set(feeType, writOrWarrantFeeAmt);
   }
 
   private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
@@ -256,7 +256,7 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(riskCategory);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('check', riskCategory.riskTypes);
+    await performAction('check', { question: riskCategory.question, option: riskCategory.option });
     await performAction('clickButton', riskPosedByEveryoneAtProperty.continueButton);
   }
 
@@ -454,15 +454,15 @@ export class EnforcementAction implements IAction {
 
   }
 
-  private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
+  private async selectStatementOfTruth(claimantDetails: actionRecord) {
     await performAction('check', claimantDetails.selectCheckbox);
-    await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
-    if (claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption) {
-      await performAction('check', {question: claimantDetails.question,option:claimantDetails.option});
+    await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
+    if (claimantDetails.option === statementOfTruthOne.claimantRadioOption) {
+      await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
-    if (claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+    if (claimantDetails.option === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
       await performAction('check', claimantDetails.option1);
       await performAction('inputText', claimantDetails.label, claimantDetails.input);
       await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
@@ -471,19 +471,36 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', statementOfTruthOne.continueButton);
   }
 
+  // private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
+  //   await performAction('check', claimantDetails.selectCheckbox);
+  //   await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
+  //   if (claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption) {
+  //     await performAction('check', claimantDetails.iBelieveCheckbox);
+  //     await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+  //     await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+  //   }
+  //   if (claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption) {
+  //     await performAction('check', claimantDetails.signThisStatementCheckbox);
+  //     await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
+  //     await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
+  //     await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+  //   }
+  //   await performAction('clickButton', statementOfTruthOne.continueButton);
+  // }
+
   private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
     await performAction('check', claimantDetails.selectCheckbox);
-    await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
-    if (claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption) {
-      await performAction('check', claimantDetails.iBelieveCheckbox);
-      await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-      await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
+    if (claimantDetails.option === statementOfTruthOne.claimantRadioOption) {
+      await performAction('check', claimantDetails.option1);
+      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
+      await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
-    if (claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption) {
-      await performAction('check', claimantDetails.signThisStatementCheckbox);
-      await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-      await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-      await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    if (claimantDetails.option === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+      await performAction('check', claimantDetails.option1);
+      await performAction('inputText', claimantDetails.label, claimantDetails.input);
+      await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
+      await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
     }
     await performAction('clickButton', statementOfTruthOne.continueButton);
   }

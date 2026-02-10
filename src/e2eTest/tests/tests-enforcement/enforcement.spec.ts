@@ -86,7 +86,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Possession]', async () => {
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @PR @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement1 @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -429,12 +429,12 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         button: statementOfTruthOne.continueButton
       });
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
-      await performAction('selectStatementOfTruthOne', {
+      await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
         question: statementOfTruthOne.completedByLabel,
         option: statementOfTruthOne.claimantRadioOption,
         option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        label:statementOfTruthOne.fullNameHiddenTextLabel,
+        label: statementOfTruthOne.fullNameHiddenTextLabel,
         input: statementOfTruthOne.fullNameHiddenTextInput,
         label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
         input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
@@ -443,7 +443,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @PR @regression', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
@@ -605,13 +605,17 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       button: statementOfTruthTwo.continueButton
     });
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
-    await performAction('selectStatementOfTruthTwo', {
+    await performAction('selectStatementOfTruth', {
       selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
-      completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
-      signThisStatementCheckbox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
-      fullNameTextInput: statementOfTruthTwo.fullNameHiddenTextInput,
-      nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextInput,
-      positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput
+      question: statementOfTruthTwo.completedByLabel,
+      option: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
+      option1: statementOfTruthTwo.signThisStatementHiddenCheckbox,
+      label: statementOfTruthTwo.fullNameHiddenTextLabel,
+      input: statementOfTruthTwo.fullNameHiddenTextInput,
+      label1: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
+      input1: statementOfTruthTwo.nameOfFirmHiddenTextInput,
+      label2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
+      input2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput,
     });
   });
 
@@ -721,13 +725,17 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     });
     await performValidation('mainHeader', statementOfTruthOne.mainHeader);
     await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
-    await performAction('selectStatementOfTruthOne', {
+    await performAction('selectStatementOfTruth', {
       selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
-      completedBy: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
-      signThisStatementCheckbox: statementOfTruthOne.signThisStatementHiddenCheckbox,
-      fullNameTextInput: statementOfTruthOne.fullNameHiddenTextInput,
-      nameOfFirmTextInput: statementOfTruthOne.nameOfFirmHiddenTextInput,
-      positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput
+      question: statementOfTruthOne.completedByLabel,
+      option: statementOfTruthOne.claimantRadioOption,
+      option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
+      label: statementOfTruthOne.fullNameHiddenTextLabel,
+      input: statementOfTruthOne.fullNameHiddenTextInput,
+      label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+      input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
+      label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
+      input2: statementOfTruthOne.nameOfFirmHiddenTextInput
     });
   });
 
@@ -756,7 +764,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreatedErrorMessage, message: youNeedPermission.errMessage });
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @PR @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement1 @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -869,17 +877,21 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
       await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
-      await performAction('selectStatementOfTruthTwo', {
+      await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
-        completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
-        signThisStatementCheckbox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
-        fullNameTextInput: statementOfTruthTwo.fullNameHiddenTextInput,
-        nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextInput,
-        positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput
+        question: statementOfTruthTwo.completedByLabel,
+        option: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
+        option1: statementOfTruthTwo.signThisStatementHiddenCheckbox,
+        label: statementOfTruthTwo.fullNameHiddenTextLabel,
+        input: statementOfTruthTwo.fullNameHiddenTextInput,
+        label1: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
+        input1: statementOfTruthTwo.nameOfFirmHiddenTextInput,
+        label2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
+        input2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput,
       });
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]- only main defendants name known @onlyMain @PR @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]- only main defendants name known @onlyMain @enforcement1 @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -992,13 +1004,17 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
       await performValidation('mainHeader', statementOfTruthTwo.mainHeader);
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruthTwo.mainHeader });
-      await performAction('selectStatementOfTruthTwo', {
+      await performAction('selectStatementOfTruth', {
         selectCheckbox: statementOfTruthTwo.iCertifyCheckbox,
-        completedBy: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
-        signThisStatementCheckbox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
-        fullNameTextInput: statementOfTruthTwo.fullNameHiddenTextInput,
-        nameOfFirmTextInput: statementOfTruthTwo.nameOfFirmHiddenTextInput,
-        positionOrOfficeTextInput: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput
+        question: statementOfTruthTwo.completedByLabel,
+        option: statementOfTruthTwo.claimantLegalRepresentativeRadioOption,
+        option1: statementOfTruthTwo.signThisStatementHiddenCheckbox,
+        label: statementOfTruthTwo.fullNameHiddenTextLabel,
+        input: statementOfTruthTwo.fullNameHiddenTextInput,
+        label1: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
+        input1: statementOfTruthTwo.nameOfFirmHiddenTextInput,
+        label2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
+        input2: statementOfTruthTwo.positionOrOfficeHeldHiddenTextInput,
       });
     });
 });
