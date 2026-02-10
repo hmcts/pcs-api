@@ -584,7 +584,6 @@ export class EnforcementAction implements IAction {
       finalString += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return finalString;
-
   }
 
   private async retrieveAmountFromString(input: string): Promise<number> {
