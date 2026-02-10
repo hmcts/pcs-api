@@ -15,7 +15,7 @@ CREATE TABLE enf_warrant(
 
   -- Additional Information
   additional_information_select           YES_NO,
-  additional_information_details          TEXT,
+  additional_information_details          VARCHAR(6800),
 
   -- NameAndAddressForEviction
   correct_name_and_address                YES_NO,
@@ -25,7 +25,7 @@ CREATE TABLE enf_warrant(
 
   -- PropertyAccessDetails
   is_difficult_to_access_property         YES_NO,
-  clarification_on_access_difficulty_text TEXT,
+  clarification_on_access_difficulty_text VARCHAR(6800),
 
   -- Legal Costs & Finances
   are_legal_costs_to_be_claimed           YES_NO,
@@ -37,13 +37,13 @@ CREATE TABLE enf_warrant(
   amount_of_land_registry_fees            NUMERIC(10, 2),
 
   -- Repayment
-  repayment_choice                        TEXT,
+  repayment_choice                        VARCHAR(20),
   amount_of_repayment_costs               NUMERIC(10, 2),
   repayment_summary_markdown              TEXT,
 
   -- Defendants DOB
   defendants_dob_known                    YES_NO,
-  defendants_dob_details                  TEXT,
+  defendants_dob_details                  VARCHAR(6800),
 
   -- Risk Assessment
   any_risk_to_bailiff                     YES_NO_NOT_SURE,
