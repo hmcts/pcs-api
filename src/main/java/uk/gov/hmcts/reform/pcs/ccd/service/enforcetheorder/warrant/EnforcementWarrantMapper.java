@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
 
 
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
@@ -18,7 +17,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -144,11 +142,9 @@ public class EnforcementWarrantMapper {
 
     private void legalCosts(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
         LegalCosts legalCosts = warrantDetails.getLegalCosts();
-        if (legalCosts != null
-            && StringUtils.isNotEmpty(legalCosts.getAmountOfLegalCosts())) {
+        if (legalCosts != null && legalCosts.getAmountOfLegalCosts() != null) {
             warrantEntity.setAreLegalCostsToBeClaimed(legalCosts.getAreLegalCostsToBeClaimed());
-            String costs = legalCosts.getAmountOfLegalCosts();
-            warrantEntity.setAmountOfLegalCosts(StringUtils.isNotEmpty(costs) ? new BigDecimal(costs) : null);
+            warrantEntity.setAmountOfLegalCosts(legalCosts.getAmountOfLegalCosts());
         }
     }
 
@@ -156,9 +152,7 @@ public class EnforcementWarrantMapper {
         LandRegistryFees landRegistryFees = warrantDetails.getLandRegistryFees();
         if (landRegistryFees != null) {
             warrantEntity.setHaveLandRegistryFeesBeenPaid(landRegistryFees.getHaveLandRegistryFeesBeenPaid());
-            String amount = landRegistryFees.getAmountOfLandRegistryFees();
-            warrantEntity.setAmountOfLandRegistryFees(StringUtils.isNotEmpty(amount)
-                                                          ? new BigDecimal(amount) : null);
+            warrantEntity.setAmountOfLandRegistryFees(landRegistryFees.getAmountOfLandRegistryFees());
         }
     }
 
@@ -169,8 +163,7 @@ public class EnforcementWarrantMapper {
             if (repaymentChoice != null) {
                 warrantEntity.setRepaymentChoice(repaymentChoice.getLabel());
             }
-            String costs = repaymentCosts.getAmountOfRepaymentCosts();
-            warrantEntity.setAmountOfRepaymentCosts(StringUtils.isNotEmpty(costs) ? new BigDecimal(costs) : null);
+            warrantEntity.setAmountOfRepaymentCosts(repaymentCosts.getAmountOfRepaymentCosts());
             warrantEntity.setRepaymentSummaryMarkdown(repaymentCosts.getRepaymentSummaryMarkdown());
         }
     }
@@ -203,8 +196,7 @@ public class EnforcementWarrantMapper {
 
     private void moneyOwed(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
         if (warrantDetails.getMoneyOwedByDefendants() != null) {
-            String amountOwed = warrantDetails.getMoneyOwedByDefendants().getAmountOwed();
-            warrantEntity.setAmountOwed(StringUtils.isNotEmpty(amountOwed) ? new BigDecimal(amountOwed) : null);
+            warrantEntity.setAmountOwed(warrantDetails.getMoneyOwedByDefendants().getAmountOwed());
         }
     }
 

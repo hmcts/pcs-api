@@ -16,9 +16,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.DefendantsDOB;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
@@ -215,7 +215,7 @@ class EnforcementWarrantMapperTest {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
             .areLegalCostsToBeClaimed(VerticalYesNo.YES)
-            .amountOfLegalCosts("1500.50")
+            .amountOfLegalCosts(new BigDecimal("1500.50"))
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().legalCosts(legalCosts).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
@@ -233,7 +233,6 @@ class EnforcementWarrantMapperTest {
         // Given
         LegalCosts legalCosts = LegalCosts.builder()
             .areLegalCostsToBeClaimed(VerticalYesNo.YES)
-            .amountOfLegalCosts("")
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().legalCosts(legalCosts).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
@@ -250,7 +249,7 @@ class EnforcementWarrantMapperTest {
     void shouldMapMoneyOwed() {
         // Given
         MoneyOwedByDefendants moneyOwed = MoneyOwedByDefendants.builder()
-            .amountOwed("2500.75")
+            .amountOwed(new BigDecimal("2500.75"))
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().moneyOwedByDefendants(moneyOwed).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
@@ -266,7 +265,6 @@ class EnforcementWarrantMapperTest {
     void shouldHandleMoneyOwedWithEmptyAmount() {
         // Given
         MoneyOwedByDefendants moneyOwed = MoneyOwedByDefendants.builder()
-            .amountOwed("")
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().moneyOwedByDefendants(moneyOwed).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
@@ -283,7 +281,7 @@ class EnforcementWarrantMapperTest {
         // Given
         LandRegistryFees landRegistryFees = LandRegistryFees.builder()
             .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
-            .amountOfLandRegistryFees("350.00")
+            .amountOfLandRegistryFees(new BigDecimal("350.00"))
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().landRegistryFees(landRegistryFees).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
@@ -301,7 +299,6 @@ class EnforcementWarrantMapperTest {
         // Given
         LandRegistryFees landRegistryFees = LandRegistryFees.builder()
             .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
-            .amountOfLandRegistryFees("")
             .build();
 
         WarrantDetails warrantDetails = WarrantDetails.builder().landRegistryFees(landRegistryFees).build();
@@ -322,7 +319,7 @@ class EnforcementWarrantMapperTest {
 
         RepaymentCosts repaymentCosts = RepaymentCosts.builder()
             .repaymentChoice(repaymentPreference)
-            .amountOfRepaymentCosts("1000.00")
+            .amountOfRepaymentCosts(new BigDecimal("1000.00"))
             .repaymentSummaryMarkdown("Summary markdown")
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().repaymentCosts(repaymentCosts).build();
@@ -342,7 +339,7 @@ class EnforcementWarrantMapperTest {
         // Given
         RepaymentCosts repaymentCosts = RepaymentCosts.builder()
             .repaymentChoice(null)
-            .amountOfRepaymentCosts("1000.00")
+            .amountOfRepaymentCosts(new BigDecimal("1000.00"))
             .build();
         WarrantDetails warrantDetails = WarrantDetails.builder().repaymentCosts(repaymentCosts).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
@@ -571,7 +568,7 @@ class EnforcementWarrantMapperTest {
                                        .build())
             .legalCosts(LegalCosts.builder()
                             .areLegalCostsToBeClaimed(VerticalYesNo.YES)
-                            .amountOfLegalCosts("1000.00")
+                            .amountOfLegalCosts(new BigDecimal("1000.00"))
                             .build())
             .statementOfTruth(statementOfTruth)
             .build();

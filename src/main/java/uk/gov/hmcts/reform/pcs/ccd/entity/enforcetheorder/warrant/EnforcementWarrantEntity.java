@@ -46,84 +46,70 @@ public class EnforcementWarrantEntity {
     // UI Control Flags
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "show_change_name_address_page")
     private VerticalYesNo showChangeNameAddressPage;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "show_people_who_will_be_evicted_page")
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "show_people_you_want_to_evict_page")
     private VerticalYesNo showPeopleYouWantToEvictPage;
 
     // Language & Status
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "is_suspended_order")
     private VerticalYesNo isSuspendedOrder;
 
     // Additional Information
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "additional_information_select")
     private VerticalYesNo additionalInformationSelect;
 
-    @Column(name = "additional_information_details")
     private String additionalInformationDetails;
 
     // NameAndAddressForEviction
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "correct_name_and_address")
     private VerticalYesNo correctNameAndAddress;
 
     // PeopleToEvict
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "evict_everyone")
     private VerticalYesNo evictEveryone;
 
     // PropertyAccessDetails
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "is_difficult_to_access_property")
     private VerticalYesNo isDifficultToAccessProperty;
 
-    @Column(name = "clarification_on_access_difficulty_text")
     private String clarificationOnAccessDifficultyText;
 
     // Legal Costs & Finances
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "are_legal_costs_to_be_claimed")
     private VerticalYesNo areLegalCostsToBeClaimed;
 
-    @Column(name = "amount_of_legal_costs", precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal amountOfLegalCosts;
 
-    @Column(name = "amount_owed", precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal amountOwed;
 
     // Land Registry
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "have_land_registry_fees_been_paid")
     private VerticalYesNo haveLandRegistryFeesBeenPaid;
 
-    @Column(name = "amount_of_land_registry_fees", precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal amountOfLandRegistryFees;
 
     // Repayment
-    @Column(name = "repayment_choice")
     private String repaymentChoice;
 
-    @Column(name = "amount_of_repayment_costs", precision = 10, scale = 2)
+    @Column(precision = 10, scale = 2)
     private BigDecimal amountOfRepaymentCosts;
 
-    @Column(name = "repayment_summary_markdown")
     private String repaymentSummaryMarkdown;
 
     // Defendants DOB
@@ -138,46 +124,34 @@ public class EnforcementWarrantEntity {
     // Risk Assessment
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "any_risk_to_bailiff")
     private YesNoNotSure anyRiskToBailiff;
 
-    @Column(name = "enforcement_risk_categories")
     private String enforcementRiskCategories;
 
     // Vulnerable People (from RawWarrantDetails)
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "vulnerable_people_present")
     private YesNoNotSure vulnerablePeoplePresent;
 
     // Statement of Truth
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "statement_of_truth_completed_by")
     private StatementOfTruthCompletedBy completedBy;
 
-    @Column(name = "statement_of_truth_agreement_claimant")
     private String agreementClaimant;
 
-    @Column(name = "statement_of_truth_full_name_claimant")
     private String fullNameClaimant;
 
-    @Column(name = "statement_of_truth_position_claimant")
     private String positionClaimant;
 
-    @Column(name = "statement_of_truth_agreement_legal_rep")
     private String agreementLegalRep;
 
-    @Column(name = "statement_of_truth_full_name_legal_rep")
     private String fullNameLegalRep;
 
-    @Column(name = "statement_of_truth_firm_name_legal_rep")
     private String firmNameLegalRep;
 
-    @Column(name = "statement_of_truth_position_legal_rep")
     private String positionLegalRep;
 
-    @Column(name = "statement_of_truth_certification")
     private String certification;
 
 }

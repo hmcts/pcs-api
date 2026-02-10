@@ -2,7 +2,7 @@ CREATE TYPE YES_NO_NOT_SURE AS ENUM ('YES', 'NO', 'NOT_SURE');
 CREATE TYPE STATEMENT_OF_TRUTH_COMPLETED_BY AS ENUM ('CLAIMANT', 'LEGAL_REPRESENTATIVE');
 
 CREATE TABLE enf_warrant(
-  id                                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id                                      UUID PRIMARY KEY,
   enf_case_id                             UUID NOT NULL REFERENCES enf_case (id) ON DELETE CASCADE,
 
   -- UI Control Flags
@@ -53,15 +53,15 @@ CREATE TABLE enf_warrant(
   vulnerable_people_present               YES_NO_NOT_SURE,
 
   -- Statement of Truth
-  statement_of_truth_completed_by         STATEMENT_OF_TRUTH_COMPLETED_BY,
-  statement_of_truth_certification        TEXT,
-  statement_of_truth_agreement_claimant   TEXT,
-  statement_of_truth_full_name_claimant   TEXT,
-  statement_of_truth_position_claimant    TEXT,
-  statement_of_truth_agreement_legal_rep  TEXT,
-  statement_of_truth_full_name_legal_rep  TEXT,
-  statement_of_truth_firm_name_legal_rep  TEXT,
-  statement_of_truth_position_legal_rep   TEXT,
+  completed_by                            STATEMENT_OF_TRUTH_COMPLETED_BY,
+  certification                           TEXT,
+  agreement_claimant                      TEXT,
+  full_name_claimant                      VARCHAR(60),
+  position_claimant                       VARCHAR(60),
+  agreement_legal_rep                     TEXT,
+  full_name_legal_rep                     VARCHAR(60),
+  firm_name_legal_rep                     VARCHAR(60),
+  position_legal_rep                      VARCHAR(60),
 
   CONSTRAINT unique_warrant_per_enforcement UNIQUE (enf_case_id)
 );
