@@ -85,7 +85,7 @@ withPipeline(type, product, component) {
     enableHighLevelDataSetup()
   }
 
-  before('highleveldatasetup') {
+  before('build') {
     onPR{
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
