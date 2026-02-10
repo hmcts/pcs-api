@@ -9,10 +9,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
@@ -28,6 +34,8 @@ public class EnforcementOrderService {
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
+    private final EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
+    private final PartyRepository partyRepository;
 
     public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
         return enforcementOrderRepository.findById(id)
@@ -58,6 +66,28 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
+
         enforcementOrderRepository.save(enforcementOrderEntity);
+
+        DynamicMultiSelectStringList selectedDefendants =
+            enforcementOrderEntity
+                .getEnforcementOrder()
+                .getRawWarrantDetails()
+                .getSelectedDefendants();
+
+        List<UUID> selectedDefIds = selectedDefendants.getValue()
+            .stream()
+            .map(DynamicStringListElement::getCode)
+            .map(UUID::fromString)
+            .toList();
+
+        List<PartyEntity> parties = partyRepository.findAllById(selectedDefIds);
+
+        for (PartyEntity party : parties) {
+            EnforcementSelectedDefendantEntity entity = new EnforcementSelectedDefendantEntity();
+            entity.setEnforcementCase(enforcementOrderEntity);
+            entity.setParty(party);
+            enforcementSelectedDefendantRepository.save(entity);
+        }
     }
 }

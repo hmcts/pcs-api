@@ -23,9 +23,13 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -57,6 +61,10 @@ public class PartyEntity {
     @Builder.Default
     @JsonManagedReference
     private Set<ClaimPartyEntity> claimParties = new HashSet<>();
+
+    @OneToMany(mappedBy = "party", fetch = LAZY)
+    @Builder.Default
+    private List<EnforcementSelectedDefendantEntity> selectedDefendantEntities = new ArrayList<>();
 
     private UUID idamId;
 
