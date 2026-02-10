@@ -171,7 +171,7 @@ ccd:
     replicas: 1
     minimumMasterNodes: 1
     antiAffinity: "soft"
-    esJavaOpts: "-Xmx1024m -Xms1024m -XX:+UseG1GC"
+    esJavaOpts: "-Xmx1024m -Xms1024m -XX:-UseConcMarkSweepGC -XX:+UseG1GC"
     extraEnvs:
       - name: discovery.type
         value: single-node
@@ -187,7 +187,7 @@ ccd:
     image: "hmctspublic.azurecr.io/imported/logstash/logstash"
     imageTag: "7.16.1"
     imagePullPolicy: "IfNotPresent"
-    logstashJavaOpts: "-Xmx1536m -Xms1024m -XX:+UseG1GC"
+    logstashJavaOpts: "-Xmx1536m -Xms1024m -XX:-UseConcMarkSweepGC -XX:+UseG1GC"
 xui-webapp:
   enabled: true
   nodejs:
