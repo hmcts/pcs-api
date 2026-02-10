@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
@@ -37,7 +38,7 @@ public class WritDetails {
     @JsonUnwrapped
     @CCD
     private LandRegistryFees landRegistryFees;
-    
+
     @CCD(
         label = "Have you hired a High Court enforcement officer?"
     )
@@ -53,4 +54,14 @@ public class WritDetails {
     @JsonUnwrapped
     @CCD
     private LegalCosts legalCosts;
+
+    @JsonUnwrapped
+    @CCD
+    private MoneyOwedByDefendants moneyOwedByDefendants;
+    
+    @CCD(
+        searchable = false,
+        label = "Has the claim been transferred to the High Court?"
+    )
+    private YesOrNo hasClaimTransferredToHighCourt;
 }
