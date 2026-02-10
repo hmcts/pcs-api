@@ -91,7 +91,7 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
             // ASB in secureContractDiscretionaryGroundsWales only - should show ASB questions page
             arguments(
                 null,
-                Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR),
+                Set.of(SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157),
                 YesOrNo.YES
             ),
             // ASB with other grounds in discretionaryGroundsWales - should show ASB questions page
@@ -107,8 +107,8 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
             arguments(
                 null,
                 Set.of(
-                    SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT,
-                    SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR
+                    SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157,
+                    SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157
                 ),
                 YesOrNo.YES
             ),
@@ -121,7 +121,7 @@ class ReasonsForPossessionWalesTest extends BasePageTest {
             // Only non-ASB in secureContractDiscretionaryGroundsWales - should not show ASB questions page
             arguments(
                 null,
-                Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT),
+                Set.of(SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157),
                 YesOrNo.NO
             ),
             // Both grounds null - should not show ASB questions page
