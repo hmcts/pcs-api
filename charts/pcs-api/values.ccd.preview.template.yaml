@@ -17,6 +17,7 @@ java:
   memoryLimits: '4096Mi'
   cpuRequests: '1000m'
   environment:
+    CASE_TYPE_SUFFIX: ${CHANGE_ID}
     JAVA_TOOL_OPTIONS: >-
       -XX:InitialRAMPercentage=50.0
       -XX:MaxRAMPercentage=75.0
