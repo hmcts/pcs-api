@@ -87,6 +87,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
             makeAClaimTestCreation(label, caseReference);
         } else if (ENFORCEMENT_CASE_GENERATOR.equalsIgnoreCase(label)) {
             makeAClaimTestCreation(MAKE_A_CLAIM_CASE_GENERATOR, caseReference);
+            System.gc();
             enforceTheOrder.submitOrder(caseReference, loadTestPcsCase(label));
         }
         return SubmitResponse.<State>builder().state(CASE_ISSUED).build();

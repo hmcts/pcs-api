@@ -69,6 +69,13 @@ ccd:
       autoscaling:
         maxReplicas: 1
       environment:
+        JAVA_TOOL_OPTIONS: >-
+          -XX:InitialRAMPercentage=25.0
+          -XX:MaxRAMPercentage=75.0
+          -XX:+UseG1GC
+          -XX:MaxGCPauseMillis=200
+          -XX:+HeapDumpOnOutOfMemoryError
+          -XX:HeapDumpPath=/tmp/heapdump.hprof
         DEFINITION_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
         DEFINITION_STORE_TX_TIMEOUT_DEFAULT: 360
@@ -92,6 +99,13 @@ ccd:
       devmemoryLimits: '2048Mi'
       devcpuRequests: '500m'
       environment:
+        JAVA_TOOL_OPTIONS: >-
+          -XX:InitialRAMPercentage=25.0
+          -XX:MaxRAMPercentage=75.0
+          -XX:+UseG1GC
+          -XX:MaxGCPauseMillis=200
+          -XX:+HeapDumpOnOutOfMemoryError
+          -XX:HeapDumpPath=/tmp/heapdump.hprof
         DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
@@ -157,7 +171,7 @@ ccd:
     replicas: 1
     minimumMasterNodes: 1
     antiAffinity: "soft"
-    esJavaOpts: "-Xmx512m -Xms512m"
+    esJavaOpts: "-Xmx1024m -Xms1024m -XX:+UseG1GC"
     extraEnvs:
       - name: discovery.type
         value: single-node
@@ -173,7 +187,7 @@ ccd:
     image: "hmctspublic.azurecr.io/imported/logstash/logstash"
     imageTag: "7.16.1"
     imagePullPolicy: "IfNotPresent"
-    logstashJavaOpts: "-Xmx1g -Xms512M"
+    logstashJavaOpts: "-Xmx1536m -Xms1024m -XX:+UseG1GC"
 xui-webapp:
   enabled: true
   nodejs:
