@@ -69,25 +69,38 @@ public class EnforcementOrderService {
 
         enforcementOrderRepository.save(enforcementOrderEntity);
 
-        DynamicMultiSelectStringList selectedDefendants =
-            enforcementOrderEntity
-                .getEnforcementOrder()
-                .getRawWarrantDetails()
-                .getSelectedDefendants();
+        if(enforcementOrderEntity.getEnforcementOrder().getRawWarrantDetails().getSelectedDefendants() != null) {
+            DynamicMultiSelectStringList selectedDefendants = getSelectedDefendants(enforcementOrderEntity);
 
-        List<UUID> selectedDefIds = selectedDefendants.getValue()
-            .stream()
-            .map(DynamicStringListElement::getCode)
-            .map(UUID::fromString)
-            .toList();
+            List<PartyEntity> parties = getPartyEntities(selectedDefendants);
 
-        List<PartyEntity> parties = partyRepository.findAllById(selectedDefIds);
+            linkSelectedDefendantsToEnforcementOrder(parties, enforcementOrderEntity);
+        }
+    }
 
+    private void linkSelectedDefendantsToEnforcementOrder(List<PartyEntity> parties, EnforcementOrderEntity enforcementOrderEntity) {
         for (PartyEntity party : parties) {
             EnforcementSelectedDefendantEntity entity = new EnforcementSelectedDefendantEntity();
             entity.setEnforcementCase(enforcementOrderEntity);
             entity.setParty(party);
             enforcementSelectedDefendantRepository.save(entity);
         }
+    }
+
+    private List<PartyEntity> getPartyEntities(DynamicMultiSelectStringList selectedDefendants) {
+        List<UUID> selectedDefIds = selectedDefendants.getValue()
+            .stream()
+            .map(DynamicStringListElement::getCode)
+            .map(UUID::fromString)
+            .toList();
+
+        return partyRepository.findAllById(selectedDefIds);
+    }
+
+    private DynamicMultiSelectStringList getSelectedDefendants(EnforcementOrderEntity enforcementOrderEntity) {
+        return enforcementOrderEntity
+            .getEnforcementOrder()
+            .getRawWarrantDetails()
+            .getSelectedDefendants();
     }
 }
