@@ -66,10 +66,9 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
-
         enforcementOrderRepository.save(enforcementOrderEntity);
-
-        if(enforcementOrderEntity.getEnforcementOrder().getRawWarrantDetails().getSelectedDefendants() != null) {
+        if (enforcementOrderEntity.getEnforcementOrder().getRawWarrantDetails()
+            .getSelectedDefendants() != null) {
             DynamicMultiSelectStringList selectedDefendants = getSelectedDefendants(enforcementOrderEntity);
 
             List<PartyEntity> parties = getPartyEntities(selectedDefendants);
@@ -78,7 +77,8 @@ public class EnforcementOrderService {
         }
     }
 
-    private void linkSelectedDefendantsToEnforcementOrder(List<PartyEntity> parties, EnforcementOrderEntity enforcementOrderEntity) {
+    private void linkSelectedDefendantsToEnforcementOrder(List<PartyEntity> parties,
+                                                          EnforcementOrderEntity enforcementOrderEntity) {
         for (PartyEntity party : parties) {
             EnforcementSelectedDefendantEntity entity = new EnforcementSelectedDefendantEntity();
             entity.setEnforcementCase(enforcementOrderEntity);

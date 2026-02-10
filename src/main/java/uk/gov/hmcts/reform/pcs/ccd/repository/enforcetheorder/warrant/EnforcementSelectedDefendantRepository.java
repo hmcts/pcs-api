@@ -5,5 +5,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSel
 
 import java.util.UUID;
 
-public interface EnforcementSelectedDefendantRepository extends JpaRepository<EnforcementSelectedDefendantEntity, UUID> {
+public interface EnforcementSelectedDefendantRepository extends
+    JpaRepository<EnforcementSelectedDefendantEntity, UUID> {
 }
