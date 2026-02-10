@@ -311,6 +311,11 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
     });
+    await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
+    await performAction('confirmClaimTransferredToHighCourt', {
+      question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
+      option: claimSentToHighCourt.yesRadioOption,
+    });
     await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
