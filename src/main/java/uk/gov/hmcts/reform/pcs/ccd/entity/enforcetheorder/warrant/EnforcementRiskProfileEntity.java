@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -36,38 +35,27 @@ public class EnforcementRiskProfileEntity {
     private EnforcementOrderEntity enforcementOrder;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "any_risk_to_bailiff")
     private YesNoNotSure anyRiskToBailiff;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "vulnerable_people_present")
     private YesNoNotSure vulnerablePeoplePresent;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "vulnerable_category")
     private VulnerableCategory vulnerableCategory;
 
-    @Column(name = "vulnerable_reason_text")
     private String vulnerableReasonText;
 
-    @Column(name = "violent_details")
     private String violentDetails;
 
-    @Column(name = "firearms_details")
     private String firearmsDetails;
 
-    @Column(name = "criminal_details")
     private String criminalDetails;
 
-    @Column(name = "verbal_threats_details")
     private String verbalThreatsDetails;
 
-    @Column(name = "protest_group_details")
     private String protestGroupDetails;
 
-    @Column(name = "police_social_services_details")
     private String policeSocialServicesDetails;
 
-    @Column(name = "animals_details")
     private String animalsDetails;
 }
