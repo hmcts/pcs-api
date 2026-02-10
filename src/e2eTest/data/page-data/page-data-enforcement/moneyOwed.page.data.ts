@@ -1,7 +1,6 @@
 export const moneyOwed = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'The amount the defendants owe you',
-  mainHeaderWrit: 'The amount the defendants owe you (placeholder)',
   totalAmountOwedTextLabel: 'What is the total amount that the defendants owe you?',
   totalAmountOwedTextInput: '9999.99',
   continueButton: 'Continue',

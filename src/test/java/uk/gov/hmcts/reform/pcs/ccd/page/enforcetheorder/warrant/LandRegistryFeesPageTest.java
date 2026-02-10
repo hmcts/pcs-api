@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -31,9 +31,11 @@ class LandRegistryFeesPageTest extends BasePageTest {
     @Mock
     private RepaymentTableRenderer repaymentTableRenderer;
 
+    @Mock
+    private MoneyConverter moneyConverter;
+
     @BeforeEach
     void setUp() {
-        MoneyConverter moneyConverter = new MoneyConverter();
         setPageUnderTest(new LandRegistryFeesPage(moneyConverter, repaymentTableRenderer));
     }
 
@@ -41,6 +43,14 @@ class LandRegistryFeesPageTest extends BasePageTest {
     @MethodSource("repaymentFeeScenarios")
     void shouldRenderTableCorrectly(RepaymentFee fee) {
         // Given
+        BigDecimal totalWithoutFee = fee.rentArrearsAmount()
+            .add(fee.legalCostsAmount())
+            .add(fee.landRegistryAmount());
+        BigDecimal warrantFeeAsBigDecimal = fee.expectedTotalFees().subtract(totalWithoutFee);
+
+        when(moneyConverter.convertPoundsToPence(fee.warrantFeeAmount())).thenReturn("warrant-fee-pence");
+        when(moneyConverter.convertPenceToBigDecimal("warrant-fee-pence")).thenReturn(warrantFeeAsBigDecimal);
+
         LegalCosts legalCosts = LegalCosts.builder()
             .amountOfLegalCosts(fee.legalCostsAmount())
             .build();
