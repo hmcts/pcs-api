@@ -15,12 +15,14 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
+            .add(new ToggleClaimSentToHighCourtPlaceholder())
+            .add(new CannotApplyForWritInfoPage())
             .add(new NameAndAddressForEvictionWritPage())
             .add(new ChangeNameAddressWritPage())
             .add(new ConfirmHCEOfficerPage())
             .add(hceOfficerDetailsPage)
             .add(new EnforcementOfficerSelectionPage())
-            .add(new AmountDefendantOwesPage())
+            .add(new MoneyOwedWritPage())
             .add(new LegalCostsWritPage())
             .add(new LandRegistryFeesPage())
             .add(new RepaymentsPlaceholder());

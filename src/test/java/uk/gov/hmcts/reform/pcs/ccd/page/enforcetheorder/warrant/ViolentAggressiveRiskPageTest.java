@@ -76,7 +76,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
                                       "6,800");
 
         // Then
-        assertThat(response.getErrors()).containsExactly(expectedError);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
     }
 
 }
