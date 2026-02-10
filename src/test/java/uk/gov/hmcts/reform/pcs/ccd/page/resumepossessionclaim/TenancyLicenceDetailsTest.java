@@ -64,10 +64,10 @@ class TenancyLicenceDetailsTest extends BasePageTest {
 
         // Then
         if (!isValid) {
-            assertThat(response.getErrors())
-                .containsExactly("Date the tenancy or licence began must be in the past");
+            assertThat(response.getErrorMessageOverride())
+                .isEqualTo("Date the tenancy or licence began must be in the past");
         } else {
-            assertThat(response.getErrors()).isNull();
+            assertThat(response.getErrorMessageOverride()).isNull();
             assertThat(response.getData().getTenancyLicenceDetails().getTenancyLicenceDate())
                 .isEqualTo(date);
         }

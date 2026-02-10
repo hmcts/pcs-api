@@ -26,7 +26,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
 
     public static String getCaseType() {
-        return withChangeId(CASE_TYPE_ID, "-");
+        return withSuffix(CASE_TYPE_ID, "-");
     }
 
     public static String getJurisdictionId() {
@@ -34,11 +34,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     public static String getCaseTypeName() {
-        return withChangeId(CASE_TYPE_NAME, " ");
+        return withSuffix(CASE_TYPE_NAME, " ");
     }
 
-    private static String withChangeId(String base, String separator) {
-        return ofNullable(getenv().get("CHANGE_ID"))
+    private static String withSuffix(String base, String separator) {
+        return ofNullable(getenv().get("CASE_TYPE_SUFFIX"))
             .map(changeId -> base + separator + changeId)
             .orElse(base);
     }
