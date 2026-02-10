@@ -338,7 +338,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performValidation('mainHeader', legalCosts.mainHeader);
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
-      option: legalCosts.noRadioOption,
+      option: legalCosts.yesRadioOption,
       label: legalCosts.howMuchYouWantToReclaimTextLabel,
       input: legalCosts.howMuchYouWantToReclaimTextInput,
       nextPage: landRegistryFees.mainHeader
