@@ -206,9 +206,7 @@ class SubmitEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNotNull();
-        assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0)).isEqualTo("Invalid submission: missing response data");
+        assertThat(result.getErrors()).containsExactly("Invalid submission: missing response data");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
@@ -271,12 +269,8 @@ class SubmitEventHandlerTest {
         // Then - Must reject when both fields are null
         assertThat(result).isNotNull();
         assertThat(result.getErrors())
-            .as("Must return error when both fields are null")
-            .isNotNull()
-            .hasSize(1);
-        assertThat(result.getErrors().get(0))
-            .as("Error message should indicate no data to save")
-            .isEqualTo("Invalid submission: no data to save");
+            .as("Must return error when both fields are null with correct error message")
+            .containsExactly("Invalid submission: no data to save");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
@@ -316,8 +310,7 @@ class SubmitEventHandlerTest {
         // Then
         assertThat(result.getErrors())
             .as("Must reject when immutable field is sent")
-            .hasSize(1)
-            .contains("Invalid submission: immutable field must not be sent: nameKnown");
+            .containsExactly("Invalid submission: immutable field must not be sent: nameKnown");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
@@ -359,7 +352,6 @@ class SubmitEventHandlerTest {
         // Then
         assertThat(result.getErrors())
             .as("Must reject when multiple immutable fields sent")
-            .hasSize(3)
             .containsExactlyInAnyOrder(
                 "Invalid submission: immutable field must not be sent: nameKnown",
                 "Invalid submission: immutable field must not be sent: addressKnown",
@@ -719,10 +711,8 @@ class SubmitEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNotNull();
-        assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0))
-            .isEqualTo("We couldn't save your response. Please try again or contact support.");
+        assertThat(result.getErrors())
+            .containsExactly("We couldn't save your response. Please try again or contact support.");
     }
 
     @Test
