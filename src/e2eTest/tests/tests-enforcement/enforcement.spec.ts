@@ -177,7 +177,8 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         button: riskPosedByEveryoneAtProperty.continueButton
       });
       await performAction('selectRiskPosedByEveryoneAtProperty', {
-        riskTypes: [
+        question: riskPosedByEveryoneAtProperty.kindOfRiskQuestion,
+        option: [
           riskPosedByEveryoneAtProperty.violentOrAggressiveBehaviourCheckbox,
           riskPosedByEveryoneAtProperty.historyOfFirearmPossessionCheckbox,
           riskPosedByEveryoneAtProperty.criminalOrAntisocialBehaviourCheckbox,
@@ -430,10 +431,15 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
       await performAction('selectStatementOfTruthOne', {
         selectCheckbox: statementOfTruthOne.iCertifyCheckbox,
-        completedBy: statementOfTruthOne.claimantRadioOption,
-        iBelieveCheckbox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        fullNameTextInput: statementOfTruthOne.fullNameHiddenTextInput,
-        positionOrOfficeTextInput: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput
+        question: statementOfTruthOne.completedByLabel,
+        option: statementOfTruthOne.claimantRadioOption,
+        option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
+        label:statementOfTruthOne.fullNameHiddenTextLabel,
+        input: statementOfTruthOne.fullNameHiddenTextInput,
+        label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+        input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
+        label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
+        input2: statementOfTruthOne.nameOfFirmHiddenTextInput
       });
     });
 

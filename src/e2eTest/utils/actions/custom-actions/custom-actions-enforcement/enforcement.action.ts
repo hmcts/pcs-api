@@ -458,15 +458,15 @@ export class EnforcementAction implements IAction {
     await performAction('check', claimantDetails.selectCheckbox);
     await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
     if (claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption) {
-      await performAction('check', claimantDetails.iBelieveCheckbox);
-      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, !claimantDetails.fullNameTextInput ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.fullNameTextInput);
-      await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      await performAction('check', {question: claimantDetails.question,option:claimantDetails.option});
+      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
+      await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
     if (claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
-      await performAction('check', claimantDetails.signThisStatementCheckbox);
-      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-      await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-      await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+      await performAction('check', claimantDetails.option1);
+      await performAction('inputText', claimantDetails.label, claimantDetails.input);
+      await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
+      await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
     }
     await performAction('clickButton', statementOfTruthOne.continueButton);
   }
