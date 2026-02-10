@@ -13,7 +13,20 @@ global:
   databaseNamePrefix: "pr-${CHANGE_ID}-"
 
 java:
+  memoryRequests: '2048Mi'
+  memoryLimits: '4096Mi'
+  cpuRequests: '1000m'
   environment:
+    JAVA_TOOL_OPTIONS: >-
+      -XX:InitialRAMPercentage=50.0
+      -XX:MaxRAMPercentage=75.0
+      -XX:+UseG1GC
+      -XX:MaxGCPauseMillis=200
+      -XX:G1ReservePercent=20
+      -XX:InitiatingHeapOccupancyPercent=45
+      -XX:+HeapDumpOnOutOfMemoryError
+      -XX:HeapDumpPath=/tmp/heapdump.hprof
+      -XX:+ExitOnOutOfMemoryError
     CHANGE_ID: ${CHANGE_ID}
     PCS_DB_NAME: "{{ .Values.global.databaseNamePrefix }}pcs"
     PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
@@ -63,9 +76,9 @@ ccd:
       enabled: true
   ccd-definition-store-api:
     java:
-      devmemoryRequests: '1024Mi'
-      devmemoryLimits: '2048Mi'
-      devcpuRequests: '500m'
+      devmemoryRequests: '2048Mi'
+      devmemoryLimits: '4096Mi'
+      devcpuRequests: '1000m'
       autoscaling:
         maxReplicas: 1
       environment:
@@ -95,9 +108,9 @@ ccd:
   ccd-data-store-api:
     java:
       imagePullPolicy: Always
-      devmemoryRequests: '1524Mi'
-      devmemoryLimits: '2048Mi'
-      devcpuRequests: '500m'
+      devmemoryRequests: '2048Mi'
+      devmemoryLimits: '4096Mi'
+      devcpuRequests: '1000m'
       environment:
         JAVA_TOOL_OPTIONS: >-
           -XX:InitialRAMPercentage=25.0
@@ -171,7 +184,7 @@ ccd:
     replicas: 1
     minimumMasterNodes: 1
     antiAffinity: "soft"
-    esJavaOpts: "-Xmx512m -Xms512m"
+    esJavaOpts: "-Xmx1024m -Xms1024m"
     extraEnvs:
       - name: discovery.type
         value: single-node
@@ -195,10 +208,10 @@ xui-webapp:
     releaseNameOverride: ${SERVICE_NAME}-xui-webapp
     image: hmctspublic.azurecr.io/xui/webapp:latest
     ingressHost: xui-${SERVICE_FQDN}
-    devmemoryRequests: 2Gi
-    devcpuRequests: 500m
-    devmemoryLimits: 4Gi
-    devcpuLimits: 1
+    devmemoryRequests: 4Gi
+    devcpuRequests: 1000m
+    devmemoryLimits: 6Gi
+    devcpuLimits: 2
     environment:
       HEALTH_CCD_COMPONENT_API: http://${SERVICE_NAME}-ccd-api-gw/health
       HEALTH_CCD_DATA_API: http://${SERVICE_NAME}-ccd-data-store-api/health
