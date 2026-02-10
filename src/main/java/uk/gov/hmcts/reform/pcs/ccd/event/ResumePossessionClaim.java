@@ -344,15 +344,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         log.debug("Draft data deleted successfully");
 
-
-        if (pcsCase.getClaimantInformation() != null) {
-            String overriddenClaimantName = pcsCase.getClaimantInformation().getOverriddenClaimantName();
-
-            if (overriddenClaimantName != null && overriddenClaimantName.contains("FAIL")) {
-                throw new IllegalStateException("Test exception");
-            }
-        }
-
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());

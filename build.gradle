@@ -304,7 +304,6 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/config/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/event/ResumePossessionClaim.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
