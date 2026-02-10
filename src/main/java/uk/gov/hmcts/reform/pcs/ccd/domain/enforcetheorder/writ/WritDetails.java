@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 
 @Builder
 @Data
@@ -52,6 +53,10 @@ public class WritDetails {
     @CCD
     private LegalCosts legalCosts;
 
+    @JsonUnwrapped
+    @CCD
+    private MoneyOwedByDefendants moneyOwedByDefendants;
+    
     @CCD(
         searchable = false,
         label = "Has the claim been transferred to the High Court?"
