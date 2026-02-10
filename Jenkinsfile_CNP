@@ -90,6 +90,9 @@ withPipeline(type, product, component) {
       env.DEFINITION_STORE_URL_BASE = "https://ccd-definition-store-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.CASE_API_URL = "https://pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       env.DATA_STORE_URL_BASE="https://ccd-data-store-api-pcs-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      generateDefinitions(builder)
+      env.CASE_API_URL = "https://pcs-api-aat.aat.platform.hmcts.net"
+      env.CASE_TYPE_SUFFIX=""
     }
     onMaster{
       env.DEFINITION_STORE_URL_BASE = "http://ccd-definition-store-api-aat.service.core-compute-aat.internal"
