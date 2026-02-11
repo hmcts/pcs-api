@@ -28,8 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTemplate.WRIT;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.LandRegistryFeesWritPage.WRIT_FEE_AMOUNT;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.LandRegistryFeesWritPage.TEMPLATE;
 import static uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier.UNABLE_TO_RETRIEVE;
 
 @ExtendWith(MockitoExtension.class)
@@ -80,12 +80,12 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
                 .thenReturn(enforcementCosts.getFeeAmount());
         when(repaymentTableRenderer.render(
                 enforcementCosts,
-                TEMPLATE
+                WRIT
         )).thenReturn("<table>Mock Repayment Table</table>");
         when(repaymentTableRenderer.render(
                 enforcementCosts,
                 "The payments due",
-                TEMPLATE
+                WRIT
         )).thenReturn("<table>Mock SOT Repayment Table</table>");
 
         // When
@@ -94,12 +94,12 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
         // Then
         verify(repaymentTableRenderer).render(
                 enforcementCosts,
-                TEMPLATE
+                WRIT
         );
         verify(repaymentTableRenderer).render(
                 enforcementCosts,
                 "The payments due",
-                TEMPLATE
+                WRIT
         );
 
         assertThat(caseData.getEnforcementOrder().getWritDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())
@@ -151,9 +151,9 @@ class LandRegistryFeesWritPageTest extends BasePageTest {
                 .build();
 
         when(moneyFormatter.deformatFee(UNABLE_TO_RETRIEVE)).thenReturn(null);
-        when(repaymentTableRenderer.render(any(EnforcementCosts.class), eq(TEMPLATE)))
+        when(repaymentTableRenderer.render(any(EnforcementCosts.class), eq(WRIT)))
                 .thenReturn("<table>Mock Repayment Table</table>");
-        when(repaymentTableRenderer.render(any(EnforcementCosts.class), eq("The payments due"), eq(TEMPLATE)))
+        when(repaymentTableRenderer.render(any(EnforcementCosts.class), eq("The payments due"), eq(WRIT)))
                 .thenReturn("<table>Mock SOT Repayment Table</table>");
 
         callMidEventHandler(caseData);

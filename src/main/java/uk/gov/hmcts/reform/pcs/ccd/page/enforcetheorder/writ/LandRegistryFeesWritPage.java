@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
+import static uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTemplate.WRIT;
 
 @AllArgsConstructor
 @Component
@@ -27,7 +28,6 @@ public class LandRegistryFeesWritPage implements CcdPageConfiguration {
     private final MoneyFormatter moneyFormatter;
 
     public static final String WRIT_FEE_AMOUNT = "writFeeAmount";
-    static final String TEMPLATE = "repaymentTableWrit";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -66,14 +66,14 @@ public class LandRegistryFeesWritPage implements CcdPageConfiguration {
         // Render repayment table for Repayments screen (default caption)
         repaymentCosts.setRepaymentSummaryMarkdown(repaymentTableRenderer.render(
                 enforcementCosts,
-                TEMPLATE
+                WRIT
         ));
 
         // Render repayment table for SOT screen (custom caption)
         repaymentCosts.setStatementOfTruthRepaymentSummaryMarkdown(repaymentTableRenderer.render(
                 enforcementCosts,
                 "The payments due",
-                TEMPLATE
+                WRIT
         ));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
