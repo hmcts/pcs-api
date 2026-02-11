@@ -66,4 +66,30 @@ class RepaymentTableHelperTest {
                 )
         );
     }
+
+    @ParameterizedTest
+    @MethodSource("nullFeeScenarios")
+    void getContext_whenFeeAmountIsNull_treatsFeeAsZero(EnforcementCosts enforcementCosts, BigDecimal expectedTotal) {
+        when(moneyFormatter.formatFee(BigDecimal.ZERO)).thenReturn("£0");
+
+        Map<String, Object> context = repaymentTableHelper.getContext(enforcementCosts, "Caption");
+
+        assertThat((BigDecimal) context.get("totalFees")).isEqualByComparingTo(expectedTotal);
+        assertThat(context.get(enforcementCosts.getFeeAmountType())).isEqualTo("£0");
+    }
+
+    private static Stream<Arguments> nullFeeScenarios() {
+        return Stream.of(
+                arguments(
+                        new EnforcementCosts(new BigDecimal("100"), new BigDecimal("50"), new BigDecimal("25"),
+                                null, WARRANT_FEE_AMOUNT),
+                        new BigDecimal("175.00")
+                ),
+                arguments(
+                        new EnforcementCosts(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
+                                null, WARRANT_FEE_AMOUNT),
+                        BigDecimal.ZERO
+                )
+        );
+    }
 }
