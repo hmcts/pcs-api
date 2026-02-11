@@ -115,14 +115,13 @@ public class TenancyLicenceService {
     private BigDecimal getDailyRentAmount(RentDetails rentDetails) {
         if (rentDetails.getFrequency() == RentPaymentFrequency.OTHER) {
             return rentDetails.getDailyCharge();
-        } else if (rentDetails.getPerDayCorrect() == VerticalYesNo.YES){
+        } else if (rentDetails.getPerDayCorrect() == VerticalYesNo.YES) {
             return rentDetails.getCalculatedDailyCharge();
         } else if (rentDetails.getPerDayCorrect() == VerticalYesNo.NO) {
             return rentDetails.getAmendedDailyCharge();
         } else {
             throw new CaseDataValidationException("Invalid rent details: " + rentDetails);
         }
-
     }
 
 }
