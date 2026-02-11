@@ -10,7 +10,8 @@ export class ErrorMessageValidation implements IValidation {
       errorMessage = page.locator(`
         h3.error-summary-heading:text-is("${error.header}") + p:text-is("${error.message}"),
         h3.error-summary-heading:text-is("${error.header}") ~ #errors li:text-is("${error.message}"),
-        h2#error-summary-title:text-is("${error.header}") ~ div ul li a:text-is("${error.message}")
+        h2#error-summary-title:text-is("${error.header}") ~ div ul li a:text-is("${error.message}"),
+        h3#edit-case-event_error-summary-heading ~ ul li:text-is("${error.message}")
       `);
     }
     await expect(errorMessage).toBeVisible();
