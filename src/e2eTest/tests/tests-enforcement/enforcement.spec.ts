@@ -86,7 +86,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Possession]', async () => {
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Yes] @enforcement @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -443,7 +443,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @enforcement @regression', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] @enforcement @PR @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
@@ -619,7 +619,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
     });
   });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement1 @regression', async () => {
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [Not sure] @enforcement @PR @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
@@ -764,7 +764,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performValidation('errorMessage', { header: youNeedPermission.eventCouldNotBeCreatedErrorMessage, message: youNeedPermission.errMessage });
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement1 @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No] no defendants added @noDefendants @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -891,7 +891,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       });
     });
 
-  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]- only main defendants name known @onlyMain @enforcement1 @regression',
+  test('Warrant - Apply for a Warrant of Possession - risk to Bailiff [No]- only main defendants name known @onlyMain @enforcement',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);

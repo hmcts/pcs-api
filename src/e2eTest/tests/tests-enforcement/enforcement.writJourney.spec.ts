@@ -73,7 +73,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Writ of Possession]', async () => {
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @PR @regression',
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [Yes] - Repayment [SOME] @enforcement @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
@@ -296,7 +296,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
     });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @PR @regression', async () => {
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [ALL] @enforcement @PR @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
@@ -383,7 +383,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
   });
 
-  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [None] ', async () => {
+  test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [None] @enforcement ', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
@@ -457,7 +457,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
   });
 
-  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement @regression', async () => {
+  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
