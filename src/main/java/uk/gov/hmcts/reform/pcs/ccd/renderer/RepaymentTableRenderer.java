@@ -28,6 +28,7 @@ public class RepaymentTableRenderer {
         Writer writer = new StringWriter();
 
         Map<String, Object> context = repaymentTableHelper.getContext(enforcementCosts, caption);
+        context.put("feeAmountLabel", template.getFeeAmountLabel());
 
         try {
             compiledTemplate.evaluate(writer, context);

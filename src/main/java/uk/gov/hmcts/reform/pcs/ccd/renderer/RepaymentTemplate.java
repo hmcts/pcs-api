@@ -7,8 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum RepaymentTemplate {
 
-    WARRANT("repaymentTableWarrant"),
-    WRIT("repaymentTableWrit");
+    WARRANT("repaymentTableWarrant", "Warrant of possession fee"),
+    WRIT("repaymentTableWrit", "Writ of possession fee");
 
     private final String templateName;
+    private final String feeAmountLabel;
 }
