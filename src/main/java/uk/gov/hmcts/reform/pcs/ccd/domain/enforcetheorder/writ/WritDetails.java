@@ -10,11 +10,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
-
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 
 @Builder
@@ -34,11 +35,7 @@ public class WritDetails {
 
     @CCD(searchable = false)
     private YesOrNo showPeopleWhoWillBeEvictedPage;
-
-    @JsonUnwrapped
-    @CCD
-    private LandRegistryFees landRegistryFees;
-
+    
     @CCD(
         label = "Have you hired a High Court enforcement officer?"
     )
@@ -58,7 +55,22 @@ public class WritDetails {
     @JsonUnwrapped
     @CCD
     private MoneyOwedByDefendants moneyOwedByDefendants;
-    
+
+    @JsonUnwrapped
+    @CCD
+    private LandRegistryFees landRegistryFees;
+
+    @JsonUnwrapped
+    @CCD
+    private RepaymentCosts repaymentCosts;
+
+    @CCD(
+        label = "Which language did you use to complete this service?",
+        hint = "If someone else helped you to answer a question in this service, "
+            + "ask them if they answered any questions in Welsh. We’ll use this to "
+            + "make sure your claim is processed correctly"
+    )
+    private LanguageUsed enforcementLanguageUsed;
     @CCD(
         searchable = false,
         label = "Has the claim been transferred to the High Court?"
