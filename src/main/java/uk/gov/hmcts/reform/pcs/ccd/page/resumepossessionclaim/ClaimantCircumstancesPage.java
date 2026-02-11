@@ -73,5 +73,4 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
 
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
-
 }
