@@ -62,7 +62,7 @@ from the PCS AAT key vault:
 | PCS_IDAM_SYSTEM_PASSWORD | secret: idam-system-user-password                                |
 | PCS_PRD_ADMIN_USERNAME   | secret: pcs-prd-admin-username                                   |
 | PCS_PRD_ADMIN_PASSWORD   | secret: pcs-prd-admin-password                                   |
-
+| IDAM_PCS_USER_PASSWORD   | secret: idam-pcs-user-password                                   |
 
 Finally, run the service with the `bootWithCCD` task as above.
 

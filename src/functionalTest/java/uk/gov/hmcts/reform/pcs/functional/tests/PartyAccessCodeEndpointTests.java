@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import java.util.Map;
 
 @Slf4j
-@Tag("Functional")
+@Tag("Functional1")
 @ExtendWith(SerenityJUnit5Extension.class)
 class PartyAccessCodeEndpointTests extends BaseApi {
 
@@ -27,15 +27,14 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     private String accessCode;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws InterruptedException {
         caseReference = apiSteps.ccdCaseIsCreated("england");
-        accessCode = apiSteps.accessCodeIsFetched(caseReference);
     }
 
     @Title("Party Access Code Endpoint Tests - should return 200 when successfully link user with valid access code")
     @Test
     void partyAccessCodeTest200Scenario() {
-
+        accessCode = apiSteps.accessCodeIsFetched(caseReference);
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -50,7 +49,6 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 400 when access code is invalid")
     @Test
     void partyAccessCodeTest400ScenarioInvalidAccessCode() {
-
         Map<String, String> requestBody = Map.of("accessCode", "INVALIDCODE123");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -66,7 +64,6 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 400 when access code is empty")
     @Test
     void partyAccessCodeTest400ScenarioMissingAccessCode() {
-
         Map<String, String> requestBody = Map.of("accessCode", "");
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -82,7 +79,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is missing")
     @Test
     void partyAccessCodeTest401MissingServiceToken() {
-
+        accessCode = apiSteps.accessCodeIsFetched(caseReference);
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -96,7 +93,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return 401 when S2S is invalid")
     @Test
     void partyAccessCodeTest401InvalidServiceToken() {
-
+        accessCode = apiSteps.accessCodeIsFetched(caseReference);
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -111,7 +108,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - return 403 Forbidden when the request uses an unauthorised S2S token")
     @Test
     void partyAccessCodeTest403Scenario() {
-
+        accessCode = apiSteps.accessCodeIsFetched(caseReference);
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -126,7 +123,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - should return a 409 when request is duplicated")
     @Test
     void partyAccessCodeTest409Scenario() {
-
+        accessCode = apiSteps.accessCodeIsFetched(caseReference);
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();
@@ -145,7 +142,7 @@ class PartyAccessCodeEndpointTests extends BaseApi {
     @Title("Party Access Code Endpoint Tests - Should return 404 when invalid case reference is used.")
     @Test
     void partyAccessCodeTest404Scenario() {
-
+        accessCode = apiSteps.accessCodeIsFetched(caseReference);
         Map<String, String> requestBody = Map.of("accessCode", accessCode);
 
         apiSteps.requestIsPreparedWithAppropriateValues();

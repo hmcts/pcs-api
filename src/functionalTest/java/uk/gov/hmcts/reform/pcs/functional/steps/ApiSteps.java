@@ -188,18 +188,35 @@ public class ApiSteps {
 
     @Step("a pin is fetched")
     public String accessCodeIsFetched(Long caseReference) {
-        Map<String, Object> pins = SerenityRest.given()
-            .baseUri(baseUrl)
-            .contentType(ContentType.JSON)
-            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-            .pathParam("caseReference", caseReference)
-            .when()
-            .get(Endpoints.GetPins.getResource())
-            .then()
-            .statusCode(200)
-            .extract()
-            .as(new TypeRef<Map<String, Object>>() {});
+        int maxRetries = 15;
+        int waitMillis = 700;
 
-        return pins.keySet().iterator().next();
+        for (int i = 0; i < maxRetries; i++) {
+            Map<String, Object> pins = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("caseReference", caseReference)
+                .when()
+                .get(Endpoints.GetPins.getResource())
+                .then()
+                .extract()
+                .as(new TypeRef<Map<String, Object>>() {});
+
+            if (pins != null && !pins.isEmpty()) {
+                return pins.keySet().iterator().next();
+            }
+
+            try {
+                Thread.sleep(waitMillis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+
+        throw new RuntimeException(
+            "Access code not available for case: " + caseReference
+        );
     }
 }
