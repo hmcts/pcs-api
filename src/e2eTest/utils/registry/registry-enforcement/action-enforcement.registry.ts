@@ -64,7 +64,7 @@ export class ActionEnforcementRegistry {
     ['selectLanguageUsed', new EnforcementAction()],
     ['confirmSuspendedOrder', new EnforcementAction()],
     ['selectStatementOfTruth', new EnforcementAction()],
-    ['selectStatementOfTruthTwo', new EnforcementAction()],
+    ['selectStatementOfTruthWrit', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],
   ]);

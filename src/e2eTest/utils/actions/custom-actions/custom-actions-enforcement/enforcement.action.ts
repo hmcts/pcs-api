@@ -84,7 +84,7 @@ export class EnforcementAction implements IAction {
       ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
       ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
-      ['selectStatementOfTruthTwo', () => this.selectStatementOfTruthTwo(fieldName as actionRecord)],
+      ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -455,6 +455,7 @@ export class EnforcementAction implements IAction {
   }
 
   private async selectStatementOfTruth(claimantDetails: actionRecord) {
+    await this.addFieldsToMap(claimantDetails);
     await performAction('check', claimantDetails.selectCheckbox);
     await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
     if (claimantDetails.option === statementOfTruthOne.claimantRadioOption) {
@@ -471,40 +472,23 @@ export class EnforcementAction implements IAction {
     await performAction('clickButton', statementOfTruthOne.continueButton);
   }
 
-  // private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
-  //   await performAction('check', claimantDetails.selectCheckbox);
-  //   await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
-  //   if (claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption) {
-  //     await performAction('check', claimantDetails.iBelieveCheckbox);
-  //     await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-  //     await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-  //   }
-  //   if (claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption) {
-  //     await performAction('check', claimantDetails.signThisStatementCheckbox);
-  //     await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-  //     await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-  //     await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
-  //   }
-  //   await performAction('clickButton', statementOfTruthOne.continueButton);
-  // }
-
-  private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
-    await performAction('check', claimantDetails.selectCheckbox);
-    await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
-    if (claimantDetails.option === statementOfTruthOne.claimantRadioOption) {
-      await performAction('check', claimantDetails.option1);
-      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
-      await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
+  private async selectStatementOfTruthWrit(claimantSOT: actionRecord) {
+    await this.addFieldsToMap(claimantSOT);
+    await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
+    if (claimantSOT.option === statementOfTruthOne.claimantRadioOption) {
+      await performAction('check', claimantSOT.option1);
+      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload.claimantName : claimantSOT.input);
+      await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
     }
-    if (claimantDetails.option === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
-      await performAction('check', claimantDetails.option1);
-      await performAction('inputText', claimantDetails.label, claimantDetails.input);
-      await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
-      await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
+    if (claimantSOT.option === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+      await performAction('check', claimantSOT.option1);
+      await performAction('inputText', claimantSOT.label, claimantSOT.input);
+      await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
+      await performAction('inputText', claimantSOT.label2, claimantSOT.input2);
     }
     await performAction('clickButton', statementOfTruthOne.continueButton);
   }
-
+  
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
 
     if (validationArr.validationReq === 'YES') {
