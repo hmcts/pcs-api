@@ -12,10 +12,10 @@ import {
   landRegistryFees,
   legalCosts,
   moneyOwed,
-  rePayments, languageUsed, suspendedOrder
   rePayments,
-  statementOfTruthOne,
   languageUsed,
+  suspendedOrder,
+  statementOfTruthOne,
   claimSentToHighCourt,
   youCannotApplyForWrit
 } from '@data/page-data/page-data-enforcement';
@@ -391,6 +391,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       nextPage: rePayments.mainHeader
     });
     await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
     await performAction('provideAmountToRePay', {
       question: rePayments.rePaymentQuestion,
       option: rePayments.rePaymentRadioOptions.none,
