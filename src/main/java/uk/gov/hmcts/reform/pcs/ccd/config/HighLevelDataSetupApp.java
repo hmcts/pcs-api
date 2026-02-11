@@ -33,7 +33,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     private final CcdEnvironment environment;
 
     public HighLevelDataSetupApp(CcdEnvironment dataSetupEnvironment) {
-        super(dataSetupEnvironment,"build/definitions/" );
+        super(dataSetupEnvironment,"build/definitions/");
         environment = dataSetupEnvironment;
     }
 
