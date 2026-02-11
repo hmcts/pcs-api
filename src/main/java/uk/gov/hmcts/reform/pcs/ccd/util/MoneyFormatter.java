@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 @Component
-public class FeeFormatter {
+public class MoneyFormatter {
 
     public String formatFee(BigDecimal amount) {
         if (amount == null) {

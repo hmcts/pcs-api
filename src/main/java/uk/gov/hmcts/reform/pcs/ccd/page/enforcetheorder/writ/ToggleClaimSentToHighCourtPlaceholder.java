@@ -4,20 +4,24 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
-public class ConfirmHiringEnforcementOfficerPlaceholder implements CcdPageConfiguration {
+public class ToggleClaimSentToHighCourtPlaceholder implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("confirmHiringEnforcementOfficer")
-            .pageLabel("Confirm if you have already hired a High Court enforcement officer (place holder)")
+            .page("toggleClaimSentToHighCourtPlaceholder")
+            .pageLabel("Placeholder to simulate if claim has been sent to High Court")
             .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .label("toggleClaimSentToHighCourtPlaceholder-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
-            .label("enforcementOfficerPlaceHolder-content", "---")
-            .label("enforcementOfficerPlaceHolder-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .mandatory(WritDetails::getHasClaimTransferredToHighCourt)
+            .done()
+            .done()
+            .label("toggleClaimSentToHighCourtPlaceholder-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }
