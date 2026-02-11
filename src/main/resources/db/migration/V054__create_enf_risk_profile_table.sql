@@ -6,14 +6,14 @@ CREATE TABLE enf_risk_profile (
     any_risk_to_bailiff YES_NO_NOT_SURE,
     vulnerable_people_present YES_NO_NOT_SURE,
     vulnerable_category VARCHAR(100),
-    vulnerable_reason_text VARCHAR(6400),
-    violent_details VARCHAR(6400),
-    firearms_details VARCHAR(6400),
-    criminal_details VARCHAR(6400),
-    verbal_threats_details VARCHAR(6400),
-    protest_group_details VARCHAR(6400),
-    police_social_services_details VARCHAR(6400),
-    animals_details VARCHAR(6400),
+    vulnerable_reason_text VARCHAR(6800),
+    violent_details VARCHAR(6800),
+    firearms_details VARCHAR(6800),
+    criminal_details VARCHAR(6800),
+    verbal_threats_details VARCHAR(6800),
+    protest_group_details VARCHAR(6800),
+    police_social_services_details VARCHAR(6800),
+    animals_details VARCHAR(6800),
     CONSTRAINT unique_risk_profile_per_case UNIQUE(enf_case_id)
 );
 
