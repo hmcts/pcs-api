@@ -25,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
@@ -79,6 +80,8 @@ class PCSCaseViewTest {
     @Mock
     private HousingActWalesView housingActWalesView;
     @Mock
+    private AsbProhibitedConductView asbProhibitedConductView;
+    @Mock
     private RentArrearsView rentArrearsView;
     @Mock
     private NoticeOfPossessionView noticeOfPossessionView;
@@ -99,8 +102,8 @@ class PCSCaseViewTest {
 
         underTest = new PCSCaseView(pcsCaseRepository, securityContextService, modelMapper, draftCaseDataService,
                                     caseTitleService, claimView, tenancyLicenceView, claimGroundsView, rentDetailsView,
-                                    alternativesToPossessionView, housingActWalesView, rentArrearsView,
-                                    noticeOfPossessionView, statementOfTruthView
+                                    alternativesToPossessionView, housingActWalesView, asbProhibitedConductView,
+                                    rentArrearsView, noticeOfPossessionView, statementOfTruthView
         );
     }
 
@@ -320,6 +323,7 @@ class PCSCaseViewTest {
         verify(rentDetailsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(alternativesToPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(housingActWalesView).setCaseFields(pcsCase, pcsCaseEntity);
+        verify(asbProhibitedConductView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(rentArrearsView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(noticeOfPossessionView).setCaseFields(pcsCase, pcsCaseEntity);
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
