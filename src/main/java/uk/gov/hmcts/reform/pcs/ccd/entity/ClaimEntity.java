@@ -162,6 +162,10 @@ public class ClaimEntity {
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
     @JsonManagedReference
+    private AsbProhibitedConductEntity asbProhibitedConductEntity;
+
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
     private PossessionAlternativesEntity possessionAlternativesEntity;
 
     @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
@@ -185,6 +189,18 @@ public class ClaimEntity {
 
         if (this.housingActWales != null) {
             this.housingActWales.setClaim(this);
+        }
+    }
+
+    public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
+        if (this.asbProhibitedConductEntity != null) {
+            this.asbProhibitedConductEntity.setClaim(null);
+        }
+
+        this.asbProhibitedConductEntity = asbProhibitedConductEntity;
+
+        if (this.asbProhibitedConductEntity != null) {
+            this.asbProhibitedConductEntity.setClaim(this);
         }
     }
 
