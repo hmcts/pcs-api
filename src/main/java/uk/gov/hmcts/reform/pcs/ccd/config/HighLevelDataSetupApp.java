@@ -1,5 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.config;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Stream;
+import javax.crypto.AEADBadTagException;
+import javax.net.ssl.SSLException;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,12 +18,6 @@ import uk.gov.hmcts.befta.dse.ccd.CcdRoleConfig;
 import uk.gov.hmcts.befta.dse.ccd.DataLoaderToDefinitionStore;
 import uk.gov.hmcts.befta.exception.ImportException;
 import uk.gov.hmcts.befta.util.BeftaUtils;
-import uk.gov.hmcts.reform.pcs.ccd.CaseType;
-
-import javax.crypto.AEADBadTagException;
-import javax.net.ssl.SSLException;
-import java.util.List;
-import java.util.Locale;
 
 public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
 
@@ -29,7 +33,7 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     private final CcdEnvironment environment;
 
     public HighLevelDataSetupApp(CcdEnvironment dataSetupEnvironment) {
-        super(dataSetupEnvironment);
+        super(dataSetupEnvironment,"build/definitions/" );
         environment = dataSetupEnvironment;
     }
 
@@ -56,9 +60,16 @@ public class HighLevelDataSetupApp extends DataLoaderToDefinitionStore {
     @Override
     protected List<String> getAllDefinitionFilesToLoadAt(String definitionsPath) {
         String environmentName = environment.name().toLowerCase(Locale.UK);
-        return List.of(
-            "build/definitions/CCD_Definition_" + CaseType.getCaseType() + "_" + environmentName + ".xlsx"
-        );
+        try (Stream<Path> paths = Files.list(Paths.get(definitionsPath))) {
+            return paths
+                .filter(Files::isRegularFile)
+                .map(Path::toString) // optional filter
+                .filter(string -> string.endsWith(".xlsx"))
+                .sorted()
+                .toList();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to read definition files from " + definitionsPath, e);
+        }
     }
 
     @Override
