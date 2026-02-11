@@ -57,6 +57,11 @@ class MoneyFormatterTest {
         }
     }
 
+    @Test
+    void shouldReturnNullForUnableToRetrieveSoRepaymentTableTreatsFeeAsZero() {
+        assertThat(underTest.deformatFee("Unable to retrieve")).isNull();
+    }
+
     private static Stream<Arguments> feeScenarios() {
         return Stream.of(
             arguments(new BigDecimal("15.00"), "£15"),
