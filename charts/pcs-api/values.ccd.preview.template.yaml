@@ -18,16 +18,6 @@ java:
   cpuRequests: '1000m'
   environment:
     CASE_TYPE_SUFFIX: ${CHANGE_ID}
-    JAVA_TOOL_OPTIONS: >-
-      -XX:InitialRAMPercentage=50.0
-      -XX:MaxRAMPercentage=75.0
-      -XX:+UseG1GC
-      -XX:MaxGCPauseMillis=200
-      -XX:G1ReservePercent=20
-      -XX:InitiatingHeapOccupancyPercent=45
-      -XX:+HeapDumpOnOutOfMemoryError
-      -XX:HeapDumpPath=/tmp/heapdump.hprof
-      -XX:+ExitOnOutOfMemoryError
     CHANGE_ID: ${CHANGE_ID}
     PCS_DB_NAME: "{{ .Values.global.databaseNamePrefix }}pcs"
     PCS_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
@@ -77,19 +67,12 @@ ccd:
       enabled: true
   ccd-definition-store-api:
     java:
-      devmemoryRequests: '2048Mi'
-      devmemoryLimits: '4096Mi'
-      devcpuRequests: '1000m'
+      devmemoryRequests: '1024Mi'
+      devmemoryLimits: '2048Mi'
+      devcpuRequests: '500m'
       autoscaling:
         maxReplicas: 1
       environment:
-        JAVA_TOOL_OPTIONS: >-
-          -XX:InitialRAMPercentage=25.0
-          -XX:MaxRAMPercentage=75.0
-          -XX:+UseG1GC
-          -XX:MaxGCPauseMillis=200
-          -XX:+HeapDumpOnOutOfMemoryError
-          -XX:HeapDumpPath=/tmp/heapdump.hprof
         DEFINITION_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         IDAM_USER_URL: https://idam-web-public.aat.platform.hmcts.net
         DEFINITION_STORE_TX_TIMEOUT_DEFAULT: 360
@@ -109,17 +92,10 @@ ccd:
   ccd-data-store-api:
     java:
       imagePullPolicy: Always
-      devmemoryRequests: '2048Mi'
-      devmemoryLimits: '4096Mi'
-      devcpuRequests: '1000m'
+      devmemoryRequests: '1524Mi'
+      devmemoryLimits: '2048Mi'
+      devcpuRequests: '500m'
       environment:
-        JAVA_TOOL_OPTIONS: >-
-          -XX:InitialRAMPercentage=25.0
-          -XX:MaxRAMPercentage=75.0
-          -XX:+UseG1GC
-          -XX:MaxGCPauseMillis=200
-          -XX:+HeapDumpOnOutOfMemoryError
-          -XX:HeapDumpPath=/tmp/heapdump.hprof
         DATA_STORE_DB_HOST: '{{ tpl .Values.global.postgresHostname $}}'
         DATA_STORE_DB_USERNAME: "{{ .Values.global.postgresUsername}}"
         IDAM_API_BASE_URL: https://idam-api.aat.platform.hmcts.net
@@ -185,7 +161,7 @@ ccd:
     replicas: 1
     minimumMasterNodes: 1
     antiAffinity: "soft"
-    esJavaOpts: "-Xmx1024m -Xms1024m"
+    esJavaOpts: "-Xmx512m -Xms512m"
     extraEnvs:
       - name: discovery.type
         value: single-node

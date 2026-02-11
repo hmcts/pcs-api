@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -46,23 +45,21 @@ public class DraftCaseDataService {
     public Optional<PCSCase> getUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
         log.info("Getting unsubmitted draft data: caseReference={}, eventId={}, userId={}",
-            caseReference, eventId, userId);
+                 caseReference, eventId, userId);
 
-        Optional<DraftCaseDataEntity> optionalCaseData = draftCaseDataRepository
-            .findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId);
-        PCSCase pcsCase = null;
-        if (optionalCaseData.isPresent()) {
-            log.debug("Found draft case data for caseReference={}, eventId={}, userId={}",
-                caseReference, eventId, userId);
-            String caseDataJson = optionalCaseData.get().getCaseData();
-            optionalCaseData = Optional.empty();
-            pcsCase = parseCaseDataJson(caseDataJson);
-            setUnsubmittedDataFlag(pcsCase);
-        } else {
-            log.debug("No draft case data found for caseReference={}, eventId={}, userId={}",
-                caseReference, eventId, userId);
-        }
-        return Optional.ofNullable(pcsCase);
+        return draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(caseReference, eventId, userId)
+            .map(draft -> {
+                log.debug("Found draft case data for caseReference={}, eventId={}, userId={}",
+                          caseReference, eventId, userId);
+                PCSCase pcsCase = parseCaseDataJson(draft.getCaseData());
+                setUnsubmittedDataFlag(pcsCase);
+                return pcsCase;
+            })
+            .or(() -> {
+                log.debug("No draft case data found for caseReference={}, eventId={}, userId={}",
+                          caseReference, eventId, userId);
+                return Optional.empty();
+            });
     }
 
     public boolean hasUnsubmittedCaseData(long caseReference, EventId eventId) {
@@ -118,7 +115,7 @@ public class DraftCaseDataService {
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void deleteUnsubmittedCaseData(long caseReference, EventId eventId) {
         UUID userId = getCurrentUserId();
         log.info("Deleting draft: caseReference={}, eventId={}, userId={}", caseReference, eventId, userId);
