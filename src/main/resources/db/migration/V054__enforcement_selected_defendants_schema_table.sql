@@ -7,6 +7,3 @@ CREATE TABLE enf_selected_defendants (
 );
 CREATE INDEX idx_enf_selected_defendants_case ON enf_selected_defendants(enf_case_id);
 CREATE INDEX idx_enf_selected_defendants_party ON enf_selected_defendants(party_id);
-
-
-
