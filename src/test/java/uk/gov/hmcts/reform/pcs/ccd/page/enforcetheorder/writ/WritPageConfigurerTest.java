@@ -28,9 +28,6 @@ class WritPageConfigurerTest extends BasePageTest {
     private WritPageConfigurer writPageConfigurer;
 
     @Mock
-    private HCEOfficerDetailsPage hceOfficerDetailsPage;
-
-    @Mock
     private LandRegistryFeesWritPage landRegistryFeesWritPage;
 
     @Test
@@ -52,7 +49,7 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ConfirmHCEOfficerPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, hceOfficerDetailsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, HCEOfficerDetailsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, MoneyOwedWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);
