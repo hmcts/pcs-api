@@ -42,7 +42,7 @@ import {
   claimLanguageUsed,
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
-  statementOfTruth,
+  statementOfTruth, groundsForPossessionRentArrears,
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -204,6 +204,7 @@ test.describe('[Create Case - Wales]', async () => {
       occupationContractType: occupationContractOrLicenceDetailsWales.secureContract
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
+    await performValidation('elementNotToBeVisible',[whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187]);
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.discretionary.antiSocialBehaviour, whatAreYourGroundsForPossessionWales.discretionary.estateManagementGrounds],
       discretionaryEstateGrounds: [whatAreYourGroundsForPossessionWales.discretionary.buildingWorks],
