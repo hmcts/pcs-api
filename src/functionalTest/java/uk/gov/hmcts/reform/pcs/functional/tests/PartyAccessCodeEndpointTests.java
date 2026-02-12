@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import java.util.Map;
 
 @Slf4j
-@Tag("Functional1")
+@Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
 class PartyAccessCodeEndpointTests extends BaseApi {
 
