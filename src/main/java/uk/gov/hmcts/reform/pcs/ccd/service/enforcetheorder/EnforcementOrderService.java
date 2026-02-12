@@ -69,7 +69,6 @@ public class EnforcementOrderService {
             && enforcementOrder.getWarrantDetails() != null) {
             storeWarrant(enforcementOrder, saved);
         }
-
     }
 
     void storeWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {

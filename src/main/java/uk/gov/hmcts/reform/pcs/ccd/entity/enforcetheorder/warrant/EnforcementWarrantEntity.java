@@ -90,10 +90,8 @@ public class EnforcementWarrantEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo areLegalCostsToBeClaimed;
 
-    @Column(precision = 10, scale = 2)
     private BigDecimal amountOfLegalCosts;
 
-    @Column(precision = 10, scale = 2)
     private BigDecimal amountOwed;
 
     // Land Registry
@@ -101,13 +99,11 @@ public class EnforcementWarrantEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo haveLandRegistryFeesBeenPaid;
 
-    @Column(precision = 10, scale = 2)
     private BigDecimal amountOfLandRegistryFees;
 
     // Repayment
     private String repaymentChoice;
 
-    @Column(precision = 10, scale = 2)
     private BigDecimal amountOfRepaymentCosts;
 
     private String repaymentSummaryMarkdown;

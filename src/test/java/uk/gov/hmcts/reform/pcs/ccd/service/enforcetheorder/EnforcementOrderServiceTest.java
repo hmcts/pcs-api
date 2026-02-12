@@ -93,7 +93,6 @@ class EnforcementOrderServiceTest {
         assertThat(retrievedEnforcementOrderEntity.getClaim().getId()).isEqualTo(claimId);
     }
 
-
     @Test
     void shouldSaveNewSubmittedEnforcementData() {
         // Given

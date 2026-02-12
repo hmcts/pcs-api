@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.testingsupport;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
@@ -27,8 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the enforcement domain and entity models remain synchronized.
  * Category: Domain Entity Validation
  */
-//@Tag("architecture")
-//@Tag("enforcement-domain-entity-alignment")
+@Tag("architecture")
+@Tag("enforcement-domain-entity-alignment")
 class EnforcementDMTest {
 
     private DomainDataModelSupportHelper domainDataModelSupportHelper;
