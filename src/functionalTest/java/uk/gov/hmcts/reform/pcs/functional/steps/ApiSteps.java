@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -192,33 +193,38 @@ public class ApiSteps {
 
     @Step("a pin is fetched")
     public String accessCodeIsFetched(Long caseReference) {
+
+        Callable<String> fetchPins = () -> {
+            Map<String, Object> pins = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("caseReference", caseReference)
+                .when()
+                .get(Endpoints.GetPins.getResource())
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<Map<String, Object>>() {});
+
+            if (pins != null && !pins.isEmpty()) {
+                return pins.keySet().iterator().next();
+            }
+            return null;
+        };
+
         try {
             return await()
                 .atMost(Duration.ofSeconds(15))
                 .pollInterval(Duration.ofMillis(700))
                 .ignoreExceptions()
-                .until(() -> {
-                    Map<String, Object> pins = SerenityRest.given()
-                        .baseUri(baseUrl)
-                        .contentType(ContentType.JSON)
-                        .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-                        .pathParam("caseReference", caseReference)
-                        .when()
-                        .get(Endpoints.GetPins.getResource())
-                        .then()
-                        .statusCode(200)
-                        .extract()
-                        .as(new TypeRef<Map<String, Object>>() {});
-
-                    if (pins != null && !pins.isEmpty()) {
-                        return pins.keySet().iterator().next();
-                    }
-                    return null;
-                }, notNullValue());
+                .until(fetchPins, notNullValue());
         } catch (ConditionTimeoutException e) {
             throw new RuntimeException(
                 "Access code not available for case: " + caseReference, e
             );
         }
     }
+
+
 }
