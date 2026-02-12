@@ -45,23 +45,23 @@ export class EnforcementAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
-      ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord,page)],
-      ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord,page)],
-      ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord,page)],
-      ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord,page)],
-      ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord,page)],
-      ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord,page)],
+      ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord, page)],
+      ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord, page)],
+      ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord, page)],
+      ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord, page)],
+      ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord, page)],
+      ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord, page)],
       ['enterDefendantsDOB', () => this.enterDefendantsDOB(page, fieldName as actionRecord)],
-      ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord,page)],
+      ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord, page)],
       ['selectPermissionFromJudge', () => this.selectPermissionFromJudge(page)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
-      ['selectPeopleWhoWillBeEvicted', () => this.selectPeopleWhoWillBeEvicted(fieldName as actionRecord,page)],
-      ['selectPeopleYouWantToEvict', () => this.selectPeopleYouWantToEvict(fieldName as actionRecord,page)],
-      ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord,page)],
-      ['provideRiskPosedByEveryoneAtProperty', () => this.provideRiskPosedByEveryoneAtProperty(fieldName as actionRecord,page)],
-      ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord,page)],
-      ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord,page)],
-      ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord,page)],
+      ['selectPeopleWhoWillBeEvicted', () => this.selectPeopleWhoWillBeEvicted(fieldName as actionRecord, page)],
+      ['selectPeopleYouWantToEvict', () => this.selectPeopleYouWantToEvict(fieldName as actionRecord, page)],
+      ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord, page)],
+      ['provideRiskPosedByEveryoneAtProperty', () => this.provideRiskPosedByEveryoneAtProperty(fieldName as actionRecord, page)],
+      ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord, page)],
+      ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord, page)],
+      ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord, page)],
       ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord, page)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord, page)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord, page)],
@@ -197,7 +197,7 @@ export class EnforcementAction implements IAction {
     await this.reTryOnCallBackError(page, enterDefendantsDOB.continueButton, defendantsDOB.nextPage as string);
   }
 
-  private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord,page:Page) {
+  private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord, page: Page) {
     await this.addFieldsToMap(evictPeople);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -205,7 +205,7 @@ export class EnforcementAction implements IAction {
     await this.reTryOnCallBackError(page, peopleWillBeEvicted.continueButton, evictPeople.nextPage as string);
   }
 
-  private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord,page:Page) {
+  private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord, page: Page) {
     await this.addFieldsToMap(peopleYouWantEvicted);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -229,7 +229,7 @@ export class EnforcementAction implements IAction {
     await generalApplicationPage.close();
   }
 
-  private async selectEveryoneLivingAtTheProperty(riskToBailiff: actionRecord,page:Page) {
+  private async selectEveryoneLivingAtTheProperty(riskToBailiff: actionRecord, page: Page) {
     await this.addFieldsToMap(riskToBailiff);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -237,7 +237,7 @@ export class EnforcementAction implements IAction {
     await this.reTryOnCallBackError(page, everyoneLivingAtTheProperty.continueButton, riskToBailiff.nextPage as string);
   }
 
-  private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord,page:Page) {
+  private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord, page: Page) {
     await this.addFieldsToMap(riskCategory);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -245,7 +245,7 @@ export class EnforcementAction implements IAction {
     await this.reTryOnCallBackError(page, riskPosedByEveryoneAtProperty.continueButton, riskCategory.nextPage as string);
   }
 
-    private async provideRiskPosedByEveryoneAtProperty(provideRiskPosed: actionRecord,page:Page) {
+  private async provideRiskPosedByEveryoneAtProperty(provideRiskPosed: actionRecord, page: Page) {
     await this.addFieldsToMap(provideRiskPosed);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -253,7 +253,7 @@ export class EnforcementAction implements IAction {
     await this.reTryOnCallBackError(page, !provideRiskPosed?.button ? provideRiskPosed.button = 'Continue' : provideRiskPosed.button as string, provideRiskPosed.nextPage as string);
   }
 
-  private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord,page:Page) {
+  private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord, page: Page) {
     await this.addFieldsToMap(vulnerablePeople);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -264,7 +264,7 @@ export class EnforcementAction implements IAction {
     }
     await this.reTryOnCallBackError(page, vulnerableAdultsAndChildren.continueButton, vulnerablePeople.nextPage as string);
   }
-  private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord,page:Page) {
+  private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord, page: Page) {
     await this.addFieldsToMap(anythingElse);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -274,7 +274,7 @@ export class EnforcementAction implements IAction {
     };
     await this.reTryOnCallBackError(page, anythingElseHelpWithEviction.continueButton, anythingElse.nextPage as string);
   }
-  private async accessToProperty(accessToProperty: actionRecord,page:Page) {
+  private async accessToProperty(accessToProperty: actionRecord, page: Page) {
     await this.addFieldsToMap(accessToProperty);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
