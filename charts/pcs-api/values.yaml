@@ -3,10 +3,10 @@ java:
   image: 'hmctspublic.azurecr.io/pcs/api:latest'
   ingressHost: pcs-api-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   aadIdentityName: pcs
-  devmemoryRequests: 512Mi
-  devmemoryLimits: 512Mi
-  memoryRequests: 512Mi
-  memoryLimits: 512Mi
+  devmemoryRequests: 1Gi
+  devmemoryLimits: 1Gi
+  memoryRequests: 1Gi
+  memoryLimits: 1Gi
   keyVaults:
     pcs:
       secrets:
