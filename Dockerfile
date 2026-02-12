@@ -7,12 +7,13 @@ USER hmcts
 COPY lib/applicationinsights.json /opt/app/
 COPY build/libs/pcs-api.jar /opt/app/
 
-ENV JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS} -Dscott.test=1 -Dcom.sun.management.jmxremote \
+ENV JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS} -Dscott.test=2 -Dcom.sun.management.jmxremote \
                        -Dcom.sun.management.jmxremote.authenticate=false \
                        -Dcom.sun.management.jmxremote.ssl=false \
                        -Dcom.sun.management.jmxremote.local.only=false \
                        -Dcom.sun.management.jmxremote.port=1099 \
                        -Dcom.sun.management.jmxremote.rmi.port=1099 \
+                       -Xms200M -XX:MaxRAMPercentage=80.0 \
                        -Djava.rmi.server.hostname=127.0.0.1"
 
 
