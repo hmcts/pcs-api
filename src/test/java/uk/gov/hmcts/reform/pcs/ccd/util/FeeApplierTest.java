@@ -31,7 +31,7 @@ class FeeApplierTest extends BaseEventTest {
     private FeeService feeService;
 
     @Spy
-    private MoneyFormatter feeFormatter;
+    private MoneyFormatter moneyFormatter;
 
     @Test
     void shouldSetFormattedFeeWhenFeeServiceReturnsFee() {
@@ -92,7 +92,6 @@ class FeeApplierTest extends BaseEventTest {
             .build();
 
         when(feeService.getFee(feeType)).thenReturn(feeDetails);
-        when(feeFormatter.formatFee(null)).thenReturn(null);
 
         BiConsumer<PCSCase, String> setter = PCSCase::setFeeAmount;
 

@@ -19,15 +19,16 @@ public class RepaymentTableRenderer {
     private final PebbleEngine pebbleEngine;
     private final RepaymentTableHelper repaymentTableHelper;
 
-    public String render(EnforcementCosts enforcementCosts, String template) {
+    public String render(EnforcementCosts enforcementCosts, RepaymentTemplate template) {
         return render(enforcementCosts, null, template);
     }
 
-    public String render(EnforcementCosts enforcementCosts, String caption, String template) {
-        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(template);
+    public String render(EnforcementCosts enforcementCosts, String caption, RepaymentTemplate template) {
+        PebbleTemplate compiledTemplate = pebbleEngine.getTemplate(template.getTemplateName());
         Writer writer = new StringWriter();
 
         Map<String, Object> context = repaymentTableHelper.getContext(enforcementCosts, caption);
+        context.put("feeAmountLabel", template.getFeeAmountLabel());
 
         try {
             compiledTemplate.evaluate(writer, context);

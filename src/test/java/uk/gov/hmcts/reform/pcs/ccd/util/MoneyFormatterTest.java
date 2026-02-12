@@ -11,8 +11,6 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 class MoneyFormatterTest {
@@ -52,11 +50,16 @@ class MoneyFormatterTest {
     void testDeformatFeeScenarios(String input, String expected) {
         BigDecimal result = underTest.deformatFee(input);
 
-        if (expected == null) {
-            assertNull(result);
+        if (expected == null || expected.isBlank()) {
+            assertThat(result).isNull();
         } else {
-            assertEquals(new BigDecimal(expected), result);
+            assertThat(result).isEqualTo(new BigDecimal(expected.trim()));
         }
+    }
+
+    @Test
+    void shouldReturnNullForUnableToRetrieveSoRepaymentTableTreatsFeeAsZero() {
+        assertThat(underTest.deformatFee("Unable to retrieve")).isNull();
     }
 
     private static Stream<Arguments> feeScenarios() {
