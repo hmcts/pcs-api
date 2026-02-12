@@ -264,6 +264,7 @@ export class EnforcementAction implements IAction {
     }
     await this.reTryOnCallBackError(page, vulnerableAdultsAndChildren.continueButton, vulnerablePeople.nextPage as string);
   }
+
   private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord, page: Page) {
     await this.addFieldsToMap(anythingElse);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
@@ -274,6 +275,7 @@ export class EnforcementAction implements IAction {
     };
     await this.reTryOnCallBackError(page, anythingElseHelpWithEviction.continueButton, anythingElse.nextPage as string);
   }
+  
   private async accessToProperty(accessToProperty: actionRecord, page: Page) {
     await this.addFieldsToMap(accessToProperty);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
