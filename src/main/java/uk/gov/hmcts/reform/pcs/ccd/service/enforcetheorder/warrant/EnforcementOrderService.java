@@ -70,7 +70,5 @@ public class EnforcementOrderService {
         if (!selectedDefendantsEntities.isEmpty()) {
             enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
         }
-
     }
-
 }

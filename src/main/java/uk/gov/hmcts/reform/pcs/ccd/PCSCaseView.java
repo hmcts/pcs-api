@@ -9,9 +9,6 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantCircumstances;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -24,11 +21,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.CaseTitleService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
-import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 import uk.gov.hmcts.reform.pcs.ccd.view.AlternativesToPossessionView;
+import uk.gov.hmcts.reform.pcs.ccd.view.AsbProhibitedConductView;
 import uk.gov.hmcts.reform.pcs.ccd.view.ClaimGroundsView;
+import uk.gov.hmcts.reform.pcs.ccd.view.ClaimView;
 import uk.gov.hmcts.reform.pcs.ccd.view.HousingActWalesView;
 import uk.gov.hmcts.reform.pcs.ccd.view.NoticeOfPossessionView;
 import uk.gov.hmcts.reform.pcs.ccd.view.RentArrearsView;
@@ -59,11 +56,13 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
     private final ModelMapper modelMapper;
     private final DraftCaseDataService draftCaseDataService;
     private final CaseTitleService caseTitleService;
+    private final ClaimView claimView;
     private final TenancyLicenceView tenancyLicenceView;
     private final ClaimGroundsView claimGroundsView;
     private final RentDetailsView rentDetailsView;
     private final AlternativesToPossessionView alternativesToPossessionView;
     private final HousingActWalesView housingActWalesView;
+    private final AsbProhibitedConductView asbProhibitedConductView;
     private final RentArrearsView rentArrearsView;
     private final NoticeOfPossessionView noticeOfPossessionView;
     private final StatementOfTruthView statementOfTruthView;
@@ -110,13 +109,14 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
             .build();
 
         setDerivedProperties(pcsCase, pcsCaseEntity);
-        setClaimFields(pcsCase, pcsCaseEntity);
 
+        claimView.setCaseFields(pcsCase, pcsCaseEntity);
         tenancyLicenceView.setCaseFields(pcsCase, pcsCaseEntity);
         claimGroundsView.setCaseFields(pcsCase, pcsCaseEntity);
         rentDetailsView.setCaseFields(pcsCase, pcsCaseEntity);
         alternativesToPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
         housingActWalesView.setCaseFields(pcsCase, pcsCaseEntity);
+        asbProhibitedConductView.setCaseFields(pcsCase, pcsCaseEntity);
 
         rentArrearsView.setCaseFields(pcsCase, pcsCaseEntity);
         noticeOfPossessionView.setCaseFields(pcsCase, pcsCaseEntity);
@@ -244,63 +244,6 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
                            .build())
                 .build())
             .collect(Collectors.toList());
-    }
-
-    private void mapBasicClaimFields(PCSCase pcsCase, ClaimEntity claim) {
-        pcsCase.setClaimAgainstTrespassers(claim.getAgainstTrespassers());
-        pcsCase.setClaimDueToRentArrears(claim.getDueToRentArrears());
-        pcsCase.setClaimingCostsWanted(claim.getClaimCosts());
-        pcsCase.setPreActionProtocolCompleted(claim.getPreActionProtocolFollowed());
-        pcsCase.setMediationAttempted(claim.getMediationAttempted());
-        pcsCase.setMediationAttemptedDetails(claim.getMediationDetails());
-        pcsCase.setSettlementAttempted(claim.getSettlementAttempted());
-        pcsCase.setSettlementAttemptedDetails(claim.getSettlementDetails());
-        pcsCase.setAddAnotherDefendant(claim.getAdditionalDefendants());
-        pcsCase.setHasUnderlesseeOrMortgagee(claim.getUnderlesseeOrMortgagee());
-        pcsCase.setAddAdditionalUnderlesseeOrMortgagee(claim.getAdditionalUnderlesseesOrMortgagees());
-        pcsCase.setApplicationWithClaim(claim.getGenAppExpected());
-        pcsCase.setLanguageUsed(claim.getLanguageUsed());
-        pcsCase.setWantToUploadDocuments(claim.getAdditionalDocsProvided());
-    }
-
-    private void mapComplexClaimFields(PCSCase pcsCase, ClaimEntity claim) {
-        pcsCase.setClaimantCircumstances(
-            ClaimantCircumstances.builder()
-                .claimantCircumstancesSelect(claim.getClaimantCircumstancesProvided())
-                .claimantCircumstancesDetails(claim.getClaimantCircumstances())
-                .build()
-        );
-
-        pcsCase.setDefendantCircumstances(
-            DefendantCircumstances.builder()
-                .hasDefendantCircumstancesInfo(claim.getDefendantCircumstancesProvided())
-                .defendantCircumstancesInfo(claim.getDefendantCircumstances())
-                .build()
-        );
-
-        pcsCase.setAdditionalReasonsForPossession(
-            AdditionalReasons.builder()
-                .hasReasons(claim.getAdditionalReasonsProvided())
-                .reasons(claim.getAdditionalReasons())
-                .build()
-        );
-
-        if (claim.getClaimantType() != null) {
-            pcsCase.setClaimantType(DynamicStringList.builder()
-                .value(DynamicStringListElement.builder().code(claim.getClaimantType().name())
-                           .label(claim.getClaimantType().getLabel())
-                           .build())
-                .build());
-        }
-
-    }
-
-    private void setClaimFields(PCSCase pcsCase, PcsCaseEntity pcsCaseEntity) {
-        if (!pcsCaseEntity.getClaims().isEmpty()) {
-            ClaimEntity mainClaim = pcsCaseEntity.getClaims().getFirst();
-            mapBasicClaimFields(pcsCase, mainClaim);
-            mapComplexClaimFields(pcsCase, mainClaim);
-        }
     }
 
 }
