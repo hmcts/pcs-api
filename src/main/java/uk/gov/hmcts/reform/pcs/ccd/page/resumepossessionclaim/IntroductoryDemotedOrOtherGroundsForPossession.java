@@ -44,7 +44,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                     "introductoryDemotedOrOtherGroundsForPossession-info",
                       """
                        ---
-                       <p class="govuk-body" tabindex="0">In some cases, a claimant can make for possession of a
+                       <p class="govuk-body" tabindex="0">In some cases, a claimant can make a claim for possession of a
                         property without having to rely on a specific ground. If your claim meets these
                        requirements, you can select that you have no grounds for possession.
 
@@ -53,6 +53,9 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                         If you have, you should have written the grounds you’re making your claim under.
                          You should select these grounds here and any extra ground you’d like to add to your claim,
                          if you need to.
+                       </p>
+                       <p class="govuk-body">
+                        <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
                        </p>
                        """)
                 .mandatory(
