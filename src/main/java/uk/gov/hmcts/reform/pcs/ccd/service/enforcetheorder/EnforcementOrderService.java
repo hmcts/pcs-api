@@ -71,12 +71,11 @@ public class EnforcementOrderService {
         }
     }
 
-    void storeWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
+    private void storeWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
         EnforcementWarrantEntity warrantEntity = enforcementWarrantMapper.toEntity(enforcementOrder,
                                                                                    enforcementOrderEntity);
         EnforcementWarrantEntity saved = enforcementWarrantRepository.save(warrantEntity);
         enforcementOrderEntity.setWarrantDetails(saved);
-        enforcementOrderRepository.save(enforcementOrderEntity);
     }
 
 }

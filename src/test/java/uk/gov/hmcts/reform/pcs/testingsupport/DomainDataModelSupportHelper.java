@@ -17,7 +17,7 @@ class DomainDataModelSupportHelper {
     private final Set<Class<?>> processedClasses = new HashSet<>();
     private final Map<String, List<CCDFieldInfo>> ccdFieldsByClass = new HashMap<>();
     private final Set<Class<?>> ignoredClassesFromMissing = new HashSet<>();
-    private final Set<String> ignoreFieldsFromMissing = new HashSet<>();
+    private final Set<String> ignoredFieldsFromMissing = new HashSet<>();
 
     @SuppressWarnings("rawtypes")
     public DomainDataModelSupportHelper(Class clazz) {
@@ -29,7 +29,7 @@ class DomainDataModelSupportHelper {
     }
 
     public void addFieldsToIgnore(String... fieldNames) {
-        ignoreFieldsFromMissing.addAll(Arrays.asList(fieldNames));
+        ignoredFieldsFromMissing.addAll(Arrays.asList(fieldNames));
     }
 
     public List<MissingCCDFieldInfo> findMissingCCDFields(Class<?> entityClass) {
@@ -41,7 +41,7 @@ class DomainDataModelSupportHelper {
                 .filter(c -> c.getSimpleName().equalsIgnoreCase(className)).findAny().isPresent()) {
                 for (CCDFieldInfo ccdField : ccdFields) {
                     if (!entityFieldNames.contains(ccdField.fieldName)
-                        && !ignoreFieldsFromMissing.contains(ccdField.fieldName)) {
+                        && !ignoredFieldsFromMissing.contains(ccdField.fieldName)) {
                         missingFields.add(new MissingCCDFieldInfo(className, ccdField));
                     }
                 }
