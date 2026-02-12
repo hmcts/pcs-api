@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.functional.steps;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -14,12 +15,15 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
+import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
@@ -188,35 +192,33 @@ public class ApiSteps {
 
     @Step("a pin is fetched")
     public String accessCodeIsFetched(Long caseReference) {
-        int maxRetries = 15;
-        int waitMillis = 700;
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(() -> {
+                    Map<String, Object> pins = SerenityRest.given()
+                        .baseUri(baseUrl)
+                        .contentType(ContentType.JSON)
+                        .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                        .pathParam("caseReference", caseReference)
+                        .when()
+                        .get(Endpoints.GetPins.getResource())
+                        .then()
+                        .statusCode(200)
+                        .extract()
+                        .as(new TypeRef<Map<String, Object>>() {});
 
-        for (int i = 0; i < maxRetries; i++) {
-            Map<String, Object> pins = SerenityRest.given()
-                .baseUri(baseUrl)
-                .contentType(ContentType.JSON)
-                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-                .pathParam("caseReference", caseReference)
-                .when()
-                .get(Endpoints.GetPins.getResource())
-                .then()
-                .extract()
-                .as(new TypeRef<Map<String, Object>>() {});
-
-            if (pins != null && !pins.isEmpty()) {
-                return pins.keySet().iterator().next();
-            }
-
-            try {
-                Thread.sleep(waitMillis);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
+                    if (pins != null && !pins.isEmpty()) {
+                        return pins.keySet().iterator().next();
+                    }
+                    return null;
+                }, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Access code not available for case: " + caseReference, e
+            );
         }
-
-        throw new RuntimeException(
-            "Access code not available for case: " + caseReference
-        );
     }
 }
