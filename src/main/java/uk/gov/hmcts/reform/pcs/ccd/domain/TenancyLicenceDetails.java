@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseworkerReadAccess;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,7 +29,7 @@ public class TenancyLicenceDetails {
 
     @CCD(
         label = "What type of tenancy or licence is in place?",
-        access = {CaseworkerReadAccess.class}
+        access = {CaseworkerReadAccess.class, CitizenAccess.class}
     )
     private TenancyLicenceType typeOfTenancyLicence;
 
@@ -41,7 +42,8 @@ public class TenancyLicenceDetails {
 
     @CCD(
         label = "What date did the tenancy or licence begin?",
-        hint = "For example, 16 4 2021"
+        hint = "For example, 16 4 2021",
+        access = {CitizenAccess.class}
     )
     private LocalDate tenancyLicenceDate;
 

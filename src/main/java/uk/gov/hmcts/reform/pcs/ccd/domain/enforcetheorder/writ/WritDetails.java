@@ -15,8 +15,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
-
 @Builder
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -47,9 +45,9 @@ public class WritDetails {
     @CCD(
         label = "Name of your High Court enforcement officer",
         hint = "If you do not know their name, use the name of the organisation they work for",
-        typeOverride = TextArea
+        max = 120
     )
-    private String highCourtEnforcementOfficerDetails;
+    private String hceoDetails;
 
     @JsonUnwrapped
     @CCD

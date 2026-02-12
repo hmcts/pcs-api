@@ -7,7 +7,6 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -42,8 +41,6 @@ import static org.springframework.test.context.TestConstructor.AutowireMode.ALL;
 @RequiredArgsConstructor
 @TestConstructor(autowireMode = ALL)
 
-//Test is disabled until provider test is implemented - DTSRD-5190
-@Disabled
 public class InternalOrgReferenceDataConsumerTest {
 
     private static final String SERVICE_AUTH_TOKEN = "Bearer serviceToken";
@@ -55,7 +52,7 @@ public class InternalOrgReferenceDataConsumerTest {
     @Pact(provider = "referenceData_organisationalDetailsInternal", consumer = "pcs_api")
     public V4Pact getOrganisationById(PactDslWithProvider builder) throws IOException {
         return builder
-            .given("organisation exists for given Id")
+            .given("Organisation exists for given Id")
             .uponReceiving("a request to get an organisation by id")
             .path("/refdata/internal/v1/organisations/orgDetails/" + USER_ID)
             .method(HttpMethod.GET.toString())
