@@ -13,7 +13,7 @@ ENV JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS} -Dscott.test=2 -Dcom.sun.management.
                        -Dcom.sun.management.jmxremote.local.only=false \
                        -Dcom.sun.management.jmxremote.port=1099 \
                        -Dcom.sun.management.jmxremote.rmi.port=1099 \
-                       -Xms10M -XX:MaxRAMPercentage=80.0 \
+                       -Xms400M -XX:MaxRAMPercentage=80.0 \
                        -Djava.rmi.server.hostname=127.0.0.1"
 
 
