@@ -38,12 +38,11 @@ public class SelectedDefendantsMapper {
         List<PartyEntity> parties = partyRepository.findAllById(selectedIds);
 
         return parties.stream()
-            .map(party -> {
-                EnforcementSelectedDefendantEntity entity = new EnforcementSelectedDefendantEntity();
-                entity.setEnforcementCase(enforcementOrderEntity);
-                entity.setParty(party);
-                return entity;
-            })
+            .map(party -> EnforcementSelectedDefendantEntity.builder()
+                .enforcementCase(enforcementOrderEntity)
+                .party(party)
+                .build()
+            )
             .toList();
     }
 }
