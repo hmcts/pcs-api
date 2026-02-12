@@ -3,5 +3,5 @@ export const policeOrSocialServiceVisit = {
   mainHeader: 'Their history of police or social services visits to the property',
   whyDidThePoliceOrSSVisitTheProperty: 'Why did the police or social services visit the property?',
   whyDidThePoliceOrSSVisitThePropertyInput: 'Test input for Why did the police or social services visit the property?',
-  continue: 'Continue',
+  continueButton: 'Continue',
 }

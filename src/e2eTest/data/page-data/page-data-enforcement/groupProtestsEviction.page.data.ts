@@ -3,5 +3,5 @@ export const groupProtestsEviction = {
   mainHeader: 'Their membership of a group that protests evictions',
   whichGroupMember: 'Which group are they a member of and how have they protested?',
   whichGroupMemberInput: 'Test input Which group are they a member of and how have they protested',
-  continue: 'Continue',
+  continueButton: 'Continue',
 }

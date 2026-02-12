@@ -43,6 +43,7 @@ export class ActionEnforcementRegistry {
     ['selectPermissionFromJudge', new EnforcementAction()],
     ['selectEveryoneLivingAtTheProperty', new EnforcementAction()],
     ['selectRiskPosedByEveryoneAtProperty', new EnforcementAction()],
+    ['provideRiskPosedByEveryoneAtProperty', new EnforcementAction()],
     ['provideDetailsViolentOrAggressiveBehaviour', new EnforcementAction()],
     ['provideDetailsFireArmPossession', new EnforcementAction()],
     ['provideDetailsCriminalOrAntisocialBehavior', new EnforcementAction()],

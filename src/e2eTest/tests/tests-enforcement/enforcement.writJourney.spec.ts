@@ -103,8 +103,8 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
+        nextPage: claimSentToHighCourt.mainHeader
       });
-      await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: claimSentToHighCourt.errorValidation,
         validationType: claimSentToHighCourt.errorValidationType.three,
@@ -116,8 +116,8 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('confirmClaimTransferredToHighCourt', {
         question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
         option: claimSentToHighCourt.yesRadioOption,
+        nextPage: nameAndAddressForEviction.mainHeader
       });
-      await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: nameAndAddressForEviction.errorValidation,
         validationType: nameAndAddressForEviction.errorValidationType.three,
@@ -130,8 +130,8 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.yesRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        nextPage: confirmHCEOHired.mainHeader
       });
-      await performValidation('mainHeader', confirmHCEOHired.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: confirmHCEOHired.errorValidation,
         validationType: confirmHCEOHired.errorValidationType.three,
@@ -143,6 +143,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectHaveHiredHCEO', {
         question: confirmHCEOHired.haveYouHiredHCEOQuestion,
         option: confirmHCEOHired.yesRadioOption,
+        nextPage: yourHCEO.mainHeader
       });
       await performValidation('mainHeader', yourHCEO.mainHeader);
       await performAction('inputErrorValidation', {
@@ -156,8 +157,8 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('nameYourHCEO', {
         label: yourHCEO.nameOfYourHCEOLabel,
         input: yourHCEO.nameOfYourHCEOInput,
+        nextPage: moneyOwed.mainHeader
       });
-      await performValidation('mainHeader', moneyOwed.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: moneyOwed.errorValidation,
         validationType: moneyOwed.errorValidationType.one,
@@ -170,7 +171,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         input: moneyOwed.totalAmountOwedTextInput,
         nextPage: legalCosts.mainHeader
       });
-      await performValidation('mainHeader', legalCosts.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: legalCosts.errorValidation,
         validationType: legalCosts.errorValidationType.three,
@@ -228,7 +228,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         input: rePayments.enterTheAmountTextInput,
         nextPage: languageUsed.mainHeader
       });
-      await performValidation('mainHeader', languageUsed.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: languageUsed.errorValidation,
         validationType: languageUsed.errorValidationType.three,
@@ -239,9 +238,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
       await performAction('selectLanguageUsed', {
         question: languageUsed.whichLanguageUsedQuestion,
-        option: languageUsed.languageUsedRadioOptions.englishRadioOption
+        option: languageUsed.languageUsedRadioOptions.englishRadioOption,
+        nextPage: statementOfTruthOne.mainHeader
       });
-      await performValidation('mainHeader', statementOfTruthOne.mainHeader);
       await performAction('inputErrorValidation', {
         validationReq: statementOfTruthOne.errorValidation,
         validationType: statementOfTruthOne.errorValidationType.four,
@@ -311,24 +310,24 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
+      nextPage: claimSentToHighCourt.mainHeader
     });
-    await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
     await performAction('confirmClaimTransferredToHighCourt', {
       question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
       option: claimSentToHighCourt.yesRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader
     });
-    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      nextPage: confirmHCEOHired.mainHeader
     });
-    await performValidation('mainHeader', confirmHCEOHired.mainHeader);
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOHired.haveYouHiredHCEOQuestion,
       option: confirmHCEOHired.noRadioOption,
+      nextPage: theNICEWillChoose.mainHeader
     });
-    await performValidation('mainHeader', theNICEWillChoose.mainHeader);
     await performAction('clickButton', theNICEWillChoose.continueButton);
     await performValidation('mainHeader', moneyOwed.mainHeader);
     await performAction('inputErrorValidation', {
@@ -343,7 +342,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       input: moneyOwed.totalAmountOwedTextInput,
       nextPage: legalCosts.mainHeader
     });
-    await performValidation('mainHeader', legalCosts.mainHeader);
     await performAction('provideLegalCosts', {
       question: legalCosts.reclaimLegalCostsQuestion,
       option: legalCosts.noRadioOption,
@@ -367,10 +365,10 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     });
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.languageUsedRadioOptions.welshRadioOption
+      option: languageUsed.languageUsedRadioOptions.welshRadioOption,
+      nextPage: statementOfTruthOne.mainHeader
     });
-    await performValidation('mainHeader', statementOfTruthOne.mainHeader);
-    await performAction('selectStatementOfTruth', {
+    await performAction('selectStatementOfTruthWrit', {
         question: statementOfTruthOne.completedByLabel,
         option: statementOfTruthOne.claimantRadioOption,
         option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
@@ -390,24 +388,24 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
+      nextPage: claimSentToHighCourt.mainHeader
     });
-    await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
     await performAction('confirmClaimTransferredToHighCourt', {
       question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
       option: claimSentToHighCourt.yesRadioOption,
+      nextPage: nameAndAddressForEviction.mainHeader
     });
-    await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
     await performAction('selectNameAndAddressForEviction', {
       question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
       option: nameAndAddressForEviction.yesRadioOption,
       defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+      nextPage: confirmHCEOHired.mainHeader
     });
-    await performValidation('mainHeader', confirmHCEOHired.mainHeader);
     await performAction('selectHaveHiredHCEO', {
       question: confirmHCEOHired.haveYouHiredHCEOQuestion,
       option: confirmHCEOHired.noRadioOption,
+      nextPage: theNICEWillChoose.mainHeader
     });
-    await performValidation('mainHeader', theNICEWillChoose.mainHeader);
     await performAction('clickButton', theNICEWillChoose.continueButton);
     await performValidation('mainHeader', moneyOwed.mainHeader);
     await performAction('provideMoneyOwed', {
@@ -441,10 +439,10 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performValidation('mainHeader', languageUsed.mainHeader);
     await performAction('selectLanguageUsed', {
       question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.languageUsedRadioOptions.englishAndWelshRadioOption
+      option: languageUsed.languageUsedRadioOptions.englishAndWelshRadioOption,
+      nextPage: statementOfTruthOne.mainHeader
     });
-    await performValidation('mainHeader', statementOfTruthOne.mainHeader);
-    await performAction('selectStatementOfTruth', {
+    await performAction('selectStatementOfTruthWrit', {
         question: statementOfTruthOne.completedByLabel,
         option: statementOfTruthOne.claimantRadioOption,
         option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
@@ -464,13 +462,13 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
+      nextPage: claimSentToHighCourt.mainHeader
     });
-    await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
     await performAction('confirmClaimTransferredToHighCourt', {
       question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
       option: claimSentToHighCourt.noRadioOption,
+      nextPage: youCannotApplyForWrit.mainHeader
     });
-    await performValidation('mainHeader', youCannotApplyForWrit.mainHeader);
     await performAction('clickButton', youCannotApplyForWrit.continueButton);
     await performValidation('errorMessage', { header: youCannotApplyForWrit.errors, message: youCannotApplyForWrit.errMessage });
   });
@@ -488,17 +486,18 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
+        nextPage: claimSentToHighCourt.mainHeader
       });
-      await performValidation('mainHeader', claimSentToHighCourt.mainHeader);
       await performAction('confirmClaimTransferredToHighCourt', {
         question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
         option: claimSentToHighCourt.yesRadioOption,
+        nextPage: nameAndAddressForEviction.mainHeader
       });
-      await performValidation('mainHeader', nameAndAddressForEviction.mainHeader);
       await performAction('selectNameAndAddressForEviction', {
         question: nameAndAddressForEviction.nameAndAddressPageForEvictionQuestion,
         option: nameAndAddressForEviction.noRadioOption,
         defendant1NameKnown: submitCaseApiData.submitCasePayload.defendant1.nameKnown,
+        nextPage: youNeedPermission.mainHeader
       });
       await performValidation('mainHeader', youNeedPermission.mainHeader);
       await performAction('clickButton', youNeedPermission.continueButton);
