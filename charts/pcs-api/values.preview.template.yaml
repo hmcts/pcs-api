@@ -25,6 +25,7 @@ java:
         - name: pcs-prd-admin-password
           alias: PCS_PRD_ADMIN_PASSWORD
   environment:
+    JAVA_OPTS: "-Xms290M"
     PCS_DB_HOST: "{{ .Release.Name }}-postgresql"
     PCS_DB_USER_NAME: "{{ .Values.postgresql.auth.username}}"
     PCS_DB_NAME: "{{ .Values.postgresql.auth.database}}"
