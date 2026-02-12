@@ -51,7 +51,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                        You may have already given the defendants notice of your intention to begin
                         possession proceedings.
                         If you have, you should have written the grounds you’re making your claim under.
-                         You should select these grounds here and any extra ground you’d like to add to your claim,
+                         You should select these grounds here and any extra grounds you’d like to add to your claim,
                          if you need to.
                        </p>
                        <p class="govuk-body">
