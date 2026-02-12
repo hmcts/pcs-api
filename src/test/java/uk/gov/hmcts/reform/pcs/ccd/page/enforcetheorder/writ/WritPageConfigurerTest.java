@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -52,7 +51,7 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ConfirmHCEOfficerPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, hceOfficerDetailsPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, HCEOfficerDetailsPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, MoneyOwedWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);

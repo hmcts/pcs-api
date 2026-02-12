@@ -44,9 +44,9 @@ public class WritDetails {
     @CCD(
         label = "Name of your High Court enforcement officer",
         hint = "If you do not know their name, use the name of the organisation they work for",
-        typeOverride = TextArea
+        max = 120
     )
-    private String highCourtEnforcementOfficerDetails;
+    private String hceoDetails;
 
     @JsonUnwrapped
     @CCD

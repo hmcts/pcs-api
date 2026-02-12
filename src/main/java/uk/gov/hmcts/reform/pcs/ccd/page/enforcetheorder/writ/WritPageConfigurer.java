@@ -21,7 +21,7 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
             .add(new NameAndAddressForEvictionWritPage())
             .add(new ChangeNameAddressWritPage())
             .add(new ConfirmHCEOfficerPage())
-            .add(hceOfficerDetailsPage)
+            .add(new HCEOfficerDetailsPage())
             .add(new EnforcementOfficerSelectionPage())
             .add(new MoneyOwedWritPage())
             .add(new LegalCostsWritPage())
