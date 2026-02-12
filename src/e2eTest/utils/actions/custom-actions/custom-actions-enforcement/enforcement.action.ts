@@ -27,7 +27,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -560,7 +560,7 @@ export class EnforcementAction implements IAction {
       await performAction('clickButton', button);
       await expect(page.locator(`//h1[text()="${nextPage}"]`), `If the ${nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
-      timeout: LONG_TIMEOUT,
+      timeout: MEDIUM_TIMEOUT + SHORT_TIMEOUT,
     });
   }
 }
