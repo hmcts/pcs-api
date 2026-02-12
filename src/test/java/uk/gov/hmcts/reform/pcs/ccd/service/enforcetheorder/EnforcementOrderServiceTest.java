@@ -161,63 +161,62 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
+    void shouldAddSelectedDefendantsWhenProvided() {
         // Given
-        void shouldAddSelectedDefendantsWhenProvided() {
-            // Given
-            final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-            String jessMayID = "6cd0fed0-6e90-4116-add4-5513f10c684f";
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        String jessMayID = UUID.randomUUID().toString();
 
-            List<DynamicStringListElement> selected = List.of(
-                new DynamicStringListElement(jessMayID, "Jess May")
-            );
+        List<DynamicStringListElement> selected = List.of(
+            new DynamicStringListElement(jessMayID, "Jess May")
+        );
 
-            List<DynamicStringListElement> listItems = List.of(
-                new DynamicStringListElement(jessMayID, "Jess May")
-            );
+        List<DynamicStringListElement> listItems = List.of(
+            new DynamicStringListElement(jessMayID, "Jess May")
+        );
 
-            final EnforcementOrder enforcementOrder =
-                EnforcementDataUtil.buildEnforcementOrderWithSelectedDefendants(selected, listItems);
+        final EnforcementOrder enforcementOrder =
+            EnforcementDataUtil.buildEnforcementOrderWithSelectedDefendants(selected, listItems);
 
-            when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-                .thenReturn(Optional.of(pcsCaseEntity));
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(pcsCaseEntity));
 
-            PartyEntity partyJessMay = PartyEntity.builder()
-                .id(UUID.fromString(jessMayID))
-                .firstName("Jess")
-                .lastName("May")
-                .build();
+        PartyEntity partyJessMay = PartyEntity.builder()
+            .id(UUID.fromString(jessMayID))
+            .firstName("Jess")
+            .lastName("May")
+            .build();
 
-            EnforcementSelectedDefendantEntity entity = new EnforcementSelectedDefendantEntity();
-            entity.setEnforcementCase(null);
-            entity.setParty(partyJessMay);
+        EnforcementSelectedDefendantEntity entity = new EnforcementSelectedDefendantEntity();
+        entity.setEnforcementCase(null);
+        entity.setParty(partyJessMay);
 
-            when(selectedDefendantsMapper.mapToEntities(any(EnforcementOrderEntity.class)))
-                .thenReturn(List.of(entity));
+        when(selectedDefendantsMapper.mapToEntities(any(EnforcementOrderEntity.class)))
+            .thenReturn(List.of(entity));
 
-            // When
-            enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
-            // Then
-            verify(draftCaseDataService)
-                .deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
+        // Then
+        verify(draftCaseDataService)
+            .deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
 
-            verify(enforcementSelectedDefendantRepository, times(1)).saveAll(captor.capture());
-            List<EnforcementSelectedDefendantEntity> savedEntities = captor.getValue();
-            assertThat(savedEntities).hasSize(1);
+        verify(enforcementSelectedDefendantRepository, times(1)).saveAll(captor.capture());
+        List<EnforcementSelectedDefendantEntity> savedEntities = captor.getValue();
+        assertThat(savedEntities).hasSize(1);
 
-            EnforcementSelectedDefendantEntity savedEntity = savedEntities.getFirst();
+        EnforcementSelectedDefendantEntity savedEntity = savedEntities.getFirst();
 
-            assertThat(savedEntity.getParty().getId()).isEqualTo(UUID.fromString(jessMayID));
-            assertThat(savedEntity.getParty().getFirstName()).isEqualTo("Jess");
-            assertThat(savedEntity.getParty().getLastName()).isEqualTo("May");
+        assertThat(savedEntity.getParty().getId()).isEqualTo(UUID.fromString(jessMayID));
+        assertThat(savedEntity.getParty().getFirstName()).isEqualTo("Jess");
+        assertThat(savedEntity.getParty().getLastName()).isEqualTo("May");
     }
 
     @Test
     void shouldAddMultipleSelectedDefendantsWhenProvided() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        String jessMayID = "6cd0fed0-6e90-4116-add4-5513f10c684f";
-        String jamesMayID = "e29108f4-bb65-4b81-88d9-f319048fa8f0";
+        String jessMayID = UUID.randomUUID().toString();
+        String jamesMayID = UUID.randomUUID().toString();
 
         List<DynamicStringListElement> selected = List.of(
             new DynamicStringListElement(jessMayID, "Jess May"),
