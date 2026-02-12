@@ -29,7 +29,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -189,10 +188,7 @@ class EnforcementOrderServiceTest {
             .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        when(enforcementWarrantMapper.toEntity(any(), any())).thenReturn(mock(EnforcementWarrantEntity.class));
         enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WRIT);
-        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
-            .thenReturn(mock(EnforcementWarrantEntity.class));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -201,7 +197,8 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        verify(enforcementWarrantRepository, never()).save(any(EnforcementWarrantEntity.class));
+        verifyNoInteractions(enforcementWarrantRepository);
+        verifyNoInteractions(enforcementWarrantMapper);
     }
 
 }
