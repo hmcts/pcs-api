@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
@@ -186,8 +187,11 @@ class EnforcementOrderServiceTest {
             .lastName("May")
             .build();
 
+        EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
+        enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
+
         EnforcementSelectedDefendantEntity entity = new EnforcementSelectedDefendantEntity();
-        entity.setEnforcementCase(null);
+        entity.setEnforcementCase(enforcementOrderEntity);
         entity.setParty(partyJessMay);
 
         when(selectedDefendantsMapper.mapToEntities(any(EnforcementOrderEntity.class)))
@@ -270,7 +274,7 @@ class EnforcementOrderServiceTest {
 
 
     @Test
-    void shouldNotAddAnySelectedDefendantsWhenWarrantDetailsNull() {
+    void shouldNotAddAnySelectedDefendantsWhenEvictEveryoneIsYes() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
 
@@ -281,10 +285,10 @@ class EnforcementOrderServiceTest {
                                                                .correctNameAndAddress(VerticalYesNo.YES)
                                                                .build())
                                 .peopleToEvict(PeopleToEvict.builder()
-                                                   .evictEveryone(VerticalYesNo.NO)
+                                                   .evictEveryone(VerticalYesNo.YES)
                                                    .build())
                                 .build())
-            .rawWarrantDetails(null)
+            .rawWarrantDetails(RawWarrantDetails.builder().selectedDefendants(null).build())
             .build();
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))

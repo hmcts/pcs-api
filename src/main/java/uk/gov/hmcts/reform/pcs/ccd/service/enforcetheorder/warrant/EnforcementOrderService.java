@@ -67,7 +67,7 @@ public class EnforcementOrderService {
         List<EnforcementSelectedDefendantEntity> selectedDefendantsEntities =
             selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
 
-        if (!selectedDefendantsEntities.isEmpty()) {
+        if (!CollectionUtils.isEmpty(selectedDefendantsEntities)) {
             enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
         }
     }
