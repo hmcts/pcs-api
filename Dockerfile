@@ -7,7 +7,7 @@ USER hmcts
 COPY lib/applicationinsights.json /opt/app/
 COPY build/libs/pcs-api.jar /opt/app/
 
-ONBUILD ARG JVM_ARGS=${DEV_JVM_ARGS:-'-XX:InitialRAMPercentage=30.0 -XX:MaxRAMPercentage=67.0 -XX:MinRAMPercentage=30.0'}
+ONBUILD ARG JVM_ARGS='-XX:InitialRAMPercentage=30.0 -XX:MaxRAMPercentage=67.0 -XX:MinRAMPercentage=30.0'
 ONBUILD ENV JAVA_TOOL_OPTIONS "${JVM_ARGS} ${JAVA_OPTS} ${JAVA_AGENT_OPTIONS} ${JVM_ENCODING_ARGS}"
 
 
