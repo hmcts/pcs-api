@@ -147,7 +147,6 @@ public class ApiSteps {
 
     @Step("the request contains a valid IDAM token")
     public void theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType user) {
-
         String userToken = switch (user) {
             case systemUser -> systemUserIdamToken;
             case citizenUser -> citizenUserIdamToken;
@@ -193,7 +192,6 @@ public class ApiSteps {
 
     @Step("a pin is fetched")
     public String accessCodeIsFetched(Long caseReference) {
-
         Callable<String> fetchPins = () -> {
             Map<String, Object> pins = SerenityRest.given()
                 .baseUri(baseUrl)

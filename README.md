@@ -53,16 +53,19 @@ authMode = AuthMode.AAT
 Then set the following environment variables based on the value below or named secret
 from the PCS AAT key vault:
 
-| Environment Variable     | Value or Secret Name                                             |
-|--------------------------|------------------------------------------------------------------|
-| LOCATION_REF_URL         | http://rd-location-ref-api-aat.service.core-compute-aat.internal |
-| PCS_API_S2S_SECRET       | secret: pcs-api-s2s-secret                                       |
-| IDAM_CLIENT_SECRET       | secret: pcs-api-idam-secret                                      |
-| PCS_IDAM_SYSTEM_USERNAME | secret: idam-system-user-name                                    |
-| PCS_IDAM_SYSTEM_PASSWORD | secret: idam-system-user-password                                |
-| PCS_PRD_ADMIN_USERNAME   | secret: pcs-prd-admin-username                                   |
-| PCS_PRD_ADMIN_PASSWORD   | secret: pcs-prd-admin-password                                   |
-| IDAM_PCS_USER_PASSWORD   | secret: idam-pcs-user-password                                   |
+| Environment Variable         | Value or Secret Name                                                         |
+|------------------------------|------------------------------------------------------------------------------|
+| LOCATION_REF_URL             | http://rd-location-ref-api-aat.service.core-compute-aat.internal             |
+| DATA_STORE_URL_BASE          | https://ccd-data-store-api-pcs-api-pr-{CHANGE_ID}.preview.platform.hmcts.net |
+| PCS_API_S2S_SECRET           | secret: pcs-api-s2s-secret                                                   |
+| IDAM_CLIENT_SECRET           | secret: pcs-api-idam-secret                                                  |
+| PCS_IDAM_SYSTEM_USERNAME     | secret: idam-system-user-name                                                |
+| PCS_IDAM_SYSTEM_PASSWORD     | secret: idam-system-user-password                                            |
+| PCS_PRD_ADMIN_USERNAME       | secret: pcs-prd-admin-username                                               |
+| PCS_PRD_ADMIN_PASSWORD       | secret: pcs-prd-admin-password                                               |
+| IDAM_PCS_USER_PASSWORD       | secret: idam-pcs-user-password                                               |
+| PCS_SOLICITOR_AUTOMATION_UID | secret: pcs-solicitor-automation-uid                                         |
+
 
 Finally, run the service with the `bootWithCCD` task as above.
 
