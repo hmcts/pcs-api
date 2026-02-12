@@ -36,8 +36,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementWarrantMapperTest {
@@ -61,7 +59,7 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNotNull(result);
+        assertThat(result).isNotNull();
         assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
     }
 
@@ -99,9 +97,9 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNull(result.getShowChangeNameAddressPage());
-        assertNull(result.getShowPeopleWhoWillBeEvictedPage());
-        assertNull(result.getShowPeopleYouWantToEvictPage());
+        assertThat(result.getShowChangeNameAddressPage()).isNull();
+        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isNull();
+        assertThat(result.getShowPeopleYouWantToEvictPage()).isNull();
     }
 
     @Test
@@ -151,8 +149,8 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNull(result.getAdditionalInformationSelect());
-        assertNull(result.getAdditionalInformationDetails());
+        assertThat(result.getAdditionalInformationSelect()).isNull();
+        assertThat(result.getAdditionalInformationDetails()).isNull();
     }
 
     @Test
@@ -241,8 +239,8 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNull(result.getAreLegalCostsToBeClaimed());
-        assertNull(result.getAmountOfLegalCosts());
+        assertThat(result.getAreLegalCostsToBeClaimed()).isNull();
+        assertThat(result.getAmountOfLegalCosts()).isNull();
     }
 
     @Test
@@ -273,7 +271,7 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNull(result.getAmountOwed());
+        assertThat(result.getAmountOwed()).isNull();
     }
 
     @Test
@@ -309,7 +307,7 @@ class EnforcementWarrantMapperTest {
 
         // Then
         assertThat(result.getHaveLandRegistryFeesBeenPaid()).isEqualTo(VerticalYesNo.YES);
-        assertNull(result.getAmountOfLandRegistryFees());
+        assertThat(result.getAmountOfLandRegistryFees()).isNull();
     }
 
     @Test
@@ -348,7 +346,7 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNull(result.getRepaymentChoice());
+        assertThat(result.getRepaymentChoice()).isNull();
         assertThat(result.getAmountOfRepaymentCosts()).isEqualByComparingTo(new BigDecimal("1000.00"));
     }
 
@@ -380,7 +378,7 @@ class EnforcementWarrantMapperTest {
 
         // Then
         assertThat(result.getDefendantsDOBKnown()).isEqualTo(VerticalYesNo.NO);
-        assertNull(result.getDefendantsDOBDetails());
+        assertThat(result.getDefendantsDOBDetails()).isNull();
     }
 
     @Test
@@ -412,7 +410,7 @@ class EnforcementWarrantMapperTest {
 
         // Then
         assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.NO);
-        assertNull(result.getEnforcementRiskCategories());
+        assertThat(result.getEnforcementRiskCategories()).isNull();
     }
 
     @Test
@@ -469,7 +467,7 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNull(result.getAgreementClaimant());
+        assertThat(result.getAgreementClaimant()).isNull();
     }
 
     @Test
@@ -529,7 +527,7 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNull(result.getVulnerablePeoplePresent());
+        assertThat(result.getVulnerablePeoplePresent()).isNull();
     }
 
     @Test
@@ -541,7 +539,7 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertNotNull(result);
+        assertThat(result).isNotNull();
         assertThat(result.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
         assertThat(result.getShowChangeNameAddressPage()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getIsSuspendedOrder()).isEqualTo(VerticalYesNo.NO);
