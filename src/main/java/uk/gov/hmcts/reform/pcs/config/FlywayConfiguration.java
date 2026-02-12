@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.data.migration.FlywayNoOpStrategy;
  */
 @AutoConfigureAfter({
     DataSourceAutoConfiguration.class,
+    DataSourceConfiguration.class,
     HibernateJpaAutoConfiguration.class
 })
 @AutoConfigureBefore({
