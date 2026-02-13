@@ -23,6 +23,7 @@ import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ContactPreferenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 
 import java.util.HashSet;
@@ -94,5 +95,10 @@ public class PartyEntity {
     private String emailAddress;
 
     private String pcqId;
+
+    @OneToMany(mappedBy = "party", cascade = ALL, orphanRemoval = true, fetch = LAZY)
+    @Builder.Default
+    @JsonManagedReference
+    private Set<ContactPreferenceEntity> contactPreferences = new HashSet<>();
 
 }

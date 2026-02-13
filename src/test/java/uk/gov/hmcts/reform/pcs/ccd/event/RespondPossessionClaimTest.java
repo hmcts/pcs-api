@@ -71,6 +71,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private ImmutablePartyFieldValidator immutableFieldValidator;
 
+    @Mock
+    private uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository defendantResponseRepository;
+
     @BeforeEach
     void setUp() {
         // Create handlers with real dependencies
@@ -84,7 +87,11 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
             draftCaseDataService,
-            immutableFieldValidator
+            immutableFieldValidator,
+            pcsCaseService,
+            securityContextService,
+            addressMapper,
+            defendantResponseRepository
         );
 
         setEventUnderTest(new RespondPossessionClaim(

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
 import org.junit.jupiter.api.Test;
+import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 
@@ -8,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AddressMapperTest {
 
-    private final AddressMapper underTest = new AddressMapper();
+    private final AddressMapper underTest = new AddressMapper(new ModelMapper());
 
     @Test
     void shouldReturnAddressUKWithAllNullFieldsWhenAddressEntityIsNull() {
