@@ -8,19 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
 
-/**
- * Maps domain {@link EnforcementOrder} (warrant + raw warrant risk details) to {@link EnforcementRiskProfileEntity}.
- */
 @Component
 public class EnforcementRiskProfileMapper {
 
-    /**
-     * Maps enforcement order and its persisted entity to a risk profile entity.
-     *
-     * @param enforcementOrderEntity the persisted enforcement order entity
-     * @param enforcementOrder the domain enforcement order with warrant and raw warrant details
-     * @return populated risk profile entity
-     */
     public EnforcementRiskProfileEntity toEntity(
             EnforcementOrderEntity enforcementOrderEntity,
             EnforcementOrder enforcementOrder) {
