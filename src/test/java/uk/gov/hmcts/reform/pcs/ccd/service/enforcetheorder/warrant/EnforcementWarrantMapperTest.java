@@ -22,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.StatementOfTruthDetails;
@@ -393,7 +392,6 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
         assertThat(result.getEnforcementRiskCategories()).contains(RiskCategory.VIOLENT_OR_AGGRESSIVE.name(),
                                                                    RiskCategory.AGENCY_VISITS.name());
     }
@@ -409,7 +407,6 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.NO);
         assertThat(result.getEnforcementRiskCategories()).isNull();
     }
 
@@ -502,32 +499,6 @@ class EnforcementWarrantMapperTest {
 
         // Then
         assertThat(result.getCertification()).isEqualTo(StatementOfTruthAgreement.CERTIFY.name());
-    }
-
-    @Test
-    void shouldMapRawWarrantDetails() {
-        // Given
-        RawWarrantDetails rawWarrantDetails = RawWarrantDetails.builder()
-            .vulnerablePeoplePresent(YesNoNotSure.YES).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().rawWarrantDetails(rawWarrantDetails).build();
-
-        // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getVulnerablePeoplePresent()).isEqualTo(YesNoNotSure.YES);
-    }
-
-    @Test
-    void shouldHandleNullRawWarrantDetails() {
-        // Given
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().rawWarrantDetails(null).build();
-
-        // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getVulnerablePeoplePresent()).isNull();
     }
 
     @Test

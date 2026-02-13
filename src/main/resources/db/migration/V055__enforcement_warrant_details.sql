@@ -46,11 +46,7 @@ CREATE TABLE enf_warrant(
   defendants_dob_details                  VARCHAR(6800),
 
   -- Risk Assessment
-  any_risk_to_bailiff                     YES_NO_NOT_SURE,
   enforcement_risk_categories             TEXT,
-
-  -- Vulnerable People (from RawWarrantDetails)
-  vulnerable_people_present               YES_NO_NOT_SURE,
 
   -- Statement of Truth
   completed_by                            STATEMENT_OF_TRUTH_COMPLETED_BY,

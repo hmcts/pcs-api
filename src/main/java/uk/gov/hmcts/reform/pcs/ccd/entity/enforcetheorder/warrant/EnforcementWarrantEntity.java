@@ -20,7 +20,6 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -117,17 +116,7 @@ public class EnforcementWarrantEntity {
     @Column(name = "defendants_dob_details")
     private String defendantsDOBDetails;
 
-    // Risk Assessment
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesNoNotSure anyRiskToBailiff;
-
     private String enforcementRiskCategories;
-
-    // Vulnerable People (from RawWarrantDetails)
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesNoNotSure vulnerablePeoplePresent;
 
     // Statement of Truth
     @Enumerated(EnumType.STRING)

@@ -27,7 +27,6 @@ public class EnforcementWarrantMapper {
         EnforcementOrderEntity enforcementOrderEntity) {
         EnforcementWarrantEntity warrantEntity = EnforcementWarrantEntity.builder()
             .enforcementOrder(enforcementOrderEntity).build();
-
         if (enforcementOrder.getWarrantDetails() != null) {
             WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
             controlFlags(warrantEntity, warrantDetails);
@@ -44,7 +43,6 @@ public class EnforcementWarrantMapper {
             riskAssessment(warrantEntity, warrantDetails);
             statementOfTruth(warrantDetails, warrantEntity);
         }
-        rawWarrantDetails(enforcementOrder, warrantEntity);
         return warrantEntity;
     }
 
@@ -168,15 +166,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void rawWarrantDetails(EnforcementOrder enforcementOrder, EnforcementWarrantEntity warrantEntity) {
-        if (enforcementOrder.getRawWarrantDetails() != null) {
-            warrantEntity.setVulnerablePeoplePresent(
-                enforcementOrder.getRawWarrantDetails().getVulnerablePeoplePresent());
-        }
-    }
-
     private void riskAssessment(EnforcementWarrantEntity warrantEntity, WarrantDetails warrantDetails) {
-        warrantEntity.setAnyRiskToBailiff(warrantDetails.getAnyRiskToBailiff());
         if (warrantDetails.getEnforcementRiskCategories() != null) {
             warrantEntity.setEnforcementRiskCategories(
                 warrantDetails.getEnforcementRiskCategories().stream()
