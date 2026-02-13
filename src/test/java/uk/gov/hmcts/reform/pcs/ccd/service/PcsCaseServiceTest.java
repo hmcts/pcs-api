@@ -7,7 +7,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -17,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -46,7 +46,7 @@ class PcsCaseServiceTest {
     @Mock
     private TenancyLicenceService tenancyLicenceService;
     @Mock
-    private ModelMapper modelMapper;
+    private AddressMapper addressMapper;
 
     @Captor
     private ArgumentCaptor<PcsCaseEntity> pcsCaseEntityCaptor;
@@ -61,7 +61,7 @@ class PcsCaseServiceTest {
             partyService,
             documentService,
             tenancyLicenceService,
-            modelMapper
+            addressMapper
         );
     }
 
@@ -72,7 +72,7 @@ class PcsCaseServiceTest {
         AddressEntity propertyAddressEntity = mock(AddressEntity.class);
         LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
 
-        when(modelMapper.map(propertyAddress, AddressEntity.class)).thenReturn(propertyAddressEntity);
+        when(addressMapper.toAddressEntityAndNormalise(propertyAddress)).thenReturn(propertyAddressEntity);
 
         // When
         underTest.createCase(CASE_REFERENCE, propertyAddress, legislativeCountry);
