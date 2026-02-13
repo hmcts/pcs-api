@@ -66,6 +66,26 @@ class AddressMapperTest {
         assertThat(normalisedAddressEntity.getPostcode()).isEqualTo(expectedNormalisedPostcode);
     }
 
+    @Test
+    void shouldNotNormalisePostcodeThatIsTooShort() {
+        // Given
+        AddressUK addressUK = mock(AddressUK.class);
+        String rawPostcode = "A1   2C";
+        AddressEntity mappedAddressEntity = AddressEntity.builder()
+            .addressLine1("10 High Street")
+            .postTown("London")
+            .postcode(rawPostcode)
+            .build();
+
+        when(modelMapper.map(addressUK, AddressEntity.class)).thenReturn(mappedAddressEntity);
+
+        // When
+        AddressEntity normalisedAddressEntity = underTest.toAddressEntityAndNormalise(addressUK);
+
+        // Then
+        assertThat(normalisedAddressEntity.getPostcode()).isEqualTo(rawPostcode);
+    }
+
     private static Stream<Arguments> postcodeScenarios() {
         return Stream.of(
             arguments("B12CD", "B1 2CD"),
