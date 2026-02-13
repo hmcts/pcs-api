@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
@@ -99,7 +100,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         boolean phoneRequired = isPreferenceEnabled(response.getContactByText())
             || isPreferenceEnabled(response.getContactByPhone());
 
-        if (phoneRequired && isBlank(party.getPhoneNumber())) {
+        if (phoneRequired && StringUtils.isBlank(party.getPhoneNumber())) {
             errors.add("Phone number is required when text or phone contact preference is selected");
             log.error("Final submit rejected for case {}: text/phone preference YES but phoneNumber missing",
                 caseReference);
@@ -110,7 +111,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private void validatePreference(VerticalYesNo preference, String value, String errorMessage,
                                      String fieldName, long caseReference, List<String> errors) {
-        if (isPreferenceEnabled(preference) && isBlank(value)) {
+        if (isPreferenceEnabled(preference) && StringUtils.isBlank(value)) {
             errors.add(errorMessage);
             log.error("Final submit rejected for case {}: {}=YES but value is missing", caseReference, fieldName);
         }
@@ -118,10 +119,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private boolean isPreferenceEnabled(VerticalYesNo preference) {
         return preference != null && preference.toBoolean();
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
     }
 
     private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
@@ -273,10 +270,21 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         Party draftParty = contactDetails.getParty();
 
-        updateIfNotBlank(draftParty.getFirstName(), defendant::setFirstName);
-        updateIfNotBlank(draftParty.getLastName(), defendant::setLastName);
-        updateIfNotBlank(draftParty.getEmailAddress(), defendant::setEmailAddress);
-        updateIfNotBlank(draftParty.getPhoneNumber(), defendant::setPhoneNumber);
+        if (StringUtils.isNotBlank(draftParty.getFirstName())) {
+            defendant.setFirstName(draftParty.getFirstName());
+        }
+
+        if (StringUtils.isNotBlank(draftParty.getLastName())) {
+            defendant.setLastName(draftParty.getLastName());
+        }
+
+        if (StringUtils.isNotBlank(draftParty.getEmailAddress())) {
+            defendant.setEmailAddress(draftParty.getEmailAddress());
+        }
+
+        if (StringUtils.isNotBlank(draftParty.getPhoneNumber())) {
+            defendant.setPhoneNumber(draftParty.getPhoneNumber());
+        }
 
         if (draftParty.getPhoneNumberProvided() != null) {
             defendant.setPhoneNumberProvided(draftParty.getPhoneNumberProvided());
@@ -284,12 +292,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         if (draftParty.getAddress() != null) {
             defendant.setAddress(addressMapper.toEntity(draftParty.getAddress()));
-        }
-    }
-
-    private void updateIfNotBlank(String value, java.util.function.Consumer<String> setter) {
-        if (!isBlank(value)) {
-            setter.accept(value);
         }
     }
 
