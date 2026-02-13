@@ -46,10 +46,21 @@
     "nameKnown": "YES",
     "firstName": "Jane",
     "lastName": "Doe",
-    "addressKnown": "NO"
+    "addressKnown": "NO",
+    "addressSameAsPossession": null,
+    "correspondenceAddress": {
+      "AddressLine1": null,
+      "AddressLine2": null,
+      "AddressLine3": null,
+      "PostTown": null,
+      "County": null,
+      "Country": null,
+      "PostCode": null
+    }
   },
   "addAnotherDefendant": "NO",
   "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
+  "tenancy_TenancyLicenceDate": null,
   "tenancy_TenancyLicenceDocuments": [
   ],
   "secureOrFlexibleDiscretionaryGrounds": [
@@ -62,6 +73,7 @@
   "secureOrFlexibleDiscretionaryGroundsAlt": [
   ],
   "antiSocialGround": "Antisocial behaviour reasons.",
+  "showBreachOfTenancyTextarea": null,
   "showReasonsForGroundsPage": "Yes",
   "preActionProtocolCompleted": "NO",
   "mediationAttempted": "NO",
@@ -80,7 +92,8 @@
   "suspensionOfRTB_Reason": "Reasons for requesting a suspension order.",
   "claimingCostsWanted": "NO",
   "additionalReasonsForPossession": {
-    "hasReasons": "NO"
+    "hasReasons": "NO",
+    "reasons": null
   },
   "hasUnderlesseeOrMortgagee": "NO",
   "wantToUploadDocuments": "NO",
@@ -88,12 +101,16 @@
   "languageUsed": "ENGLISH",
   "completionNextStep": "SUBMIT_AND_PAY_NOW",
   "statementOfTruth": {
-    "completedBy": "LEGAL_REPRESENTATIVE",
-    "fullNameLegalRep": "John",
-    "firmNameLegalRep": "Doe",
-    "positionLegalRep": "Solicitor",
+    "completedBy": "CLAIMANT",
+    "fullNameClaimant": "John Doe",
+    "positionClaimant": "Solicitor",
+    "fullNameLegalRep": null,
+    "firmNameLegalRep": null,
+    "positionLegalRep": null,
+    "agreementClaimant": [
+      "BELIEVE_TRUE"
+    ],
     "agreementLegalRep": [
-      "AGREED"
     ]
   }
 }

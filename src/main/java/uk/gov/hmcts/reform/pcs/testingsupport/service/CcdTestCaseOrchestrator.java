@@ -74,7 +74,7 @@ public class CcdTestCaseOrchestrator {
             RESUME_EVENT
         );
 
-        JsonNode resumePossessionClaimPayload = buildResumePossessionClaimPayload(legislativeCountry, payloadMerge);
+        JsonNode resumePossessionClaimPayload = buildResumePossessionClaimPayload(payloadMerge);
 
         CaseDataContent resumeContent = CaseDataContent.builder()
             .event(Event.builder().id(RESUME_EVENT).build())
@@ -97,9 +97,9 @@ public class CcdTestCaseOrchestrator {
         );
     }
 
-    private JsonNode buildResumePossessionClaimPayload(LegislativeCountry legislativeCountry, JsonNode payloadMerge
+    private JsonNode buildResumePossessionClaimPayload(JsonNode payloadMerge
     ) {
-        ObjectNode base = getBasePayload(legislativeCountry);
+        ObjectNode base = getBasePayload();
 
         if (payloadMerge != null && payloadMerge.isObject()) {
             mergePayload(base, (ObjectNode) payloadMerge);
@@ -126,12 +126,10 @@ public class CcdTestCaseOrchestrator {
         });
     }
 
-    private ObjectNode getBasePayload(LegislativeCountry legislativeCountry) {
-        String path = "testcasesupport/Create-Case-" + legislativeCountry.name() + "-Base.json";
-
+    private ObjectNode getBasePayload() {
         try (InputStream basePayload = getClass()
             .getClassLoader()
-            .getResourceAsStream(path)) {
+            .getResourceAsStream("testcasesupport/Create-Case-Base.json")) {
 
             return (ObjectNode) objectMapper.readTree(basePayload);
 

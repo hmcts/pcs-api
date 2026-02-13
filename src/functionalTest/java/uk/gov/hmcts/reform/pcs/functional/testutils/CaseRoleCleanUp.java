@@ -34,9 +34,7 @@ public class CaseRoleCleanUp {
                 .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
                 .body(payload)
                 .when()
-                .delete("/case-users")
-                .then()
-                .statusCode(200);
+                .delete("/case-users");
 
         } catch (Exception e) {
             System.err.println("Failed to delete case role for caseId=" + caseId + e.getMessage());
