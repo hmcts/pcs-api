@@ -7,7 +7,7 @@ import java.util.Map;
 
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps.ccdDataS2sToken;
+import static uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps.pcsApiS2sToken;
 import static uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps.solicitorUserIdamToken;
 
 public class CaseRoleCleanUp {
@@ -30,7 +30,7 @@ public class CaseRoleCleanUp {
                 .relaxedHTTPSValidation()
                 .baseUri(dataStoreUrl)
                 .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .header(TestConstants.SERVICE_AUTHORIZATION, ccdDataS2sToken)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
                 .header(TestConstants.AUTHORIZATION, solicitorUserIdamToken)
                 .body(payload)
                 .when()
