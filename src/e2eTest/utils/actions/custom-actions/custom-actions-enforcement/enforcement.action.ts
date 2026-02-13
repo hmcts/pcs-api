@@ -60,8 +60,7 @@ export class EnforcementAction implements IAction {
       ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord, page)],
       ['provideRiskPosedByEveryoneAtProperty', () => this.provideRiskPosedByEveryoneAtProperty(fieldName as actionRecord, page)],
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord, page)],
-      ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord, page)],
-      ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord, page)],
+      ['provideDetailsBasedOnRadioOptionSelection', () => this.provideDetailsBasedOnRadioOptionSelection(fieldName as actionRecord, page)],
       ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord, page)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord, page)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord, page)],
@@ -265,26 +264,15 @@ export class EnforcementAction implements IAction {
     await this.reTryOnCallBackError(page, vulnerableAdultsAndChildren.continueButton, vulnerablePeople.nextPage as string);
   }
 
-  private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord, page: Page) {
-    await this.addFieldsToMap(anythingElse);
+  private async provideDetailsBasedOnRadioOptionSelection(userInput: actionRecord, page: Page) {
+    await this.addFieldsToMap(userInput);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
-    if (anythingElse.option === anythingElseHelpWithEviction.yesRadioOption) {
-      await performAction('inputText', anythingElse.label, anythingElse.input);
+    await performAction('clickRadioButton', { question: userInput.question, option: userInput.option });
+    if (userInput.option === 'Yes') {
+      await performAction('inputText', userInput.label, userInput.input);
     };
-    await this.reTryOnCallBackError(page, anythingElseHelpWithEviction.continueButton, anythingElse.nextPage as string);
-  }
-
-  private async accessToProperty(accessToProperty: actionRecord, page: Page) {
-    await this.addFieldsToMap(accessToProperty);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: accessToProperty.question, option: accessToProperty.option });
-    if (accessToProperty.option === accessToTheProperty.yesRadioOption) {
-      await performAction('inputText', accessToProperty.label, accessToProperty.input);
-    };
-    await this.reTryOnCallBackError(page, accessToTheProperty.continueButton, accessToProperty.nextPage as string);
+    await this.reTryOnCallBackError(page, !userInput?.button ? userInput.button = 'Continue' : userInput.button as string, userInput.nextPage as string);
   }
 
   private async provideMoneyOwed(totalMoneyOwed: actionRecord, page: Page) {

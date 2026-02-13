@@ -266,14 +266,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
         nextPage: accessToTheProperty.mainHeader
       });
-      await performAction('accessToProperty', {
+      await performAction('provideDetailsBasedOnRadioOptionSelection', {
         question: accessToTheProperty.accessToThePropertyQuestion,
         option: accessToTheProperty.yesRadioOption,
         label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
         input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
         nextPage: anythingElseHelpWithEviction.mainHeader
       });
-      await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      await performAction('provideDetailsBasedOnRadioOptionSelection', {
         question: anythingElseHelpWithEviction.anythingElseQuestion,
         option: anythingElseHelpWithEviction.yesRadioOption,
         label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
@@ -511,16 +511,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
       nextPage: accessToTheProperty.mainHeader
     });
-    await performAction('accessToProperty', {
+    await performAction('provideDetailsBasedOnRadioOptionSelection', {
       question: accessToTheProperty.accessToThePropertyQuestion,
       option: accessToTheProperty.noRadioOption,
       nextPage: anythingElseHelpWithEviction.mainHeader
     });
-    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+    await performAction('provideDetailsBasedOnRadioOptionSelection', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
       option: anythingElseHelpWithEviction.noRadioOption,
-      label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
-      input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
       nextPage: moneyOwed.mainHeader
     });
     await performAction('provideMoneyOwed', {
@@ -680,14 +678,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
       nextPage: accessToTheProperty.mainHeader
     });
-    await performAction('accessToProperty', {
+    await performAction('provideDetailsBasedOnRadioOptionSelection', {
       question: accessToTheProperty.accessToThePropertyQuestion,
       option: accessToTheProperty.yesRadioOption,
       label: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextLabel,
       input: accessToTheProperty.whyItsDifficultToAccessToThePropertyTextInput,
       nextPage: anythingElseHelpWithEviction.mainHeader
     });
-    await performAction('provideDetailsAnythingElseHelpWithEviction', {
+    await performAction('provideDetailsBasedOnRadioOptionSelection', {
       question: anythingElseHelpWithEviction.anythingElseQuestion,
       option: anythingElseHelpWithEviction.yesRadioOption,
       label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
@@ -852,16 +850,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
         nextPage: accessToTheProperty.mainHeader
       });
-      await performAction('accessToProperty', {
+      await performAction('provideDetailsBasedOnRadioOptionSelection', {
         question: accessToTheProperty.accessToThePropertyQuestion,
         option: accessToTheProperty.noRadioOption,
         nextPage: anythingElseHelpWithEviction.mainHeader
       });
-      await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      await performAction('provideDetailsBasedOnRadioOptionSelection', {
         question: anythingElseHelpWithEviction.anythingElseQuestion,
         option: anythingElseHelpWithEviction.noRadioOption,
-        label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
-        input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
         nextPage: moneyOwed.mainHeader
       });
       await performAction('provideMoneyOwed', {
@@ -979,16 +975,14 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         input: vulnerableAdultsAndChildren.howAreTheyVulnerableTextInput,
         nextPage: accessToTheProperty.mainHeader,
       });
-      await performAction('accessToProperty', {
+      await performAction('provideDetailsBasedOnRadioOptionSelection', {
         question: accessToTheProperty.accessToThePropertyQuestion,
         option: accessToTheProperty.noRadioOption,
         nextPage: anythingElseHelpWithEviction.mainHeader,
       });
-      await performAction('provideDetailsAnythingElseHelpWithEviction', {
+      await performAction('provideDetailsBasedOnRadioOptionSelection', {
         question: anythingElseHelpWithEviction.anythingElseQuestion,
         option: anythingElseHelpWithEviction.noRadioOption,
-        label: anythingElseHelpWithEviction.tellUsAnythingElseTextLabel,
-        input: anythingElseHelpWithEviction.tellUsAnythingElseTextInput,
         nextPage: moneyOwed.mainHeader,
       });
       await performAction('provideMoneyOwed', {
