@@ -26,65 +26,91 @@
     "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
   },
   "claimAgainstTrespassers": "NO",
-  "claimantName": "pcs-solicitor1@test.com",
+  "orgNameFound": "Yes",
+  "claimantName": "Possession Claims Solicitor Org",
   "isClaimantNameCorrect": "YES",
   "claimantContactEmail": "pcs-solicitor1@test.com",
   "isCorrectClaimantContactEmail": "YES",
-  "orgAddressFound": "No",
-  "overriddenClaimantContactAddress": {
-    "AddressLine1": "1 Rse Way",
-    "AddressLine2": "",
-    "AddressLine3": "",
+  "orgAddressFound": "Yes",
+  "organisationAddress": {
+    "AddressLine1": "Ministry Of Justice",
+    "AddressLine2": "Seventh Floor 102 Petty France",
     "PostTown": "London",
-    "County": "",
-    "Country": "United Kingdom",
-    "PostCode": "SW11 1PD"
+    "PostCode": "SW1H 9AJ",
+    "Country": "United Kingdom"
   },
+  "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
+  "isCorrectClaimantContactAddress": "YES",
   "claimantProvidePhoneNumber": "NO",
   "defendant1": {
     "nameKnown": "YES",
     "firstName": "Jane",
     "lastName": "Doe",
-    "addressKnown": "NO"
+    "addressKnown": "NO",
+    "addressSameAsPossession": null,
+    "correspondenceAddress": {
+      "AddressLine1": null,
+      "AddressLine2": null,
+      "AddressLine3": null,
+      "PostTown": null,
+      "County": null,
+      "Country": null,
+      "PostCode": null
+    }
   },
   "addAnotherDefendant": "NO",
-  "tenancy_TypeOfTenancyLicence": "ASSURED_TENANCY",
-  "tenancy_TenancyLicenceDocuments": [],
-  "claimDueToRentArrears": "No",
-  "showRentSectionPage": "No",
-  "noRentArrears_ShowGroundReasonPage": "Yes",
-  "noRentArrears_MandatoryGrounds": [
-    "OWNER_OCCUPIER_GROUND1"
+  "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
+  "tenancy_TenancyLicenceDate": null,
+  "tenancy_TenancyLicenceDocuments": [
   ],
-  "noRentArrears_DiscretionaryGrounds": [],
+  "secureOrFlexibleDiscretionaryGrounds": [
+  ],
+  "secureOrFlexibleMandatoryGrounds": [
+    "ANTI_SOCIAL"
+  ],
+  "secureOrFlexibleMandatoryGroundsAlt": [
+  ],
+  "secureOrFlexibleDiscretionaryGroundsAlt": [
+  ],
+  "antiSocialGround": "Antisocial behaviour reasons.",
+  "showBreachOfTenancyTextarea": null,
+  "showReasonsForGroundsPage": "Yes",
   "preActionProtocolCompleted": "NO",
   "mediationAttempted": "NO",
   "settlementAttempted": "NO",
   "noticeServed": "No",
-  "claimantNamePossessiveForm": "pcs-solicitor1@test.com’s",
+  "claimantNamePossessiveForm": "Possession Claims Solicitor Org’s",
   "claimantCircumstancesSelect": "NO",
   "hasDefendantCircumstancesInfo": "NO",
-  "suspensionOfRTB_ShowHousingActsPage": "No",
+  "suspensionOfRTB_ShowHousingActsPage": "Yes",
   "demotionOfTenancy_ShowHousingActsPage": "No",
   "suspensionToBuyDemotionOfTenancyPages": "No",
-  "alternativesToPossession": [],
+  "alternativesToPossession": [
+    "SUSPENSION_OF_RIGHT_TO_BUY"
+  ],
+  "suspensionOfRTB_HousingAct": "SECTION_82A_2",
+  "suspensionOfRTB_Reason": "Reasons for requesting a suspension order.",
   "claimingCostsWanted": "NO",
   "additionalReasonsForPossession": {
-    "hasReasons": "NO"
+    "hasReasons": "NO",
+    "reasons": null
   },
   "hasUnderlesseeOrMortgagee": "NO",
   "wantToUploadDocuments": "NO",
   "applicationWithClaim": "NO",
   "languageUsed": "ENGLISH",
-  "completionNextStep": "SAVE_IT_FOR_LATER",
+  "completionNextStep": "SUBMIT_AND_PAY_NOW",
   "statementOfTruth": {
-    "completedBy": "LEGAL_REPRESENTATIVE",
-    "fullNameLegalRep": "GEUTIEWQ",
-    "firmNameLegalRep": "DSAFSDF",
-    "positionLegalRep": "SADASD",
-    "agreementClaimant": [],
+    "completedBy": "CLAIMANT",
+    "fullNameClaimant": "John Doe",
+    "positionClaimant": "Solicitor",
+    "fullNameLegalRep": null,
+    "firmNameLegalRep": null,
+    "positionLegalRep": null,
+    "agreementClaimant": [
+      "BELIEVE_TRUE"
+    ],
     "agreementLegalRep": [
-      "AGREED"
     ]
   }
 }
