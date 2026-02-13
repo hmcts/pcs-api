@@ -94,17 +94,11 @@ export async function performAction(action: string, fieldName?: actionData | act
     displayFieldName = displayValue;
   }
 
-  const errorValidationRequired = typeof fieldName === 'string' && fieldName.toLowerCase() === 'validationreq';
-  const errorValidationFlag = typeof value === 'string' && value.toUpperCase() === 'NO';
-
   const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
-
-  if (!(errorValidationRequired && errorValidationFlag)) {
     await test.step(stepText, async () => {
       await actionInstance.execute(executor.page, action, fieldName, value);
       await logToBrowser(executor.page, stepText);
     });
-  }
   await validatePageIfNavigated(action);
 }
 
