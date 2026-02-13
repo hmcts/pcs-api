@@ -83,5 +83,21 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
+
+        builder.tab("caseFileView", "Case File View")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
+
+        builder.categories(UserRole.PCS_SOLICITOR)
+            .categoryID("C1")
+            .categoryLabel("My category 1")
+            .displayOrder(10)
+            .build();
+
+        builder.categories(UserRole.PCS_SOLICITOR)
+            .categoryID("C2")
+            .categoryLabel("Rent Statement")
+            .displayOrder(20)
+            .build();
     }
 }
