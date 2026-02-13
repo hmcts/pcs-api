@@ -3,5 +3,5 @@ export const animalsAtTheProperty = {
   mainHeader: 'The animals at the property',
   whatKindOfAnimalDoTheyHave: 'What kind of animal do they have?',
   whatKindOfAnimalDoTheyHaveInput: 'Test input for what kind of animal do they have?',
-  continue: 'Continue',
+  continueButton: 'Continue',
 }

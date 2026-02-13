@@ -7,14 +7,7 @@ import {
   confirmDefendantsDOB,
   everyoneLivingAtTheProperty,
   vulnerableAdultsAndChildren,
-  violentOrAggressiveBehaviour,
-  firearmPossession,
-  criminalOrAntisocialBehaviour,
   riskPosedByEveryoneAtProperty,
-  verbalOrWrittenThreats,
-  groupProtestsEviction,
-  policeOrSocialServiceVisit,
-  animalsAtTheProperty,
   anythingElseHelpWithEviction,
   accessToTheProperty,
   peopleWillBeEvicted,
@@ -26,7 +19,6 @@ import {
   moneyOwed,
   languageUsed,
   statementOfTruthOne,
-  statementOfTruthTwo,
   enterDefendantsDOB,
   suspendedOrder,
   confirmHCEOHired,
@@ -35,7 +27,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { LONG_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, MEDIUM_TIMEOUT, SHORT_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
@@ -53,38 +45,31 @@ export class EnforcementAction implements IAction {
     const actionsMap = new Map<string, () => Promise<void>>([
       ['validateWritOrWarrantFeeAmount', () => this.validateWritOrWarrantFeeAmount(fieldName as actionRecord)],
       ['validateGetQuoteFromBailiffLink', () => this.validateGetQuoteFromBailiffLink(fieldName as actionRecord)],
-      ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord)],
-      ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord)],
-      ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord)],
-      ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord)],
-      ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord)],
-      ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord)],
+      ['selectApplicationType', () => this.selectApplicationType(fieldName as actionRecord, page)],
+      ['confirmClaimTransferredToHighCourt', () => this.confirmClaimTransferredToHighCourt(fieldName as actionRecord, page)],
+      ['selectHaveHiredHCEO', () => this.selectHaveHiredHCEO(fieldName as actionRecord, page)],
+      ['nameYourHCEO', () => this.nameYourHCEO(fieldName as actionRecord, page)],
+      ['selectNameAndAddressForEviction', () => this.selectNameAndAddressForEviction(fieldName as actionRecord, page)],
+      ['confirmDefendantsDOB', () => this.confirmDefendantsDOB(fieldName as actionRecord, page)],
       ['enterDefendantsDOB', () => this.enterDefendantsDOB(page, fieldName as actionRecord)],
-      ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord)],
+      ['selectEveryoneLivingAtTheProperty', () => this.selectEveryoneLivingAtTheProperty(fieldName as actionRecord, page)],
       ['selectPermissionFromJudge', () => this.selectPermissionFromJudge(page)],
       ['getDefendantDetails', () => this.getDefendantDetails(fieldName as actionRecord)],
-      ['selectPeopleWhoWillBeEvicted', () => this.selectPeopleWhoWillBeEvicted(fieldName as actionRecord)],
-      ['selectPeopleYouWantToEvict', () => this.selectPeopleYouWantToEvict(fieldName as actionRecord)],
-      ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord)],
-      ['provideDetailsViolentOrAggressiveBehaviour', () => this.provideDetailsViolentOrAggressiveBehaviour(fieldName as actionRecord)],
-      ['provideDetailsFireArmPossession', () => this.provideDetailsFireArmPossession(fieldName as actionRecord)],
-      ['provideDetailsCriminalOrAntisocialBehavior', () => this.provideDetailsCriminalOrAntisocialBehavior(fieldName as actionRecord)],
-      ['provideDetailsVerbalOrWrittenThreats', () => this.provideDetailsVerbalOrWrittenThreats(fieldName as actionRecord)],
-      ['provideDetailsGroupProtestsEviction', () => this.provideDetailsGroupProtestsEviction(fieldName as actionRecord)],
-      ['provideDetailsPoliceOrSocialServiceVisits', () => this.provideDetailsPoliceOrSocialServiceVisits(fieldName as actionRecord)],
-      ['provideDetailsAnimalsAtTheProperty', () => this.provideDetailsAnimalsAtTheProperty(fieldName as actionRecord)],
-      ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord)],
-      ['provideDetailsAnythingElseHelpWithEviction', () => this.provideDetailsAnythingElseHelpWithEviction(fieldName as actionRecord)],
-      ['accessToProperty', () => this.accessToProperty(fieldName as actionRecord)],
+      ['selectPeopleWhoWillBeEvicted', () => this.selectPeopleWhoWillBeEvicted(fieldName as actionRecord, page)],
+      ['selectPeopleYouWantToEvict', () => this.selectPeopleYouWantToEvict(fieldName as actionRecord, page)],
+      ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord, page)],
+      ['provideRiskPosedByEveryoneAtProperty', () => this.provideRiskPosedByEveryoneAtProperty(fieldName as actionRecord, page)],
+      ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord, page)],
+      ['provideDetailsBasedOnRadioOptionSelection', () => this.provideDetailsBasedOnRadioOptionSelection(fieldName as actionRecord, page)],
       ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord, page)],
       ['provideLegalCosts', () => this.provideLegalCosts(fieldName as actionRecord, page)],
       ['provideLandRegistryFees', () => this.provideLandRegistryFees(fieldName as actionRecord, page)],
       ['provideAmountToRePay', () => this.provideAmountToRePay(fieldName as actionRecord, page)],
       ['validateAmountToRePayTable', () => this.validateAmountToRePayTable(fieldName as actionRecord)],
-      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord)],
-      ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord)],
-      ['selectStatementOfTruthOne', () => this.selectStatementOfTruthOne(fieldName as actionRecord)],
-      ['selectStatementOfTruthTwo', () => this.selectStatementOfTruthTwo(fieldName as actionRecord)],
+      ['selectLanguageUsed', () => this.selectLanguageUsed(fieldName as actionRecord, page)],
+      ['confirmSuspendedOrder', () => this.confirmSuspendedOrder(fieldName as actionRecord, page)],
+      ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord, page)],
+      ['selectStatementOfTruthWrit', () => this.selectStatementOfTruthWrit(fieldName as actionRecord, page)],
       ['inputErrorValidation', () => this.inputErrorValidation(page, fieldName as actionRecord)],
     ]);
     const actionToPerform = actionsMap.get(action);
@@ -101,10 +86,10 @@ export class EnforcementAction implements IAction {
     const feeType = warrantJourney
       ? yourApplication.typeofFee.warrantOfPossessionFee
       : yourApplication.typeofFee.writOfPossessionFee;
-      
+
     const writOrWarrantFeeAmt = warrantJourney ? await this.retrieveAmountFromString(summaryOption.text1 as string) : await this.retrieveAmountFromString(summaryOption.text2 as string);
 
-    moneyMap.set(feeType,writOrWarrantFeeAmt);
+    moneyMap.set(feeType, writOrWarrantFeeAmt);
   }
 
   private async validateGetQuoteFromBailiffLink(bailiffQuote: actionRecord) {
@@ -113,20 +98,20 @@ export class EnforcementAction implements IAction {
     await performAction('expandSummary', bailiffQuote.type);
   }
 
-  private async selectApplicationType(applicationType: actionRecord) {
+  private async selectApplicationType(applicationType: actionRecord, page: Page) {
     await this.addFieldsToMap(applicationType);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: applicationType.question, option: applicationType.option });
-    await performAction('clickButton', yourApplication.continueButton);
+    await this.reTryOnCallBackError(page, yourApplication.continueButton, applicationType.nextPage as string);
   }
 
-  private async confirmClaimTransferredToHighCourt(transfer: actionRecord) {
+  private async confirmClaimTransferredToHighCourt(transfer: actionRecord, page: Page) {
     await this.addFieldsToMap(transfer);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: transfer.question, option: transfer.option });
-    await performAction('clickButton', claimSentToHighCourt.continueButton);
+    await this.reTryOnCallBackError(page, claimSentToHighCourt.continueButton, transfer.nextPage as string);
   }
 
   private async getDefendantDetails(defendantsDetails: actionRecord) {
@@ -161,23 +146,23 @@ export class EnforcementAction implements IAction {
 
   }
 
-  private async selectHaveHiredHCEO(haveYouHired: actionRecord) {
+  private async selectHaveHiredHCEO(haveYouHired: actionRecord, page: Page) {
     await this.addFieldsToMap(haveYouHired);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: haveYouHired.question, option: haveYouHired.option });
-    await performAction('clickButton', confirmHCEOHired.continueButton);
+    await this.reTryOnCallBackError(page, confirmHCEOHired.continueButton, haveYouHired.nextPage as string);
   }
 
-  private async nameYourHCEO(nameHCEO: actionRecord) {
+  private async nameYourHCEO(nameHCEO: actionRecord, page: Page) {
     await this.addFieldsToMap(nameHCEO);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', nameHCEO.label, nameHCEO.input);
-    await performAction('clickButton', yourHCEO.continueButton);
+    await this.reTryOnCallBackError(page, yourHCEO.continueButton, nameHCEO.nextPage as string);
   }
 
-  private async selectNameAndAddressForEviction(nameAndAddress: actionRecord) {
+  private async selectNameAndAddressForEviction(nameAndAddress: actionRecord, page: Page) {
     await this.addFieldsToMap(nameAndAddress);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -191,15 +176,15 @@ export class EnforcementAction implements IAction {
 
     await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderAddress, `${addressInfo.buildingStreet} ${addressInfo.addressLine2} ${addressInfo.townCity} ${addressInfo.engOrWalPostcode}`);
     await performAction('clickRadioButton', { question: nameAndAddress.question, option: nameAndAddress.option });
-    await performAction('clickButton', nameAndAddressForEviction.continueButton);
+    await this.reTryOnCallBackError(page, nameAndAddressForEviction.continueButton, nameAndAddress.nextPage as string);
   }
 
-  private async confirmDefendantsDOB(confirmDefendantsDateOfBirth: actionRecord) {
+  private async confirmDefendantsDOB(confirmDefendantsDateOfBirth: actionRecord, page: Page) {
     await this.addFieldsToMap(confirmDefendantsDateOfBirth);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: confirmDefendantsDateOfBirth.question, option: confirmDefendantsDateOfBirth.option });
-    await performAction('clickButton', confirmDefendantsDOB.continueButton);
+    await this.reTryOnCallBackError(page, confirmDefendantsDOB.continueButton, confirmDefendantsDateOfBirth.nextPage as string);
   }
 
   private async enterDefendantsDOB(page: Page, defendantsDOB: actionRecord) {
@@ -208,24 +193,23 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('inputText', defendantsDOB.label, await this.inputDOB(defendantsDOB.input as Array<string>));
     fieldsMap.set(defendantsDOB.label as string, await page.getByLabel(enterDefendantsDOB.defendantsDOBTextLabel).inputValue());
-    await performAction('clickButton', enterDefendantsDOB.continueButton);
-
+    await this.reTryOnCallBackError(page, enterDefendantsDOB.continueButton, defendantsDOB.nextPage as string);
   }
 
-  private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord) {
+  private async selectPeopleWhoWillBeEvicted(evictPeople: actionRecord, page: Page) {
     await this.addFieldsToMap(evictPeople);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: evictPeople.question, option: evictPeople.option });
-    await performAction('clickButton', peopleWillBeEvicted.continueButton);
+    await this.reTryOnCallBackError(page, peopleWillBeEvicted.continueButton, evictPeople.nextPage as string);
   }
 
-  private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord) {
+  private async selectPeopleYouWantToEvict(peopleYouWantEvicted: actionRecord, page: Page) {
     await this.addFieldsToMap(peopleYouWantEvicted);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('check', { question: peopleYouWantEvicted.question, option: peopleYouWantEvicted.option });
-    await performAction('clickButton', peopleYouWantToEvict.continueButton);
+    await this.reTryOnCallBackError(page, peopleYouWantToEvict.continueButton, peopleYouWantEvicted.nextPage as string);
   }
 
   private async selectPermissionFromJudge(page: Page) {
@@ -244,86 +228,31 @@ export class EnforcementAction implements IAction {
     await generalApplicationPage.close();
   }
 
-  private async selectEveryoneLivingAtTheProperty(riskToBailiff: actionRecord) {
+  private async selectEveryoneLivingAtTheProperty(riskToBailiff: actionRecord, page: Page) {
     await this.addFieldsToMap(riskToBailiff);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: riskToBailiff.question, option: riskToBailiff.option });
-    await performAction('clickButton', everyoneLivingAtTheProperty.continueButton);
+    await this.reTryOnCallBackError(page, everyoneLivingAtTheProperty.continueButton, riskToBailiff.nextPage as string);
   }
 
-  private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord) {
+  private async selectRiskPosedByEveryoneAtProperty(riskCategory: actionRecord, page: Page) {
     await this.addFieldsToMap(riskCategory);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('check', riskCategory.riskTypes);
-    await performAction('clickButton', riskPosedByEveryoneAtProperty.continueButton);
+    await performAction('check', { question: riskCategory.question, option: riskCategory.option });
+    await this.reTryOnCallBackError(page, riskPosedByEveryoneAtProperty.continueButton, riskCategory.nextPage as string);
   }
 
-  private async provideDetailsViolentOrAggressiveBehaviour(violentAggressiveBehaviour: actionRecord) {
-    await this.addFieldsToMap(violentAggressiveBehaviour);
-    await performValidation('mainHeader', violentOrAggressiveBehaviour.mainHeader);
+  private async provideRiskPosedByEveryoneAtProperty(provideRiskPosed: actionRecord, page: Page) {
+    await this.addFieldsToMap(provideRiskPosed);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', violentAggressiveBehaviour.label, violentAggressiveBehaviour.input);
-    await performAction('clickButton', violentOrAggressiveBehaviour.continueButton);
+    await performAction('inputText', provideRiskPosed.label, provideRiskPosed.input);
+    await this.reTryOnCallBackError(page, !provideRiskPosed?.button ? provideRiskPosed.button = 'Continue' : provideRiskPosed.button as string, provideRiskPosed.nextPage as string);
   }
 
-  private async provideDetailsFireArmPossession(firearm: actionRecord) {
-    await this.addFieldsToMap(firearm);
-    await performValidation('mainHeader', firearmPossession.mainHeader);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', firearm.label, firearm.input);
-    await performAction('clickButton', firearmPossession.continue);
-  }
-
-  private async provideDetailsCriminalOrAntisocialBehavior(criminalAntisocialBehaviour: actionRecord) {
-    await this.addFieldsToMap(criminalAntisocialBehaviour);
-    await performValidation('mainHeader', criminalOrAntisocialBehaviour.mainHeader);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', criminalAntisocialBehaviour.label, criminalAntisocialBehaviour.input);
-    await performAction('clickButton', criminalOrAntisocialBehaviour.continue);
-  }
-
-  private async provideDetailsVerbalOrWrittenThreats(verbalWritten: actionRecord) {
-    await this.addFieldsToMap(verbalWritten);
-    await performValidation('mainHeader', verbalOrWrittenThreats.mainHeader);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', verbalWritten.label, verbalWritten.input);
-    await performAction('clickButton', verbalOrWrittenThreats.continue);
-  }
-
-  private async provideDetailsGroupProtestsEviction(protestGroup: actionRecord) {
-    await this.addFieldsToMap(protestGroup);
-    await performValidation('mainHeader', groupProtestsEviction.mainHeader);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', protestGroup.label, protestGroup.input);
-    await performAction('clickButton', groupProtestsEviction.continue);
-  }
-
-  private async provideDetailsPoliceOrSocialServiceVisits(policeOrSSVisit: actionRecord) {
-    await performValidation('mainHeader', policeOrSocialServiceVisit.mainHeader);
-    await this.addFieldsToMap(policeOrSSVisit);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', policeOrSSVisit.label, policeOrSSVisit.input);
-    await performAction('clickButton', policeOrSocialServiceVisit.continue);
-  }
-
-  private async provideDetailsAnimalsAtTheProperty(theAnimalsAtTheProperty: actionRecord) {
-    await performValidation('mainHeader', animalsAtTheProperty.mainHeader);
-    await this.addFieldsToMap(theAnimalsAtTheProperty);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', theAnimalsAtTheProperty.label, theAnimalsAtTheProperty.input);
-    await performAction('clickButton', animalsAtTheProperty.continue);
-  }
-
-  private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord) {
+  private async selectVulnerablePeopleInTheProperty(vulnerablePeople: actionRecord, page: Page) {
     await this.addFieldsToMap(vulnerablePeople);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
@@ -332,27 +261,18 @@ export class EnforcementAction implements IAction {
       await performAction('clickRadioButton', { question: vulnerablePeople.confirm, option: vulnerablePeople.peopleOption });
       await performAction('inputText', vulnerablePeople.label, vulnerablePeople.input);
     }
-    await performAction('clickButton', vulnerableAdultsAndChildren.continueButton);
+    await this.reTryOnCallBackError(page, vulnerableAdultsAndChildren.continueButton, vulnerablePeople.nextPage as string);
   }
-  private async provideDetailsAnythingElseHelpWithEviction(anythingElse: actionRecord) {
-    await this.addFieldsToMap(anythingElse);
+
+  private async provideDetailsBasedOnRadioOptionSelection(userInput: actionRecord, page: Page) {
+    await this.addFieldsToMap(userInput);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: anythingElse.question, option: anythingElse.option });
-    if (anythingElse.option === anythingElseHelpWithEviction.yesRadioOption) {
-      await performAction('inputText', anythingElse.label, anythingElse.input);
+    await performAction('clickRadioButton', { question: userInput.question, option: userInput.option });
+    if (userInput.option === 'Yes') {
+      await performAction('inputText', userInput.label, userInput.input);
     };
-    await performAction('clickButton', anythingElseHelpWithEviction.continueButton);
-  }
-  private async accessToProperty(accessToProperty: actionRecord) {
-    await this.addFieldsToMap(accessToTheProperty);
-    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
-    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('clickRadioButton', { question: accessToProperty.question, option: accessToProperty.option });
-    if (accessToProperty.option === accessToTheProperty.yesRadioOption) {
-      await performAction('inputText', accessToProperty.label, accessToProperty.input);
-    };
-    await performAction('clickButton', accessToTheProperty.continueButton);
+    await this.reTryOnCallBackError(page, !userInput?.button ? userInput.button = 'Continue' : userInput.button as string, userInput.nextPage as string);
   }
 
   private async provideMoneyOwed(totalMoneyOwed: actionRecord, page: Page) {
@@ -362,12 +282,7 @@ export class EnforcementAction implements IAction {
     await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
     const moneyOwedAmt = await this.retrieveAmountFromString(totalMoneyOwed.input as string);
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
-    await expect(async () => {
-      await performAction('clickButton', moneyOwed.continueButton);
-      await expect(page.locator(`//h1[text()="${totalMoneyOwed.nextPage}"]`), `If the ${totalMoneyOwed.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
-    }).toPass({
-      timeout: LONG_TIMEOUT,
-    });
+    await this.reTryOnCallBackError(page, moneyOwed.continueButton, totalMoneyOwed.nextPage as string);
   }
 
   private async provideLegalCosts(legalCost: actionRecord, page: Page) {
@@ -382,12 +297,7 @@ export class EnforcementAction implements IAction {
     } else {
       moneyMap.set(legalCosts.legalCostsFee, 0);
     }
-    await expect(async () => {
-      await performAction('clickButton', legalCosts.continueButton);
-      await expect(page.locator(`//h1[text()="${legalCost.nextPage}"]`), `If the ${legalCost.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
-    }).toPass({
-      timeout: LONG_TIMEOUT,
-    });
+    await this.reTryOnCallBackError(page, legalCosts.continueButton, legalCost.nextPage as string);
   }
 
   private async provideLandRegistryFees(landRegistry: actionRecord, page: Page) {
@@ -402,13 +312,7 @@ export class EnforcementAction implements IAction {
     } else {
       moneyMap.set(landRegistryFees.landRegistryFee, 0);
     }
-    await expect(async () => {
-      await performAction('clickButton', landRegistryFees.continueButton);
-      await expect(page.locator(`//h1[text()="${landRegistry.nextPage}"]`), `If the ${landRegistry.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
-    }).toPass({
-      timeout: LONG_TIMEOUT,
-    });
-
+    await this.reTryOnCallBackError(page, landRegistryFees.continueButton, landRegistry.nextPage as string);
   }
 
   private async validateAmountToRePayTable(header: actionRecord) {
@@ -429,63 +333,58 @@ export class EnforcementAction implements IAction {
     if (amtToPay.option === rePayments.rePaymentRadioOptions.some) {
       await performAction('inputText', amtToPay.label, amtToPay.input);
     };
-    await expect(async () => {
-      await performAction('clickButton', rePayments.continueButton);
-      await expect(page.locator(`//h1[text()="${amtToPay.nextPage}"]`), `If the ${amtToPay.nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
-    }).toPass({
-      timeout: LONG_TIMEOUT,
-    });
+    await this.reTryOnCallBackError(page, rePayments.continueButton, amtToPay.nextPage as string);
   }
 
-  private async selectLanguageUsed(languageDetails: actionRecord) {
+  private async selectLanguageUsed(languageDetails: actionRecord, page: Page) {
     await this.addFieldsToMap(languageDetails);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: languageDetails.question, option: languageDetails.option });
-    await performAction('clickButton', languageUsed.continueButton);
+    await this.reTryOnCallBackError(page, languageUsed.continueButton, languageDetails.nextPage as string);
   }
 
-  private async confirmSuspendedOrder(suspendedOrderPara: actionRecord) {
+  private async confirmSuspendedOrder(suspendedOrderPara: actionRecord, page: Page) {
     await this.addFieldsToMap(suspendedOrderPara);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: suspendedOrderPara.question, option: suspendedOrderPara.option });
-    await performAction('clickButton', suspendedOrder.continueButton);
-
+    await this.reTryOnCallBackError(page, suspendedOrder.continueButton, suspendedOrderPara.nextPage as string);
   }
 
-  private async selectStatementOfTruthOne(claimantDetails: actionRecord) {
+  private async selectStatementOfTruth(claimantDetails: actionRecord, page: Page) {
+    await this.addFieldsToMap(claimantDetails);
     await performAction('check', claimantDetails.selectCheckbox);
-    await performAction('clickRadioButton', { question: statementOfTruthOne.completedByLabel, option: claimantDetails.completedBy });
-    if (claimantDetails.completedBy === statementOfTruthOne.claimantRadioOption) {
-      await performAction('check', claimantDetails.iBelieveCheckbox);
-      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, !claimantDetails.fullNameTextInput ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.fullNameTextInput);
-      await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    await performAction('clickRadioButton', { question: claimantDetails.question, option: claimantDetails.option });
+    if (claimantDetails.option === statementOfTruthOne.claimantRadioOption) {
+      await performAction('check', claimantDetails.option1);
+      await performAction('inputText', claimantDetails.label, !claimantDetails.input ? submitCaseApiData.submitCasePayload.claimantName : claimantDetails.input);
+      await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
     }
-    if (claimantDetails.completedBy === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
-      await performAction('check', claimantDetails.signThisStatementCheckbox);
-      await performAction('inputText', statementOfTruthOne.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-      await performAction('inputText', statementOfTruthOne.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-      await performAction('inputText', statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    if (claimantDetails.option === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+      await performAction('check', claimantDetails.option1);
+      await performAction('inputText', claimantDetails.label, claimantDetails.input);
+      await performAction('inputText', claimantDetails.label1, claimantDetails.input1);
+      await performAction('inputText', claimantDetails.label2, claimantDetails.input2);
     }
-    await performAction('clickButton', statementOfTruthOne.continueButton);
+    await this.reTryOnCallBackError(page, statementOfTruthOne.continueButton, claimantDetails.nextPage as string);
   }
 
-  private async selectStatementOfTruthTwo(claimantDetails: actionRecord) {
-    await performAction('check', claimantDetails.selectCheckbox);
-    await performAction('clickRadioButton', { question: statementOfTruthTwo.completedByLabel, option: claimantDetails.completedBy });
-    if (claimantDetails.completedBy === statementOfTruthTwo.claimantRadioOption) {
-      await performAction('check', claimantDetails.iBelieveCheckbox);
-      await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-      await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+  private async selectStatementOfTruthWrit(claimantSOT: actionRecord, page: Page) {
+    await this.addFieldsToMap(claimantSOT);
+    await performAction('clickRadioButton', { question: claimantSOT.question, option: claimantSOT.option });
+    if (claimantSOT.option === statementOfTruthOne.claimantRadioOption) {
+      await performAction('check', claimantSOT.option1);
+      await performAction('inputText', claimantSOT.label, !claimantSOT.input ? submitCaseApiData.submitCasePayload.claimantName : claimantSOT.input);
+      await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
     }
-    if (claimantDetails.completedBy === statementOfTruthTwo.claimantLegalRepresentativeRadioOption) {
-      await performAction('check', claimantDetails.signThisStatementCheckbox);
-      await performAction('inputText', statementOfTruthTwo.fullNameHiddenTextLabel, claimantDetails.fullNameTextInput);
-      await performAction('inputText', statementOfTruthTwo.nameOfFirmHiddenTextLabel, claimantDetails.nameOfFirmTextInput);
-      await performAction('inputText', statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel, claimantDetails.positionOrOfficeTextInput);
+    if (claimantSOT.option === statementOfTruthOne.claimantLegalRepresentativeRadioOption) {
+      await performAction('check', claimantSOT.option1);
+      await performAction('inputText', claimantSOT.label, claimantSOT.input);
+      await performAction('inputText', claimantSOT.label1, claimantSOT.input1);
+      await performAction('inputText', claimantSOT.label2, claimantSOT.input2);
     }
-    await performAction('clickButton', statementOfTruthOne.continueButton);
+    await this.reTryOnCallBackError(page, statementOfTruthOne.continueButton, claimantSOT.nextPage as string);
   }
 
   private async inputErrorValidation(page: Page, validationArr: actionRecord) {
@@ -643,5 +542,21 @@ export class EnforcementAction implements IAction {
     const year = randomDate.getFullYear();
 
     return `${day} ${month} ${year}`;
+  }
+
+  /* This retry method is called when there is a call back error after the event of button click - with lesser 'Expect' timeout */
+  private async reTryOnCallBackError(page: Page, button: string, nextPage: string) {
+    await expect(async () => {
+      await performAction('clickButton', button);
+      await expect(page.locator(`h3.error-summary-heading:text-is("The event could not be created"),
+                                 h3.error-summary-heading:text-is("Errors"),
+                                 h2#error-summary-title:text-is("There is a problem"),
+                                 h3#edit-case-event_error-summary-heading
+                                 `), `This checks for Unexpected callback errors or server failures. The action retries based on the timeout provided.`).toHaveCount(0, { timeout: SHORT_TIMEOUT });
+
+      await expect(page.locator(`//h1[text()="${nextPage}"]`), `If the ${nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
+    }).toPass({
+      timeout: MEDIUM_TIMEOUT + SHORT_TIMEOUT,
+    });
   }
 }

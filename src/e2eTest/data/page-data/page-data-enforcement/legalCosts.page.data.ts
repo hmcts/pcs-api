@@ -15,7 +15,7 @@ export const legalCosts = {
       { type: 'negativeDecimal', input: '-0.5', errMessage: 'Should be more than or equal to £0.01' },
       { type: 'negative', input: '-5', errMessage: 'Should be more than or equal to £0.01' },
       { type: 'zero', input: '0', errMessage: 'Should be more than or equal to £0.01' },
-      { type: 'max', input: '100000000000000000', errMessage: '10000000000000000000 is not a valid value. Money GBP needs to be expressed in pence' },
+      { type: 'max', input: '100000000', errMessage: 'Should be less than or equal to £10,000,000.00' },
       { type: 'alpha', input: 'test', errMessage: 'The data entered is not valid for How much do you want to reclaim?' },
       { type: 'decimal', input: '10.234', errMessage: 'The data entered is not valid for How much do you want to reclaim?' },
       { type: 'empty', input: '', errMessage: 'The data entered is not valid for How much do you want to reclaim?' },
