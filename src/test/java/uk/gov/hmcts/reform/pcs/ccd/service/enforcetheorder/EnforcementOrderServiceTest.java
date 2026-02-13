@@ -8,14 +8,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
 
@@ -24,6 +27,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -33,12 +38,14 @@ class EnforcementOrderServiceTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
-
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
-
     @Mock
     private PcsCaseRepository pcsCaseRepository;
+    @Mock
+    private EnforcementWarrantMapper enforcementWarrantMapper;
+    @Mock
+    private EnforcementWarrantRepository enforcementWarrantRepository;
 
     @InjectMocks
     private EnforcementOrderService enforcementOrderService;
@@ -91,9 +98,13 @@ class EnforcementOrderServiceTest {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-                .thenReturn(Optional.of(pcsCaseEntity));
+            .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(enforcementWarrantMapper.toEntity(any(), any())).thenReturn(mock(EnforcementWarrantEntity.class));
+        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
+            .thenReturn(mock(EnforcementWarrantEntity.class));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -128,9 +139,14 @@ class EnforcementOrderServiceTest {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-
-        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-                .thenReturn(Optional.of(pcsCaseEntity));
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(pcsCaseEntity));
+        EnforcementOrderEntity enforcementOrderEntity = mock(EnforcementOrderEntity.class);
+        when(enforcementOrderRepository.save(any())).thenReturn(enforcementOrderEntity);
+        EnforcementWarrantEntity mockWarrantEntity = EnforcementWarrantEntity.builder().build();
+        when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
+            .thenReturn(mockWarrantEntity);
+        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
+            .thenReturn(mockWarrantEntity);
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -138,4 +154,51 @@ class EnforcementOrderServiceTest {
         // Then
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
     }
+
+    @Test
+    void shouldSaveNewWarrantEnforcementData() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        when(enforcementWarrantMapper.toEntity(any(), any())).thenReturn(mock(EnforcementWarrantEntity.class));
+        enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WARRANT);
+        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
+            .thenReturn(mock(EnforcementWarrantEntity.class));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
+        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        verify(enforcementWarrantRepository).save(any(EnforcementWarrantEntity.class));
+    }
+
+    @Test
+    void shouldSaveNewWritEnforcementData() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+        enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WRIT);
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
+        assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+        verifyNoInteractions(enforcementWarrantRepository);
+        verifyNoInteractions(enforcementWarrantMapper);
+    }
+
 }

@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,13 +6,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
@@ -28,6 +32,8 @@ public class EnforcementOrderService {
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
+    private final EnforcementWarrantMapper enforcementWarrantMapper;
+    private final EnforcementWarrantRepository enforcementWarrantRepository;
 
     public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
         return enforcementOrderRepository.findById(id)
@@ -58,6 +64,18 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setClaim(claimEntity);
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
-        enforcementOrderRepository.save(enforcementOrderEntity);
+        EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcementOrderEntity);
+        if (SelectEnforcementType.WARRANT == enforcementOrder.getSelectEnforcementType()
+            && enforcementOrder.getWarrantDetails() != null) {
+            storeWarrant(enforcementOrder, saved);
+        }
     }
+
+    private void storeWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
+        EnforcementWarrantEntity warrantEntity = enforcementWarrantMapper.toEntity(enforcementOrder,
+                                                                                   enforcementOrderEntity);
+        EnforcementWarrantEntity saved = enforcementWarrantRepository.save(warrantEntity);
+        enforcementOrderEntity.setWarrantDetails(saved);
+    }
+
 }
