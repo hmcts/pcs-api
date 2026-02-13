@@ -455,7 +455,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
   });
 
-  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement', async () => {
+  test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement @regression', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);

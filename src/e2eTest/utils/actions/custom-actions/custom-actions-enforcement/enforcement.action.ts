@@ -560,12 +560,11 @@ export class EnforcementAction implements IAction {
   private async reTryOnCallBackError(page: Page, button: string, nextPage: string) {
     await expect(async () => {
       await performAction('clickButton', button);
-
       await expect(page.locator(`h3.error-summary-heading:text-is("The event could not be created"),
                                  h3.error-summary-heading:text-is("Errors"),
                                  h2#error-summary-title:text-is("There is a problem"),
                                  h3#edit-case-event_error-summary-heading
-                                 `)).toHaveCount(0, { timeout: SHORT_TIMEOUT });
+                                 `), `This checks for Unexpected callback errors or server failures. The action retries based on the timeout provided.`).toHaveCount(0, { timeout: SHORT_TIMEOUT });
 
       await expect(page.locator(`//h1[text()="${nextPage}"]`), `If the ${nextPage} page is not loaded on the initial attempt,then this retry logic will be activated =>`).toBeVisible({ timeout: SHORT_TIMEOUT });
     }).toPass({
