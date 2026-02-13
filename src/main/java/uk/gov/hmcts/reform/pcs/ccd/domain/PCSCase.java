@@ -6,6 +6,7 @@ import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
@@ -49,6 +50,9 @@ public class PCSCase {
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
     public static final int MIN_MONETARY_AMOUNT = 1;
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
+
+    @CCD
+    private ComponentLauncher caseFileView;
 
     @CCD(
         access = {DefendantAccess.class}
