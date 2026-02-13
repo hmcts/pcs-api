@@ -91,40 +91,37 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         Party party = contactDetails.getParty();
         List<String> errors = new java.util.ArrayList<>();
 
-        // Validate email preference requires email address
-        if (response.getContactByEmail() != null && response.getContactByEmail().toBoolean()) {
-            if (party.getEmailAddress() == null || party.getEmailAddress().isBlank()) {
-                errors.add("Email address is required when email contact preference is selected");
-                log.error("Final submit rejected for case {}: contactByEmail=YES but emailAddress is missing",
-                    caseReference);
-            }
+        validatePreference(response.getContactByEmail(), party.getEmailAddress(),
+            "Email address is required when email contact preference is selected",
+            "contactByEmail", caseReference, errors);
+
+        // Text and phone both require phone number - validate once if either is selected
+        boolean phoneRequired = isPreferenceEnabled(response.getContactByText())
+            || isPreferenceEnabled(response.getContactByPhone());
+
+        if (phoneRequired && isBlank(party.getPhoneNumber())) {
+            errors.add("Phone number is required when text or phone contact preference is selected");
+            log.error("Final submit rejected for case {}: text/phone preference YES but phoneNumber missing",
+                caseReference);
         }
 
-        // Validate text preference requires phone number
-        if (response.getContactByText() != null && response.getContactByText().toBoolean()) {
-            if (party.getPhoneNumber() == null || party.getPhoneNumber().isBlank()) {
-                errors.add("Phone number is required when text contact preference is selected");
-                log.error("Final submit rejected for case {}: contactByText=YES but phoneNumber is missing",
-                    caseReference);
-            }
-        }
+        return errors.isEmpty() ? null : SubmitResponse.<State>builder().errors(errors).build();
+    }
 
-        // Validate phone preference requires phone number
-        if (response.getContactByPhone() != null && response.getContactByPhone().toBoolean()) {
-            if (party.getPhoneNumber() == null || party.getPhoneNumber().isBlank()) {
-                errors.add("Phone number is required when phone contact preference is selected");
-                log.error("Final submit rejected for case {}: contactByPhone=YES but phoneNumber is missing",
-                    caseReference);
-            }
+    private void validatePreference(VerticalYesNo preference, String value, String errorMessage,
+                                     String fieldName, long caseReference, List<String> errors) {
+        if (isPreferenceEnabled(preference) && isBlank(value)) {
+            errors.add(errorMessage);
+            log.error("Final submit rejected for case {}: {}=YES but value is missing", caseReference, fieldName);
         }
+    }
 
-        if (!errors.isEmpty()) {
-            return SubmitResponse.<State>builder()
-                .errors(errors)
-                .build();
-        }
+    private boolean isPreferenceEnabled(VerticalYesNo preference) {
+        return preference != null && preference.toBoolean();
+    }
 
-        return null;
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
@@ -276,21 +273,10 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         Party draftParty = contactDetails.getParty();
 
-        if (draftParty.getFirstName() != null && !draftParty.getFirstName().isBlank()) {
-            defendant.setFirstName(draftParty.getFirstName());
-        }
-
-        if (draftParty.getLastName() != null && !draftParty.getLastName().isBlank()) {
-            defendant.setLastName(draftParty.getLastName());
-        }
-
-        if (draftParty.getEmailAddress() != null && !draftParty.getEmailAddress().isBlank()) {
-            defendant.setEmailAddress(draftParty.getEmailAddress());
-        }
-
-        if (draftParty.getPhoneNumber() != null && !draftParty.getPhoneNumber().isBlank()) {
-            defendant.setPhoneNumber(draftParty.getPhoneNumber());
-        }
+        updateIfNotBlank(draftParty.getFirstName(), defendant::setFirstName);
+        updateIfNotBlank(draftParty.getLastName(), defendant::setLastName);
+        updateIfNotBlank(draftParty.getEmailAddress(), defendant::setEmailAddress);
+        updateIfNotBlank(draftParty.getPhoneNumber(), defendant::setPhoneNumber);
 
         if (draftParty.getPhoneNumberProvided() != null) {
             defendant.setPhoneNumberProvided(draftParty.getPhoneNumberProvided());
@@ -298,6 +284,12 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         if (draftParty.getAddress() != null) {
             defendant.setAddress(addressMapper.toEntity(draftParty.getAddress()));
+        }
+    }
+
+    private void updateIfNotBlank(String value, java.util.function.Consumer<String> setter) {
+        if (!isBlank(value)) {
+            setter.accept(value);
         }
     }
 

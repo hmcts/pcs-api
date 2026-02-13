@@ -1140,7 +1140,7 @@ class SubmitEventHandlerTest {
         // Then
         assertThat(result.getErrors())
             .hasSize(1)
-            .contains("Phone number is required when text contact preference is selected");
+            .contains("Phone number is required when text or phone contact preference is selected");
     }
 
     @Test
@@ -1182,7 +1182,7 @@ class SubmitEventHandlerTest {
         // Then
         assertThat(result.getErrors())
             .hasSize(1)
-            .contains("Phone number is required when phone contact preference is selected");
+            .contains("Phone number is required when text or phone contact preference is selected");
     }
 
     @Test
@@ -1227,7 +1227,7 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors())
             .hasSize(2)
             .contains("Email address is required when email contact preference is selected")
-            .contains("Phone number is required when text contact preference is selected");
+            .contains("Phone number is required when text or phone contact preference is selected");
     }
 
     @Test
