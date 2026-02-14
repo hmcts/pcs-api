@@ -64,7 +64,7 @@ public class PossessionClaimResponseMapper {
             .firstName(matchedDefendant.getFirstName())
             .lastName(matchedDefendant.getLastName())
             .nameKnown(matchedDefendant.getNameKnown())
-            .emailAddress(matchedDefendant.getEmailAddress())
+            // emailAddress intentionally NOT included - stored in DB but not exposed to citizen UI
             .address(contactAddress)
             .addressKnown(matchedDefendant.getAddressKnown())
             .addressSameAsProperty(matchedDefendant.getAddressSameAsProperty())

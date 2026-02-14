@@ -11,7 +11,14 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import java.util.List;
 
-@Builder
+/**
+ * Defendant's response to a possession claim.
+ *
+ * <p><b>IMPORTANT:</b> {@code @Builder(toBuilder = true)} is REQUIRED.
+ * Used by {@link uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler#restoreSavedDraftAnswers}
+ * to safely merge fresh claimant data with saved defendant data.
+ */
+@Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

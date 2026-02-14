@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -14,17 +17,19 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -201,9 +206,7 @@ class SubmitEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNotNull();
-        assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0)).isEqualTo("Invalid submission: missing response data");
+        assertThat(result.getErrors()).containsExactly("Invalid submission: missing response data");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
@@ -266,25 +269,24 @@ class SubmitEventHandlerTest {
         // Then - Must reject when both fields are null
         assertThat(result).isNotNull();
         assertThat(result.getErrors())
-            .as("Must return error when both fields are null")
-            .isNotNull()
-            .hasSize(1);
-        assertThat(result.getErrors().get(0))
-            .as("Error message should indicate no data to save")
-            .isEqualTo("Invalid submission: no data to save");
+            .as("Must return error when both fields are null with correct error message")
+            .containsExactly("Invalid submission: no data to save");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }
 
-    @Test
-    void shouldRejectDraftWhenImmutableFieldNameKnownIsSent() {
-        // Given - Party with immutable field nameKnown
+    @ParameterizedTest
+    @MethodSource("immutableFieldViolationScenarios")
+    void shouldRejectDraftWhenImmutableFieldsSent(
+        List<String> violations,
+        List<String> expectedErrors
+    ) {
+        // Given - Party with immutable fields
         Party party = Party.builder()
             .firstName("John")
             .lastName("Doe")
-            .nameKnown(VerticalYesNo.YES)  // Immutable field with value
             .build();
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
@@ -303,66 +305,36 @@ class SubmitEventHandlerTest {
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         when(immutableFieldValidator.findImmutableFieldViolations(party, CASE_REFERENCE))
-            .thenReturn(List.of("nameKnown"));
+            .thenReturn(violations);
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result.getErrors())
-            .as("Must reject when immutable field is sent")
-            .hasSize(1)
-            .contains("Invalid submission: immutable field must not be sent: nameKnown");
+            .containsExactlyInAnyOrderElementsOf(expectedErrors);
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }
 
-    @Test
-    void shouldRejectDraftWhenMultipleImmutableFieldsSent() {
-        // Given - Party with multiple immutable fields
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .nameKnown(VerticalYesNo.YES)
-            .addressKnown(VerticalYesNo.YES)
-            .addressSameAsProperty(VerticalYesNo.NO)
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(immutableFieldValidator.findImmutableFieldViolations(party, CASE_REFERENCE))
-            .thenReturn(List.of("nameKnown", "addressKnown", "addressSameAsProperty"));
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result.getErrors())
-            .as("Must reject when multiple immutable fields sent")
-            .hasSize(3)
-            .containsExactlyInAnyOrder(
-                "Invalid submission: immutable field must not be sent: nameKnown",
-                "Invalid submission: immutable field must not be sent: addressKnown",
-                "Invalid submission: immutable field must not be sent: addressSameAsProperty"
-            );
-
-        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+    private static Stream<Arguments> immutableFieldViolationScenarios() {
+        return Stream.of(
+            argumentSet(
+                "Single immutable field (nameKnown)",
+                List.of("nameKnown"),
+                List.of("Invalid submission: immutable field must not be sent: nameKnown")
+            ),
+            argumentSet(
+                "Multiple immutable fields",
+                List.of("nameKnown", "addressKnown", "addressSameAsProperty"),
+                List.of(
+                    "Invalid submission: immutable field must not be sent: nameKnown",
+                    "Invalid submission: immutable field must not be sent: addressKnown",
+                    "Invalid submission: immutable field must not be sent: addressSameAsProperty"
+                )
+            )
         );
     }
 
@@ -581,6 +553,65 @@ class SubmitEventHandlerTest {
         submitAndVerifyDraftSaved(caseData);
     }
 
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("legalAdviceTestCases")
+    void shouldSaveDraftWithLegalAdviceField(
+        String testName,
+        YesNoPreferNotToSay legalAdviceValue,
+        YesNoNotSure additionalField
+    ) {
+        // Given
+        DefendantResponses.DefendantResponsesBuilder responsesBuilder = DefendantResponses.builder()
+            .receivedFreeLegalAdvice(legalAdviceValue);
+
+        if (additionalField != null) {
+            responsesBuilder.tenancyTypeCorrect(additionalField);
+        }
+
+        DefendantResponses responses = responsesBuilder.build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(null)
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.NO)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
+        );
+
+        PCSCase savedDraft = pcsCaseCaptor.getValue();
+        assertThat(savedDraft.getPossessionClaimResponse()).isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses())
+            .isNotNull();
+        assertThat(savedDraft.getPossessionClaimResponse().getDefendantResponses()
+            .getReceivedFreeLegalAdvice()).isEqualTo(legalAdviceValue);
+    }
+
+    private static Stream<Arguments> legalAdviceTestCases() {
+        return Stream.of(
+            Arguments.of("Legal advice PREFER_NOT_TO_SAY with other fields",
+                YesNoPreferNotToSay.PREFER_NOT_TO_SAY, YesNoNotSure.YES),
+            Arguments.of("Legal advice YES only",
+                YesNoPreferNotToSay.YES, null),
+            Arguments.of("Legal advice NO only",
+                YesNoPreferNotToSay.NO, null)
+        );
+    }
+
     @Test
     void shouldAllowPartialUpdateWhenOnlyAddressLine1Provided() {
         // Given
@@ -655,10 +686,8 @@ class SubmitEventHandlerTest {
 
         // Then
         assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNotNull();
-        assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0))
-            .isEqualTo("We couldn't save your response. Please try again or contact support.");
+        assertThat(result.getErrors())
+            .containsExactly("We couldn't save your response. Please try again or contact support.");
     }
 
     @Test
