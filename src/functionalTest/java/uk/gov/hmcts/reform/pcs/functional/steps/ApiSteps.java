@@ -3,25 +3,32 @@ package uk.gov.hmcts.reform.pcs.functional.steps;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
+import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;
 
 public class ApiSteps {
 
@@ -33,6 +40,8 @@ public class ApiSteps {
     private static String unauthorisedS2sToken;
     public static String systemUserIdamToken;
     public static String citizenUserIdamToken;
+    public static String solicitorUserIdamToken;
+    Long caseId;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -43,6 +52,7 @@ public class ApiSteps {
 
         systemUserIdamToken = PcsIdamTokenClient.generateToken(systemUser);
         citizenUserIdamToken = PcsIdamTokenClient.generateToken(citizenUser);
+        solicitorUserIdamToken = PcsIdamTokenClient.generateToken(solicitorUser);
 
         SerenityRest.given().baseUri(baseUrl);
     }
@@ -137,10 +147,10 @@ public class ApiSteps {
 
     @Step("the request contains a valid IDAM token")
     public void theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType user) {
-
         String userToken = switch (user) {
             case systemUser -> systemUserIdamToken;
             case citizenUser -> citizenUserIdamToken;
+            case solicitorUser -> solicitorUserIdamToken;
         };
 
         request = request.header(TestConstants.AUTHORIZATION, "Bearer " + userToken);
@@ -162,4 +172,55 @@ public class ApiSteps {
         request = request.body(body);
     }
 
+    @Step("a case for {0} is created")
+    public Long ccdCaseIsCreated(String legislativeCountry) {
+        caseId = SerenityRest.given()
+            .baseUri(baseUrl)
+            .contentType(ContentType.JSON)
+            .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
+            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+            .pathParam("legislativeCountry", legislativeCountry)
+            .when()
+            .post(Endpoints.CreateTestCase.getResource())
+            .then()
+            .statusCode(201)
+            .extract()
+            .path("caseId");
+
+        return caseId;
+    }
+
+    @Step("a pin is fetched")
+    public String accessCodeIsFetched(Long caseReference) {
+        Callable<String> fetchPins = () -> {
+            Map<String, Object> pins = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("caseReference", caseReference)
+                .when()
+                .get(Endpoints.GetPins.getResource())
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<Map<String, Object>>() {});
+
+            if (pins != null && !pins.isEmpty()) {
+                return pins.keySet().iterator().next();
+            }
+            return null;
+        };
+
+        try {
+            return await()
+                .atMost(Duration.ofSeconds(15))
+                .pollInterval(Duration.ofMillis(700))
+                .ignoreExceptions()
+                .until(fetchPins, notNullValue());
+        } catch (ConditionTimeoutException e) {
+            throw new RuntimeException(
+                "Access code not available for case: " + caseReference, e
+            );
+        }
+    }
 }

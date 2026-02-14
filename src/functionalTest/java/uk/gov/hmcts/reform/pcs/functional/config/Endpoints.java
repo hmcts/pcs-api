@@ -5,7 +5,8 @@ public enum Endpoints {
     DashboardNotifications("/dashboard/{caseReference}/notifications"),
     DashboardTasks("/dashboard/{caseReference}/tasks"),
     ClaimEligibility("/testing-support/claim-eligibility"),
-    DeleteTestCase("/testing-support/cases/{caseReference}"),
+    CreateTestCase("/testing-support/{legislativeCountry}/create-case"),
+    GetPins("/testing-support/pins/{caseReference}"),
     ValidateAccessCode("/cases/{caseReference}/validate-access-code");
 
     private final String resource;

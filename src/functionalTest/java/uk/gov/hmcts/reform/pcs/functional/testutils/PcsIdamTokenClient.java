@@ -19,12 +19,14 @@ public class PcsIdamTokenClient {
     private static final String IDAM_SYSTEM_USERNAME = getEnv("IDAM_SYSTEM_USERNAME");
     private static final String IDAM_SYSTEM_PASSWORD = getEnv("IDAM_SYSTEM_USER_PASSWORD");
     private static final String CITIZEN_USERNAME = TestConstants.PCS_CITIZEN_USER;
-    private static final String CITIZEN_PASSWORD = getEnv("IDAM_PCS_USER_PASSWORD");
+    private static final String GENERIC_PASSWORD = getEnv("IDAM_PCS_USER_PASSWORD");
+    private static final String SOLICITOR_USERNAME = TestConstants.PCS_SOLICITOR_USER;
     private static final String CLIENT_SECRET = getEnv("PCS_API_IDAM_SECRET");
 
     public enum UserType {
         systemUser,
-        citizenUser
+        citizenUser,
+        solicitorUser
     }
 
     public static String generateToken(UserType user) {
@@ -32,11 +34,12 @@ public class PcsIdamTokenClient {
         String username = switch (user) {
             case systemUser -> IDAM_SYSTEM_USERNAME;
             case citizenUser -> CITIZEN_USERNAME;
+            case solicitorUser -> SOLICITOR_USERNAME;
         };
 
         String password = switch (user) {
             case systemUser -> IDAM_SYSTEM_PASSWORD;
-            case citizenUser -> CITIZEN_PASSWORD;
+            case citizenUser, solicitorUser -> GENERIC_PASSWORD;
         };
 
         Map<String, String> formData = Map.of(
