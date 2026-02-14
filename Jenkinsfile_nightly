@@ -45,7 +45,7 @@ def secrets = [
 
 withNightlyPipeline(type, product, component) {
   validateInputs()
-  enableSlackNotifications('#pcs-tech')
+  enableSlackNotifications('#qa-pipeline-status') //Revert to #pcs-tech
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
@@ -54,6 +54,10 @@ withNightlyPipeline(type, product, component) {
 
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
+  }
+
+  afterAlways('E2eTest') {
+    postAllureResultsToSlack()
   }
 }
 
@@ -78,4 +82,11 @@ def handleEnvironmentSetting() {
   env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
     ? "pr"
     : "chrome"
+}
+
+// E2E stage: post Allure summary to QA channel (build status sent by library)
+def postAllureResultsToSlack() {
+  def msg = sh(script: 'cd src/e2eTest && ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only 2>/dev/null || true', returnStdout: true).trim()
+  if (!msg) msg = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
+  slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
 }
