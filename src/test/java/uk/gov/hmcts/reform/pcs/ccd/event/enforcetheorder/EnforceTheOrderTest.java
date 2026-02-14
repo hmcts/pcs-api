@@ -85,7 +85,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
-                .build();
+            .build();
 
         // When
         callStartHandler(caseData);
@@ -331,8 +331,8 @@ class EnforceTheOrderTest extends BaseEventTest {
                 "Writ fee",
                 FeeType.ENFORCEMENT_WRIT_FEE,
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWritFeeAmount
-            ),
-            argumentSet(
+        ),
+        argumentSet(
                 "Warrant fee",
                 FeeType.ENFORCEMENT_WARRANT_FEE,
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount
