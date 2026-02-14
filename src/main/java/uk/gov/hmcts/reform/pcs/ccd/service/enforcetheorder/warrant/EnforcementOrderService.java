@@ -9,9 +9,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
@@ -28,6 +30,8 @@ public class EnforcementOrderService {
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
+    private final EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
+    private final SelectedDefendantsMapper selectedDefendantsMapper;
 
     public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
         return enforcementOrderRepository.findById(id)
@@ -59,5 +63,12 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
         enforcementOrderRepository.save(enforcementOrderEntity);
+
+        List<EnforcementSelectedDefendantEntity> selectedDefendantsEntities =
+            selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
+
+        if (!CollectionUtils.isEmpty(selectedDefendantsEntities)) {
+            enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
+        }
     }
 }
