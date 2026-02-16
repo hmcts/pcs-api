@@ -10,13 +10,13 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,41 +28,34 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseRequest;
-import uk.gov.hmcts.reform.pcs.testingsupport.model.CreateTestCaseResponse;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
 import java.security.SecureRandom;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole.DEFENDANT;
 
 @Slf4j
+@AllArgsConstructor
 @RestController
 @RequestMapping("/testing-support")
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
@@ -74,35 +67,10 @@ public class TestingSupportController {
     private final DocAssemblyService docAssemblyService;
     private final EligibilityService eligibilityService;
     private final PcsCaseRepository pcsCaseRepository;
-    private final PartyRepository partyRepository;
     private final PartyAccessCodeRepository partyAccessCodeRepository;
-    private final PcsCaseService pcsCaseService;
-    private final AccessCodeGenerationService accessCodeGenerationService;
     private final ModelMapper modelMapper;
+    private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
     private final SecureRandom secureRandom = new SecureRandom();
-
-    public TestingSupportController(
-        SchedulerClient schedulerClient,
-        @Qualifier("helloWorldTask") Task<Void> helloWorldTask,
-        DocAssemblyService docAssemblyService,
-        EligibilityService eligibilityService,
-        PcsCaseRepository pcsCaseRepository,
-        PartyRepository partyRepository,
-        PartyAccessCodeRepository partyAccessCodeRepository,
-        PcsCaseService pcsCaseService,
-        AccessCodeGenerationService accessCodeGenerationService,
-        ModelMapper modelMapper) {
-        this.schedulerClient = schedulerClient;
-        this.helloWorldTask = helloWorldTask;
-        this.docAssemblyService = docAssemblyService;
-        this.eligibilityService = eligibilityService;
-        this.pcsCaseRepository = pcsCaseRepository;
-        this.partyRepository = partyRepository;
-        this.partyAccessCodeRepository = partyAccessCodeRepository;
-        this.pcsCaseService = pcsCaseService;
-        this.accessCodeGenerationService = accessCodeGenerationService;
-        this.modelMapper = modelMapper;
-    }
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -145,7 +113,8 @@ public class TestingSupportController {
             log.info("Scheduled Hello World task with ID: {} to execute at: {}", taskId, executionTime);
             return ResponseEntity.ok(String.format(
                 "Hello World task scheduled successfully with ID: %s, execution time: %s",
-                taskId, executionTime));
+                taskId, executionTime
+            ));
         } catch (Exception e) {
             log.error("Failed to schedule Hello World task", e);
             return ResponseEntity.internalServerError()
@@ -208,6 +177,21 @@ public class TestingSupportController {
         }
     }
 
+    private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
+        String message = e.getMessage();
+
+        if (message.contains("Bad request")) {
+            return ResponseEntity.badRequest().body("Bad request to Doc Assembly service: " + message);
+        } else if (message.contains("Authorization failed")) {
+            return ResponseEntity.status(401).body("Authorization failed: " + message);
+        } else if (message.contains("endpoint not found")) {
+            return ResponseEntity.status(404).body("Doc Assembly service endpoint not found: " + message);
+        } else if (message.contains("temporarily unavailable") || message.contains("service error")) {
+            return ResponseEntity.status(503).body("Doc Assembly service is temporarily unavailable: " + message);
+        } else {
+            return ResponseEntity.internalServerError().body("Doc Assembly service error: " + message);
+        }
+    }
 
     @Operation(
         summary = "Checks the eligibility for a given property postcode",
@@ -316,198 +300,6 @@ public class TestingSupportController {
     }
 
     @Operation(
-        summary = "Create a test case with defendants",
-        description = "Creates a test case with property address, legislative country, and at least 1 defendant. "
-            + "Case reference and party IDs will be auto-generated if not provided."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Case created successfully"),
-        @ApiResponse(responseCode = "400", description = "Bad request - invalid payload"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @PostMapping(
-        value = "/create-case",
-        consumes = MediaType.APPLICATION_JSON_VALUE,
-        produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<CreateTestCaseResponse> createTestCase(
-        @Parameter(
-            description = "Bearer token for user authentication",
-            required = true,
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        )
-        @RequestHeader(value = AUTHORIZATION) String authorization,
-        @Parameter(
-            description = "Service-to-Service (S2S) authorization token",
-            required = true,
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        )
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @Parameter(
-            description = "Test case creation request",
-            required = true
-        )
-        @RequestBody CreateTestCaseRequest request
-    ) {
-        try {
-            // Generate case reference if not provided (expand to 16 digits)
-            long caseReference = Optional.ofNullable(request.getCaseReference())
-                .orElseGet(this::generateCaseReference);
-
-            // Create case using PcsCaseService
-            PcsCaseEntity caseEntity = pcsCaseService.createCase(
-                caseReference,
-                request.getPropertyAddress(),
-                request.getLegislativeCountry()
-            );
-
-            ClaimEntity mainClaim = ClaimEntity.builder()
-                .pcsCase(caseEntity)
-                .claimCosts(VerticalYesNo.NO)
-                .build();
-
-            caseEntity.addClaim(mainClaim);
-
-            // Create defendants
-            List<PartyEntity> createdPartyEntities = new ArrayList<>();
-            for (CreateTestCaseRequest.DefendantRequest defendantRequest : request.getDefendants()) {
-                // Create PartyEntity
-                PartyEntity partyEntity = PartyEntity.builder()
-                    .pcsCase(caseEntity)
-                    .firstName(defendantRequest.getFirstName())
-                    .lastName(defendantRequest.getLastName())
-                    .idamId(defendantRequest.getIdamUserId())
-                    .build();
-
-                createdPartyEntities.add(partyEntity);
-
-                caseEntity.addParty(partyEntity);
-                mainClaim.addParty(partyEntity, DEFENDANT);
-            }
-
-            // Save to DB to generate party IDs
-            partyRepository.saveAllAndFlush(createdPartyEntities);
-
-            // Save case with parties and defendants
-            pcsCaseRepository.save(caseEntity);
-
-            log.info("Created test case {} with {} defendants", caseReference, request.getDefendants().size());
-
-
-            List<CreateTestCaseResponse.DefendantInfo> defendantInfos = mainClaim.getClaimParties().stream()
-                .filter(claimParty -> claimParty.getRole() == DEFENDANT)
-                .map(ClaimPartyEntity::getParty)
-                .map(party ->
-                    // Create response info (accessCode will be populated after generation)
-                    new CreateTestCaseResponse.DefendantInfo(
-                        party.getId(),
-                        party.getIdamId(),
-                        party.getFirstName(),
-                        party.getLastName(),
-                        null  // Will be populated after access code generation
-                    )
-                )
-                .toList();
-
-
-            // Generate access codes immediately (synchronous - better for testing)
-            try {
-                accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference));
-                log.info("Generated access codes for case {}", caseReference);
-
-                // Load access codes from database and populate in response
-                List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository
-                    .findAllByPcsCase_Id(caseEntity.getId());
-
-                // Create map of partyId -> accessCode
-                Map<UUID, String> partyIdToCode = accessCodes.stream()
-                    .collect(Collectors.toMap(
-                        PartyAccessCodeEntity::getPartyId,
-                        PartyAccessCodeEntity::getCode
-                    ));
-
-                // Update defendantInfos with access codes
-                defendantInfos.forEach(info -> {
-                    String code = partyIdToCode.get(info.getPartyId());
-                    info.setAccessCode(code);
-                });
-
-            } catch (Exception e) {
-                log.warn("Failed to generate access codes for case {}: {}", caseReference, e.getMessage());
-                // Don't fail the request - codes can be generated later if needed
-                // Set accessCode to null for all defendants if generation failed
-                defendantInfos.forEach(info -> info.setAccessCode(null));
-            }
-
-            // Build response with caseId
-            CreateTestCaseResponse response = new CreateTestCaseResponse(
-                caseEntity.getId(),  // caseId (UUID)
-                caseReference,
-                defendantInfos
-            );
-            return ResponseEntity.status(201).body(response);
-
-        } catch (Exception e) {
-            log.error("Failed to create test case", e);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @Operation(
-        summary = "Delete a test case and related access codes",
-        description = "Deletes a case created for testing purposes, along with any associated party access codes."
-    )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Case deleted"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
-        @ApiResponse(responseCode = "404", description = "Case not found"),
-        @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @DeleteMapping("/cases/{caseReference}")
-    public ResponseEntity<Void> deleteCase(
-        @Parameter(
-            description = "Bearer token for user authentication",
-            required = true,
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        )
-        @RequestHeader(value = AUTHORIZATION) String authorization,
-        @Parameter(
-            description = "Service-to-Service (S2S) authorization token",
-            required = true,
-            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-        )
-        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
-        @Parameter(description = "Case reference to delete", required = true)
-        @PathVariable long caseReference
-    ) {
-        try {
-            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
-            if (maybeCase.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            PcsCaseEntity pcsCaseEntity = maybeCase.get();
-
-            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
-                pcsCaseEntity.getId()
-            );
-            if (!accessCodes.isEmpty()) {
-                partyAccessCodeRepository.deleteAll(accessCodes);
-            }
-
-            pcsCaseRepository.delete(pcsCaseEntity);
-            log.info("Deleted test case {} and {} access codes", caseReference, accessCodes.size());
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            log.error("Failed to delete test case {}", caseReference, e);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @Operation(
         summary = "Get all pins associated with a case"
     )
     @ApiResponses(value = {
@@ -588,26 +380,37 @@ public class TestingSupportController {
         }
     }
 
-    private long generateCaseReference() {
-        long timestamp = System.currentTimeMillis();
-        int suffix = secureRandom.nextInt(1000);
-        return Long.parseLong(String.format("%d%03d", timestamp, suffix));
+    @Operation(
+        summary = "Create a PCS case via testing support",
+        description = "Testing support endpoint that orchestrates the CCD calls required to create a case."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Case created successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - invalid payload"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping(
+        value = "/{legislativeCountry}/create-case",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, Object>> createPCSCaseViaTestingSupport(
+        @PathVariable String legislativeCountry,
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @RequestBody(required = false) JsonNode payloadMerge
+    ) {
+        LegislativeCountry country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
+
+        Map<String, Object> result = ccdTestCaseOrchestrator.createCase(authorization, country, payloadMerge);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", "CREATED");
+        body.put("caseId", result.get("caseId"));
+        body.put("caseDetails", result.get("caseDetails"));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
-
-    private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
-        String message = e.getMessage();
-
-        if (message.contains("Bad request")) {
-            return ResponseEntity.badRequest().body("Bad request to Doc Assembly service: " + message);
-        } else if (message.contains("Authorization failed")) {
-            return ResponseEntity.status(401).body("Authorization failed: " + message);
-        } else if (message.contains("endpoint not found")) {
-            return ResponseEntity.status(404).body("Doc Assembly service endpoint not found: " + message);
-        } else if (message.contains("temporarily unavailable") || message.contains("service error")) {
-            return ResponseEntity.status(503).body("Doc Assembly service is temporarily unavailable: " + message);
-        } else {
-            return ResponseEntity.internalServerError().body("Doc Assembly service error: " + message);
-        }
-    }
-
 }

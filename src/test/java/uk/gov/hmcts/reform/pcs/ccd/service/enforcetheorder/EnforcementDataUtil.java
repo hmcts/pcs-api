@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddress
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -65,10 +67,27 @@ final class EnforcementDataUtil {
                 .build();
     }
 
+    static EnforcementOrder buildEnforcementOrderWithVulnerability() {
+        return EnforcementOrder.builder()
+                .selectEnforcementType(SelectEnforcementType.WARRANT)
+                .warrantDetails(WarrantDetails.builder()
+                        .nameAndAddressForEviction(NameAndAddressForEviction.builder()
+                                .correctNameAndAddress(VerticalYesNo.YES)
+                                .build())
+                        .build())
+                .rawWarrantDetails(RawWarrantDetails.builder()
+                        .vulnerablePeoplePresent(YesNoNotSure.YES)
+                        .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                                .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS)
+                                .vulnerableReasonText("Vulnerability reason")
+                                .build())
+                        .build())
+                .build();
+    }
+
     static EnforcementOrder buildEnforcementOrderWithSelectedDefendants(
         List<DynamicStringListElement> selectedValues,
-        List<DynamicStringListElement> listItems
-    ) {
+        List<DynamicStringListElement> listItems) {
         DynamicMultiSelectStringList selectedDefendants = new DynamicMultiSelectStringList(selectedValues, listItems);
 
         return EnforcementOrder.builder()
@@ -86,5 +105,4 @@ final class EnforcementDataUtil {
                                    .build())
             .build();
     }
-
 }
