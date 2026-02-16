@@ -39,8 +39,8 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .page("statementOfTruthWrit", this::midEvent)
             .pageLabel("Statement of truth")
             .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
-            .label("statementOfTruth-writ-line-separator", "---")
-            .label("statementOfTruth-writ-declaration",
+            .label("statementOfTruthWrit-line-separator", "---")
+            .label("statementOfTruthWrit-declaration",
                    """
                   <p class="govuk-body">
                   I certify that the details I have given are correct and that to my knowledge there is no application
@@ -53,7 +53,7 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .complex(EnforcementOrder::getWritDetails)
             .complex(WritDetails::getRepaymentCosts)
             .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
-            .label("statementOfTruth-payments-table",
+            .label("statementOfTruthWrit-payments-table",
                    "${writStatementOfTruthRepaymentSummaryMarkdown}")
             .done()
             .complex(WritDetails::getStatementOfTruth)
@@ -82,7 +82,7 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .done()
             .done()
             .done()
-            .label("statementOfTruthWritPlaceholder-saveAndReturn", SAVE_AND_RETURN);
+            .label("statementOfTruthWrit-saveAndReturn", SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
