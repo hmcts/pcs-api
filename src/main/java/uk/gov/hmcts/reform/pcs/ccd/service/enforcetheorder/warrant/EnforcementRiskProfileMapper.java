@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
@@ -10,6 +11,12 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRis
 
 @Component
 public class EnforcementRiskProfileMapper {
+
+    private final ModelMapper modelMapper;
+
+    public EnforcementRiskProfileMapper(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
 
     public EnforcementRiskProfileEntity toEntity(
             EnforcementOrderEntity enforcementOrderEntity,
@@ -22,13 +29,7 @@ public class EnforcementRiskProfileMapper {
             entity.setAnyRiskToBailiff(warrantDetails.getAnyRiskToBailiff());
             EnforcementRiskDetails riskDetails = warrantDetails.getRiskDetails();
             if (riskDetails != null) {
-                entity.setViolentDetails(riskDetails.getViolentDetails());
-                entity.setFirearmsDetails(riskDetails.getFirearmsDetails());
-                entity.setCriminalDetails(riskDetails.getCriminalDetails());
-                entity.setVerbalThreatsDetails(riskDetails.getVerbalThreatsDetails());
-                entity.setProtestGroupDetails(riskDetails.getProtestGroupDetails());
-                entity.setPoliceSocialServicesDetails(riskDetails.getPoliceSocialServicesDetails());
-                entity.setAnimalsDetails(riskDetails.getAnimalsDetails());
+                modelMapper.map(riskDetails, entity);
             }
         }
 

@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
 
+import org.modelmapper.ModelMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(MockitoExtension.class)
 class EnforcementRiskProfileMapperTest {
 
-    private final EnforcementRiskProfileMapper mapper = new EnforcementRiskProfileMapper();
+    private final EnforcementRiskProfileMapper mapper =
+            new EnforcementRiskProfileMapper(new ModelMapper());
 
     @Nested
     @DisplayName("toEntity")
