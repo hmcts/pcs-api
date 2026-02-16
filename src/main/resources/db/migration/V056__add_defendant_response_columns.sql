@@ -1,4 +1,9 @@
-CREATE TYPE yes_no_not_sure AS ENUM ('YES', 'NO', 'NOT_SURE');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'yes_no_not_sure') THEN
+        CREATE TYPE yes_no_not_sure AS ENUM ('YES', 'NO', 'NOT_SURE');
+    END IF;
+END$$;
 
 ALTER TABLE defendant_response
     ADD COLUMN tenancy_type_correct yes_no_not_sure,
