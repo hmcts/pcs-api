@@ -64,7 +64,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         //Always submit draft data, even if we are doing the 'final' submission
         SubmitResponse<State> draftSubmitResponse = processDraftSubmit(caseReference, caseData);
-        return submitFlag.toBoolean() ? processDraftSubmit(caseReference, caseData) : draftSubmitResponse;
+        return submitFlag.toBoolean() ? processFinalSubmit(caseReference, caseData) : draftSubmitResponse;
     }
 
     private SubmitResponse<State> validate(PCSCase caseData, long caseReference) {
