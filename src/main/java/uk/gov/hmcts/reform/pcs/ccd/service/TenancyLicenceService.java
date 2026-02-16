@@ -7,9 +7,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.exception.CaseDataValidationException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
@@ -91,12 +93,14 @@ public class TenancyLicenceService {
         if (rentDetails != null && rentDetails.getFrequency() != null) {
             tenancyLicenceEntity.setRentAmount(rentDetails.getCurrentRent());
             tenancyLicenceEntity.setRentPerDay(getDailyRentAmount(rentDetails));
-            tenancyLicenceEntity.setRentFrequency(rentDetails.getFrequency());
-            tenancyLicenceEntity.setCalculatedDailyRentCorrect(rentDetails.getPerDayCorrect());
 
+            tenancyLicenceEntity.setRentFrequency(rentDetails.getFrequency());
             if (rentDetails.getFrequency() == RentPaymentFrequency.OTHER) {
                 tenancyLicenceEntity.setOtherRentFrequency(rentDetails.getOtherFrequency());
+            } else {
+                tenancyLicenceEntity.setCalculatedDailyRentCorrect(rentDetails.getPerDayCorrect());
             }
+
         }
     }
 
@@ -109,17 +113,15 @@ public class TenancyLicenceService {
     }
 
     private BigDecimal getDailyRentAmount(RentDetails rentDetails) {
-        BigDecimal[] fieldValues = {
-            rentDetails.getAmendedDailyCharge(),
-            rentDetails.getCalculatedDailyCharge(),
-            rentDetails.getDailyCharge()
-        };
-        for (BigDecimal value : fieldValues) {
-            if (value != null) {
-                return value;
-            }
+        if (rentDetails.getFrequency() == RentPaymentFrequency.OTHER) {
+            return rentDetails.getDailyCharge();
+        } else if (rentDetails.getPerDayCorrect() == VerticalYesNo.YES) {
+            return rentDetails.getCalculatedDailyCharge();
+        } else if (rentDetails.getPerDayCorrect() == VerticalYesNo.NO) {
+            return rentDetails.getAmendedDailyCharge();
+        } else {
+            throw new CaseDataValidationException("Invalid rent details: " + rentDetails);
         }
-        return null;
     }
 
 }

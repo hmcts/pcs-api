@@ -1,11 +1,5 @@
 package uk.gov.hmcts.reform.pcs.openapi;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +8,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import uk.gov.hmcts.reform.pcs.config.AbstractPostgresContainerIT;
+
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Built-in feature which saves service's swagger specs in temporary directory.
@@ -22,7 +24,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(properties = { "spring.flyway.enabled=false" })
 @AutoConfigureMockMvc
-class OpenAPIPublisherTest {
+class OpenAPIPublisherTest extends AbstractPostgresContainerIT {
 
     @Autowired
     private MockMvc mvc;
