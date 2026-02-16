@@ -5,11 +5,14 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales.RENT_ARREARS_S157;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181;
 
 @Component
 public class StandardOrOtherWalesRentSectionRoutingPolicy implements WalesRentSectionRoutingPolicy {
@@ -21,10 +24,13 @@ public class StandardOrOtherWalesRentSectionRoutingPolicy implements WalesRentSe
             return YesOrNo.NO;
         }
         Set<DiscretionaryGroundWales> discretionary = grounds.getDiscretionaryGrounds();
-        if (discretionary == null) {
-            return YesOrNo.NO;
-        }
-        return YesOrNo.from(discretionary.contains(RENT_ARREARS_S157));
+        Set<MandatoryGroundWales> mandatory = grounds.getMandatoryGrounds();
+        boolean rentArrearsDiscretionary = discretionary != null
+                && discretionary.contains(RENT_ARREARS_S157);
+        boolean rentArrearsMandatory = mandatory != null
+                && (mandatory.contains(SERIOUS_ARREARS_PERIODIC_S181)
+                || mandatory.contains(SERIOUS_ARREARS_FIXED_TERM_S187));
+        return YesOrNo.from(rentArrearsDiscretionary || rentArrearsMandatory);
     }
 
     @Override
