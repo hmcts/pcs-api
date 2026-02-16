@@ -4,7 +4,7 @@ import * as path from 'path';
 
 class TextCaptureService {
   private static instance: TextCaptureService;
-  private outputDir: string = path.join(process.cwd(), '/src/e2eTest/generators/output/text-capture-results');
+  private outputDir: string = path.join(process.cwd(), '/generators/output/text-capture-results');
   private locatorsFile: string = path.join(process.cwd(), '/src/e2eTest/generators/output/all-locators.json');
   private capturedPages: Set<string> = new Set();
   private isEnabled: boolean = false;

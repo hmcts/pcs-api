@@ -4,7 +4,7 @@ import * as path from 'path';
 
 class FlowchartLogger {
   private static instance: FlowchartLogger;
-  private filePath: string = path.join(process.cwd(), '/src/e2eTest/generators/output/flowchart.txt');
+  private filePath: string = path.join(process.cwd(), '/generators/output/flowchart.txt');
   private previousNode: string = '';
   private currentAlphabet: string = 'A';
   private alphabetStepCount: number = 0;
