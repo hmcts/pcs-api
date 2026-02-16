@@ -62,11 +62,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         YesOrNo submitFlag = Optional.ofNullable(caseData.getSubmitDraftAnswers())
             .orElse(YesOrNo.NO);
 
-        if (submitFlag.toBoolean()) {
-            return processFinalSubmit(caseReference, caseData);
-        }
-
-        return processDraftSubmit(caseReference, caseData);
+        //Always submit draft data, even if we are doing the 'final' submission
+        SubmitResponse<State> draftSubmitResponse = processDraftSubmit(caseReference, caseData);
+        return submitFlag.toBoolean() ? processDraftSubmit(caseReference, caseData) : draftSubmitResponse;
     }
 
     private SubmitResponse<State> validate(PCSCase caseData, long caseReference) {
