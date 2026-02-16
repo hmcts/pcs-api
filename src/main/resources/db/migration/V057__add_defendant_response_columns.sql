@@ -1,5 +1,3 @@
-CREATE TYPE yes_no_not_sure AS ENUM ('YES', 'NO', 'NOT_SURE');
-
 ALTER TABLE defendant_response
     ADD COLUMN tenancy_type_correct yes_no_not_sure,
     ADD COLUMN tenancy_start_date_correct yes_no_not_sure,
