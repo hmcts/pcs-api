@@ -22,7 +22,7 @@ public class RepaymentTableHelper {
         BigDecimal feeAmount = safe(enforcementCosts.getFeeAmount());
         BigDecimal totalFees = totalArrears.add(legalFees).add(landRegistryFees).add(feeAmount);
 
-        Map<String, Object> context = new HashMap<>();
+        Map<String, Object> context = new HashMap<>(8);
         context.put("totalArrears", totalArrears);
         context.put("legalFees", legalFees);
         context.put("landRegistryFees", landRegistryFees);

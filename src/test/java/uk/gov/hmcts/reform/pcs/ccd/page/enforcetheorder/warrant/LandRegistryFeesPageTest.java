@@ -25,8 +25,8 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTemplate.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegistryFeesPage.WARRANT_FEE_AMOUNT;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.LandRegistryFeesPage.TEMPLATE;
 
 @ExtendWith(MockitoExtension.class)
 class LandRegistryFeesPageTest extends BasePageTest {
@@ -76,12 +76,12 @@ class LandRegistryFeesPageTest extends BasePageTest {
                 .thenReturn(enforcementCosts.getFeeAmount());
         when(repaymentTableRenderer.render(
             enforcementCosts,
-            TEMPLATE
+            WARRANT
         )).thenReturn("<table>Mock Repayment Table</table>");
         when(repaymentTableRenderer.render(
             enforcementCosts,
             "The payments due",
-            TEMPLATE
+            WARRANT
         )).thenReturn("<table>Mock SOT Repayment Table</table>");
 
         // When
@@ -90,12 +90,12 @@ class LandRegistryFeesPageTest extends BasePageTest {
         // Then
         verify(repaymentTableRenderer).render(
             enforcementCosts,
-            TEMPLATE
+            WARRANT
         );
         verify(repaymentTableRenderer).render(
             enforcementCosts,
             "The payments due",
-            TEMPLATE
+            WARRANT
         );
 
         assertThat(caseData.getEnforcementOrder().getWarrantDetails().getRepaymentCosts().getRepaymentSummaryMarkdown())

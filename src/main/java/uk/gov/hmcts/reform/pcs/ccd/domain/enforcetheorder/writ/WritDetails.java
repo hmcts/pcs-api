@@ -16,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.StatementOfTruthDetails;
 
 @Builder
 @Data
@@ -34,7 +35,7 @@ public class WritDetails {
 
     @CCD(searchable = false)
     private YesOrNo showPeopleWhoWillBeEvictedPage;
-    
+
     @CCD(
         label = "Have you hired a High Court enforcement officer?"
     )
@@ -75,4 +76,8 @@ public class WritDetails {
         label = "Has the claim been transferred to the High Court?"
     )
     private YesOrNo hasClaimTransferredToHighCourt;
+
+    @JsonUnwrapped
+    @CCD
+    private StatementOfTruthDetails statementOfTruth;
 }

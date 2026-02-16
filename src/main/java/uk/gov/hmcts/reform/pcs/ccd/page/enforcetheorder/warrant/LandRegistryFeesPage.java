@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTemplate.WARRANT;
 
 @AllArgsConstructor
 @Component
@@ -27,7 +28,6 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
     private final MoneyFormatter moneyFormatter;
 
     public static final String WARRANT_FEE_AMOUNT = "warrantFeeAmount";
-    static final String TEMPLATE = "repaymentTableWarrant";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -65,14 +65,14 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         // Set rendered repayment table for Repayments screen (default caption)
         repaymentCosts.setRepaymentSummaryMarkdown(repaymentTableRenderer.render(
                 enforcementCosts,
-                TEMPLATE
+                WARRANT
         ));
 
         // Set rendered repayment table for SOT screen (custom caption)
         repaymentCosts.setStatementOfTruthRepaymentSummaryMarkdown(repaymentTableRenderer.render(
                 enforcementCosts,
                 "The payments due",
-                TEMPLATE
+                WARRANT
         ));
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

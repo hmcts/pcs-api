@@ -28,9 +28,6 @@ class WritPageConfigurerTest extends BasePageTest {
     private WritPageConfigurer writPageConfigurer;
 
     @Mock
-    private HCEOfficerDetailsPage hceOfficerDetailsPage;
-
-    @Mock
     private LandRegistryFeesWritPage landRegistryFeesWritPage;
 
     @Test
@@ -59,7 +56,7 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, landRegistryFeesWritPage, verificationCount);
         verifyAndCount(inOrder, pageBuilder, RepaymentsWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LanguageUsedWritPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, StatementOfTruthPlaceholderWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, StatementOfTruthWritPage.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
