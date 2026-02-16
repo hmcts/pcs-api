@@ -64,7 +64,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         //Always submit draft data, even if we are doing the 'final' submission
         SubmitResponse<State> draftSubmitResponse = processDraftSubmit(caseReference, caseData);
-        return submitFlag.toBoolean() ? processFinalSubmit(caseReference, caseData) : draftSubmitResponse;
+        return submitFlag.toBoolean() ? processFinalSubmit(caseReference) : draftSubmitResponse;
     }
 
     private SubmitResponse<State> validate(PCSCase caseData, long caseReference) {
@@ -119,7 +119,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return preference != null && preference.toBoolean();
     }
 
-    private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
+    private SubmitResponse<State> processFinalSubmit(long caseReference) {
         log.info("Processing final submission for case {}", caseReference);
 
         try {
@@ -128,7 +128,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             log.debug("Current user ID: {}", userId);
 
             // Step 2: Load draft data from draft_case_data table
-            PCSCase draftData = loadDraftData(caseReference, userId);
+            PCSCase draftData = loadDraftData(caseReference);
 
             // Step 3: Validate contact preferences against contact details
             SubmitResponse<State> contactValidationError = validateContactPreferences(draftData, caseReference);
@@ -241,7 +241,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .build();  // Sparse object - other fields preserved by patchUnsubmittedEventData
     }
 
-    private PCSCase loadDraftData(long caseReference, UUID userId) {
+    private PCSCase loadDraftData(long caseReference) {
         return draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
             .orElseThrow(() -> new IllegalStateException(
                 String.format("No draft found for case %d", caseReference)
