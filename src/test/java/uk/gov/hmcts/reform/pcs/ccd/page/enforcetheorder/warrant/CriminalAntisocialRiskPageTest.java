@@ -38,7 +38,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
                         .warrantDetails(WarrantDetails.builder()
                                 .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementCriminalDetails(riskDetails)
+                                        .criminalDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-            .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(riskDetails);
+            .getRiskDetails().getCriminalDetails()).isEqualTo(riskDetails);
     }
 
 
@@ -64,7 +64,7 @@ class CriminalAntisocialRiskPageTest extends BasePageTest {
                         .warrantDetails(WarrantDetails.builder()
                                 .enforcementRiskCategories(Set.of(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementCriminalDetails(longText)
+                                        .criminalDetails(longText)
                                         .build())
                                 .build())
                         .build())

@@ -22,14 +22,13 @@ public class EnforcementRiskProfileMapper {
             entity.setAnyRiskToBailiff(warrantDetails.getAnyRiskToBailiff());
             EnforcementRiskDetails riskDetails = warrantDetails.getRiskDetails();
             if (riskDetails != null) {
-                entity.setViolentDetails(riskDetails.getEnforcementViolentDetails());
-                entity.setFirearmsDetails(riskDetails.getEnforcementFirearmsDetails());
-                entity.setCriminalDetails(riskDetails.getEnforcementCriminalDetails());
-                entity.setVerbalThreatsDetails(riskDetails.getEnforcementVerbalOrWrittenThreatsDetails());
-                entity.setProtestGroupDetails(riskDetails.getEnforcementProtestGroupMemberDetails());
-                entity.setPoliceSocialServicesDetails(
-                        riskDetails.getEnforcementPoliceOrSocialServicesDetails());
-                entity.setAnimalsDetails(riskDetails.getEnforcementDogsOrOtherAnimalsDetails());
+                entity.setViolentDetails(riskDetails.getViolentDetails());
+                entity.setFirearmsDetails(riskDetails.getFirearmsDetails());
+                entity.setCriminalDetails(riskDetails.getCriminalDetails());
+                entity.setVerbalThreatsDetails(riskDetails.getVerbalThreatsDetails());
+                entity.setProtestGroupDetails(riskDetails.getProtestGroupDetails());
+                entity.setPoliceSocialServicesDetails(riskDetails.getPoliceSocialServicesDetails());
+                entity.setAnimalsDetails(riskDetails.getAnimalsDetails());
             }
         }
 

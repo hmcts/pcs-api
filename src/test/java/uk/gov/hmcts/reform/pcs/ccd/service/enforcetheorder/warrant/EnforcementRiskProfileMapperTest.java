@@ -37,9 +37,9 @@ class EnforcementRiskProfileMapperTest {
                     .warrantDetails(WarrantDetails.builder()
                             .anyRiskToBailiff(YesNoNotSure.YES)
                             .riskDetails(EnforcementRiskDetails.builder()
-                                    .enforcementViolentDetails("Violent")
-                                    .enforcementVerbalOrWrittenThreatsDetails("Verbal")
-                                    .enforcementFirearmsDetails("Firearms")
+                                    .violentDetails("Violent")
+                                    .verbalThreatsDetails("Verbal")
+                                    .firearmsDetails("Firearms")
                                     .build())
                             .build())
                     .build();

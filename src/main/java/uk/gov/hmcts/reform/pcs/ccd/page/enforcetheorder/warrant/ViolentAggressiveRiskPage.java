@@ -37,7 +37,7 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getRiskDetails)
-            .mandatory(EnforcementRiskDetails::getEnforcementViolentDetails)
+            .mandatory(EnforcementRiskDetails::getViolentDetails)
             .done()
             .label("violentAggressiveRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -53,7 +53,7 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementViolentDetails();
+                .getWarrantDetails().getRiskDetails().getViolentDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

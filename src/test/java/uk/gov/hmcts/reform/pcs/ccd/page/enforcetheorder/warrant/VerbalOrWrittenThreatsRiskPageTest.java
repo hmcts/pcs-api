@@ -38,7 +38,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
                         .warrantDetails(WarrantDetails.builder()
                                 .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementVerbalOrWrittenThreatsDetails(riskDetails)
+                                        .verbalThreatsDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                       .getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails()).isEqualTo(riskDetails);
+                       .getRiskDetails().getVerbalThreatsDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -62,7 +62,7 @@ class VerbalOrWrittenThreatsRiskPageTest extends BasePageTest {
                         .warrantDetails(WarrantDetails.builder()
                                 .enforcementRiskCategories(Set.of(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementVerbalOrWrittenThreatsDetails(longText)
+                                        .verbalThreatsDetails(longText)
                                         .build())
                                 .build())
                         .build())

@@ -38,7 +38,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
                         .warrantDetails(WarrantDetails.builder()
                                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementFirearmsDetails(riskDetails)
+                                        .firearmsDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(riskDetails);
+                .getWarrantDetails().getRiskDetails().getFirearmsDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -62,7 +62,7 @@ class FirearmsPossessionRiskPageTest extends BasePageTest {
                         .warrantDetails(WarrantDetails.builder()
                                 .enforcementRiskCategories(Set.of(RiskCategory.FIREARMS_POSSESSION))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementFirearmsDetails(longText)
+                                        .firearmsDetails(longText)
                                         .build())
                                 .build())
                         .build())

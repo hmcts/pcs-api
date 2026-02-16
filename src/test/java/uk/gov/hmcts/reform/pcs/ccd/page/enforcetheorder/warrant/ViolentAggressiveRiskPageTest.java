@@ -38,7 +38,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
                         .warrantDetails(WarrantDetails.builder()
                                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementViolentDetails(riskDetails)
+                                        .violentDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                       .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(riskDetails);
+                       .getRiskDetails().getViolentDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -62,7 +62,7 @@ class ViolentAggressiveRiskPageTest extends BasePageTest {
                         .warrantDetails(WarrantDetails.builder()
                                 .enforcementRiskCategories(Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementViolentDetails(longText)
+                                        .violentDetails(longText)
                                         .build())
                                 .build())
                         .build())

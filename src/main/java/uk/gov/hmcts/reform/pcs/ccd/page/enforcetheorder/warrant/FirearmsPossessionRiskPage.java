@@ -36,7 +36,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getRiskDetails)
-            .mandatory(EnforcementRiskDetails::getEnforcementFirearmsDetails)
+            .mandatory(EnforcementRiskDetails::getFirearmsDetails)
             .done()
             .label("firearmsPossessionRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementFirearmsDetails();
+                .getWarrantDetails().getRiskDetails().getFirearmsDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,
