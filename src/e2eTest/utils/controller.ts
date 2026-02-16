@@ -6,11 +6,6 @@ import { ValidationRegistry } from '@utils/registry/validation.registry';
 import { AxeUtils} from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from '@utils/test-logger';
-import { Page, test } from '@playwright/test';
-import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
-import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
-import { ActionRegistry } from './registry/action.registry';
-import { ValidationRegistry } from './registry/validation.registry';
 import { flowchartLogger } from '../generators/flowchartBuilder';
 import { textCaptureService } from '../generators/text-capture';
 
@@ -38,7 +33,8 @@ export function startNewTest(): void {
 // Add this function to close flowchart after ALL tests
 export function finalizeAllTests(): void {
   flowchartLogger.closeFlowchart();
-  previousUrl = page.url();
+  const executor = getExecutor();
+  previousUrl = executor.page.url();
   captureDataForCYAPage = false;
 }
 
@@ -133,12 +129,12 @@ export async function performAction(action: string, fieldName?: actionData | act
   await flowchartLogger.logNavigation(executor.page);
 }
 
-// Add this function to capture final page of each test
-export async function finalizeTest(): Promise<void> {
-  const executor = getExecutor();
-  await flowchartLogger.forceLogFinalPage(executor.page);
-  await validatePageIfNavigated(action);
-}
+// // Add this function to capture final page of each test
+// export async function finalizeTest(): Promise<void> {
+//   const executor = getExecutor();
+//   await flowchartLogger.forceLogFinalPage(executor.page);
+//   await validatePageIfNavigated(action);
+// }
 
 export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
   const executor = getExecutor();
