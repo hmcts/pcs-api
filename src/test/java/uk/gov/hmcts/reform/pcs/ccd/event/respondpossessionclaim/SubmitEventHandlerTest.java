@@ -190,10 +190,10 @@ class SubmitEventHandlerTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
-            .contactByEmail(YesOrNo.YES)
-            .contactByText(YesOrNo.YES)
-            .contactByPost(YesOrNo.YES)
-            .contactByPhone(YesOrNo.YES)
+            .contactByEmail(VerticalYesNo.YES)
+            .contactByText(VerticalYesNo.NO)
+            .contactByPost(VerticalYesNo.YES)
+            .contactByPhone(VerticalYesNo.NO)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
@@ -814,14 +814,18 @@ class SubmitEventHandlerTest {
     @Test
     void shouldSaveContactPreferencesToDraft() {
         // Given - All 4 contact preferences set
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder().firstName("John").build())
-                .build())
+        DefendantResponses defendantResponses = DefendantResponses.builder()
             .contactByEmail(VerticalYesNo.YES)
             .contactByText(VerticalYesNo.NO)
             .contactByPost(VerticalYesNo.YES)
             .contactByPhone(VerticalYesNo.NO)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(DefendantContactDetails.builder()
+                .party(Party.builder().firstName("John").build())
+                .build())
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -847,10 +851,10 @@ class SubmitEventHandlerTest {
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
 
-        assertThat(savedResponse.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getContactByText()).isEqualTo(VerticalYesNo.NO);
-        assertThat(savedResponse.getContactByPost()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedResponse.getDefendantResponses().getContactByPost()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
@@ -863,14 +867,18 @@ class SubmitEventHandlerTest {
             .phoneNumber("07700900000")
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(DefendantContactDetails.builder()
-                .party(party)
-                .build())
+        DefendantResponses defendantResponses = DefendantResponses.builder()
             .contactByEmail(VerticalYesNo.YES)
             .contactByText(VerticalYesNo.YES)
             .contactByPost(VerticalYesNo.NO)
             .contactByPhone(VerticalYesNo.NO)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(DefendantContactDetails.builder()
+                .party(party)
+                .build())
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -899,8 +907,8 @@ class SubmitEventHandlerTest {
         assertThat(savedResponse.getDefendantContactDetails().getParty().getFirstName()).isEqualTo("Jane");
         assertThat(savedResponse.getDefendantContactDetails().getParty().getEmailAddress())
             .isEqualTo("jane@example.com");
-        assertThat(savedResponse.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -909,13 +917,13 @@ class SubmitEventHandlerTest {
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .oweRentArrears(YesNoNotSure.NO)
+            .contactByEmail(VerticalYesNo.YES)
+            .contactByPost(VerticalYesNo.YES)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
             .defendantResponses(responses)
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByPost(VerticalYesNo.YES)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -940,21 +948,25 @@ class SubmitEventHandlerTest {
 
         assertThat(savedResponse.getDefendantContactDetails()).isNull();
         assertThat(savedResponse.getDefendantResponses().getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedResponse.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getContactByPost()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDefendantResponses().getContactByPost()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
     void shouldSavePartialContactPreferences() {
         // Given - Only 2 contact preferences set, others null
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .contactByText(null)
+            .contactByPost(VerticalYesNo.YES)
+            .contactByPhone(null)
+            .build();
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
                 .party(Party.builder().firstName("John").build())
                 .build())
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(null)
-            .contactByPost(null)
-            .contactByPhone(null)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -980,23 +992,28 @@ class SubmitEventHandlerTest {
         PCSCase savedDraft = pcsCaseCaptor.getValue();
         PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
 
-        assertThat(savedResponse.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getContactByText()).isNull();
-        assertThat(savedResponse.getContactByPost()).isNull();
-        assertThat(savedResponse.getContactByPhone()).isNull();
+        assertThat(savedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDefendantResponses().getContactByText()).isNull();
+        assertThat(savedResponse.getDefendantResponses().getContactByPost()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedResponse.getDefendantResponses().getContactByPhone()).isNull();
     }
 
     @Test
     void shouldSaveContactPreferencesWhenAllNull() {
         // Given - All 4 contact preferences are null
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder().firstName("John").build())
-                .build())
+
+        DefendantResponses defendantResponses = DefendantResponses.builder()
             .contactByEmail(null)
             .contactByText(null)
             .contactByPost(null)
             .contactByPhone(null)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(DefendantContactDetails.builder()
+                .party(Party.builder().firstName("John").build())
+                .build())
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -1035,9 +1052,13 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .build();
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
-            .contactByEmail(VerticalYesNo.YES)  // Want email contact
+            .defendantResponses(defendantResponses)  // Want email contact
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1077,9 +1098,13 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .build();
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
-            .contactByEmail(VerticalYesNo.YES)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1119,9 +1144,13 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByText(VerticalYesNo.YES)
+            .build();
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
-            .contactByText(VerticalYesNo.YES)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1161,9 +1190,14 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByPhone(VerticalYesNo.YES)
+            .build();
+
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
-            .contactByPhone(VerticalYesNo.YES)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1204,10 +1238,14 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
+        DefendantResponses defendantResponses = DefendantResponses.builder()
             .contactByEmail(VerticalYesNo.YES)
             .contactByText(VerticalYesNo.YES)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1248,9 +1286,13 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.NO)
+            .build();
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
-            .contactByEmail(VerticalYesNo.NO)  // Don't want email
+            .defendantResponses(defendantResponses)  // Don't want email
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1294,9 +1336,13 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByEmail(null)
+            .build();
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
-            .contactByEmail(null)  // Null preference
+            .defendantResponses(defendantResponses)  // Null preference
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1340,12 +1386,16 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
+        DefendantResponses defendantResponses = DefendantResponses.builder()
             .contactByPost(VerticalYesNo.YES)
             .contactByEmail(VerticalYesNo.NO)
             .contactByText(VerticalYesNo.NO)
             .contactByPhone(VerticalYesNo.NO)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1379,10 +1429,15 @@ class SubmitEventHandlerTest {
 
     @Test
     void shouldRejectFinalSubmitWhenContactDetailsNull() {
-        // Given - No contact details at all
+
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .build();
+
+        // Given - No contact details at all but email set as preference
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(null)
-            .contactByEmail(VerticalYesNo.YES)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1416,9 +1471,13 @@ class SubmitEventHandlerTest {
             .party(null)
             .build();
 
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .build();
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
-            .contactByEmail(VerticalYesNo.YES)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase draftData = PCSCase.builder()
@@ -1458,9 +1517,13 @@ class SubmitEventHandlerTest {
             .party(party)
             .build();
 
+        DefendantResponses defendantResponses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .build();
+
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
-            .contactByEmail(VerticalYesNo.YES)
+            .defendantResponses(defendantResponses)
             .build();
 
         PCSCase draftData = PCSCase.builder()
