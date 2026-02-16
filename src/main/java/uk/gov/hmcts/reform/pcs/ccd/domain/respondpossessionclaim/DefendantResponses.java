@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
@@ -39,14 +39,14 @@ public class DefendantResponses {
     private LocalDate noticeReceivedDate;
 
     @CCD
-    private YesOrNo contactByEmail;
+    private VerticalYesNo contactByEmail;
 
     @CCD
-    private YesOrNo contactByText;
+    private VerticalYesNo contactByText;
 
     @CCD
-    private YesOrNo contactByPost;
+    private VerticalYesNo contactByPost;
 
     @CCD
-    private YesOrNo contactByPhone;
+    private VerticalYesNo contactByPhone;
 }

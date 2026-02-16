@@ -35,17 +35,5 @@ public class PossessionClaimResponse {
 
     @CCD(access = {CitizenAccess.class})
     private DefendantResponses defendantResponses;
-
-    @CCD(access = {CitizenAccess.class})
-    private VerticalYesNo contactByEmail;
-
-    @CCD(access = {CitizenAccess.class})
-    private VerticalYesNo contactByText;
-
-    @CCD(access = {CitizenAccess.class})
-    private VerticalYesNo contactByPost;
-
-    @CCD(access = {CitizenAccess.class})
-    private VerticalYesNo contactByPhone;
 }
 

@@ -90,13 +90,13 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         Party party = contactDetails.getParty();
         List<String> errors = new java.util.ArrayList<>();
 
-        validatePreference(response.getContactByEmail(), party.getEmailAddress(),
+        validatePreference(response.getDefendantResponses().getContactByEmail(), party.getEmailAddress(),
             "Email address is required when email contact preference is selected",
             "contactByEmail", caseReference, errors);
 
         // Text and phone both require phone number - validate once if either is selected
-        boolean phoneRequired = isPreferenceEnabled(response.getContactByText())
-            || isPreferenceEnabled(response.getContactByPhone());
+        boolean phoneRequired = isPreferenceEnabled(response.getDefendantResponses().getContactByText())
+            || isPreferenceEnabled(response.getDefendantResponses().getContactByPhone());
 
         if (phoneRequired && StringUtils.isBlank(party.getPhoneNumber())) {
             errors.add("Phone number is required when text or phone contact preference is selected");
@@ -230,10 +230,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())
             .defendantResponses(response.getDefendantResponses())
-            .contactByEmail(response.getContactByEmail())
-            .contactByText(response.getContactByText())
-            .contactByPost(response.getContactByPost())
-            .contactByPhone(response.getContactByPhone())
             .build();
 
         return PCSCase.builder()
@@ -302,10 +298,14 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         defendant.getContactPreferences().clear();
 
-        addContactPreference(defendant, ContactPreferenceType.EMAIL, response.getContactByEmail());
-        addContactPreference(defendant, ContactPreferenceType.TEXT, response.getContactByText());
-        addContactPreference(defendant, ContactPreferenceType.POST, response.getContactByPost());
-        addContactPreference(defendant, ContactPreferenceType.PHONE, response.getContactByPhone());
+        addContactPreference(defendant, ContactPreferenceType.EMAIL,
+            response.getDefendantResponses().getContactByEmail());
+        addContactPreference(defendant, ContactPreferenceType.TEXT,
+            response.getDefendantResponses().getContactByText());
+        addContactPreference(defendant, ContactPreferenceType.POST,
+            response.getDefendantResponses().getContactByPost());
+        addContactPreference(defendant, ContactPreferenceType.PHONE,
+            response.getDefendantResponses().getContactByPhone());
 
         log.debug("Updated contact preferences for defendant {}", defendant.getId());
     }
