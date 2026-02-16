@@ -9,8 +9,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.PaymentService;
 
 import java.time.Duration;
 
@@ -20,52 +22,60 @@ public class FeesAndPayTaskComponent {
 
     private static final String FEES_AND_PAY_CASE_ISSUED_TASK_NAME = "fees-and-pay-task";
 
-    public static final TaskDescriptor<String> FEE_CASE_ISSUED_TASK_DESCRIPTOR =
-        TaskDescriptor.of(FEES_AND_PAY_CASE_ISSUED_TASK_NAME, String.class);
+    public static final TaskDescriptor<FeesAndPayTaskData> FEE_CASE_ISSUED_TASK_DESCRIPTOR =
+        TaskDescriptor.of(FEES_AND_PAY_CASE_ISSUED_TASK_NAME, FeesAndPayTaskData.class);
 
-    private final FeesAndPayService feesAndPayService;
+    private final FeeService feeService;
+    private final PaymentService paymentService;
     private final int maxRetriesFeesAndPay;
     private final Duration feesAndPayBackoffDelay;
 
     public FeesAndPayTaskComponent(
-        FeesAndPayService feesAndPayService,
-        @Value("${fees-register.request.max-retries}") int maxRetriesFeesAndPay,
-        @Value("${fees-register.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay
+        FeeService feeService,
+        PaymentService paymentService,
+        @Value("${fees.request.max-retries}") int maxRetriesFeesAndPay,
+        @Value("${fees.request.backoff-delay-seconds}") Duration feesAndPayBackoffDelay
     ) {
-        this.feesAndPayService = feesAndPayService;
+        this.feeService = feeService;
+        this.paymentService = paymentService;
         this.maxRetriesFeesAndPay = maxRetriesFeesAndPay;
         this.feesAndPayBackoffDelay = feesAndPayBackoffDelay;
     }
 
     /**
-     * Creates a scheduled task for fetching fees from the Fees Register API.
-     * and retrieves the corresponding fee information. On successful completion, the task
+     * Creates a scheduled task for creating a payment service request. On successful completion, the task
      * removes itself from the scheduler. On failure, the task will be retried with
      * exponential backoff.
      *
      * @return CustomTask configured with retry logic and exponential backoff on failure
      */
     @Bean
-    public CustomTask<String> feesAndPayCaseIssuedTask() {
+    public CustomTask<FeesAndPayTaskData> feePaymentTask() {
         return Tasks.custom(FEE_CASE_ISSUED_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetriesFeesAndPay,
                 new FailureHandler.ExponentialBackoffFailureHandler<>(feesAndPayBackoffDelay)
             ))
             .execute((taskInstance, executionContext) -> {
-                String feeType = taskInstance.getData();
-                log.debug("Executing fee lookup task for fee type: {}", feeType);
+                FeesAndPayTaskData taskData = taskInstance.getData();
+                log.debug("Executing fee service request for fee type: {}", taskData.getFeeType());
+
+                FeeDetails feeDetails = taskData.getFeeDetails();
 
                 try {
-                    Fee fee = feesAndPayService.getFee(feeType);
-                    log.info("Successfully retrieved fee: type={}, code={}, amount={}",
-                                feeType, fee.getCode(), fee.getCalculatedAmount());
+                    paymentService.createServiceRequest(
+                        taskData.getCaseReference(),
+                        taskData.getCcdCaseNumber(),
+                        feeDetails,
+                        taskData.getVolume(),
+                        taskData.getResponsibleParty()
+                    );
 
                     return new CompletionHandler.OnCompleteRemove<>();
 
                 } catch (Exception e) {
-                    log.error("Failed to retrieve fee for type: {}. Attempt {}/{}",
-                                feeType,
+                    log.error("Failed to create fee service request for type: {}. Attempt {}/{}",
+                                taskData.getFeeType(),
                                 executionContext.getExecution().consecutiveFailures + 1,
                                 maxRetriesFeesAndPay,
                                 e);

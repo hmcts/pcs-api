@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -11,11 +13,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
+@AllArgsConstructor
+@Component
 public class AlternativesToPossessionOptions implements CcdPageConfiguration {
 
     @Override
@@ -23,11 +28,12 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
         pageBuilder
             .page("alternativesToPossession", this::midEvent)
             .pageLabel("Alternatives to possession")
+            .showCondition("legislativeCountry!=\"Wales\"")
             .complex(PCSCase::getSuspensionOfRightToBuy)
-            .readonlyNoSummary(SuspensionOfRightToBuy::getShowSuspensionOfRightToBuyHousingActsPage,NEVER_SHOW)
+            .readonlyNoSummary(SuspensionOfRightToBuy::getShowHousingActsPage, NEVER_SHOW)
             .done()
             .complex(PCSCase::getDemotionOfTenancy)
-            .readonlyNoSummary(DemotionOfTenancy::getShowDemotionOfTenancyHousingActsPage,NEVER_SHOW)
+            .readonlyNoSummary(DemotionOfTenancy::getShowHousingActsPage, NEVER_SHOW)
             .done()
             .complex(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy)
             .readonlyNoSummary(SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionToBuyDemotionOfTenancyPages,
@@ -38,7 +44,7 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
                     <p class="govuk-body govuk-!-margin-bottom-1" tabindex="0">
                       If a judge decides that possession is not reasonable at this time, they may instead decide
                       to order a demotion of tenancy (demotion order) or a suspension of the defendants’ right
-                      to buy (suspension order), if they're not already in place.
+                      to buy (suspension order), if they’re not already in place.
                     </p>
 
                     <h2 class="govuk-heading-l govuk-!-margin-top-1" tabindex="0">Suspension of right to buy</h2>
@@ -57,7 +63,8 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
                       place by the demotion order.
                     </p>
                     """)
-            .optional(PCSCase::getAlternativesToPossession);
+            .optional(PCSCase::getAlternativesToPossession)
+            .label("alternativesToPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -78,11 +85,11 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
 
         if (caseData.getSuspensionOfRightToBuy() != null) {
             caseData.getSuspensionOfRightToBuy()
-                .setShowSuspensionOfRightToBuyHousingActsPage(YesOrNo.from(showSuspensionPage));
+                .setShowHousingActsPage(YesOrNo.from(showSuspensionPage));
         }
         if (caseData.getDemotionOfTenancy() != null) {
             caseData.getDemotionOfTenancy()
-                .setShowDemotionOfTenancyHousingActsPage(YesOrNo.from(showDemotionPage));
+                .setShowHousingActsPage(YesOrNo.from(showDemotionPage));
         }
 
         if (caseData.getSuspensionOfRightToBuyDemotionOfTenancy() != null) {

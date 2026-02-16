@@ -10,7 +10,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
 /**
  * Setup some common possessions case type configuration.
@@ -26,7 +26,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     private static final String JURISDICTION_DESCRIPTION = "Possessions Jurisdiction";
 
     public static String getCaseType() {
-        return withChangeId(CASE_TYPE_ID, "-");
+        return withSuffix(CASE_TYPE_ID, "-");
     }
 
     public static String getJurisdictionId() {
@@ -34,11 +34,11 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     public static String getCaseTypeName() {
-        return withChangeId(CASE_TYPE_NAME, " ");
+        return withSuffix(CASE_TYPE_NAME, " ");
     }
 
-    private static String withChangeId(String base, String separator) {
-        return ofNullable(getenv().get("CHANGE_ID"))
+    private static String withSuffix(String base, String separator) {
+        return ofNullable(getenv().get("CASE_TYPE_SUFFIX"))
             .map(changeId -> base + separator + changeId)
             .orElse(base);
     }
@@ -64,20 +64,24 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getPropertyAddress, "Property Address");
 
         builder.tab("nextSteps", "Next steps")
-            .showCondition(ShowConditions.stateEquals(AWAITING_FURTHER_CLAIM_DETAILS))
+            .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
             .field("nextStepsMarkdown", NEVER_SHOW);
 
         builder.tab("summary", "Summary")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_FURTHER_CLAIM_DETAILS))
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
 
         builder.tab("hidden", "HiddenFields")
             .showCondition(NEVER_SHOW)
-            .field(PCSCase::getPageHeadingMarkdown);
+            .field(PCSCase::getCaseTitleMarkdown);
+
+        builder.tab("serviceRequest", "Service Request")
+            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .field("waysToPay");
     }
 }

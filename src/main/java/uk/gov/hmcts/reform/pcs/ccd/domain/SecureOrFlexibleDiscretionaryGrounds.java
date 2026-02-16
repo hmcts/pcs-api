@@ -2,11 +2,10 @@ package uk.gov.hmcts.reform.pcs.ccd.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 
 @AllArgsConstructor
 @Getter
-public enum SecureOrFlexibleDiscretionaryGrounds implements HasLabel {
+public enum SecureOrFlexibleDiscretionaryGrounds implements PossessionGroundEnum {
 
     RENT_ARREARS_OR_BREACH_OF_TENANCY("Rent arrears or breach of the tenancy (ground 1)"),
     NUISANCE_OR_IMMORAL_USE("Nuisance, annoyance, illegal or immoral use of the property (ground 2)"),
@@ -20,6 +19,11 @@ public enum SecureOrFlexibleDiscretionaryGrounds implements HasLabel {
     REFUSAL_TO_MOVE_BACK("Refusal to move back to main home after works completed (ground 8)");
 
     private final String label;
+
+    @Override
+    public int getRank() {
+        return this.ordinal();
+    }
 
 }
 

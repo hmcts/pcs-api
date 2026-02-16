@@ -53,6 +53,9 @@ applicationinsights-agent-*.jar
 /pacts/
 /cftlib_log_file_IS_UNDEFINED
 /allure-results
-
+/e2e-output
 node_modules
 *.code-workspace
+
+# Playwright authentication state
+/src/e2eTest/.auth/

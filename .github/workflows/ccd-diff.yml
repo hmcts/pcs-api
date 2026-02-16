@@ -18,7 +18,7 @@ jobs:
           java-version: 21
 
       - name: Checkout ${{ matrix.target }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ matrix.target == 'master' && 'master' || github.head_ref }}
           path: build/${{ matrix.target }}
@@ -27,7 +27,7 @@ jobs:
         run: ./gradlew generateCCDConfig
         working-directory: build/${{ matrix.target }}
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ matrix.target }}
           path: build/${{ matrix.target }}/build/definitions/PCS
@@ -41,11 +41,11 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: branch
           path: build/branch
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           name: master
           path: build/master
@@ -71,11 +71,12 @@ jobs:
             echo "summary-path=$SUMMARY_FILE"
           } >> "$GITHUB_OUTPUT"
       - name: Upload HTML report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: ccd-diff-report-${{ github.run_id }}
           path: ${{ steps.ccd-diff.outputs.report-path }}
-      - name: Add report
+
+      - name: Create or update CCD diff comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -88,4 +89,18 @@ jobs:
             printf '👉 Full report: %s\n\n' "$RUN_URL"
             cat "$SUMMARY_PATH"
           } > "$BODY_FILE"
-          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
+
+          COMMENT_ID=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" \
+          --json comments \
+          --jq '[.comments[]
+          | select(.body | startswith("# CCD diff summary"))
+          | .url | capture("#issuecomment-(?<id>[0-9]+)$").id][-1]')
+
+          if [ -n "$COMMENT_ID" ]; then
+              echo "📝 Updating existing CCD diff comment ($COMMENT_ID)"
+              gh api repos/$GITHUB_REPOSITORY/issues/comments/$COMMENT_ID \
+                -X PATCH -f body="$(cat "$BODY_FILE")"
+            else
+              echo "💬 Creating new CCD diff comment"
+              gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file "$BODY_FILE"
+          fi

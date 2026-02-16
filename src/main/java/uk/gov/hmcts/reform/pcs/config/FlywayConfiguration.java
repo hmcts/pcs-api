@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.data.migration.FlywayNoOpStrategy;
  */
 @AutoConfigureAfter({
     DataSourceAutoConfiguration.class,
+    DataSourceConfiguration.class,
     HibernateJpaAutoConfiguration.class
 })
 @AutoConfigureBefore({
@@ -37,11 +38,5 @@ public class FlywayConfiguration {
     @ConditionalOnProperty(prefix = "flyway.noop", name = "strategy", matchIfMissing = true)
     public FlywayMigrationStrategy flywayMigrationStrategy() {
         return new FlywayNoOpStrategy();
-    }
-
-    @Bean
-    @ConditionalOnProperty(prefix = "flyway.noop", name = "strategy", havingValue = "false")
-    public FlywayMigrationStrategy flywayVoidMigrationStrategy() {
-        return null;
     }
 }

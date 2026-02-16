@@ -16,18 +16,30 @@ public class AddressValidator {
     private final PostcodeValidator postcodeValidator;
 
     public List<String> validateAddressFields(AddressUK address) {
+        return validateAddressFields(address, null);
+    }
+
+    public List<String> validateAddressFields(AddressUK address, String sectionHint) {
         List<String> validationErrors = new ArrayList<>();
         if (StringUtils.isBlank(address.getPostTown())) {
-            validationErrors.add("Town or City is required");
+            validationErrors.add(withSectionHint("Town or City is required", sectionHint));
         }
 
         if (StringUtils.isBlank(address.getPostCode())) {
-            validationErrors.add("Postcode is required");
+            validationErrors.add(withSectionHint("Postcode is required", sectionHint));
         } else if (!postcodeValidator.isValidPostcode(address.getPostCode())) {
-            validationErrors.add("Enter a valid postcode");
+            validationErrors.add(withSectionHint("Enter a valid postcode", sectionHint));
         }
 
         return validationErrors;
+    }
+
+    private static String withSectionHint(String errorMessage, String sectionHint) {
+        if (sectionHint != null && !sectionHint.isBlank()) {
+            return errorMessage + " for " + sectionHint;
+        } else {
+            return errorMessage;
+        }
     }
 
 }

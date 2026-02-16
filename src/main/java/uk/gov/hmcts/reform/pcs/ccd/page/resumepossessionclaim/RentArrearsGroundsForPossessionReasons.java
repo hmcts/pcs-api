@@ -1,21 +1,41 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@AllArgsConstructor
+@Component
 public class RentArrearsGroundsForPossessionReasons implements CcdPageConfiguration {
+
+    private static final String ADDITIONAL_MANDATORY_GROUNDS = "rentArrears_AdditionalMandatoryGrounds";
+    private static final String ADDITIONAL_DISCRETIONARY_GROUNDS = "rentArrears_AdditionalDiscretionaryGrounds";
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("rentArrearsGroundsForPossessionReasons")
+            .page("rentArrearsGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition("groundsForPossession=\"Yes\""
-                               + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND showRentArrearsGroundReasonPage=\"Yes\""
+            .showCondition("claimDueToRentArrears=\"Yes\""
+                               + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
                                + " AND hasOtherAdditionalGrounds=\"Yes\""
+                               + " AND legislativeCountry=\"England\""
             )
             .label("rentArrearsGrounds-lineSeparator","---")
             .complex(PCSCase::getRentArrearsGroundsReasons)
@@ -28,20 +48,24 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"OWNER_OCCUPIER_GROUND1\"")
+                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                  AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1))
             .mandatory(RentArrearsGroundsReasons::getOwnerOccupierReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"OWNER_OCCUPIER_GROUND1\"")
+                       ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                    AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1))
 
             .label("rentArrears-repossessionByLender-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
-                    Repossession by the landlord's mortgage lender (ground 2)
+                    Repossession by the landlord’s mortgage lender (ground 2)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"REPOSSESSION_GROUND2\"")
+                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                  AssuredMandatoryGround.REPOSSESSION_GROUND2))
             .mandatory(RentArrearsGroundsReasons::getRepossessionByLenderReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"REPOSSESSION_GROUND2\"")
+                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                             AssuredMandatoryGround.REPOSSESSION_GROUND2))
 
             .label("rentArrears-holidayLet-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -50,9 +74,11 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"HOLIDAY_LET_GROUND3\"")
+                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                  AssuredMandatoryGround.HOLIDAY_LET_GROUND3))
             .mandatory(RentArrearsGroundsReasons::getHolidayLetReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"HOLIDAY_LET_GROUND3\"")
+                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                             AssuredMandatoryGround.HOLIDAY_LET_GROUND3))
 
             .label("rentArrears-studentLet-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -61,9 +87,11 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"STUDENT_LET_GROUND4\"")
+                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                  AssuredMandatoryGround.STUDENT_LET_GROUND4))
             .mandatory(RentArrearsGroundsReasons::getStudentLetReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"STUDENT_LET_GROUND4\"")
+                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                             AssuredMandatoryGround.STUDENT_LET_GROUND4))
 
             .label("rentArrears-ministerOfReligion-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -72,9 +100,11 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"MINISTER_RELIGION_GROUND5\"")
+                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                  AssuredMandatoryGround.MINISTER_RELIGION_GROUND5))
             .mandatory(RentArrearsGroundsReasons::getMinisterOfReligionReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"MINISTER_RELIGION_GROUND5\"")
+                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                             AssuredMandatoryGround.MINISTER_RELIGION_GROUND5))
 
             .label("rentArrears-redevelopment-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -83,9 +113,11 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"REDEVELOPMENT_GROUND6\"")
+                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                  AssuredMandatoryGround.REDEVELOPMENT_GROUND6))
             .mandatory(RentArrearsGroundsReasons::getRedevelopmentReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"REDEVELOPMENT_GROUND6\"")
+                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                             AssuredMandatoryGround.REDEVELOPMENT_GROUND6))
 
             .label("rentArrears-deathOfTenant-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -94,9 +126,11 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"DEATH_OF_TENANT_GROUND7\"")
+                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                  AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7))
             .mandatory(RentArrearsGroundsReasons::getDeathOfTenantReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"DEATH_OF_TENANT_GROUND7\"")
+                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                             AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7))
 
             .label("rentArrears-antisocialBehaviour-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -105,9 +139,12 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"ANTISOCIAL_BEHAVIOUR_GROUND7A\"")
+                """,
+                   ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A))
             .mandatory(RentArrearsGroundsReasons::getAntisocialBehaviourReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"ANTISOCIAL_BEHAVIOUR_GROUND7A\"")
+                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                             AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A))
 
             .label("rentArrears-noRightToRent-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -116,9 +153,11 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsMandatoryGroundsCONTAINS\"NO_RIGHT_TO_RENT_GROUND7B\"")
+                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                                  AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B))
             .mandatory(RentArrearsGroundsReasons::getNoRightToRentReason,
-                "rentArrearsMandatoryGroundsCONTAINS\"NO_RIGHT_TO_RENT_GROUND7B\"")
+                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
+                                             AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B))
 
             // ---------- Discretionary grounds ----------
             .label("rentArrears-suitableAlternativeAccommodation-label", """
@@ -128,9 +167,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"ALTERNATIVE_ACCOMMODATION_GROUND9\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9))
             .mandatory(RentArrearsGroundsReasons::getSuitableAltAccommodationReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"ALTERNATIVE_ACCOMMODATION_GROUND9\"")
+                ShowConditions.fieldContains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9))
 
             .label("rentArrears-breachOfTenancyConditions-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -139,9 +182,12 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"BREACH_TENANCY_GROUND12\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12))
             .mandatory(RentArrearsGroundsReasons::getBreachOfTenancyConditionsReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"BREACH_TENANCY_GROUND12\"")
+                ShowConditions.fieldContains(ADDITIONAL_DISCRETIONARY_GROUNDS,
+                                             AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12))
 
             .label("rentArrears-propertyDeterioration-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -150,9 +196,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"DETERIORATION_PROPERTY_GROUND13\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13))
             .mandatory(RentArrearsGroundsReasons::getPropertyDeteriorationReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"DETERIORATION_PROPERTY_GROUND13\"")
+                ShowConditions.fieldContains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13))
 
             .label("rentArrears-nuisanceAnnoyance-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -161,9 +211,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"NUISANCE_ANNOYANCE_GROUND14\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14))
             .mandatory(RentArrearsGroundsReasons::getNuisanceAnnoyanceReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"NUISANCE_ANNOYANCE_GROUND14\"")
+                ShowConditions.fieldContains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14))
 
             .label("rentArrears-domesticViolence-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -172,9 +226,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"DOMESTIC_VIOLENCE_GROUND14A\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A))
             .mandatory(RentArrearsGroundsReasons::getDomesticViolenceReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"DOMESTIC_VIOLENCE_GROUND14A\"")
+                ShowConditions.fieldContains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A))
 
             .label("rentArrears-offenceDuringRiot-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -183,9 +241,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"OFFENCE_RIOT_GROUND14ZA\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA))
             .mandatory(RentArrearsGroundsReasons::getOffenceDuringRiotReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"OFFENCE_RIOT_GROUND14ZA\"")
+                ShowConditions.fieldContains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA))
 
             .label("rentArrears-furnitureDeterioration-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -194,9 +256,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"DETERIORATION_FURNITURE_GROUND15\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15))
             .mandatory(RentArrearsGroundsReasons::getFurnitureDeteriorationReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"DETERIORATION_FURNITURE_GROUND15\"")
+                ShowConditions.fieldContains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15))
 
             .label("rentArrears-employeeOfLandlord-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -205,9 +271,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"EMPLOYEE_LANDLORD_GROUND16\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16))
             .mandatory(RentArrearsGroundsReasons::getEmployeeOfLandlordReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"EMPLOYEE_LANDLORD_GROUND16\"")
+                ShowConditions.fieldContains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16))
 
             .label("rentArrears-tenancyByFalseStatement-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -216,9 +286,140 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, "rentArrearsDiscretionaryGroundsCONTAINS\"FALSE_STATEMENT_GROUND17\"")
+                """, ShowConditions.fieldContains(
+                ADDITIONAL_DISCRETIONARY_GROUNDS,
+                AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17))
             .mandatory(RentArrearsGroundsReasons::getTenancyByFalseStatementReason,
-                "rentArrearsDiscretionaryGroundsCONTAINS\"FALSE_STATEMENT_GROUND17\"")
-            .done();
+                ShowConditions.fieldContains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17))
+            .done()
+            .label("rentArrearsGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+
+        List<String> validationErrors = new ArrayList<>();
+
+        RentArrearsGroundsReasons rentArrearsGrounds = caseData.getRentArrearsGroundsReasons();
+        if (rentArrearsGrounds != null) {
+            validationErrors.addAll(validateRentArrearsGrounds(rentArrearsGrounds));
+        }
+
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private List<String> validateRentArrearsGrounds(RentArrearsGroundsReasons grounds) {
+        List<TextAreaValidationService.FieldValidation> allValidations = new ArrayList<>();
+        allValidations.addAll(List.of(buildMandatoryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildDiscretionaryGroundValidations(grounds)));
+
+        return textAreaValidationService.validateMultipleTextAreas(
+            allValidations.toArray(new TextAreaValidationService.FieldValidation[0])
+        );
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildMandatoryGroundValidations(
+            RentArrearsGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getOwnerOccupierReason(),
+                AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getRepossessionByLenderReason(),
+                AssuredMandatoryGround.REPOSSESSION_GROUND2.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getHolidayLetReason(),
+                AssuredMandatoryGround.HOLIDAY_LET_GROUND3.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getStudentLetReason(),
+                AssuredMandatoryGround.STUDENT_LET_GROUND4.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getMinisterOfReligionReason(),
+                AssuredMandatoryGround.MINISTER_RELIGION_GROUND5.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getRedevelopmentReason(),
+                AssuredMandatoryGround.REDEVELOPMENT_GROUND6.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getDeathOfTenantReason(),
+                AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAntisocialBehaviourReason(),
+                AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getNoRightToRentReason(),
+                AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildDiscretionaryGroundValidations(
+            RentArrearsGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSuitableAltAccommodationReason(),
+                AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getBreachOfTenancyConditionsReason(),
+                AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getPropertyDeteriorationReason(),
+                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getNuisanceAnnoyanceReason(),
+                AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getDomesticViolenceReason(),
+                AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getOffenceDuringRiotReason(),
+                AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getFurnitureDeteriorationReason(),
+                AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getEmployeeOfLandlordReason(),
+                AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getTenancyByFalseStatementReason(),
+                AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
     }
 }

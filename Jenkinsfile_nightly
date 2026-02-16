@@ -14,16 +14,6 @@ properties([
       defaultValue: '',
       description: 'PR number (REQUIRED if environment is preview, leave blank otherwise).'
     ),
-    booleanParam(
-      name: 'CHROME_TESTS',
-      defaultValue: false,
-      description: 'Tick the checkbox to run E2E tests in Chrome.'
-    ),
-    booleanParam(
-      name: 'FIREFOX_TESTS',
-      defaultValue: false,
-      description: 'Tick the checkbox to run E2E tests in Firefox.'
-    ),
   ])
 ])
 
@@ -47,6 +37,7 @@ def secrets = [
     secret('idam-system-user-name', 'IDAM_SYSTEM_USERNAME'),
     secret('idam-system-user-password', 'IDAM_SYSTEM_USER_PASSWORD'),
     secret('idam-pcs-user-password', 'IDAM_PCS_USER_PASSWORD'),
+    secret('pcs-solicitor-automation-uid', 'PCS_SOLICITOR_AUTOMATION_UID'),
     secret('pcs-prd-admin-username', 'PCS_PRD_ADMIN_USERNAME'),
     secret('pcs-prd-admin-password', 'PCS_PRD_ADMIN_PASSWORD')
   ]
@@ -58,11 +49,11 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
+
+  enableE2eTest()
+
   afterAlways('fortify-scan') {
     steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/Fortify Scan/**/*'
-    //Skipping e2e tests as the decentralisation is not currently supported in aat
-    //runE2eTests()
-    //publishE2EReport()
   }
 }
 
@@ -78,37 +69,13 @@ def validateInputs() {
 def handleEnvironmentSetting() {
   env.MANAGE_CASE_BASE_URL = (params.ENVIRONMENT == 'preview')
     ? "https://xui-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
-    : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net/"
-}
+    : "https://manage-case.${params.ENVIRONMENT}.platform.hmcts.net"
 
-def runE2eTests() {
-  if (params.CHROME_TESTS) {
-    runE2ETestForBrowser('Chrome')
-  }
-  if (params.FIREFOX_TESTS) {
-    runE2ETestForBrowser('Firefox')
-  }
-}
+  env.DATA_STORE_URL_BASE = (params.ENVIRONMENT == 'preview')
+    ? "https://ccd-data-store-api-pcs-api-pr-${params.PR_NUMBER}.preview.platform.hmcts.net"
+    : "http://ccd-data-store-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
 
-def runE2ETestForBrowser(String browser) {
-  stage("Full E2E Test - ${browser}") {
-    try {
-      sh "./gradlew runE2e${browser}Tests"
-    } catch (Error) {
-      unstable(message: "${STAGE_NAME} is unstable: " + Error.toString())
-    }
-  }
-}
-
-def publishE2EReport() {
-  stage("Publish E2E Test Report") {
-    publishHTML([
-      allowMissing: true,
-      alwaysLinkToLastBuild: true,
-      keepAll: true,
-      reportDir: "src/e2eTest/allure-report",
-      reportFiles: 'index.html',
-      reportName: "Full EXUI E2E Test Report"
-    ])
-  }
+  env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
+    ? "pr"
+    : "chrome"
 }

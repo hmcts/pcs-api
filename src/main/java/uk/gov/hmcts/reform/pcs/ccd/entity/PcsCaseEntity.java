@@ -8,8 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -18,15 +16,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicence;
-import uk.gov.hmcts.reform.pcs.ccd.model.Defendant;
-import uk.gov.hmcts.reform.pcs.ccd.model.PartyDocumentDto;
-import uk.gov.hmcts.reform.pcs.ccd.model.PossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,12 +36,6 @@ import static jakarta.persistence.FetchType.LAZY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@NamedEntityGraph(
-    name = "PcsCaseEntity.parties",
-    attributeNodes = {
-        @NamedAttributeNode("parties")
-    }
-)
 public class PcsCaseEntity {
 
     @Id
@@ -70,11 +58,9 @@ public class PcsCaseEntity {
 
     private Boolean preActionProtocolCompleted;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    private TenancyLicence tenancyLicence;
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    private PossessionGrounds possessionGrounds;
+    @OneToOne(mappedBy = "pcsCase", cascade = ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private TenancyLicenceEntity tenancyLicence;
 
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
@@ -84,15 +70,24 @@ public class PcsCaseEntity {
     @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL)
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimEntity> claims = new HashSet<>();
+    private List<ClaimEntity> claims = new ArrayList<>();
 
-    @Column(name = "defendant_details")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private List<Defendant> defendants;
+    @OneToMany(mappedBy = "pcsCase", fetch = LAZY, cascade = ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonManagedReference
+    private List<DocumentEntity> documents = new ArrayList<>();
 
-    @Column(name = "party_documents")
-    @JdbcTypeCode(SqlTypes.JSON)
-    private List<PartyDocumentDto> partyDocuments;
+    public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
+        if (this.tenancyLicence != null) {
+            this.tenancyLicence.setPcsCase(null);
+        }
+
+        this.tenancyLicence = tenancyLicence;
+
+        if (this.tenancyLicence != null) {
+            this.tenancyLicence.setPcsCase(this);
+        }
+    }
 
     public void addClaim(ClaimEntity claim) {
         claims.add(claim);
@@ -104,4 +99,10 @@ public class PcsCaseEntity {
         party.setPcsCase(this);
     }
 
+    public void addDocuments(List<DocumentEntity> documents) {
+        for (DocumentEntity document : documents) {
+            document.setPcsCase(this);
+            this.documents.add(document);
+        }
+    }
 }

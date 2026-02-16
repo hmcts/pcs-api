@@ -1,0 +1,22 @@
+export const asbQuestionsWales = {
+  mainHeader: `Antisocial behaviour and illegal or prohibited conduct`,
+  cancelLink: `Cancel`,
+  caseNumberParagraph: `Case number:`,
+  continueButton: `Continue`,
+  cymraegToggleLink: `Cymraeg`,
+  giveDetailsOfAsbHiddenTextLabel: `Give details of the actual or threatened antisocial behaviour`,
+  giveDetailsOfAsbHiddenTextInput: `Aggression to others`,
+  giveDetailsOfIllegalHiddenTextLabel: `Give details of the actual or threatened use of the premises for illegal purposes`,
+  giveDetailsOfIllegalHiddenTextInput: `illegal purposes`,
+  giveDetailsOfTheOtherHiddenTextLabel: `Give details of the other prohibited conduct`,
+  giveDetailsOfTheOtherHiddenTextInput: `prohibited conduct`,
+  hasThereBeenOtherProhibitedQuestion: `Has there been other prohibited conduct?`,
+  isThereActualOrThreatenedAsbQuestion: `Is there actual or threatened antisocial behaviour?`,
+  isThereActualIllegalPurposesQuestion: `Is there actual or threatened use of the premises for illegal purposes?`,
+  makeAClaimCaption: `Make a claim`,
+  noRadioOption: `No`,
+  previousButton: `Previous`,
+  yesRadioOption: `Yes`,
+  youCanEnterUpToHintText: `You can enter up to 500 characters`,
+  youllHaveTheOptionToParagraph: `You’ll have the option to upload documents that give more details about the antisocial behaviour or illegal or prohibited conduct you’re describing or evidence of this behaviour later on.`
+};

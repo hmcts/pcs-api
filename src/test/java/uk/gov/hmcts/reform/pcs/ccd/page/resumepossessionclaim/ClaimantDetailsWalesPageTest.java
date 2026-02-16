@@ -22,9 +22,9 @@ class ClaimantDetailsWalesPageTest {
         LocalDate today = LocalDate.of(2023, 6, 15);
         Clock fixedClock = Clock.fixed(today.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
         ClaimantDetailsWalesPage page = new ClaimantDetailsWalesPage(fixedClock);
-        
+
         LocalDate futureDate = today.plusDays(1);
-        
+
         WalesHousingAct walesHousingAct = WalesHousingAct.builder()
             .registered(YesNoNotApplicable.YES)
             .registrationNumber("REG123")
@@ -51,6 +51,7 @@ class ClaimantDetailsWalesPageTest {
 
         // Then
         assertThat(response).isNotNull();
-        assertThat(response.getErrors()).containsExactly("The agent's date of appointment must be in the past");
+        assertThat(response.getErrorMessageOverride())
+            .isEqualTo("The agent’s date of appointment must be in the past");
     }
 }

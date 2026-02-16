@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.model;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,167 +14,177 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class NoRentArrearsReasonForGrounds {
 
     // Ground 1
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Owner occupier (ground 1))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String ownerOccupierTextArea;
+    private String ownerOccupier;
 
     // Ground 2
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Repossession by the landlord’s"
+                + " mortgage lender (ground 2))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String repossessionByLenderTextArea;
+    private String repossessionByLender;
 
     // Ground 3
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+        label = "Give details about your reasons for claiming possession (Holiday let (ground 3))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String holidayLetTextArea;
+    private String holidayLet;
 
     // Ground 4
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Student let (ground 4))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String studentLetTextArea;
+    private String studentLet;
 
     // Ground 5
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Property required for minister of"
+            + " religion (ground 5))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String ministerOfReligionTextArea;
+    private String ministerOfReligion;
 
     // Ground 6
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Property required for "
+                + "redevelopment (ground 6))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String redevelopmentTextArea;
+    private String redevelopment;
 
     // Ground 7
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Death of the tenant (ground 7))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String deathOfTenantTextArea;
+    private String deathOfTenant;
 
     // Ground 7A
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Antisocial behaviour (ground 7A))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String antisocialBehaviourTextArea;
+    private String antisocialBehaviour;
 
     // Ground 7B
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Tenant does not have a right "
+                + "to rent (ground 7B))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String noRightToRentTextArea;
+    private String noRightToRent;
 
     // Ground 9
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Suitable alternative"
+                + " accommodation (ground 9))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String suitableAccomTextArea;
+    private String suitableAlternativeAccomodation;
 
     // Ground 12
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession "
+                + "(Breach of tenancy conditions (ground 12))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String breachOfTenancyConditionsTextArea;
+    private String breachOfTenancyConditions;
 
     // Ground 13
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Deterioration in the condition "
+                + "of the property (ground 13))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String propertyDeteriorationTextArea;
+    private String propertyDeterioration;
 
     // Ground 14
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Nuisance, annoyance, illegal or "
+                + "immoral use of the property (ground 14))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String nuisanceOrIllegalUseTextArea;
+    private String nuisanceOrIllegalUse;
 
     // Ground 14A
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Domestic violence (ground 14A))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String domesticViolenceTextArea;
+    private String domesticViolence;
 
     // Ground 14ZA
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Offence during a riot (ground 14ZA))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String offenceDuringRiotTextArea;
+    private String offenceDuringRiot;
 
     // Ground 15
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Deterioration of furniture (ground 15))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String furnitureDeteriorationTextArea;
+    private String furnitureDeterioration;
 
     // Ground 16
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Employee of the landlord (ground 16))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String landlordEmployeeTextArea;
+    private String landlordEmployee;
 
     // Ground 17
     @CCD(
-            label = "Give details about your reasons for claiming possession",
-            hint = "You'll be able to upload documents to support or further explain your reasons later on",
-            typeOverride = TextArea,
-            max = 500
+            label = "Give details about your reasons for claiming possession (Tenancy obtained by false "
+                + "statement (ground 17))",
+            hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+                + "You can enter up to 500 characters",
+            typeOverride = TextArea
     )
-    private String falseStatementTextArea;
+    private String falseStatement;
 }

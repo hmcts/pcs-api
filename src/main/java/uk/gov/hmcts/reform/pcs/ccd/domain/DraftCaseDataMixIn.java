@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
  * Use this class to annotate fields that exist in {@link PCSCase} that
  * should not be persisted as draft data, (e.g. derived fields)
  */
+@SuppressWarnings("unused")
 public abstract class DraftCaseDataMixIn {
 
     @JsonIgnore
@@ -14,9 +15,7 @@ public abstract class DraftCaseDataMixIn {
     @JsonIgnore
     private YesOrNo showCrossBorderPage;
     @JsonIgnore
-    private String pageHeadingMarkdown;
-    @JsonIgnore
-    private String claimPaymentTabMarkdown;
+    private String caseTitleMarkdown;
     @JsonIgnore
     private String nextStepsMarkdown;
 

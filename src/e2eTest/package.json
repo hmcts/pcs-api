@@ -5,10 +5,15 @@
   "engines": {
     "node": ">=18.0.0"
   },
+  "resolutions": {
+    "lighthouse": "^12.8.2"
+  },
   "scripts": {
-    "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate --clean; exit $EXIT_CODE",
-    "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate --clean; exit $EXIT_CODE",
-    "test:openAllureReport": "yarn allure open allure-report"
+    "test:pr": "yarn playwright install && yarn playwright test --project chrome --grep '@PR'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
+    "test:regression": "yarn playwright install && yarn playwright test --project chrome --grep '@regression'; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
+    "test:chrome": "yarn playwright install && yarn playwright test --project chrome; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
+    "test:firefox": "yarn playwright install && yarn playwright test --project firefox; EXIT_CODE=$?; allure generate -o ../../e2e-output --clean; tsx ./config/clean-attachments.config.ts; exit $EXIT_CODE",
+    "test:openAllureReport": "yarn allure open ../../e2e-output"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
@@ -26,5 +31,8 @@
     "@hmcts/playwright-common": "^1.0.33",
     "oauth4webapi": "^3.5.1",
     "uuid": "^13.0.0"
+  },
+  "resolutions": {
+    "lighthouse": "^12.8.2"
   }
 }

@@ -26,15 +26,15 @@ public class DefendantCircumstances {
     private String defendantCircumstancesLabel;
 
     @CCD(
-        label = "Is there any information you'd like to provide about the ${defendantTermPossessive} circumstances?",
+        label = "Is there any information you’d like to provide about the ${defendantTermPossessive} circumstances?",
         hint = "This can be any known details or any attempts made to obtain details"
     )
     private VerticalYesNo hasDefendantCircumstancesInfo;
 
     @CCD(
         label = "Give details about the ${defendantTermPossessive} circumstances",
-        typeOverride = TextArea,
-        max = 950
+        hint = "You can enter up to 950 characters",
+        typeOverride = TextArea
     )
     private String defendantCircumstancesInfo;
 

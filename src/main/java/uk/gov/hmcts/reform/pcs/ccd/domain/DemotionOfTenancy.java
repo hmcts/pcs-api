@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,12 +15,16 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class DemotionOfTenancy {
+
+    public static final String DEMOTION_OF_TENANCY_REASON_LABEL = "Why are you requesting a demotion order?";
+    public static final String STATEMENT_OF_EXPRESS_TERMS_DETAILS_LABEL = "Give details of the terms";
 
     @CCD(
         label = "Which section of the Housing Act is the claim for demotion of tenancy made under?"
     )
-    private DemotionOfTenancyHousingAct demotionOfTenancyHousingActs;
+    private DemotionOfTenancyHousingAct housingAct;
 
     @CCD(
         label = "Have you served the defendants with a statement of the express terms which will apply "
@@ -27,21 +33,19 @@ public class DemotionOfTenancy {
     private VerticalYesNo statementOfExpressTermsServed;
 
     @CCD(
-        label = "Give details of the terms",
+        label = STATEMENT_OF_EXPRESS_TERMS_DETAILS_LABEL,
         hint = "You can enter up to 950 characters",
-        typeOverride = TextArea,
-        max = 950
+        typeOverride = TextArea
     )
     private String statementOfExpressTermsDetails;
 
     @CCD(
-        label = "Why are you requesting a demotion order?",
-        hint = "Give details of the defendants' conduct and any other reasons you think are relevant. "
+        label = DEMOTION_OF_TENANCY_REASON_LABEL,
+        hint = "Give details of the defendants’ conduct and any other reasons you think are relevant. "
             + "You can enter up to 250 characters",
-        typeOverride = TextArea,
-        max = 250
+        typeOverride = TextArea
     )
-    private String demotionOfTenancyReason;
+    private String reason;
 
-    private YesOrNo showDemotionOfTenancyHousingActsPage;
+    private YesOrNo showHousingActsPage;
 }

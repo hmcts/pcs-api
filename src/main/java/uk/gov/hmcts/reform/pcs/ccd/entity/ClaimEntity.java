@@ -11,16 +11,30 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.LanguageUsed;
-import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyHousingAct;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancyHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.HousingActWalesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.NoticeOfPossessionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.PossessionAlternativesEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.RentArrearsEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,42 +64,193 @@ public class ClaimEntity {
     @JsonBackReference
     private PcsCaseEntity pcsCase;
 
+    @Enumerated(EnumType.STRING)
+    private ClaimantType claimantType;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo againstTrespassers;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private YesOrNo dueToRentArrears;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo claimCosts;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo preActionProtocolFollowed;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo mediationAttempted;
+
+    private String mediationDetails;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo settlementAttempted;
+
+    private String settlementDetails;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo claimantCircumstancesProvided;
+
+    private String claimantCircumstances;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo additionalDefendants;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo defendantCircumstancesProvided;
+
+    private String defendantCircumstances;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo additionalReasonsProvided;
+
+    private String additionalReasons;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo underlesseeOrMortgagee;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo additionalUnderlesseesOrMortgagees;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo additionalDocsProvided;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo genAppExpected;
+
+    @Enumerated(EnumType.STRING)
+    private LanguageUsed languageUsed;
+
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
-    private Set<ClaimPartyEntity> claimParties = new HashSet<>();
+    private List<ClaimPartyEntity> claimParties = new ArrayList<>();
 
     @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
     @Builder.Default
     @JsonManagedReference
     private Set<ClaimGroundEntity> claimGrounds = new HashSet<>();
 
-    private String summary;
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private List<ClaimDocumentEntity> claimDocuments = new ArrayList<>();
 
-    private Boolean applicationWithClaim;
+    @OneToMany(fetch = LAZY, cascade = ALL, mappedBy = "claim")
+    @Builder.Default
+    @JsonManagedReference
+    private Set<EnforcementOrderEntity> enforcementOrders = new HashSet<>();
 
-    private String defendantCircumstances;
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private HousingActWalesEntity housingActWales;
 
-    private Boolean costsClaimed;
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private AsbProhibitedConductEntity asbProhibitedConductEntity;
 
-    @Enumerated(EnumType.STRING)
-    private SuspensionOfRightToBuyHousingAct suspensionOfRightToBuyHousingAct;
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private PossessionAlternativesEntity possessionAlternativesEntity;
 
-    private String suspensionOfRightToBuyReason;
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private RentArrearsEntity rentArrears;
 
-    @Enumerated(EnumType.STRING)
-    private DemotionOfTenancyHousingAct demotionOfTenancyHousingAct;
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private NoticeOfPossessionEntity noticeOfPossession;
 
-    private String demotionOfTenancyReason;
+    @OneToOne(cascade = ALL, mappedBy = "claim", orphanRemoval = true)
+    @JsonManagedReference
+    private StatementOfTruthEntity statementOfTruth;
 
-    private String statementOfExpressTermsDetails;
+    public void setHousingActWales(HousingActWalesEntity housingActWales) {
+        if (this.housingActWales != null) {
+            this.housingActWales.setClaim(null);
+        }
 
-    private String additionalReasons;
+        this.housingActWales = housingActWales;
 
-    private String claimantCircumstances;
+        if (this.housingActWales != null) {
+            this.housingActWales.setClaim(this);
+        }
+    }
 
-    @Enumerated(EnumType.STRING)
-    private LanguageUsed languageUsed;
+    public void setAsbProhibitedConductEntity(AsbProhibitedConductEntity asbProhibitedConductEntity) {
+        if (this.asbProhibitedConductEntity != null) {
+            this.asbProhibitedConductEntity.setClaim(null);
+        }
+
+        this.asbProhibitedConductEntity = asbProhibitedConductEntity;
+
+        if (this.asbProhibitedConductEntity != null) {
+            this.asbProhibitedConductEntity.setClaim(this);
+        }
+    }
+
+    public void setPossessionAlternativesEntity(PossessionAlternativesEntity possessionAlternativesEntity) {
+        if (this.possessionAlternativesEntity != null) {
+            this.possessionAlternativesEntity.setClaim(null);
+        }
+
+        this.possessionAlternativesEntity = possessionAlternativesEntity;
+
+        if (this.possessionAlternativesEntity != null) {
+            this.possessionAlternativesEntity.setClaim(this);
+        }
+    }
+
+    public void setRentArrears(RentArrearsEntity rentArrears) {
+        if (this.rentArrears != null) {
+            this.rentArrears.setClaim(null);
+        }
+
+        this.rentArrears = rentArrears;
+
+        if (this.rentArrears != null) {
+            this.rentArrears.setClaim(this);
+        }
+    }
+
+    public void setNoticeOfPossession(NoticeOfPossessionEntity noticeOfPossession) {
+        if (this.noticeOfPossession != null) {
+            this.noticeOfPossession.setClaim(null);
+        }
+
+        this.noticeOfPossession = noticeOfPossession;
+
+        if (this.noticeOfPossession != null) {
+            this.noticeOfPossession.setClaim(this);
+        }
+    }
+
+    public void setStatementOfTruth(StatementOfTruthEntity statementOfTruth) {
+        if (this.statementOfTruth != null) {
+            this.statementOfTruth.setClaim(null);
+        }
+
+        this.statementOfTruth = statementOfTruth;
+
+        if (this.statementOfTruth != null) {
+            this.statementOfTruth.setClaim(this);
+        }
+    }
 
     public void addParty(PartyEntity party, PartyRole partyRole) {
         ClaimPartyEntity claimPartyEntity = ClaimPartyEntity.builder()
@@ -93,7 +258,6 @@ public class ClaimEntity {
             .party(party)
             .role(partyRole)
             .build();
-
         claimParties.add(claimPartyEntity);
         party.getClaimParties().add(claimPartyEntity);
     }
@@ -102,6 +266,19 @@ public class ClaimEntity {
         for (ClaimGroundEntity ground : grounds) {
             ground.setClaim(this);
             this.claimGrounds.add(ground);
+        }
+    }
+
+    public void addClaimDocuments(List<DocumentEntity> documents) {
+
+        for (DocumentEntity document : documents) {
+            ClaimDocumentEntity claimDocument = ClaimDocumentEntity.builder()
+                .claim(this)
+                .document(document)
+                .build();
+
+            claimDocuments.add(claimDocument);
+            document.getClaimDocuments().add(claimDocument);
         }
     }
 }

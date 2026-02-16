@@ -46,7 +46,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 </p>
 
                 <p class="govuk-body">
-                If you're not sure which country your property is in, try searching for your
+                If you’re not sure which country your property is in, try searching for your
                 address on the land and property register.
                 </p>
 
@@ -90,6 +90,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 log.debug("Cross-border eligibility check: ELIGIBLE for postcode {} with country {}. "
                         + "Proceeding to normal flow", postcode, selectedCountry);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
             }
             case NOT_ELIGIBLE -> {
@@ -103,6 +104,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 log.info("Cross-border eligibility check: NO_MATCH_FOUND for postcode {} with country {}. "
                         + "Redirecting to PostcodeNotAssignedToCourt page", postcode, selectedCountry);
                 caseData.setLegislativeCountry(selectedCountry);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
 
                 // Determine which view to show based on selected country

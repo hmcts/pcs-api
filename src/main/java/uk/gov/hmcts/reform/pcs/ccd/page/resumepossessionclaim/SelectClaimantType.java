@@ -10,12 +10,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.COMMUNITY_LANDLORD;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType.PROVIDER_OF_SOCIAL_HOUSING;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
@@ -35,7 +37,8 @@ public class SelectClaimantType implements CcdPageConfiguration {
                         A claimant is the person or organisation who is making the possession claim.
                         """)
             .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true)
-            .mandatory(PCSCase::getClaimantType);
+            .mandatory(PCSCase::getClaimantType)
+            .label("selectClaimantType-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -45,7 +48,7 @@ public class SelectClaimantType implements CcdPageConfiguration {
         PCSCase caseData = details.getData();
 
         if (caseData.getResumeClaimKeepAnswers() == YesOrNo.NO) {
-            draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
+            draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
             caseData.setHasUnsubmittedCaseData(YesOrNo.NO); // To hide the ResumeClaim page if navigating backwards
         }
 

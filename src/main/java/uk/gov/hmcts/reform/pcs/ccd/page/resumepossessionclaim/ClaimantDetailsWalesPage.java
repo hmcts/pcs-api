@@ -9,10 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.time.Clock;
 import java.time.LocalDate;
-import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable.YES;
 
@@ -52,7 +52,8 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
                     "walesLicensedAgentAppointed=\"YES\"")
                 .mandatory(WalesHousingAct::getAgentAppointmentDate,
                     "walesLicensedAgentAppointed=\"YES\"")
-            .done();
+            .done()
+            .label("claimantDetailsWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -67,7 +68,7 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
                 LocalDate currentDate = LocalDate.now(ukClock);
                 if (appointmentDate.isAfter(currentDate)) {
                     return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                        .errors(List.of("The agent's date of appointment must be in the past"))
+                        .errorMessageOverride("The agent’s date of appointment must be in the past")
                         .build();
                 }
             }

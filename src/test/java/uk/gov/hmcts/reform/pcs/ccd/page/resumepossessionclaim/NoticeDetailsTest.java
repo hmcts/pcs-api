@@ -8,11 +8,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,6 +22,10 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.doAnswer;
 
 @ExtendWith(MockitoExtension.class)
 class NoticeDetailsTest extends BasePageTest {
@@ -27,9 +33,24 @@ class NoticeDetailsTest extends BasePageTest {
     @Mock
     private NoticeDetailsService noticeDetailsService;
 
+    @Mock
+    private TextAreaValidationService textAreaValidationService;
+
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new NoticeDetails(noticeDetailsService));
+        // Configure TextAreaValidationService mocks
+        lenient().doReturn(new ArrayList<>()).when(textAreaValidationService)
+            .validateMultipleTextAreas(any(), any());
+        doAnswer(invocation -> {
+            Object caseData = invocation.getArgument(0);
+            List<String> errors = invocation.getArgument(1);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data((PCSCase) caseData)
+                .errors(errors.isEmpty() ? null : errors)
+                .build();
+        }).when(textAreaValidationService).createValidationResponse(any(), anyList());
+        
+        setPageUnderTest(new NoticeDetails(noticeDetailsService, textAreaValidationService));
     }
 
     @Nested
@@ -39,7 +60,9 @@ class NoticeDetailsTest extends BasePageTest {
         void shouldCallNoticeDetailsServiceForValidation() {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .build())
                 .build();
 
             List<String> validationErrors = new ArrayList<>();
@@ -56,7 +79,9 @@ class NoticeDetailsTest extends BasePageTest {
         void shouldReturnNoErrorsWhenServiceValidationPasses() {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .build())
                 .build();
 
             AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
@@ -68,7 +93,9 @@ class NoticeDetailsTest extends BasePageTest {
         void shouldHandleMultipleValidationErrorsFromService() {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.EMAIL)
+                    .build())
                 .build();
 
             List<String> validationErrors = new ArrayList<>();
@@ -108,8 +135,10 @@ class NoticeDetailsTest extends BasePageTest {
         void shouldAllowProceedingWithValidData() {
             PCSCase caseData = PCSCase.builder()
                 .noticeServed(YesOrNo.YES)
-                .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
-                .noticePostedDate(LocalDate.of(2023, 1, 1))
+                .noticeServedDetails(NoticeServedDetails.builder()
+                    .noticeServiceMethod(NoticeServiceMethod.FIRST_CLASS_POST)
+                    .noticePostedDate(LocalDate.of(2023, 1, 1))
+                    .build())
                 .build();
 
             when(noticeDetailsService.validateNoticeDetails(caseData)).thenReturn(new ArrayList<>());

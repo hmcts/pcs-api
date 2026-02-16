@@ -8,6 +8,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
@@ -29,7 +30,8 @@ public class SelectClaimType implements CcdPageConfiguration {
                             target="_blank"
                             class="govuk-link">read the guidance on removing squatters (opens in a new tab)</a>.
                         """)
-            .mandatory(PCSCase::getClaimAgainstTrespassers);
+            .mandatory(PCSCase::getClaimAgainstTrespassers)
+            .label("selectClaimType-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

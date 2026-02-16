@@ -7,7 +7,6 @@ import au.com.dius.pact.consumer.junit5.PactTestFor;
 import au.com.dius.pact.core.model.V4Pact;
 import au.com.dius.pact.core.model.annotations.Pact;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(SpringExtension.class)
 @PactTestFor(providerName = "s2s_auth", port = "5050")
 
-@Disabled("Temporarily disabled until  DTSPO-27978 is done")
+// @Disabled("Temporarily disabled until  DTSPO-27978 is done")
 public class ServiceAuthorisationConsumerTest {
 
     private static final String AUTHORISATION_TOKEN = "Bearer someAuthorisationToken";

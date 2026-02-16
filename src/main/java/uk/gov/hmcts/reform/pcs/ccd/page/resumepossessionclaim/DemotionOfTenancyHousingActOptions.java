@@ -4,6 +4,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DemotionOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration {
 
@@ -12,7 +13,7 @@ public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration 
         pageBuilder
             .page("demotionOfTenancyHousingActOptions")
             .pageLabel("Housing Act")
-            .showCondition("showDemotionOfTenancyHousingActsPage=\"Yes\"")
+            .showCondition("demotionOfTenancy_ShowHousingActsPage=\"Yes\"")
             .label("demotionOfTenancyHousingActOptions-info", """
                 ---
                   <ul tabindex="0">
@@ -21,7 +22,8 @@ public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration 
                   </ul>
                 """)
                 .complex(PCSCase::getDemotionOfTenancy)
-                .mandatory(DemotionOfTenancy::getDemotionOfTenancyHousingActs)
-                .done();
+                .mandatory(DemotionOfTenancy::getHousingAct)
+                .done()
+            .label("demotionOfTenancyHousingActOptions-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 }

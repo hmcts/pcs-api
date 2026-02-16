@@ -11,31 +11,29 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.idam.client.models.UserInfo;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.DefendantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.AdditionalReasonsForPossession;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.ClaimantCircumstancesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EntitledToClaimRelief;
-import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformation;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantTypeNotEligibleWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimingCosts;
@@ -52,22 +50,19 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemote
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MoneyJudgment;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrears;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundsForPossessionReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsOrBreachOfTenancyGround;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ResumeClaim;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SecureOrFlexibleGroundsForPossessionReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPosessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SelectClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.StatementOfExpressTerms;
@@ -75,33 +70,47 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightT
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionOfRightToBuyOrderReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyActs;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.SuspensionToBuyDemotionOfTenancyOrderReasons;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeDetailsPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UnderlesseeOrMortgageeEntitledToClaimRelief;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.UploadAdditionalDocumentsDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WalesCheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.WantToUploadDocuments;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ASBQuestionsWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.GroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLicenceDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
-import uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent;
+import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeDetails;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeesAndPayTaskData;
+import uk.gov.hmcts.reform.pcs.feesandpay.service.FeeService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
-import uk.gov.hmcts.reform.pcs.reference.service.OrganisationNameService;
+import uk.gov.hmcts.reform.pcs.reference.service.OrganisationService;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_FURTHER_CLAIM_DETAILS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_PAY_NOW;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
+import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
+import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
 @Slf4j
 @Component
@@ -117,29 +126,57 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final SelectClaimantType selectClaimantType;
     private final NoticeDetails noticeDetails;
     private final UploadAdditionalDocumentsDetails uploadAdditionalDocumentsDetails;
-    private final TenancyLicenceDetails tenancyLicenceDetails;
+    private final TenancyLicenceDetailsPage tenancyLicenceDetails;
     private final ContactPreferences contactPreferences;
     private final DefendantsDetails defendantsDetails;
-    private final OrganisationNameService organisationNameService;
+    private final NoRentArrearsGroundsForPossessionReason noRentArrearsGroundsForPossessionReason;
+    private final AdditionalReasonsForPossession additionalReasonsForPossession;
+    private final SecureOrFlexibleGroundsForPossessionReasons secureOrFlexibleGroundsForPossessionReasons;
+    private final MediationAndSettlement mediationAndSettlement;
+    private final ClaimantCircumstancesPage claimantCircumstancesPage;
+    private final IntroductoryDemotedOtherGroundsReasons introductoryDemotedOtherGroundsReasons;
+    private final IntroductoryDemotedOrOtherGroundsForPossession introductoryDemotedOrOtherGroundsForPossession;
+    private final RentArrearsGroundsForPossessionReasons rentArrearsGroundsForPossessionReasons;
+    private final SuspensionToBuyDemotionOfTenancyOrderReasons suspensionToBuyDemotionOfTenancyOrderReasons;
+    private final DefendantCircumstancesPage defendantCircumstancesPage;
+    private final SuspensionOfRightToBuyOrderReason suspensionOfRightToBuyOrderReason;
+    private final StatementOfExpressTerms statementOfExpressTerms;
+    private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
+    private final OrganisationService organisationService;
+    private final ClaimantInformationPage claimantInformationPage;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
+    private final ProhibitedConductWales prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
     private final DraftCaseDataService draftCaseDataService;
+    private final OccupationLicenceDetailsWalesPage occupationLicenceDetailsWalesPage;
+    private final GroundsForPossessionWalesPage groundsForPossessionWales;
+    private final SecureContractGroundsForPossessionWalesPage secureContractGroundsForPossessionWales;
+    private final ReasonsForPossessionWales reasonsForPossessionWales;
     private final AddressFormatter addressFormatter;
-
-    private static final String CASE_ISSUED_FEE_TYPE = "caseIssueFee";
+    private final RentArrearsGroundsForPossessionPage rentArrearsGroundsForPossessionPage;
+    private final RentArrearsGroundForPossessionAdditionalGrounds rentArrearsGroundForPossessionAdditionalGrounds;
+    private final AssuredNoArrearsGroundsForPossessionPage noRentArrearsGroundsForPossessionOptions;
+    private final CheckingNotice checkingNotice;
+    private final WalesCheckingNotice walesCheckingNotice;
+    private final ASBQuestionsWales asbQuestionsWales;
+    private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
+    private final FeeService feeService;
+    private final MoneyFormatter moneyFormatter;
+    private final DocumentService documentService;
+    private final RentDetailsPage rentDetailsPage;
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
         EventBuilder<PCSCase, UserRole, State> eventBuilder =
             configBuilder
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
-                .forStateTransition(AWAITING_FURTHER_CLAIM_DETAILS, AWAITING_SUBMISSION_TO_HMCTS)
+                .forState(AWAITING_SUBMISSION_TO_HMCTS)
                 .name("Make a claim")
                 .showCondition(ShowConditions.NEVER_SHOW)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
 
-        savingPageBuilderFactory.create(eventBuilder)
+        savingPageBuilderFactory.create(eventBuilder, resumePossessionClaim)
             .add(resumeClaim)
             .add(selectClaimantType)
             .add(new ClaimantTypeNotEligibleEngland())
@@ -147,48 +184,51 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(new ClaimantInformation())
+            .add(claimantInformationPage)
             .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
             .add(tenancyLicenceDetails)
-            .add(new OccupationLicenceDetailsWales())
-            .add(new GroundsForPossessionWales())
-            .add(new SecureContractGroundsForPossessionWales())
-            .add(new ReasonsForPosessionWales())
+            .add(occupationLicenceDetailsWalesPage)
+            .add(groundsForPossessionWales)
+            .add(secureContractGroundsForPossessionWales)
+            .add(reasonsForPossessionWales)
+            .add(asbQuestionsWales)
             .add(new SecureOrFlexibleGroundsForPossession())
             .add(new RentArrearsOrBreachOfTenancyGround())
-            .add(new SecureOrFlexibleGroundsForPossessionReasons())
-            .add(new IntroductoryDemotedOrOtherGroundsForPossession())
-            .add(new IntroductoryDemotedOtherGroundsReasons())
+            .add(secureOrFlexibleGroundsForPossessionReasons)
+            .add(introductoryDemotedOrOtherGroundsForPossession)
+            .add(introductoryDemotedOtherGroundsReasons)
             .add(new GroundsForPossession())
-            .add(new RentArrearsGroundsForPossession())
-            .add(new RentArrearsGroundForPossessionAdditionalGrounds())
-            .add(new RentArrearsGroundsForPossessionReasons())
-            .add(new NoRentArrearsGroundsForPossessionOptions())
-            .add(new NoRentArrearsGroundsForPossessionReason())
+            .add(rentArrearsGroundsForPossessionPage)
+            .add(rentArrearsGroundForPossessionAdditionalGrounds)
+            .add(rentArrearsGroundsForPossessionReasons)
+            .add(noRentArrearsGroundsForPossessionOptions)
+            .add(noRentArrearsGroundsForPossessionReason)
             .add(new PreActionProtocol())
-            .add(new MediationAndSettlement())
-            .add(new CheckingNotice())
-            .add(new WalesCheckingNotice())
+            .add(mediationAndSettlement)
+            .add(checkingNotice)
+            .add(walesCheckingNotice)
             .add(noticeDetails)
-            .add(new RentDetails())
+            .add(rentDetailsPage)
             .add(new DailyRentAmount())
             .add(new RentArrears())
             .add(new MoneyJudgment())
-            .add(new ClaimantCircumstancesPage())
-            .add(new DefendantCircumstancesPage())
+            .add(claimantCircumstancesPage)
+            .add(defendantCircumstancesPage)
+            .add(prohibitedConductWalesPage)
             .add(new AlternativesToPossessionOptions())
             .add(new SuspensionOfRightToBuyHousingActOptions())
-            .add(new SuspensionOfRightToBuyOrderReason())
+            .add(suspensionOfRightToBuyOrderReason)
             .add(new DemotionOfTenancyHousingActOptions())
             .add(new SuspensionToBuyDemotionOfTenancyActs())
-            .add(new StatementOfExpressTerms())
-            .add(new DemotionOfTenancyOrderReason())
-            .add(new SuspensionToBuyDemotionOfTenancyOrderReasons())
+            .add(statementOfExpressTerms)
+            .add(demotionOfTenancyOrderReason)
+            .add(suspensionToBuyDemotionOfTenancyOrderReasons)
             .add(new ClaimingCosts())
-            .add(new AdditionalReasonsForPossession())
-            .add(new EntitledToClaimRelief())
+            .add(additionalReasonsForPossession)
+            .add(new UnderlesseeOrMortgageeEntitledToClaimRelief())
+            .add(underlesseeOrMortgageeDetailsPage)
             //TO DO will be routed later on  correctly using tech debt ticket
             .add(new WantToUploadDocuments())
             .add(uploadAdditionalDocumentsDetails)
@@ -200,22 +240,30 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
+        long caseReference = eventPayload.caseReference();
         PCSCase caseData = eventPayload.caseData();
 
-        String userEmail = securityContextService.getCurrentUserDetails().getSub();
+        setUnsubmittedCaseDataFlag(caseReference, caseData);
 
+        String userEmail = securityContextService.getCurrentUserDetails().getSub();
         // Fetch organisation name from rd-professional API
-        String organisationName = organisationNameService.getOrganisationNameForCurrentUser();
+        String organisationName = organisationService.getOrganisationNameForCurrentUser();
+        ClaimantInformation claimantInfo = getClaimantInfo(caseData);
+
         if (organisationName != null) {
-            caseData.setOrganisationName(organisationName);
+            claimantInfo.setOrgNameFound(YesOrNo.YES);
+            claimantInfo.setClaimantName(organisationName);
         } else {
-            // Fallback to user details if organisation name cannot be retrieved
-            caseData.setOrganisationName(userEmail);
-            log.warn("Could not retrieve organisation name, using user details as fallback");
+            claimantInfo.setOrgNameFound(YesOrNo.NO);
         }
 
-        caseData.setClaimantContactEmail(userEmail);
-
+        ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
+        if (contactPreferences == null) {
+            contactPreferences = ClaimantContactPreferences.builder().build();
+        }
+        contactPreferences.setClaimantContactEmail(userEmail);
+        caseData.setClaimantContactPreferences(contactPreferences);
+        caseData.setClaimantInformation(claimantInfo);
         AddressUK propertyAddress = caseData.getPropertyAddress();
         if (propertyAddress == null) {
             throw new IllegalStateException("Cannot resume claim without property address already set");
@@ -236,71 +284,160 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .listItems(listItems)
             .build();
         caseData.setClaimantType(claimantTypeList);
-        caseData.setFormattedClaimantContactAddress(addressFormatter.getFormattedAddress(caseData));
+
+        contactPreferences.setOrganisationAddress(organisationService.getOrganisationAddressForCurrentUser());
+
+        contactPreferences.setFormattedClaimantContactAddress(addressFormatter
+            .formatMediumAddress(contactPreferences.getOrganisationAddress(), BR_DELIMITER));
+
+        if (contactPreferences.getOrganisationAddress() != null) {
+            contactPreferences.setOrgAddressFound(YesOrNo.YES);
+        } else {
+            contactPreferences.setOrgAddressFound(YesOrNo.NO);
+        }
+
+        caseData.setClaimantContactPreferences(contactPreferences);
 
         return caseData;
+    }
+
+    private void setUnsubmittedCaseDataFlag(long caseReference, PCSCase caseData) {
+        boolean hasUnsubmittedCaseData = draftCaseDataService
+            .hasUnsubmittedCaseData(caseReference, resumePossessionClaim);
+
+        log.debug("Draft data check result: caseReference={}, hasUnsubmittedData={}",
+            caseReference, hasUnsubmittedCaseData);
+
+        caseData.setHasUnsubmittedCaseData(YesOrNo.from(hasUnsubmittedCaseData));
     }
 
     private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
         PCSCase pcsCase = eventPayload.caseData();
 
-        List<ListValue<DefendantDetails>> defendantsList = new ArrayList<>();
-        if (pcsCase.getDefendant1() != null) {
-            if (VerticalYesNo.YES == pcsCase.getDefendant1().getAddressSameAsPossession()) {
-                pcsCase.getDefendant1().setCorrespondenceAddress(pcsCase.getPropertyAddress());
-            }
-            defendantsList.add(new ListValue<>(UUID.randomUUID().toString(), pcsCase.getDefendant1()));
-            pcsCaseService.clearHiddenDefendantDetailsFields(defendantsList);
-            pcsCase.setDefendants(defendantsList);
+        if (pcsCase.getCompletionNextStep() == SUBMIT_AND_PAY_NOW) {
+            return submitClaim(caseReference, pcsCase);
+        } else {
+            return saveForLater();
         }
+    }
 
+    public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
         PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+
+        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
+        List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
+        pcsCaseEntity.addDocuments(documentEntities);
+        claimEntity.addClaimDocuments(documentEntities);
+        pcsCaseEntity.addClaim(claimEntity);
+
+        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
 
         pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
 
-        PartyEntity claimantPartyEntity = createClaimantPartyEntity(pcsCase);
-        pcsCaseEntity.addParty(claimantPartyEntity);
+        schedulePartyAccessCodeGeneration(caseReference);
 
-        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase, claimantPartyEntity);
-        pcsCaseEntity.addClaim(claimEntity);
+        log.debug("Deleting draft data after claim submission: caseReference={}, eventId={}",
+            caseReference, resumePossessionClaim);
 
-        pcsCaseService.save(pcsCaseEntity);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        draftCaseDataService.deleteUnsubmittedCaseData(caseReference);
+        log.debug("Draft data deleted successfully");
+
+        String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
+        FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
+        String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
+        return SubmitResponse.<State>builder()
+            .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
+            .state(State.PENDING_CASE_ISSUED)
+            .build();
+    }
+
+    private SubmitResponse<State> saveForLater() {
+        return SubmitResponse.<State>builder()
+            .confirmationBody(getClaimSavedMarkdown())
+            .state(AWAITING_SUBMISSION_TO_HMCTS)
+            .build();
+    }
+
+    private ClaimantInformation getClaimantInfo(PCSCase caseData) {
+        return Optional.ofNullable(caseData.getClaimantInformation())
+            .orElse(ClaimantInformation.builder().build());
+    }
+
+    private FeeDetails scheduleCaseIssueFeePayment(long caseReference, String responsibleParty) {
+
+        FeeDetails feeDetails = feeService.getFee(FeeType.CASE_ISSUE_FEE);
 
         String taskId = UUID.randomUUID().toString();
 
+        FeesAndPayTaskData taskData = FeesAndPayTaskData.builder()
+            .feeType(FeeType.CASE_ISSUE_FEE.getCode())
+            .feeDetails(feeDetails)
+            .ccdCaseNumber(String.valueOf(caseReference))
+            .caseReference(String.valueOf(caseReference))
+            .responsibleParty(responsibleParty)
+            .build();
+
         schedulerClient.scheduleIfNotExists(
-            FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR
+            FEE_CASE_ISSUED_TASK_DESCRIPTOR
                 .instance(taskId)
-                .data(CASE_ISSUED_FEE_TYPE)
+                .data(taskData)
                 .scheduledTo(Instant.now())
         );
 
-        return SubmitResponse.defaultResponse();
+        return feeDetails;
     }
 
-    private PartyEntity createClaimantPartyEntity(PCSCase pcsCase) {
-        UserInfo userDetails = securityContextService.getCurrentUserDetails();
-        UUID userID = UUID.fromString(userDetails.getUid());
+    private void schedulePartyAccessCodeGeneration(long caseReference) {
 
-        String claimantName = isNotBlank(pcsCase.getOverriddenClaimantName())
-            ? pcsCase.getOverriddenClaimantName() : pcsCase.getClaimantName();
+        String taskId = UUID.randomUUID().toString();
 
-        AddressUK contactAddress = pcsCase.getOverriddenClaimantContactAddress() != null
-            ? pcsCase.getOverriddenClaimantContactAddress() : pcsCase.getPropertyAddress();
+        AccessCodeTaskData taskData = AccessCodeTaskData.builder()
+            .caseReference(String.valueOf(caseReference))
+            .build();
 
-        String contactEmail = isNotBlank(pcsCase.getOverriddenClaimantContactEmail())
-            ? pcsCase.getOverriddenClaimantContactEmail() : pcsCase.getClaimantContactEmail();
-
-        return partyService.createPartyEntity(
-            userID,
-            claimantName,
-            null,
-            contactEmail,
-            contactAddress,
-            pcsCase.getClaimantContactPhoneNumber()
+        schedulerClient.scheduleIfNotExists(
+            ACCESS_CODE_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(taskData)
+                .scheduledTo(Instant.now())
         );
     }
+
+    private static String getPaymentConfirmationMarkdown(String caseIssueFee, long caseReference) {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+            <span class="govuk-panel__title govuk-!-font-size-36">Pay %s claim fee</span>
+            </div>
+
+            <h3>Make a payment</h3>
+
+            You must pay the claim fee of %s. Your claim will not progress until this
+            fee has been paid.
+            <a href="/cases/case-details/%d#Service%%20Request"
+                    class="govuk-link govuk-link--no-visited-state">Pay the claim fee</a>.
+            """.formatted(caseIssueFee, caseIssueFee, caseReference);
+    }
+
+    private static String getClaimSavedMarkdown() {
+        return """
+            ---
+            <div class="govuk-panel govuk-panel--confirmation govuk-!-padding-top-3 govuk-!-padding-bottom-3">
+              <span class="govuk-panel__title govuk-!-font-size-36">Claim saved</span>
+            </div>
+
+            A draft of your claim has been saved. To sign, submit and pay for your claim:
+
+            <ol class="govuk-list govuk-list--number">
+            <li>Resume your claim.</li>
+            <li>Click through the questions.</li>
+            <li>Choose the ‘Submit and pay for my claim now’ option when asked
+                how you’d like to complete your claim.</li>
+            <li>Select the ‘Pay the claim fee’ link on the confirmation screen.</li>
+            </ol>
+            """;
+    }
+
 }

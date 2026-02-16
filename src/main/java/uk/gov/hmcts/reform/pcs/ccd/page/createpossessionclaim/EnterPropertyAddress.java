@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -35,7 +36,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("enterPropertyAddress", this::midEvent)
-            .pageLabel("What is the address of the property you're claiming possession of?")
+            .pageLabel("What is the address of the property you’re claiming possession of?")
             .label("enterPropertyAddress-lineSeparator", "---")
             .complex(PCSCase::getPropertyAddress)
                 .mandatory(AddressUK::getAddressLine1)
@@ -56,9 +57,10 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         AddressUK propertyAddress = caseData.getPropertyAddress();
 
         List<String> validationErrors = addressValidator.validateAddressFields(propertyAddress);
+
         if (!validationErrors.isEmpty()) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errors(validationErrors)
+                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
                 .build();
         }
 
@@ -79,9 +81,11 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             }
             case NO_MATCH_FOUND -> {
                 log.debug("No court found for postcode: {}", postcode);
+                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
                 caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
-                caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setLegislativeCountry(null);
             }
             case MULTIPLE_MATCHES_FOUND -> {
                 // TODO: HDPI-1838 will handle multiple matches
@@ -89,6 +93,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             }
             case ELIGIBLE -> {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
+                caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.NO);
                 caseData.setLegislativeCountry(eligibilityResult.getLegislativeCountry());
             }

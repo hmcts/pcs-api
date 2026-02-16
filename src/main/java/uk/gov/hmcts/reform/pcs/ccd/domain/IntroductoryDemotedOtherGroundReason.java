@@ -17,42 +17,42 @@ public class IntroductoryDemotedOtherGroundReason {
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Antisocial behaviour)",
-        hint = "You'll be able to upload documents to support or further explain your reasons later on",
-        typeOverride = TextArea,
-        max = 500
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+            + "You can enter up to 500 characters",
+        typeOverride = TextArea
     )
     private String antiSocialBehaviourGround;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Breach of the tenancy)",
-        hint = "You'll be able to upload documents to support or further explain your reasons later on",
-        typeOverride = TextArea,
-        max = 500
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+            + "You can enter up to 500 characters",
+        typeOverride = TextArea
     )
     private String breachOfTheTenancyGround;
 
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Absolute grounds)",
-        hint = "You'll be able to upload documents to support or further explain your reasons later on",
-        typeOverride = TextArea,
-        max = 500
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+            + "You can enter up to 500 characters",
+        typeOverride = TextArea
     )
     private String absoluteGrounds;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (Other grounds)",
-        hint = "You'll be able to upload documents to support or further explain your reasons later on",
-        typeOverride = TextArea,
-        max = 500
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+            + "You can enter up to 500 characters",
+        typeOverride = TextArea
     )
     private String otherGround;
 
     @CCD(
         label = "Give details about your reasons for claiming possession (No grounds)",
-        hint = "You'll be able to upload documents to support or further explain your reasons later on",
-        typeOverride = TextArea,
-        max = 500
+        hint = "You’ll be able to upload documents to support or further explain your reasons later on. "
+            + "You can enter up to 500 characters",
+        typeOverride = TextArea
     )
     private String noGrounds;
 }

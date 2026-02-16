@@ -40,6 +40,8 @@ class HearingsControllerIT extends AbstractPostgresContainerIT {
     private MockMvc mockMvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private IdamHelper idamHelper;
 
     @MockitoBean
     private AuthTokenGenerator authTokenGenerator;
@@ -50,7 +52,7 @@ class HearingsControllerIT extends AbstractPostgresContainerIT {
 
     @BeforeEach
     void setUp() {
-        IdamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
+        idamHelper.stubIdamSystemUser(idamClient, SYSTEM_USER_ID_TOKEN);
     }
 
     @Test

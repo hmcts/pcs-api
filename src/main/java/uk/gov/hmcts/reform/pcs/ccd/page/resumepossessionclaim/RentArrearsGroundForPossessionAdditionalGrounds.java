@@ -1,64 +1,69 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalMandatoryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsDiscretionaryGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsMandatoryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 /**
- * Page for selecting additional grounds for possession.
+ * Page for selecting additional grounds for possession on an assured tenancy.
  */
+@Slf4j
+@Component
 public class RentArrearsGroundForPossessionAdditionalGrounds implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("groundForPossessionAdditionalGrounds", this::midEvent)
-            .pageLabel("What are your grounds for possession?")
+            .pageLabel("What are your additional grounds for possession?")
             .showCondition("hasOtherAdditionalGrounds=\"Yes\""
-                           + " AND typeOfTenancyLicence=\"ASSURED_TENANCY\""
-                           + " AND groundsForPossession=\"Yes\"")
-            .readonly(PCSCase::getShowRentArrearsGroundReasonPage, NEVER_SHOW)
+                           + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
+                           + " AND claimDueToRentArrears=\"Yes\""
+                           + " AND legislativeCountry=\"England\"")
             .label("groundForPossessionAdditionalGrounds-info", """
             ---
             <p class="govuk-body">You may have already given the defendants notice of your intention to begin
-                possession proceedings. If you have, you should have written the grounds you're making your
-                claim under. You should select these grounds here and any extra grounds you'd like to add to
+                possession proceedings. If you have, you should have written the grounds you’re making your
+                claim under. You should select these grounds here and any extra grounds you’d like to add to
                 your claim, if you need to.</p>
+            <p class="govuk-body">
+              <a href="https://england.shelter.org.uk/professional_resources/legal/possession_and_eviction/grounds_for_possession" class="govuk-link" rel="noreferrer noopener" target="_blank">More information about possession grounds (opens in new tab)</a>.
+            </p>
             """)
-            .mandatory(PCSCase::getRentArrearsMandatoryGrounds)
-            .mandatory(PCSCase::getRentArrearsDiscretionaryGrounds)
-            .done();
+            .complex(PCSCase::getAssuredRentArrearsPossessionGrounds)
+                .optional(AssuredRentArrearsPossessionGrounds::getAdditionalMandatoryGrounds)
+                .optional(AssuredRentArrearsPossessionGrounds::getAdditionalDiscretionaryGrounds)
+            .done()
+            .label("groundForPossessionAdditionalGrounds-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     public AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                  CaseDetails<PCSCase, State> detailsBefore) {
 
         PCSCase caseData = details.getData();
-        Set<RentArrearsMandatoryGrounds> mandatoryGrounds = caseData.getRentArrearsMandatoryGrounds();
-        Set<RentArrearsDiscretionaryGrounds> discretionaryGrounds = caseData.getRentArrearsDiscretionaryGrounds();
+        AssuredRentArrearsPossessionGrounds groundsForPossession = caseData.getAssuredRentArrearsPossessionGrounds();
 
-        boolean hasOtherMandatoryGrounds = mandatoryGrounds
-            .stream()
-            .anyMatch(ground -> ground != RentArrearsMandatoryGrounds.SERIOUS_RENT_ARREARS_GROUND8);
+        Set<AssuredAdditionalMandatoryGrounds> additionalMandatoryGrounds
+            = groundsForPossession.getAdditionalMandatoryGrounds();
+        Set<AssuredAdditionalDiscretionaryGrounds> additionalDiscretionaryGrounds
+            = groundsForPossession.getAdditionalDiscretionaryGrounds();
 
-        boolean hasOtherDiscretionaryGrounds =  discretionaryGrounds
-            .stream()
-            .anyMatch(ground -> ground != RentArrearsDiscretionaryGrounds.RENT_ARREARS_GROUND10
-                && ground != RentArrearsDiscretionaryGrounds.PERSISTENT_DELAY_GROUND11);
-
-        boolean shouldShowReasonsPage = hasOtherDiscretionaryGrounds || hasOtherMandatoryGrounds;
-
-        caseData.setShowRentArrearsGroundReasonPage(YesOrNo.from(shouldShowReasonsPage));
+        if (additionalMandatoryGrounds.isEmpty() && additionalDiscretionaryGrounds.isEmpty()) {
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .errorMessageOverride("Please select at least one ground")
+                .build();
+        }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(caseData)

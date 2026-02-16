@@ -9,16 +9,16 @@ class ShowConditionsTest {
 
     @Test
     void shouldCreateShowConditionForStateEquals() {
-        String showCondition = ShowConditions.stateEquals(State.AWAITING_FURTHER_CLAIM_DETAILS);
+        String showCondition = ShowConditions.stateEquals(State.AWAITING_SUBMISSION_TO_HMCTS);
 
-        assertThat(showCondition).isEqualTo("[STATE]=\"AWAITING_FURTHER_CLAIM_DETAILS\"");
+        assertThat(showCondition).isEqualTo("[STATE]=\"AWAITING_SUBMISSION_TO_HMCTS\"");
     }
 
     @Test
     void shouldCreateShowConditionForStateNotEquals() {
-        String showCondition = ShowConditions.stateNotEquals(State.AWAITING_FURTHER_CLAIM_DETAILS);
+        String showCondition = ShowConditions.stateNotEquals(State.AWAITING_SUBMISSION_TO_HMCTS);
 
-        assertThat(showCondition).isEqualTo("[STATE]!=\"AWAITING_FURTHER_CLAIM_DETAILS\"");
+        assertThat(showCondition).isEqualTo("[STATE]!=\"AWAITING_SUBMISSION_TO_HMCTS\"");
     }
 
     @Test
@@ -28,6 +28,15 @@ class ShowConditionsTest {
         String showCondition = ShowConditions.fieldEquals(fieldId, TestEnum.GREEN);
 
         assertThat(showCondition).isEqualTo("testFieldId1=\"GREEN\"");
+    }
+
+    @Test
+    void shouldCreateShowConditionForFieldContains() {
+        String fieldId = "testFieldId1";
+
+        String showCondition = ShowConditions.fieldContains(fieldId, TestEnum.BLUE);
+
+        assertThat(showCondition).isEqualTo("testFieldId1CONTAINS\"BLUE\"");
     }
 
     private enum TestEnum {

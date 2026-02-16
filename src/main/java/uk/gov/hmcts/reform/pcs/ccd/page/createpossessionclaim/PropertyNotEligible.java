@@ -10,8 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import java.util.List;
-
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
@@ -40,7 +38,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       This service is currently only available for claimants claiming possession of a property
                       in Bedfordshire.
                     </p>
-                    <p class="govuk-body">If you're making a claim in another area:</p>
+                    <p class="govuk-body">If you’re making a claim in another area:</p>
 
                     <ul class="govuk-list govuk-list--bullet">
                       <li class="govuk-!-font-size-19">
@@ -68,7 +66,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                       <strong class="govuk-warning-text__text">
                         <span class="govuk-visually-hidden">Warning</span>
-                          To exit back to the case list, select 'Cancel'
+                          To exit back to the case list, select ‘Cancel’
                       </strong>
                     </div>
                     </section>
@@ -91,7 +89,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                      To exit back to the case list, select 'Cancel'
+                      To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
                 </section>
@@ -113,7 +111,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                      To exit back to the case list, select 'Cancel'
+                      To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
                 </section>
@@ -130,7 +128,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                      To exit back to the case list, select 'Cancel'
+                      To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
                 </section>
@@ -141,7 +139,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                    CaseDetails<PCSCase, State> detailsBefore) {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("Property not eligible for this online service"))
+            .errorMessageOverride("Property not eligible for this online service")
             .build();
     }
 

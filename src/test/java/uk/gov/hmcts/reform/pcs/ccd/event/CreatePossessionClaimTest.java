@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
@@ -11,14 +13,16 @@ import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcod
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PropertyNotEligible;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.feesandpay.entity.Fee;
-import uk.gov.hmcts.reform.pcs.feesandpay.exception.FeeNotFoundException;
-import uk.gov.hmcts.reform.pcs.feesandpay.service.FeesAndPayService;
+import uk.gov.hmcts.reform.pcs.ccd.util.FeeApplier;
+import uk.gov.hmcts.reform.pcs.feesandpay.model.FeeType;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.math.BigDecimal;
+import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,7 +33,7 @@ class CreatePossessionClaimTest extends BaseEventTest {
     @Mock
     private PcsCaseService pcsCaseService;
     @Mock
-    private FeesAndPayService feesAndPayService;
+    private FeeApplier feeApplier;
     @Mock
     private EnterPropertyAddress enterPropertyAddress;
     @Mock
@@ -41,18 +45,16 @@ class CreatePossessionClaimTest extends BaseEventTest {
     void setUp() {
         CreatePossessionClaim underTest = new CreatePossessionClaim(
             pcsCaseService,
-            feesAndPayService,
+            feeApplier,
             enterPropertyAddress,
             crossBorderPostcodeSelection,
             propertyNotEligible
         );
-
         setEventUnderTest(underTest);
     }
 
     @Test
     void shouldUpdateCaseOnSubmit() {
-        // Given
         PCSCase caseData = mock(PCSCase.class);
         AddressUK propertyAddress = mock(AddressUK.class);
         LegislativeCountry legislativeCountry = mock(LegislativeCountry.class);
@@ -60,111 +62,58 @@ class CreatePossessionClaimTest extends BaseEventTest {
         when(caseData.getPropertyAddress()).thenReturn(propertyAddress);
         when(caseData.getLegislativeCountry()).thenReturn(legislativeCountry);
 
-        // When
         callSubmitHandler(caseData);
 
-        // Then
         verify(pcsCaseService).createCase(TEST_CASE_REFERENCE, propertyAddress, legislativeCountry);
     }
 
-    @Test
-    void shouldSetFeeAmountOnStart() {
-        // Given
-        PCSCase caseData = PCSCase.builder().build();
-        Fee fee = Fee.builder()
-            .code("FEE0412")
-            .calculatedAmount(new BigDecimal("404.00"))
-            .build();
-
-        when(feesAndPayService.getFee("caseIssueFee")).thenReturn(fee);
-
-        // When
-        PCSCase result = callStartHandler(caseData);
-
-        // Then
-        assertThat(result.getFeeAmount()).isEqualTo("£404");
-    }
-
-    @Test
-    void shouldHandleFeeWithDecimalPlaces() {
-        // Given
-        PCSCase caseData = PCSCase.builder().build();
-        Fee fee = Fee.builder()
-            .calculatedAmount(new BigDecimal("123.45"))
-            .build();
-
-        when(feesAndPayService.getFee("caseIssueFee")).thenReturn(fee);
-
-        // When
-        PCSCase result = callStartHandler(caseData);
-
-        // Then
-        assertThat(result.getFeeAmount()).isEqualTo("£123.45");
-    }
-
-    @Test
-    void shouldHandleZeroFeeAmount() {
-        // Given
-        PCSCase caseData = PCSCase.builder().build();
-        Fee fee = Fee.builder()
-            .calculatedAmount(BigDecimal.ZERO)
-            .build();
-
-        when(feesAndPayService.getFee("caseIssueFee")).thenReturn(fee);
-
-        // When
-        PCSCase result = callStartHandler(caseData);
-
-        // Then
-        assertThat(result.getFeeAmount()).isEqualTo("£0");
-    }
-
-    @Test
-    void shouldHandleNullFeeAmount() {
-        // Given
-        PCSCase caseData = PCSCase.builder().build();
-        Fee fee = Fee.builder()
-            .calculatedAmount(null)
-            .build();
-
-        when(feesAndPayService.getFee("caseIssueFee")).thenReturn(fee);
-
-        // When
-        PCSCase result = callStartHandler(caseData);
-
-        // Then
-        assertThat(result.getFeeAmount()).isEqualTo("Unable to retrieve");
-    }
-
-    @Test
-    void shouldSetDefaultFeeWhenFeeServiceFails() {
-        // Given
+    @ParameterizedTest
+    @ValueSource(strings = {"£0", "£123.45", "£123"})
+    void shouldHandleWithVariousFormattedValues(String expectedFormattedFee) {
         PCSCase caseData = PCSCase.builder().build();
 
-        when(feesAndPayService.getFee("caseIssueFee"))
-            .thenThrow(new FeeNotFoundException("Fee not found"));
+        doAnswer(invocation -> {
+            PCSCase pcs = invocation.getArgument(0);
+            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
+            setter.accept(pcs, expectedFormattedFee);
+            return null;
+        }).when(feeApplier).applyFeeAmount(
+            eq(caseData),
+            eq(FeeType.CASE_ISSUE_FEE),
+            any()
+        );
 
-        // When
         PCSCase result = callStartHandler(caseData);
 
-        // Then
-        assertThat(result.getFeeAmount()).isEqualTo("Unable to retrieve");
-        verify(feesAndPayService).getFee("caseIssueFee");
+        assertThat(result.getFeeAmount()).isEqualTo(expectedFormattedFee);
+        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
+
     }
+
 
     @Test
     void shouldSetDefaultFeeWhenFeeServiceThrowsRuntimeException() {
-        // Given
         PCSCase caseData = PCSCase.builder().build();
+        String expectedFeesMessage = FeeApplier.UNABLE_TO_RETRIEVE;
 
-        when(feesAndPayService.getFee("caseIssueFee"))
-            .thenThrow(new RuntimeException("API unavailable"));
+        doAnswer(invocation -> {
+            PCSCase pcs = invocation.getArgument(0);
+            BiConsumer<PCSCase, String> setter = invocation.getArgument(2);
+            try {
+                throw new RuntimeException("Fee not found");
+            } catch (RuntimeException e) {
+                setter.accept(pcs, expectedFeesMessage);
+            }
+            return null;
+        }).when(feeApplier).applyFeeAmount(
+            eq(caseData),
+            any(FeeType.class),
+            any());
 
-        // When
         PCSCase result = callStartHandler(caseData);
 
-        // Then
-        assertThat(result.getFeeAmount()).isEqualTo("Unable to retrieve");
-        verify(feesAndPayService).getFee("caseIssueFee");
+        assertThat(result.getFeeAmount()).isEqualTo(expectedFeesMessage);
+        verify(feeApplier).applyFeeAmount(eq(caseData), eq(FeeType.CASE_ISSUE_FEE), any());
     }
+
 }

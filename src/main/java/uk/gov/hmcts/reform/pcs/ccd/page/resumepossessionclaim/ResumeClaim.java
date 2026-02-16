@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @Slf4j
 @AllArgsConstructor
@@ -31,7 +32,6 @@ public class ResumeClaim implements CcdPageConfiguration {
             .pageLabel("Resume claim")
             .showCondition("hasUnsubmittedCaseData=\"Yes\"")
             .readonly(PCSCase::getHasUnsubmittedCaseData, NEVER_SHOW)
-            .readonly(PCSCase::getOverrideResumedGrounds, NEVER_SHOW)
             .label("resumeClaim-info", """
                 ---
                 <p class="govuk-body">
@@ -61,20 +61,13 @@ public class ResumeClaim implements CcdPageConfiguration {
         log.debug("Resuming claim - keep existing answers = " + caseData.getResumeClaimKeepAnswers());
 
         if (caseData.getResumeClaimKeepAnswers() == YesOrNo.YES) {
-            draftCaseDataService.getUnsubmittedCaseData(caseReference)
+            draftCaseDataService.getUnsubmittedCaseData(caseReference, resumePossessionClaim)
                 .ifPresentOrElse(
                     unsubmittedCaseData -> modelMapper.map(unsubmittedCaseData, caseData),
                     () -> {
                         throw new UnsubmittedDataException("No unsubmitted case data found for case " + caseReference);
                     }
                 );
-        }
-
-        if (caseData.getRentArrearsMandatoryGrounds() == null
-            && caseData.getRentArrearsDiscretionaryGrounds() == null) {
-            caseData.setOverrideResumedGrounds(YesOrNo.YES);
-        } else {
-            caseData.setOverrideResumedGrounds(YesOrNo.NO);
         }
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()

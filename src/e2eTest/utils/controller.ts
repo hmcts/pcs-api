@@ -1,4 +1,12 @@
 import { Page, test } from '@playwright/test';
+import { actionData, actionRecord, actionTuple } from '@utils/interfaces/action.interface';
+import { validationData, validationRecord, validationTuple } from '@utils/interfaces/validation.interface';
+import { ActionRegistry } from '@utils/registry/action.registry';
+import { ValidationRegistry } from '@utils/registry/validation.registry';
+import { AxeUtils} from "@hmcts/playwright-common";
+import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
+import { logToBrowser } from '@utils/test-logger';
+import { Page, test } from '@playwright/test';
 import { actionData, actionRecord, actionTuple } from './interfaces/action.interface';
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
 import { ActionRegistry } from './registry/action.registry';
@@ -7,6 +15,8 @@ import { flowchartLogger } from '../generators/flowchartBuilder';
 import { textCaptureService } from '../generators/text-capture';
 
 let testExecutor: { page: Page };
+let previousUrl: string = '';
+let captureDataForCYAPage = false;
 
 // ONE-LINE CONFIGURATION
 const ENABLE_FLOWCHART = true;
@@ -28,6 +38,8 @@ export function startNewTest(): void {
 // Add this function to close flowchart after ALL tests
 export function finalizeAllTests(): void {
   flowchartLogger.closeFlowchart();
+  previousUrl = page.url();
+  captureDataForCYAPage = false;
 }
 
 function getExecutor(): { page: Page } {
@@ -37,11 +49,81 @@ function getExecutor(): { page: Page } {
   return testExecutor;
 }
 
+async function detectPageNavigation(): Promise<boolean> {
+  const executor = getExecutor();
+  const currentUrl = executor.page.url();
+
+  const pageNavigated = currentUrl !== previousUrl;
+
+  if (pageNavigated) {
+    previousUrl = currentUrl;
+  }
+
+  return pageNavigated;
+}
+
+async function validatePageIfNavigated(action:string): Promise<void> {
+  if(action.includes('click')) {
+    const pageNavigated = await detectPageNavigation();
+    if (pageNavigated) {
+      const executor = getExecutor();
+      const currentUrl = executor.page.url();
+
+      // Skip accessibility audit for login/auth pages
+      if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
+          currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        await performValidation('autoValidatePageContent');
+        return;
+      }
+
+      await performValidation('autoValidatePageContent');
+      try {
+        await new AxeUtils(executor.page).audit();
+      } catch (error) {
+        const errorMessage = String((error as Error).message || error).toLowerCase();
+        if (errorMessage.includes('execution context was destroyed') ||
+            errorMessage.includes('navigation')) {
+          console.warn(`Accessibility audit skipped due to navigation: ${errorMessage}`);
+        } else {
+          throw error;
+        }
+      }
+    }
+  }
+}
+
+function captureDataForCYA(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): void {
+  if (action === 'selectClaimantType') {
+    captureDataForCYAPage = true;
+  }
+
+  if (captureDataForCYAPage && ['clickRadioButton', 'inputText', 'check', 'select', 'uploadFile'].includes(action)) {
+    cyaStore.captureAnswer(action, fieldName, value);
+  }
+}
+
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
   const executor = getExecutor();
   const actionInstance = ActionRegistry.getAction(action);
-  await test.step(`${action}${fieldName !== undefined ? ` - ${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}` : ''} ${value !== undefined ? ` with value '${typeof value === 'object' ? readValuesFromInputObjects(value) : value}'` : ''}`, async () => {
+
+  captureDataForCYA(action, fieldName, value);
+
+  let displayFieldName = fieldName;
+  let displayValue = value ?? fieldName;
+
+  if (typeof fieldName === 'string' && fieldName.toLowerCase() === 'password' && typeof value === 'string') {
+    displayValue = '*'.repeat(value.length);
+  } else if (typeof fieldName === 'object' && fieldName !== null && 'password' in fieldName) {
+    const obj = fieldName as Record<string, any>;
+    displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
+    displayFieldName = displayValue;
+  }
+
+  const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
+
+  await test.step(stepText, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
+    await logToBrowser(executor.page, stepText);
   });
 
   await executor.page.waitForTimeout(1000);
@@ -55,15 +137,20 @@ export async function performAction(action: string, fieldName?: actionData | act
 export async function finalizeTest(): Promise<void> {
   const executor = getExecutor();
   await flowchartLogger.forceLogFinalPage(executor.page);
+  await validatePageIfNavigated(action);
 }
 
-export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
+export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
   const executor = getExecutor();
-  const [fieldName, data] = typeof inputFieldName === 'string'
-    ? [inputFieldName, inputData]
-    : ['', inputFieldName];
+
+  const [fieldName, data] = inputFieldName === undefined
+      ? ['', undefined]
+      : typeof inputFieldName === 'string'
+          ? [inputFieldName, inputData]
+          : ['', inputFieldName];
+
   const validationInstance = ValidationRegistry.getValidation(validation);
-  await test.step(`Validated ${validation} - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
+  await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
     await validationInstance.validate(executor.page, validation, fieldName, data);
   });
 }
@@ -95,9 +182,9 @@ function readValuesFromInputObjects(obj: object): string {
     let valueString: string;
     if (Array.isArray(value)) {
       valueString = `[${value.map(item =>
-        typeof item === 'object'
-          ? `{ ${readValuesFromInputObjects(item)} }`
-          : String(item)
+          typeof item === 'object'
+              ? `{ ${readValuesFromInputObjects(item)} }`
+              : String(item)
       ).join(', ')}]`;
     } else if (typeof value === 'object' && value !== null) {
       valueString = `{ ${readValuesFromInputObjects(value)} }`;
@@ -108,3 +195,4 @@ function readValuesFromInputObjects(obj: object): string {
   });
   return `${formattedPairs.join(', ')}`;
 }
+

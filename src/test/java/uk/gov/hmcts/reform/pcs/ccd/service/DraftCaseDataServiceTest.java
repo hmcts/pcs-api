@@ -12,15 +12,20 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DraftCaseDataEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DraftCaseDataRepository;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,6 +34,7 @@ import static org.mockito.Mockito.when;
 class DraftCaseDataServiceTest {
 
     private static final long CASE_REFERENCE = 1234L;
+    private static final UUID USER_ID = UUID.randomUUID();
 
     @Mock
     private DraftCaseDataRepository draftCaseDataRepository;
@@ -36,14 +42,28 @@ class DraftCaseDataServiceTest {
     private ObjectMapper objectMapper;
     @Mock
     private DraftCaseJsonMerger draftCaseJsonMerger;
+    @Mock
+    private SecurityContextService securityContextService;
     @Captor
     private ArgumentCaptor<DraftCaseDataEntity> unsubmittedCaseDataEntityCaptor;
+
+    private final EventId eventId = EventId.resumePossessionClaim;
 
     private DraftCaseDataService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new DraftCaseDataService(draftCaseDataRepository, objectMapper, draftCaseJsonMerger);
+        underTest = new DraftCaseDataService(
+            draftCaseDataRepository,
+            objectMapper,
+            draftCaseJsonMerger,
+            securityContextService
+        );
+
+        UserInfo userInfo = UserInfo.builder()
+            .uid(USER_ID.toString())
+            .build();
+        when(securityContextService.getCurrentUserDetails()).thenReturn(userInfo);
     }
 
     @Test
@@ -53,13 +73,13 @@ class DraftCaseDataServiceTest {
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
         PCSCase expectedUnsubmittedCaseData = mock(PCSCase.class);
 
-        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE))
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
         when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenReturn(expectedUnsubmittedCaseData);
 
         // When
-        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE);
+        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId);
 
         // Then
         assertThat(unsubmittedCaseData).contains(expectedUnsubmittedCaseData);
@@ -69,10 +89,11 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldReturnEmptyWhenNoUnsubmittedCaseData() {
         // Given
-        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.empty());
 
         // When
-        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE);
+        Optional<PCSCase> unsubmittedCaseData = underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId);
 
         // Then
         assertThat(unsubmittedCaseData).isEmpty();
@@ -82,10 +103,11 @@ class DraftCaseDataServiceTest {
     @ValueSource(booleans = {true, false})
     void shouldReturnWhetherUnsubmittedCaseDataExists(boolean repositoryDataExists) {
         // Given
-        when(draftCaseDataRepository.existsByCaseReference(CASE_REFERENCE)).thenReturn(repositoryDataExists);
+        when(draftCaseDataRepository.existsByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(repositoryDataExists);
 
         // When
-        boolean hasUnsubmittedCaseData = underTest.hasUnsubmittedCaseData(CASE_REFERENCE);
+        boolean hasUnsubmittedCaseData = underTest.hasUnsubmittedCaseData(CASE_REFERENCE, eventId);
 
         // Then
         assertThat(hasUnsubmittedCaseData).isEqualTo(repositoryDataExists);
@@ -97,10 +119,34 @@ class DraftCaseDataServiceTest {
         String caseDataJson = "case data json";
         PCSCase caseData = mock(PCSCase.class);
         when(objectMapper.writeValueAsString(caseData)).thenReturn(caseDataJson);
-        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.empty());
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, caseData);
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId);
+
+        // Then
+        verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
+        DraftCaseDataEntity savedEntity = unsubmittedCaseDataEntityCaptor.getValue();
+
+        assertThat(savedEntity.getCaseReference()).isEqualTo(CASE_REFERENCE);
+        assertThat(savedEntity.getCaseData()).isEqualTo(caseDataJson);
+        assertThat(savedEntity.getIdamUserId()).isEqualTo(USER_ID);
+    }
+
+    @Test
+    void shouldPatchUnsubmittedCaseDataWithJson() {
+        // Given
+        String caseDataJson = "case data json";
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
+            .thenReturn(Optional.empty());
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, eventId, caseDataJson);
 
         // Then
         verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
@@ -125,11 +171,13 @@ class DraftCaseDataServiceTest {
 
         when(draftCaseJsonMerger.mergeJson(existingCaseDataJson, newCaseDataJson)).thenReturn(mergedCaseDataJson);
 
-        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE))
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
+        when(draftCaseDataRepository.save(any(DraftCaseDataEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
-        underTest.patchUnsubmittedCaseData(CASE_REFERENCE, newCaseData);
+        underTest.patchUnsubmittedEventData(CASE_REFERENCE, newCaseData, eventId);
 
         // Then
         verify(draftCaseDataRepository).save(unsubmittedCaseDataEntityCaptor.capture());
@@ -142,10 +190,10 @@ class DraftCaseDataServiceTest {
     @Test
     void shouldDeleteUnsubmittedDataByCaseReference() {
         // When
-        underTest.deleteUnsubmittedCaseData(CASE_REFERENCE);
+        underTest.deleteUnsubmittedCaseData(CASE_REFERENCE, eventId);
 
         // Then
-        verify(draftCaseDataRepository).deleteByCaseReference(CASE_REFERENCE);
+        verify(draftCaseDataRepository).deleteByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID);
     }
 
     @Test
@@ -154,18 +202,15 @@ class DraftCaseDataServiceTest {
         String unsubmittedCaseDataJson = "case data json";
         DraftCaseDataEntity draftCaseDataEntity = mock(DraftCaseDataEntity.class);
 
-        when(draftCaseDataRepository.findByCaseReference(CASE_REFERENCE))
+        when(draftCaseDataRepository.findByCaseReferenceAndEventIdAndIdamUserId(CASE_REFERENCE, eventId, USER_ID))
             .thenReturn(Optional.of(draftCaseDataEntity));
         when(draftCaseDataEntity.getCaseData()).thenReturn(unsubmittedCaseDataJson);
 
         JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
         when(objectMapper.readValue(unsubmittedCaseDataJson, PCSCase.class)).thenThrow(jsonProcessingException);
 
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.getUnsubmittedCaseData(CASE_REFERENCE));
-
         // Then
-        assertThat(throwable)
+        assertThatThrownBy(() -> underTest.getUnsubmittedCaseData(CASE_REFERENCE, eventId))
             .isInstanceOf(UnsubmittedDataException.class)
             .hasMessage("Failed to read saved answers")
             .hasCause(jsonProcessingException);
@@ -176,16 +221,13 @@ class DraftCaseDataServiceTest {
         // Given
         PCSCase caseData = mock(PCSCase.class);
         JsonProcessingException jsonProcessingException = mock(JsonProcessingException.class);
-
         when(objectMapper.writeValueAsString(caseData)).thenThrow(jsonProcessingException);
 
-        // When
-        Throwable throwable = catchThrowable(() -> underTest.patchUnsubmittedCaseData(CASE_REFERENCE, caseData));
-
         // Then
-        assertThat(throwable)
-            .isInstanceOf(UnsubmittedDataException.class)
+        assertThatThrownBy(() -> underTest.patchUnsubmittedEventData(CASE_REFERENCE, caseData, eventId))
+           .isInstanceOf(UnsubmittedDataException.class)
             .hasMessage("Failed to save answers")
             .hasCause(jsonProcessingException);
+
     }
 }

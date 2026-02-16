@@ -1,105 +1,132 @@
-import {test} from '@playwright/test';
-import {initializeExecutor, performAction, performValidation, performValidations} from '@utils/controller';
-import {addressDetails} from '@data/page-data/addressDetails.page.data';
-import {claimantType} from '@data/page-data/claimantType.page.data';
-import {claimType} from '@data/page-data/claimType.page.data';
-import {claimantName} from '@data/page-data/claimantName.page.data';
-import {contactPreferences} from '@data/page-data/contactPreferences.page.data';
-import {defendantDetails} from '@data/page-data/defendantDetails.page.data';
-import {tenancyLicenceDetails} from '@data/page-data/tenancyLicenceDetails.page.data';
-import {groundsForPossession} from '@data/page-data/groundsForPossession.page.data';
-import {rentArrearsPossessionGrounds} from '@data/page-data/rentArrearsPossessionGrounds.page.data';
-import {preActionProtocol} from '@data/page-data/preActionProtocol.page.data';
-import {mediationAndSettlement} from '@data/page-data/mediationAndSettlement.page.data';
-import {noticeOfYourIntention} from '@data/page-data/noticeOfYourIntention.page.data';
-import {noticeDetails} from '@data/page-data/noticeDetails.page.data';
-import {rentDetails} from '@data/page-data/rentDetails.page.data';
-import {dailyRentAmount} from '@data/page-data/dailyRentAmount.page.data';
-import {provideMoreDetailsOfClaim} from '@data/page-data/provideMoreDetailsOfClaim.page.data';
-import {whatAreYourGroundsForPossession} from '@data/page-data/whatAreYourGroundsForPossession.page.data';
-import {moneyJudgment} from '@data/page-data/moneyJudgment.page.data';
-import {claimantCircumstances} from '@data/page-data/claimantCircumstances.page.data';
-import {applications} from '@data/page-data/applications.page.data';
-import {completeYourClaim} from '@data/page-data/completeYourClaim.page.data';
-import {user} from '@data/user-data/permanent.user.data';
-import {checkYourAnswers} from '@data/page-data/checkYourAnswers.page.data';
-import {propertyDetails} from '@data/page-data/propertyDetails.page.data';
-import {languageUsed} from '@data/page-data/languageUsed.page.data';
-import {defendantCircumstances} from '@data/page-data/defendantCircumstances.page.data';
-import {claimingCosts} from '@data/page-data/claimingCosts.page.data';
-import {uploadAdditionalDocs} from '@data/page-data/uploadAdditionalDocs.page.data';
-import {statementOfTruth} from '@data/page-data/statementOfTruth.page.data';
-import {home} from '@data/page-data/home.page.data';
-import {additionalReasonsForPossession} from '@data/page-data/additionalReasonsForPossession.page.data';
-import {underlesseeOrMortgageeEntitledToClaim} from '@data/page-data/underlesseeOrMortgageeEntitledToClaim.page.data';
-import {alternativesToPossession} from '@data/page-data/alternativesToPossession.page.data';
-import {wantToUploadDocuments} from '@data/page-data/wantToUploadDocuments.page.data';
-import {resumeClaim} from "@data/page-data/resumeClaim.page.data";
-import {resumeClaimOptions} from "@data/page-data/resumeClaimOptions.page.data";
-
+import { test } from '@utils/test-fixtures';
+import {
+  initializeExecutor,
+  performAction,
+  performValidation,
+  performValidations
+} from '@utils/controller';
+import {
+  addressCheckYourAnswers,
+  addressDetails,
+  checkYourAnswers,
+  propertyDetails,
+  reasonsForPossession,
+  resumeClaim,
+  resumeClaimOptions,
+  user,
+  whatAreYourGroundsForPossession,
+  home
+} from '@data/page-data';
+import {
+  claimantType,
+  claimType,
+  claimantInformation,
+  defendantDetails,
+  contactPreferences,
+  tenancyLicenceDetails,
+  groundsForPossession,
+  preactionProtocol,
+  alternativesToPossession,
+  claimantCircumstances,
+  claimingCosts,
+  dailyRentAmount,
+  defendantCircumstances,
+  mediationAndSettlement,
+  moneyJudgment,
+  noticeDetails,
+  rentDetails,
+  checkingNotice,
+  rentArrears,
+  additionalReasonsForPossession,
+  generalApplication,
+  completingYourClaim,
+  claimLanguageUsed,
+  underlesseeMortgageeEntitledToClaimRelief,
+  wantToUploadDocuments,
+  statementOfTruth,
+} from '@data/page-data-figma';
+import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
+import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
+import { dismissCookieBanner } from '@config/cookie-banner';
 // This test validates the resume & find case functionality with and without saved options.
 // It is not intended to reuse for any of the e2e scenarios, those should still be covered in others specs.
 // When a new page is added/flow changes, basic conditions in this test should be updated accordingly to continue the journey.
-// Due to frequent issues with relogin and “Find Case” (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
+// Due to frequent issues with relogin and "Find Case" (Elasticsearch), this test is made optional only for the pipeline to maintain a green build.
 // However, it must be executed locally, and evidence of the passed results should be provided during PR review in case its failing in pipeline.
 
-test.beforeEach(async ({page}) => {
+// Disable global storageState for this file - these tests need to test sign-out/re-login flow
+test.use({ storageState: undefined });
+
+test.beforeEach(async ({ page, context }) => {
+  await context.clearCookies();
   initializeExecutor(page);
   await performAction('navigateToUrl', process.env.MANAGE_CASE_BASE_URL);
+  await page.evaluate(() => {
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (e) {
+      // Ignore if storage is not accessible
+    }
+  });
+
+  await dismissCookieBanner(page, 'additional');
   await performAction('login', user.claimantSolicitor);
+  await dismissCookieBanner(page, 'analytics');
   await performAction('clickTab', home.createCaseTab);
   await performAction('selectJurisdictionCaseTypeEvent');
   await performAction('housingPossessionClaim');
 });
 
-test.describe.skip('[Create Case - With resume claim options] @Master @nightly', async () => {
-  test('England - Resume with saved options', async () => {
+test.afterEach(async () => {
+  if (caseNumber) {
+    await performAction('deleteCaseRole', '[CREATOR]');
+  }
+  PageContentValidation.finaliseTest();
+});
+
+test.describe('[Create Case - With resume claim options]', async () => {
+  test('England - Resume with saved options - Assured Tenancy - Rent arrears + other grounds when user selects no to rent arrears question', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
     await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.yes);
     await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, true);
-    await performAction('verifyPageAndClickButton', claimantType.continue, claimantType.mainHeader);
-    await performValidation('radioButtonChecked', claimType.no, true);
-    await performAction('verifyPageAndClickButton', claimType.continue, claimType.mainHeader);
-    await performValidation('radioButtonChecked', claimantName.yes, true);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performAction('verifyPageAndClickButton', claimantType.continueButton, claimantType.mainHeader);
+    await performValidation('radioButtonChecked', claimType.noRadioOption, true);
+    await performAction('verifyPageAndClickButton', claimType.continueButton, claimType.mainHeader);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, true);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.yes,
-      correspondenceAddress: contactPreferences.yes,
-      phoneNumber: contactPreferences.no
+      notifications: contactPreferences.yesRadioOption,
+      correspondenceAddress: contactPreferences.yesRadioOption,
+      phoneNumber: contactPreferences.noRadioOption
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
-    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
+      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancyRadioOption,
+      day: tenancyLicenceDetails.dayTextInput,
+      month: tenancyLicenceDetails.monthTextInput,
+      year: tenancyLicenceDetails.yearTextInput
     });
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
-    await performAction('selectRentArrearsPossessionGround', {
-      rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-      otherGrounds: rentArrearsPossessionGrounds.yes
-    });
+    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.noRadioOption});
     await performAction('selectYourPossessionGrounds', {
       mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
       discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
@@ -107,75 +134,72 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     await performAction('enterReasonForPossession',
       [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier,
         whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {
-      "text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink,
-      "elementType": "paragraphLink"
-    })
-    await performValidation('text', {
-      "text": noticeOfYourIntention.servedNoticeInteractiveText,
-      "elementType": "inlineText"
-    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: noticeOfYourIntention.yes
-    });
-    await performValidation('mainHeader', noticeDetails.mainHeader);
-    await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
     });
     await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Weekly', rentAmount: '800'});
     await performValidation('mainHeader', dailyRentAmount.mainHeader);
     await performAction('selectDailyRentAmount', {
       calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
+      unpaidRentInteractiveOption: dailyRentAmount.noRadioOption,
       unpaidRentAmountPerDay: '20'
     });
+    await performValidation('mainHeader', rentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: rentArrears.yesRadioOption,
+      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
+    });
     await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
+    await performAction('selectMoneyJudgment', moneyJudgment.yesRadioOption);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
-      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.yes
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
     });
-    await performAction('uploadAdditionalDocs', {
-      documents: [{
-        type: uploadAdditionalDocs.tenancyAgreementOption,
-        fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocs.shortDescriptionInput
-      }]
-    });
-    await performAction('selectApplications', applications.yes);
+    await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {
-      question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.english
+      question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
+      option: claimLanguageUsed.englishLRadioOption
     });
-    await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('completingYourClaim', completingYourClaim.submitAndPayForClaimRadioOption);
+    await performAction('selectStatementOfTruth', {
+      completedBy: statementOfTruth.claimantRadioOption,
+      iBelieveCheckbox: statementOfTruth.iBelieveTheFactsHiddenCheckbox,
+      fullNameTextInput: statementOfTruth.fullNameHiddenTextInput,
+      positionOrOfficeTextInput: statementOfTruth.positionOrOfficeHeldHiddenTextInput
+    });
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('payClaimFee');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
     await performValidations(
       'address info not null',
@@ -186,139 +210,105 @@ test.describe.skip('[Create Case - With resume claim options] @Master @nightly',
     )
   });
 
-  test('England - Resume without saved options', async () => {
+  test('England - Resume without saved options - Secure tenancy - No Rent Arrears', async () => {
     await performAction('selectAddress', {
-      postcode: addressDetails.englandCourtAssignedPostcode,
+      postcode: addressDetails.englandCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
+    await performValidation('mainHeader', addressCheckYourAnswers.mainHeader)
+    await performAction('submitAddressCheckYourAnswers');
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
-    await performAction('clickButtonAndVerifyPageNavigation', provideMoreDetailsOfClaim.continue, claimantType.mainHeader);
+    await performAction('provideMoreDetailsOfClaim');
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
-    await performAction('selectClaimType', claimType.no);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
-    await performAction('clickButton', home.signOutButton);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
+    await performAction('signOut');
     await performAction('reloginAndFindTheCase', user.claimantSolicitor);
     await performAction('clickButtonAndVerifyPageNavigation', resumeClaim.continue, resumeClaimOptions.mainHeader);
     await performAction('selectResumeClaimOption', resumeClaimOptions.no);
     await performValidation('radioButtonChecked', claimantType.england.registeredProviderForSocialHousing, false);
     await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
-    await performValidation('radioButtonChecked', claimType.no, false);
-    await performAction('selectClaimType', claimType.no);
-    await performValidation('radioButtonChecked', claimantName.yes, false);
-    await performAction('selectClaimantName', claimantName.yes);
-    await performAction('clickButtonAndVerifyPageNavigation', claimantName.continue, contactPreferences.mainHeader);
+    await performValidation('radioButtonChecked', claimType.noRadioOption, false);
+    await performAction('selectClaimType', claimType.noRadioOption);
+    await performValidation('radioButtonChecked', claimantInformation.yesRadioOption, false);
+    await performAction('selectClaimantName', claimantInformation.yesRadioOption);
+    await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, contactPreferences.mainHeader);
     await performAction('selectContactPreferences', {
-      notifications: contactPreferences.yes,
-      correspondenceAddress: contactPreferences.yes,
-      phoneNumber: contactPreferences.no
+      notifications: contactPreferences.yesRadioOption,
+      correspondenceAddress: contactPreferences.yesRadioOption,
+      phoneNumber: contactPreferences.noRadioOption
     });
-    await performAction('defendantDetails', {
-      name: defendantDetails.yes,
-      correspondenceAddress: defendantDetails.yes,
-      email: defendantDetails.yes,
-      correspondenceAddressSame: defendantDetails.no
+    await performAction('addDefendantDetails', {
+      nameOption: defendantDetails.yesRadioOption, firstName: defendantDetails.defendantsFirstNameTextInput, lastName: defendantDetails.defendantsLastNameTextInput,
+      correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.noRadioOption, address: defendantDetails.postcodeTextInput,
+      addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
-    await performValidation('mainHeader', tenancyLicenceDetails.mainHeader);
     await performAction('selectTenancyOrLicenceDetails', {
-      tenancyOrLicenceType: tenancyLicenceDetails.assuredTenancy,
-      day: tenancyLicenceDetails.day,
-      month: tenancyLicenceDetails.month,
-      year: tenancyLicenceDetails.year,
-      files: ['tenancyLicence.docx', 'tenancyLicence.png']
-    });
-    await performValidation('mainHeader', groundsForPossession.mainHeader);
-    await performAction('selectGroundsForPossession', {groundsRadioInput: groundsForPossession.yes});
-    await performAction('selectRentArrearsPossessionGround', {
-      rentArrears: [rentArrearsPossessionGrounds.rentArrears, rentArrearsPossessionGrounds.seriousRentArrears, rentArrearsPossessionGrounds.persistentDelayInPayingRent],
-      otherGrounds: rentArrearsPossessionGrounds.yes
-    });
+      tenancyOrLicenceType: tenancyLicenceDetails.secureTenancyRadioOption});
+    await performValidation('mainHeader', whatAreYourGroundsForPossession.groundsForPossessionMainHeader);
     await performAction('selectYourPossessionGrounds', {
-      mandatory: [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier],
-      discretionary: [whatAreYourGroundsForPossession.discretionary.domesticViolence14A, whatAreYourGroundsForPossession.discretionary.rentArrears],
+      discretionary: [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4],
+      mandatory: [whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour],
+      mandatoryAccommodation: [whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks],
+      discretionaryAccommodation: [whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied],
     });
-    await performAction('enterReasonForPossession',
-      [whatAreYourGroundsForPossession.mandatory.holidayLet, whatAreYourGroundsForPossession.mandatory.ownerOccupier,
-        whatAreYourGroundsForPossession.discretionary.domesticViolence14A])
-    await performValidation('mainHeader', preActionProtocol.mainHeader);
-    await performAction('selectPreActionProtocol', preActionProtocol.yes);
+    await performValidation('mainHeader', reasonsForPossession.mainHeader);
+    await performAction('enterReasonForPossession'
+      , [whatAreYourGroundsForPossession.discretionary.deteriorationOfFurniture4, whatAreYourGroundsForPossession.mandatory.antiSocialBehaviour,
+        whatAreYourGroundsForPossession.mandatoryWithAccommodation.charitableLandlords, whatAreYourGroundsForPossession.mandatoryWithAccommodation.landlordsWorks,
+        whatAreYourGroundsForPossession.discretionaryWithAccommodation.adapted, whatAreYourGroundsForPossession.discretionaryWithAccommodation.tied
+      ]);
+    await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performValidation('mainHeader', mediationAndSettlement.mainHeader);
     await performAction('selectMediationAndSettlement', {
-      attemptedMediationWithDefendantsOption: mediationAndSettlement.yes,
-      settlementWithDefendantsOption: mediationAndSettlement.no,
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
-    await performValidation('mainHeader', noticeOfYourIntention.mainHeader);
-    await performValidation('text', {
-      "text": noticeOfYourIntention.guidanceOnPosessionNoticePeriodsLink,
-      "elementType": "paragraphLink"
-    })
-    await performValidation('text', {
-      "text": noticeOfYourIntention.servedNoticeInteractiveText,
-      "elementType": "inlineText"
-    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
     await performAction('selectNoticeOfYourIntention', {
-      question: noticeOfYourIntention.servedNoticeInteractiveText,
-      option: noticeOfYourIntention.yes
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.yesRadioOption
     });
     await performValidation('mainHeader', noticeDetails.mainHeader);
     await performAction('selectNoticeDetails', {
-      howDidYouServeNotice: noticeDetails.byFirstClassPost,
-      day: '16', month: '07', year: '1985', files: 'NoticeDetails.pdf'
+      howDidYouServeNotice: noticeDetails.byFirstClassPostOrRadioOption,
+      day: '16', month: '07', year: '1985'
     });
-    await performValidation('mainHeader', rentDetails.mainHeader);
-    await performAction('provideRentDetails', {rentFrequencyOption: 'weekly', rentAmount: '800'});
-    await performValidation('mainHeader', dailyRentAmount.mainHeader);
-    await performAction('selectDailyRentAmount', {
-      calculateRentAmount: '£114.29',
-      unpaidRentInteractiveOption: dailyRentAmount.no,
-      unpaidRentAmountPerDay: '20'
-    });
-    await performValidation('mainHeader', moneyJudgment.mainHeader);
-    await performAction('selectMoneyJudgment', moneyJudgment.yes);
     await performValidation('mainHeader', claimantCircumstances.mainHeader);
     await performAction('selectClaimantCircumstances', {
-      circumstanceOption: claimantCircumstances.yes,
-      claimantInput: claimantCircumstances.claimantCircumstanceInfoInputData
+      circumstanceOption: claimantCircumstances.yesRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
     });
     await performValidation('mainHeader', defendantCircumstances.mainHeader);
-    await performAction('selectDefendantCircumstances', defendantCircumstances.yes);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: false
+    });
     await performValidation('mainHeader', alternativesToPossession.mainHeader);
     await performAction('selectAlternativesToPossession');
     await performValidation('mainHeader', claimingCosts.mainHeader);
-    await performAction('selectClaimingCosts', claimingCosts.yes);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yes);
-    await performValidation('mainHeader', underlesseeOrMortgageeEntitledToClaim.mainHeader);
-    await performAction('clickButton', underlesseeOrMortgageeEntitledToClaim.continue);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.yesRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
     await performAction('wantToUploadDocuments', {
-      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsLabel,
-      option: wantToUploadDocuments.yes
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
     });
-    await performAction('uploadAdditionalDocs', {
-      documents: [{
-        type: uploadAdditionalDocs.tenancyAgreementOption,
-        fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocs.shortDescriptionInput
-      }]
-    });
-    await performAction('selectApplications', applications.yes);
+    await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {
-      question: languageUsed.whichLanguageUsedQuestion,
-      option: languageUsed.english
+      question: claimLanguageUsed.whichLanguageDidYouUseQuestion,
+      option: claimLanguageUsed.englishLRadioOption
     });
-    await performAction('completingYourClaim', completeYourClaim.submitAndClaimNow);
-    await performAction('clickButton', statementOfTruth.continue);
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
     await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
     await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
-    await performValidations(
-      'address info not null',
-      ['formLabelValue', propertyDetails.buildingAndStreetLabel],
-      ['formLabelValue', propertyDetails.townOrCityLabel],
-      ['formLabelValue', propertyDetails.postcodeZipcodeLabel],
-      ['formLabelValue', propertyDetails.countryLabel],
-    )
   });
 });
-
 

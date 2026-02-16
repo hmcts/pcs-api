@@ -6,10 +6,13 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
@@ -22,17 +25,20 @@ import java.util.List;
 public class NoticeDetails implements CcdPageConfiguration {
 
     private final NoticeDetailsService noticeDetailsService;
+    private final TextAreaValidationService textAreaValidationService;
 
-    private static final String NOTICE_SERVICE_METHOD_CONDITION = "noticeServiceMethod=\"";
+    private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_NoticeServiceMethod=\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("noticeDetails", this::midEvent)
             .pageLabel("Notice details")
-            .showCondition("noticeServed=\"Yes\"")
+            .showCondition("noticeServed=\"Yes\""
+                               + " OR walesNoticeServed=\"Yes\"")
             .label("noticeDetails-separator", "---")
-            .mandatory(PCSCase::getNoticeServiceMethod)
+            .complex(PCSCase::getNoticeServedDetails)
+            .mandatory(NoticeServedDetails::getNoticeServiceMethod)
 
             // First class post
             .label("noticeDetails-firstClassPost-section", """
@@ -40,7 +46,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 delivery on the next business day</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\"")
             .optional(
-                PCSCase::getNoticePostedDate,
+                NoticeServedDetails::getNoticePostedDate,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\""
             )
 
@@ -49,7 +55,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By delivering it to or leaving it at a permitted place</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\"")
             .optional(
-                PCSCase::getNoticeDeliveredDate,
+                NoticeServedDetails::getNoticeDeliveredDate,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\""
             )
 
@@ -58,11 +64,11 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By personally handing it to or leaving it with someone</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\"")
             .optional(
-                PCSCase::getNoticePersonName,
+                NoticeServedDetails::getNoticePersonName,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
             )
             .optional(
-                PCSCase::getNoticeHandedOverDateTime,
+                NoticeServedDetails::getNoticeHandedOverDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
             )
 
@@ -71,11 +77,11 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By email</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\"")
             .optional(
-                PCSCase::getNoticeEmailExplanation,
+                NoticeServedDetails::getNoticeEmailExplanation,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
             )
             .optional(
-                PCSCase::getNoticeEmailSentDateTime,
+                NoticeServedDetails::getNoticeEmailSentDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
             )
 
@@ -84,7 +90,7 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">By other electronic method</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\"")
             .optional(
-                PCSCase::getNoticeOtherElectronicDateTime,
+                NoticeServedDetails::getNoticeOtherElectronicDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\""
             )
 
@@ -93,11 +99,11 @@ public class NoticeDetails implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s">Other</h3>
                 """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\"")
             .optional(
-                PCSCase::getNoticeOtherExplanation,
+                NoticeServedDetails::getNoticeOtherExplanation,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
             )
             .optional(
-                PCSCase::getNoticeOtherDateTime,
+                NoticeServedDetails::getNoticeOtherDateTime,
                 NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
             )
 
@@ -110,7 +116,8 @@ public class NoticeDetails implements CcdPageConfiguration {
                 Any documents you upload now will be included in the pack of documents a judge will
                 receive before the hearing (the bundle)</p>
                 """)
-              .optional(PCSCase::getNoticeDocuments);
+              .optional(NoticeServedDetails::getNoticeDocuments)
+              .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -119,15 +126,6 @@ public class NoticeDetails implements CcdPageConfiguration {
 
         List<String> validationErrors = noticeDetailsService.validateNoticeDetails(caseData);
 
-        if (!validationErrors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .data(caseData)
-                .errors(validationErrors)
-                .build();
-        }
-
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(caseData)
-            .build();
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }

@@ -1,0 +1,34 @@
+<table class="govuk-table">
+  <caption class="govuk-table__caption govuk-table__caption--m govuk-!-font-size-19">{{ caption | default("Total amount that can be repaid") }}</caption>
+  <thead class="govuk-table__head">
+    <tr class="govuk-table__row">
+     <th scope="col" class="govuk-table__header">Repayment for</th>
+     <th scope="col" class="govuk-table__header">Amount</th>
+    </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+    <tr class="govuk-table__row">
+     <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Arrears and other costs
+     </th>
+     <td class="govuk-table__cell">{{ totalArrears | currency }}</td>
+    </tr>
+    <tr class="govuk-table__row">
+     <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Legal costs</th>
+     <td class="govuk-table__cell">{{ legalFees | currency }}</td>
+    </tr>
+    <tr class="govuk-table__row">
+     <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Land Registry fees</th>
+     <td class="govuk-table__cell">{{ landRegistryFees | currency }}</td>
+    </tr>
+    <tr class="govuk-table__row">
+     <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">
+      Warrant of possession fee
+     </th>
+     <td class="govuk-table__cell">{{ warrantFeeAmount }}</td>
+    </tr>
+    <tr class="govuk-table__row">
+     <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Total</th>
+     <td class="govuk-table__cell">{{ totalFees | currency }}</td>
+    </tr>
+  </tbody>
+</table>

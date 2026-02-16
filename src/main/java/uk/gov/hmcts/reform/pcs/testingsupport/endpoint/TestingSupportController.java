@@ -10,32 +10,52 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.docassembly.domain.OutputType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PartyAccessCodeEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyAccessCodeRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.document.service.DocAssemblyService;
 import uk.gov.hmcts.reform.pcs.document.service.exception.DocAssemblyException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
+import uk.gov.hmcts.reform.pcs.testingsupport.service.CcdTestCaseOrchestrator;
 
 import java.net.URI;
+import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Slf4j
+@AllArgsConstructor
 @RestController
 @RequestMapping("/testing-support")
 @ConditionalOnProperty(name = "testing-support.enabled", havingValue = "true")
@@ -46,18 +66,11 @@ public class TestingSupportController {
     private final Task<Void> helloWorldTask;
     private final DocAssemblyService docAssemblyService;
     private final EligibilityService eligibilityService;
-
-    public TestingSupportController(
-        SchedulerClient schedulerClient,
-        @Qualifier("helloWorldTask") Task<Void> helloWorldTask,
-        DocAssemblyService docAssemblyService,
-        EligibilityService eligibilityService
-    ) {
-        this.schedulerClient = schedulerClient;
-        this.helloWorldTask = helloWorldTask;
-        this.docAssemblyService = docAssemblyService;
-        this.eligibilityService = eligibilityService;
-    }
+    private final PcsCaseRepository pcsCaseRepository;
+    private final PartyAccessCodeRepository partyAccessCodeRepository;
+    private final ModelMapper modelMapper;
+    private final CcdTestCaseOrchestrator ccdTestCaseOrchestrator;
+    private final SecureRandom secureRandom = new SecureRandom();
 
     @Operation(
         summary = "Schedule a Hello World task",
@@ -100,7 +113,8 @@ public class TestingSupportController {
             log.info("Scheduled Hello World task with ID: {} to execute at: {}", taskId, executionTime);
             return ResponseEntity.ok(String.format(
                 "Hello World task scheduled successfully with ID: %s, execution time: %s",
-                taskId, executionTime));
+                taskId, executionTime
+            ));
         } catch (Exception e) {
             log.error("Failed to schedule Hello World task", e);
             return ResponseEntity.internalServerError()
@@ -163,6 +177,21 @@ public class TestingSupportController {
         }
     }
 
+    private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
+        String message = e.getMessage();
+
+        if (message.contains("Bad request")) {
+            return ResponseEntity.badRequest().body("Bad request to Doc Assembly service: " + message);
+        } else if (message.contains("Authorization failed")) {
+            return ResponseEntity.status(401).body("Authorization failed: " + message);
+        } else if (message.contains("endpoint not found")) {
+            return ResponseEntity.status(404).body("Doc Assembly service endpoint not found: " + message);
+        } else if (message.contains("temporarily unavailable") || message.contains("service error")) {
+            return ResponseEntity.status(503).body("Doc Assembly service is temporarily unavailable: " + message);
+        } else {
+            return ResponseEntity.internalServerError().body("Doc Assembly service error: " + message);
+        }
+    }
 
     @Operation(
         summary = "Checks the eligibility for a given property postcode",
@@ -270,20 +299,118 @@ public class TestingSupportController {
         return eligibilityService.checkEligibility(postcode, legislativeCountry);
     }
 
-    private ResponseEntity<String> handleDocAssemblyException(DocAssemblyException e) {
-        String message = e.getMessage();
+    @Operation(
+        summary = "Get all pins associated with a case"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pins Returned"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/pins/{caseReference}")
+    public ResponseEntity<Map<String, Party>> getPins(
+        @Parameter(
+            description = "Service-to-Service (S2S) authorization token",
+            required = true,
+            example = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        )
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @Parameter(description = "Case reference to find pins for", required = true)
+        @PathVariable long caseReference
+    ) {
+        try {
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
 
-        if (message.contains("Bad request")) {
-            return ResponseEntity.badRequest().body("Bad request to Doc Assembly service: " + message);
-        } else if (message.contains("Authorization failed")) {
-            return ResponseEntity.status(401).body("Authorization failed: " + message);
-        } else if (message.contains("endpoint not found")) {
-            return ResponseEntity.status(404).body("Doc Assembly service endpoint not found: " + message);
-        } else if (message.contains("temporarily unavailable") || message.contains("service error")) {
-            return ResponseEntity.status(503).body("Doc Assembly service is temporarily unavailable: " + message);
-        } else {
-            return ResponseEntity.internalServerError().body("Doc Assembly service error: " + message);
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+
+            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(
+                pcsCaseEntity.getId()
+            );
+
+            //map partyId to party
+            Map<UUID, PartyEntity> partyByPartyId = pcsCaseEntity.getParties().stream()
+                .collect(Collectors.toMap(
+                    PartyEntity::getId,
+                    Function.identity(),
+                    (existing, incoming) -> {
+                        throw new IllegalStateException("Duplicate partyId: " + existing.getId());
+                    }
+                ));
+
+            Map<String, Party> minimalPartyMap = new HashMap<>();
+
+            for (var accessCodeObject : accessCodes) {
+                //for each access code return the matching defendant's name and address
+
+                String accessCode = accessCodeObject.getCode();
+                UUID partyId = accessCodeObject.getPartyId();
+
+                PartyEntity matched = partyByPartyId.get(partyId);
+                if (matched == null) {
+                    throw new IllegalStateException("Party is not found on Case. PartyID = " + partyId);
+                }
+
+                AddressUK addressUK;
+
+                if (!matched.getAddressKnown().toBoolean()) {
+                    addressUK = null;
+                } else if (matched.getAddressSameAsProperty().toBoolean()) {
+                    addressUK = modelMapper.map(pcsCaseEntity.getPropertyAddress(), AddressUK.class);
+                } else {
+                    addressUK = modelMapper.map(matched.getAddress(), AddressUK.class);
+                }
+
+                Party minimalParty = Party.builder()
+                    .firstName(matched.getFirstName())
+                    .lastName(matched.getLastName())
+                    .address(addressUK)
+                    .build();
+
+                minimalPartyMap.put(accessCode, minimalParty);
+            }
+
+            return ResponseEntity.ok(minimalPartyMap);
+        } catch (Exception e) {
+            log.error("Failed to get Access codes / Pins {}", caseReference, e);
+            return ResponseEntity.internalServerError().build();
         }
     }
 
+    @Operation(
+        summary = "Create a PCS case via testing support",
+        description = "Testing support endpoint that orchestrates the CCD calls required to create a case."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Case created successfully"),
+        @ApiResponse(responseCode = "400", description = "Bad request - invalid payload"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping(
+        value = "/{legislativeCountry}/create-case",
+        consumes = MediaType.APPLICATION_JSON_VALUE,
+        produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, Object>> createPCSCaseViaTestingSupport(
+        @PathVariable String legislativeCountry,
+        @RequestHeader(value = AUTHORIZATION) String authorization,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @RequestBody(required = false) JsonNode payloadMerge
+    ) {
+        LegislativeCountry country = LegislativeCountry.valueOf(legislativeCountry.toUpperCase());
+
+        Map<String, Object> result = ccdTestCaseOrchestrator.createCase(authorization, country, payloadMerge);
+
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", "CREATED");
+        body.put("caseId", result.get("caseId"));
+        body.put("caseDetails", result.get("caseDetails"));
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
+    }
 }

@@ -1,20 +1,55 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class AddressFormatter {
 
-    public String getFormattedAddress(PCSCase caseData) {
-        AddressUK propertyAddress = caseData.getPropertyAddress();
-        return String.format(
-            "%s<br>%s<br>%s",
-            propertyAddress.getAddressLine1(),
-            propertyAddress.getPostTown(),
-            propertyAddress.getPostCode()
-        );
+    public static final String COMMA_DELIMITER = ", ";
+    public static final String BR_DELIMITER = "<br>";
+
+    /**
+     * Formats an {@link AddressUK} with the mandatory address fields, (address line 1, post-town and postcode).
+     * @param address The address to format
+     * @param delimiter The delimiter with which to join each part of the address
+     * @return A formatted address String
+     */
+    public String formatShortAddress(AddressUK address, String delimiter) {
+        Objects.requireNonNull(delimiter, "Delimiter must not be null");
+
+        if (address == null) {
+            return null;
+        }
+
+        return Stream.of(address.getAddressLine1(), address.getPostTown(), address.getPostCode())
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(delimiter));
+    }
+
+    /**
+     * Formats an {@link AddressUK} with the main address fields, (address line 1, address line 2,
+     * post-town and postcode).
+     * @param address The address to format
+     * @param delimiter The delimiter with which to join each part of the address
+     * @return A formatted address String
+     */
+    public String formatMediumAddress(AddressUK address, String delimiter) {
+        Objects.requireNonNull(delimiter, "Delimiter must not be null");
+
+        if (address == null) {
+            return null;
+        }
+
+        return Stream.of(address.getAddressLine1(), address.getAddressLine2(),
+                         address.getPostTown(), address.getPostCode())
+            .filter(StringUtils::isNotBlank)
+            .collect(Collectors.joining(delimiter));
     }
 
 }

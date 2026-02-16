@@ -1,40 +1,84 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleGroundsReasons;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.DOMESTIC_VIOLENCE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.PREMIUM_PAID_MUTUAL_EXCHANGE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.PROPERTY_DETERIORATION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.REFUSAL_TO_MOVE_BACK;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.TENANCY_OBTAINED_BY_FALSE_STATEMENT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.UNREASONABLE_CONDUCT_TIED_ACCOMMODATION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.SPECIAL_NEEDS_ACCOMMODATION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.UNDER_OCCUPYING_AFTER_SUCCESSION;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGrounds.ANTI_SOCIAL;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.CHARITABLE_LANDLORD;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.LANDLORD_WORKS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.OVERCROWDING;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleMandatoryGroundsAlternativeAccomm.PROPERTY_SOLD;
 
+@AllArgsConstructor
+@Component
 public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfiguration {
+
+    private static final String DISCRETIONARY_GROUNDS = "secureOrFlexibleDiscretionaryGrounds";
+
+    private static final String BREACH_OF_TENANCY_GROUND_LABEL = "Breach of the tenancy (ground 1)";
+    private static final String MANDATORY_GROUNDS = "secureOrFlexibleMandatoryGrounds";
+    private static final String MANDATORY_GROUNDS_ALT = "secureOrFlexibleMandatoryGroundsAlt";
+    private static final String DISCRETIONARY_GROUNDS_ALT = "secureOrFlexibleDiscretionaryGroundsAlt";
+
+    private final TextAreaValidationService textAreaValidationService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("secureOrFlexibleGroundsForPossessionReasons")
+            .page("secureOrFlexibleGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
             .showCondition(
-                    "typeOfTenancyLicence=\"SECURE_TENANCY\""
-                            + " OR typeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
+                    "tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
+                            + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
                             + " AND (showBreachOfTenancyTextarea=\"Yes\" OR showReasonsForGroundsPage=\"Yes\")"
+                            + " AND legislativeCountry=\"England\""
             )
             .label("possessionReasons-lineSeparator","---")
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
 
             // Discretionary grounds
-            .label("possessionReasons-breachOfTenancyGround-label","""
+            .label("possessionReasons-breachOfTenancyGround-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Breach of the tenancy (ground 1)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                 Why are you making a claim for possession under this ground?</h3>
-                """, "showBreachOfTenancyTextarea=\"Yes\""
-                + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
+                """, "showBreachOfTenancyTextarea=\"Yes\" AND "
+                + ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, RENT_ARREARS_OR_BREACH_OF_TENANCY))
             .mandatory(SecureOrFlexibleGroundsReasons::getBreachOfTenancyGround,
-                    "showBreachOfTenancyTextarea=\"Yes\""
-                           + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                           + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\"")
+                    "showBreachOfTenancyTextarea=\"Yes\" AND "
+                        + ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, RENT_ARREARS_OR_BREACH_OF_TENANCY))
 
             .label("possessionReasons-nuisanceOrImmoralUse-label",
                    """
@@ -45,9 +89,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS\"NUISANCE_OR_IMMORAL_USE\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, NUISANCE_OR_IMMORAL_USE))
             .mandatory(SecureOrFlexibleGroundsReasons::getNuisanceOrImmoralUseGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS\"NUISANCE_OR_IMMORAL_USE\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, NUISANCE_OR_IMMORAL_USE))
 
             .label("possessionReasons-domesticViolence-label",
                    """
@@ -56,9 +100,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS\"DOMESTIC_VIOLENCE\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, DOMESTIC_VIOLENCE))
             .mandatory(SecureOrFlexibleGroundsReasons::getDomesticViolenceGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS\"DOMESTIC_VIOLENCE\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, DOMESTIC_VIOLENCE))
 
             .label("possessionReasons-riotOffence-label",
                    """
@@ -67,9 +111,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS\"RIOT_OFFENCE\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, RIOT_OFFENCE))
             .mandatory(SecureOrFlexibleGroundsReasons::getRiotOffenceGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS\"RIOT_OFFENCE\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, RIOT_OFFENCE))
 
             .label("possessionReasons-propertyDeterioration-label",
                    """
@@ -80,9 +124,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS\"PROPERTY_DETERIORATION\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, PROPERTY_DETERIORATION))
             .mandatory(SecureOrFlexibleGroundsReasons::getPropertyDeteriorationGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS\"PROPERTY_DETERIORATION\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, PROPERTY_DETERIORATION))
 
             .label("possessionReasons-furnitureDeterioration-label",
                    """
@@ -91,9 +135,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS\"FURNITURE_DETERIORATION\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, FURNITURE_DETERIORATION))
             .mandatory(SecureOrFlexibleGroundsReasons::getFurnitureDeteriorationGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS\"FURNITURE_DETERIORATION\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, FURNITURE_DETERIORATION))
 
             .label("possessionReasons-tenancyObtainedByFalseStatement-label",
                    """
@@ -102,11 +146,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                   </h3>
                   """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                       + "\"TENANCY_OBTAINED_BY_FALSE_STATEMENT\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, TENANCY_OBTAINED_BY_FALSE_STATEMENT))
             .mandatory(SecureOrFlexibleGroundsReasons::getTenancyByFalseStatementGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                           + "\"TENANCY_OBTAINED_BY_FALSE_STATEMENT\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, TENANCY_OBTAINED_BY_FALSE_STATEMENT))
 
             .label("possessionReasons-premiumPaidMutualExchange-label",
                    """
@@ -117,11 +159,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                   </h3>
                   """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                       + "\"PREMIUM_PAID_MUTUAL_EXCHANGE\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, PREMIUM_PAID_MUTUAL_EXCHANGE))
             .mandatory(SecureOrFlexibleGroundsReasons::getPremiumMutualExchangeGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                           + "\"PREMIUM_PAID_MUTUAL_EXCHANGE\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, PREMIUM_PAID_MUTUAL_EXCHANGE))
 
             .label("possessionReasons-unreasonableConductTiedAccommodation-label",
                    """
@@ -132,11 +172,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                   </h3>
                   """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                       + "\"UNREASONABLE_CONDUCT_TIED_ACCOMMODATION\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, UNREASONABLE_CONDUCT_TIED_ACCOMMODATION))
             .mandatory(SecureOrFlexibleGroundsReasons::getUnreasonableConductGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                           + "\"UNREASONABLE_CONDUCT_TIED_ACCOMMODATION\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, UNREASONABLE_CONDUCT_TIED_ACCOMMODATION))
 
             .label("possessionReasons-refusalToMoveBack-label",
                    """
@@ -147,9 +185,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                 </h3>
                 """,
-                   "secureOrFlexibleDiscretionaryGroundsCONTAINS\"REFUSAL_TO_MOVE_BACK\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, REFUSAL_TO_MOVE_BACK))
             .mandatory(SecureOrFlexibleGroundsReasons::getRefusalToMoveBackGround,
-                       "secureOrFlexibleDiscretionaryGroundsCONTAINS\"REFUSAL_TO_MOVE_BACK\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS, REFUSAL_TO_MOVE_BACK))
 
             // Mandatory grounds
             .label("possessionReasons-antiSocial-label",
@@ -159,9 +197,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
+                   ShowConditions.fieldContains(MANDATORY_GROUNDS, ANTI_SOCIAL))
             .mandatory(SecureOrFlexibleGroundsReasons::getAntiSocialGround,
-                       "secureOrFlexibleMandatoryGroundsCONTAINS\"ANTI_SOCIAL\"")
+                       ShowConditions.fieldContains(MANDATORY_GROUNDS, ANTI_SOCIAL))
 
             // Mandatory grounds (if alternative accommodation is available)
             .label("possessionReasons-overcrowding-label",
@@ -171,20 +209,20 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"OVERCROWDING\"")
+                   ShowConditions.fieldContains(MANDATORY_GROUNDS_ALT, OVERCROWDING))
             .mandatory(SecureOrFlexibleGroundsReasons::getOvercrowdingGround,
-                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"OVERCROWDING\"")
+                       ShowConditions.fieldContains(MANDATORY_GROUNDS_ALT, OVERCROWDING))
 
             .label("possessionReasons-landlordWorks-label",
                    """
-                 <h2 class="govuk-heading-l" tabindex="0">Landlord's works (ground 10)</h2>
+                 <h2 class="govuk-heading-l" tabindex="0">Landlord’s works (ground 10)</h2>
                  <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"LANDLORD_WORKS\"")
+                   ShowConditions.fieldContains(MANDATORY_GROUNDS_ALT, LANDLORD_WORKS))
             .mandatory(SecureOrFlexibleGroundsReasons::getLandlordWorksGround,
-                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"LANDLORD_WORKS\"")
+                       ShowConditions.fieldContains(MANDATORY_GROUNDS_ALT, LANDLORD_WORKS))
 
             .label("possessionReasons-propertySold-label",
                    """
@@ -193,9 +231,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"PROPERTY_SOLD\"")
+                   ShowConditions.fieldContains(MANDATORY_GROUNDS_ALT, PROPERTY_SOLD))
             .mandatory(SecureOrFlexibleGroundsReasons::getPropertySoldGround,
-                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"PROPERTY_SOLD\"")
+                       ShowConditions.fieldContains(MANDATORY_GROUNDS_ALT, PROPERTY_SOLD))
 
             .label("possessionReasons-charitableLandlord-label",
                    """
@@ -204,9 +242,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleMandatoryGroundsAltCONTAINS\"CHARITABLE_LANDLORD\"")
+                   ShowConditions.fieldContains(MANDATORY_GROUNDS_ALT, CHARITABLE_LANDLORD))
             .mandatory(SecureOrFlexibleGroundsReasons::getCharitableLandlordGround,
-                       "secureOrFlexibleMandatoryGroundsAltCONTAINS\"CHARITABLE_LANDLORD\"")
+                       ShowConditions.fieldContains(MANDATORY_GROUNDS_ALT, CHARITABLE_LANDLORD))
 
             //Discretionary grounds (if alternative accommodation is available)
             .label("possessionReasons-tiedAccommodationNeededForEmployee-label",
@@ -218,11 +256,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
-                       + "\"TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE))
             .mandatory(SecureOrFlexibleGroundsReasons::getTiedAccommodationGround,
-                       "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
-                           + "\"TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE))
 
             .label("possessionReasons-adaptedAccommodation-label",
                    """
@@ -231,9 +267,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsAltCONTAINS\"ADAPTED_ACCOMMODATION\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, ADAPTED_ACCOMMODATION))
             .mandatory(SecureOrFlexibleGroundsReasons::getAdaptedAccommodationGround,
-                       "secureOrFlexibleDiscretionaryGroundsAltCONTAINS\"ADAPTED_ACCOMMODATION\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, ADAPTED_ACCOMMODATION))
 
             .label("possessionReasons-housingAssociationSpecialCircumstances-label",
                    """
@@ -244,11 +280,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
-                       + "\"HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES))
             .mandatory(SecureOrFlexibleGroundsReasons::getHousingAssocSpecialGround,
-                       "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
-                           + "\"HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES))
 
             .label("possessionReasons-specialNeedsAccommodation-label",
                    """
@@ -257,10 +291,9 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsAltCONTAINS\"SPECIAL_NEEDS_ACCOMMODATION\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, SPECIAL_NEEDS_ACCOMMODATION))
             .mandatory(SecureOrFlexibleGroundsReasons::getSpecialNeedsAccommodationGround,
-                       "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
-                           + "\"SPECIAL_NEEDS_ACCOMMODATION\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, SPECIAL_NEEDS_ACCOMMODATION))
 
             .label("possessionReasons-underOccupyingAfterSuccession-label",
                    """
@@ -269,15 +302,165 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                     Why are you making a claim for possession under this ground?
                  </h3>
                  """,
-                   "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
-                       + "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
+                   ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, UNDER_OCCUPYING_AFTER_SUCCESSION))
             .mandatory(SecureOrFlexibleGroundsReasons::getUnderOccupancySuccessionGround,
-                       "secureOrFlexibleDiscretionaryGroundsAltCONTAINS"
-                           + "\"UNDER_OCCUPYING_AFTER_SUCCESSION\"")
+                       ShowConditions.fieldContains(DISCRETIONARY_GROUNDS_ALT, UNDER_OCCUPYING_AFTER_SUCCESSION))
             .done()
                 .readonly(PCSCase::getShowBreachOfTenancyTextarea,NEVER_SHOW)
-                .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW);
+                .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW)
+                .label("secureOrFlexibleGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
 
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
+                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+        PCSCase caseData = details.getData();
+
+        List<String> validationErrors = new ArrayList<>();
+
+        SecureOrFlexibleGroundsReasons secureOrFlexibleGrounds = caseData.getSecureOrFlexibleGroundsReasons();
+        if (secureOrFlexibleGrounds != null) {
+            validationErrors.addAll(validateSecureOrFlexibleGrounds(secureOrFlexibleGrounds));
+        }
+
+        return textAreaValidationService.createValidationResponse(caseData, validationErrors);
+    }
+
+    private List<String> validateSecureOrFlexibleGrounds(SecureOrFlexibleGroundsReasons grounds) {
+        List<TextAreaValidationService.FieldValidation> allValidations = new ArrayList<>();
+        allValidations.addAll(List.of(buildDiscretionaryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildMandatoryGroundValidations(grounds)));
+        allValidations.addAll(List.of(buildMandatoryGroundsAlternativeAccommValidations(grounds)));
+        allValidations.addAll(List.of(buildDiscretionaryGroundsAlternativeAccommValidations(grounds)));
+
+        return textAreaValidationService.validateMultipleTextAreas(
+            allValidations.toArray(new TextAreaValidationService.FieldValidation[0])
+        );
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildDiscretionaryGroundValidations(
+            SecureOrFlexibleGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getBreachOfTenancyGround(),
+                BREACH_OF_TENANCY_GROUND_LABEL,
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getNuisanceOrImmoralUseGround(),
+                SecureOrFlexibleDiscretionaryGrounds.NUISANCE_OR_IMMORAL_USE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getDomesticViolenceGround(),
+                SecureOrFlexibleDiscretionaryGrounds.DOMESTIC_VIOLENCE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getRiotOffenceGround(),
+                SecureOrFlexibleDiscretionaryGrounds.RIOT_OFFENCE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getPropertyDeteriorationGround(),
+                SecureOrFlexibleDiscretionaryGrounds.PROPERTY_DETERIORATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getFurnitureDeteriorationGround(),
+                SecureOrFlexibleDiscretionaryGrounds.FURNITURE_DETERIORATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getTenancyByFalseStatementGround(),
+                SecureOrFlexibleDiscretionaryGrounds.TENANCY_OBTAINED_BY_FALSE_STATEMENT.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getPremiumMutualExchangeGround(),
+                SecureOrFlexibleDiscretionaryGrounds.PREMIUM_PAID_MUTUAL_EXCHANGE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getUnreasonableConductGround(),
+                SecureOrFlexibleDiscretionaryGrounds.UNREASONABLE_CONDUCT_TIED_ACCOMMODATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getRefusalToMoveBackGround(),
+                SecureOrFlexibleDiscretionaryGrounds.REFUSAL_TO_MOVE_BACK.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildMandatoryGroundValidations(
+            SecureOrFlexibleGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAntiSocialGround(),
+                ANTI_SOCIAL.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildMandatoryGroundsAlternativeAccommValidations(
+            SecureOrFlexibleGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getOvercrowdingGround(),
+                OVERCROWDING.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getLandlordWorksGround(),
+                LANDLORD_WORKS.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getPropertySoldGround(),
+                PROPERTY_SOLD.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getCharitableLandlordGround(),
+                CHARITABLE_LANDLORD.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
+    }
+
+    private TextAreaValidationService.FieldValidation[] buildDiscretionaryGroundsAlternativeAccommValidations(
+            SecureOrFlexibleGroundsReasons grounds) {
+        return new TextAreaValidationService.FieldValidation[] {
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getTiedAccommodationGround(),
+                TIED_ACCOMMODATION_NEEDED_FOR_EMPLOYEE.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getAdaptedAccommodationGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.ADAPTED_ACCOMMODATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getHousingAssocSpecialGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm
+                    .HOUSING_ASSOCIATION_SPECIAL_CIRCUMSTANCES.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getSpecialNeedsAccommodationGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.SPECIAL_NEEDS_ACCOMMODATION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            ),
+            TextAreaValidationService.FieldValidation.of(
+                grounds.getUnderOccupancySuccessionGround(),
+                SecureOrFlexibleDiscretionaryGroundsAlternativeAccomm.UNDER_OCCUPYING_AFTER_SUCCESSION.getLabel(),
+                TextAreaValidationService.MEDIUM_TEXT_LIMIT
+            )
+        };
     }
 }
 
