@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.TenancyLicenceEntity;
+import uk.gov.hmcts.reform.pcs.exception.CaseDataValidationException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.math.BigDecimal;
@@ -26,6 +28,7 @@ import java.time.LocalDate;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.mock;
@@ -162,19 +165,20 @@ class TenancyLicenceServiceTest {
         assertThat(tenancyLicenceEntity.getStartDate()).isEqualTo(licenceStartDate);
     }
 
-    @Test
-    void shouldSetRentDetailsInTenancyLicenceEntity() {
+    @ParameterizedTest
+    @EnumSource(value = RentPaymentFrequency.class, names = {"WEEKLY", "FORTNIGHTLY", "MONTHLY"})
+    void shouldSetRentDetailsForNonOtherFrequency(RentPaymentFrequency rentFrequency) {
         // Given
         BigDecimal rentAmount = new BigDecimal("1.23");
-        BigDecimal dailyCharge = new BigDecimal("4.56");
-        RentPaymentFrequency rentFrequency = RentPaymentFrequency.FORTNIGHTLY;
+        BigDecimal calculatedDailyCharge = new BigDecimal("4.56");
 
         RentDetails rentDetails = RentDetails.builder()
             .currentRent(rentAmount)
-            .dailyCharge(dailyCharge)
+            .calculatedDailyCharge(calculatedDailyCharge)
+            .perDayCorrect(VerticalYesNo.YES)
+            .amendedDailyCharge(new BigDecimal("99.99")) // Should be ignored
             .frequency(rentFrequency)
             .otherFrequency("should be ignored")
-            .perDayCorrect(VerticalYesNo.YES)
             .build();
 
         when(pcsCase.getRentDetails()).thenReturn(rentDetails);
@@ -184,7 +188,7 @@ class TenancyLicenceServiceTest {
 
         // Then
         assertThat(tenancyLicenceEntity.getRentAmount()).isEqualTo(rentAmount);
-        assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(dailyCharge);
+        assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(calculatedDailyCharge);
         assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(rentFrequency);
         assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
         assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(VerticalYesNo.YES);
@@ -201,6 +205,8 @@ class TenancyLicenceServiceTest {
         RentDetails rentDetails = RentDetails.builder()
             .currentRent(rentAmount)
             .dailyCharge(dailyCharge)
+            .perDayCorrect(VerticalYesNo.NO) // Should be ignored
+            .amendedDailyCharge(new BigDecimal("99.99")) // Should be ignored
             .frequency(rentFrequency)
             .otherFrequency(otherRentFrequency)
             .build();
@@ -215,23 +221,51 @@ class TenancyLicenceServiceTest {
         assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(dailyCharge);
         assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(rentFrequency);
         assertThat(tenancyLicenceEntity.getOtherRentFrequency()).isEqualTo(otherRentFrequency);
+        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isNull();
     }
 
-    @ParameterizedTest(name = "amended={0}, calculated={1}, daily={2} -> expected={3}")
-    @MethodSource("dailyRentChargeScenarios")
-    void shouldPreferDailyRentCharge(BigDecimal amendedDailyRent, BigDecimal calculatedDailyRent, BigDecimal dailyRent,
-                                     BigDecimal expectedAmount) {
+    @Test
+    void shouldSetDailyRentWhenNotCorrect() {
+        BigDecimal rentAmount = new BigDecimal("2000.00");
+        BigDecimal amendedDailyCharge = new BigDecimal("56.25");
+
         when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
         when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
-                .amendedDailyCharge(amendedDailyRent)
-                .calculatedDailyCharge(calculatedDailyRent)
-                .dailyCharge(dailyRent)
-                .currentRent(new BigDecimal("1200.00"))
-                .frequency(RentPaymentFrequency.MONTHLY)
+                .frequency(RentPaymentFrequency.WEEKLY)
+                .currentRent(rentAmount) // Should be ignored
+                .calculatedDailyCharge(new BigDecimal("99.99"))// Should be ignored
+                .amendedDailyCharge(amendedDailyCharge)
+                .perDayCorrect(VerticalYesNo.NO)
                 .build());
 
-        TenancyLicenceEntity result = underTest.createTenancyLicenceEntity(pcsCase);
-        assertThat(result.getRentPerDay()).isEqualTo(expectedAmount);
+        TenancyLicenceEntity tenancyLicenceEntity = underTest.createTenancyLicenceEntity(pcsCase);
+
+        assertThat(tenancyLicenceEntity.getRentAmount()).isEqualTo(rentAmount);
+        assertThat(tenancyLicenceEntity.getCalculatedDailyRentCorrect()).isEqualTo(VerticalYesNo.NO);
+        assertThat(tenancyLicenceEntity.getRentPerDay()).isEqualTo(amendedDailyCharge);
+        assertThat(tenancyLicenceEntity.getRentFrequency()).isEqualTo(RentPaymentFrequency.WEEKLY);
+        assertThat(tenancyLicenceEntity.getOtherTypeDetails()).isNull();
+    }
+
+    @Test
+    void shouldThrowExceptionIfRentDataIsIncomplete() {
+        BigDecimal rentAmount = new BigDecimal("2000.00");
+        BigDecimal amendedDailyCharge = new BigDecimal("56.25");
+
+        when(pcsCase.getNoticeServedDetails()).thenReturn(noticeServedDetails);
+        when(pcsCase.getRentDetails()).thenReturn(RentDetails.builder()
+              .frequency(RentPaymentFrequency.WEEKLY)
+              .perDayCorrect(null)
+              .currentRent(rentAmount) // Should be ignored
+              .calculatedDailyCharge(new BigDecimal("99.99"))// Should be ignored
+              .amendedDailyCharge(amendedDailyCharge)
+              .build());
+
+        Throwable throwable = catchThrowable(() -> underTest.createTenancyLicenceEntity(pcsCase));
+
+        assertThat(throwable)
+            .isInstanceOf(CaseDataValidationException.class)
+            .hasMessageStartingWith("Invalid rent details:");
     }
 
     private static Stream<Arguments> noTenancyTypeScenarios() {
@@ -275,12 +309,4 @@ class TenancyLicenceServiceTest {
         );
     }
 
-
-    static Stream<Arguments> dailyRentChargeScenarios() {
-        return Stream.of(
-                Arguments.of("50.00", "40.00", "35.00", "50.00"),
-                Arguments.of(null, "40.00", "35.00", "40.00"),
-                Arguments.of(null, null, "35.00", "35.00")
-        );
-    }
 }
