@@ -5,7 +5,7 @@ export const yourHCEO = {
   nameOfYourHCEOInput: 'Morgan Freeman',
   continueButton: 'Continue',
   errors: 'There is a problem',
-  errorValidation: 'YES',//set it to 'NO' before raising a PR
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorTextField: [
