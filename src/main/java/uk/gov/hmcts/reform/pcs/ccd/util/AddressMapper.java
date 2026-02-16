@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -9,7 +11,10 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
  * This ensures consistent JSON structure for CCD event token validation.
  */
 @Component
+@RequiredArgsConstructor
 public class AddressMapper {
+
+    private final ModelMapper modelMapper;
 
     /**
      * Maps AddressEntity to AddressUK with all fields explicitly set (even when null).
@@ -42,6 +47,16 @@ public class AddressMapper {
             .postCode(nullIfEmpty(addressEntity.getPostcode()))
             .country(nullIfEmpty(addressEntity.getCountry()))
             .build();
+    }
+
+    /**
+     * Maps AddressUK domain object to AddressEntity for database persistence.
+     *
+     * @param addressUK the address domain object to map from (can be null)
+     * @return AddressEntity for database persistence, or null if input is null
+     */
+    public AddressEntity toEntity(AddressUK addressUK) {
+        return addressUK != null ? modelMapper.map(addressUK, AddressEntity.class) : null;
     }
 
     private String nullIfEmpty(String value) {
