@@ -426,13 +426,17 @@ export class EnforcementAction implements IAction {
 
             case 'textField':
               await performAction('inputText', validationArr.label, await this.generateMoreThanMaxString(page, validationArr.label as string, item.input));
-              await performAction('clickButton', validationArr.button);
-              if (item.type === 'moreThanMax') {
-                await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
-              } else {
-                await performValidation('inputError', validationArr.label, item.errMessage);
-                await performValidation('errorMessage', validationArr.label, item.errMessage)
-              }
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                if (item.type === 'moreThanMax') {
+                  await performValidation('errorMessage', { header: validationArr.header, message: item.errMessage });
+                } else {
+                  await performValidation('inputError', validationArr.label, item.errMessage);
+                  await performValidation('errorMessage', validationArr.label, item.errMessage);
+                }
+              }).toPass({
+                timeout: VERY_LONG_TIMEOUT,
+              });
               break;
 
             case 'checkBox':

@@ -5,7 +5,7 @@ export const violentOrAggressiveBehaviour = {
   howHaveTheyBeenViolentAndAggressiveInput: 'Test input for How have they been violent or aggressive?',
   continueButton: 'Continue',
   errors: 'The event could not be created',
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidation: 'YES',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox',five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorTextField: [
