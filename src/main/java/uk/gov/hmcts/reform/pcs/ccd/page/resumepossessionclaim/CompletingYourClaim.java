@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 public class CompletingYourClaim implements CcdPageConfiguration {
 
     @Override
@@ -40,6 +42,7 @@ public class CompletingYourClaim implements CcdPageConfiguration {
                 """
             )
             .mandatory(PCSCase::getCompletionNextStep)
+            .readonly(PCSCase::getSaveButtonLabelOnCaseSubmit, NEVER_SHOW, true)
             .label("completingYourClaim-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
