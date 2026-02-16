@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
@@ -125,7 +126,7 @@ class SubmitEventHandlerTest {
     // ========== FINAL SUBMIT FLOW (submitDraftAnswers = YES) ==========
 
     @Test
-    void shouldNotSaveDraftWhenSubmitFlagIsYes() {
+    void shouldSaveDraftWhenSubmitFlagIsYes() {
         // Given
         Party party = Party.builder()
             .firstName("John")
@@ -169,7 +170,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }
@@ -227,8 +228,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
+        verify(pcsCaseService, times(1)).save(any(PcsCaseEntity.class)
         );
     }
 
