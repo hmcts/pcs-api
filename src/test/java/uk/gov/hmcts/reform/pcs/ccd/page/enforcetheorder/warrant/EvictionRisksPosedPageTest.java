@@ -38,7 +38,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getEnforcementRiskCategories()).isEqualTo(selectedRisks);
+                .getRiskCategories()).isEqualTo(selectedRisks);
     }
 
     @ParameterizedTest
@@ -102,7 +102,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails().getEnforcementRiskCategories())
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails().getRiskCategories())
             .isEqualTo(allCategories);
     }
 
@@ -111,7 +111,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         return PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .warrantDetails(WarrantDetails.builder()
-                    .enforcementRiskCategories(selectedCategories)
+                    .riskCategories(selectedCategories)
                     .riskDetails(riskDetails)
                     .build())
                 .build())
