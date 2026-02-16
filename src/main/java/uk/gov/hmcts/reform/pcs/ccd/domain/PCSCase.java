@@ -316,6 +316,9 @@ public class PCSCase {
     @CCD
     private GroundsReasonsWales groundsReasonsWales;
 
+    @CCD(searchable = false)
+    private String saveButtonLabelOnCaseSubmit;
+
 
     @JsonUnwrapped
     @CCD
