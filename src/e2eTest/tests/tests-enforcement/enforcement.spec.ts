@@ -429,7 +429,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       await performAction('inputErrorValidation', {
         validationReq: statementOfTruthOne.errorValidation,
         validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
+        inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
         header: statementOfTruthOne.errors,
         label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
         button: statementOfTruthOne.continueButton

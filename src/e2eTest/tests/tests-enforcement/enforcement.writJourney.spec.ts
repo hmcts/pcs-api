@@ -16,7 +16,8 @@ import {
   statementOfTruthOne,
   languageUsed,
   claimSentToHighCourt,
-  youCannotApplyForWrit
+  youCannotApplyForWrit,
+  checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
@@ -243,14 +244,6 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       });
       await performAction('inputErrorValidation', {
         validationReq: statementOfTruthOne.errorValidation,
-        validationType: statementOfTruthOne.errorValidationType.four,
-        inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
-        label: statementOfTruthOne.checkBoxGenericErrorLabel,
-        checkBox: statementOfTruthOne.iCertifyCheckbox,
-        button: statementOfTruthOne.continueButton
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: statementOfTruthOne.errorValidation,
         validationType: statementOfTruthOne.errorValidationType.three,
         inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
         question: statementOfTruthOne.completedByLabel,
@@ -276,13 +269,13 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('inputErrorValidation', {
         validationReq: statementOfTruthOne.errorValidation,
         validationType: statementOfTruthOne.errorValidationType.two,
-        inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
+        inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
         header: statementOfTruthOne.errors,
         label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
         button: statementOfTruthOne.continueButton
       });
       await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
-      await performAction('selectStatementOfTruth', {
+      await performAction('selectStatementOfTruthWrit', {
         question: statementOfTruthOne.completedByLabel,
         option: statementOfTruthOne.claimantRadioOption,
         option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
@@ -291,7 +284,8 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
         input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
         label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruthOne.nameOfFirmHiddenTextInput
+        input2: statementOfTruthOne.nameOfFirmHiddenTextInput,
+        nextPage: checkYourAnswers.mainHeader
       });
     });
 
@@ -368,17 +362,60 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       option: languageUsed.languageUsedRadioOptions.welshRadioOption,
       nextPage: statementOfTruthOne.mainHeader
     });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthOne.errorValidation,
+      validationType: statementOfTruthOne.errorValidationType.three,
+      inputArray: statementOfTruthOne.errorValidationField.errorRadioOption,
+      question: statementOfTruthOne.completedByLabel,
+      option: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
+      button: statementOfTruthOne.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthOne.errorValidation,
+      validationType: statementOfTruthOne.errorValidationType.four,
+      inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
+      label: statementOfTruthOne.checkBoxGenericErrorLabel,
+      header: statementOfTruthOne.errors,
+      checkBox: statementOfTruthOne.signThisStatementHiddenCheckbox,
+      button: statementOfTruthOne.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthOne.errorValidation,
+      validationType: statementOfTruthOne.errorValidationType.two,
+      inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
+      header: statementOfTruthOne.errors,
+      label: statementOfTruthOne.fullNameHiddenTextLabel,
+      button: statementOfTruthOne.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthOne.errorValidation,
+      validationType: statementOfTruthOne.errorValidationType.two,
+      inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
+      header: statementOfTruthOne.errors,
+      label: statementOfTruthOne.nameOfFirmHiddenTextLabel,
+      button: statementOfTruthOne.continueButton
+    });
+    await performAction('inputErrorValidation', {
+      validationReq: statementOfTruthOne.errorValidation,
+      validationType: statementOfTruthOne.errorValidationType.two,
+      inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
+      header: statementOfTruthOne.errors,
+      label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+      button: statementOfTruthOne.continueButton
+    });
+    await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
     await performAction('selectStatementOfTruthWrit', {
-        question: statementOfTruthOne.completedByLabel,
-        option: statementOfTruthOne.claimantRadioOption,
-        option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        label: statementOfTruthOne.fullNameHiddenTextLabel,
-        input: statementOfTruthOne.fullNameHiddenTextInput,
-        label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
-        label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruthOne.nameOfFirmHiddenTextInput
-      });
+      question: statementOfTruthOne.completedByLabel,
+      option: statementOfTruthOne.claimantLegalRepresentativeRadioOption,
+      option1: statementOfTruthOne.signThisStatementHiddenCheckbox,
+      label: statementOfTruthOne.fullNameHiddenTextLabel,
+      input: statementOfTruthOne.fullNameHiddenTextInput,
+      label1: statementOfTruthOne.nameOfFirmHiddenTextLabel,
+      input1: statementOfTruthOne.nameOfFirmHiddenTextInput,
+      label2: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+      input2: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
+      nextPage: checkYourAnswers.mainHeader
+    });
   });
 
   test('Writ - Apply for a Writ of Possession - Have you hired HCEO [No] - Repayment [None] @enforcement ', async () => {
@@ -442,17 +479,19 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       option: languageUsed.languageUsedRadioOptions.englishAndWelshRadioOption,
       nextPage: statementOfTruthOne.mainHeader
     });
+    await performAction('validateAmountToRePayTable', { headerName: statementOfTruthOne.mainHeader });
     await performAction('selectStatementOfTruthWrit', {
-        question: statementOfTruthOne.completedByLabel,
-        option: statementOfTruthOne.claimantRadioOption,
-        option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
-        label: statementOfTruthOne.fullNameHiddenTextLabel,
-        input: statementOfTruthOne.fullNameHiddenTextInput,
-        label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
-        input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
-        label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
-        input2: statementOfTruthOne.nameOfFirmHiddenTextInput
-      });
+      question: statementOfTruthOne.completedByLabel,
+      option: statementOfTruthOne.claimantRadioOption,
+      option1: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
+      label: statementOfTruthOne.fullNameHiddenTextLabel,
+      input: statementOfTruthOne.fullNameHiddenTextInput,
+      label1: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
+      input1: statementOfTruthOne.positionOrOfficeHeldHiddenTextInput,
+      label2: statementOfTruthOne.nameOfFirmHiddenTextLabel,
+      input2: statementOfTruthOne.nameOfFirmHiddenTextInput,
+      nextPage: checkYourAnswers.mainHeader
+    });
   });
 
   test('Writ - Apply for a Writ of Possession - Claim sent to High Court [No] @enforcement @regression', async () => {

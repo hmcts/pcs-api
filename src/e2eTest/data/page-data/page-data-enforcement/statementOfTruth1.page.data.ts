@@ -31,6 +31,10 @@ export const statementOfTruthOne = {
       { type: 'empty', input: 'EMPTY', errMessage: 'Full name is required' },
     ],
     errorTextField2: [
+      { type: 'moreThanMax', input: 60, errMessage: 'Name of firm exceeds the maximum length' },
+      { type: 'empty', input: 'EMPTY', errMessage: 'Name of firm is required' },
+    ],
+    errorTextField3: [
       { type: 'moreThanMax', input: 60, errMessage: 'Position or office held exceeds the maximum length' },
       { type: 'empty', input: 'EMPTY', errMessage: 'Position or office held is required' },
     ]

@@ -31,7 +31,14 @@ export async function performAction(action: string, fieldName?: actionData | act
     displayValue = { ...obj, password: '*'.repeat(String(obj.password).length) };
     displayFieldName = displayValue;
   }
-  const errorValidationRequired = (readValuesFromInputObjects(displayFieldName as actionRecord)).includes("validationReq: NO");
+  let errorValidationRequired = false;
+
+  if (typeof displayFieldName === "object" && displayFieldName !== null) {
+    errorValidationRequired = (
+      readValuesFromInputObjects(displayFieldName as actionRecord)
+    ).includes("validationReq: NO");
+  }
+
   if (!errorValidationRequired) {
     const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
     await test.step(stepText, async () => {
