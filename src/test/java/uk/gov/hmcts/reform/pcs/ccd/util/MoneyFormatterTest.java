@@ -45,7 +45,8 @@ class MoneyFormatterTest {
         "10.50,   ",      // No £ sign -> returns null
         "$10.50,  ",      // Wrong currency -> returns null
         "£abc,    ",      // Invalid number -> returns null
-        ",        "       // Null input -> returns null
+        ",        ",      // Null input -> returns null
+        "Unable to retrieve,   "  // FeeApplier.UNABLE_TO_RETRIEVE -> returns null
     })
     void testDeformatFeeScenarios(String input, String expected) {
         BigDecimal result = underTest.deformatFee(input);
