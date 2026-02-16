@@ -291,14 +291,36 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
-                // Only mandatory grounds - show reasons for grounds page
+                // Only mandatory S181 (rent arrears type) - go to pre-action, no reasons page
                 arguments(
                         Set.of(),
                         Set.of(),
                         Set.of(MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181),
                         YesOrNo.NO,
-                        YesOrNo.YES
+                        YesOrNo.NO
                 ),
+
+                // Only mandatory S187 (rent arrears type) - go to pre-action, no reasons page
+                arguments(
+                        Set.of(),
+                        Set.of(),
+                        Set.of(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187),
+                        YesOrNo.NO,
+                        YesOrNo.NO
+                ),
+
+                // Rent arrears types (157 + S187) + ASB only - show ASB page then pre-action
+                arguments(
+                        Set.of(
+                                DiscretionaryGroundWales.RENT_ARREARS_S157,
+                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157
+                        ),
+                        Set.of(),
+                        Set.of(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187),
+                        YesOrNo.YES,
+                        YesOrNo.NO
+                ),
+                
                 // Rent arrears + other option (mandatory) - show reasons for grounds page
                 arguments(
                         Set.of(DiscretionaryGroundWales.RENT_ARREARS_S157),
@@ -312,17 +334,6 @@ class GroundsForPossessionWalesPageTest extends BasePageTest {
                         Set.of(DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157),
                         Set.of(),
                         Set.of(MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178),
-                        YesOrNo.NO,
-                        YesOrNo.YES
-                ),
-                // Rent arrears + ASB + mandatory grounds - show reasons for grounds page
-                arguments(
-                        Set.of(
-                                DiscretionaryGroundWales.RENT_ARREARS_S157,
-                                DiscretionaryGroundWales.ANTISOCIAL_BEHAVIOUR_S157
-                        ),
-                        Set.of(),
-                        Set.of(MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187),
                         YesOrNo.NO,
                         YesOrNo.YES
                 ),
