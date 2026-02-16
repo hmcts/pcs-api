@@ -7,13 +7,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
@@ -30,6 +36,7 @@ import java.util.UUID;
 public class EnforcementOrderService {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
+    private final EnforcementRiskProfileRepository enforcementRiskProfileRepository;
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementWarrantMapper enforcementWarrantMapper;
@@ -67,8 +74,46 @@ public class EnforcementOrderService {
         EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcementOrderEntity);
         if (SelectEnforcementType.WARRANT == enforcementOrder.getSelectEnforcementType()
             && enforcementOrder.getWarrantDetails() != null) {
+            EnforcementRiskProfileEntity riskProfile = mapToRiskProfile(enforcementOrderEntity, enforcementOrder);
+            enforcementRiskProfileRepository.save(riskProfile);
             storeWarrant(enforcementOrder, saved);
         }
+    }
+
+    private EnforcementRiskProfileEntity mapToRiskProfile(
+            EnforcementOrderEntity enforcementOrderEntity,
+            EnforcementOrder enforcementOrder) {
+        EnforcementRiskProfileEntity entity = new EnforcementRiskProfileEntity();
+        entity.setEnforcementOrder(enforcementOrderEntity);
+
+        WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
+        if (warrantDetails != null) {
+            entity.setAnyRiskToBailiff(warrantDetails.getAnyRiskToBailiff());
+            EnforcementRiskDetails riskDetails = warrantDetails.getRiskDetails();
+            if (riskDetails != null) {
+                entity.setViolentDetails(riskDetails.getEnforcementViolentDetails());
+                entity.setFirearmsDetails(riskDetails.getEnforcementFirearmsDetails());
+                entity.setCriminalDetails(riskDetails.getEnforcementCriminalDetails());
+                entity.setVerbalThreatsDetails(riskDetails.getEnforcementVerbalOrWrittenThreatsDetails());
+                entity.setProtestGroupDetails(riskDetails.getEnforcementProtestGroupMemberDetails());
+                entity.setPoliceSocialServicesDetails(
+                        riskDetails.getEnforcementPoliceOrSocialServicesDetails());
+                entity.setAnimalsDetails(riskDetails.getEnforcementDogsOrOtherAnimalsDetails());
+            }
+        }
+
+        RawWarrantDetails rawWarrantDetails = enforcementOrder.getRawWarrantDetails();
+        if (rawWarrantDetails != null) {
+            entity.setVulnerablePeoplePresent(rawWarrantDetails.getVulnerablePeoplePresent());
+            if (rawWarrantDetails.getVulnerableAdultsChildren() != null) {
+                entity.setVulnerableCategory(
+                        rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableCategory());
+                entity.setVulnerableReasonText(
+                        rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableReasonText());
+            }
+        }
+
+        return entity;
     }
 
     private void storeWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {

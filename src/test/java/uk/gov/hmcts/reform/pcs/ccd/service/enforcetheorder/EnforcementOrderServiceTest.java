@@ -7,15 +7,20 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
@@ -27,8 +32,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -38,8 +41,13 @@ class EnforcementOrderServiceTest {
 
     @Mock
     private DraftCaseDataService draftCaseDataService;
+
     @Mock
     private EnforcementOrderRepository enforcementOrderRepository;
+
+    @Mock
+    private EnforcementRiskProfileRepository enforcementRiskProfileRepository;
+
     @Mock
     private PcsCaseRepository pcsCaseRepository;
     @Mock
@@ -52,6 +60,9 @@ class EnforcementOrderServiceTest {
 
     @Captor
     private ArgumentCaptor<EnforcementOrderEntity> enforcementOrderEntityCaptor;
+
+    @Captor
+    private ArgumentCaptor<EnforcementRiskProfileEntity> enforcementRiskProfileEntityCaptor;
 
     private final UUID enforcementOrderId = UUID.fromString("f47ac10b-58cc-4372-a567-0e02b2c3d479");
 
@@ -113,6 +124,13 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
+
+        verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
+        EnforcementRiskProfileEntity savedRiskProfile = enforcementRiskProfileEntityCaptor.getValue();
+        assertThat(savedRiskProfile.getEnforcementOrder()).isEqualTo(savedEntity);
+        assertThat(savedRiskProfile.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedRiskProfile.getViolentDetails()).isEqualTo("Violent");
+        assertThat(savedRiskProfile.getVerbalThreatsDetails()).isEqualTo("Verbal");
     }
 
     @Test
@@ -132,6 +150,7 @@ class EnforcementOrderServiceTest {
                 .isInstanceOf(ClaimNotFoundException.class)
                 .hasMessageContaining("No claim found for case reference");
         verifyNoInteractions(draftCaseDataService);
+        verifyNoInteractions(enforcementRiskProfileRepository);
     }
 
     @Test
@@ -201,4 +220,85 @@ class EnforcementOrderServiceTest {
         verifyNoInteractions(enforcementWarrantMapper);
     }
 
+
+    @Test
+    void shouldPersistRiskProfileWithMinimalDataWhenWarrantButNoWarrantOrRawDetails() {
+        // Given: WARRANT type but no warrant or raw details
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .selectEnforcementType(SelectEnforcementType.WARRANT)
+                .build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+                .thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then: risk profile is still saved with null risk/vulnerability fields
+        verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
+        EnforcementRiskProfileEntity savedRiskProfile = enforcementRiskProfileEntityCaptor.getValue();
+        assertThat(savedRiskProfile.getAnyRiskToBailiff()).isNull();
+        assertThat(savedRiskProfile.getVulnerablePeoplePresent()).isNull();
+        assertThat(savedRiskProfile.getVulnerableCategory()).isNull();
+        assertThat(savedRiskProfile.getVulnerableReasonText()).isNull();
+        assertThat(savedRiskProfile.getViolentDetails()).isNull();
+        assertThat(savedRiskProfile.getVerbalThreatsDetails()).isNull();
+    }
+
+    @Test
+    void shouldNotPersistRiskProfileWhenEnforcementTypeIsWrit() {
+        // Given: WRIT type (risk profile only applies to warrant)
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+                .selectEnforcementType(SelectEnforcementType.WRIT)
+                .build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+                .thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        verifyNoInteractions(enforcementRiskProfileRepository);
+    }
+
+    @Test
+    void shouldNotPersistRiskProfileWhenEnforcementTypeIsNull() {
+        // Given: no enforcement type set
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+                .thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        verifyNoInteractions(enforcementRiskProfileRepository);
+    }
+
+    @Test
+    void shouldPersistVulnerabilityDetailsInRiskProfile() {
+        // Given: order with raw warrant details (vulnerability)
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrderWithVulnerability();
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+                .thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
+        EnforcementRiskProfileEntity savedRiskProfile = enforcementRiskProfileEntityCaptor.getValue();
+        assertThat(savedRiskProfile.getVulnerablePeoplePresent()).isEqualTo(YesNoNotSure.YES);
+        assertThat(savedRiskProfile.getVulnerableCategory()).isEqualTo(VulnerableCategory.VULNERABLE_ADULTS);
+        assertThat(savedRiskProfile.getVulnerableReasonText()).isEqualTo("Vulnerability reason");
+    }
 }
