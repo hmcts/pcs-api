@@ -5,7 +5,7 @@ export const landRegistryFees = {
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
   howMuchYouSpendOnLandRegistryFeeTextLabel: 'How much did you spend on Land Registry fees?',
-  howMuchYouSpendOnLandRegistryFeeTextInput: '10009.19',
+  howMuchYouSpendOnLandRegistryFeeTextInput: ['155559.7','9999','199.95','120.00','890.10','111.01'],
   continueButton: 'Continue',
   landRegistryFee: 'Land Registry fees',
   errorValidation: 'YES',//set it to 'NO' before raising a PR

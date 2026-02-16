@@ -2,7 +2,7 @@ export const moneyOwed = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'The amount the defendants owe you',
   totalAmountOwedTextLabel: 'What is the total amount that the defendants owe you?',
-  totalAmountOwedTextInput: '9999.99',
+  totalAmountOwedTextInput: ['755559.7','119999','1099.95','6320.00','890.10','9911.01'],
   continueButton: 'Continue',
   arrearsAndOtherCosts: 'Arrears and other costs',
   errorValidation: 'YES',//set it to 'NO' before raising a PR

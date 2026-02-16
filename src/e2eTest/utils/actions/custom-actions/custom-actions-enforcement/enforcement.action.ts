@@ -279,8 +279,9 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(totalMoneyOwed);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', totalMoneyOwed.label, totalMoneyOwed.input);
-    const moneyOwedAmt = await this.retrieveAmountFromString(totalMoneyOwed.input as string);
+    const moneyOwedEntered = this.getRandomElementForAnArray(totalMoneyOwed.input as Array<string>)
+    await performAction('inputText', totalMoneyOwed.label, moneyOwedEntered);
+    const moneyOwedAmt = await this.retrieveAmountFromString(moneyOwedEntered as string);
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
     await this.reTryOnCallBackError(page, moneyOwed.continueButton, totalMoneyOwed.nextPage as string);
   }
@@ -291,8 +292,9 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: legalCost.question, option: legalCost.option });
     if (legalCost.option === legalCosts.yesRadioOption) {
-      await performAction('inputText', legalCost.label, legalCost.input);
-      const legalCostAmt = await this.retrieveAmountFromString(legalCost.input as string);
+      const legalCostEntered = this.getRandomElementForAnArray(legalCost.input as Array<string>)
+      await performAction('inputText', legalCost.label, legalCostEntered);
+      const legalCostAmt = await this.retrieveAmountFromString(legalCostEntered as string);
       moneyMap.set(legalCosts.legalCostsFee, legalCostAmt);
     } else {
       moneyMap.set(legalCosts.legalCostsFee, 0);
@@ -306,8 +308,9 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: landRegistry.question, option: landRegistry.option });
     if (landRegistry.option === accessToTheProperty.yesRadioOption) {
-      await performAction('inputText', landRegistry.label, landRegistry.input);
-      const landRegistryFeeAmt = await this.retrieveAmountFromString(landRegistry.input as string);
+      const langRegistryAmtEntered = this.getRandomElementForAnArray(landRegistry.input as Array<string>)
+      await performAction('inputText', landRegistry.label, langRegistryAmtEntered);
+      const landRegistryFeeAmt = await this.retrieveAmountFromString(langRegistryAmtEntered as string);
       moneyMap.set(landRegistryFees.landRegistryFee, landRegistryFeeAmt);
     } else {
       moneyMap.set(landRegistryFees.landRegistryFee, 0);
@@ -331,7 +334,9 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     await performAction('clickRadioButton', { question: amtToPay.question, option: amtToPay.option });
     if (amtToPay.option === rePayments.rePaymentRadioOptions.some) {
-      await performAction('inputText', amtToPay.label, amtToPay.input);
+      const amtToRepayEntered = this.getRandomElementForAnArray(amtToPay.input as Array<string>)
+      await performAction('inputText', amtToPay.label, amtToRepayEntered);
+      fieldsMap.set(amtToPay.label as string,amtToRepayEntered as string);
     };
     await this.reTryOnCallBackError(page, rePayments.continueButton, amtToPay.nextPage as string);
   }
@@ -562,5 +567,13 @@ export class EnforcementAction implements IAction {
     }).toPass({
       timeout: MEDIUM_TIMEOUT + SHORT_TIMEOUT,
     });
+  }
+
+  private getRandomElementForAnArray<T>(arr: T[]): T | undefined {
+
+    if (arr.length === 0) return undefined;
+    const index = Math.floor(Math.random() * arr.length);
+    return arr[index];
+
   }
 }
