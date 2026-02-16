@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
@@ -32,6 +32,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -225,12 +227,19 @@ class EnforcementOrderServiceTest {
     void shouldPersistRiskProfileWithMinimalDataWhenWarrantButNoWarrantOrRawDetails() {
         // Given: WARRANT type but no warrant or raw details
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        WarrantDetails warrantDetails = mock(WarrantDetails.class);
         final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .selectEnforcementType(SelectEnforcementType.WARRANT)
+                .warrantDetails(warrantDetails)
                 .build();
-
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenReturn(mock(EnforcementOrderEntity.class));
+        when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
+            .thenReturn(mock(EnforcementWarrantEntity.class));
+        when(enforcementWarrantRepository.save(any()))
+            .thenReturn(mock(EnforcementWarrantEntity.class));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -287,7 +296,8 @@ class EnforcementOrderServiceTest {
         // Given: order with raw warrant details (vulnerability)
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrderWithVulnerability();
-
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenReturn(mock(EnforcementOrderEntity.class));
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
 
