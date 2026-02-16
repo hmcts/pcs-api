@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredAdditionalDiscretionaryGrounds;
@@ -19,24 +21,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.model.NoRentArrearsReasonForGrounds;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsReasonsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessionWales;
-import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractMandatoryGroundsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundCategory;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimGroundEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.ground.WalesSecureClaimGroundService;
+import uk.gov.hmcts.reform.pcs.ccd.service.ground.WalesStandardClaimGroundService;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11;
@@ -48,21 +44,27 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy.BR
 import static uk.gov.hmcts.reform.pcs.ccd.domain.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 
 @Service
+@AllArgsConstructor
+@Slf4j
 public class ClaimGroundService {
 
+    private final WalesSecureClaimGroundService walesSecureClaimGroundService;
+    private final WalesStandardClaimGroundService walesStandardClaimGroundService;
+
     public List<ClaimGroundEntity> createClaimGroundEntities(PCSCase pcsCase) {
-        // Check if Wales first - Wales uses OccupationLicenceTypeWales, not TenancyLicenceType
+
         if (LegislativeCountry.WALES.equals(pcsCase.getLegislativeCountry())) {
-            return getWalesGroundsWithReason(pcsCase);
+            OccupationLicenceDetailsWales licenceDetails = pcsCase.getOccupationLicenceDetailsWales();
+            OccupationLicenceTypeWales licenceType = licenceDetails.getOccupationLicenceTypeWales();
+
+            return switch (licenceType) {
+                case SECURE_CONTRACT -> walesSecureClaimGroundService.createClaimGroundEntities(pcsCase);
+                case STANDARD_CONTRACT, OTHER -> walesStandardClaimGroundService.createClaimGroundEntities(pcsCase);
+            };
         }
 
         TenancyLicenceDetails tenancyDetails = pcsCase.getTenancyLicenceDetails();
-        TenancyLicenceType tenancyLicenceType = tenancyDetails != null
-            ? tenancyDetails.getTypeOfTenancyLicence() : null;
-
-        if (tenancyLicenceType == null) {
-            return Collections.emptyList();
-        }
+        TenancyLicenceType tenancyLicenceType = tenancyDetails.getTypeOfTenancyLicence();
 
         return switch (tenancyLicenceType) {
             case ASSURED_TENANCY -> getAssuredTenancyGroundsWithReason(pcsCase);
@@ -128,7 +130,7 @@ public class ClaimGroundService {
                     break;
                 case PERSISTENT_DELAY_GROUND11:
                     // Ground 11 is discretionary
-                    combinedDiscretionaryGrounds.add(AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11);
+                    combinedDiscretionaryGrounds.add(PERSISTENT_DELAY_GROUND11);
                     break;
             }
         }
@@ -397,162 +399,6 @@ public class ClaimGroundService {
         );
 
         return claimGroundEntities;
-    }
-
-    private List<ClaimGroundEntity> getWalesGroundsWithReason(PCSCase pcsCase) {
-
-        SecureContractGroundsForPossessionWales secureGrounds =
-            Optional.ofNullable(pcsCase.getSecureContractGroundsForPossessionWales())
-                .orElse(SecureContractGroundsForPossessionWales.builder()
-                            .discretionaryGroundsWales(Set.of())
-                            .mandatoryGroundsWales(Set.of())
-                            .estateManagementGroundsWales(Set.of())
-                            .build());
-
-        GroundsForPossessionWales groundsForPossessionWales =
-            Optional.ofNullable(pcsCase.getGroundsForPossessionWales())
-                .orElse(GroundsForPossessionWales.builder().build());
-
-        Set<MandatoryGroundWales> mandatoryGrounds = groundsForPossessionWales.getMandatoryGroundsWales();
-        Set<DiscretionaryGroundWales> discretionaryGrounds = groundsForPossessionWales.getDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> estateGrounds = groundsForPossessionWales.getEstateManagementGroundsWales();
-        Set<SecureContractMandatoryGroundsWales> secureMandatoryGrounds =
-            secureGrounds.getMandatoryGroundsWales();
-        Set<SecureContractDiscretionaryGroundsWales> secureDiscretionaryGrounds =
-            secureGrounds.getDiscretionaryGroundsWales();
-        Set<EstateManagementGroundsWales> secureEstateGrounds =
-            secureGrounds.getEstateManagementGroundsWales();
-        GroundsReasonsWales reasons = pcsCase.getGroundsReasonsWales();
-
-        List<ClaimGroundEntity> entities = new ArrayList<>();
-
-        if (mandatoryGrounds == null && discretionaryGrounds == null && estateGrounds == null
-            && secureMandatoryGrounds == null && secureDiscretionaryGrounds == null
-            && secureEstateGrounds == null) {
-            return entities;
-        }
-
-        // Standard/Other Contract - Mandatory grounds
-        if (mandatoryGrounds != null) {
-            for (MandatoryGroundWales ground : mandatoryGrounds) {
-                String reasonText = reasons != null ? switch (ground) {
-                    case FAIL_TO_GIVE_UP_S170 -> reasons.getFailToGiveUpS170Reason();
-                    case LANDLORD_NOTICE_PERIODIC_S178 -> reasons.getLandlordNoticePeriodicS178Reason();
-                    case SERIOUS_ARREARS_PERIODIC_S181 -> reasons.getSeriousArrearsPeriodicS181Reason();
-                    case LANDLORD_NOTICE_FT_END_S186 -> reasons.getLandlordNoticeFtEndS186Reason();
-                    case SERIOUS_ARREARS_FIXED_TERM_S187 -> reasons.getSeriousArrearsFixedTermS187Reason();
-                    case FAIL_TO_GIVE_UP_BREAK_NOTICE_S191 -> reasons.getFailToGiveUpBreakNoticeS191Reason();
-                    case LANDLORD_BREAK_CLAUSE_S199 -> reasons.getLandlordBreakClauseS199Reason();
-                    case CONVERTED_FIXED_TERM_SCH12_25B2 -> reasons.getConvertedFixedTermSch1225B2Reason();
-                } : null;
-
-                entities.add(ClaimGroundEntity.builder()
-                    .code(ground.name())
-                    .reason(reasonText)
-                    .build());
-            }
-        }
-
-        // Standard/Other Contract - Discretionary grounds
-        if (discretionaryGrounds != null) {
-            for (DiscretionaryGroundWales ground : discretionaryGrounds) {
-                String reasonText = reasons != null ? switch (ground) {
-                    case RENT_ARREARS_SECTION_157 -> null;
-                    case ANTISOCIAL_BEHAVIOUR_SECTION_157 -> null;
-                    case OTHER_BREACH_SECTION_157 -> reasons.getOtherBreachSection157Reason();
-                    case ESTATE_MANAGEMENT_GROUNDS_SECTION_160 -> null;
-                } : null;
-
-                entities.add(ClaimGroundEntity.builder()
-                    .code(ground.name())
-                    .reason(reasonText)
-                    .build());
-            }
-        }
-
-        // Standard/Other Contract - Estate Management grounds
-        if (estateGrounds != null) {
-            for (EstateManagementGroundsWales ground : estateGrounds) {
-                String reasonText = reasons != null ? switch (ground) {
-                    case BUILDING_WORKS -> reasons.getBuildingWorksReason();
-                    case REDEVELOPMENT_SCHEMES -> reasons.getRedevelopmentSchemesReason();
-                    case CHARITIES -> reasons.getCharitiesReason();
-                    case DISABLED_SUITABLE_DWELLING -> reasons.getDisabledSuitableDwellingReason();
-                    case HOUSING_ASSOCIATIONS_AND_TRUSTS -> reasons.getHousingAssociationsAndTrustsReason();
-                    case SPECIAL_NEEDS_DWELLINGS -> reasons.getSpecialNeedsDwellingsReason();
-                    case RESERVE_SUCCESSORS -> reasons.getReserveSuccessorsReason();
-                    case JOINT_CONTRACT_HOLDERS -> reasons.getJointContractHoldersReason();
-                    case OTHER_ESTATE_MANAGEMENT_REASONS -> reasons.getOtherEstateManagementReasonsReason();
-                } : null;
-
-                entities.add(ClaimGroundEntity.builder()
-                    .code(ground.name())
-                    .reason(reasonText)
-                    .build());
-            }
-        }
-
-        // Secure Contract - Mandatory grounds
-        if (secureMandatoryGrounds != null) {
-            for (SecureContractMandatoryGroundsWales ground : secureMandatoryGrounds) {
-                String reasonText = reasons != null ? switch (ground) {
-                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_170 ->
-                        reasons.getSecureFailureToGiveUpPossessionSection170Reason();
-                    case LANDLORD_NOTICE_SECTION_186 ->
-                        reasons.getSecureLandlordNoticeSection186Reason();
-                    case FAILURE_TO_GIVE_UP_POSSESSION_SECTION_191 ->
-                        reasons.getSecureFailureToGiveUpPossessionSection191Reason();
-                    case LANDLORD_NOTICE_SECTION_199 ->
-                        reasons.getSecureLandlordNoticeSection199Reason();
-                } : null;
-
-                entities.add(ClaimGroundEntity.builder()
-                    .code(ground.name())
-                    .reason(reasonText)
-                    .build());
-            }
-        }
-
-        // Secure Contract - Discretionary grounds
-        if (secureDiscretionaryGrounds != null) {
-            for (SecureContractDiscretionaryGroundsWales ground : secureDiscretionaryGrounds) {
-                String reasonText = reasons != null ? switch (ground) {
-                    case RENT_ARREARS -> null;
-                    case ANTISOCIAL_BEHAVIOUR -> null;
-                    case OTHER_BREACH_OF_CONTRACT -> reasons.getSecureOtherBreachOfContractReason();
-                    case ESTATE_MANAGEMENT_GROUNDS -> null;
-                } : null;
-
-                entities.add(ClaimGroundEntity.builder()
-                    .code(ground.name())
-                    .reason(reasonText)
-                    .build());
-            }
-        }
-
-        // Secure Contract - Estate Management grounds
-        if (secureEstateGrounds != null) {
-            for (EstateManagementGroundsWales ground : secureEstateGrounds) {
-                String reasonText = reasons != null ? switch (ground) {
-                    case BUILDING_WORKS -> reasons.getSecureBuildingWorksReason();
-                    case REDEVELOPMENT_SCHEMES -> reasons.getSecureRedevelopmentSchemesReason();
-                    case CHARITIES -> reasons.getSecureCharitiesReason();
-                    case DISABLED_SUITABLE_DWELLING -> reasons.getSecureDisabledSuitableDwellingReason();
-                    case HOUSING_ASSOCIATIONS_AND_TRUSTS -> reasons.getSecureHousingAssociationsAndTrustsReason();
-                    case SPECIAL_NEEDS_DWELLINGS -> reasons.getSecureSpecialNeedsDwellingsReason();
-                    case RESERVE_SUCCESSORS -> reasons.getSecureReserveSuccessorsReason();
-                    case JOINT_CONTRACT_HOLDERS -> reasons.getSecureJointContractHoldersReason();
-                    case OTHER_ESTATE_MANAGEMENT_REASONS -> reasons.getSecureOtherEstateManagementReasonsReason();
-                } : null;
-
-                entities.add(ClaimGroundEntity.builder()
-                    .code(ground.name())
-                    .reason(reasonText)
-                    .build());
-            }
-        }
-
-        return entities;
     }
 
 }

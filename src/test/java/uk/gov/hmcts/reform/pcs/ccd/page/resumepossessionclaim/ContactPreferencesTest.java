@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
 
@@ -31,7 +32,8 @@ class ContactPreferencesTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new ContactPreferences(addressValidator));
+        TextAreaValidationService textAreaValidationService = new TextAreaValidationService();
+        setPageUnderTest(new ContactPreferences(addressValidator,textAreaValidationService));
     }
 
     @Test
@@ -53,7 +55,7 @@ class ContactPreferencesTest extends BasePageTest {
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEqualTo(expectedValidationErrors);
+        assertThat(response.getErrorMessageOverride()).isEqualTo("error 1\nerror 2");
     }
 
     @Test
@@ -68,14 +70,14 @@ class ContactPreferencesTest extends BasePageTest {
             .claimantContactPreferences(contactPreferences)
             .build();
 
-        List<String> expectedErrors = List.of("addressLine1 missing");
-        when(addressValidator.validateAddressFields(null)).thenReturn(expectedErrors);
+        String expectedError = "addressLine1 missing";
+        when(addressValidator.validateAddressFields(null)).thenReturn(List.of(expectedError));
 
         // When
         AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
-        assertThat(response.getErrors()).isEqualTo(expectedErrors);
+        assertThat(response.getErrorMessageOverride()).isEqualTo(expectedError);
         verify(addressValidator).validateAddressFields(null);
     }
 
@@ -111,5 +113,52 @@ class ContactPreferencesTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNull();
         verifyNoInteractions(addressValidator);
+    }
+
+    @Test
+    void shouldValidateEmailWhenCorrectLength() {
+        //Given
+        ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            .orgAddressFound(YesOrNo.YES)
+            .isCorrectClaimantContactAddress(VerticalYesNo.YES)
+            .overriddenClaimantContactAddress(null)
+            .isCorrectClaimantContactEmail(VerticalYesNo.NO)
+            .overriddenClaimantContactEmail("John.Smith@hotmail.com")
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantContactPreferences(contactPreferences)
+            .build();
+
+        //When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //Then
+        assertThat(response.getErrors()).isNull();
+    }
+
+    @Test
+    void shouldValidateEmailWhenTooLong() {
+        //Given
+        String longEmail = "John.Smith@hotmail.com".repeat(4);
+        ClaimantContactPreferences contactPreferences = ClaimantContactPreferences.builder()
+            .orgAddressFound(YesOrNo.YES)
+            .isCorrectClaimantContactAddress(VerticalYesNo.YES)
+            .overriddenClaimantContactAddress(null)
+            .isCorrectClaimantContactEmail(VerticalYesNo.NO)
+            .overriddenClaimantContactEmail(longEmail)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .claimantContactPreferences(contactPreferences)
+            .build();
+
+        //When
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+
+        //Then
+        assertThat(response.getErrorMessageOverride())
+            .contains("more than the maximum number of characters");
+
     }
 }
