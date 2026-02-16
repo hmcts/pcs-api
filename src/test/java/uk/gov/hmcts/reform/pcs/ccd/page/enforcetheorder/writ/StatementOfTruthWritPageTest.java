@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,17 +32,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class StatementOfTruthPageTest extends BasePageTest {
+class StatementOfTruthWritPageTest extends BasePageTest {
 
     @Mock
     private TextAreaValidationService textAreaValidationService;
 
     @InjectMocks
-    private StatementOfTruthPage statementOfTruthPage;
+    private StatementOfTruthWritPage statementOfTruthWritPage;
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(statementOfTruthPage);
+        setPageUnderTest(statementOfTruthWritPage);
     }
 
     @Nested

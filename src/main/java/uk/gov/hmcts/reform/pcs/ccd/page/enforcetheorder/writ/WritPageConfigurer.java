@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigure
 @AllArgsConstructor
 public class WritPageConfigurer implements EnforcementPageConfigurer {
     private final LandRegistryFeesWritPage landRegistryFeesWritPage;
+    private final StatementOfTruthWritPage statementOfTruthWritPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
@@ -27,6 +28,6 @@ public class WritPageConfigurer implements EnforcementPageConfigurer {
             .add(landRegistryFeesWritPage)
             .add(new RepaymentsWritPage())
             .add(new LanguageUsedWritPage())
-            .add(new StatementOfTruthPlaceholderWritPage());
+            .add(statementOfTruthWritPage);
     }
 }
