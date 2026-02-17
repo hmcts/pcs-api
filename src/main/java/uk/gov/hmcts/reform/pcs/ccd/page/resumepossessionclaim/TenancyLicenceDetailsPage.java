@@ -82,7 +82,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
         // Validate tenancy licence date
         if (tenancyLicenceDate != null && !tenancyLicenceDate.isBefore(currentDate)) {
             return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("Date the tenancy or licence began must be in the past"))
+            .errorMessageOverride("Date the tenancy or licence began must be in the past")
             .build();
         }
 

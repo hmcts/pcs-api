@@ -61,14 +61,7 @@ public class PartyService {
 
         PartyEntity claimantParty = new PartyEntity();
 
-        VerticalYesNo claimantNameCorrect = claimantInformation.getIsClaimantNameCorrect();
-        if (claimantNameCorrect == VerticalYesNo.YES) {
-            claimantParty.setNameOverridden(YesOrNo.NO);
-            claimantParty.setOrgName(claimantInformation.getClaimantName());
-        } else {
-            claimantParty.setNameOverridden(YesOrNo.YES);
-            claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
-        }
+        setClaimantOrgName(claimantInformation, claimantParty);
 
         ClaimantContactPreferences claimantContactPreferences = pcsCase.getClaimantContactPreferences();
         AddressUK contactAddress = resolveContactAddress(claimantContactPreferences);
@@ -91,6 +84,19 @@ public class PartyService {
         partyRepository.save(claimantParty);
 
         return claimantParty;
+    }
+
+    private static void setClaimantOrgName(ClaimantInformation claimantInformation, PartyEntity claimantParty) {
+        if (claimantInformation.getOrgNameFound() == YesOrNo.NO) {
+            claimantParty.setNameOverridden(YesOrNo.YES);
+            claimantParty.setOrgName(claimantInformation.getFallbackClaimantName());
+        } else if (claimantInformation.getIsClaimantNameCorrect() == VerticalYesNo.NO) {
+            claimantParty.setNameOverridden(YesOrNo.YES);
+            claimantParty.setOrgName(claimantInformation.getOverriddenClaimantName());
+        } else {
+            claimantParty.setNameOverridden(YesOrNo.NO);
+            claimantParty.setOrgName(claimantInformation.getClaimantName());
+        }
     }
 
     private List<PartyEntity> createDefendants(PCSCase pcsCase) {

@@ -21,7 +21,7 @@ class ClaimEntityTest {
     }
 
     @Test
-    void shouldUpdateClaimExistingHousingActWales() {
+    void shouldUpdateExistingHousingActWales() {
         // Given
         HousingActWalesEntity existingHousingActWales = mock(HousingActWalesEntity.class);
         HousingActWalesEntity updatedHousingActWales = mock(HousingActWalesEntity.class);
@@ -33,6 +33,21 @@ class ClaimEntityTest {
         // Then
         verify(existingHousingActWales).setClaim(null);
         verify(updatedHousingActWales).setClaim(underTest);
+    }
+
+    @Test
+    void shouldUpdateExistingAsbProhibitedConductEntity() {
+        // Given
+        AsbProhibitedConductEntity existingAsbProhibitedConduct = mock(AsbProhibitedConductEntity.class);
+        AsbProhibitedConductEntity updatedAsbProhibitedConduct = mock(AsbProhibitedConductEntity.class);
+        underTest.setAsbProhibitedConductEntity(existingAsbProhibitedConduct);
+
+        // When
+        underTest.setAsbProhibitedConductEntity(updatedAsbProhibitedConduct);
+
+        // Then
+        verify(existingAsbProhibitedConduct).setClaim(null);
+        verify(updatedAsbProhibitedConduct).setClaim(underTest);
     }
 
     @Test

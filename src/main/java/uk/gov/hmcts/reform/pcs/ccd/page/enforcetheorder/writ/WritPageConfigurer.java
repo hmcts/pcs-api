@@ -10,17 +10,18 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.EnforcementPageConfigure
 @Component
 @AllArgsConstructor
 public class WritPageConfigurer implements EnforcementPageConfigurer {
-    private final HCEOfficerDetailsPage hceOfficerDetailsPage;
 
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
+            .add(new ToggleClaimSentToHighCourtPlaceholder())
+            .add(new CannotApplyForWritInfoPage())
             .add(new NameAndAddressForEvictionWritPage())
             .add(new ChangeNameAddressWritPage())
             .add(new ConfirmHCEOfficerPage())
-            .add(hceOfficerDetailsPage)
+            .add(new HCEOfficerDetailsPage())
             .add(new EnforcementOfficerSelectionPage())
-            .add(new AmountDefendantOwesPage())
+            .add(new MoneyOwedWritPage())
             .add(new LegalCostsWritPage())
             .add(new LandRegistryFeesPage())
             .add(new RepaymentsPlaceholder());

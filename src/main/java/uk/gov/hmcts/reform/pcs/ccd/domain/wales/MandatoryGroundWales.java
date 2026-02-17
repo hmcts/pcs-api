@@ -2,12 +2,13 @@ package uk.gov.hmcts.reform.pcs.ccd.domain.wales;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import uk.gov.hmcts.ccd.sdk.api.HasLabel;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionGroundEnum;
 
 @AllArgsConstructor
 @Getter
-public enum MandatoryGroundWales implements HasLabel {
-    FAIL_TO_GIVE_UP_S170(
+public enum MandatoryGroundWales implements PossessionGroundEnum {
+
+    FAILURE_TO_GIVE_UP_POSSESSION_S170(
         "Failure to give up possession on date specified in contract-holder’s notice (section 170)"),
     LANDLORD_NOTICE_PERIODIC_S178(
         "Landlord’s notice given in relation to periodic standard contract (section 178)"),
@@ -25,4 +26,10 @@ public enum MandatoryGroundWales implements HasLabel {
         "Notice given in relation to end of converted fixed term standard contract (paragraph 25B(2) of Schedule 12)");
 
     private final String label;
+
+    @Override
+    public int getRank() {
+        return this.ordinal();
+    }
+
 }

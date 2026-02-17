@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.function.Function;
 public class TextAreaValidationService {
 
     // Common character limits used across the application
-    public static final int STATEMENT_OF_TRUTH_CHARACTER_LIMIT = 60;
+    public static final int EXTRA_SHORT_TEXT_LIMIT = 60;
     public static final int BYTE_TEXT_LIMIT = 120;
     public static final int SHORT_TEXT_LIMIT = 250;
     public static final int MEDIUM_TEXT_LIMIT = 500;
@@ -57,7 +58,7 @@ public class TextAreaValidationService {
             T caseData, List<String> validationErrors) {
         return AboutToStartOrSubmitResponse.<T, S>builder()
             .data(caseData)
-            .errors((validationErrors != null && !validationErrors.isEmpty()) ? validationErrors : null)
+            .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
             .build();
     }
 
