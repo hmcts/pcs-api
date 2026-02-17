@@ -140,6 +140,15 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             PcsCaseEntity caseEntity = pcsCaseService.loadCase(caseReference);
             PartyEntity defendant = findDefendantParty(caseEntity, userId);
 
+            Optional<DefendantResponseEntity> existingResponse =
+                defendantResponseRepository.findByClaimPcsCaseCaseReferenceAndPartyIdamId(
+                    caseReference, userId);
+
+            if (existingResponse.isPresent()) {
+                log.info("Defendant response already exists for case {} and user {}", caseReference, userId);
+                return error("A response has already been submitted for this case.");
+            }
+
             // Step 5: Update defendant details (name, address, phone, email)
             updateDefendantDetails(defendant, draftData);
 
