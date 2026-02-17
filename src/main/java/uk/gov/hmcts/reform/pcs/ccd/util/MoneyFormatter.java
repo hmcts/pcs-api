@@ -19,6 +19,18 @@ public class MoneyFormatter {
         return "£" + amount.toPlainString();
     }
 
+    public BigDecimal deformatFee(String amount) {
+        if (amount == null || !amount.startsWith("£")) {
+            return null;
+        }
+
+        try {
+            return new BigDecimal(amount.substring(1));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     private boolean hasZeroPence(BigDecimal amount) {
         return amount.stripTrailingZeros().scale() <= 0;
     }

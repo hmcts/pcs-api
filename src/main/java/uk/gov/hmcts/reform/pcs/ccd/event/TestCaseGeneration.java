@@ -16,13 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -98,8 +97,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
             loadedCase.getLegislativeCountry());
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        pcsCaseService.mergeCaseData(pcsCaseEntity, loadedCase);
+
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }
 
