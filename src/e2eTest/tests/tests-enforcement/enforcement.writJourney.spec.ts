@@ -222,6 +222,26 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
         nextPage: rePayments.mainHeader
       });
+      await performValidation('mainHeader', rePayments.mainHeader);
+      await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
+      await performAction('inputErrorValidation', {
+        validationReq: rePayments.errorValidation,
+        validationType: rePayments.errorValidationType.three,
+        inputArray: rePayments.errorValidationField.errorRadioOption,
+        question: rePayments.rePaymentQuestion,
+        option: rePayments.rePaymentRadioOptions.some,
+        button: rePayments.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: rePayments.errorValidation,
+        validationType: rePayments.errorValidationType.five,
+        inputArray: rePayments.errorValidationField.errorMoneyField,
+        question: rePayments.rePaymentQuestion,
+        option: rePayments.rePaymentRadioOptions.some,
+        option2: rePayments.rePaymentRadioOptions.none,
+        label: rePayments.enterTheAmountTextLabel,
+        button: rePayments.continueButton
+      });
       await performAction('provideAmountToRePay', {
         question: rePayments.rePaymentQuestion,
         option: rePayments.rePaymentRadioOptions.some,
@@ -351,6 +371,8 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       input: landRegistryFees.howMuchYouSpendOnLandRegistryFeeTextInput,
       nextPage: rePayments.mainHeader
     });
+    await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
     await performAction('provideAmountToRePay', {
       question: rePayments.rePaymentQuestion,
       option: rePayments.rePaymentRadioOptions.all,
@@ -423,6 +445,14 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
     await performAction('clickButton', caseSummary.go);
     await performValidation('mainHeader', yourApplication.mainHeader);
+    await performAction('validateWritOrWarrantFeeAmount', {
+      journey: yourApplication.typeOfApplicationOptions.writOfPossession,
+      type: yourApplication.summaryWritOrWarrant,
+      label1: yourApplication.warrantFeeValidationLabel,
+      text1: yourApplication.warrantFeeValidationText,
+      label2: yourApplication.writFeeValidationLabel,
+      text2: yourApplication.writFeeValidationText
+    });
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
@@ -467,6 +497,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       nextPage: rePayments.mainHeader
     });
     await performValidation('mainHeader', rePayments.mainHeader);
+    await performAction('validateAmountToRePayTable', { headerName: rePayments.mainHeader });
     await performAction('provideAmountToRePay', {
       question: rePayments.rePaymentQuestion,
       option: rePayments.rePaymentRadioOptions.none,
