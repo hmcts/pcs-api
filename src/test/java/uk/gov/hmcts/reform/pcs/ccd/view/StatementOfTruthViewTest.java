@@ -8,7 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.claim.StatementOfTruthEntity;
@@ -20,10 +20,10 @@ import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementClaimant.BELIEVE_TRUE;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthAgreementLegalRep.AGREED;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy.CLAIMANT;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant.BELIEVE_TRUE;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep.AGREED;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
 
 @ExtendWith(MockitoExtension.class)
 class StatementOfTruthViewTest {
