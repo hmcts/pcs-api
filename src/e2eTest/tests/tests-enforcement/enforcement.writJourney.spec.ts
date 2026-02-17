@@ -13,8 +13,8 @@ import {
   legalCosts,
   moneyOwed,
   rePayments,
-  languageUsed,
   statementOfTruthOne,
+  languageUsed,
   claimSentToHighCourt,
   youCannotApplyForWrit
 } from '@data/page-data/page-data-enforcement';
