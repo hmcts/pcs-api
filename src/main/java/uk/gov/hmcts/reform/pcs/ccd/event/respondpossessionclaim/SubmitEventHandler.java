@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
@@ -47,6 +48,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final SecurityContextService securityContextService;
     private final AddressMapper addressMapper;
     private final DefendantResponseRepository defendantResponseRepository;
+    private final PartyRepository partyRepository;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -160,8 +162,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             // Step 7: Save defendant response to defendant_response table
             saveDefendantResponse(caseEntity, defendant, draftData);
 
-            // Step 8: Save case entity (cascades party and contact preference changes)
-            pcsCaseService.saveCase(caseEntity);
+            // Step 8: Save defendant party (cascades address and contact preference changes)
+            partyRepository.save(defendant);
             log.debug("Saved defendant updates for case {}", caseReference);
 
             // Step 9: Delete draft
