@@ -1,16 +1,15 @@
-// Disabled content will be enabled once https://tools.hmcts.net/jira/browse/HDPI-3491 bug is fixed.
 export const groundsForPossessionRentArrears = {
   mainHeader: `Grounds for possession`,
   cancelButton: `Cancel`,
   caseNumber: `Case number:`,
   continueButton: `Continue`,
-  //youMayHaveAlreadyGivenParagraph: `You may have already given the defendants notice of your intention to begin possession proceedings and written which grounds you’re making the possession claim under. You should select these grounds here.`,
+  youMayHaveAlreadyGivenParagraph: `You may have already given the defendants notice of your intention to begin possession proceedings and written which grounds you’re making the possession claim under. You should select these grounds here.`,
   seriousRentArrearsSubHeader: `Serious rent arrears (ground 8)`,
   mandatoryGroundCanBeParagraph: `Mandatory ground. Can be used if the defendants owe at least:`,
-  //eightWeeksParagraph: `eight weeks’ rent if they pay weekly or fortnightly`,
+  eightWeeksParagraph: `eight weeks’ rent if they pay weekly or fortnightly`,
   twoMonthsParagraph: `two months’ rent if they pay monthly`,
   threeMonthsParagraph: `three months’ rent if they pay quarterly or yearly`,
-  //theDefendantsMustOweParagraph: `The defendants must owe the rent when the notice is served and at the time of the hearing.`,
+  theDefendantsMustOweParagraph: `The defendants must owe the rent when the notice is served and at the time of the hearing.`,
   rentArrearsSubHeader: `Rent arrears (ground 10)`,
   discretionaryGroundTheParagraph: `Discretionary ground. The defendants are in any amount of arrears.`,
   persistentDelaySubHeader: `Persistent delay in paying rent (ground 11)`,
@@ -20,7 +19,7 @@ export const groundsForPossessionRentArrears = {
   seriousRentArrearsGroundCheckbox: `Serious rent arrears (ground 8)`,
   rentArrearsGround10Checkbox: `Rent arrears (ground 10)`,
   persistentDelayInPayingRentCheckbox: `Persistent delay in paying rent (ground 11)`,
-  // Below content will be enabled once HDPI-3491 bug is fixed.
+  // Below content is not fixed as part of this HDPI-3491 bug as it is impacting common content across all grounds for possession pages, but we will need to update this content across all pages, Need to address in another ticket
   //doYouHaveAnyOtherAdditionalDynamicQuestion: `Do you have any other grounds for possession?`,
   doYouHaveAnyOtherAdditionalDynamicQuestion: `Do you have any other additional grounds for possession?`,
   noRadioOption: `No`,
