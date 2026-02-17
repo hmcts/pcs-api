@@ -81,7 +81,7 @@ def handleEnvironmentSetting() {
 
   env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
     ? "pr"
-    : "chrome"
+    : "pr" //Revert to chrome after testing
 }
 
 // E2E stage notification to QA channel only

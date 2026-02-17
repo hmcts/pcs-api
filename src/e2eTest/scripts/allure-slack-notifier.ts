@@ -3,10 +3,6 @@ import * as path from 'path';
 import * as https from 'https';
 import * as http from 'http';
 
-// -----------------------------
-// Allure summary parsing
-// -----------------------------
-
 const DEFAULT_SUMMARY_CANDIDATES = [
   'e2e-output/widgets/summary.json',
   'e2e-output/data/widgets/summary.json',
@@ -70,10 +66,6 @@ export function parseAllureSummary(summaryPath: string): AllureSummary {
     pass_rate: passRate,
   };
 }
-
-// -----------------------------
-// Optional: Per-test parsing (top slowest + failures)
-// -----------------------------
 
 function safeGet<T>(d: Record<string, unknown>, key: string, defaultVal: T): T {
   const v = d[key];
@@ -217,10 +209,6 @@ export function formatDuration(seconds: number): string {
   return parts.join(' ');
 }
 
-// -----------------------------
-// RAG threshold logic (edit to match your standards)
-// -----------------------------
-
 export function ragStatus(summary: AllureSummary): string {
   if (summary.failed > 0 || summary.pass_rate < 95) {
     return '🔴 RED';
@@ -231,85 +219,15 @@ export function ragStatus(summary: AllureSummary): string {
   return '🟢 GREEN';
 }
 
-// -----------------------------
-// Slack posting (Incoming Webhook or Bot API)
-// -----------------------------
-
-/** Returns true if the value looks like a Slack channel name (#channel). */
-function isChannelName(value: string): boolean {
-  const trimmed = (value ?? '').trim();
-  return trimmed.length > 0 && trimmed.startsWith('#');
-}
-
-/** Returns true if the value looks like a Slack Incoming Webhook URL (not a channel name). */
 function isValidWebhookUrl(value: string): boolean {
   const trimmed = (value ?? '').trim();
-  if (!trimmed) return false;
-  if (trimmed.startsWith('#')) return false; // channel name
+  if (!trimmed || trimmed.startsWith('#')) return false;
   try {
     const url = new URL(trimmed);
     return url.protocol === 'https:' && url.hostname.includes('slack.com');
   } catch {
     return false;
   }
-}
-
-/** Normalise channel to include # if missing. */
-function normaliseChannel(channel: string): string {
-  const trimmed = (channel ?? '').trim();
-  return trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
-}
-
-/** Post via Slack API chat.postMessage (same concept as Jenkins slackSend). Use with SLACK_BOT_TOKEN + channel name. */
-export async function postToSlackViaApi(
-  botToken: string,
-  channel: string,
-  text: string,
-  timeoutMs: number = 20000
-): Promise<void> {
-  const ch = normaliseChannel(channel);
-  const payload = JSON.stringify({ channel: ch, text });
-  const options: https.RequestOptions = {
-    hostname: 'slack.com',
-    port: 443,
-    path: '/api/chat.postMessage',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      Authorization: `Bearer ${botToken.trim()}`,
-      'Content-Length': Buffer.byteLength(payload, 'utf-8'),
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', (chunk) => { body += chunk; });
-      res.on('end', () => {
-        if (res.statusCode !== 200) {
-          reject(new Error(`Slack API failed: HTTP ${res.statusCode} - ${body}`));
-          return;
-        }
-        try {
-          const json = JSON.parse(body);
-          if (!json.ok) {
-            reject(new Error(`Slack API error: ${json.error ?? body}`));
-            return;
-        }
-        resolve();
-        } catch {
-          reject(new Error(`Slack API invalid response: ${body}`));
-        }
-      });
-    });
-    req.on('error', reject);
-    req.setTimeout(timeoutMs, () => {
-      req.destroy();
-      reject(new Error('Slack API timeout'));
-    });
-    req.write(payload, 'utf-8');
-    req.end();
-  });
 }
 
 export async function postToSlack(
@@ -431,105 +349,71 @@ export function buildSlackMessage(
   return lines.join('\n').trim();
 }
 
-// -----------------------------
-// Main (copy/paste friendly)
-// -----------------------------
+const DEFAULT_REPORT_PATH = 'E2E_20Test_20Report/';
 
-export async function main(): Promise<void> {
-  const printOnly = process.argv.includes('--print-only');
-  const webhook = (process.env.SLACK_WEBHOOK_URL ?? '').trim();
-  const buildNumber = (process.env.BUILD_NUMBER ?? 'local').trim();
-  const buildUrl = (process.env.BUILD_URL ?? '').trim();
-  const jobName = (process.env.JOB_NAME ?? 'e2e').trim();
-
-  // Paths: when run from src/e2eTest (Jenkins), cwd is src/e2eTest; e2e-output is at repo root (../../e2e-output)
-  const scriptDir = __dirname;
-  const e2eTestDir = path.resolve(scriptDir, '..');
+function resolveDirs(): { baseDir: string; e2eTestDir: string } {
+  const e2eTestDir = path.resolve(__dirname, '..');
   const projectRootFromScript = path.resolve(e2eTestDir, '../..');
   const projectRootFromCwd = path.resolve(process.cwd(), '../..');
   const projectRoot = fs.existsSync(path.join(projectRootFromCwd, 'e2e-output'))
     ? projectRootFromCwd
     : projectRootFromScript;
-  const baseDir = fs.existsSync(path.join(projectRoot, 'e2e-output'))
-    ? projectRoot
-    : e2eTestDir;
+  const baseDir = fs.existsSync(path.join(projectRoot, 'e2e-output')) ? projectRoot : e2eTestDir;
+  return { baseDir, e2eTestDir };
+}
 
-  let msg: string;
+/** Build the Slack message from Allure data, or a fallback if summary is missing. */
+export function getSlackMessage(): string {
+  const { baseDir, e2eTestDir } = resolveDirs();
+  const buildNumber = (process.env.BUILD_NUMBER ?? 'local').trim();
+  const buildUrl = (process.env.BUILD_URL ?? '').trim();
+  const jobName = (process.env.JOB_NAME ?? 'e2e').trim();
+  const reportSuffix = (process.env.ALLURE_REPORT_PATH_SUFFIX ?? DEFAULT_REPORT_PATH).trim() || DEFAULT_REPORT_PATH;
+
   try {
-    const summaryPath = findAllureSummaryJson(baseDir);
-    const summary = parseAllureSummary(summaryPath);
+    const summary = parseAllureSummary(findAllureSummaryJson(baseDir));
     let tests: AllureTestRecord[] | null = null;
-    const allureResultsPath = path.join(e2eTestDir, 'allure-results');
     try {
-      tests = parseAllureResults(allureResultsPath);
+      tests = parseAllureResults(path.join(e2eTestDir, 'allure-results'));
     } catch {
-      tests = null;
+      /* optional */
     }
-    const reportPathSuffix =
-      (process.env.ALLURE_REPORT_PATH_SUFFIX ?? 'E2E_20Test_20Report/').trim() ||
-      'E2E_20Test_20Report/';
-    msg = buildSlackMessage(
-      summary,
-      buildNumber,
-      buildUrl,
-      reportPathSuffix,
-      tests,
-      5,
-      8
-    );
+    return buildSlackMessage(summary, buildNumber, buildUrl, reportSuffix, tests, 5, 8);
   } catch (err) {
-    const reportUrl = buildUrl
-      ? `${buildUrl}${process.env.ALLURE_REPORT_PATH_SUFFIX ?? 'E2E_20Test_20Report/'}`
-      : '';
-    msg = `E2E stage completed for ${jobName} build ${buildNumber}. Allure report not available – check build logs.${reportUrl ? `\n*Allure report:* ${reportUrl}` : buildUrl ? `\n*Build:* ${buildUrl}` : ''}`;
-    if (!printOnly) {
-      console.warn('[WARN] Could not read Allure summary; sending fallback message.', err);
+    if (!process.argv.includes('--print-only')) {
+      console.warn('[WARN] Could not read Allure summary; sending fallback.', err);
     }
+    const reportUrl = buildUrl ? `${buildUrl}${reportSuffix}` : '';
+    return `E2E stage completed for ${jobName} build ${buildNumber}. Allure report not available – check build logs.${reportUrl ? `\n*Allure report:* ${reportUrl}` : buildUrl ? `\n*Build:* ${buildUrl}` : ''}`;
   }
+}
+
+export async function main(): Promise<void> {
+  const printOnly = process.argv.includes('--print-only');
+  const msg = getSlackMessage();
 
   if (printOnly) {
     process.stdout.write(msg);
     return;
   }
 
-  // 4) Print to console (useful for Jenkins logs)
   console.log(msg);
 
-  // 5) Post to Slack
-  const botToken = (process.env.SLACK_BOT_TOKEN ?? '').trim();
-  const channel = (process.env.SLACK_CHANNEL ?? webhook).trim();
-
-  // Same as Jenkins: channel name + Bot token → use Slack API (chat.postMessage)
-  if (botToken && channel && (isChannelName(channel) || isChannelName(webhook))) {
-    const targetChannel = isChannelName(channel) ? channel : webhook;
-    try {
-      await postToSlackViaApi(botToken, targetChannel, msg);
-      console.log(`\n[INFO] Slack notification sent to ${normaliseChannel(targetChannel)}.`);
-    } catch (err) {
-      console.error('\n[ERROR] Failed to post to Slack:', err);
-      process.exit(1);
-    }
+  const webhook = (process.env.SLACK_WEBHOOK_URL ?? '').trim();
+  if (!webhook) {
+    console.log('\n[INFO] No SLACK_WEBHOOK_URL; skipping post.');
     return;
   }
-
-  // Incoming Webhook URL
-  if (webhook) {
-    if (!isValidWebhookUrl(webhook)) {
-      console.warn(
-        '\n[WARN] SLACK_WEBHOOK_URL is not a valid webhook URL (got channel or invalid value). Skipping Slack post.'
-      );
-      console.warn('       For channel by name use: SLACK_BOT_TOKEN + SLACK_CHANNEL=#qa-pipeline-status');
-    } else {
-      try {
-        await postToSlack(webhook, msg);
-        console.log('\n[INFO] Slack notification sent successfully.');
-      } catch (err) {
-        console.error('\n[ERROR] Failed to post to Slack:', err);
-        process.exit(1);
-      }
-    }
-  } else {
-    console.log('\n[INFO] No Slack config (set SLACK_CHANNEL + SLACK_BOT_TOKEN, or SLACK_WEBHOOK_URL); skipping Slack post.');
+  if (!isValidWebhookUrl(webhook)) {
+    console.warn('\n[WARN] SLACK_WEBHOOK_URL is not a valid webhook URL; skipping post.');
+    return;
+  }
+  try {
+    await postToSlack(webhook, msg);
+    console.log('\n[INFO] Slack notification sent.');
+  } catch (err) {
+    console.error('\n[ERROR] Failed to post to Slack:', err);
+    process.exit(1);
   }
 }
 
