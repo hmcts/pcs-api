@@ -75,7 +75,7 @@ public class PartyEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo nameOverridden;
 
-    @OneToOne(cascade = ALL)
+    @OneToOne(cascade = ALL, orphanRemoval = true)
     private AddressEntity address;
 
     @Enumerated(EnumType.STRING)

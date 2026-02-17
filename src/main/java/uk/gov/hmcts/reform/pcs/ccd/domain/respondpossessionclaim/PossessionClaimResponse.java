@@ -8,7 +8,6 @@ import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
 import java.util.List;
 
@@ -42,17 +41,5 @@ public class PossessionClaimResponse {
 
     @CCD(access = {CitizenAccess.class})
     private DefendantResponses defendantResponses;
-
-    @CCD(access = {CitizenAccess.class})
-    private VerticalYesNo contactByEmail;
-
-    @CCD(access = {CitizenAccess.class})
-    private VerticalYesNo contactByText;
-
-    @CCD(access = {CitizenAccess.class})
-    private VerticalYesNo contactByPost;
-
-    @CCD(access = {CitizenAccess.class})
-    private VerticalYesNo contactByPhone;
 }
 

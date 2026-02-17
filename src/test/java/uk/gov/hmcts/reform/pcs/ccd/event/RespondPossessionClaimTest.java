@@ -311,7 +311,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldNotSaveDraftWhenSubmitDraftIsYes() {
+    void shouldSaveDraftWhenSubmitDraftIsYes() {
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
                 .party(null)
@@ -326,7 +326,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         callSubmitHandler(caseData);
 
-        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
