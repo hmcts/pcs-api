@@ -21,10 +21,8 @@
      <td class="govuk-table__cell">{{ landRegistryFees | currency }}</td>
     </tr>
     <tr class="govuk-table__row">
-     <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">
-      Warrant of possession fee
-     </th>
-     <td class="govuk-table__cell">{{ warrantFeeAmount }}</td>
+     <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">{{ feeAmountLabel }}</th>
+     <td class="govuk-table__cell">{{ writFeeAmount }}</td>
     </tr>
     <tr class="govuk-table__row">
      <th scope="row" class="govuk-table__header govuk-body govuk-!-font-weight-regular">Total</th>
