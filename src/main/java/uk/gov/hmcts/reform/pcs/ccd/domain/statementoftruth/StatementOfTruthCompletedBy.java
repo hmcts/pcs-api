@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth;
 
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 
