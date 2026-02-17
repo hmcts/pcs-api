@@ -150,7 +150,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationReq: enterDefendantsDOB.errorValidation,
         validationType: enterDefendantsDOB.errorValidationType.two,
         inputArray: enterDefendantsDOB.errorValidationField.errorTextField,
-        header: enterDefendantsDOB.errors,
+        header: enterDefendantsDOB.eventCouldNotBeCreatedErrorMessage,
         label: enterDefendantsDOB.defendantsDOBTextLabel,
         button: enterDefendantsDOB.continueButton
       });
@@ -194,7 +194,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationReq: violentOrAggressiveBehaviour.errorValidation,
         validationType: violentOrAggressiveBehaviour.errorValidationType.two,
         inputArray: violentOrAggressiveBehaviour.errorValidationField.errorTextField,
-        header: violentOrAggressiveBehaviour.errors,
+        header: violentOrAggressiveBehaviour.eventCouldNotBeCreatedErrorMessage,
         label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
         button: violentOrAggressiveBehaviour.continueButton
       });
@@ -253,7 +253,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationReq: vulnerableAdultsAndChildren.errorValidation,
         validationType: vulnerableAdultsAndChildren.errorValidationType.two,
         inputArray: vulnerableAdultsAndChildren.errorValidationField.errorTextField,
-        header: vulnerableAdultsAndChildren.errors,
+        header: vulnerableAdultsAndChildren.eventCouldNotBeCreatedErrorMessage,
         label: vulnerableAdultsAndChildren.howAreTheyVulnerableTextLabel,
         button: vulnerableAdultsAndChildren.continueButton
       });
@@ -422,7 +422,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationReq: statementOfTruthOne.errorValidation,
         validationType: statementOfTruthOne.errorValidationType.two,
         inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-        header: statementOfTruthOne.errors,
+        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
         label: statementOfTruthOne.fullNameHiddenTextLabel,
         button: statementOfTruthOne.continueButton
       });
@@ -430,7 +430,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationReq: statementOfTruthOne.errorValidation,
         validationType: statementOfTruthOne.errorValidationType.two,
         inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-        header: statementOfTruthOne.errors,
+        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
         label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
         button: statementOfTruthOne.continueButton
       });
@@ -488,7 +488,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationType: peopleYouWantToEvict.errorValidationType.six,
       inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
       label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
-      header: peopleYouWantToEvict.errors,
+      header: peopleYouWantToEvict.thereIsAProblemErrorMessageHeader,
       checkBox: defendantDetails[0],
       button: peopleYouWantToEvict.continueButton
     });
@@ -563,7 +563,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationType: statementOfTruthTwo.errorValidationType.four,
       inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
       label: statementOfTruthTwo.checkBoxGenericErrorLabel,
-      header: statementOfTruthTwo.errors,
+      header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
       checkBox: statementOfTruthTwo.iCertifyCheckbox,
       button: statementOfTruthTwo.continueButton
     });
@@ -580,7 +580,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationType: statementOfTruthTwo.errorValidationType.four,
       inputArray: statementOfTruthTwo.errorValidationField.errorCheckBoxOption,
       label: statementOfTruthTwo.checkBoxGenericErrorLabel,
-      header: statementOfTruthTwo.errors,
+      header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
       checkBox: statementOfTruthTwo.signThisStatementHiddenCheckbox,
       button: statementOfTruthTwo.continueButton
     });
@@ -588,7 +588,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationReq: statementOfTruthTwo.errorValidation,
       validationType: statementOfTruthTwo.errorValidationType.two,
       inputArray: statementOfTruthTwo.errorValidationField.errorTextField1,
-      header: statementOfTruthTwo.errors,
+      header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
       label: statementOfTruthTwo.fullNameHiddenTextLabel,
       button: statementOfTruthTwo.continueButton
     });
@@ -596,7 +596,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationReq: statementOfTruthTwo.errorValidation,
       validationType: statementOfTruthTwo.errorValidationType.two,
       inputArray: statementOfTruthTwo.errorValidationField.errorTextField2,
-      header: statementOfTruthTwo.errors,
+      header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
       label: statementOfTruthTwo.nameOfFirmHiddenTextLabel,
       button: statementOfTruthTwo.continueButton
     });
@@ -604,7 +604,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
       validationReq: statementOfTruthTwo.errorValidation,
       validationType: statementOfTruthTwo.errorValidationType.two,
       inputArray: statementOfTruthTwo.errorValidationField.errorTextField3,
-      header: statementOfTruthTwo.errors,
+      header: statementOfTruthTwo.thereIsAProblemErrorMessageHeader,
       label: statementOfTruthTwo.positionOrOfficeHeldHiddenTextLabel,
       button: statementOfTruthTwo.continueButton
     });
@@ -809,7 +809,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationType: peopleYouWantToEvict.errorValidationType.six,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
-        header: peopleYouWantToEvict.errors,
+        header: peopleYouWantToEvict.thereIsAProblemErrorMessageHeader,
         checkBox: defendantDetails[0],
         button: peopleYouWantToEvict.continueButton
       });
@@ -952,7 +952,7 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationType: peopleYouWantToEvict.errorValidationType.six,
         inputArray: peopleYouWantToEvict.errorValidationField.errorCheckBoxOption,
         label: peopleYouWantToEvict.whoDoYouWantToEvictQuestion,
-        header: peopleYouWantToEvict.errors,
+        header: peopleYouWantToEvict.thereIsAProblemErrorMessageHeader,
         checkBox: defendantDetails[0],
         button: peopleYouWantToEvict.continueButton
       });

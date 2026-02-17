@@ -283,6 +283,7 @@ export class EnforcementAction implements IAction {
     await performAction('inputText', totalMoneyOwed.label, moneyOwedEntered);
     const moneyOwedAmt = await this.retrieveAmountFromString(moneyOwedEntered as string);
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
+    fieldsMap.set(totalMoneyOwed.label as string,moneyOwedEntered as string);
     await this.reTryOnCallBackError(page, moneyOwed.continueButton, totalMoneyOwed.nextPage as string);
   }
 
@@ -296,6 +297,7 @@ export class EnforcementAction implements IAction {
       await performAction('inputText', legalCost.label, legalCostEntered);
       const legalCostAmt = await this.retrieveAmountFromString(legalCostEntered as string);
       moneyMap.set(legalCosts.legalCostsFee, legalCostAmt);
+      fieldsMap.set(legalCost.label as string,legalCostEntered as string);
     } else {
       moneyMap.set(legalCosts.legalCostsFee, 0);
     }
@@ -312,6 +314,7 @@ export class EnforcementAction implements IAction {
       await performAction('inputText', landRegistry.label, langRegistryAmtEntered);
       const landRegistryFeeAmt = await this.retrieveAmountFromString(langRegistryAmtEntered as string);
       moneyMap.set(landRegistryFees.landRegistryFee, landRegistryFeeAmt);
+      fieldsMap.set(landRegistry.label as string,langRegistryAmtEntered as string);
     } else {
       moneyMap.set(landRegistryFees.landRegistryFee, 0);
     }
@@ -415,6 +418,7 @@ export class EnforcementAction implements IAction {
             case 'radioOptions':
               await performAction('clickButton', validationArr.button);
               await performValidation('inputError', !validationArr?.label ? validationArr.question : validationArr.label, item.errMessage);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('clickRadioButton', { question: validationArr.question, option: validationArr.option });
               break;
 

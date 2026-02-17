@@ -19,7 +19,7 @@ export const yourApplication = {
   writFeeValidationText: 'it costs £80 to apply',
   quoteFromBailiffLink: 'you can get a quote from a bailiff to find out how much it will cost',
   continueButton: 'Continue',
-  errors: 'Errors',
+  thereIsAProblemErrorMessageHeader: 'There is a problem',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {

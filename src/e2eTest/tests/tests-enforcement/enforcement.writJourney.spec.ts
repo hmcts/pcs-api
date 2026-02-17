@@ -255,6 +255,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         validationType: statementOfTruthOne.errorValidationType.four,
         inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
         label: statementOfTruthOne.checkBoxGenericErrorLabel,
+        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
         checkBox: statementOfTruthOne.iBelieveTheFactsHiddenCheckbox,
         button: statementOfTruthOne.continueButton
       });
@@ -262,7 +263,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         validationReq: statementOfTruthOne.errorValidation,
         validationType: statementOfTruthOne.errorValidationType.two,
         inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-        header: statementOfTruthOne.errors,
+        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
         label: statementOfTruthOne.fullNameHiddenTextLabel,
         button: statementOfTruthOne.continueButton
       });
@@ -270,7 +271,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         validationReq: statementOfTruthOne.errorValidation,
         validationType: statementOfTruthOne.errorValidationType.two,
         inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-        header: statementOfTruthOne.errors,
+        header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
         label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
         button: statementOfTruthOne.continueButton
       });
@@ -375,7 +376,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       validationType: statementOfTruthOne.errorValidationType.four,
       inputArray: statementOfTruthOne.errorValidationField.errorCheckBoxOption,
       label: statementOfTruthOne.checkBoxGenericErrorLabel,
-      header: statementOfTruthOne.errors,
+      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
       checkBox: statementOfTruthOne.signThisStatementHiddenCheckbox,
       button: statementOfTruthOne.continueButton
     });
@@ -383,7 +384,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       validationReq: statementOfTruthOne.errorValidation,
       validationType: statementOfTruthOne.errorValidationType.two,
       inputArray: statementOfTruthOne.errorValidationField.errorTextField1,
-      header: statementOfTruthOne.errors,
+      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
       label: statementOfTruthOne.fullNameHiddenTextLabel,
       button: statementOfTruthOne.continueButton
     });
@@ -391,7 +392,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       validationReq: statementOfTruthOne.errorValidation,
       validationType: statementOfTruthOne.errorValidationType.two,
       inputArray: statementOfTruthOne.errorValidationField.errorTextField2,
-      header: statementOfTruthOne.errors,
+      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
       label: statementOfTruthOne.nameOfFirmHiddenTextLabel,
       button: statementOfTruthOne.continueButton
     });
@@ -399,7 +400,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       validationReq: statementOfTruthOne.errorValidation,
       validationType: statementOfTruthOne.errorValidationType.two,
       inputArray: statementOfTruthOne.errorValidationField.errorTextField3,
-      header: statementOfTruthOne.errors,
+      header: statementOfTruthOne.thereIsAProblemErrorMessageHeader,
       label: statementOfTruthOne.positionOrOfficeHeldHiddenTextLabel,
       button: statementOfTruthOne.continueButton
     });

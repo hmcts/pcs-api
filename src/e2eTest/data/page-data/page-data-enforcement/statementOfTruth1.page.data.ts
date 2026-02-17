@@ -15,7 +15,7 @@ export const statementOfTruthOne = {
   positionOrOfficeHeldHiddenTextInput: 'Solicitor',
   signThisStatementHiddenCheckbox: 'The claimant believes that the facts stated in this claim form are true.  I am authorised by the claimant to sign this statement.',
   continueButton: 'Continue',
-  errors: 'There is a problem',
+  thereIsAProblemErrorMessageHeader: 'There is a problem',
   checkBoxGenericErrorLabel: 'Field is required',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
