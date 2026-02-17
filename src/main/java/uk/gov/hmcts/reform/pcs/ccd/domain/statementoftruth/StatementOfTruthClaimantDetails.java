@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth;
 
 import lombok.Builder;
 import lombok.Data;

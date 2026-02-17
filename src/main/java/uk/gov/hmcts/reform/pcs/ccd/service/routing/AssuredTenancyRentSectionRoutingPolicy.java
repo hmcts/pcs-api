@@ -2,14 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.service.routing;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 /**
