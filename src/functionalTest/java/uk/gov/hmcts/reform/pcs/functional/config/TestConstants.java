@@ -11,4 +11,6 @@ public class TestConstants {
     public static final String EXPIRED_S2S_TOKEN = getEnv("S2S_EXPIRED_TOKEN");
     public static final String EXPIRED_IDAM_TOKEN = getEnv("IDAM_EXPIRED_USER_TOKEN");
     public static final String PCS_CITIZEN_USER = "pcs-citizen@test.com";
+    public static final String PCS_SOLICITOR_USER = "pcs-solicitor-automation@test.com";
+    public static final String PCS_SOLICITOR_AUTOMATION_IDAM_UID = getEnv("PCS_SOLICITOR_AUTOMATION_UID");
 }
