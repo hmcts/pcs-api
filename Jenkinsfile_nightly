@@ -81,7 +81,7 @@ def handleEnvironmentSetting() {
 
   env.E2E_SUITE = (params.ENVIRONMENT == 'preview')
     ? "pr"
-    : "pr" //Revert to chrome after testing
+    : "chrome"
 }
 
 // E2E stage notification to #hdp-qa-e2e-test-results
