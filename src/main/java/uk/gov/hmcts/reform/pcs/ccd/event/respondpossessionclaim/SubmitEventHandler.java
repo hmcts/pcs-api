@@ -348,6 +348,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             .rentArrearsAmount(responses.getRentArrearsAmount())
             .noticeReceived(responses.getNoticeReceived())
             .noticeReceivedDate(responses.getNoticeReceivedDate())
+            .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .build();
 
         defendantResponseRepository.save(defendantResponse);

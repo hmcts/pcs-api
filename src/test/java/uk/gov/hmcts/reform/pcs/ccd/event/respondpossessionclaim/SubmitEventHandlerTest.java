@@ -233,6 +233,77 @@ class SubmitEventHandlerTest {
         );
     }
 
+    @ParameterizedTest(name = "receivedFreeLegalAdvice = {0}")
+    @MethodSource("legalAdvicePersistenceTestCases")
+    void shouldPersistReceivedFreeLegalAdviceToDefendantResponseEntity(
+        YesNoPreferNotToSay legalAdviceValue
+    ) {
+        // Given
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .emailAddress("john@example.com")
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .tenancyTypeCorrect(YesNoNotSure.YES)
+            .receivedFreeLegalAdvice(legalAdviceValue)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase draftData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.YES)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        // Mock dependencies for final submit
+        uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity mockedCase = createMockedCaseEntity();
+        java.util.UUID userId = mockedCase.getParties().iterator().next().getIdamId();
+
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
+            .thenReturn(java.util.Optional.of(draftData));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(mockedCase);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        // Verify DefendantResponseEntity was saved with correct receivedFreeLegalAdvice value
+        ArgumentCaptor<uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity> entityCaptor =
+            ArgumentCaptor.forClass(uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity.class);
+        verify(defendantResponseRepository).save(entityCaptor.capture());
+
+        uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity savedEntity = entityCaptor.getValue();
+        assertThat(savedEntity.getReceivedFreeLegalAdvice()).isEqualTo(legalAdviceValue);
+    }
+
+    private static Stream<Arguments> legalAdvicePersistenceTestCases() {
+        return Stream.of(
+            Arguments.of(YesNoPreferNotToSay.YES),
+            Arguments.of(YesNoPreferNotToSay.NO),
+            Arguments.of(YesNoPreferNotToSay.PREFER_NOT_TO_SAY),
+            Arguments.of((YesNoPreferNotToSay) null)  // Test null handling
+        );
+    }
+
     // ========== VALIDATION ERROR CASES ==========
 
     @Test

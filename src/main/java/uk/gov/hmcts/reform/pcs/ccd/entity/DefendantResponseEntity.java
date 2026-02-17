@@ -19,6 +19,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.math.BigDecimal;
@@ -74,4 +75,9 @@ public class DefendantResponseEntity {
 
     @Column(name = "notice_received_date")
     private LocalDate noticeReceivedDate;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "received_free_legal_advice")
+    private YesNoPreferNotToSay receivedFreeLegalAdvice;
 }
