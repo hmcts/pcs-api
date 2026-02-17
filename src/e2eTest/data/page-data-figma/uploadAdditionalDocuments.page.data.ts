@@ -13,7 +13,7 @@ export const uploadAdditionalDocuments = {
   documentFieldHiddenLabel: `Document`,
   chooseFileHiddenButton: `Choose file`,
   cancelUploadHiddenButton: `Cancel upload`,
-  tenancyAgreementDropDownInput: `Tenancy Agreement`,
+  tenancyAgreementDropDownInput: `Tenancy agreement`,
   shortDescriptionHiddenTextLabel: `Short description`,
   shortDescriptionHiddenTextInput: `This is a tenancy agreement`,
   previousButton: `Previous`,
