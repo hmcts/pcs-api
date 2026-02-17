@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CCDConfig;
 import uk.gov.hmcts.ccd.sdk.api.ConfigBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
@@ -89,15 +90,16 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getCaseFileView, null, "#ARGUMENT(CaseFileView)");
 
         builder.categories(UserRole.PCS_SOLICITOR)
-            .categoryID("C1")
-            .categoryLabel("My category 1")
+            .categoryID(DocumentCategory.TENANCY_DOCUMENT.name())
+            .categoryLabel(DocumentCategory.TENANCY_DOCUMENT.getLabel())
             .displayOrder(10)
             .build();
 
         builder.categories(UserRole.PCS_SOLICITOR)
-            .categoryID("C2")
-            .categoryLabel("Rent Statement")
+            .categoryID(DocumentCategory.RENT_STATEMENT.name())
+            .categoryLabel(DocumentCategory.RENT_STATEMENT.getLabel())
             .displayOrder(20)
             .build();
+
     }
 }

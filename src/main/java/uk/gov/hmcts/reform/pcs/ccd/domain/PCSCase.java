@@ -388,6 +388,17 @@ public class PCSCase {
     )
     private List<ListValue<AdditionalDocument>> additionalDocuments;
 
+
+    @CCD(
+        label = "Is this an amended version of a previously uploaded document?"
+    )
+    private VerticalYesNo isAmendedDocument;
+
+    @CCD(
+        label = "Upload a new rent statement"
+    )
+    private Document amendedRentStatement;
+
     @CCD(
         label = "Are you planning to make an application at the same time as your claim?",
         hint = "After you’ve submitted your claim, there will be instructions on how to make an application"

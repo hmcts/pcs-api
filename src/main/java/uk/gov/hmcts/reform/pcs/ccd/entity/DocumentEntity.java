@@ -17,8 +17,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -49,7 +53,13 @@ public class DocumentEntity {
 
     private String binaryUrl;
 
-    private String categoryId;
+    private String categoryId; // TODO: Remove?
+
+    private LocalDateTime lastModified;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private VerticalYesNo isAmendment;
 
     @Enumerated(EnumType.STRING)
     private DocumentType type;

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.CaseView;
@@ -9,11 +10,14 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.DocumentCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ClaimPartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -35,6 +39,8 @@ import uk.gov.hmcts.reform.pcs.ccd.view.TenancyLicenceView;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -51,6 +57,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 @AllArgsConstructor
 public class PCSCaseView implements CaseView<PCSCase, State> {
 
+    private static final DateTimeFormatter DOCUMENT_DATE_FORMAT = DateTimeFormatter.ofPattern("uuuuMMdd_HHmmss");
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
@@ -234,16 +241,45 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         }
 
         return pcsCaseEntity.getDocuments().stream()
-            .map(entity -> ListValue.<Document>builder()
-                .id(entity.getId().toString())
-                .value(Document.builder()
-                           .filename(entity.getFileName())
-                           .url(entity.getUrl())
-                           .binaryUrl(entity.getBinaryUrl())
-                           .categoryId(entity.getCategoryId())
-                           .build())
-                .build())
+            .map(entity -> {
+                DocumentCategory category = entity.getType().getCategory();
+
+                String filename = buildFileName(entity);
+                return ListValue.<Document>builder()
+                    .id(entity.getId().toString())
+                    .value(Document.builder()
+                               .filename(filename)
+                               .url(entity.getUrl())
+                               .binaryUrl(entity.getBinaryUrl())
+                               .categoryId(category != null ? category.name() : null)
+                               .uploadTimestamp(entity.getLastModified())
+                               .build())
+                    .build();
+            })
             .collect(Collectors.toList());
+    }
+
+    private String buildFileName(DocumentEntity entity) {
+        String filenamePrefix = entity.getType().getFilenamePrefix();
+        if (filenamePrefix != null && !filenamePrefix.isBlank()) {
+            filenamePrefix = filenamePrefix + "_";
+        } else {
+            filenamePrefix = "";
+        }
+
+        if (entity.getIsAmendment() == VerticalYesNo.YES) {
+            String filename = entity.getFileName();
+            String baseName = FilenameUtils.getBaseName(filename);
+            String extension = FilenameUtils.getExtension(filename);
+
+
+            LocalDateTime modified = entity.getLastModified();
+            String formattedDate = DOCUMENT_DATE_FORMAT.format(modified);
+            return filenamePrefix + baseName + " (amended " + formattedDate + ")." + extension;
+//            return filenamePrefix + entity.getFileName() + " (amended " + formattedDate + ")";
+        } else {
+            return filenamePrefix + entity.getFileName();
+        }
     }
 
 }

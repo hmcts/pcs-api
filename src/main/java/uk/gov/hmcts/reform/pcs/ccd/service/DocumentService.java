@@ -12,11 +12,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DocumentRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.ListValueUtils;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,7 +58,20 @@ public class DocumentService {
                 .map(NoticeServedDetails::getNoticeDocuments)
                 .orElse(null), DocumentType.NOTICE_SERVED));
 
+
         return documentRepository.saveAll(createDocumentEntities(allDocuments));
+    }
+
+    public List<DocumentEntity> saveDocument(Document document,
+                                             DocumentType documentType,
+                                             VerticalYesNo isAmendedDocument) {
+
+        List<Pair<Document, DocumentType>> documentList = List.of(Pair.of(document, documentType));
+
+        List<DocumentEntity> documentEntities = createDocumentEntities(documentList);
+        documentEntities.forEach(documentEntity -> documentEntity.setIsAmendment(isAmendedDocument));
+
+        return documentRepository.saveAll(documentEntities);
     }
 
     private List<Pair<Document, DocumentType>> mapDocumentsWithType(
@@ -94,6 +110,8 @@ public class DocumentService {
             return List.of();
         }
 
+        LocalDateTime currentDateTime = LocalDateTime.now(ZoneId.of("Europe/London"));
+
         return documents.stream()
             .map(pair -> DocumentEntity.builder()
                 .url(pair.getKey().getUrl())
@@ -101,6 +119,7 @@ public class DocumentService {
                 .binaryUrl(pair.getKey().getBinaryUrl())
                 .categoryId(pair.getKey().getCategoryId())
                 .type(pair.getValue())
+                .lastModified(currentDateTime)
                 .build())
             .toList();
     }
