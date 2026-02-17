@@ -228,7 +228,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(pcsCaseService, times(1)).save(any(PcsCaseEntity.class)
+        verify(pcsCaseService, times(1)).saveCase(any(PcsCaseEntity.class)
         );
     }
 
