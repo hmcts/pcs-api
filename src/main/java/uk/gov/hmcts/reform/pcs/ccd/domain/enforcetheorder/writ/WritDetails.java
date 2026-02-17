@@ -35,7 +35,7 @@ public class WritDetails {
 
     @CCD(searchable = false)
     private YesOrNo showPeopleWhoWillBeEvictedPage;
-
+    
     @CCD(
         label = "Have you hired a High Court enforcement officer?"
     )
