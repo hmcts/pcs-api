@@ -1,13 +1,4 @@
 {
-  "propertyAddress": {
-    "County": "",
-    "Country": "Deyrnas Unedig",
-    "PostCode": "CF11 6QX",
-    "PostTown": "Caerdydd",
-    "AddressLine1": "2 Pentre Street",
-    "AddressLine2": "",
-    "AddressLine3": ""
-  },
   "legislativeCountry":"Wales",
   "claimantType":{
     "value":{

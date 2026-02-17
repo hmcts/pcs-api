@@ -6,13 +6,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDataContent;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
+import uk.gov.hmcts.reform.ccd.client.model.CaseResource;
 import uk.gov.hmcts.reform.pcs.ccd.CaseType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -40,6 +41,7 @@ public class CcdTestCaseOrchestrator {
         String s2sToken = s2sAuthTokenGenerator.generate();
 
         PCSCase caseData = PCSCase.builder()
+            .propertyAddress(addressFor(legislativeCountry))
             .legislativeCountry(legislativeCountry)
             .build();
 
@@ -125,7 +127,7 @@ public class CcdTestCaseOrchestrator {
     }
 
     private ObjectNode getBasePayload(LegislativeCountry legislativeCountry) {
-        String path = "testcasesupport/Create-Case-" + legislativeCountry + "-Base.json";
+        String path = "testcasesupport-api/Create-Case-" + legislativeCountry + "-Base.json";
 
         try (InputStream basePayload = getClass()
             .getClassLoader()
@@ -136,5 +138,28 @@ public class CcdTestCaseOrchestrator {
         } catch (Exception e) {
             throw new RuntimeException("Failed to read base payload JSON", e);
         }
+    }
+
+    private AddressUK addressFor(LegislativeCountry legislativeCountry) {
+        return switch (legislativeCountry) {
+            case ENGLAND -> AddressUK.builder()
+                .addressLine1("1 Second Avenue")
+                .postTown("London")
+                .county("Greater London")
+                .postCode("W3 7RX")
+                .country("United Kingdom")
+                .build();
+
+            case WALES -> AddressUK.builder()
+                .addressLine1("2 Pentre Street")
+                .postTown("Caerdydd")
+                .postCode("CF11 6QX")
+                .country("Deyrnas Unedig")
+                .build();
+
+            default -> throw new IllegalArgumentException(
+                "Unsupported legislative country: " + legislativeCountry
+            );
+        };
     }
 }
