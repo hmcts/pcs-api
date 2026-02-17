@@ -5,7 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
 
@@ -27,7 +27,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                 .complex(EnforcementOrder::getWarrantDetails)
                     .label("statementOfTruth-lineSeparator", "---")
                     .complex(WarrantDetails::getStatementOfTruth)
-                        .mandatory(StatementOfTruthDetails::getCertification)
+                        .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
                         .label("statementOfTruth-cert-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
@@ -61,20 +61,20 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                             "${warrantStatementOfTruthRepaymentSummaryMarkdown}")
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
-                        .mandatory(StatementOfTruthDetails::getCompletedBy)
-                        .mandatory(StatementOfTruthDetails::getAgreementClaimant,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
+                        .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
                             WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetails::getFullNameClaimant,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getFullNameClaimant,
                             WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetails::getPositionClaimant,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getPositionClaimant,
                             WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetails::getAgreementLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getAgreementLegalRep,
                             WARRANT_COMPLETED_BY_LEGAL_REP)
-                        .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
                             WARRANT_COMPLETED_BY_LEGAL_REP)
-                        .mandatory(StatementOfTruthDetails::getFirmNameLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getFirmNameLegalRep,
                             WARRANT_COMPLETED_BY_LEGAL_REP)
-                        .mandatory(StatementOfTruthDetails::getPositionLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getPositionLegalRep,
                             WARRANT_COMPLETED_BY_LEGAL_REP)
                     .done()
                 .done()
