@@ -45,7 +45,7 @@ def secrets = [
 
 withNightlyPipeline(type, product, component) {
   validateInputs()
-  enableSlackNotifications('#qa-pipeline-status') //Revert to #pcs-tech
+  enableSlackNotifications('#pcs-tech')
   loadVaultSecrets(secrets)
   handleEnvironmentSetting()
   enableFortifyScan()
@@ -84,7 +84,7 @@ def handleEnvironmentSetting() {
     : "chrome"
 }
 
-// E2E stage notification to QA channel only (build status is sent by library via enableSlackNotifications)
+// E2E stage notification to QA channel only
 def postAllureResultsToSlack() {
   def msg = sh(
     script: 'cd src/e2eTest && ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only 2>/dev/null || true',
