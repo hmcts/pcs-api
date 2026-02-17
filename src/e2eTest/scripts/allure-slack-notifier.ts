@@ -427,13 +427,8 @@ export async function main(): Promise<void> {
     console.warn('\n[WARN] SLACK_WEBHOOK_URL is not a valid webhook URL; skipping post.');
     return;
   }
-  try {
-    await postToSlack(webhook, msg);
-    console.log('\n[INFO] Slack notification sent.');
-  } catch (err) {
-    console.error('\n[ERROR] Failed to post to Slack:', err);
-    process.exit(1);
-  }
+  await postToSlack(webhook, msg);
+  console.log('\n[INFO] Slack notification sent.');
 }
 
 const isMain =
