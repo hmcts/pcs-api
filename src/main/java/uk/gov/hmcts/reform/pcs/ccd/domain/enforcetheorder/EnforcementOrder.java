@@ -47,4 +47,5 @@ public class EnforcementOrder {
     @CCD(searchable = false)
     @External
     private String writFeeAmount;
+
 }
