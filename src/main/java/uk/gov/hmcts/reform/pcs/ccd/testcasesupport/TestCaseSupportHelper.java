@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 public class TestCaseSupportHelper {
 
-    public static final String LOCATION_PATTERN = "classpath*:test-case-support/";
+    public static final String LOCATION_PATTERN = "classpath*:test-case-generation/";
     public static final String JSON = ".json";
 
     private final ResourcePatternResolver resourcePatternResolver;
@@ -47,7 +47,8 @@ public class TestCaseSupportHelper {
     }
 
     private String generateLabelFromFilename(String filename) {
-        return filename.replace("-", " ").replace(JSON, "");
+        String name = filename.replace(LOCATION_PATTERN, "");
+        return name.replace("-", " ").replace(JSON, "");
     }
 
     public Resource getTestResource(String label) throws IOException {
