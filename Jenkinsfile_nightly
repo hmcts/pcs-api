@@ -84,14 +84,21 @@ def handleEnvironmentSetting() {
     : "pr" //Revert to chrome after testing
 }
 
-// E2E stage notification to QA channel only
+// E2E stage notification to #hdp-qa-e2e-test-results
 def postAllureResultsToSlack() {
+  env.E2E_SERVICE_NAME = 'pcs-api'
+  env.E2E_PIPELINE_TYPE = 'nightly'
   def msg = sh(
-    script: 'cd src/e2eTest && ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only 2>/dev/null || true',
+    script: "cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=nightly ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true",
     returnStdout: true
   ).trim()
   if (!msg) {
-    msg = "E2E stage completed for ${env.JOB_NAME} build ${env.BUILD_NUMBER}. Allure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* nightly\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
-  slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+  try {
+    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results"
+  } catch (Exception e) {
+    echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
+  }
 }

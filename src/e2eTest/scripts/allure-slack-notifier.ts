@@ -52,7 +52,9 @@ export function parseAllureSummary(summaryPath: string): AllureSummary {
   const unknown = parseInt(String(stats.unknown ?? 0), 10) || 0;
   const durationMs = parseInt(String(timeInfo.duration ?? 0), 10) || 0;
   const durationSeconds = Math.round((durationMs / 1000) * 100) / 100;
-  const passRate = total > 0 ? Math.round((passed / total) * 10000) / 100 : 0;
+  const runCount = total - skipped;
+  const passRate =
+    runCount > 0 ? Math.round((passed / runCount) * 10000) / 100 : total > 0 ? 0 : 100;
 
   return {
     total,
@@ -150,11 +152,14 @@ export function parseAllureResults(
   return tests;
 }
 
+/** Tests with duration >= minDurationSeconds, sorted slowest first, up to topN. */
 export function topSlowestTests(
   tests: AllureTestRecord[],
-  topN: number = 5
+  topN: number = 5,
+  minDurationSeconds: number = 5 * 60
 ): AllureTestRecord[] {
   return [...tests]
+    .filter((t) => (t.duration_seconds ?? 0) >= minDurationSeconds)
     .sort((a, b) => (b.duration_ms ?? 0) - (a.duration_ms ?? 0))
     .slice(0, topN);
 }
@@ -165,31 +170,13 @@ export function failedTests(tests: AllureTestRecord[]): AllureTestRecord[] {
   );
 }
 
-/**
- * Deduplicate failed/broken tests by retry: Playwright retries create multiple result files
- * for the same test. Group by historyId (or fullName/name) and keep only the latest attempt.
- */
-export function deduplicateFailedTestsByRetry(
-  tests: AllureTestRecord[]
-): AllureTestRecord[] {
-  const failed = failedTests(tests);
-  const byKey = new Map<string, AllureTestRecord>();
-  for (const t of failed) {
-    const key = (t.historyId ?? t.fullName ?? t.name).trim() || t.name;
-    const existing = byKey.get(key);
-    const start = t.start ?? 0;
-    const existingStart = existing?.start ?? 0;
-    if (!existing || start >= existingStart) {
-      byKey.set(key, t);
-    }
-  }
-  return Array.from(byKey.values());
+export function deduplicateFailedTestsByRetry(tests: AllureTestRecord[]): AllureTestRecord[] {
+  return failedTests(latestResultByKey(tests));
 }
 
-/** Count tests with duration >= thresholdSeconds (default 10s). */
 export function countSlowTests(
   tests: AllureTestRecord[],
-  thresholdSeconds: number = 10
+  thresholdSeconds: number = 5 * 60
 ): number {
   return tests.filter((t) => (t.duration_seconds ?? 0) >= thresholdSeconds).length;
 }
@@ -217,6 +204,32 @@ export function ragStatus(summary: AllureSummary): string {
     return '🟠 AMBER';
   }
   return '🟢 GREEN';
+}
+
+/** One record per test (latest by start time), keyed by historyId/fullName/name. */
+function latestResultByKey(tests: AllureTestRecord[]): AllureTestRecord[] {
+  const byKey = new Map<string, AllureTestRecord>();
+  for (const t of tests) {
+    const key = (t.historyId ?? t.fullName ?? t.name).trim() || t.name;
+    const existing = byKey.get(key);
+    const start = t.start ?? 0;
+    const existingStart = existing?.start ?? 0;
+    if (!existing || start >= existingStart) byKey.set(key, t);
+  }
+  return Array.from(byKey.values());
+}
+
+function latestResultSummary(tests: AllureTestRecord[]): { failed: number; broken: number; pass_rate: number } {
+  const latest = latestResultByKey(tests);
+  const total = latest.length;
+  const failed = latest.filter((t) => t.status === 'failed').length;
+  const broken = latest.filter((t) => t.status === 'broken').length;
+  const skipped = latest.filter((t) => t.status === 'skipped').length;
+  const passed = total - failed - broken - skipped;
+  const runCount = total - skipped;
+  const pass_rate =
+    runCount > 0 ? Math.round((passed / runCount) * 10000) / 100 : total > 0 ? 0 : 100;
+  return { failed, broken, pass_rate };
 }
 
 function isValidWebhookUrl(value: string): boolean {
@@ -282,23 +295,24 @@ export function buildSlackMessage(
   tests: AllureTestRecord[] | null = null,
   topNSlowest: number = 5,
   maxFailuresToList: number = 8,
-  slowThresholdSeconds: number = 10
+  slowThresholdSeconds: number = 5 * 60,
+  serviceName: string = 'pcs-api',
+  pipelineType: string = 'nightly'
 ): string {
-  const rag = ragStatus(summary);
+  const summaryForRag =
+    tests && tests.length > 0
+      ? { ...summary, ...latestResultSummary(tests) }
+      : summary;
+  const rag = ragStatus(summaryForRag);
   const reportUrl = buildUrl ? `${buildUrl}${reportPathSuffix}` : '';
   const lines: string[] = [];
-
-  // Header + RAG
   lines.push(`*E2E Test Results* — Build #${buildNumber}  ${rag}`);
+  lines.push(`*Service:* ${serviceName}  |  *Pipeline:* ${pipelineType}`);
   lines.push('');
-
-  // Link to Allure report from build (prominent)
   if (reportUrl) {
     lines.push(`*Allure report:* ${reportUrl}`);
     lines.push('');
   }
-
-  // Status: one metric per line
   const slowCount =
     tests && tests.length > 0
       ? countSlowTests(tests, slowThresholdSeconds)
@@ -308,7 +322,11 @@ export function buildSlackMessage(
   lines.push(`Total: *${summary.total}*`);
   lines.push(`✅ Passed: *${summary.passed}*`);
   lines.push(`❌ Failed: *${summary.failed}*`);
-  lines.push(`🐢 Slow (≥${slowThresholdSeconds}s): *${slowCount}*`);
+  const slowLabel =
+    slowThresholdSeconds >= 60
+      ? `≥${Math.round(slowThresholdSeconds / 60)}m`
+      : `≥${slowThresholdSeconds}s`;
+  lines.push(`🐢 Slow (${slowLabel}): *${slowCount}*`);
   lines.push(`⏭️ Skipped: *${summary.skipped}*`);
   if (summary.broken > 0) {
     lines.push(`⚠️ Broken: *${summary.broken}*`);
@@ -319,7 +337,7 @@ export function buildSlackMessage(
 
   if (tests && tests.length > 0) {
     const fails = deduplicateFailedTestsByRetry(tests);
-    const slow = topSlowestTests(tests, topNSlowest);
+    const slow = topSlowestTests(tests, topNSlowest, slowThresholdSeconds);
 
     if (fails.length > 0) {
       lines.push(`*Failures / Broken* (${fails.length})`);
@@ -338,7 +356,7 @@ export function buildSlackMessage(
     }
 
     if (slow.length > 0) {
-      lines.push(`*Top ${slow.length} slowest tests*`);
+      lines.push(`*Top ${slow.length} slowest tests* (${slowLabel})`);
       for (const t of slow) {
         lines.push(`• ${t.name} — ${t.duration_seconds}s`);
       }
@@ -362,13 +380,14 @@ function resolveDirs(): { baseDir: string; e2eTestDir: string } {
   return { baseDir, e2eTestDir };
 }
 
-/** Build the Slack message from Allure data, or a fallback if summary is missing. */
 export function getSlackMessage(): string {
   const { baseDir, e2eTestDir } = resolveDirs();
   const buildNumber = (process.env.BUILD_NUMBER ?? 'local').trim();
   const buildUrl = (process.env.BUILD_URL ?? '').trim();
   const jobName = (process.env.JOB_NAME ?? 'e2e').trim();
   const reportSuffix = (process.env.ALLURE_REPORT_PATH_SUFFIX ?? DEFAULT_REPORT_PATH).trim() || DEFAULT_REPORT_PATH;
+  const serviceName = (process.env.E2E_SERVICE_NAME ?? process.env.COMPONENT ?? 'pcs-api').trim() || 'pcs-api';
+  const pipelineType = (process.env.E2E_PIPELINE_TYPE ?? (jobName.toLowerCase().includes('nightly') ? 'nightly' : 'master')).trim() || 'master';
 
   try {
     const summary = parseAllureSummary(findAllureSummaryJson(baseDir));
@@ -378,13 +397,13 @@ export function getSlackMessage(): string {
     } catch {
       /* optional */
     }
-    return buildSlackMessage(summary, buildNumber, buildUrl, reportSuffix, tests, 5, 8);
+    return buildSlackMessage(summary, buildNumber, buildUrl, reportSuffix, tests, 5, 8, 5 * 60, serviceName, pipelineType);
   } catch (err) {
     if (!process.argv.includes('--print-only')) {
       console.warn('[WARN] Could not read Allure summary; sending fallback.', err);
     }
     const reportUrl = buildUrl ? `${buildUrl}${reportSuffix}` : '';
-    return `E2E stage completed for ${jobName} build ${buildNumber}. Allure report not available – check build logs.${reportUrl ? `\n*Allure report:* ${reportUrl}` : buildUrl ? `\n*Build:* ${buildUrl}` : ''}`;
+    return `E2E Test Results — Build #${buildNumber}\n*Service:* ${serviceName}  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.${reportUrl ? `\n*Allure report:* ${reportUrl}` : buildUrl ? `\n*Build:* ${buildUrl}` : ''}`;
   }
 }
 
@@ -417,7 +436,6 @@ export async function main(): Promise<void> {
   }
 }
 
-// Run when executed directly (e.g. tsx scripts/allure-slack-notifier.ts)
 const isMain =
   require.main === module ||
   process.argv[1]?.includes('allure-slack-notifier');
