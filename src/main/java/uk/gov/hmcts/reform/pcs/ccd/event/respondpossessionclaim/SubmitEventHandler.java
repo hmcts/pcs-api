@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Submit;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -15,6 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ContactPreferenceEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ContactPreferenceType;
@@ -159,7 +161,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             saveDefendantResponse(caseEntity, defendant, draftData);
 
             // Step 8: Save case entity (cascades party and contact preference changes)
-            pcsCaseService.save(caseEntity);
+            pcsCaseService.saveCase(caseEntity);
             log.debug("Saved defendant updates for case {}", caseReference);
 
             // Step 9: Delete draft
@@ -294,7 +296,23 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
 
         if (draftParty.getAddress() != null) {
-            defendant.setAddress(addressMapper.toEntity(draftParty.getAddress()));
+            updateOrCreateAddress(defendant, draftParty.getAddress());
+        }
+    }
+
+    private void updateOrCreateAddress(PartyEntity defendant, AddressUK newAddress) {
+        AddressEntity existingAddress = defendant.getAddress();
+
+        if (existingAddress != null) {
+            existingAddress.setAddressLine1(newAddress.getAddressLine1());
+            existingAddress.setAddressLine2(newAddress.getAddressLine2());
+            existingAddress.setAddressLine3(newAddress.getAddressLine3());
+            existingAddress.setPostTown(newAddress.getPostTown());
+            existingAddress.setCounty(newAddress.getCounty());
+            existingAddress.setPostcode(newAddress.getPostCode());
+            existingAddress.setCountry(newAddress.getCountry());
+        } else {
+            defendant.setAddress(addressMapper.toEntity(newAddress));
         }
     }
 
@@ -305,31 +323,38 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
             return;
         }
 
-        defendant.getContactPreferences().clear();
+        DefendantResponses responses = response.getDefendantResponses();
 
-        addContactPreference(defendant, ContactPreferenceType.EMAIL,
-            response.getDefendantResponses().getContactByEmail());
-        addContactPreference(defendant, ContactPreferenceType.TEXT,
-            response.getDefendantResponses().getContactByText());
-        addContactPreference(defendant, ContactPreferenceType.POST,
-            response.getDefendantResponses().getContactByPost());
-        addContactPreference(defendant, ContactPreferenceType.PHONE,
-            response.getDefendantResponses().getContactByPhone());
+        updateOrCreateContactPreference(defendant, ContactPreferenceType.EMAIL,
+            responses.getContactByEmail());
+        updateOrCreateContactPreference(defendant, ContactPreferenceType.TEXT,
+            responses.getContactByText());
+        updateOrCreateContactPreference(defendant, ContactPreferenceType.POST,
+            responses.getContactByPost());
+        updateOrCreateContactPreference(defendant, ContactPreferenceType.PHONE,
+            responses.getContactByPhone());
 
         log.debug("Updated contact preferences for defendant {}", defendant.getId());
     }
 
-    private void addContactPreference(PartyEntity party, ContactPreferenceType type, VerticalYesNo value) {
+    private void updateOrCreateContactPreference(PartyEntity party, ContactPreferenceType type, VerticalYesNo value) {
         if (value == null) {
             return;
         }
 
-        ContactPreferenceEntity preference = ContactPreferenceEntity.builder()
-            .party(party)
-            .preferenceType(type)
-            .enabled(value.toBoolean())
-            .build();
-        party.getContactPreferences().add(preference);
+        party.getContactPreferences().stream()
+            .filter(pref -> pref.getPreferenceType() == type)
+            .findFirst()
+            .ifPresentOrElse(
+                existing -> existing.setEnabled(value.toBoolean()),
+                () -> {
+                    ContactPreferenceEntity preference = ContactPreferenceEntity.builder()
+                        .party(party)
+                        .preferenceType(type)
+                        .enabled(value.toBoolean())
+                        .build();
+                    party.getContactPreferences().add(preference);
+                });
     }
 
     private void saveDefendantResponse(PcsCaseEntity caseEntity, PartyEntity defendant, PCSCase draftData) {

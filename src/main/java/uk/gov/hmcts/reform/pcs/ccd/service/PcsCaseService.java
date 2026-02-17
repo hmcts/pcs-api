@@ -63,4 +63,8 @@ public class PcsCaseService {
             .orElseThrow(() -> new CaseNotFoundException(caseReference));
     }
 
+    public PcsCaseEntity saveCase(PcsCaseEntity pcsCaseEntity) {
+        return pcsCaseRepository.save(pcsCaseEntity);
+    }
+
 }
