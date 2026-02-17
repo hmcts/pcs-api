@@ -13,17 +13,28 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
+import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,13 +58,13 @@ class SubmitEventHandlerTest {
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
-    private uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService pcsCaseService;
+    private PcsCaseService pcsCaseService;
     @Mock
-    private uk.gov.hmcts.reform.pcs.security.SecurityContextService securityContextService;
+    private SecurityContextService securityContextService;
     @Mock
-    private uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper addressMapper;
+    private AddressMapper addressMapper;
     @Mock
-    private uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository defendantResponseRepository;
+    private DefendantResponseRepository defendantResponseRepository;
 
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
@@ -155,12 +166,12 @@ class SubmitEventHandlerTest {
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // Mock dependencies for final submit
-        uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity mockedCase = createMockedCaseEntity();
-        java.util.UUID userId = mockedCase.getParties().iterator().next().getIdamId();
+        PcsCaseEntity mockedCase = createMockedCaseEntity();
+        UUID userId = mockedCase.getParties().iterator().next().getIdamId();
 
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(mockedCase);
 
         // When
@@ -213,12 +224,12 @@ class SubmitEventHandlerTest {
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
         // Mock dependencies for final submit
-        uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity mockedCase = createMockedCaseEntity();
-        java.util.UUID userId = mockedCase.getParties().iterator().next().getIdamId();
+        PcsCaseEntity mockedCase = createMockedCaseEntity();
+        UUID userId = mockedCase.getParties().iterator().next().getIdamId();
 
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
         when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(mockedCase);
 
         // When
@@ -251,7 +262,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNotNull();
         assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0)).isEqualTo("Invalid submission: missing response data");
+        assertThat(result.getErrors().getFirst()).isEqualTo("Invalid submission: missing response data");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
@@ -317,7 +328,7 @@ class SubmitEventHandlerTest {
             .as("Must return error when both fields are null")
             .isNotNull()
             .hasSize(1);
-        assertThat(result.getErrors().get(0))
+        assertThat(result.getErrors().getFirst())
             .as("Error message should indicate no data to save")
             .isEqualTo("Invalid submission: no data to save");
 
@@ -705,7 +716,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNotNull();
         assertThat(result.getErrors()).hasSize(1);
-        assertThat(result.getErrors().get(0))
+        assertThat(result.getErrors().getFirst())
             .isEqualTo("We couldn't save your response. Please try again or contact support.");
     }
 
@@ -1072,9 +1083,9 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(java.util.UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1118,9 +1129,9 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(java.util.UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1164,9 +1175,9 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(java.util.UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1211,9 +1222,9 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(java.util.UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1259,9 +1270,9 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(java.util.UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1306,11 +1317,11 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        java.util.UUID userId = java.util.UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1356,11 +1367,11 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        java.util.UUID userId = java.util.UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1409,11 +1420,11 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        java.util.UUID userId = java.util.UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
 
         when(securityContextService.getCurrentUserId()).thenReturn(userId);
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1451,9 +1462,9 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(java.util.UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1491,9 +1502,9 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(java.util.UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1537,9 +1548,9 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(java.util.UUID.randomUUID());
+        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
         when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(java.util.Optional.of(draftData));
+            .thenReturn(Optional.of(draftData));
 
         // When
         SubmitResponse<State> result = underTest.submit(payload);
@@ -1550,29 +1561,26 @@ class SubmitEventHandlerTest {
             .contains("Email address is required when email contact preference is selected");
     }
 
-    private uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity createMockedCaseEntity() {
-        java.util.UUID userId = java.util.UUID.randomUUID();
+    private PcsCaseEntity createMockedCaseEntity() {
+        UUID userId = UUID.randomUUID();
 
-        uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity partyEntity =
-            uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity.builder()
-            .id(java.util.UUID.randomUUID())
+        PartyEntity partyEntity =
+            PartyEntity.builder()
+            .id(UUID.randomUUID())
             .idamId(userId)
-            .contactPreferences(new java.util.HashSet<>())
+            .contactPreferences(new HashSet<>())
             .build();
 
-        uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity claimEntity =
-            uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity.builder()
-            .id(java.util.UUID.randomUUID())
+        ClaimEntity claimEntity =
+            ClaimEntity.builder()
+            .id(UUID.randomUUID())
             .build();
 
-        uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity caseEntity =
-            uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity.builder()
-            .caseReference(CASE_REFERENCE)
-            .parties(new java.util.HashSet<>(java.util.Set.of(partyEntity)))
-            .claims(java.util.List.of(claimEntity))
-            .build();
-
-        return caseEntity;
+        return PcsCaseEntity.builder()
+        .caseReference(CASE_REFERENCE)
+        .parties(new HashSet<>(Set.of(partyEntity)))
+        .claims(List.of(claimEntity))
+        .build();
     }
 
     private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
@@ -1603,5 +1611,136 @@ class SubmitEventHandlerTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
+    }
+
+    // ========== ADDRESS UPDATE TESTS ==========
+
+    @Test
+    void shouldUpdateExistingAddressWithoutChangingId() {
+        // Given - Existing address with known ID
+        UUID existingAddressId = UUID.randomUUID();
+        UUID partyId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+
+        AddressEntity existingAddress = AddressEntity.builder()
+                .id(existingAddressId)
+                .addressLine1("Old Address Line 1")
+                .addressLine2("Old Address Line 2")
+                .postTown("Old Town")
+                .postcode("OLD 1AA")
+                .country("Old Country")
+                .build();
+
+        PartyEntity partyEntity = PartyEntity.builder()
+                .id(partyId)
+                .idamId(userId)
+                .address(existingAddress)
+                .build();
+
+        ClaimEntity claimEntity = ClaimEntity.builder()
+                .id(UUID.randomUUID())
+                .build();
+
+        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
+                .caseReference(CASE_REFERENCE)
+                .parties(new HashSet<>(Set.of(partyEntity)))
+                .claims(List.of(claimEntity))
+                .build();
+
+        // New address from draft
+        AddressUK newAddress = AddressUK.builder()
+            .addressLine1("New Address Line 1")
+            .addressLine2("New Address Line 2")
+            .addressLine3("New Address Line 3")
+            .postTown("New Town")
+            .county("New County")
+            .postCode("NEW 2BB")
+            .country("New Country")
+            .build();
+
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .emailAddress("john@example.com")
+            .address(newAddress)
+            .build();
+
+        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
+            .party(party)
+            .build();
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .contactByEmail(VerticalYesNo.YES)
+            .contactByPost(VerticalYesNo.NO)
+            .contactByText(VerticalYesNo.NO)
+            .contactByPhone(VerticalYesNo.NO)
+            .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(contactDetails)
+            .defendantResponses(responses)
+            .build();
+
+        PCSCase draftData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.YES)
+            .build();
+
+        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+
+        when(securityContextService.getCurrentUserId()).thenReturn(userId);
+        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
+            .thenReturn(Optional.of(draftData));
+        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(payload);
+
+        // Then
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        // Verify the address was updated in place - same ID, new values
+        assertThat(existingAddress.getId())
+            .as("Address ID should remain unchanged")
+            .isEqualTo(existingAddressId);
+
+        assertThat(existingAddress.getAddressLine1())
+            .as("AddressLine1 should be updated")
+            .isEqualTo("New Address Line 1");
+
+        assertThat(existingAddress.getAddressLine2())
+            .as("AddressLine2 should be updated")
+            .isEqualTo("New Address Line 2");
+
+        assertThat(existingAddress.getAddressLine3())
+            .as("AddressLine3 should be updated")
+            .isEqualTo("New Address Line 3");
+
+        assertThat(existingAddress.getPostTown())
+            .as("PostTown should be updated")
+            .isEqualTo("New Town");
+
+        assertThat(existingAddress.getCounty())
+            .as("County should be updated")
+            .isEqualTo("New County");
+
+        assertThat(existingAddress.getPostcode())
+            .as("Postcode should be updated")
+            .isEqualTo("NEW 2BB");
+
+        assertThat(existingAddress.getCountry())
+            .as("Country should be updated")
+            .isEqualTo("New Country");
+
+        // Verify the party still references the same address object
+        assertThat(partyEntity.getAddress())
+            .as("Party should still reference the same address entity")
+            .isSameAs(existingAddress);
+
+        verify(pcsCaseService).saveCase(caseEntity);
     }
 }
