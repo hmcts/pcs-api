@@ -6,9 +6,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredNoArrearsPossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
@@ -18,11 +18,11 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredDiscretionaryGround.RENT_ARREARS_GROUND10;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround.PERSISTENT_DELAY_GROUND11;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround.RENT_ARREARS_GROUND10;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround.SERIOUS_RENT_ARREARS_GROUND8;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.ASSURED_TENANCY;
 
 class AssuredTenancyRentSectionRoutingPolicyTest {

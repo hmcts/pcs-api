@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.grounds;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
