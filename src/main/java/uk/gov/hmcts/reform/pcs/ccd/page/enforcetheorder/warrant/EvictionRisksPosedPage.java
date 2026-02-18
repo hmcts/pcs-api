@@ -25,7 +25,7 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
             .label("evictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
-            .mandatory(WarrantDetails::getEnforcementRiskCategories)
+            .mandatory(WarrantDetails::getRiskCategories)
             .done()
             .label("evictionRisksPosed-save-and-return", SAVE_AND_RETURN);
     }

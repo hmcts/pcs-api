@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.AllArgsConstructor;
@@ -28,7 +29,8 @@ public class EnforcementRiskDetails {
             + "reported an incident. You can enter up to 6,800 characters",
         typeOverride = TextArea
     )
-    private String enforcementViolentDetails;
+    @JsonProperty("EnforcementViolentDetails")
+    private String violentDetails;
 
     @CCD(
         label = "What is their history of firearm possession?",
@@ -36,7 +38,8 @@ public class EnforcementRiskDetails {
             + "reported an incident. You can enter up to 6,800 characters",
         typeOverride = TextArea
     )
-    private String enforcementFirearmsDetails;
+    @JsonProperty("EnforcementFirearmsDetails")
+    private String firearmsDetails;
 
     @CCD(
         label = "What is their history of criminal or antisocial behaviour?",
@@ -44,7 +47,8 @@ public class EnforcementRiskDetails {
             + "reported an incident. You can enter up to 6,800 characters",
         typeOverride = TextArea
     )
-    private String enforcementCriminalDetails;
+    @JsonProperty("EnforcementCriminalDetails")
+    private String criminalDetails;
 
     @CCD(
         label = "What kind of verbal or written threats have they made?",
@@ -54,7 +58,8 @@ public class EnforcementRiskDetails {
             + "You can enter up to 6,800 characters",
         typeOverride = TextArea
     )
-    private String enforcementVerbalOrWrittenThreatsDetails;
+    @JsonProperty("EnforcementVerbalOrWrittenThreatsDetails")
+    private String verbalThreatsDetails;
 
     @CCD(
         label = "Which group are they a member of and how have they protested?",
@@ -62,7 +67,8 @@ public class EnforcementRiskDetails {
             + "You can enter up to 6,800 characters",
         typeOverride = TextArea
     )
-    private String enforcementProtestGroupMemberDetails;
+    @JsonProperty("EnforcementProtestGroupMemberDetails")
+    private String protestGroupDetails;
 
     @CCD(
         label = "Why did the police or social services visit the property?",
@@ -70,7 +76,8 @@ public class EnforcementRiskDetails {
             + "You can enter up to 6,800 characters",
         typeOverride = TextArea
     )
-    private String enforcementPoliceOrSocialServicesDetails;
+    @JsonProperty("EnforcementPoliceOrSocialServicesDetails")
+    private String policeSocialServicesDetails;
 
     @CCD(
         label = "What kind of animal do they have?",
@@ -78,7 +85,8 @@ public class EnforcementRiskDetails {
             + "You can enter up to 6,800 characters",
         typeOverride = TextArea
     )
-    private String enforcementDogsOrOtherAnimalsDetails;
+    @JsonProperty("EnforcementDogsOrOtherAnimalsDetails")
+    private String animalsDetails;
 }
 
 
