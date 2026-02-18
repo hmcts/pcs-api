@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ContactPreferencesRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -23,20 +22,16 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class DefendantContactPreferencesServiceTest {
 
     @Mock
     private PartyRepository partyRepository;
-
-    @Mock
-    private ContactPreferencesRepository contactPreferencesRepository;
 
     @Mock
     private SecurityContextService securityContextService;
@@ -49,9 +44,6 @@ class DefendantContactPreferencesServiceTest {
 
     @Captor
     private ArgumentCaptor<PartyEntity> partyCaptor;
-
-    @Captor
-    private ArgumentCaptor<ContactPreferencesEntity> contactPrefsCaptor;
 
     private static final UUID TEST_IDAM_ID = UUID.randomUUID();
     private static final UUID TEST_PARTY_ID = UUID.randomUUID();
@@ -86,15 +78,13 @@ class DefendantContactPreferencesServiceTest {
         service.saveDraftData(response);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
+        verify(partyRepository, times(2)).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
         assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
         assertThat(savedParty.getEmailAddress()).isEqualTo("defendant@example.com");
         assertThat(savedParty.getAddress()).isEqualTo(addressEntity);
 
-        verify(contactPreferencesRepository).save(contactPrefsCaptor.capture());
-        ContactPreferencesEntity savedPrefs = contactPrefsCaptor.getValue();
-        assertThat(savedPrefs.getParty()).isEqualTo(testParty);
+        ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
         assertThat(savedPrefs.getContactByEmail()).isTrue();
         assertThat(savedPrefs.getContactByPhone()).isFalse();
         assertThat(savedPrefs.getContactByText()).isTrue();
@@ -116,7 +106,7 @@ class DefendantContactPreferencesServiceTest {
         service.saveDraftData(response);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
+        verify(partyRepository, times(2)).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
         assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
         assertThat(savedParty.getEmailAddress()).isNull();
@@ -137,7 +127,7 @@ class DefendantContactPreferencesServiceTest {
         service.saveDraftData(response);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
+        verify(partyRepository, times(2)).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
         assertThat(savedParty.getEmailAddress()).isEqualTo("defendant@example.com");
         assertThat(savedParty.getPhoneNumber()).isNull();
@@ -160,8 +150,8 @@ class DefendantContactPreferencesServiceTest {
         service.saveDraftData(response);
 
         // Then
-        verify(contactPreferencesRepository).save(contactPrefsCaptor.capture());
-        ContactPreferencesEntity savedPrefs = contactPrefsCaptor.getValue();
+        verify(partyRepository).save(partyCaptor.capture());
+        ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
         assertThat(savedPrefs.getContactByEmail()).isFalse();
         assertThat(savedPrefs.getContactByPhone()).isFalse();
         assertThat(savedPrefs.getContactByText()).isTrue();
@@ -185,8 +175,10 @@ class DefendantContactPreferencesServiceTest {
         service.saveDraftData(response);
 
         // Then
-        verify(partyRepository, never()).save(any());
-        verify(contactPreferencesRepository).save(any(ContactPreferencesEntity.class));
+        verify(partyRepository).save(partyCaptor.capture());
+        PartyEntity savedParty = partyCaptor.getValue();
+        assertThat(savedParty.getContactPreferences()).isNotNull();
+        assertThat(savedParty.getContactPreferences().getContactByEmail()).isTrue();
     }
 
     @Test
@@ -205,7 +197,6 @@ class DefendantContactPreferencesServiceTest {
 
         // Then
         verifyNoInteractions(partyRepository);
-        verifyNoInteractions(contactPreferencesRepository);
     }
 
     @Test
@@ -225,7 +216,6 @@ class DefendantContactPreferencesServiceTest {
 
         // Then
         verify(partyRepository).findByIdamId(TEST_IDAM_ID);
-        verifyNoInteractions(contactPreferencesRepository);
     }
 
     @Test
@@ -245,8 +235,8 @@ class DefendantContactPreferencesServiceTest {
         service.saveDraftData(response);
 
         // Then
-        verify(contactPreferencesRepository).save(contactPrefsCaptor.capture());
-        ContactPreferencesEntity savedPrefs = contactPrefsCaptor.getValue();
+        verify(partyRepository).save(partyCaptor.capture());
+        ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
         assertThat(savedPrefs.getContactByEmail()).isFalse();
         assertThat(savedPrefs.getContactByPhone()).isFalse();
         assertThat(savedPrefs.getContactByText()).isFalse();
@@ -266,7 +256,6 @@ class DefendantContactPreferencesServiceTest {
             .address("123 Test Street, London, SW1A 1AA")
             .build();
 
-        // Create a properly populated AddressEntity
         AddressEntity addressEntity = AddressEntity.builder()
             .addressLine1("123 Test Street")
             .postTown("London")
@@ -281,7 +270,7 @@ class DefendantContactPreferencesServiceTest {
         service.saveDraftData(response);
 
         // Then
-        verify(partyRepository).save(partyCaptor.capture());
+        verify(partyRepository, times(2)).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
 
         assertThat(savedParty.getAddress()).isNotNull();
@@ -293,12 +282,10 @@ class DefendantContactPreferencesServiceTest {
         assertThat(savedParty.getPhoneNumber()).isEqualTo("07123456789");
         assertThat(savedParty.getEmailAddress()).isEqualTo("test@example.com");
 
-        verify(contactPreferencesRepository).save(contactPrefsCaptor.capture());
-        ContactPreferencesEntity savedPrefs = contactPrefsCaptor.getValue();
+        ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
         assertThat(savedPrefs.getContactByEmail()).isTrue();
         assertThat(savedPrefs.getContactByPhone()).isTrue();
         assertThat(savedPrefs.getContactByText()).isTrue();
         assertThat(savedPrefs.getContactByPost()).isTrue();
-
     }
 }

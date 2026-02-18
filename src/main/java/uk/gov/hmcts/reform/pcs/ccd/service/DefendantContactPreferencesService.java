@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.ContactPreferencesRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
@@ -32,7 +31,6 @@ import java.util.UUID;
 public class DefendantContactPreferencesService {
 
     private final PartyRepository partyRepository;
-    private final ContactPreferencesRepository contactPreferencesRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
     private final AddressMapper addressMapper;
@@ -55,7 +53,7 @@ public class DefendantContactPreferencesService {
 
         //save to relevant tables
         updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
-        createAndSaveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
+        saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
 
         log.info("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
@@ -116,16 +114,19 @@ public class DefendantContactPreferencesService {
      * Creates and saves contact preferences entity with null-safe conversion.
      * Defaults null preferences to false (no contact).
      */
-    private void createAndSaveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
-        ContactPreferencesEntity contactPrefs = ContactPreferencesEntity.builder()
-            .party(party)
-            .contactByEmail(toBooleanOrFalse(defendantResponse.getContactByEmail()))
-            .contactByText(toBooleanOrFalse(defendantResponse.getContactByText()))
-            .contactByPost(toBooleanOrFalse(defendantResponse.getContactByPost()))
-            .contactByPhone(toBooleanOrFalse(defendantResponse.getContactByPhone()))
-            .build();
+    private void saveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
+        ContactPreferencesEntity contactPrefs = party.getContactPreferences();
+        if (contactPrefs == null) {
+            contactPrefs = new ContactPreferencesEntity();
+            party.setContactPreferences(contactPrefs);
+        }
 
-        contactPreferencesRepository.save(contactPrefs);
+        contactPrefs.setContactByEmail(toBooleanOrFalse(defendantResponse.getContactByEmail()));
+        contactPrefs.setContactByText(toBooleanOrFalse(defendantResponse.getContactByText()));
+        contactPrefs.setContactByPost(toBooleanOrFalse(defendantResponse.getContactByPost()));
+        contactPrefs.setContactByPhone(toBooleanOrFalse(defendantResponse.getContactByPhone()));
+
+        partyRepository.save(party);
         log.debug("Saved contact preferences for party ID: {}", party.getId());
     }
 
