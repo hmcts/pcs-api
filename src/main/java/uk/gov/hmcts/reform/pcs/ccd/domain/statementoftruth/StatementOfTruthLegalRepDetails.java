@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain;
+package uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth;
 
 import lombok.Builder;
 import lombok.Data;
@@ -12,17 +12,20 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 @Data
 @Builder
 @ComplexType(generate = true)
-public class StatementOfTruthClaimantDetails {
+public class StatementOfTruthLegalRepDetails {
 
     @CCD(
         typeOverride = MultiSelectList,
-        typeParameterOverride = "StatementOfTruthAgreementClaimant"
+        typeParameterOverride = "StatementOfTruthAgreementLegalRep"
     )
-    private List<StatementOfTruthAgreementClaimant> agreementClaimant;
+    private List<StatementOfTruthAgreementLegalRep> agreementLegalRep;
 
     @CCD(label = "Full name", max = 60)
-    private String fullNameClaimant;
+    private String fullNameLegalRep;
+
+    @CCD(label = "Name of firm", max = 60)
+    private String firmNameLegalRep;
 
     @CCD(label = "Position or office held", max = 60)
-    private String positionClaimant;
+    private String positionLegalRep;
 }
