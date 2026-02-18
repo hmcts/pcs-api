@@ -6,10 +6,13 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -18,8 +21,14 @@ import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
 import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matchers;
+import org.skyscreamer.jsonassert.Customization;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
+import uk.gov.hmcts.reform.pcs.functional.testutils.JsonAssertUtils;
+import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
@@ -35,6 +44,7 @@ public class ApiSteps {
     private RequestSpecification request;
     private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
+    private static final String IGNORE = "${IGNORE}";
     public static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
     private static String unauthorisedS2sToken;
@@ -90,6 +100,12 @@ public class ApiSteps {
         request = request.header(TestConstants.SERVICE_AUTHORIZATION, expiredS2sToken);
     }
 
+    @Step("the request contains an Idempotency-Key header")
+    public void theRequestContainsIdempotencyKeyHeader() {
+        String idempotemcyKey = UUID.randomUUID().toString();
+        request = request.header("Idempotency-Key", idempotemcyKey);
+    }
+
     @Step("the request contains the path parameter {0} as {1}")
     public void theRequestContainsThePathParameter(String pathParam, String value) {
         request = request.pathParam(pathParam, value);
@@ -137,12 +153,11 @@ public class ApiSteps {
     }
 
     @Step("the response body matches the expected response")
-    public void theResponseBodyMatchesTheExpectedResponse(String expectedResponsePath) throws IOException {
-        String expectedResponse = new String(Files.readAllBytes(Paths.get(expectedResponsePath)));
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode expectedJson = mapper.readTree(expectedResponse);
-        JsonNode actualJson = mapper.readTree(SerenityRest.lastResponse().asString());
-        assertEquals(expectedJson, actualJson);
+    public void theResponseBodyMatchesTheExpectedResponse(String expectedPath) {
+        JsonAssertUtils.assertEqualsIgnoreFields(
+            expectedPath,
+            SerenityRest.lastResponse().getBody().asString()
+        );
     }
 
     @Step("the request contains a valid IDAM token")
@@ -169,7 +184,12 @@ public class ApiSteps {
 
     @Step("the request contains a request body")
     public void theRequestContainsBody(Object body) {
-        request = request.body(body);
+        if (body instanceof String path && path.endsWith(".json")) {
+            body = PayloadLoader.load(path);
+        }
+        request = request
+            .contentType(ContentType.JSON)
+            .body(body);
     }
 
     @Step("a case for {0} is created")

@@ -1,0 +1,107 @@
+{
+  "case_details": {
+    "id": "${IGNORE}",
+    "jurisdiction": "PCS",
+    "state": "PENDING_CASE_ISSUED",
+    "version": 2,
+    "case_type_id": "${IGNORE}",
+    "created_date": "${IGNORE}",
+    "last_modified": "${IGNORE}",
+    "last_state_modified_date": "${IGNORE}",
+    "security_classification": "PUBLIC",
+    "case_data": {
+      "parties": [
+        {
+          "value": {
+            "nameKnown": "NO",
+            "addressKnown": "NO"
+          }
+        },
+        {
+          "value": {
+            "emailAddress": "pcs-solicitor1@test.com",
+            "phoneNumberProvided": "NO"
+          }
+        }
+      ],
+      "allClaimants": [
+        {
+          "id": "${IGNORE}",
+          "value": {
+            "emailAddress": "pcs-solicitor1@test.com",
+            "phoneNumberProvided": "NO"
+          }
+        }
+      ],
+      "allDocuments": [],
+      "claimantType": {
+        "value": {
+          "code": "PROVIDER_OF_SOCIAL_HOUSING",
+          "label": "Registered provider of social housing"
+        },
+        "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
+      },
+      "languageUsed": "ENGLISH",
+      "noticeServed": "No",
+      "userPcqIdSet": "No",
+      "allDefendants": [
+        {
+          "id": "${IGNORE}",
+          "value": {
+            "nameKnown": "NO",
+            "addressKnown": "NO"
+          }
+        }
+      ],
+      "propertyAddress": {
+        "Country": "England",
+        "PostCode": "BH1 3BP",
+        "PostTown": "Bournemouth",
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "AddressLine3": "70 Knyveton Road"
+      },
+      "statementOfTruth": {
+        "completedBy": "CLAIMANT",
+        "fullNameClaimant": "rew",
+        "positionClaimant": "eww",
+        "agreementClaimant": [
+          "BELIEVE_TRUE"
+        ]
+      },
+      "caseTitleMarkdown": "<p class=\"govuk-!-font-size-24 govuk-!-margin-top-0 govuk-!-margin-bottom-1\">\n    Case number: ${[CASE_REFERENCE]}\n</p>\n<p class=\"govuk-!-font-size-24 govuk-!-margin-bottom-0\">\n    Property address: 1, Bournemouth, BH1 3BP\n</p>",
+      "nextStepsMarkdown": "<h2 class=\"govuk-heading-m\">Provide more details about your claim</h2>\nYour answers will be saved from this point so you can return to your draft\nlater.\n<br>\n<br>\n<a href=\"/cases/case-details/${[CASE_REFERENCE]}/trigger/resumePossessionClaim\"\n   role=\"button\"\n   class=\"govuk-button govuk-link govuk-link--no-visited-state\">\n  Continue\n</a>\n<p class=\"govuk-body govuk-!-font-size-19\">\n<span><a class=\"govuk-link--no-visited-state\" href=\"/cases\">Cancel</a></span>\n</p>\n",
+      "legislativeCountry": "England",
+      "mediationAttempted": "NO",
+      "addAnotherDefendant": "NO",
+      "claimingCostsWanted": "NO",
+      "settlementAttempted": "NO",
+      "applicationWithClaim": "NO",
+      "claimGroundSummaries": [
+        {
+          "id": "${IGNORE}",
+          "value": {
+            "code": "TENANCY_OBTAINED_BY_FALSE_STATEMENT",
+            "label": "Tenancy obtained by false statement (ground 5)",
+            "reason": "test",
+            "category": "SECURE_OR_FLEXIBLE_DISCRETIONARY",
+            "isRentArrears": "No"
+          }
+        }
+      ],
+      "wantToUploadDocuments": "NO",
+      "claimAgainstTrespassers": "NO",
+      "hasUnderlesseeOrMortgagee": "NO",
+      "preActionProtocolCompleted": "NO",
+      "claimantCircumstancesSelect": "NO",
+      "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
+      "hasDefendantCircumstancesInfo": "NO",
+      "additionalReasonsForPossession": {
+        "hasReasons": "NO"
+      }
+    },
+    "data_classification": {},
+    "supplementary_data": {}
+  },
+  "revision": 2
+}
