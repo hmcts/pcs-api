@@ -1,50 +1,47 @@
 package uk.gov.hmcts.reform.pcs.ccd.util;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 
-/**
- * Maps AddressEntity to AddressUK with all fields explicitly set.
- * This ensures consistent JSON structure for CCD event token validation.
- */
 @Component
+@AllArgsConstructor
+@Slf4j
 public class AddressMapper {
 
-    /**
-     * Maps AddressEntity to AddressUK with all fields explicitly set (even when null).
-     * This prevents CCD event token validation errors where fields in submit appear "new"
-     * if they were omitted from start response due to null values and NON_NULL serialization.
-     *
-     * @param addressEntity the address entity to map from (can be null)
-     * @return AddressUK with all fields present
-     */
+    private final ModelMapper modelMapper;
+
     public AddressUK toAddressUK(AddressEntity addressEntity) {
-        if (addressEntity == null) {
-            // Return AddressUK with all fields explicitly set to null
-            return AddressUK.builder()
-                .addressLine1(null)
-                .addressLine2(null)
-                .addressLine3(null)
-                .postTown(null)
-                .county(null)
-                .postCode(null)
-                .country(null)
-                .build();
+        return modelMapper.map(addressEntity, AddressUK.class);
+    }
+
+    public AddressEntity toAddressEntityAndNormalise(AddressUK addressUK) {
+        AddressEntity addressEntity = modelMapper.map(addressUK, AddressEntity.class);
+        addressEntity.setPostcode(normalisePostcode(addressEntity.getPostcode()));
+        return addressEntity;
+    }
+
+    private String normalisePostcode(String postcode) {
+        if (postcode == null) {
+            return null;
         }
 
-        return AddressUK.builder()
-            .addressLine1(nullIfEmpty(addressEntity.getAddressLine1()))
-            .addressLine2(nullIfEmpty(addressEntity.getAddressLine2()))
-            .addressLine3(nullIfEmpty(addressEntity.getAddressLine3()))
-            .postTown(nullIfEmpty(addressEntity.getPostTown()))
-            .county(nullIfEmpty(addressEntity.getCounty()))
-            .postCode(nullIfEmpty(addressEntity.getPostcode()))
-            .country(nullIfEmpty(addressEntity.getCountry()))
-            .build();
+        String postcodeNoSpaces = postcode.replaceAll("\\s", "");
+
+        int length = postcodeNoSpaces.length();
+        if (length < 5) {
+            log.warn("Unable to normalise postcode with fewer than 5 non whitespace characters");
+            return postcode;
+        }
+
+        String upperCasePostcode = postcodeNoSpaces.toUpperCase();
+        String outwardCode = upperCasePostcode.substring(0, length - 3);
+        String inwardCode = upperCasePostcode.substring(length - 3, length);
+
+        return outwardCode + " " + inwardCode;
     }
 
-    private String nullIfEmpty(String value) {
-        return (value == null || value.isEmpty()) ? null : value;
-    }
 }
