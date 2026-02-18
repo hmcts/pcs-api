@@ -541,7 +541,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       nextPage: youCannotApplyForWrit.mainHeader
     });
     await performAction('clickButton', youCannotApplyForWrit.continueButton);
-    await performValidation('errorMessage', { header: youCannotApplyForWrit.errors, message: youCannotApplyForWrit.errMessage });
+    await performValidation('errorMessage', { header: youCannotApplyForWrit.errorMessageHeader, message: youCannotApplyForWrit.errMessage });
   });
 
   test('Writ - Apply for a Writ of Possession [General application journey]', {
