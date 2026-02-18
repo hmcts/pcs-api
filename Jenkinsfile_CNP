@@ -56,11 +56,9 @@ withPipeline(type, product, component) {
     }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
-      enableE2eTest()
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
       env.E2E_SUITE = "regression"
-      enableE2eTest()
     }
   }
 
@@ -120,12 +118,9 @@ withPipeline(type, product, component) {
 
   afterAlways('e2eTest:aat') {
     archiveE2eTestReports()
-    postAllureResultsToSlack('master')
-  }
-
-  afterAlways('e2eTest:preview') {
-    archiveE2eTestReports()
-    postAllureResultsToSlack('preview')
+    if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
+      postAllureResultsToSlack('master')
+    }
   }
 }
 
@@ -185,7 +180,7 @@ def archiveE2eTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
-// E2E stage notification to #hdp-qa-e2e-test-results. pipelineType: 'master' (AAT) or 'preview' (PR).
+// E2E Slack notification (master only, only when E2E stage has failures).
 def postAllureResultsToSlack(String pipelineType = 'master') {
   env.E2E_SERVICE_NAME = 'pcs-api'
   env.E2E_PIPELINE_TYPE = pipelineType
