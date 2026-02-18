@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Maps view-populated PCSCase and matched defendant to PossessionClaimResponse.
@@ -83,11 +84,12 @@ public class PossessionClaimResponseMapper {
      * Otherwise convert defendant's address entity to AddressUK.
      */
     private AddressUK resolveAddress(PartyEntity defendantEntity, PCSCase pcsCase) {
-        if (defendantEntity.getAddressSameAsProperty() != null
-            && defendantEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
+        if (defendantEntity.getAddressSameAsProperty() == VerticalYesNo.YES) {
             return pcsCase.getPropertyAddress();  // Already AddressUK from view
         } else {
-            return addressMapper.toAddressUK(defendantEntity.getAddress());
+            return Optional.ofNullable(defendantEntity.getAddress())
+                .map(addressMapper::toAddressUK)
+                .orElse(AddressUK.builder().build());
         }
     }
 
