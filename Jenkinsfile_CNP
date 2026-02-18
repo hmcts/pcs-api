@@ -60,7 +60,7 @@ withPipeline(type, product, component) {
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
       env.E2E_SUITE = "regression"
     }
-    postAllureResultsToSlack('preview') //Sameena-delete this
+    postAllureResultsToSlack('preview')
   }
 
   onMaster() {
@@ -193,8 +193,8 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
   try {
-    slackSend(channel: '#qa-pipeline-status', message: msg) //Sameena modify this
-    echo "E2E Slack notification sent to #qa-pipeline-status" //Sameena modify this
+    slackSend(channel: '#qa-pipeline-status', message: msg)
+    echo "E2E Slack notification sent to #qa-pipeline-status"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
