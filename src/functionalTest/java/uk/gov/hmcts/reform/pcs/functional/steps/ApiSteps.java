@@ -1,18 +1,10 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.Callable;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -21,10 +13,6 @@ import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
 import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matchers;
-import org.skyscreamer.jsonassert.Customization;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.skyscreamer.jsonassert.comparator.CustomComparator;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.testutils.JsonAssertUtils;
@@ -34,7 +22,6 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerat
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;

@@ -7,7 +7,9 @@ public class RandomNumberUtil {
     private static final Random RANDOM = new Random();
 
     public static long generateRandomNumber(int length) {
-        if (length <= 0) return 0;
+        if (length <= 0) {
+            return 0;
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.append(RANDOM.nextInt(9) + 1);

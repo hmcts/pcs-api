@@ -11,8 +11,6 @@ import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 
-import java.io.IOException;
-
 //Although this is a testing support endpoint, we’re adding some functional tests to ensure the logic works as expected
 
 @Issue("HDPI-1285")

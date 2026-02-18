@@ -10,8 +10,6 @@ import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 
-import java.io.IOException;
-
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
 class DashboardTasksEndpointTests extends BaseApi {

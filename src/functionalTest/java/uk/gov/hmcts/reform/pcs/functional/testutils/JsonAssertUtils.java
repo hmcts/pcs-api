@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Objects;
@@ -46,12 +45,16 @@ public class JsonAssertUtils {
                 JsonNode actVal = actual.get(field);
 
                 if (expVal.isTextual() && IGNORE.equals(expVal.asText())) {
-                    if (actual instanceof ObjectNode obj) obj.put(field, IGNORE);
+                    if (actual instanceof ObjectNode obj) {
+                        obj.put(field, IGNORE);
+                    }
                     continue;
                 }
 
                 if (expVal.isTextual() && actVal != null && actVal.isNumber()) {
-                    if (expVal.asText().equals(actVal.asText())) continue;
+                    if (expVal.asText().equals(actVal.asText())) {
+                        continue;
+                    }
                 }
 
                 if (expVal.isContainerNode() && actVal != null) {
