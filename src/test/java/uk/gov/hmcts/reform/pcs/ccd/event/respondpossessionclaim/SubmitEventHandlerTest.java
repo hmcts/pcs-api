@@ -799,7 +799,7 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify contact preferences service was called
-        verify(defendantContactPreferencesService).saveContactPreferences(response);
+        verify(defendantContactPreferencesService).saveDraftData(response);
 
         // Verify draft service was NOT called
         verify(draftService, never()).save(eq(CASE_REFERENCE), any(PCSCase.class));
@@ -833,7 +833,7 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify contact preferences service was NOT called
-        verify(defendantContactPreferencesService, never()).saveContactPreferences(any());
+        verify(defendantContactPreferencesService, never()).saveDraftData(any());
 
         // Verify draft service WAS called
         verify(draftService).save(eq(CASE_REFERENCE), any(PCSCase.class));
@@ -875,7 +875,7 @@ class SubmitEventHandlerTest {
         // Verify the exact response object is passed to the service
         ArgumentCaptor<PossessionClaimResponse> responseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(defendantContactPreferencesService).saveContactPreferences(responseCaptor.capture());
+        verify(defendantContactPreferencesService).saveDraftData(responseCaptor.capture());
 
         PossessionClaimResponse capturedResponse = responseCaptor.getValue();
         assertThat(capturedResponse.getContactByPhone()).isEqualTo(YesOrNo.YES);
@@ -920,7 +920,7 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify service handles null values gracefully
-        verify(defendantContactPreferencesService).saveContactPreferences(response);
+        verify(defendantContactPreferencesService).saveDraftData(response);
     }
 
     @Test
@@ -945,7 +945,7 @@ class SubmitEventHandlerTest {
 
         // Mock service to throw exception
         doThrow(new IllegalStateException("No party found for IDAM ID"))
-            .when(defendantContactPreferencesService).saveContactPreferences(any());
+            .when(defendantContactPreferencesService).saveDraftData(any());
 
         // When / Then - Exception should propagate (not caught by handler)
         // This tests that the handler doesn't swallow exceptions
@@ -954,7 +954,7 @@ class SubmitEventHandlerTest {
             () -> underTest.submit(eventPayload)
         )).hasMessage("No party found for IDAM ID");
 
-        verify(defendantContactPreferencesService).saveContactPreferences(response);
+        verify(defendantContactPreferencesService).saveDraftData(response);
     }
 
     @Test
@@ -982,7 +982,7 @@ class SubmitEventHandlerTest {
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then - Verify service is called and success is returned
-        verify(defendantContactPreferencesService).saveContactPreferences(response);
+        verify(defendantContactPreferencesService).saveDraftData(response);
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
         assertThat(result.getState()).isNull(); // Default response has null state
@@ -1002,7 +1002,7 @@ class SubmitEventHandlerTest {
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then - Service should NOT be called due to validation failure
-        verify(defendantContactPreferencesService, never()).saveContactPreferences(any());
+        verify(defendantContactPreferencesService, never()).saveDraftData(any());
         assertThat(result.getErrors()).isNotEmpty();
     }
 

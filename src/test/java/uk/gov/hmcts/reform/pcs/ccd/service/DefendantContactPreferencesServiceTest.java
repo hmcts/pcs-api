@@ -65,7 +65,7 @@ class DefendantContactPreferencesServiceTest {
     }
 
     @Test
-    void shouldSaveContactPreferencesWithAllFieldsProvided() {
+    void shouldSaveDraftDataWithAllFieldsProvided() {
         // Given
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .contactByEmail(YesOrNo.YES)
@@ -83,7 +83,7 @@ class DefendantContactPreferencesServiceTest {
         when(modelMapper.map(response.getAddress(), AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        service.saveContactPreferences(response);
+        service.saveDraftData(response);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());
@@ -113,7 +113,7 @@ class DefendantContactPreferencesServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveContactPreferences(response);
+        service.saveDraftData(response);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());
@@ -134,7 +134,7 @@ class DefendantContactPreferencesServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveContactPreferences(response);
+        service.saveDraftData(response);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());
@@ -157,7 +157,7 @@ class DefendantContactPreferencesServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveContactPreferences(response);
+        service.saveDraftData(response);
 
         // Then
         verify(contactPreferencesRepository).save(contactPrefsCaptor.capture());
@@ -182,7 +182,7 @@ class DefendantContactPreferencesServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveContactPreferences(response);
+        service.saveDraftData(response);
 
         // Then
         verify(partyRepository, never()).save(any());
@@ -199,7 +199,7 @@ class DefendantContactPreferencesServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(null);
 
         // When
-        assertThatThrownBy(() -> service.saveContactPreferences(response))
+        assertThatThrownBy(() -> service.saveDraftData(response))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Current user IDAM ID is null");
 
@@ -219,7 +219,7 @@ class DefendantContactPreferencesServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.empty());
 
         // When
-        assertThatThrownBy(() -> service.saveContactPreferences(response))
+        assertThatThrownBy(() -> service.saveDraftData(response))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No party found for IDAM ID:");
 
@@ -242,7 +242,7 @@ class DefendantContactPreferencesServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveContactPreferences(response);
+        service.saveDraftData(response);
 
         // Then
         verify(contactPreferencesRepository).save(contactPrefsCaptor.capture());
@@ -278,7 +278,7 @@ class DefendantContactPreferencesServiceTest {
         when(modelMapper.map(response.getAddress(), AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        service.saveContactPreferences(response);
+        service.saveDraftData(response);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());

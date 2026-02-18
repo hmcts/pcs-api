@@ -5,13 +5,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.ContactPreferencesRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -31,15 +35,15 @@ public class DefendantContactPreferencesService {
     private final ContactPreferencesRepository contactPreferencesRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
+    private final AddressMapper addressMapper;
 
     /**
      * Saves defendant's contact preferences and contact details.
-     * Finds the defendant party by the current user's IDAM ID and updates their information.
+     * Finds the defendant party by the current user's IDAM ID and case reference updates their information.
      *
-     * @param defendantResponse The defendant's response containing contact preferences and details
      * @throws IllegalStateException if no party found for the current user's IDAM ID
      */
-    public void saveContactPreferences(PossessionClaimResponse defendantResponse) {
+    public void saveDraftData(PossessionClaimResponse dataFromDraftTable) {
         UUID currentUserIdamId = securityContextService.getCurrentUserId();
 
         if (currentUserIdamId == null) {
@@ -49,8 +53,9 @@ public class DefendantContactPreferencesService {
 
         PartyEntity defendant = findDefendantByIdamId(currentUserIdamId);
 
-        updatePartyContactDetails(defendant, defendantResponse);
-        createAndSaveContactPreferences(defendant, defendantResponse);
+        //save to relevant tables
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
+        createAndSaveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
 
         log.info("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
@@ -69,24 +74,37 @@ public class DefendantContactPreferencesService {
      * Updates party's contact details (phone number and email address).
      * Only updates if the values are provided (non-blank).
      */
-    private void updatePartyContactDetails(PartyEntity party, PossessionClaimResponse defendantResponse) {
+    private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantResponse) {
         boolean updated = false;
 
-        if (StringUtils.isNotBlank(defendantResponse.getPhoneNumber())) {
-            party.setPhoneNumber(defendantResponse.getPhoneNumber());
+        if (StringUtils.isNotBlank(defendantResponse.getParty().getPhoneNumber())) {
+            party.setPhoneNumber(defendantResponse.getParty().getPhoneNumber());
             updated = true;
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
 
-        if (StringUtils.isNotBlank(defendantResponse.getEmail())) {
-            party.setEmailAddress(defendantResponse.getEmail());
+        if (StringUtils.isNotBlank(defendantResponse.getParty().getEmailAddress())) {
+            party.setEmailAddress(defendantResponse.getParty().getEmailAddress());
             updated = true;
             log.debug("Updated email address for party ID: {}", party.getId());
         }
 
-        if (StringUtils.isNotBlank(defendantResponse.getAddress())) {
-            AddressEntity address = modelMapper.map(defendantResponse.getAddress(), AddressEntity.class);
-            party.setAddress(address);
+        AddressUK newAddress = defendantResponse.getParty().getAddress();
+
+        if (StringUtils.isNotBlank(newAddress.getAddressLine1())) {
+            AddressEntity existingAddress = party.getAddress();
+
+            if (existingAddress != null) {
+                existingAddress.setAddressLine1(defendantResponse.getParty().getAddress().getAddressLine1());
+                existingAddress.setAddressLine2(newAddress.getAddressLine2());
+                existingAddress.setAddressLine3(newAddress.getAddressLine3());
+                existingAddress.setPostTown(newAddress.getPostTown());
+                existingAddress.setCounty(newAddress.getCounty());
+                existingAddress.setPostcode(newAddress.getPostCode());
+                existingAddress.setCountry(newAddress.getCountry());
+            } else {
+                party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
+            }
         }
 
         if (updated) {
@@ -98,7 +116,7 @@ public class DefendantContactPreferencesService {
      * Creates and saves contact preferences entity with null-safe conversion.
      * Defaults null preferences to false (no contact).
      */
-    private void createAndSaveContactPreferences(PartyEntity party, PossessionClaimResponse defendantResponse) {
+    private void createAndSaveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
         ContactPreferencesEntity contactPrefs = ContactPreferencesEntity.builder()
             .party(party)
             .contactByEmail(toBooleanOrFalse(defendantResponse.getContactByEmail()))
@@ -118,7 +136,7 @@ public class DefendantContactPreferencesService {
      * @param yesOrNo the YesOrNo value to convert
      * @return true if YES, false if NO or null
      */
-    private Boolean toBooleanOrFalse(YesOrNo yesOrNo) {
+    private Boolean toBooleanOrFalse(VerticalYesNo yesOrNo) {
         return Optional.ofNullable(YesOrNoConverter.toBoolean(yesOrNo))
             .orElse(false);
     }
