@@ -74,6 +74,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository defendantResponseRepository;
 
+    @Mock
+    private uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository partyRepository;
+
     @BeforeEach
     void setUp() {
         // Create handlers with real dependencies
@@ -91,7 +94,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
             pcsCaseService,
             securityContextService,
             addressMapper,
-            defendantResponseRepository
+            defendantResponseRepository,
+            partyRepository
         );
 
         setEventUnderTest(new RespondPossessionClaim(

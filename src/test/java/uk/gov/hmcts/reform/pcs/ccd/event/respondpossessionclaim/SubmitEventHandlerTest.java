@@ -24,6 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
@@ -65,6 +66,8 @@ class SubmitEventHandlerTest {
     private AddressMapper addressMapper;
     @Mock
     private DefendantResponseRepository defendantResponseRepository;
+    @Mock
+    private PartyRepository partyRepository;
 
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
@@ -79,7 +82,8 @@ class SubmitEventHandlerTest {
             pcsCaseService,
             securityContextService,
             addressMapper,
-            defendantResponseRepository
+            defendantResponseRepository,
+            partyRepository
         );
     }
 
@@ -239,8 +243,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(pcsCaseService, times(1)).saveCase(any(PcsCaseEntity.class)
-        );
+        verify(partyRepository, times(1)).save(any(PartyEntity.class));
     }
 
     // ========== VALIDATION ERROR CASES ==========
@@ -1741,6 +1744,6 @@ class SubmitEventHandlerTest {
             .as("Party should still reference the same address entity")
             .isSameAs(existingAddress);
 
-        verify(pcsCaseService).saveCase(caseEntity);
+        verify(partyRepository).save(partyEntity);
     }
 }
