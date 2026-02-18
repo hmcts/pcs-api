@@ -16,7 +16,6 @@ import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.testutils.JsonAssertUtils;
-import uk.gov.hmcts.reform.pcs.functional.testutils.PayloadLoader;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
@@ -170,9 +169,6 @@ public class ApiSteps {
 
     @Step("the request contains a request body")
     public void theRequestContainsBody(Object body) {
-        if (body instanceof String path && path.endsWith(".json")) {
-            body = PayloadLoader.load(path);
-        }
         request = request.body(body);
     }
 

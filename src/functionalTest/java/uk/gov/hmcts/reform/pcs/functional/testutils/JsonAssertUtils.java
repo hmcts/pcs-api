@@ -12,25 +12,28 @@ import java.util.Objects;
 public class JsonAssertUtils {
 
     private static final String IGNORE_VALUE = "[[IGNORE_VALUE]]";
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static void assertEqualsIgnoreFields(String expectedPath, String actualJson) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
+            JsonNode expected;
+            JsonNode actual;
 
-            InputStream is = Objects.requireNonNull(
+            try (InputStream is = Objects.requireNonNull(
                 JsonAssertUtils.class.getResourceAsStream(expectedPath)
-            );
-            JsonNode expected = mapper.readTree(is);
-            JsonNode actual = mapper.readTree(actualJson);
+            )) {
+                expected = MAPPER.readTree(is);
+            }
+
+            actual = MAPPER.readTree(actualJson);
 
             compareNodes(expected, actual);
 
             JSONAssert.assertEquals(
-                mapper.writeValueAsString(expected),
-                mapper.writeValueAsString(actual),
+                MAPPER.writeValueAsString(expected),
+                MAPPER.writeValueAsString(actual),
                 JSONCompareMode.LENIENT
             );
-
         } catch (Exception e) {
             throw new RuntimeException("JSON comparison failed for " + expectedPath, e);
         }
@@ -58,6 +61,11 @@ public class JsonAssertUtils {
         }
 
         if (expected.isArray() && actual.isArray()) {
+            if (expected.size() != actual.size()) {
+                throw new AssertionError(
+                    "Array sizes differ. Expected: " + expected.size() + " but was: " + actual.size()
+                );
+            }
             for (int i = 0; i < expected.size(); i++) {
                 compareNodes(expected.get(i), actual.get(i));
             }
