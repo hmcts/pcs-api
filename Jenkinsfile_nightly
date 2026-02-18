@@ -85,7 +85,7 @@ def handleEnvironmentSetting() {
     : "chrome"
 }
 
-// E2E stage notification to #hdp-qa-e2e-test-results
+// E2E stage notification to #qa-pipeline-status
 def postAllureResultsToSlack() {
   env.E2E_SERVICE_NAME = 'pcs-api'
   env.E2E_PIPELINE_TYPE = 'nightly'
@@ -97,8 +97,8 @@ def postAllureResultsToSlack() {
     msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* nightly\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
   try {
-    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
-    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results"
+    slackSend(channel: '#qa-pipeline-status', message: msg)
+    echo "E2E Slack notification sent to #qa-pipeline-status"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
