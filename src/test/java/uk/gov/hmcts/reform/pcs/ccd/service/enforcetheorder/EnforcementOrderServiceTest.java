@@ -7,23 +7,21 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
@@ -31,12 +29,10 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.Enforcemen
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,9 +41,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -88,45 +83,11 @@ class EnforcementOrderServiceTest {
     @Mock
     private SelectedDefendantsMapper selectedDefendantsMapper;
 
-    private final UUID enforcementOrderId = UUID.fromString("f47ac10b-58cc-4372-a567-0e02b2c3d479");
-
     private final UUID claimId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
 
     private final UUID pcsCaseId = UUID.fromString("7b9e0f1a-2b3c-4d5e-6f7a-8b9c0d1e2f3a");
 
     private static final long CASE_REFERENCE = 1234L;
-
-    @Test
-    void shouldThrowExceptionWhenNoEnforcementOrder() {
-        // Given
-        when(enforcementOrderRepository.findById(enforcementOrderId)).thenReturn(Optional.empty());
-
-        // When &
-        // Then
-        assertThatThrownBy(() -> enforcementOrderService.loadEnforcementOrder(enforcementOrderId))
-                .isInstanceOf(EnforcementOrderNotFoundException.class)
-                .hasMessageContaining("No enforcement order found for case reference");
-    }
-
-    @Test
-    void shouldReturnEnforcementOrderWhenFound() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        final ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-        final EnforcementOrderEntity enforcementOrderEntity =
-                EnforcementDataUtil.buildEnforcementOrderEntity(enforcementOrderId, claimEntity, enforcementOrder);
-        when(enforcementOrderRepository.findById(enforcementOrderId)).thenReturn(Optional.of(enforcementOrderEntity));
-
-        // When
-        EnforcementOrderEntity retrievedEnforcementOrderEntity =
-                enforcementOrderService.loadEnforcementOrder(enforcementOrderId);
-
-        // Then
-        assertThat(retrievedEnforcementOrderEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        assertThat(retrievedEnforcementOrderEntity.getId()).isEqualTo(enforcementOrderId);
-        assertThat(retrievedEnforcementOrderEntity.getClaim().getId()).isEqualTo(claimId);
-    }
 
     @Test
     void shouldSaveNewSubmittedEnforcementData() {
@@ -255,12 +216,7 @@ class EnforcementOrderServiceTest {
                 .build();
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
-        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenReturn(mock(EnforcementOrderEntity.class));
-        when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
-            .thenReturn(mock(EnforcementWarrantEntity.class));
-        when(enforcementWarrantRepository.save(any()))
-            .thenReturn(mock(EnforcementWarrantEntity.class));
+        mockStoreWarrant();
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -368,6 +324,7 @@ class EnforcementOrderServiceTest {
 
         when(selectedDefendantsMapper.mapToEntities(any(EnforcementOrderEntity.class)))
             .thenReturn(List.of(entity));
+        mockStoreWarrant();
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -430,6 +387,7 @@ class EnforcementOrderServiceTest {
 
         when(selectedDefendantsMapper.mapToEntities(any(EnforcementOrderEntity.class)))
             .thenReturn(List.of(entityJess, entityJames));
+        mockStoreWarrant();
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -443,7 +401,6 @@ class EnforcementOrderServiceTest {
             .extracting(EnforcementSelectedDefendantEntity::getParty)
             .containsExactlyInAnyOrder(partyJessMay, partyJamesMay);
     }
-
 
     @Test
     void shouldNotAddAnySelectedDefendantsWhenEvictEveryoneIsYes() {
@@ -465,6 +422,12 @@ class EnforcementOrderServiceTest {
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
             .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenReturn(mock(EnforcementOrderEntity.class));
+        when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
+            .thenReturn(mock(EnforcementWarrantEntity.class));
+        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
+            .thenReturn(mock(EnforcementWarrantEntity.class));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -472,5 +435,14 @@ class EnforcementOrderServiceTest {
         // Then
         verifyNoInteractions(enforcementSelectedDefendantRepository);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
+    }
+
+    private void mockStoreWarrant() {
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenReturn(mock(EnforcementOrderEntity.class));
+        when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
+            .thenReturn(mock(EnforcementWarrantEntity.class));
+        when(enforcementWarrantRepository.save(any()))
+            .thenReturn(mock(EnforcementWarrantEntity.class));
     }
 }

@@ -45,10 +45,6 @@ public class EnforcementWarrantEntity {
     // UI Control Flags
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private VerticalYesNo showChangeNameAddressPage;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo showPeopleWhoWillBeEvictedPage;
 
     @Enumerated(EnumType.STRING)

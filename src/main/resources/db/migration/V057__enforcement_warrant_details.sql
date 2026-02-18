@@ -5,7 +5,6 @@ CREATE TABLE enf_warrant(
   enf_case_id                             UUID NOT NULL REFERENCES enf_case (id) ON DELETE CASCADE,
 
   -- UI Control Flags
-  show_change_name_address_page           YES_NO,
   show_people_who_will_be_evicted_page    YES_NO,
   show_people_you_want_to_evict_page      YES_NO,
 

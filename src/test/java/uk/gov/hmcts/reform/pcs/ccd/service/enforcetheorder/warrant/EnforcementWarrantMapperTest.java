@@ -96,9 +96,9 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getShowChangeNameAddressPage()).isNull();
-        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isNull();
-        assertThat(result.getShowPeopleYouWantToEvictPage()).isNull();
+        assertThat(result.getShowChangeNameAddressPage()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(VerticalYesNo.NO);
+        assertThat(result.getShowPeopleYouWantToEvictPage()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
@@ -238,7 +238,7 @@ class EnforcementWarrantMapperTest {
         EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
 
         // Then
-        assertThat(result.getAreLegalCostsToBeClaimed()).isNull();
+        assertThat(result.getAreLegalCostsToBeClaimed()).isEqualTo(VerticalYesNo.YES);
         assertThat(result.getAmountOfLegalCosts()).isNull();
     }
 

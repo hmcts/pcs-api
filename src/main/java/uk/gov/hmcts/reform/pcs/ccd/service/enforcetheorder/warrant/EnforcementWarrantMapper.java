@@ -47,8 +47,6 @@ public class EnforcementWarrantMapper {
     }
 
     private void controlFlags(EnforcementWarrantEntity warrantEntity, WarrantDetails warrantDetails) {
-        warrantEntity.setShowChangeNameAddressPage(
-            convertYesOrNoToVerticalYesNo(warrantDetails.getShowChangeNameAddressPage()));
         warrantEntity.setShowPeopleWhoWillBeEvictedPage(
             convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleWhoWillBeEvictedPage()));
         warrantEntity.setShowPeopleYouWantToEvictPage(
@@ -140,7 +138,7 @@ public class EnforcementWarrantMapper {
 
     private void legalCosts(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
         LegalCosts legalCosts = warrantDetails.getLegalCosts();
-        if (legalCosts != null && legalCosts.getAmountOfLegalCosts() != null) {
+        if (legalCosts != null) {
             warrantEntity.setAreLegalCostsToBeClaimed(legalCosts.getAreLegalCostsToBeClaimed());
             warrantEntity.setAmountOfLegalCosts(legalCosts.getAmountOfLegalCosts());
         }
@@ -191,9 +189,6 @@ public class EnforcementWarrantMapper {
     }
 
     private VerticalYesNo convertYesOrNoToVerticalYesNo(YesOrNo yesOrNo) {
-        if (yesOrNo == null) {
-            return null;
-        }
         return yesOrNo == YesOrNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
     }
 }
