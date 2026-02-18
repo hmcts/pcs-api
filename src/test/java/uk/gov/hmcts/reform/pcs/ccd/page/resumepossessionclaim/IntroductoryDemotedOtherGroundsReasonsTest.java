@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.domain.IntroductoryDemotedOtherGroundReason;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundReason;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
@@ -43,7 +43,7 @@ class IntroductoryDemotedOtherGroundsReasonsTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
+
         setPageUnderTest(new IntroductoryDemotedOtherGroundsReasons(textAreaValidationService));
     }
 
@@ -52,7 +52,7 @@ class IntroductoryDemotedOtherGroundsReasonsTest extends BasePageTest {
     class ValidationIntegrationTests {
 
         @Test
-        @DisplayName("Should validate all text area fields when introductory demoted other grounds " 
+        @DisplayName("Should validate all text area fields when introductory demoted other grounds "
             + "reasons are provided")
         void shouldValidateAllTextAreaFieldsWhenIntroductoryDemotedOtherGroundsReasonsAreProvided() {
             // Given
