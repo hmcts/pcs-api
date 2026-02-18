@@ -6,7 +6,6 @@ CREATE TABLE enf_writ(
   correct_name_and_address                   YES_NO,
 
   -- Direct fields
-  show_change_name_address_page              YES_NO,
   show_people_who_will_be_evicted_page       YES_NO,
   has_hired_high_court_enforcement_officer   YES_NO,
   hceo_details                               VARCHAR(120),

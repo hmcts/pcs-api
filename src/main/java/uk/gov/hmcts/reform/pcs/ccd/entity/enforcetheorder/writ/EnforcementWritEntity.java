@@ -44,10 +44,6 @@ public class EnforcementWritEntity {
     // Direct fields
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private YesOrNo showChangeNameAddressPage;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private YesOrNo showPeopleWhoWillBeEvictedPage;
 
     // LandRegistryFees

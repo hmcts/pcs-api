@@ -72,7 +72,6 @@ class WritDetailsMapperTest {
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.YES);
-        assertThat(entity.getShowChangeNameAddressPage()).isEqualTo(YesOrNo.NO);
         assertThat(entity.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(YesOrNo.YES);
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.YES);
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
@@ -155,7 +154,6 @@ class WritDetailsMapperTest {
         assertThat(entity.getAreLegalCostsToBeClaimed()).isNull();
         assertThat(entity.getAmountOfLegalCosts()).isNull();
         assertThat(entity.getAmountOwed()).isNull();
-        assertThat(entity.getShowChangeNameAddressPage()).isEqualTo(YesOrNo.NO);
         assertThat(entity.getHceoDetails()).isEqualTo("John Smith, Enforcement Ltd");
     }
 
@@ -185,7 +183,6 @@ class WritDetailsMapperTest {
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.NO);
-        assertThat(entity.getShowChangeNameAddressPage()).isEqualTo(YesOrNo.NO);
         assertThat(entity.getShowPeopleWhoWillBeEvictedPage()).isEqualTo(YesOrNo.NO);
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);
         assertThat(entity.getHasClaimTransferredToHighCourt()).isEqualTo(YesOrNo.NO);

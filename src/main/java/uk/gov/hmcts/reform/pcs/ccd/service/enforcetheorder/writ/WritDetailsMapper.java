@@ -20,7 +20,6 @@ public class WritDetailsMapper {
         mapNameAndAddressForEviction(writDetails.getNameAndAddressForEviction(), entity);
 
         // Map direct fields
-        entity.setShowChangeNameAddressPage(writDetails.getShowChangeNameAddressPage());
         entity.setShowPeopleWhoWillBeEvictedPage(writDetails.getShowPeopleWhoWillBeEvictedPage());
         entity.setHasHiredHighCourtEnforcementOfficer(writDetails.getHasHiredHighCourtEnforcementOfficer());
         entity.setHceoDetails(writDetails.getHceoDetails());
