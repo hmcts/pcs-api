@@ -26,7 +26,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final DraftCaseDataService draftCaseDataService;
     private final ImmutablePartyFieldValidator immutableFieldValidator;
-    private final DefendantContactPreferencesService PossesionResponseSaveDraftToMainDatabaseService;
+    private final DefendantContactPreferencesService possessionResponseSaveDraftToMainDatabaseService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -70,7 +70,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 
         //call services to save to relevant tables
-        PossesionResponseSaveDraftToMainDatabaseService
+        possessionResponseSaveDraftToMainDatabaseService
             .saveDraftData(responseDraftData);
 
         //delete draft as it's no longer needed

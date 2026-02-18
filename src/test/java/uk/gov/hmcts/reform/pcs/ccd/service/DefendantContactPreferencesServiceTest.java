@@ -9,8 +9,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PossessionClaimResponse;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
+import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
@@ -22,10 +26,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class DefendantContactPreferencesServiceTest {
@@ -47,6 +51,12 @@ class DefendantContactPreferencesServiceTest {
 
     private static final UUID TEST_IDAM_ID = UUID.randomUUID();
     private static final UUID TEST_PARTY_ID = UUID.randomUUID();
+    private static final AddressUK TEST_ADDRESS = AddressUK.builder()
+        .addressLine1("123 Test Street")
+        .postTown("London")
+        .postCode("SW1A 1AA")
+        .build();
+
     private PartyEntity testParty;
 
     @BeforeEach
@@ -59,20 +69,24 @@ class DefendantContactPreferencesServiceTest {
     @Test
     void shouldSaveDraftDataWithAllFieldsProvided() {
         // Given
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByEmail(YesOrNo.YES)
-            .contactByPhone(YesOrNo.NO)
-            .contactByText(YesOrNo.YES)
-            .contactByPost(YesOrNo.NO)
-            .phoneNumber("07123456789")
-            .email("defendant@example.com")
-            .address("123 Test Street")
-            .build();
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .emailAddress("defendant@example.com")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPhone(VerticalYesNo.NO)
+                .contactByText(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.NO)
+                .build()
+        );
 
         AddressEntity addressEntity = new AddressEntity();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
-        when(modelMapper.map(response.getAddress(), AddressEntity.class)).thenReturn(addressEntity);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
         service.saveDraftData(response);
@@ -94,10 +108,15 @@ class DefendantContactPreferencesServiceTest {
     @Test
     void shouldSaveOnlyPhoneNumber() {
         // Given
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByPhone(YesOrNo.YES)
-            .phoneNumber("07123456789")
-            .build();
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByPhone(VerticalYesNo.YES)
+                .build()
+        );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
@@ -115,10 +134,15 @@ class DefendantContactPreferencesServiceTest {
     @Test
     void shouldSaveOnlyEmail() {
         // Given
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByEmail(YesOrNo.YES)
-            .email("defendant@example.com")
-            .build();
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .emailAddress("defendant@example.com")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .build()
+        );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
@@ -136,12 +160,17 @@ class DefendantContactPreferencesServiceTest {
     @Test
     void shouldDefaultNullPreferencesToFalse() {
         // Given
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByEmail(null)
-            .contactByPhone(null)
-            .contactByText(YesOrNo.YES)
-            .contactByPost(null)
-            .build();
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(null)
+                .contactByPhone(null)
+                .contactByText(VerticalYesNo.YES)
+                .contactByPost(null)
+                .build()
+        );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
@@ -161,12 +190,16 @@ class DefendantContactPreferencesServiceTest {
     @Test
     void shouldNotUpdatePartyWhenContactDetailsAreBlank() {
         // Given
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByEmail(YesOrNo.YES)
-            .phoneNumber("")
-            .email("   ")
-            .address(null)
-            .build();
+        PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("")
+                .emailAddress("   ")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .build()
+        );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
@@ -184,9 +217,10 @@ class DefendantContactPreferencesServiceTest {
     @Test
     void shouldThrowExceptionWhenCurrentUserIdamIdIsNull() {
         // Given
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByEmail(YesOrNo.YES)
-            .build();
+        PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().build()
+        );
 
         when(securityContextService.getCurrentUserId()).thenReturn(null);
 
@@ -202,9 +236,10 @@ class DefendantContactPreferencesServiceTest {
     @Test
     void shouldThrowExceptionWhenPartyNotFound() {
         // Given
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByEmail(YesOrNo.YES)
-            .build();
+        PossessionClaimResponse response = buildResponse(
+            Party.builder().build(),
+            DefendantResponses.builder().build()
+        );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.empty());
@@ -221,12 +256,16 @@ class DefendantContactPreferencesServiceTest {
     @Test
     void shouldHandleAllPreferencesSetToNo() {
         // Given
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByEmail(YesOrNo.NO)
-            .contactByPhone(YesOrNo.NO)
-            .contactByText(YesOrNo.NO)
-            .contactByPost(YesOrNo.NO)
-            .build();
+        PossessionClaimResponse response = buildResponse(Party.builder()
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.NO)
+                .contactByPhone(VerticalYesNo.NO)
+                .contactByText(VerticalYesNo.NO)
+                .contactByPost(VerticalYesNo.NO)
+                .build()
+        );
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
@@ -245,16 +284,20 @@ class DefendantContactPreferencesServiceTest {
 
     @Test
     void shouldHandleAllPreferencesSetToYes() {
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .contactByEmail(YesOrNo.YES)
-            .contactByPhone(YesOrNo.YES)
-            .contactByText(YesOrNo.YES)
-            .contactByPost(YesOrNo.YES)
-            .phoneNumber("07123456789")
-            .email("test@example.com")
-            .address("123 Test Street, London, SW1A 1AA")
-            .build();
+        // Given
+        final PossessionClaimResponse response = buildResponse(
+            Party.builder()
+                .phoneNumber("07123456789")
+                .emailAddress("test@example.com")
+                .address(TEST_ADDRESS)
+                .build(),
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.YES)
+                .contactByPhone(VerticalYesNo.YES)
+                .contactByText(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.YES)
+                .build()
+        );
 
         AddressEntity addressEntity = AddressEntity.builder()
             .addressLine1("123 Test Street")
@@ -264,7 +307,7 @@ class DefendantContactPreferencesServiceTest {
 
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
-        when(modelMapper.map(response.getAddress(), AddressEntity.class)).thenReturn(addressEntity);
+        when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
         service.saveDraftData(response);
@@ -287,5 +330,12 @@ class DefendantContactPreferencesServiceTest {
         assertThat(savedPrefs.getContactByPhone()).isTrue();
         assertThat(savedPrefs.getContactByText()).isTrue();
         assertThat(savedPrefs.getContactByPost()).isTrue();
+    }
+
+    private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
+        return PossessionClaimResponse.builder()
+            .defendantContactDetails(DefendantContactDetails.builder().party(party).build())
+            .defendantResponses(defendantResponses)
+            .build();
     }
 }

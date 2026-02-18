@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantContactPreferencesService;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -28,7 +27,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -63,9 +61,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
     @Mock
     private SecurityContextService securityContextService;
-
-    @Mock
-    private AddressMapper addressMapper;
 
     @Mock
     private PossessionClaimResponseMapper responseMapper;
@@ -310,7 +305,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     }
 
     @Test
-    void shouldNotSaveDraftWhenSubmitDraftIsYes() {
+    void shouldSaveDraftWhenSubmitDraftIsYes() {
         PossessionClaimResponse possessionClaimResponse = PossessionClaimResponse.builder()
             .defendantContactDetails(DefendantContactDetails.builder()
                 .party(null)
@@ -325,7 +320,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         callSubmitHandler(caseData);
 
-        verify(draftCaseDataService, never()).patchUnsubmittedEventData(
+        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
@@ -654,7 +649,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0)).isEqualTo("Invalid submission: missing response data");
+        assertThat(response.getErrors().getFirst()).isEqualTo("Invalid submission: missing response data");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
@@ -682,7 +677,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         // Then: should return error
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0))
+        assertThat(response.getErrors().getFirst())
             .isEqualTo("Invalid submission: no data to save");
 
         // And: should NOT save draft
@@ -782,7 +777,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0))
+        assertThat(response.getErrors().getFirst())
             .isEqualTo("We couldn't save your response. Please try again or contact support.");
     }
 

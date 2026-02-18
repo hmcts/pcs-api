@@ -14,7 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -33,7 +32,6 @@ public class DefendantContactPreferencesService {
     private final PartyRepository partyRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
-    private final AddressMapper addressMapper;
 
     /**
      * Saves defendant's contact preferences and contact details.
