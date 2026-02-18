@@ -1,13 +1,13 @@
 {
   "case_details": {
-    "id": "${IGNORE}",
+    "id": "[[IGNORE_VALUE]]",
     "jurisdiction": "PCS",
     "state": "AWAITING_SUBMISSION_TO_HMCTS",
     "version": 1,
-    "case_type_id": "${IGNORE}",
-    "created_date": "${IGNORE}",
-    "last_modified": "${IGNORE}",
-    "last_state_modified_date": "${IGNORE}",
+    "case_type_id": "[[IGNORE_VALUE]]",
+    "created_date": "[[IGNORE_VALUE]]",
+    "last_modified": "[[IGNORE_VALUE]]",
+    "last_state_modified_date": "[[IGNORE_VALUE]]",
     "security_classification": "PUBLIC",
     "case_data": {
       "propertyAddress": {

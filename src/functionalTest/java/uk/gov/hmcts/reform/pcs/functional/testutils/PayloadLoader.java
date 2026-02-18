@@ -19,7 +19,7 @@ public class PayloadLoader {
             );
 
             for (Map.Entry<String, Object> entry : replacements.entrySet()) {
-                String value = entry.getValue() == null ? "" : entry.getValue().toString();
+                String value = Objects.toString(entry.getValue(), "");
                 content = content.replace("${" + entry.getKey() + "}", value);
             }
 

@@ -1,13 +1,13 @@
 {
   "case_details": {
-    "id": "${IGNORE}",
+    "id": "[[IGNORE_VALUE]]",
     "jurisdiction": "PCS",
     "state": "PENDING_CASE_ISSUED",
     "version": 2,
-    "case_type_id": "${IGNORE}",
-    "created_date": "${IGNORE}",
-    "last_modified": "${IGNORE}",
-    "last_state_modified_date": "${IGNORE}",
+    "case_type_id": "[[IGNORE_VALUE]]",
+    "created_date": "[[IGNORE_VALUE]]",
+    "last_modified": "[[IGNORE_VALUE]]",
+    "last_state_modified_date": "[[IGNORE_VALUE]]",
     "security_classification": "PUBLIC",
     "case_data": {
       "parties": [
@@ -26,7 +26,7 @@
       ],
       "allClaimants": [
         {
-          "id": "${IGNORE}",
+          "id": "[[IGNORE_VALUE]]",
           "value": {
             "emailAddress": "pcs-solicitor1@test.com",
             "phoneNumberProvided": "NO"
@@ -46,7 +46,7 @@
       "userPcqIdSet": "No",
       "allDefendants": [
         {
-          "id": "${IGNORE}",
+          "id": "[[IGNORE_VALUE]]",
           "value": {
             "nameKnown": "NO",
             "addressKnown": "NO"
@@ -79,7 +79,7 @@
       "applicationWithClaim": "NO",
       "claimGroundSummaries": [
         {
-          "id": "${IGNORE}",
+          "id": "[[IGNORE_VALUE]]",
           "value": {
             "code": "TENANCY_OBTAINED_BY_FALSE_STATEMENT",
             "label": "Tenancy obtained by false statement (ground 5)",

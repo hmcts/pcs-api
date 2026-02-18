@@ -31,7 +31,6 @@ public class ApiSteps {
     private RequestSpecification request;
     private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
-    private static final String IGNORE = "${IGNORE}";
     public static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
     private static String unauthorisedS2sToken;
@@ -89,8 +88,8 @@ public class ApiSteps {
 
     @Step("the request contains an Idempotency-Key header")
     public void theRequestContainsIdempotencyKeyHeader() {
-        String idempotemcyKey = UUID.randomUUID().toString();
-        request = request.header("Idempotency-Key", idempotemcyKey);
+        String idempotencyKey = UUID.randomUUID().toString();
+        request = request.header("Idempotency-Key", idempotencyKey);
     }
 
     @Step("the request contains the path parameter {0} as {1}")
@@ -174,9 +173,7 @@ public class ApiSteps {
         if (body instanceof String path && path.endsWith(".json")) {
             body = PayloadLoader.load(path);
         }
-        request = request
-            .contentType(ContentType.JSON)
-            .body(body);
+        request = request.body(body);
     }
 
     @Step("a case for {0} is created")

@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.RandomNumberUtil;
 
 import java.util.Map;
 
-@Tag("Functional")
+@Tag("Functional1")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {

@@ -11,7 +11,7 @@ import java.util.Objects;
 
 public class JsonAssertUtils {
 
-    private static final String IGNORE = "${IGNORE}";
+    private static final String IGNORE_VALUE = "[[IGNORE_VALUE]]";
 
     public static void assertEqualsIgnoreFields(String expectedPath, String actualJson) {
         try {
@@ -41,24 +41,18 @@ public class JsonAssertUtils {
             Iterator<String> fields = expected.fieldNames();
             while (fields.hasNext()) {
                 String field = fields.next();
-                JsonNode expVal = expected.get(field);
-                JsonNode actVal = actual.get(field);
+                JsonNode expValue = expected.get(field);
+                JsonNode actValue = actual.get(field);
 
-                if (expVal.isTextual() && IGNORE.equals(expVal.asText())) {
+                if (expValue.isTextual() && IGNORE_VALUE.equals(expValue.asText())) {
                     if (actual instanceof ObjectNode obj) {
-                        obj.put(field, IGNORE);
+                        obj.put(field, IGNORE_VALUE);
                     }
                     continue;
                 }
 
-                if (expVal.isTextual() && actVal != null && actVal.isNumber()) {
-                    if (expVal.asText().equals(actVal.asText())) {
-                        continue;
-                    }
-                }
-
-                if (expVal.isContainerNode() && actVal != null) {
-                    compareNodes(expVal, actVal);
+                if (expValue.isContainerNode() && actValue != null) {
+                    compareNodes(expValue, actValue);
                 }
             }
         }
