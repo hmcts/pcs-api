@@ -519,7 +519,8 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
-//  environment 'IDAM_S2S_URL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
+  environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
+  environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {
