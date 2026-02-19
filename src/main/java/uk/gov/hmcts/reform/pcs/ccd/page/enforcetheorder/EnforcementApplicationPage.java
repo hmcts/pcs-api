@@ -9,14 +9,21 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
+
+    private static final String CLAIM_TRANSFERRED_YES = " AND writHasClaimTransferredToHighCourt=\"Yes\"";
+    private static final String STUB_GA_SUCCESSFUL_CONDITION = WRIT_FLOW + CLAIM_TRANSFERRED_YES;
+
     public static final String WRIT_OR_WARRANT_INFORMATION = """
                     <details class="govuk-details">
                         <summary class="govuk-details__summary">
@@ -92,6 +99,16 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .mandatory(EnforcementOrder::getSelectEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .complex(EnforcementOrder::getWritDetails)
+            .mandatory(
+                WritDetails::getHasClaimTransferredToHighCourt,
+                claimTransferredShowCondition()
+            )
+            .mandatory(
+                WritDetails::getWasGeneralApplicationToTransferToHighCourtSuccessful,
+                gaSuccessfulShowCondition()
+            )
+            .done()
             .done()
             .label("enforcementApplication-clarification", WRIT_OR_WARRANT_INFORMATION)
             .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);
@@ -115,4 +132,22 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
     }
 
+    private boolean stubEnabled() {
+        String env = System.getenv("ENVIRONMENT");
+        if (env != null) {
+            String lower = env.toLowerCase(Locale.UK);
+            if ("dev".equals(lower) || "preview".equals(lower) || "aat".equals(lower)) {
+                return true;
+            }
+        }
+        return Boolean.parseBoolean(System.getenv("ENABLE_TESTING_SUPPORT"));
+    }
+
+    private String claimTransferredShowCondition() {
+        return stubEnabled() ? WRIT_FLOW : NEVER_SHOW;
+    }
+
+    private String gaSuccessfulShowCondition() {
+        return stubEnabled() ? STUB_GA_SUCCESSFUL_CONDITION : NEVER_SHOW;
+    }
 }
