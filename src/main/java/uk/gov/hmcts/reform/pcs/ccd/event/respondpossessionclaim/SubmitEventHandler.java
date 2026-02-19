@@ -13,6 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.PossessionClaimResponsePersistenceService;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -62,9 +63,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         //load draft data
         PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
-            .orElseThrow(() -> new IllegalStateException(
-                String.format("No draft found for case %d", caseReference)
-            ));
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         //get only possession response from draft
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
@@ -75,7 +74,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
-        log.info("Draft deleted for case {}", caseReference);
 
         log.info("Successfully saved defendant response for case: {}", caseReference);
         return success();

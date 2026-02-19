@@ -51,7 +51,7 @@ public class PossessionClaimResponsePersistenceService {
         updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
 
-        log.info("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
+        log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
 
     /**
