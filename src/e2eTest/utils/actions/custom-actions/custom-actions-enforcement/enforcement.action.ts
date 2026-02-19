@@ -167,7 +167,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (nameAndAddress.defendant1NameKnown === 'YES' && defendantDetails.length) {
-      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.sort().join(' '));
+      await performValidation('formLabelValue', nameAndAddressForEviction.subHeaderDefendants, defendantDetails.join(' '));
     }
 
     defendantDetails = defendantDetails.map(fullName =>
