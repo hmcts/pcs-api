@@ -245,8 +245,8 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
   try {
-    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
-    echo "[E2E Slack] Notification sent to #hdp-qa-e2e-test-results"
+    slackSend(channel: '#qa-pipeline-status', message: msg)
+    echo "[E2E Slack] Notification sent to #qa-pipeline-status"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
@@ -258,8 +258,8 @@ def postFunctionalTestResultsToSlack(String pipelineType = 'master') {
   def reportUrl = "${env.BUILD_URL}API_20Functional_20Test_20Report/"
   def msg = "*Functional Test Results* — Build #${env.BUILD_NUMBER}  ${status}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\n*Report:* ${reportUrl}"
   try {
-    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
-    echo "Functional Test Slack notification sent to #hdp-qa-e2e-test-results"
+    slackSend(channel: '#qa-pipeline-status', message: msg)
+    echo "Functional Test Slack notification sent to #qa-pipeline-status"
   } catch (Exception e) {
     echo "WARNING: Failed to send Functional Test Slack notification: ${e.message}"
   }
