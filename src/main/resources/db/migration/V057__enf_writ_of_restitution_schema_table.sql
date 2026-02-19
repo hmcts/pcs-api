@@ -4,7 +4,3 @@ CREATE TABLE enf_writ_of_restitution (
     CONSTRAINT unique_writ_of_restitution_per_enforcement UNIQUE(enf_case_id)
 );
 CREATE INDEX idx_enf_writ_of_restitution_case_id ON enf_writ_of_restitution(enf_case_id);
-
-
-
-

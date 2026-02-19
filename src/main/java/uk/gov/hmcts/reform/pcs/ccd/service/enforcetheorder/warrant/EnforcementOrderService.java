@@ -85,7 +85,6 @@ public class EnforcementOrderService {
         WritOfRestitutionEntity writOfRestitutionEntity = new WritOfRestitutionEntity();
         writOfRestitutionEntity.setEnforcementCase(enforcementOrderEntity);
 
-
         if (!CollectionUtils.isEmpty(selectedDefendantsEntities)) {
             enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
             writOfRestitutionRepository.save(writOfRestitutionEntity);
