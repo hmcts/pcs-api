@@ -10,8 +10,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractGroundsForPossessi
 import java.util.EnumSet;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.RENT_ARREARS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.RENT_ARREARS_S157;
 
 class SecureWalesRentSectionRoutingPolicyTest {
 
@@ -44,7 +44,7 @@ class SecureWalesRentSectionRoutingPolicyTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(EnumSet.of(RENT_ARREARS))
+                .discretionaryGrounds(EnumSet.of(RENT_ARREARS_S157))
                     .build()
             )
             .build();
@@ -62,7 +62,7 @@ class SecureWalesRentSectionRoutingPolicyTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(EnumSet.of(ANTISOCIAL_BEHAVIOUR))
+                .discretionaryGrounds(EnumSet.of(ANTISOCIAL_BEHAVIOUR_S157))
                     .build()
             )
             .build();
@@ -80,7 +80,7 @@ class SecureWalesRentSectionRoutingPolicyTest {
         PCSCase caseData = PCSCase.builder()
             .secureContractGroundsForPossessionWales(
                 SecureContractGroundsForPossessionWales.builder()
-                .discretionaryGroundsWales(null)
+                .discretionaryGrounds(null)
                     .build()
         )
             .build();

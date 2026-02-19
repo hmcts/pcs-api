@@ -307,7 +307,7 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
-      "**/entities/**," + "**/model/**"
+      "**/entities/**," + "**/model/**," + "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java"
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
   }
 }
@@ -369,7 +369,7 @@ dependencies {
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
 
-  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '7.0.0'
+  implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
   implementation group: 'com.github.hmcts', name: 'idam-java-client', version: '3.0.5'
   implementation group: 'com.github.hmcts', name: 'doc-assembly-client', version: '2.2.0'

@@ -5,12 +5,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.List;
 import java.util.Set;
@@ -45,6 +51,7 @@ final class EnforcementDataUtil {
     static EnforcementOrder buildEnforcementOrder() {
         return EnforcementOrder.builder()
                 .selectEnforcementType(SelectEnforcementType.WARRANT)
+                .rawWarrantDetails(RawWarrantDetails.builder().build())
                 .warrantDetails(WarrantDetails.builder()
                     .anyRiskToBailiff(YesNoNotSure.YES)
                     .nameAndAddressForEviction(NameAndAddressForEviction.builder()
@@ -58,5 +65,44 @@ final class EnforcementDataUtil {
                             .build())
                     .build())
                 .build();
+    }
+
+    static EnforcementOrder buildEnforcementOrderWithVulnerability() {
+        return EnforcementOrder.builder()
+                .selectEnforcementType(SelectEnforcementType.WARRANT)
+                .warrantDetails(WarrantDetails.builder()
+                        .nameAndAddressForEviction(NameAndAddressForEviction.builder()
+                                .correctNameAndAddress(VerticalYesNo.YES)
+                                .build())
+                        .build())
+                .rawWarrantDetails(RawWarrantDetails.builder()
+                        .vulnerablePeoplePresent(YesNoNotSure.YES)
+                        .vulnerableAdultsChildren(VulnerableAdultsChildren.builder()
+                                .vulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS)
+                                .vulnerableReasonText("Vulnerability reason")
+                                .build())
+                        .build())
+                .build();
+    }
+
+    static EnforcementOrder buildEnforcementOrderWithSelectedDefendants(
+        List<DynamicStringListElement> selectedValues,
+        List<DynamicStringListElement> listItems) {
+        DynamicMultiSelectStringList selectedDefendants = new DynamicMultiSelectStringList(selectedValues, listItems);
+
+        return EnforcementOrder.builder()
+            .selectEnforcementType(SelectEnforcementType.WARRANT)
+            .warrantDetails(WarrantDetails.builder()
+                                .nameAndAddressForEviction(NameAndAddressForEviction.builder()
+                                                               .correctNameAndAddress(VerticalYesNo.YES)
+                                                               .build())
+                                .peopleToEvict(PeopleToEvict.builder()
+                                                   .evictEveryone(VerticalYesNo.NO)
+                                                   .build())
+                                .build())
+            .rawWarrantDetails(RawWarrantDetails.builder()
+                                   .selectedDefendants(selectedDefendants)
+                                   .build())
+            .build();
     }
 }

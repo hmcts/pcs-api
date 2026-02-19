@@ -20,12 +20,11 @@ import uk.gov.hmcts.ccd.sdk.type.DynamicListElement;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.io.ByteArrayInputStream;
@@ -168,12 +167,8 @@ class TestCaseGenerationTest {
             .legislativeCountry(country)
             .build();
 
-        PcsCaseEntity pcsCaseEntity = mock(PcsCaseEntity.class);
-
         TestCaseGeneration spyUnderTest = spy(underTest);
         doReturn(loadedCase).when(spyUnderTest).loadTestPcsCase(label);
-
-        when(pcsCaseService.loadCase(caseReference)).thenReturn(pcsCaseEntity);
 
         // When
         spyUnderTest.makeAClaimTestCreation(label, caseReference);
@@ -181,8 +176,6 @@ class TestCaseGenerationTest {
         // Then
         InOrder inOrder = inOrder(pcsCaseService, resumePossessionClaim);
         inOrder.verify(pcsCaseService).createCase(caseReference, address, country);
-        inOrder.verify(pcsCaseService).loadCase(caseReference);
-        inOrder.verify(pcsCaseService).mergeCaseData(pcsCaseEntity, loadedCase);
         inOrder.verify(resumePossessionClaim).submitClaim(caseReference, loadedCase);
     }
 
@@ -218,7 +211,7 @@ class TestCaseGenerationTest {
     void shouldSubmitEnforcementWarrantBasicCase() {
         // Given
         Long caseReference = 456L;
-        String label = TestCaseGeneration.ENFORCEMENT_CASE_GENERATOR;
+        String label = "Create Enforcement Warrant Basic Case";
 
         DynamicList testFilesList = DynamicList.builder()
             .value(DynamicListElement.builder().label(label).build())
@@ -241,7 +234,7 @@ class TestCaseGenerationTest {
 
         // Then
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
-        verify(spyUnderTest).makeAClaimTestCreation(TestCaseGeneration.MAKE_A_CLAIM_CASE_GENERATOR, caseReference);
+        verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
         verify(enforceTheOrder).submitOrder(caseReference, loadedCase);
     }
 

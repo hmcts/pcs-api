@@ -16,13 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.enforcetheorder.EnforceTheOrder;
 import uk.gov.hmcts.reform.pcs.ccd.page.testcasesupport.TestCaseSelectionPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportException;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestCaseSupportHelper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -40,8 +39,8 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     static final String NO_NON_PROD_CASE_AVAILABLE = "No non-prod case json available.";
     static final String TEST_FEE_AMOUNT = "123.45";
     static final String EVENT_NAME = "Test Support Case Creation";
-    static final String MAKE_A_CLAIM_CASE_GENERATOR = "Create Make A Claim Basic Case";
-    static final String ENFORCEMENT_CASE_GENERATOR = "Create Enforcement Warrant Basic Case";
+    static final String MAKE_A_CLAIM_CASE_GENERATOR = "Create Case";
+    static final String ENFORCEMENT_CASE_GENERATOR = "Create Enforcement";
 
     private final ResumePossessionClaim resumePossessionClaim;
     private final EnforceTheOrder enforceTheOrder;
@@ -83,10 +82,10 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         PCSCase pcsCase = eventPayload.caseData();
         DynamicList testFilesList = getTestFilesList(pcsCase);
         String label = testFilesList.getValue().getLabel();
-        if (MAKE_A_CLAIM_CASE_GENERATOR.equalsIgnoreCase(label)) {
+        if (label.startsWith(MAKE_A_CLAIM_CASE_GENERATOR)) {
             makeAClaimTestCreation(label, caseReference);
-        } else if (ENFORCEMENT_CASE_GENERATOR.equalsIgnoreCase(label)) {
-            makeAClaimTestCreation(MAKE_A_CLAIM_CASE_GENERATOR, caseReference);
+        } else if (label.startsWith(ENFORCEMENT_CASE_GENERATOR)) {
+            makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
             enforceTheOrder.submitOrder(caseReference, loadTestPcsCase(label));
         }
         return SubmitResponse.<State>builder().state(CASE_ISSUED).build();
@@ -98,8 +97,7 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
         pcsCaseService.createCase(
             caseReference, loadedCase.getPropertyAddress(),
             loadedCase.getLegislativeCountry());
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-        pcsCaseService.mergeCaseData(pcsCaseEntity, loadedCase);
+
         resumePossessionClaim.submitClaim(caseReference, loadedCase);
     }
 

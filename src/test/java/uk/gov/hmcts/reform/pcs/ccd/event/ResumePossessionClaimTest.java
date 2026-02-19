@@ -13,30 +13,26 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.idam.client.models.UserInfo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantCircumstances;
-import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantDetailsWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimantInformationPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ContactPreferences;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantCircumstancesPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DefendantsDetails;
@@ -44,7 +40,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.DemotionOfTenancyO
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOrOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemotedOtherGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.RentArrearsGroundForPossessionAdditionalGrounds;
@@ -67,12 +62,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
@@ -96,7 +87,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mock.Strictness.LENIENT;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -119,10 +109,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     private PcsCaseService pcsCaseService;
     @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
-    @Mock
-    private PartyService partyService;
-    @Mock
-    private ClaimService claimService;
     @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @Mock
@@ -170,6 +156,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private OrganisationService organisationService;
     @Mock
+    private ClaimantInformationPage claimantInformationPage;
+    @Mock
     private ClaimantDetailsWalesPage claimantDetailsWalesPage;
     @Mock
     private UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageePage;
@@ -206,10 +194,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @Mock
     private MoneyFormatter feeFormatter;
     @Mock
-    private DocumentService documentService;
-    @Mock
-    private CaseAssignmentService caseAssignmentService;
-    @Mock
     private RentDetailsPage rentDetailsPage;
 
     @BeforeEach
@@ -223,7 +207,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
             pcsCaseService, securityContextService,
-            partyService, claimService,
             savingPageBuilderFactory, resumeClaim,
             selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
@@ -232,12 +215,12 @@ class ResumePossessionClaimTest extends BaseEventTest {
             introductoryDemotedOtherGroundsReasons, introductoryDemotedOrOtherGroundsForPossession,
             rentArrearsGroundsForPossessionReasons, suspensionToBuyDemotionOfTenancyOrderReasons,
             defendantCircumstancesPage, suspensionOfRightToBuyOrderReason, statementOfExpressTerms,
-            demotionOfTenancyOrderReason, organisationService, claimantDetailsWalesPage, prohibitedConductWalesPage,
-            schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage, groundsForPossessionWales,
-            secureContractGroundsForPossessionWales, reasonsForPossessionWales, addressFormatter,
-            rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
+            demotionOfTenancyOrderReason, organisationService, claimantInformationPage, claimantDetailsWalesPage,
+            prohibitedConductWalesPage, schedulerClient, draftCaseDataService, occupationLicenceDetailsWalesPage,
+            groundsForPossessionWales, secureContractGroundsForPossessionWales, reasonsForPossessionWales,
+            addressFormatter, rentArrearsGroundsForPossessionPage, rentArrearsGroundForPossessionAdditionalGrounds,
             noRentArrearsGroundsForPossessionOptions, checkingNotice, walesCheckingNotice, asbQuestionsWales,
-            underlesseeOrMortgageePage, feeService, feeFormatter,documentService, caseAssignmentService, rentDetailsPage
+            underlesseeOrMortgageePage, feeService, feeFormatter, rentDetailsPage
         );
 
         setEventUnderTest(underTest);
@@ -282,16 +265,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldSetClaimantNameFromOrganisationServiceWhenAvailable() {
             // Given
-            String userEmail = "user@test.com";
             String orgName = "ACME Org Ltd";
-
-            when(userDetails.getSub()).thenReturn(userEmail);
             when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(orgName);
-
-            AddressUK organisationAddress = mock(AddressUK.class);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
-            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
-                .thenReturn("formatted org address");
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -302,23 +277,16 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getClaimantName()).isEqualTo(orgName);
-            assertThat(updatedCaseData.getClaimantContactPreferences().getClaimantContactEmail()).isEqualTo(userEmail);
+            ClaimantInformation claimantInformation = updatedCaseData.getClaimantInformation();
+
+            assertThat(claimantInformation.getOrgNameFound()).isEqualTo(YesOrNo.YES);
+            assertThat(claimantInformation.getClaimantName()).isEqualTo(orgName);
         }
 
         @Test
-        void shouldFallbackToUserEmailWhenOrganisationNameNotAvailable() {
+        void shouldSetFlagWhenOrganisationNameNotAvailable() {
             // Given
-            String userEmail = "user@test.com";
-
-            when(userDetails.getSub()).thenReturn(userEmail);
             when(organisationService.getOrganisationNameForCurrentUser()).thenReturn(null);
-
-            AddressUK organisationAddress = mock(AddressUK.class);
-            when(organisationService.getOrganisationAddressForCurrentUser()).thenReturn(organisationAddress);
-
-            when(addressFormatter.formatMediumAddress(organisationAddress, AddressFormatter.BR_DELIMITER))
-                .thenReturn("formatted org address");
 
             PCSCase caseData = PCSCase.builder()
                 .propertyAddress(mock(AddressUK.class))
@@ -329,8 +297,10 @@ class ResumePossessionClaimTest extends BaseEventTest {
             PCSCase updatedCaseData = callStartHandler(caseData);
 
             // Then
-            assertThat(updatedCaseData.getClaimantInformation().getClaimantName())
-                .isEqualTo(userEmail); // HDPI-3582 will fix this
+            ClaimantInformation claimantInformation = updatedCaseData.getClaimantInformation();
+
+            assertThat(claimantInformation.getOrgNameFound()).isEqualTo(YesOrNo.NO);
+            assertThat(claimantInformation.getClaimantName()).isNull();
         }
 
         @Test
@@ -532,74 +502,20 @@ class ResumePossessionClaimTest extends BaseEventTest {
     @DisplayName("Submit and pay callback tests")
     class SubmitAndPayTests {
 
-        private PcsCaseEntity pcsCaseEntity;
-
-        @BeforeEach
-        void setUp() {
-            pcsCaseEntity = mock(PcsCaseEntity.class);
-            when(pcsCaseService.loadCase(TEST_CASE_REFERENCE)).thenReturn(pcsCaseEntity);
-        }
-
         @Test
-        void shouldMergeCaseData() {
+        void shouldCreateMainClaimOnCase() {
             // Given
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
-                .legislativeCountry(WALES)
-                .claimantCircumstances(mock(ClaimantCircumstances.class))
-                .claimingCostsWanted(VerticalYesNo.YES)
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
-
-            stubClaimCreation();
-            // When
-            callSubmitHandler(caseData);
-
-            // Then
-            InOrder inOrder = inOrder(pcsCaseService);
-            inOrder.verify(pcsCaseService).loadCase(TEST_CASE_REFERENCE);
-            inOrder.verify(pcsCaseService).mergeCaseData(pcsCaseEntity, caseData);
-            verify(pcsCaseEntity).addClaim(any(ClaimEntity.class));
-        }
-
-        @Test
-        void shouldCreatePartiesInSubmitCallback() {
-            // Given
-            AddressUK propertyAddress = mock(AddressUK.class);
-            AddressUK organisationAddress = mock(AddressUK.class);
-
-            stubFeeService();
-
-            PCSCase caseData = PCSCase.builder()
-                .propertyAddress(propertyAddress)
-                .legislativeCountry(WALES)
-                .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .claimantInformation(
-                    ClaimantInformation.builder()
-                        .claimantName("Test Claimant")
-                        .build()
-                )
-                .claimantContactPreferences(
-                    ClaimantContactPreferences.builder()
-                        .claimantContactEmail("claimant@test.com")
-                        .claimantContactPhoneNumber("01234 567890")
-                        .organisationAddress(organisationAddress)
-                        .build()
-                )
-                .claimantCircumstances(ClaimantCircumstances.builder()
-                                           .claimantCircumstancesDetails("Some circumstances")
-                                           .build())
-                .claimingCostsWanted(VerticalYesNo.YES)
-                .build();
-
-            ClaimEntity claimEntity = stubClaimCreation();
 
             // When
             callSubmitHandler(caseData);
 
             // Then
-            verify(partyService).createAllParties(caseData, pcsCaseEntity, claimEntity);
+            verify(pcsCaseService).createMainClaimOnCase(TEST_CASE_REFERENCE, caseData);
         }
 
         @Test
@@ -611,8 +527,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .claimantInformation(ClaimantInformation.builder().claimantName("Responsible Party Ltd").build())
                 .build();
-
-            stubClaimCreation();
 
             // When
             callSubmitHandler(caseData);
@@ -632,8 +546,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
                 .claimantInformation(null) // important
                 .build();
 
-            stubClaimCreation();
-
             // When
             callSubmitHandler(caseData);
 
@@ -643,36 +555,11 @@ class ResumePossessionClaimTest extends BaseEventTest {
         }
 
         @Test
-        void shouldCreateMainClaim() {
-            // Given
-            stubFeeService();
-
-            ClaimEntity claimEntity = mock(ClaimEntity.class);
-            when(claimService.createMainClaimEntity(any()))
-                .thenReturn(claimEntity);
-
-            PCSCase caseData = PCSCase.builder()
-                .completionNextStep(SUBMIT_AND_PAY_NOW)
-                .build();
-
-            when(documentService.createAllDocuments(any()))
-                .thenReturn(List.of());
-
-            // When
-            callSubmitHandler(caseData);
-
-            // Then
-            verify(claimService).createMainClaimEntity(caseData);
-        }
-
-        @Test
         void shouldSchedulePaymentTask() {
             // Given
             PCSCase caseData = PCSCase.builder()
                 .completionNextStep(SUBMIT_AND_PAY_NOW)
                 .build();
-
-            stubClaimCreation();
 
             FeeDetails feeDetails = stubFeeService();
             // When
@@ -689,7 +576,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldScheduleAccessCodeTask() {
             // Given
-            stubClaimCreation();
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
@@ -707,7 +593,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldDeleteDraftDataOnSubmitAndPay() {
             // Given
-            stubClaimCreation();
             stubFeeService();
 
             PCSCase caseData = PCSCase.builder()
@@ -724,7 +609,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
         @Test
         void shouldReturnConfirmationScreen() {
             // Given
-            stubClaimCreation();
             stubFeeService();
 
             String formattedFee = "some formatted fee";
@@ -739,12 +623,6 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
             // Then
             assertThat(submitResponse.getConfirmationBody()).contains("You must pay the claim fee of " + formattedFee);
-        }
-
-        private ClaimEntity stubClaimCreation() {
-            ClaimEntity claimEntity = mock(ClaimEntity.class);
-            when(claimService.createMainClaimEntity(any(PCSCase.class))).thenReturn(claimEntity);
-            return claimEntity;
         }
 
         private FeeDetails stubFeeService() {

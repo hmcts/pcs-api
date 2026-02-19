@@ -19,14 +19,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AlternativesToPossessionOptions;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.CheckingNotice;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleEngland;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.ClaimTypeNotEligibleWales;
@@ -50,7 +48,6 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.IntroductoryDemote
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.LanguageUsed;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MediationAndSettlement;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.MoneyJudgment;
-import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AssuredNoArrearsGroundsForPossessionPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoRentArrearsGroundsForPossessionReason;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.NoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.PreActionProtocol;
@@ -82,12 +79,8 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.CaseAssignmentService;
-import uk.gov.hmcts.reform.pcs.ccd.service.ClaimService;
-import uk.gov.hmcts.reform.pcs.ccd.service.DocumentService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
-import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -120,8 +113,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     private final PcsCaseService pcsCaseService;
     private final SecurityContextService securityContextService;
-    private final PartyService partyService;
-    private final ClaimService claimService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
     private final SelectClaimantType selectClaimantType;
@@ -144,6 +135,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final StatementOfExpressTerms statementOfExpressTerms;
     private final DemotionOfTenancyOrderReason demotionOfTenancyOrderReason;
     private final OrganisationService organisationService;
+    private final ClaimantInformationPage claimantInformationPage;
     private final ClaimantDetailsWalesPage claimantDetailsWales;
     private final ProhibitedConductWales prohibitedConductWalesPage;
     private final SchedulerClient schedulerClient;
@@ -162,8 +154,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     private final UnderlesseeOrMortgageeDetailsPage underlesseeOrMortgageeDetailsPage;
     private final FeeService feeService;
     private final MoneyFormatter moneyFormatter;
-    private final DocumentService documentService;
-    private final CaseAssignmentService caseAssignmentService;
     private final RentDetailsPage rentDetailsPage;
 
     @Override
@@ -185,7 +175,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
             .add(new SelectClaimType())
             .add(new ClaimTypeNotEligibleEngland())
             .add(new ClaimTypeNotEligibleWales())
-            .add(new ClaimantInformationPage())
+            .add(claimantInformationPage)
             .add(claimantDetailsWales)
             .add(contactPreferences)
             .add(defendantsDetails)
@@ -252,11 +242,10 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         ClaimantInformation claimantInfo = getClaimantInfo(caseData);
 
         if (organisationName != null) {
+            claimantInfo.setOrgNameFound(YesOrNo.YES);
             claimantInfo.setClaimantName(organisationName);
         } else {
-            // Fallback to user details if organisation name cannot be retrieved
-            claimantInfo.setClaimantName(userEmail);  // HDPI-3582 will fix this
-            log.warn("Could not retrieve organisation name, using user details as fallback");
+            claimantInfo.setOrgNameFound(YesOrNo.NO);
         }
 
         ClaimantContactPreferences contactPreferences = caseData.getClaimantContactPreferences();
@@ -325,29 +314,15 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
     }
 
     public SubmitResponse<State> submitClaim(long caseReference, PCSCase pcsCase) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
-
-        ClaimEntity claimEntity = claimService.createMainClaimEntity(pcsCase);
-        List<DocumentEntity> documentEntities = documentService.createAllDocuments(pcsCase);
-        pcsCaseEntity.addDocuments(documentEntities);
-        claimEntity.addClaimDocuments(documentEntities);
-        pcsCaseEntity.addClaim(claimEntity);
-
-        partyService.createAllParties(pcsCase, pcsCaseEntity, claimEntity);
-
-        pcsCaseService.mergeCaseData(pcsCaseEntity, pcsCase);
-
-        schedulePartyAccessCodeGeneration(caseReference);
-
-        log.debug("Deleting draft data after claim submission: caseReference={}, eventId={}",
-            caseReference, resumePossessionClaim);
+        pcsCaseService.createMainClaimOnCase(caseReference, pcsCase);
 
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, resumePossessionClaim);
 
-        log.debug("Draft data deleted successfully");
+        schedulePartyAccessCodeGeneration(caseReference);
 
         String responsibleParty = getClaimantInfo(pcsCase).getClaimantName();
         FeeDetails feeDetails = scheduleCaseIssueFeePayment(caseReference, responsibleParty);
+
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
