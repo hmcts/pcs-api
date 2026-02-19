@@ -4,15 +4,18 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -118,8 +121,14 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
         setFormattedDefendantNames(data.getAllDefendants(), data);
+        List<String> errors = validateWritTransfer(data);
+        if (errors.isEmpty()) {
+            errors = null;
+        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(data).build();
+            .data(data)
+            .errors(errors)
+            .build();
     }
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
@@ -141,6 +150,37 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             }
         }
         return Boolean.parseBoolean(System.getenv("ENABLE_TESTING_SUPPORT"));
+    }
+
+    private List<String> validateWritTransfer(PCSCase pcsCase) {
+        EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+        if (enforcementOrder == null
+            || enforcementOrder.getSelectEnforcementType() != SelectEnforcementType.WRIT) {
+            return List.of();
+        }
+
+        WritDetails writDetails = enforcementOrder.getWritDetails();
+        if (writDetails == null) {
+            return List.of();
+        }
+
+        boolean claimTransferred = Optional
+            .ofNullable(writDetails.getHasClaimTransferredToHighCourt())
+            .map(YesOrNo::toBoolean)
+            .orElse(false);
+
+        boolean gaSuccessful = Optional
+            .ofNullable(writDetails.getWasGeneralApplicationToTransferToHighCourtSuccessful())
+            .map(YesOrNo::toBoolean)
+            .orElse(false);
+
+        if (claimTransferred && !gaSuccessful) {
+            return List.of(
+                "You cannot continue with this application because your "
+                    + "application to transfer to the High Court was unsuccessful");
+        }
+
+        return List.of();
     }
 
     private String claimTransferredShowCondition() {
