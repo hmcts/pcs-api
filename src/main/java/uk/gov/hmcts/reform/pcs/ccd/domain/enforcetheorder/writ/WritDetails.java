@@ -72,7 +72,7 @@ public class WritDetails {
     private LanguageUsed enforcementLanguageUsed;
     @CCD(
         searchable = false,
-        label = "Has the claim been transferred to the High Court?"
+        label = "TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?"
     )
     private YesOrNo hasClaimTransferredToHighCourt;
 
