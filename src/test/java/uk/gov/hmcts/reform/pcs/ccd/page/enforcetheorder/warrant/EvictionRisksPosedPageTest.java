@@ -38,7 +38,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getEnforcementRiskCategories()).isEqualTo(selectedRisks);
+                .getRiskCategories()).isEqualTo(selectedRisks);
     }
 
     @ParameterizedTest
@@ -53,9 +53,9 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         // Given
         PCSCase caseData = createCaseData(selectedCategories,
             EnforcementRiskDetails.builder()
-                .enforcementViolentDetails(violentDetails)
-                .enforcementFirearmsDetails(firearmsDetails)
-                .enforcementCriminalDetails(criminalDetails)
+                .violentDetails(violentDetails)
+                .firearmsDetails(firearmsDetails)
+                .criminalDetails(criminalDetails)
                 .build());
 
         // When
@@ -63,11 +63,11 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementViolentDetails()).isEqualTo(expectedViolentDetails);
+                .getRiskDetails().getViolentDetails()).isEqualTo(expectedViolentDetails);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementFirearmsDetails()).isEqualTo(expectedFirearmsDetails);
+                .getRiskDetails().getFirearmsDetails()).isEqualTo(expectedFirearmsDetails);
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementCriminalDetails()).isEqualTo(expectedCriminalDetails);
+                .getRiskDetails().getCriminalDetails()).isEqualTo(expectedCriminalDetails);
     }
 
     @Test
@@ -102,7 +102,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
 
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
-        assertThat(response.getData().getEnforcementOrder().getWarrantDetails().getEnforcementRiskCategories())
+        assertThat(response.getData().getEnforcementOrder().getWarrantDetails().getRiskCategories())
             .isEqualTo(allCategories);
     }
 
@@ -111,7 +111,7 @@ class EvictionRisksPosedPageTest extends BasePageTest {
         return PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder()
                 .warrantDetails(WarrantDetails.builder()
-                    .enforcementRiskCategories(selectedCategories)
+                    .riskCategories(selectedCategories)
                     .riskDetails(riskDetails)
                     .build())
                 .build())
