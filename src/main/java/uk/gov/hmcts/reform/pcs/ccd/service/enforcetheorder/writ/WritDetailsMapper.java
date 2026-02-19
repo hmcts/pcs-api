@@ -7,14 +7,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.EnforcementWritEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.WritEntity;
 
 @Component
 @Slf4j
 public class WritDetailsMapper {
 
-    public EnforcementWritEntity toEntity(WritDetails writDetails) {
-        EnforcementWritEntity entity = new EnforcementWritEntity();
+    public WritEntity toEntity(WritDetails writDetails) {
+        WritEntity entity = new WritEntity();
 
         // Map NameAndAddressForEviction fields
         mapNameAndAddressForEviction(writDetails.getNameAndAddressForEviction(), entity);
@@ -38,20 +38,20 @@ public class WritDetailsMapper {
     }
 
     private void mapNameAndAddressForEviction(NameAndAddressForEviction nameAndAddress,
-                                              EnforcementWritEntity entity) {
+                                              WritEntity entity) {
         if (nameAndAddress != null) {
             entity.setCorrectNameAndAddress(nameAndAddress.getCorrectNameAndAddress());
         }
     }
 
-    private void mapLandRegistryFees(LandRegistryFees landRegistryFees, EnforcementWritEntity entity) {
+    private void mapLandRegistryFees(LandRegistryFees landRegistryFees, WritEntity entity) {
         if (landRegistryFees != null) {
             entity.setHaveLandRegistryFeesBeenPaid(landRegistryFees.getHaveLandRegistryFeesBeenPaid());
             entity.setAmountOfLandRegistryFees(landRegistryFees.getAmountOfLandRegistryFees());
         }
     }
 
-    private void mapLegalCosts(LegalCosts legalCosts, EnforcementWritEntity entity) {
+    private void mapLegalCosts(LegalCosts legalCosts, WritEntity entity) {
         if (legalCosts != null) {
             entity.setAreLegalCostsToBeClaimed(legalCosts.getAreLegalCostsToBeClaimed());
             entity.setAmountOfLegalCosts(legalCosts.getAmountOfLegalCosts());
@@ -59,7 +59,7 @@ public class WritDetailsMapper {
     }
 
     private void mapMoneyOwedByDefendants(MoneyOwedByDefendants moneyOwedByDefendants,
-                                          EnforcementWritEntity entity) {
+                                          WritEntity entity) {
         if (moneyOwedByDefendants != null) {
             entity.setAmountOwed(moneyOwedByDefendants.getAmountOwed());
         }

@@ -25,7 +25,7 @@ import java.util.UUID;
 @Table(name = "enf_writ")
 @Getter
 @Setter
-public class EnforcementWritEntity {
+public class WritEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

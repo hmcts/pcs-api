@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.EnforcementWritEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.WritEntity;
 
 import java.math.BigDecimal;
 
@@ -28,9 +28,6 @@ class WritDetailsMapperTest {
 
     private WritDetails writDetails;
     private NameAndAddressForEviction nameAndAddressForEviction;
-    private LandRegistryFees landRegistryFees;
-    private LegalCosts legalCosts;
-    private MoneyOwedByDefendants moneyOwedByDefendants;
 
     @BeforeEach
     void setUp() {
@@ -38,17 +35,17 @@ class WritDetailsMapperTest {
             .correctNameAndAddress(VerticalYesNo.YES)
             .build();
 
-        landRegistryFees = LandRegistryFees.builder()
+        LandRegistryFees landRegistryFees = LandRegistryFees.builder()
             .haveLandRegistryFeesBeenPaid(VerticalYesNo.YES)
             .amountOfLandRegistryFees(new BigDecimal("500.00"))
             .build();
 
-        legalCosts = LegalCosts.builder()
+        LegalCosts legalCosts = LegalCosts.builder()
             .areLegalCostsToBeClaimed(VerticalYesNo.YES)
             .amountOfLegalCosts(new BigDecimal("1500.00"))
             .build();
 
-        moneyOwedByDefendants = MoneyOwedByDefendants.builder()
+        MoneyOwedByDefendants moneyOwedByDefendants = MoneyOwedByDefendants.builder()
             .amountOwed(new BigDecimal("3000.00"))
             .build();
 
@@ -68,7 +65,7 @@ class WritDetailsMapperTest {
     @Test
     void shouldMapAllFieldsSuccessfully() {
         // When
-        EnforcementWritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(writDetails);
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.YES);
@@ -89,7 +86,7 @@ class WritDetailsMapperTest {
         writDetails.setNameAndAddressForEviction(null);
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(writDetails);
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isNull();
@@ -102,7 +99,7 @@ class WritDetailsMapperTest {
         writDetails.setLandRegistryFees(null);
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(writDetails);
 
         // Then
         assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isNull();
@@ -116,7 +113,7 @@ class WritDetailsMapperTest {
         writDetails.setLegalCosts(null);
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(writDetails);
 
         // Then
         assertThat(entity.getAreLegalCostsToBeClaimed()).isNull();
@@ -130,7 +127,7 @@ class WritDetailsMapperTest {
         writDetails.setMoneyOwedByDefendants(null);
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(writDetails);
 
         // Then
         assertThat(entity.getAmountOwed()).isNull();
@@ -146,7 +143,7 @@ class WritDetailsMapperTest {
         writDetails.setMoneyOwedByDefendants(null);
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(writDetails);
 
         assertThat(entity.getCorrectNameAndAddress()).isNull();
         assertThat(entity.getHaveLandRegistryFeesBeenPaid()).isNull();
@@ -179,7 +176,7 @@ class WritDetailsMapperTest {
             .build();
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(noWritDetails);
+        WritEntity entity = underTest.toEntity(noWritDetails);
 
         // Then
         assertThat(entity.getCorrectNameAndAddress()).isEqualTo(VerticalYesNo.NO);
@@ -209,7 +206,7 @@ class WritDetailsMapperTest {
             .build();
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(zeroAmountWritDetails);
+        WritEntity entity = underTest.toEntity(zeroAmountWritDetails);
 
         // Then
         assertThat(entity.getAmountOfLandRegistryFees()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -237,7 +234,7 @@ class WritDetailsMapperTest {
             .build();
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(largeAmountWritDetails);
+        WritEntity entity = underTest.toEntity(largeAmountWritDetails);
 
         // Then
         assertThat(entity.getAmountOfLandRegistryFees()).isEqualByComparingTo(largeAmount);
@@ -252,7 +249,7 @@ class WritDetailsMapperTest {
         writDetails.setHceoDetails(maxLengthHceoDetails);
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(writDetails);
 
         // Then
         assertThat(entity.getHceoDetails()).hasSize(120);
@@ -265,7 +262,7 @@ class WritDetailsMapperTest {
         writDetails.setHceoDetails(null);
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(writDetails);
+        WritEntity entity = underTest.toEntity(writDetails);
 
         // Then
         assertThat(entity.getHceoDetails()).isNull();
@@ -275,8 +272,8 @@ class WritDetailsMapperTest {
     @Test
     void shouldCreateNewEntityInstanceOnEachCall() {
         // When
-        EnforcementWritEntity entity1 = underTest.toEntity(writDetails);
-        EnforcementWritEntity entity2 = underTest.toEntity(writDetails);
+        WritEntity entity1 = underTest.toEntity(writDetails);
+        WritEntity entity2 = underTest.toEntity(writDetails);
 
         // Then
         assertThat(entity1).isNotSameAs(entity2);
@@ -295,7 +292,7 @@ class WritDetailsMapperTest {
             .build();
 
         // When
-        EnforcementWritEntity entity = underTest.toEntity(partialWritDetails);
+        WritEntity entity = underTest.toEntity(partialWritDetails);
 
         // Then
         assertThat(entity.getHasHiredHighCourtEnforcementOfficer()).isEqualTo(VerticalYesNo.NO);

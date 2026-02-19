@@ -16,13 +16,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.EnforcementWritEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWritRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.WritRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.writ.WritDetailsMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -44,7 +44,7 @@ public class EnforcementOrderService {
     private final EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
     private final SelectedDefendantsMapper selectedDefendantsMapper;
     private final WritDetailsMapper writDetailsMapper;
-    private final EnforcementWritRepository enforcementWritRepository;
+    private final WritRepository writRepository;
 
     public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
         return enforcementOrderRepository.findById(id)
@@ -95,9 +95,9 @@ public class EnforcementOrderService {
     }
 
     private void storeEnforcementWrit(EnforcementOrderEntity orderEntity, WritDetails writDetails) {
-        EnforcementWritEntity writEntity = writDetailsMapper.toEntity(writDetails);
+        WritEntity writEntity = writDetailsMapper.toEntity(writDetails);
         writEntity.setEnforcementOrder(orderEntity);
-        enforcementWritRepository.save(writEntity);
+        writRepository.save(writEntity);
     }
 
     private EnforcementRiskProfileEntity mapToRiskProfile(
