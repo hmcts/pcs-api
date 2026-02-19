@@ -57,11 +57,11 @@ final class EnforcementDataUtil {
                     .nameAndAddressForEviction(NameAndAddressForEviction.builder()
                             .correctNameAndAddress(VerticalYesNo.YES)
                             .build())
-                    .enforcementRiskCategories(
+                    .riskCategories(
                             Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.VERBAL_OR_WRITTEN_THREATS))
                     .riskDetails(EnforcementRiskDetails.builder()
-                            .enforcementViolentDetails("Violent")
-                            .enforcementVerbalOrWrittenThreatsDetails("Verbal")
+                            .violentDetails("Violent")
+                            .verbalThreatsDetails("Verbal")
                             .build())
                     .build())
                 .build();
