@@ -5,3 +5,6 @@ CREATE TABLE public.contact_preferences (
   contact_by_post     BOOLEAN DEFAULT NULL,
   contact_by_phone    BOOLEAN DEFAULT NULL
 );
+
+ALTER TABLE public.party
+  ADD COLUMN contact_preferences_id UUID REFERENCES public.contact_preferences (id);
