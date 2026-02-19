@@ -1,0 +1,30 @@
+{
+  "case_details_before": {},
+  "case_details": {
+    "id": "${caseId}",
+    "jurisdiction": "PCS",
+    "case_type_id": "${caseTypeId}",
+    "state": "AWAITING_SUBMISSION_TO_HMCTS",
+    "security_classification": "PUBLIC",
+    "case_data": {
+      "propertyAddress": {
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "AddressLine3": "70 Knyveton Road",
+        "PostTown": "Bournemouth",
+        "County": null,
+        "PostCode": "BH1 3BP",
+        "Country": "England"
+      },
+      "legislativeCountry": "England"
+    }
+  },
+  "event_details": {
+    "case_type": "${caseTypeId}",
+    "event_name": "createPossessionClaim",
+    "event_id": "createPossessionClaim"
+  },
+  "internal_case_id": "${caseId}",
+  "start_revision": 1,
+  "merge_revision": 1
+}
