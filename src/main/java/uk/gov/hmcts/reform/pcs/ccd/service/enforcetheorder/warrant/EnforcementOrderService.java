@@ -7,9 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
@@ -35,6 +32,7 @@ public class EnforcementOrderService {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final EnforcementRiskProfileRepository enforcementRiskProfileRepository;
+    private final EnforcementRiskProfileMapper enforcementRiskProfileMapper;
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
@@ -72,7 +70,8 @@ public class EnforcementOrderService {
         enforcementOrderRepository.save(enforcementOrderEntity);
 
         if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WARRANT) {
-            EnforcementRiskProfileEntity riskProfile = mapToRiskProfile(enforcementOrderEntity, enforcementOrder);
+            EnforcementRiskProfileEntity riskProfile =
+                    enforcementRiskProfileMapper.toEntity(enforcementOrderEntity, enforcementOrder);
             enforcementRiskProfileRepository.save(riskProfile);
         }
 
@@ -82,41 +81,5 @@ public class EnforcementOrderService {
         if (!CollectionUtils.isEmpty(selectedDefendantsEntities)) {
             enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
         }
-    }
-
-    private EnforcementRiskProfileEntity mapToRiskProfile(
-            EnforcementOrderEntity enforcementOrderEntity,
-            EnforcementOrder enforcementOrder) {
-        EnforcementRiskProfileEntity entity = new EnforcementRiskProfileEntity();
-        entity.setEnforcementOrder(enforcementOrderEntity);
-
-        WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
-        if (warrantDetails != null) {
-            entity.setAnyRiskToBailiff(warrantDetails.getAnyRiskToBailiff());
-            EnforcementRiskDetails riskDetails = warrantDetails.getRiskDetails();
-            if (riskDetails != null) {
-                entity.setViolentDetails(riskDetails.getEnforcementViolentDetails());
-                entity.setFirearmsDetails(riskDetails.getEnforcementFirearmsDetails());
-                entity.setCriminalDetails(riskDetails.getEnforcementCriminalDetails());
-                entity.setVerbalThreatsDetails(riskDetails.getEnforcementVerbalOrWrittenThreatsDetails());
-                entity.setProtestGroupDetails(riskDetails.getEnforcementProtestGroupMemberDetails());
-                entity.setPoliceSocialServicesDetails(
-                        riskDetails.getEnforcementPoliceOrSocialServicesDetails());
-                entity.setAnimalsDetails(riskDetails.getEnforcementDogsOrOtherAnimalsDetails());
-            }
-        }
-
-        RawWarrantDetails rawWarrantDetails = enforcementOrder.getRawWarrantDetails();
-        if (rawWarrantDetails != null) {
-            entity.setVulnerablePeoplePresent(rawWarrantDetails.getVulnerablePeoplePresent());
-            if (rawWarrantDetails.getVulnerableAdultsChildren() != null) {
-                entity.setVulnerableCategory(
-                        rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableCategory());
-                entity.setVulnerableReasonText(
-                        rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableReasonText());
-            }
-        }
-
-        return entity;
     }
 }
