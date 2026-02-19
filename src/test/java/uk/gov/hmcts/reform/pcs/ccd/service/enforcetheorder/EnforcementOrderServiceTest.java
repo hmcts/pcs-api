@@ -31,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.Enforcemen
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
@@ -43,6 +44,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -59,6 +61,9 @@ class EnforcementOrderServiceTest {
 
     @Mock
     private EnforcementRiskProfileRepository enforcementRiskProfileRepository;
+
+    @Mock
+    private EnforcementRiskProfileMapper enforcementRiskProfileMapper;
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
@@ -132,9 +137,15 @@ class EnforcementOrderServiceTest {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+        final EnforcementRiskProfileEntity stubbedRiskProfile = new EnforcementRiskProfileEntity();
+        stubbedRiskProfile.setAnyRiskToBailiff(YesNoNotSure.YES);
+        stubbedRiskProfile.setViolentDetails("Violent");
+        stubbedRiskProfile.setVerbalThreatsDetails("Verbal");
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementRiskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enforcementOrder)))
+                .thenReturn(stubbedRiskProfile);
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -144,12 +155,9 @@ class EnforcementOrderServiceTest {
         EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
 
+        verify(enforcementRiskProfileMapper).toEntity(savedEntity, enforcementOrder);
         verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
-        EnforcementRiskProfileEntity savedRiskProfile = enforcementRiskProfileEntityCaptor.getValue();
-        assertThat(savedRiskProfile.getEnforcementOrder()).isEqualTo(savedEntity);
-        assertThat(savedRiskProfile.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedRiskProfile.getViolentDetails()).isEqualTo("Violent");
-        assertThat(savedRiskProfile.getVerbalThreatsDetails()).isEqualTo("Verbal");
+        assertThat(enforcementRiskProfileEntityCaptor.getValue()).isSameAs(stubbedRiskProfile);
     }
 
     @Test
@@ -169,6 +177,7 @@ class EnforcementOrderServiceTest {
                 .isInstanceOf(ClaimNotFoundException.class)
                 .hasMessageContaining("No claim found for case reference");
         verifyNoInteractions(draftCaseDataService);
+        verifyNoInteractions(enforcementRiskProfileMapper);
         verifyNoInteractions(enforcementRiskProfileRepository);
     }
 
@@ -195,22 +204,21 @@ class EnforcementOrderServiceTest {
         final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
                 .selectEnforcementType(SelectEnforcementType.WARRANT)
                 .build();
+        final EnforcementRiskProfileEntity stubbedRiskProfile = new EnforcementRiskProfileEntity();
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementRiskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enforcementOrder)))
+                .thenReturn(stubbedRiskProfile);
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
-        // Then: risk profile is still saved with null risk/vulnerability fields
+        // Then: service calls mapper and saves returned risk profile
+        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        verify(enforcementRiskProfileMapper).toEntity(enforcementOrderEntityCaptor.getValue(), enforcementOrder);
         verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
-        EnforcementRiskProfileEntity savedRiskProfile = enforcementRiskProfileEntityCaptor.getValue();
-        assertThat(savedRiskProfile.getAnyRiskToBailiff()).isNull();
-        assertThat(savedRiskProfile.getVulnerablePeoplePresent()).isNull();
-        assertThat(savedRiskProfile.getVulnerableCategory()).isNull();
-        assertThat(savedRiskProfile.getVulnerableReasonText()).isNull();
-        assertThat(savedRiskProfile.getViolentDetails()).isNull();
-        assertThat(savedRiskProfile.getVerbalThreatsDetails()).isNull();
+        assertThat(enforcementRiskProfileEntityCaptor.getValue()).isSameAs(stubbedRiskProfile);
     }
 
     @Test
@@ -229,6 +237,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        verifyNoInteractions(enforcementRiskProfileMapper);
         verifyNoInteractions(enforcementRiskProfileRepository);
     }
 
@@ -246,6 +255,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        verifyNoInteractions(enforcementRiskProfileMapper);
         verifyNoInteractions(enforcementRiskProfileRepository);
     }
 
@@ -254,19 +264,24 @@ class EnforcementOrderServiceTest {
         // Given: order with raw warrant details (vulnerability)
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrderWithVulnerability();
+        final EnforcementRiskProfileEntity stubbedRiskProfile = new EnforcementRiskProfileEntity();
+        stubbedRiskProfile.setVulnerablePeoplePresent(YesNoNotSure.YES);
+        stubbedRiskProfile.setVulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS);
+        stubbedRiskProfile.setVulnerableReasonText("Vulnerability reason");
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementRiskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enforcementOrder)))
+                .thenReturn(stubbedRiskProfile);
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
-        // Then
+        // Then: service calls mapper and saves returned risk profile
+        verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
+        verify(enforcementRiskProfileMapper).toEntity(enforcementOrderEntityCaptor.getValue(), enforcementOrder);
         verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
-        EnforcementRiskProfileEntity savedRiskProfile = enforcementRiskProfileEntityCaptor.getValue();
-        assertThat(savedRiskProfile.getVulnerablePeoplePresent()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedRiskProfile.getVulnerableCategory()).isEqualTo(VulnerableCategory.VULNERABLE_ADULTS);
-        assertThat(savedRiskProfile.getVulnerableReasonText()).isEqualTo("Vulnerability reason");
+        assertThat(enforcementRiskProfileEntityCaptor.getValue()).isSameAs(stubbedRiskProfile);
     }
 
     @Test

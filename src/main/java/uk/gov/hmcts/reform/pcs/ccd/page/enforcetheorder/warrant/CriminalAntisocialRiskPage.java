@@ -36,7 +36,7 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getRiskDetails)
-            .mandatory(EnforcementRiskDetails::getEnforcementCriminalDetails)
+            .mandatory(EnforcementRiskDetails::getCriminalDetails)
             .done()
             .label("criminalAntisocialRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementCriminalDetails();
+                .getWarrantDetails().getRiskDetails().getCriminalDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,
