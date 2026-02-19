@@ -36,7 +36,7 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementVerbalOrWrittenThreatsDetails)
+                .mandatory(EnforcementRiskDetails::getVerbalThreatsDetails)
                 .done()
                 .label("verbalOrWrittenThreatsRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
+                .getWarrantDetails().getRiskDetails().getVerbalThreatsDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

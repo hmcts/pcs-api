@@ -1,0 +1,18 @@
+{
+  "event_id": "resumePossessionClaim",
+  "case_details": {
+    "id": "${caseId}",
+    "case_type_id": "${caseTypeId}",
+    "data": {
+      "propertyAddress": {
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "AddressLine3": "70 Knyveton Road",
+        "PostTown": "Bournemouth",
+        "PostCode": "BH1 3BP",
+        "Country": "United Kingdom"
+      },
+      "legislativeCountry": "England"
+    }
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "event_id": "resumePossessionClaim",
+  "event_details": {
+    "case_type": "${caseTypeId}",
+    "event_name": "resumePossessionClaim",
+    "event_id": "resumePossessionClaim"
+  },
+  "internal_case_id": "${caseId}",
+  "start_revision": 1,
+  "merge_revision": 1,
+  "case_details": {
+    "id": "${caseId}",
+    "jurisdiction": "PCS",
+    "case_type_id": "${caseTypeId}",
+    "state": "AWAITING_SUBMISSION_TO_HMCTS",
+    "security_classification": "PUBLIC",
+    "case_data": {
+      "propertyAddress": {
+        "AddressLine1": "1",
+        "AddressLine2": "Exton Gardens",
+        "AddressLine3": "70 Knyveton Road",
+        "PostTown": "Bournemouth",
+        "County": null,
+        "Country": "England",
+        "PostCode": "BH1 3BP"
+      },
+      "legislativeCountry": "England",
+      "claimantType": {
+        "value": {
+          "code": "PROVIDER_OF_SOCIAL_HOUSING",
+          "label": "Registered provider of social housing"
+        },
+        "list_items": [
+          {
+            "code": "PRIVATE_LANDLORD",
+            "label": "Private landlord"
+          },
+          {
+            "code": "PROVIDER_OF_SOCIAL_HOUSING",
+            "label": "Registered provider of social housing"
+          },
+          {
+            "code": "MORTGAGE_LENDER",
+            "label": "Mortgage lender"
+          },
+          {
+            "code": "OTHER",
+            "label": "Other"
+          }
+        ],
+        "valueCode": "PROVIDER_OF_SOCIAL_HOUSING"
+      },
+      "claimAgainstTrespassers": "NO",
+      "organisationName": "Possession Claims Solicitor Org",
+      "isClaimantNameCorrect": "YES",
+      "claimantContactEmail": "pcs-solicitor1@test.com",
+      "isCorrectClaimantContactEmail": "YES",
+      "formattedClaimantContactAddress": "Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
+      "isCorrectClaimantContactAddress": "YES",
+      "claimantProvidePhoneNumber": "NO",
+      "defendant1": {
+        "nameKnown": "NO",
+        "firstName": null,
+        "lastName": null,
+        "addressKnown": "NO",
+        "addressSameAsPossession": null,
+        "correspondenceAddress": {
+          "AddressLine1": null,
+          "AddressLine2": null,
+          "AddressLine3": null,
+          "PostTown": null,
+          "County": null,
+          "Country": null,
+          "PostCode": null
+        }
+      },
+      "addAnotherDefendant": "NO",
+      "tenancy_TypeOfTenancyLicence": "SECURE_TENANCY",
+      "tenancy_TenancyLicenceDate": null,
+      "tenancy_TenancyLicenceDocuments": [],
+      "secureOrFlexibleDiscretionaryGrounds": [
+        "TENANCY_OBTAINED_BY_FALSE_STATEMENT"
+      ],
+      "secureOrFlexibleMandatoryGrounds": [],
+      "secureOrFlexibleMandatoryGroundsAlt": [],
+      "secureOrFlexibleDiscretionaryGroundsAlt": [],
+      "tenancyByFalseStatementGround": "test",
+      "showBreachOfTenancyTextarea": null,
+      "showReasonsForGroundsPage": "Yes",
+      "preActionProtocolCompleted": "NO",
+      "mediationAttempted": "NO",
+      "settlementAttempted": "NO",
+      "noticeServed": "No",
+      "claimantNamePossessiveForm": "Possession Claims Solicitor Org’s",
+      "claimantCircumstancesSelect": "NO",
+      "hasDefendantCircumstancesInfo": "NO",
+      "showSuspensionOfRightToBuyHousingActsPage": "No",
+      "showDemotionOfTenancyHousingActsPage": "No",
+      "suspensionToBuyDemotionOfTenancyPages": "No",
+      "alternativesToPossession": [],
+      "claimingCostsWanted": "NO",
+      "additionalReasonsForPossession": {
+        "hasReasons": "NO",
+        "reasons": null
+      },
+      "hasUnderlesseeOrMortgagee": "NO",
+      "wantToUploadDocuments": "NO",
+      "applicationWithClaim": "NO",
+      "languageUsed": "ENGLISH",
+      "completionNextStep": "SUBMIT_AND_PAY_NOW",
+      "statementOfTruth": {
+        "completedBy": "CLAIMANT",
+        "fullNameClaimant": "rew",
+        "positionClaimant": "eww",
+        "fullNameLegalRep": null,
+        "firmNameLegalRep": null,
+        "positionLegalRep": null,
+        "agreementClaimant": [
+          "BELIEVE_TRUE"
+        ],
+        "agreementLegalRep": []
+      }
+    }
+  }
+}
