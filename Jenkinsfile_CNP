@@ -62,6 +62,9 @@ withPipeline(type, product, component) {
       env.E2E_SUITE = "regression"
       enableE2eTest()
     }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_test").size() > 0) {
+      enableE2eTest()
+    }
   }
 
   onMaster() {
@@ -154,6 +157,19 @@ withPipeline(type, product, component) {
     if (env.CHANGE_ID != null && env.CHANGE_ID != '') {
       archiveE2eTestReports()
       postAllureResultsToSlack('preview')
+    }
+  }
+
+  // E2E runs before this stage; when it runs, E2E artifacts should exist (same pipeline order)
+  afterAlways('Uninstall Helm Release - preview') {
+    echo "[E2E Slack] Uninstall Helm Release - preview afterAlways ran. CHANGE_ID=${env.CHANGE_ID}"
+    if (env.CHANGE_ID) {
+      def e2eRan = sh(script: 'test -f e2e-output/widgets/summary.json || test -d src/e2eTest/allure-results', returnStatus: true) == 0
+      echo "[E2E Slack] E2E artifacts present: ${e2eRan}"
+      if (e2eRan) {
+        archiveE2eTestReports()
+        postAllureResultsToSlack('preview')
+      }
     }
   }
 }
