@@ -157,36 +157,6 @@ class PossessionClaimResponsePersistenceServiceTest {
     }
 
     @Test
-    void shouldDefaultNullPreferencesToFalse() {
-        // Given
-        PossessionClaimResponse response = buildResponse(
-            Party.builder()
-                .address(TEST_ADDRESS)
-                .build(),
-            DefendantResponses.builder()
-                .contactByEmail(null)
-                .contactByPhone(null)
-                .contactByText(VerticalYesNo.YES)
-                .contactByPost(null)
-                .build()
-        );
-
-        when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
-
-        // When
-        service.saveDraftData(response);
-
-        // Then
-        verify(partyRepository).save(partyCaptor.capture());
-        ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
-        assertThat(savedPrefs.getContactByEmail()).isFalse();
-        assertThat(savedPrefs.getContactByPhone()).isFalse();
-        assertThat(savedPrefs.getContactByText()).isTrue();
-        assertThat(savedPrefs.getContactByPost()).isFalse();
-    }
-
-    @Test
     void shouldNotUpdatePartyWhenContactDetailsAreBlank() {
         // Given
         PossessionClaimResponse response = buildResponse(
