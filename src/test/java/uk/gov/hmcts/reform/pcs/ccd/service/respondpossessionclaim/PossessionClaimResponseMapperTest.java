@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -175,14 +177,17 @@ class PossessionClaimResponseMapperTest {
             .propertyAddress(AddressUK.builder().build())
             .build();
 
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
-
-        // When
         PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
 
         // Then
-        assertThat(result.getDefendantContactDetails()).isNotNull();
-        verify(addressMapper).toAddressUK(null);
+        DefendantContactDetails defendantContactDetails = result.getDefendantContactDetails();
+        assertThat(defendantContactDetails).isNotNull();
+
+        assertThat(defendantContactDetails.getParty().getAddress())
+            .usingRecursiveComparison()
+            .isEqualTo(AddressUK.builder().build());
+
+        verify(addressMapper, never()).toAddressUK(any());
     }
 
     @Test
@@ -196,8 +201,6 @@ class PossessionClaimResponseMapperTest {
         PCSCase pcsCase = PCSCase.builder()
             .propertyAddress(AddressUK.builder().build())
             .build();
-
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
 
         // When
         PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
@@ -243,8 +246,7 @@ class PossessionClaimResponseMapperTest {
         PossessionClaimResponse result = underTest.mapFrom(pcsCase, matchedDefendant);
 
         // Then
-        uk.gov.hmcts.reform.pcs.ccd.domain.Party defendantParty = result.getDefendantContactDetails()
-            .getParty();
+        Party defendantParty = result.getDefendantContactDetails().getParty();
 
         assertThat(defendantParty.getFirstName()).isEqualTo("John");
         assertThat(defendantParty.getLastName()).isEqualTo("Doe");
@@ -282,17 +284,15 @@ class PossessionClaimResponseMapperTest {
             .propertyAddress(AddressUK.builder().build())
             .build();
 
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
-
         // When: Mapping to PossessionClaimResponse
         PossessionClaimResponse response = underTest.mapFrom(pcsCase, matchedDefendant);
 
         // Then: Claimant organisation is extracted and wrapped in ListValue
         assertThat(response.getClaimantOrganisations())
             .hasSize(1);
-        assertThat(response.getClaimantOrganisations().get(0).getId())
+        assertThat(response.getClaimantOrganisations().getFirst().getId())
             .isEqualTo("claimant-1");
-        assertThat(response.getClaimantOrganisations().get(0).getValue())
+        assertThat(response.getClaimantOrganisations().getFirst().getValue())
             .isEqualTo("ABC Housing Association");
     }
 
@@ -324,8 +324,6 @@ class PossessionClaimResponseMapperTest {
             .allClaimants(allClaimants)
             .propertyAddress(AddressUK.builder().build())
             .build();
-
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
 
         // When
         PossessionClaimResponse response = underTest.mapFrom(pcsCase, matchedDefendant);
@@ -377,8 +375,6 @@ class PossessionClaimResponseMapperTest {
             .propertyAddress(AddressUK.builder().build())
             .build();
 
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
-
         // When
         PossessionClaimResponse response = underTest.mapFrom(pcsCase, matchedDefendant);
 
@@ -410,8 +406,6 @@ class PossessionClaimResponseMapperTest {
             .propertyAddress(AddressUK.builder().build())
             .build();
 
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
-
         // When
         PossessionClaimResponse response = underTest.mapFrom(pcsCase, matchedDefendant);
 
@@ -434,8 +428,6 @@ class PossessionClaimResponseMapperTest {
             .allClaimants(List.of())
             .propertyAddress(AddressUK.builder().build())
             .build();
-
-        when(addressMapper.toAddressUK(null)).thenReturn(AddressUK.builder().build());
 
         // When
         PossessionClaimResponse response = underTest.mapFrom(pcsCase, matchedDefendant);
