@@ -13,7 +13,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
-import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -25,7 +24,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class PossessionClaimResponsePersistenceService {
+public class ClaimResponseService {
 
     private final PartyRepository partyRepository;
     private final SecurityContextService securityContextService;
@@ -69,17 +68,14 @@ public class PossessionClaimResponsePersistenceService {
      * Only updates if the values are provided (non-blank).
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantResponse) {
-        boolean updated = false;
 
         if (StringUtils.isNotBlank(defendantResponse.getParty().getPhoneNumber())) {
             party.setPhoneNumber(defendantResponse.getParty().getPhoneNumber());
-            updated = true;
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
 
         if (StringUtils.isNotBlank(defendantResponse.getParty().getEmailAddress())) {
             party.setEmailAddress(defendantResponse.getParty().getEmailAddress());
-            updated = true;
             log.debug("Updated email address for party ID: {}", party.getId());
         }
 
@@ -89,7 +85,7 @@ public class PossessionClaimResponsePersistenceService {
             AddressEntity existingAddress = party.getAddress();
 
             if (existingAddress != null) {
-                existingAddress.setAddressLine1(defendantResponse.getParty().getAddress().getAddressLine1());
+                existingAddress.setAddressLine1(newAddress.getAddressLine1());
                 existingAddress.setAddressLine2(newAddress.getAddressLine2());
                 existingAddress.setAddressLine3(newAddress.getAddressLine3());
                 existingAddress.setPostTown(newAddress.getPostTown());
@@ -98,12 +94,9 @@ public class PossessionClaimResponsePersistenceService {
                 existingAddress.setCountry(newAddress.getCountry());
             } else {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
+                //only need to trigger save when object is newly created
+                partyRepository.save(party);
             }
-            updated = true;
-        }
-
-        if (updated) {
-            partyRepository.save(party);
         }
     }
 
@@ -113,17 +106,24 @@ public class PossessionClaimResponsePersistenceService {
      */
     private void saveContactPreferences(PartyEntity party, DefendantResponses defendantResponse) {
         ContactPreferencesEntity contactPrefs = party.getContactPreferences();
+        boolean saveNeeded = false;
+
         if (contactPrefs == null) {
             contactPrefs = new ContactPreferencesEntity();
             party.setContactPreferences(contactPrefs);
+            saveNeeded = true;
         }
 
-        contactPrefs.setContactByEmail(YesOrNoConverter.toBoolean(defendantResponse.getContactByEmail()));
-        contactPrefs.setContactByText(YesOrNoConverter.toBoolean(defendantResponse.getContactByText()));
-        contactPrefs.setContactByPost(YesOrNoConverter.toBoolean(defendantResponse.getContactByPost()));
-        contactPrefs.setContactByPhone(YesOrNoConverter.toBoolean(defendantResponse.getContactByPhone()));
+        contactPrefs.setContactByEmail(defendantResponse.getContactByEmail());
+        contactPrefs.setContactByText(defendantResponse.getContactByText());
+        contactPrefs.setContactByPost(defendantResponse.getContactByPost());
+        contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
 
-        partyRepository.save(party);
+        //only need to trigger save when object is newly created
+        if (saveNeeded) {
+            partyRepository.save(party);
+        }
+
         log.debug("Saved contact preferences for party ID: {}", party.getId());
     }
 }

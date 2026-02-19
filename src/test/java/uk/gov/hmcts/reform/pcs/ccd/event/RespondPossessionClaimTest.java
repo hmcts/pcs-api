@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
-import uk.gov.hmcts.reform.pcs.ccd.service.PossessionClaimResponsePersistenceService;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -41,7 +41,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -54,7 +53,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private DraftCaseDataService draftCaseDataService;
 
     @Mock
-    private PossessionClaimResponsePersistenceService possessionClaimResponsePersistenceService;
+    private ClaimResponseService claimResponseService;
 
     @Mock
     private PcsCaseService pcsCaseService;
@@ -85,7 +84,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
             draftCaseDataService,
             immutableFieldValidator,
-            possessionClaimResponsePersistenceService
+            claimResponseService
         );
 
         setEventUnderTest(new RespondPossessionClaim(
@@ -320,7 +319,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         callSubmitHandler(caseData);
 
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
@@ -362,7 +361,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // Then: draft should be saved (null defaults to NO which means save draft)
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
             eq(EventId.respondPossessionClaim)
@@ -734,7 +733,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(response.getErrors()).isNull();
 
         // And: draft should be saved via deep merge (preserves existing fields)
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
             eq(EventId.respondPossessionClaim)

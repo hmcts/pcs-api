@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
-import uk.gov.hmcts.reform.pcs.ccd.service.PossessionClaimResponsePersistenceService;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final DraftCaseDataService draftCaseDataService;
     private final ImmutablePartyFieldValidator immutableFieldValidator;
-    private final PossessionClaimResponsePersistenceService possessionResponseSaveDraftToMainDatabaseService;
+    private final ClaimResponseService claimResponseService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -71,7 +71,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 
         //call services to save to relevant tables
-        possessionResponseSaveDraftToMainDatabaseService
+        claimResponseService
             .saveDraftData(responseDraftData);
 
         //delete draft as it's no longer needed
@@ -124,8 +124,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
     }
 
-    private void saveDraftToDatabase(long caseReference, PossessionClaimResponse caseData) {
-        PCSCase partialUpdate = buildDefendantOnlyUpdate(caseData);
+    private void saveDraftToDatabase(long caseReference, PossessionClaimResponse possessionClaimResponse) {
+        PCSCase partialUpdate = buildDefendantOnlyUpdate(possessionClaimResponse);
         draftCaseDataService.patchUnsubmittedEventData(caseReference, partialUpdate, respondPossessionClaim);
     }
 

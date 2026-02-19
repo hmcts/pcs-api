@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.service.PossessionClaimResponsePersistenceService;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
@@ -32,7 +32,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
@@ -49,7 +48,7 @@ class SubmitEventHandlerTest {
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
-    PossessionClaimResponsePersistenceService possessionClaimResponsePersistenceService;
+    ClaimResponseService claimResponseService;
 
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
@@ -60,7 +59,7 @@ class SubmitEventHandlerTest {
     void setUp() {
         underTest =
             new SubmitEventHandler(draftCaseDataService,
-                immutableFieldValidator, possessionClaimResponsePersistenceService);
+                immutableFieldValidator, claimResponseService);
     }
 
     // ========== DRAFT SAVE FLOW (submitDraftAnswers = NO) ==========
@@ -150,7 +149,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }
@@ -193,7 +192,7 @@ class SubmitEventHandlerTest {
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }
@@ -813,10 +812,10 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify contact preferences service was called
-        verify(possessionClaimResponsePersistenceService).saveDraftData(response);
+        verify(claimResponseService).saveDraftData(response);
 
         // Verify draft service was called once
-        verify(draftCaseDataService, times(1))
+        verify(draftCaseDataService)
             .patchUnsubmittedEventData(eq(CASE_REFERENCE),
                 any(),
                 eq(EventId.respondPossessionClaim));
@@ -857,10 +856,10 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify contact preferences service was NOT called
-        verify(possessionClaimResponsePersistenceService, never()).saveDraftData(any(PossessionClaimResponse.class));
+        verify(claimResponseService, never()).saveDraftData(any(PossessionClaimResponse.class));
 
         // Verify draft service was called once
-        verify(draftCaseDataService, times(1))
+        verify(draftCaseDataService)
             .patchUnsubmittedEventData(eq(CASE_REFERENCE), any(), eq(respondPossessionClaim));
     }
 
@@ -914,7 +913,7 @@ class SubmitEventHandlerTest {
         // Verify the exact response object is passed to the service
         ArgumentCaptor<PossessionClaimResponse> responseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(possessionClaimResponsePersistenceService).saveDraftData(responseCaptor.capture());
+        verify(claimResponseService).saveDraftData(responseCaptor.capture());
 
         PossessionClaimResponse capturedResponse = responseCaptor.getValue();
         assertThat(capturedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.NO);
@@ -963,7 +962,7 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify service handles null values gracefully
-        verify(possessionClaimResponsePersistenceService).saveDraftData(response);
+        verify(claimResponseService).saveDraftData(response);
     }
 
     @Test
@@ -999,7 +998,7 @@ class SubmitEventHandlerTest {
 
         // Mock service to throw exception
         doThrow(new IllegalStateException("No party found for IDAM ID"))
-            .when(possessionClaimResponsePersistenceService).saveDraftData(any());
+            .when(claimResponseService).saveDraftData(any());
 
         // When / Then - Exception should propagate (not caught by handler)
         // This tests that the handler doesn't swallow exceptions
@@ -1008,7 +1007,7 @@ class SubmitEventHandlerTest {
             () -> underTest.submit(eventPayload)
         )).hasMessage("No party found for IDAM ID");
 
-        verify(possessionClaimResponsePersistenceService).saveDraftData(response);
+        verify(claimResponseService).saveDraftData(response);
     }
 
     @Test
@@ -1045,7 +1044,7 @@ class SubmitEventHandlerTest {
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then - Verify service is called and success is returned
-        verify(possessionClaimResponsePersistenceService).saveDraftData(response);
+        verify(claimResponseService).saveDraftData(response);
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
         assertThat(result.getState()).isNull(); // Default response has null state
@@ -1065,7 +1064,7 @@ class SubmitEventHandlerTest {
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then - Service should NOT be called due to validation failure
-        verify(possessionClaimResponsePersistenceService, never()).saveDraftData(any());
+        verify(claimResponseService, never()).saveDraftData(any());
         assertThat(result.getErrors()).isNotEmpty();
     }
 

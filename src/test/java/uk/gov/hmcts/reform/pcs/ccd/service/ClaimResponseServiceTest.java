@@ -32,7 +32,15 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PossessionClaimResponsePersistenceServiceTest {
+class ClaimResponseServiceTest {
+
+    private static final UUID TEST_IDAM_ID = UUID.randomUUID();
+    private static final UUID TEST_PARTY_ID = UUID.randomUUID();
+    private static final AddressUK TEST_ADDRESS = AddressUK.builder()
+        .addressLine1("123 Test Street")
+        .postTown("London")
+        .postCode("SW1A 1AA")
+        .build();
 
     @Mock
     private PartyRepository partyRepository;
@@ -44,18 +52,10 @@ class PossessionClaimResponsePersistenceServiceTest {
     private ModelMapper modelMapper;
 
     @InjectMocks
-    private PossessionClaimResponsePersistenceService service;
+    private ClaimResponseService underTest;
 
     @Captor
     private ArgumentCaptor<PartyEntity> partyCaptor;
-
-    private static final UUID TEST_IDAM_ID = UUID.randomUUID();
-    private static final UUID TEST_PARTY_ID = UUID.randomUUID();
-    private static final AddressUK TEST_ADDRESS = AddressUK.builder()
-        .addressLine1("123 Test Street")
-        .postTown("London")
-        .postCode("SW1A 1AA")
-        .build();
 
     private PartyEntity testParty;
 
@@ -89,7 +89,7 @@ class PossessionClaimResponsePersistenceServiceTest {
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        service.saveDraftData(response);
+        underTest.saveDraftData(response);
 
         // Then
         verify(partyRepository, times(2)).save(partyCaptor.capture());
@@ -99,10 +99,10 @@ class PossessionClaimResponsePersistenceServiceTest {
         assertThat(savedParty.getAddress()).isEqualTo(addressEntity);
 
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
-        assertThat(savedPrefs.getContactByEmail()).isTrue();
-        assertThat(savedPrefs.getContactByPhone()).isFalse();
-        assertThat(savedPrefs.getContactByText()).isTrue();
-        assertThat(savedPrefs.getContactByPost()).isFalse();
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
@@ -122,7 +122,7 @@ class PossessionClaimResponsePersistenceServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveDraftData(response);
+        underTest.saveDraftData(response);
 
         // Then
         verify(partyRepository, times(2)).save(partyCaptor.capture());
@@ -147,10 +147,10 @@ class PossessionClaimResponsePersistenceServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveDraftData(response);
+        underTest.saveDraftData(response);
 
         // Then
-        verify(partyRepository, times(2)).save(partyCaptor.capture());
+        verify(partyRepository).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
         assertThat(savedParty.getEmailAddress()).isEqualTo("defendant@example.com");
         assertThat(savedParty.getPhoneNumber()).isNull();
@@ -173,13 +173,13 @@ class PossessionClaimResponsePersistenceServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveDraftData(response);
+        underTest.saveDraftData(response);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
         assertThat(savedParty.getContactPreferences()).isNotNull();
-        assertThat(savedParty.getContactPreferences().getContactByEmail()).isTrue();
+        assertThat(savedParty.getContactPreferences().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
     }
 
     @Test
@@ -193,7 +193,7 @@ class PossessionClaimResponsePersistenceServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(null);
 
         // When
-        assertThatThrownBy(() -> service.saveDraftData(response))
+        assertThatThrownBy(() -> underTest.saveDraftData(response))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Current user IDAM ID is null");
 
@@ -213,7 +213,7 @@ class PossessionClaimResponsePersistenceServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.empty());
 
         // When
-        assertThatThrownBy(() -> service.saveDraftData(response))
+        assertThatThrownBy(() -> underTest.saveDraftData(response))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No party found for IDAM ID:");
 
@@ -238,15 +238,15 @@ class PossessionClaimResponsePersistenceServiceTest {
         when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        service.saveDraftData(response);
+        underTest.saveDraftData(response);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());
         ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
-        assertThat(savedPrefs.getContactByEmail()).isFalse();
-        assertThat(savedPrefs.getContactByPhone()).isFalse();
-        assertThat(savedPrefs.getContactByText()).isFalse();
-        assertThat(savedPrefs.getContactByPost()).isFalse();
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
     }
 
     @Test
@@ -277,9 +277,10 @@ class PossessionClaimResponsePersistenceServiceTest {
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        service.saveDraftData(response);
+        underTest.saveDraftData(response);
 
         // Then
+        //Once for address being created, once for preferences being
         verify(partyRepository, times(2)).save(partyCaptor.capture());
         PartyEntity savedParty = partyCaptor.getValue();
 
@@ -293,10 +294,10 @@ class PossessionClaimResponsePersistenceServiceTest {
         assertThat(savedParty.getEmailAddress()).isEqualTo("test@example.com");
 
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
-        assertThat(savedPrefs.getContactByEmail()).isTrue();
-        assertThat(savedPrefs.getContactByPhone()).isTrue();
-        assertThat(savedPrefs.getContactByText()).isTrue();
-        assertThat(savedPrefs.getContactByPost()).isTrue();
+        assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.YES);
     }
 
     private PossessionClaimResponse buildResponse(Party party, DefendantResponses defendantResponses) {
