@@ -35,7 +35,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         //extract data from event
         PossessionClaimResponse defendantResponse = eventPayload.caseData().getPossessionClaimResponse();
         // Check if defendant clicked "Submit" (final) or "Save and come back later" (draft)
-        YesOrNo submitFlag = Optional.ofNullable(eventPayload.caseData().getSubmitDraftAnswers()).orElse(YesOrNo.NO);
+        boolean submitDraftAnswers = Optional.ofNullable(eventPayload.caseData().getSubmitDraftAnswers())
+            .map(YesOrNo::toBoolean)
+            .orElse(false);
 
         log.info("RespondPossessionClaim submit callback invoked for Case Reference: {}", caseReference);
 
@@ -46,7 +48,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         //Always submit draft data, even if we are doing the 'final' submission
         SubmitResponse<State> draftSubmitResponse = processDraftSubmit(caseReference, defendantResponse);
-        return submitFlag.toBoolean() ? processFinalSubmit(caseReference) : draftSubmitResponse;
+        return submitDraftAnswers ? processFinalSubmit(caseReference) : draftSubmitResponse;
     }
 
     private SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {
