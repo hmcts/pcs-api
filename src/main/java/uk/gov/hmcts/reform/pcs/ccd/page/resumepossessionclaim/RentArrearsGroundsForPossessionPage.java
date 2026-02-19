@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.AssuredRentArrearsPossessionGrounds;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 /**
@@ -25,19 +25,19 @@ public class RentArrearsGroundsForPossessionPage implements CcdPageConfiguration
                 .label("groundForPossessionRentArrears-info", """
                 ---
                 <p class="govuk-body">You may have already given the defendants notice of your intention to begin
-                    possession proceedings. If you have, you should have written the grounds you’re making your
-                    claim under. You should select these grounds here.</p>
+                    possession proceedings and written which grounds you’re making the possession claim under.
+                     You should select these grounds here.</p>
                 <h2 class="govuk-!-font-size-19 govuk-!-margin-bottom-1">Serious rent arrears (ground 8)</h2>
                 <p class="govuk-body">Mandatory ground. Can be used if the defendants owe at least:</p>
                 <ul class="govuk-list govuk-list--bullet">
                     <li class="govuk-list govuk-!-font-size-19 govuk-!-margin-0">eight weeks’ rent if they pay
-                        weekly or forthnightly</li>
+                        weekly or fortnightly</li>
                     <li class="govuk-list govuk-!-font-size-19 govuk-!-margin-0">two months’ rent if they pay
                         monthly</li>
                     <li class="govuk-list govuk-!-font-size-19 govuk-!-margin-0">three months’ rent if they pay
                         quarterly or yearly</li>
                 </ul>
-                <p class="govuk-body">The defendants must owe the rent when the notice is served and the time of the
+                <p class="govuk-body">The defendants must owe the rent when the notice is served and at the time of the
                     hearing.</p>
                 <h2 class="govuk-!-font-size-19 govuk-!-margin-bottom-1">Rent arrears (ground 10)</h2>
                 <p class="govuk-body">Discretionary ground. The defendants are in any amount of arrears.</p>
