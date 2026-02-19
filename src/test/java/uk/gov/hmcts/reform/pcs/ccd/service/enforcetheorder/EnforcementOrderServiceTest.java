@@ -8,7 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -53,33 +52,13 @@ class EnforcementOrderServiceTest {
     private static final long CASE_REFERENCE = 1234L;
 
     @Test
-    void shouldReturnEnforcementOrderWhenFound() {
-        // Given
-        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
-        final ClaimEntity claimEntity = pcsCaseEntity.getClaims().getFirst();
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
-        final EnforcementOrderEntity enforcementOrderEntity =
-                EnforcementDataUtil.buildEnforcementOrderEntity(enforcementOrderId, claimEntity, enforcementOrder);
-        when(enforcementOrderRepository.findById(enforcementOrderId)).thenReturn(Optional.of(enforcementOrderEntity));
-
-        // When
-        EnforcementOrderEntity retrievedEnforcementOrderEntity =
-                enforcementOrderService.loadEnforcementOrder(enforcementOrderId);
-
-        // Then
-        assertThat(retrievedEnforcementOrderEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        assertThat(retrievedEnforcementOrderEntity.getId()).isEqualTo(enforcementOrderId);
-        assertThat(retrievedEnforcementOrderEntity.getClaim().getId()).isEqualTo(claimId);
-    }
-
-    @Test
     void shouldSaveNewSubmittedEnforcementData() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
-                .thenReturn(Optional.of(pcsCaseEntity));
+            .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementOrderRepository.save(any())).thenReturn(new EnforcementOrderEntity());
         when(strategyFactory.getStrategy(enforcementOrder.getSelectEnforcementType()))
             .thenReturn(mock(EnforcementTypeStrategy.class));

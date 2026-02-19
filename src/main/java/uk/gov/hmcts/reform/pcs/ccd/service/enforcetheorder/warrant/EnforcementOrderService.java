@@ -15,10 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -29,11 +27,6 @@ public class EnforcementOrderService {
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
-
-    public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
-        return enforcementOrderRepository.findById(id)
-                .orElseThrow(() -> new EnforcementOrderNotFoundException(id));
-    }
 
     public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
         createEnforcementOrder(caseReference, enforcementOrder);

@@ -36,7 +36,7 @@ public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementDogsOrOtherAnimalsDetails)
+                .mandatory(EnforcementRiskDetails::getAnimalsDetails)
                 .done()
                 .label("aggressiveAnimalsRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails();
+                .getWarrantDetails().getRiskDetails().getAnimalsDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,
