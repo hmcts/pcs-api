@@ -75,4 +75,10 @@ public class WritDetails {
         label = "Has the claim been transferred to the High Court?"
     )
     private YesOrNo hasClaimTransferredToHighCourt;
+
+    @CCD(
+        searchable = false,
+        label = "TEMPORARY TEST ONLY – was the general application to transfer to the High Court successful?"
+    )
+    private YesOrNo wasGeneralApplicationToTransferToHighCourtSuccessful;
 }
