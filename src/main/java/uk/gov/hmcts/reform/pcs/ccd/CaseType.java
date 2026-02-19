@@ -83,5 +83,10 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
         builder.tab("serviceRequest", "Service Request")
             .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
             .field("waysToPay");
+
+        builder.tab("caseLinks", "Linked cases")
+            .forRoles(UserRole.PCS_SOLICITOR)
+            .field(PCSCase::getLinkedCasesComponentLauncher, null, "#ARGUMENT(LinkedCases)")
+            .field(PCSCase::getCaseLinks, "LinkedCasesComponentLauncher!=\"\"", "#ARGUMENT(LinkedCases)");
     }
 }

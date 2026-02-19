@@ -35,6 +35,10 @@ public class PcsCaseMergeService {
             pcsCaseEntity.setCaseManagementLocation(pcsCase.getCaseManagementLocation());
         }
 
+        if (pcsCase.getCaseLinks() != null) {
+            pcsCaseEntity.mergeCaseLinks(pcsCase.getCaseLinks());
+        }
+
         pcsCaseEntity.setTenancyLicence(tenancyLicenceService.createTenancyLicenceEntity(pcsCase));
     }
 

@@ -1,30 +1,24 @@
 package uk.gov.hmcts.reform.pcs.ccd.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import uk.gov.hmcts.ccd.sdk.type.CaseLink;
+import uk.gov.hmcts.ccd.sdk.type.LinkReason;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.LAZY;
@@ -77,6 +71,12 @@ public class PcsCaseEntity {
     @JsonManagedReference
     private List<DocumentEntity> documents = new ArrayList<>();
 
+    @OneToMany(mappedBy = "pcsCase",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true)
+    @Builder.Default
+    private List<CaseLinkEntity> caseLinks = new ArrayList<>();
+
     public void setTenancyLicence(TenancyLicenceEntity tenancyLicence) {
         if (this.tenancyLicence != null) {
             this.tenancyLicence.setPcsCase(null);
@@ -104,5 +104,53 @@ public class PcsCaseEntity {
             document.setPcsCase(this);
             this.documents.add(document);
         }
+    }
+
+    public void mergeCaseLinks(List<ListValue<CaseLink>> incoming) {
+
+        if (incoming == null) {
+            this.caseLinks.clear();
+            return;
+        }
+
+        Map<Long, CaseLinkEntity> existing =
+            this.caseLinks.stream()
+                .collect(Collectors.toMap(
+                    CaseLinkEntity::getLinkedCaseReference,
+                    Function.identity()
+                ));
+
+        List<CaseLinkEntity> result = new ArrayList<>();
+
+        for (ListValue<CaseLink> lv : incoming) {
+            CaseLink dto = lv.getValue();
+            Long ref = Long.valueOf(dto.getCaseReference());
+
+            CaseLinkEntity entity = existing.remove(ref);
+
+            if (entity == null) {
+                entity = new CaseLinkEntity();
+                entity.setPcsCase(this);
+                entity.setLinkedCaseReference(ref);
+            }
+
+            entity.setCcdListId(dto.getCaseType());
+
+            entity.getReasons().clear();
+
+            if (dto.getReasonForLink() != null) {
+                for (ListValue<LinkReason> r : dto.getReasonForLink()) {
+                    entity.addReason(
+                        r.getValue().getReason(),
+                        r.getValue().getDescription()
+                    );
+                }
+            }
+
+            result.add(entity);
+        }
+
+        this.caseLinks.clear();
+        this.caseLinks.addAll(result);
     }
 }
