@@ -33,16 +33,5 @@ CREATE TABLE public.claim_party (
   PRIMARY KEY (claim_id, party_id)
 );
 
-CREATE TABLE public.contact_preferences (
-  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  party_id            UUID NOT NULL REFERENCES public.party (id),
-  contact_by_email    BOOLEAN DEFAULT FALSE,
-  contact_by_text     BOOLEAN DEFAULT FALSE,
-  contact_by_post     BOOLEAN DEFAULT FALSE,
-  contact_by_phone    BOOLEAN DEFAULT FALSE
-);
-
-CREATE INDEX idx_contact_preferences_party_id ON public.contact_preferences (party_id);
-
 ALTER TABLE public.pcs_case DROP COLUMN defendant_details;
 ALTER TABLE public.pcs_case DROP COLUMN underlessee_mortgagee_details;
