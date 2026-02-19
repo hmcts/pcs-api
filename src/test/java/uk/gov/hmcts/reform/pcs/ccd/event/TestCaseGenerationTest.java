@@ -211,7 +211,7 @@ class TestCaseGenerationTest {
     void shouldSubmitEnforcementWarrantBasicCase() {
         // Given
         Long caseReference = 456L;
-        String label = TestCaseGeneration.ENFORCEMENT_CASE_GENERATOR;
+        String label = "Create Enforcement Warrant Basic Case";
 
         DynamicList testFilesList = DynamicList.builder()
             .value(DynamicListElement.builder().label(label).build())
@@ -234,7 +234,7 @@ class TestCaseGenerationTest {
 
         // Then
         assertThat(response.getState()).isEqualTo(State.CASE_ISSUED);
-        verify(spyUnderTest).makeAClaimTestCreation(TestCaseGeneration.MAKE_A_CLAIM_CASE_GENERATOR, caseReference);
+        verify(spyUnderTest).makeAClaimTestCreation("Create-Case-Make-A-Claim-Basic-Case", caseReference);
         verify(enforceTheOrder).submitOrder(caseReference, loadedCase);
     }
 
