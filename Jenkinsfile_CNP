@@ -112,9 +112,10 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
-    // Fallback: if E2E ran on PR (artifacts exist), send Slack (library may not expose e2eTest:preview)
+    echo "[E2E Slack] functionalTest:preview afterAlways ran. CHANGE_ID=${env.CHANGE_ID}"
     if (env.CHANGE_ID) {
       def e2eRan = sh(script: 'test -f e2e-output/widgets/summary.json || test -d src/e2eTest/allure-results', returnStatus: true) == 0
+      echo "[E2E Slack] E2E artifacts present: ${e2eRan}"
       if (e2eRan) {
         archiveE2eTestReports()
         postAllureResultsToSlack('preview')
@@ -133,12 +134,13 @@ withPipeline(type, product, component) {
     }
   }
 
-  // Preview: library may use "e2eTest:preview" or just "e2eTest" for PR – support both
   afterAlways('e2eTest:preview') {
+    echo "[E2E Slack] e2eTest:preview afterAlways ran"
     archiveE2eTestReports()
     postAllureResultsToSlack('preview')
   }
   afterAlways('e2eTest') {
+    echo "[E2E Slack] e2eTest afterAlways ran. CHANGE_ID=${env.CHANGE_ID}"
     if (env.CHANGE_ID != null && env.CHANGE_ID != '') {
       archiveE2eTestReports()
       postAllureResultsToSlack('preview')
@@ -202,8 +204,9 @@ def archiveE2eTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
-// E2E Slack notification (master only, only when E2E stage has failures).
+// E2E Slack notification (master: only on failure; preview: when E2E runs).
 def postAllureResultsToSlack(String pipelineType = 'master') {
+  echo "[E2E Slack] postAllureResultsToSlack called pipelineType=${pipelineType}"
   env.E2E_SERVICE_NAME = 'pcs-api'
   env.E2E_PIPELINE_TYPE = pipelineType
   def msg = sh(
@@ -214,8 +217,8 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
   try {
-    slackSend(channel: '#qa-pipeline-status', message: msg)
-    echo "E2E Slack notification sent to #qa-pipeline-status"
+    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+    echo "[E2E Slack] Notification sent to #hdp-qa-e2e-test-results"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
