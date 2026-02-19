@@ -6,14 +6,35 @@ import { ValidationRegistry } from '@utils/registry/validation.registry';
 import { AxeUtils} from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from '@utils/test-logger';
+import { flowchartLogger } from '../generators/flowchartBuilder';
+import { textCaptureService } from '../generators/text-capture';
 
 let testExecutor: { page: Page };
 let previousUrl: string = '';
 let captureDataForCYAPage = false;
 
+// ONE-LINE CONFIGURATION
+const ENABLE_FLOWCHART = true;
+const ENABLE_TEXT_CAPTURE = true;
+const INCLUDE_LOCATORS = true;
+
 export function initializeExecutor(page: Page): void {
   testExecutor = { page };
-  previousUrl = page.url();
+
+  if (ENABLE_FLOWCHART) flowchartLogger.enable();
+  if (ENABLE_TEXT_CAPTURE) textCaptureService.enable();
+  if (INCLUDE_LOCATORS) textCaptureService.setIncludeLocators(true);
+}
+
+export function startNewTest(): void {
+  flowchartLogger.resetForNewTest();
+}
+
+// Add this function to close flowchart after ALL tests
+export function finalizeAllTests(): void {
+  flowchartLogger.closeFlowchart();
+  const executor = getExecutor();
+  previousUrl = executor.page.url();
   captureDataForCYAPage = false;
 }
 
@@ -100,8 +121,20 @@ export async function performAction(action: string, fieldName?: actionData | act
     await actionInstance.execute(executor.page, action, fieldName, value);
     await logToBrowser(executor.page, stepText);
   });
-  await validatePageIfNavigated(action);
+
+  await executor.page.waitForTimeout(1000);
+
+  // ALWAYS log to flowchart after every action
+  await textCaptureService.capturePageText(executor.page);
+  await flowchartLogger.logNavigation(executor.page);
 }
+
+// // Add this function to capture final page of each test
+// export async function finalizeTest(): Promise<void> {
+//   const executor = getExecutor();
+//   await flowchartLogger.forceLogFinalPage(executor.page);
+//   await validatePageIfNavigated(action);
+// }
 
 export async function performValidation(validation: string, inputFieldName?: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
   const executor = getExecutor();

@@ -3,8 +3,17 @@ import { actionData, actionRecord, actionTuple } from './interfaces/action.inter
 import { validationData, validationRecord, validationTuple } from './interfaces/validation.interface';
 import { ValidationRegistry } from './registry/registry-enforcement/validation-enforcement.registry';
 import { ActionEnforcementRegistry } from './registry/registry-enforcement/action-enforcement.registry';
+import { logToBrowser } from '@utils/test-logger';
+import { flowchartLogger } from '../generators/flowchartBuilder';
+import { textCaptureService } from '../generators/text-capture';
 
 let testExecutor: { page: Page };
+let previousUrl: string = '';
+
+// ONE-LINE CONFIGURATION
+const ENABLE_FLOWCHART = true;
+const ENABLE_TEXT_CAPTURE = true;
+const INCLUDE_LOCATORS = true;
 
 export function initializeEnforcementExecutor(page: Page): void {
   testExecutor = { page };
@@ -15,6 +24,37 @@ function getExecutor(): { page: Page } {
     throw new Error('Test executor not initialized. Call initializeExecutor(page) first.');
   }
   return testExecutor;
+}
+export function initializeExecutor(page: Page): void {
+  testExecutor = { page };
+
+  if (ENABLE_FLOWCHART) flowchartLogger.enable();
+  if (ENABLE_TEXT_CAPTURE) textCaptureService.enable();
+  if (INCLUDE_LOCATORS) textCaptureService.setIncludeLocators(true);
+}
+
+export function startNewTest(): void {
+  flowchartLogger.resetForNewTest();
+}
+
+// Add this function to close flowchart after ALL tests
+export function finalizeAllTests(): void {
+  flowchartLogger.closeFlowchart();
+  const executor = getExecutor();
+  previousUrl = executor.page.url();
+}
+
+async function detectPageNavigation(): Promise<boolean> {
+  const executor = getExecutor();
+  const currentUrl = executor.page.url();
+
+  const pageNavigated = currentUrl !== previousUrl;
+
+  if (pageNavigated) {
+    previousUrl = currentUrl;
+  }
+
+  return pageNavigated;
 }
 
 export async function performAction(action: string, fieldName?: actionData | actionRecord, value?: actionData | actionRecord): Promise<void> {
@@ -34,7 +74,14 @@ export async function performAction(action: string, fieldName?: actionData | act
   const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
   await test.step(stepText, async () => {
     await actionInstance.execute(executor.page, action, fieldName, value);
+    await logToBrowser(executor.page, stepText);
   });
+
+  await executor.page.waitForTimeout(1000);
+
+  // ALWAYS log to flowchart after every action
+  await textCaptureService.capturePageText(executor.page);
+  await flowchartLogger.logNavigation(executor.page);
 }
 
 export async function performValidation(validation: string, inputFieldName: validationData | validationRecord, inputData?: validationData | validationRecord): Promise<void> {
