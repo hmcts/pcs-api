@@ -36,7 +36,7 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementProtestGroupMemberDetails)
+                .mandatory(EnforcementRiskDetails::getProtestGroupDetails)
                 .done()
                 .label("protestorGroupRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementProtestGroupMemberDetails();
+                .getWarrantDetails().getRiskDetails().getProtestGroupDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,
