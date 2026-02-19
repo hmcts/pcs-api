@@ -59,7 +59,8 @@ class SubmitEventHandlerTest {
     @BeforeEach
     void setUp() {
         underTest =
-            new SubmitEventHandler(draftCaseDataService, immutableFieldValidator, possessionClaimResponsePersistenceService);
+            new SubmitEventHandler(draftCaseDataService,
+                immutableFieldValidator, possessionClaimResponsePersistenceService);
     }
 
     // ========== DRAFT SAVE FLOW (submitDraftAnswers = NO) ==========
