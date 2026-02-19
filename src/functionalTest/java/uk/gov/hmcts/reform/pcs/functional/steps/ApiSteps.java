@@ -1,15 +1,10 @@
 package uk.gov.hmcts.reform.pcs.functional.steps;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Callable;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -20,12 +15,12 @@ import org.awaitility.core.ConditionTimeoutException;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
+import uk.gov.hmcts.reform.pcs.functional.testutils.JsonAssertUtils;
 import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
 import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.solicitorUser;
@@ -90,6 +85,12 @@ public class ApiSteps {
         request = request.header(TestConstants.SERVICE_AUTHORIZATION, expiredS2sToken);
     }
 
+    @Step("the request contains an Idempotency-Key header")
+    public void theRequestContainsIdempotencyKeyHeader() {
+        String idempotencyKey = UUID.randomUUID().toString();
+        request = request.header("Idempotency-Key", idempotencyKey);
+    }
+
     @Step("the request contains the path parameter {0} as {1}")
     public void theRequestContainsThePathParameter(String pathParam, String value) {
         request = request.pathParam(pathParam, value);
@@ -137,12 +138,11 @@ public class ApiSteps {
     }
 
     @Step("the response body matches the expected response")
-    public void theResponseBodyMatchesTheExpectedResponse(String expectedResponsePath) throws IOException {
-        String expectedResponse = new String(Files.readAllBytes(Paths.get(expectedResponsePath)));
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode expectedJson = mapper.readTree(expectedResponse);
-        JsonNode actualJson = mapper.readTree(SerenityRest.lastResponse().asString());
-        assertEquals(expectedJson, actualJson);
+    public void theResponseBodyMatchesTheExpectedResponse(String expectedPath) {
+        JsonAssertUtils.assertEqualsIgnoreFields(
+            expectedPath,
+            SerenityRest.lastResponse().getBody().asString()
+        );
     }
 
     @Step("the request contains a valid IDAM token")
