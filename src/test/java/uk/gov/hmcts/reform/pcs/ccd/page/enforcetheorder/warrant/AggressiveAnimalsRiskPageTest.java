@@ -36,9 +36,9 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                            .enforcementRiskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
+                            .riskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
                             .riskDetails(EnforcementRiskDetails.builder()
-                                .enforcementDogsOrOtherAnimalsDetails(riskDetails)
+                                .animalsDetails(riskDetails)
                                 .build())
                             .build())
                         .build())
@@ -50,7 +50,7 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                .getRiskDetails().getEnforcementDogsOrOtherAnimalsDetails()).isEqualTo(riskDetails);
+                .getRiskDetails().getAnimalsDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -60,9 +60,9 @@ class AggressiveAnimalsRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
+                                .riskCategories(Set.of(RiskCategory.AGGRESSIVE_ANIMALS))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementDogsOrOtherAnimalsDetails(longText)
+                                        .animalsDetails(longText)
                                         .build())
                                 .build())
                         .build())
