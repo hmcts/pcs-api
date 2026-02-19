@@ -6,7 +6,15 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
-import uk.gov.hmcts.ccd.sdk.type.*;
+import uk.gov.hmcts.ccd.sdk.type.AddressUK;
+import uk.gov.hmcts.ccd.sdk.type.CaseLink;
+import uk.gov.hmcts.ccd.sdk.type.ComponentLauncher;
+import uk.gov.hmcts.ccd.sdk.type.Document;
+import uk.gov.hmcts.ccd.sdk.type.DynamicList;
+import uk.gov.hmcts.ccd.sdk.type.FieldType;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.WaysToPay;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CaseLinkingAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.ClaimantAccess;
@@ -27,8 +35,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
-import static uk.gov.hmcts.ccd.sdk.type.FieldType.*;
 
 
 /**
@@ -81,7 +87,7 @@ public class PCSCase {
     private YesOrNo showPropertyNotEligiblePage;
 
     @CCD(
-        typeOverride = DynamicRadioList
+        typeOverride = FieldType.DynamicRadioList
     )
     @External
     private DynamicStringList crossBorderCountriesList;
@@ -99,7 +105,7 @@ public class PCSCase {
     private String crossBorderCountry2;
 
     @CCD(access = {CaseLinkingAccess.class},
-        typeOverride = Collection,
+        typeOverride = FieldType.Collection,
         label = "Linked Cases",
         typeParameterOverride = "CaseLink")
     @Builder.Default
@@ -173,7 +179,7 @@ public class PCSCase {
     @CCD(
         label = "Give details about the attempted mediation and what the outcome was",
         hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
+        typeOverride = FieldType.TextArea
     )
     private String mediationAttemptedDetails;
 
@@ -185,7 +191,7 @@ public class PCSCase {
     @CCD(
         label = "Explain what steps you’ve taken to reach a settlement",
         hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
+        typeOverride = FieldType.TextArea
     )
     private String settlementAttemptedDetails;
 
@@ -207,7 +213,7 @@ public class PCSCase {
     @CCD(
         label = "Who is the claimant in this case?",
         hint = "If you’re a legal representative, you should select the type of claimant you’re representing",
-        typeOverride = DynamicRadioList
+        typeOverride = FieldType.DynamicRadioList
     )
     private DynamicStringList claimantType;
 
@@ -238,7 +244,7 @@ public class PCSCase {
     @CCD(
         label = "Why are you making this claim?",
         hint = "You can enter up to 250 characters",
-        typeOverride = TextArea
+        typeOverride = FieldType.TextArea
     )
     private String prohibitedConductWalesClaimDetails;
 
@@ -365,7 +371,7 @@ public class PCSCase {
         label = "In the alternative to possession, would you like to claim suspension of right to buy"
             + " or demotion of tenancy?",
         hint = "Select all that apply",
-        typeOverride = MultiSelectList,
+        typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "AlternativesToPossession"
     )
     private Set<AlternativesToPossession> alternativesToPossession;
@@ -486,7 +492,7 @@ public class PCSCase {
 
     @CCD(
         label = "Select an operation to perform.",
-        typeOverride = DynamicRadioList
+        typeOverride = FieldType.DynamicRadioList
     )
     private DynamicList testCaseSupportFileList;
 

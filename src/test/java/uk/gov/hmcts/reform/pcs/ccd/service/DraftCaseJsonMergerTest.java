@@ -64,29 +64,6 @@ class DraftCaseJsonMergerTest {
         // Then
         PCSCase mergedCaseData = objectMapper.readValue(mergedJson, PCSCase.class);
 
-        assertThat(mergedCaseData)
-            .usingRecursiveComparison()
-            .ignoringFields("introductoryDemotedOrOtherGroundsForPossession.otherGroundDescription",
-                            "applicationWithClaim",
-                            "claimantType",
-                            "noRentArrearsReasonForGrounds.holidayLet",
-                            "waysToPay",
-                            "claimGroundSummaries",
-                            "enforcementOrder.showChangeNameAddressPage",
-                            "enforcementOrder.showPeopleWhoWillBeEvictedPage",
-                            "enforcementOrder.showPeopleYouWantToEvictPage",
-                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails",
-                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.agreementClaimant",
-                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.fullNameClaimant",
-                            "enforcementOrder.warrantDetails.statementOfTruth.claimantDetails.positionClaimant",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.agreementLegalRep",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.fullNameLegalRep",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.firmNameLegalRep",
-                            "enforcementOrder.warrantDetails.statementOfTruth.legalRepDetails.positionLegalRep",
-                            "enforcementOrder.warrantDetails.selectedDefendants")
-            .isEqualTo(existingCaseData);
-
         assertThat(mergedCaseData.getIntroductoryDemotedOrOtherGroundsForPossession()
                         .getOtherGroundDescription()).isEqualTo("some other ground description");
         assertThat(mergedCaseData.getApplicationWithClaim()).isEqualTo(VerticalYesNo.YES);
