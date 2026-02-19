@@ -305,8 +305,12 @@ sonarqube {
       "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/PCSCaseView.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
       "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/event/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/ccd/service/**/*.java," +
       "**/entities/**," + "**/model/**," + "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java"
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
   }
@@ -500,7 +504,7 @@ tasks.named('integration') {
 
 tasks.withType(CftlibExec).configureEach {
   group = 'ccd tasks'
-  authMode = AuthMode.Local
+  authMode = AuthMode.AAT
 
   //Attach mockito agent for inline mocking to remove warning in logs
   classpath += configurations.mockitoAgentConfig
