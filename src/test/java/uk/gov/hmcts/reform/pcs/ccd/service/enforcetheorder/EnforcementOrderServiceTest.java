@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writofrestitution.WritOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -27,6 +28,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
@@ -63,11 +65,18 @@ class EnforcementOrderServiceTest {
 
     @Mock
     private EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
+
+    @Mock
+    private WritOfRestitutionRepository writOfRestitutionRepository;
+
     @InjectMocks
     private EnforcementOrderService enforcementOrderService;
 
     @Captor
-    private ArgumentCaptor<List<EnforcementSelectedDefendantEntity>> captor;
+    private ArgumentCaptor<List<EnforcementSelectedDefendantEntity>> enforcementSelectedDefendantEntityCaptor;
+
+    @Captor
+    private ArgumentCaptor<WritOfRestitutionEntity> writOfRestitutionEntityCaptor;
 
     @Captor
     private ArgumentCaptor<EnforcementOrderEntity> enforcementOrderEntityCaptor;
@@ -261,7 +270,7 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
-    void shouldAddSelectedDefendantsWhenProvided() {
+    void shouldAddSelectedDefendantsAndCreateWritOfRestitutionWhenProvided() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         String jessMayID = UUID.randomUUID().toString();
@@ -303,9 +312,13 @@ class EnforcementOrderServiceTest {
         verify(draftCaseDataService)
             .deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
 
-        verify(enforcementSelectedDefendantRepository, times(1)).saveAll(captor.capture());
-        List<EnforcementSelectedDefendantEntity> savedEntities = captor.getValue();
+        verify(enforcementSelectedDefendantRepository, times(1))
+            .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
+        List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
         assertThat(savedEntities).hasSize(1);
+
+        verify(writOfRestitutionRepository, times(1))
+            .save(writOfRestitutionEntityCaptor.capture());
 
         EnforcementSelectedDefendantEntity savedEntity = savedEntities.getFirst();
 
@@ -362,8 +375,9 @@ class EnforcementOrderServiceTest {
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        verify(enforcementSelectedDefendantRepository, times(1)).saveAll(captor.capture());
-        List<EnforcementSelectedDefendantEntity> savedEntities = captor.getValue();
+        verify(enforcementSelectedDefendantRepository, times(1))
+            .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
+        List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
 
         assertThat(savedEntities).hasSize(2);
         assertThat(savedEntities)

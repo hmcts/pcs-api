@@ -15,11 +15,13 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writofrestitution.WritOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
@@ -39,6 +41,7 @@ public class EnforcementOrderService {
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
     private final SelectedDefendantsMapper selectedDefendantsMapper;
+    private final WritOfRestitutionRepository writOfRestitutionRepository;
 
     public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
         return enforcementOrderRepository.findById(id)
@@ -79,8 +82,13 @@ public class EnforcementOrderService {
         List<EnforcementSelectedDefendantEntity> selectedDefendantsEntities =
             selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
 
+        WritOfRestitutionEntity writOfRestitutionEntity = new WritOfRestitutionEntity();
+        writOfRestitutionEntity.setEnforcementCase(enforcementOrderEntity);
+
+
         if (!CollectionUtils.isEmpty(selectedDefendantsEntities)) {
             enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
+            writOfRestitutionRepository.save(writOfRestitutionEntity);
         }
     }
 
@@ -116,7 +124,6 @@ public class EnforcementOrderService {
                         rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableReasonText());
             }
         }
-
         return entity;
     }
 }
