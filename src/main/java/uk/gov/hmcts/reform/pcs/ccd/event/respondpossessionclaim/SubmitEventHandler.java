@@ -12,7 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
-import uk.gov.hmcts.reform.pcs.ccd.service.DefendantContactPreferencesService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PossessionClaimResponsePersistenceService;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +26,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final DraftCaseDataService draftCaseDataService;
     private final ImmutablePartyFieldValidator immutableFieldValidator;
-    private final DefendantContactPreferencesService possessionResponseSaveDraftToMainDatabaseService;
+    private final PossessionClaimResponsePersistenceService possessionResponseSaveDraftToMainDatabaseService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {

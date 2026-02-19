@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
@@ -17,7 +16,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.util.YesOrNoConverter;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -27,7 +25,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class DefendantContactPreferencesService {
+public class PossessionClaimResponsePersistenceService {
 
     private final PartyRepository partyRepository;
     private final SecurityContextService securityContextService;
@@ -101,6 +99,7 @@ public class DefendantContactPreferencesService {
             } else {
                 party.setAddress(modelMapper.map(newAddress, AddressEntity.class));
             }
+            updated = true;
         }
 
         if (updated) {
@@ -119,24 +118,12 @@ public class DefendantContactPreferencesService {
             party.setContactPreferences(contactPrefs);
         }
 
-        contactPrefs.setContactByEmail(toBooleanOrFalse(defendantResponse.getContactByEmail()));
-        contactPrefs.setContactByText(toBooleanOrFalse(defendantResponse.getContactByText()));
-        contactPrefs.setContactByPost(toBooleanOrFalse(defendantResponse.getContactByPost()));
-        contactPrefs.setContactByPhone(toBooleanOrFalse(defendantResponse.getContactByPhone()));
+        contactPrefs.setContactByEmail(YesOrNoConverter.toBoolean(defendantResponse.getContactByEmail()));
+        contactPrefs.setContactByText(YesOrNoConverter.toBoolean(defendantResponse.getContactByText()));
+        contactPrefs.setContactByPost(YesOrNoConverter.toBoolean(defendantResponse.getContactByPost()));
+        contactPrefs.setContactByPhone(YesOrNoConverter.toBoolean(defendantResponse.getContactByPhone()));
 
         partyRepository.save(party);
         log.debug("Saved contact preferences for party ID: {}", party.getId());
-    }
-
-    /**
-     * Converts YesOrNo to Boolean with safe null handling.
-     * Returns false if the input is null (defaults to "no contact" preference).
-     *
-     * @param yesOrNo the YesOrNo value to convert
-     * @return true if YES, false if NO or null
-     */
-    private Boolean toBooleanOrFalse(VerticalYesNo yesOrNo) {
-        return Optional.ofNullable(YesOrNoConverter.toBoolean(yesOrNo))
-            .orElse(false);
     }
 }

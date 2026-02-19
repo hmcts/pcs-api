@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class DefendantContactPreferencesServiceTest {
+class PossessionClaimResponsePersistenceServiceTest {
 
     @Mock
     private PartyRepository partyRepository;
@@ -44,7 +44,7 @@ class DefendantContactPreferencesServiceTest {
     private ModelMapper modelMapper;
 
     @InjectMocks
-    private DefendantContactPreferencesService service;
+    private PossessionClaimResponsePersistenceService service;
 
     @Captor
     private ArgumentCaptor<PartyEntity> partyCaptor;
