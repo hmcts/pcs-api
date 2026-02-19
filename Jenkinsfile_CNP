@@ -115,7 +115,9 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
-    postFunctionalTestResultsToSlack('preview')
+    if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
+      postFunctionalTestResultsToSlack('preview')
+    }
     echo "[E2E Slack] functionalTest:preview afterAlways ran. CHANGE_ID=${env.CHANGE_ID}"
     if (env.CHANGE_ID) {
       def e2eRan = sh(script: 'test -f e2e-output/widgets/summary.json || test -d src/e2eTest/allure-results', returnStatus: true) == 0
@@ -129,7 +131,9 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
-    postFunctionalTestResultsToSlack('master')
+    if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
+      postFunctionalTestResultsToSlack('master')
+    }
   }
 
   afterAlways('e2eTest:aat') {
