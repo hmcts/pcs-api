@@ -137,7 +137,6 @@ class PossessionClaimResponsePersistenceServiceTest {
         PossessionClaimResponse response = buildResponse(
             Party.builder()
                 .emailAddress("defendant@example.com")
-                .address(TEST_ADDRESS)
                 .build(),
             DefendantResponses.builder()
                 .contactByEmail(VerticalYesNo.YES)
@@ -194,7 +193,6 @@ class PossessionClaimResponsePersistenceServiceTest {
             Party.builder()
                 .phoneNumber("")
                 .emailAddress("   ")
-                .address(TEST_ADDRESS)
                 .build(),
             DefendantResponses.builder()
                 .contactByEmail(VerticalYesNo.YES)
@@ -257,7 +255,6 @@ class PossessionClaimResponsePersistenceServiceTest {
     void shouldHandleAllPreferencesSetToNo() {
         // Given
         PossessionClaimResponse response = buildResponse(Party.builder()
-                .address(TEST_ADDRESS)
                 .build(),
             DefendantResponses.builder()
                 .contactByEmail(VerticalYesNo.NO)

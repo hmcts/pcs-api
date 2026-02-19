@@ -85,7 +85,7 @@ public class PossessionClaimResponsePersistenceService {
 
         AddressUK newAddress = defendantResponse.getParty().getAddress();
 
-        if (StringUtils.isNotBlank(newAddress.getAddressLine1())) {
+        if (newAddress != null && StringUtils.isNotBlank(newAddress.getAddressLine1())) {
             AddressEntity existingAddress = party.getAddress();
 
             if (existingAddress != null) {
