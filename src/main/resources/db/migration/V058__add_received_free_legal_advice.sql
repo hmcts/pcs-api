@@ -1,0 +1,4 @@
+CREATE TYPE YES_NO_PREFER_NOT_TO_SAY AS ENUM ('YES', 'NO', 'PREFER_NOT_TO_SAY');
+
+ALTER TABLE defendant_response
+    ADD COLUMN received_free_legal_advice YES_NO_PREFER_NOT_TO_SAY;

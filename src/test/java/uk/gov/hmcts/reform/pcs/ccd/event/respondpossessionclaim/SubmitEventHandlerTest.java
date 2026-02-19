@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
@@ -48,7 +49,9 @@ class SubmitEventHandlerTest {
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
-    ClaimResponseService claimResponseService;
+    private ClaimResponseService claimResponseService;
+    @Mock
+    private DefendantResponseService defendantResponseService;
 
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
@@ -59,7 +62,8 @@ class SubmitEventHandlerTest {
     void setUp() {
         underTest =
             new SubmitEventHandler(draftCaseDataService,
-                immutableFieldValidator, claimResponseService);
+                immutableFieldValidator, claimResponseService,
+                defendantResponseService);
     }
 
     // ========== DRAFT SAVE FLOW (submitDraftAnswers = NO) ==========

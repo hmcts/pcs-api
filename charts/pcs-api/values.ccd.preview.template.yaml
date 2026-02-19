@@ -108,7 +108,7 @@ ccd:
         ELASTIC_SEARCH_ENABLED: true
         ELASTIC_SEARCH_DATA_NODES_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
         ELASTIC_SEARCH_HOSTS: "http://{{ .Release.Name }}-es-master:9200"
-        CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api"
+        CCD_S2S_AUTHORISED_SERVICES_CASE_USER_ROLES: "aac_manage_case_assignment,pcs_api,pcs_frontend"
       ingressHost: ccd-data-store-api-${SERVICE_FQDN}
       autoscaling:
         enabled: false

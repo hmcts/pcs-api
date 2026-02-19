@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -49,4 +50,7 @@ public class DefendantResponses {
 
     @CCD
     private VerticalYesNo contactByPhone;
+
+    @CCD
+    private YesNoPreferNotToSay receivedFreeLegalAdvice;
 }
