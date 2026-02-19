@@ -115,6 +115,7 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
+    postFunctionalTestResultsToSlack('preview')
     echo "[E2E Slack] functionalTest:preview afterAlways ran. CHANGE_ID=${env.CHANGE_ID}"
     if (env.CHANGE_ID) {
       def e2eRan = sh(script: 'test -f e2e-output/widgets/summary.json || test -d src/e2eTest/allure-results', returnStatus: true) == 0
@@ -128,6 +129,7 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
+    postFunctionalTestResultsToSlack('master')
   }
 
   afterAlways('e2eTest:aat') {
@@ -247,6 +249,19 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     echo "[E2E Slack] Notification sent to #hdp-qa-e2e-test-results"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
+  }
+}
+
+// Functional Test Slack notification (same channel as E2E).
+def postFunctionalTestResultsToSlack(String pipelineType = 'master') {
+  def status = (currentBuild.currentResult == 'SUCCESS') ? '🟢 PASSED' : (currentBuild.currentResult == 'UNSTABLE') ? '🟠 UNSTABLE' : '🔴 FAILED'
+  def reportUrl = "${env.BUILD_URL}API_20Functional_20Test_20Report/"
+  def msg = "*Functional Test Results* — Build #${env.BUILD_NUMBER}  ${status}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\n*Report:* ${reportUrl}"
+  try {
+    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+    echo "Functional Test Slack notification sent to #hdp-qa-e2e-test-results"
+  } catch (Exception e) {
+    echo "WARNING: Failed to send Functional Test Slack notification: ${e.message}"
   }
 }
 
