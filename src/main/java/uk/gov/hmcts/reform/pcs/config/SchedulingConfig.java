@@ -18,6 +18,8 @@ import javax.sql.DataSource;
 import java.time.Duration;
 import java.util.List;
 
+import static com.github.kagkarlsson.scheduler.boot.config.DbSchedulerConfigurationSupport.SPRING_JAVA_SERIALIZER;
+
 @Configuration
 @Slf4j
 @AllArgsConstructor
@@ -59,6 +61,7 @@ public class SchedulingConfig {
         var builder = Scheduler.create(dataSource, tasks)
             .threads(threadCount)
             .pollingInterval(Duration.ofSeconds(interval))
+            .serializer(SPRING_JAVA_SERIALIZER)
             .registerShutdownHook();
 
         schedulerListeners.forEach(builder::addSchedulerListener);

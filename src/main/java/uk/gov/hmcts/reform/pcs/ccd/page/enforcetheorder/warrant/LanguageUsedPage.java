@@ -23,7 +23,7 @@ public class LanguageUsedPage implements CcdPageConfiguration {
             .label("languageUsed-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
-            .mandatory(WarrantDetails::getEnforcementLanguageUsed)
+            .mandatory(WarrantDetails::getLanguageUsed)
             .done()
             .label("languageUsed-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
