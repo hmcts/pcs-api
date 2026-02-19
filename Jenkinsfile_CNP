@@ -139,6 +139,16 @@ withPipeline(type, product, component) {
     archiveE2eTestReports()
     postAllureResultsToSlack('preview')
   }
+  afterAlways('e2eTest:aks:preview') {
+    echo "[E2E Slack] e2eTest:aks:preview afterAlways ran"
+    archiveE2eTestReports()
+    postAllureResultsToSlack('preview')
+  }
+  afterAlways('E2E Test - AKS preview') {
+    echo "[E2E Slack] E2E Test - AKS preview afterAlways ran"
+    archiveE2eTestReports()
+    postAllureResultsToSlack('preview')
+  }
   afterAlways('e2eTest') {
     echo "[E2E Slack] e2eTest afterAlways ran. CHANGE_ID=${env.CHANGE_ID}"
     if (env.CHANGE_ID != null && env.CHANGE_ID != '') {
