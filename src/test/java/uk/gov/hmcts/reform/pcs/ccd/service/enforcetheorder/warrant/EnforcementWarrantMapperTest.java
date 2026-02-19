@@ -7,32 +7,29 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
-import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementLegalRep;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -376,36 +373,6 @@ class EnforcementWarrantMapperTest {
         // Then
         assertThat(result.getDefendantsDOBKnown()).isEqualTo(VerticalYesNo.NO);
         assertThat(result.getDefendantsDOBDetails()).isNull();
-    }
-
-    @Test
-    void shouldMapRiskAssessment() {
-        // Given
-        Set<RiskCategory> riskCategories = Set.of(RiskCategory.VIOLENT_OR_AGGRESSIVE, RiskCategory.AGENCY_VISITS);
-        WarrantDetails warrantDetails = WarrantDetails.builder().anyRiskToBailiff(YesNoNotSure.YES)
-            .enforcementRiskCategories(riskCategories).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getEnforcementRiskCategories()).contains(RiskCategory.VIOLENT_OR_AGGRESSIVE.name(),
-                                                                   RiskCategory.AGENCY_VISITS.name());
-    }
-
-    @Test
-    void shouldHandleNullRiskCategories() {
-        // Given
-        WarrantDetails warrantDetails = WarrantDetails.builder().anyRiskToBailiff(YesNoNotSure.NO)
-            .enforcementRiskCategories(null).build();
-        EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
-
-        // When
-        EnforcementWarrantEntity result = mapper.toEntity(enforcementOrder, enforcementOrderEntity);
-
-        // Then
-        assertThat(result.getEnforcementRiskCategories()).isNull();
     }
 
     @Test

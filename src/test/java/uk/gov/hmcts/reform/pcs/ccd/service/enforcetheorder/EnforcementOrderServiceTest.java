@@ -29,7 +29,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.Enforcemen
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
@@ -89,8 +88,6 @@ class EnforcementOrderServiceTest {
     @Mock
     private SelectedDefendantsMapper selectedDefendantsMapper;
 
-    private final UUID enforcementOrderId = UUID.fromString("f47ac10b-58cc-4372-a567-0e02b2c3d479");
-
     private final UUID claimId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
 
     private final UUID pcsCaseId = UUID.fromString("7b9e0f1a-2b3c-4d5e-6f7a-8b9c0d1e2f3a");
@@ -109,14 +106,11 @@ class EnforcementOrderServiceTest {
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
             .thenReturn(Optional.of(pcsCaseEntity));
-        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
-        when(enforcementWarrantMapper.toEntity(any(), any())).thenReturn(mock(EnforcementWarrantEntity.class));
-        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
-            .thenReturn(mock(EnforcementWarrantEntity.class));
-                .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementRiskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enforcementOrder)))
-                .thenReturn(stubbedRiskProfile);
+            .thenReturn(stubbedRiskProfile);
+        when(enforcementWarrantMapper.toEntity(any(), any())).thenReturn(mock(EnforcementWarrantEntity.class));
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenReturn(mock(EnforcementOrderEntity.class));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -129,11 +123,6 @@ class EnforcementOrderServiceTest {
         verify(enforcementRiskProfileMapper).toEntity(savedEntity, enforcementOrder);
         verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
         assertThat(enforcementRiskProfileEntityCaptor.getValue()).isSameAs(stubbedRiskProfile);
-        EnforcementRiskProfileEntity savedRiskProfile = enforcementRiskProfileEntityCaptor.getValue();
-        assertThat(savedRiskProfile.getEnforcementOrder()).isEqualTo(savedEntity);
-        assertThat(savedRiskProfile.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedRiskProfile.getViolentDetails()).isEqualTo("Violent");
-        assertThat(savedRiskProfile.getVerbalThreatsDetails()).isEqualTo("Verbal");
     }
 
     @Test

@@ -40,7 +40,6 @@ public class EnforcementWarrantMapper {
             landRegistry(warrantDetails, warrantEntity);
             repayment(warrantDetails, warrantEntity);
             defendantsDOB(warrantEntity, warrantDetails);
-            riskAssessment(warrantEntity, warrantDetails);
             statementOfTruth(warrantDetails, warrantEntity);
         }
         return warrantEntity;
@@ -161,16 +160,6 @@ public class EnforcementWarrantMapper {
             }
             warrantEntity.setAmountOfRepaymentCosts(repaymentCosts.getAmountOfRepaymentCosts());
             warrantEntity.setRepaymentSummaryMarkdown(repaymentCosts.getRepaymentSummaryMarkdown());
-        }
-    }
-
-    private void riskAssessment(EnforcementWarrantEntity warrantEntity, WarrantDetails warrantDetails) {
-        if (warrantDetails.getEnforcementRiskCategories() != null) {
-            warrantEntity.setEnforcementRiskCategories(
-                warrantDetails.getEnforcementRiskCategories().stream()
-                    .map(Enum::name)
-                    .collect(Collectors.joining(","))
-            );
         }
     }
 

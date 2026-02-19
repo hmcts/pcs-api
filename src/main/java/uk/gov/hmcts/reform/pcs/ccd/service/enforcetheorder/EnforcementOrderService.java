@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.Enforcemen
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -69,7 +70,8 @@ public class EnforcementOrderService {
         EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcementOrderEntity);
         if (SelectEnforcementType.WARRANT == enforcementOrder.getSelectEnforcementType()
             && enforcementOrder.getWarrantDetails() != null) {
-            EnforcementRiskProfileEntity riskProfile = mapToRiskProfile(enforcementOrderEntity, enforcementOrder);
+            EnforcementRiskProfileEntity riskProfile =
+                enforcementRiskProfileMapper.toEntity(enforcementOrderEntity, enforcementOrder);
             enforcementRiskProfileRepository.save(riskProfile);
             storeWarrant(enforcementOrder, saved);
         }
