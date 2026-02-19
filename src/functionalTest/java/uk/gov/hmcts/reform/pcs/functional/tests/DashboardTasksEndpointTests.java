@@ -10,8 +10,6 @@ import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
 import uk.gov.hmcts.reform.pcs.functional.steps.ApiSteps;
 import uk.gov.hmcts.reform.pcs.functional.steps.BaseApi;
 
-import java.io.IOException;
-
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
 class DashboardTasksEndpointTests extends BaseApi {
@@ -24,27 +22,27 @@ class DashboardTasksEndpointTests extends BaseApi {
 
     @Title("Dashboard tasks endpoint - return 200 when request is valid and uses pcs_api s2s token")
     @Test
-    void dashboardTasks200SuccessWithPCSApiTokenScenario() throws IOException {
+    void dashboardTasks200SuccessWithPCSApiTokenScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "src/functionalTest/resources/responses/dashboardTasksResponse.json");
+            "/responses/dashboardTasksResponse.json");
 
     }
 
     @Title("Dashboard tasks endpoint - return 200 when request is valid and uses pcs_frontend s2s token")
     @Test
-    void dashboardTasks200SuccessWithFrontendTokenScenario() throws IOException {
+    void dashboardTasks200SuccessWithFrontendTokenScenario() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_FRONTEND);
         apiSteps.theRequestContainsThePathParameter("caseReference", "1666630757927238");
         apiSteps.callIsSubmittedToTheEndpoint("DashboardTasks", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
-            "src/functionalTest/resources/responses/dashboardTasksResponse.json");
+            "/responses/dashboardTasksResponse.json");
     }
 
     @Title("Dashboard tasks endpoint - return 404 when case id doesn't exist")
