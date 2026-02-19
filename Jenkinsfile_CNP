@@ -125,9 +125,16 @@ withPipeline(type, product, component) {
     }
   }
 
+  // Preview: library may use "e2eTest:preview" or just "e2eTest" for PR – support both
   afterAlways('e2eTest:preview') {
     archiveE2eTestReports()
     postAllureResultsToSlack('preview')
+  }
+  afterAlways('e2eTest') {
+    if (env.CHANGE_ID != null && env.CHANGE_ID != '') {
+      archiveE2eTestReports()
+      postAllureResultsToSlack('preview')
+    }
   }
 }
 
