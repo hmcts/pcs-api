@@ -20,6 +20,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.RiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.SelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 
 import java.util.Collections;
@@ -43,6 +44,8 @@ class WarrantStrategyTest {
     private SelectedDefendantsMapper selectedDefendantsMapper;
     @Mock
     private SelectedDefendantRepository selectedDefendantRepository;
+    @Mock
+    private EnforcementRiskProfileMapper riskProfileMapper;
 
     @InjectMocks
     private WarrantStrategy underTest;
@@ -61,13 +64,13 @@ class WarrantStrategyTest {
         enforcementOrderEntity = mock(EnforcementOrderEntity.class);
 
         riskDetails = EnforcementRiskDetails.builder()
-            .enforcementViolentDetails("Violent behavior reported")
-            .enforcementFirearmsDetails("Firearms present")
-            .enforcementCriminalDetails("Criminal history")
-            .enforcementVerbalOrWrittenThreatsDetails("Verbal threats made")
-            .enforcementProtestGroupMemberDetails("Member of protest group")
-            .enforcementPoliceOrSocialServicesDetails("Police involvement")
-            .enforcementDogsOrOtherAnimalsDetails("Aggressive dogs on premises")
+            .violentDetails("Violent behavior reported")
+            .firearmsDetails("Firearms present")
+            .criminalDetails("Criminal history")
+            .verbalThreatsDetails("Verbal threats made")
+            .protestGroupDetails("Member of protest group")
+            .policeSocialServicesDetails("Police involvement")
+            .animalsDetails("Aggressive dogs on premises")
             .build();
 
         warrantDetails = WarrantDetails.builder().anyRiskToBailiff(YesNoNotSure.YES).riskDetails(riskDetails).build();
@@ -85,7 +88,8 @@ class WarrantStrategyTest {
     @Test
     void shouldProcessWarrantDetailsSuccessfully() {
         // Given
-        RiskProfileEntity savedEntity = new RiskProfileEntity();
+        RiskProfileEntity savedEntity = createExpectedRiskProfileEntity();
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(savedEntity);
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(savedEntity);
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
             .thenReturn(Collections.emptyList());
@@ -112,51 +116,10 @@ class WarrantStrategyTest {
     }
 
     @Test
-    void shouldHandleNullWarrantDetails() {
-        // Given
-        enforcementOrder.setWarrantDetails(null);
-        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
-        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
-            .thenReturn(Collections.emptyList());
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(riskProfileRepository).save(riskProfileCaptor.capture());
-        RiskProfileEntity capturedEntity = riskProfileCaptor.getValue();
-
-        assertThat(capturedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-        assertThat(capturedEntity.getAnyRiskToBailiff()).isNull();
-        assertThat(capturedEntity.getViolentDetails()).isNull();
-        assertThat(capturedEntity.getFirearmsDetails()).isNull();
-    }
-
-    @Test
-    void shouldHandleNullRiskDetails() {
-        // Given
-        warrantDetails.setRiskDetails(null);
-        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
-        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
-            .thenReturn(Collections.emptyList());
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(riskProfileRepository).save(riskProfileCaptor.capture());
-        RiskProfileEntity capturedEntity = riskProfileCaptor.getValue();
-
-        assertThat(capturedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-        assertThat(capturedEntity.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
-        assertThat(capturedEntity.getViolentDetails()).isNull();
-        assertThat(capturedEntity.getFirearmsDetails()).isNull();
-    }
-
-    @Test
     void shouldHandleNullRawWarrantDetails() {
         // Given
         enforcementOrder.setRawWarrantDetails(null);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
             .thenReturn(Collections.emptyList());
@@ -177,6 +140,9 @@ class WarrantStrategyTest {
     void shouldHandleNullVulnerableAdultsChildren() {
         // Given
         rawWarrantDetails.setVulnerableAdultsChildren(null);
+        RiskProfileEntity riskProfileEntity = new RiskProfileEntity();
+        riskProfileEntity.setVulnerablePeoplePresent(YesNoNotSure.YES);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(riskProfileEntity);
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
             .thenReturn(Collections.emptyList());
@@ -199,7 +165,7 @@ class WarrantStrategyTest {
         SelectedDefendantEntity defendant1 = new SelectedDefendantEntity();
         SelectedDefendantEntity defendant2 = new SelectedDefendantEntity();
         List<SelectedDefendantEntity> defendants = List.of(defendant1, defendant2);
-
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity)).thenReturn(defendants);
 
@@ -213,7 +179,9 @@ class WarrantStrategyTest {
     @Test
     void shouldNotSaveSelectedDefendantsWhenEmpty() {
         // Given
-        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
+        RiskProfileEntity riskProfileEntity = createExpectedRiskProfileEntity();
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(riskProfileEntity);
+        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(riskProfileEntity);
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
             .thenReturn(Collections.emptyList());
 
@@ -227,6 +195,7 @@ class WarrantStrategyTest {
     @Test
     void shouldNotSaveSelectedDefendantsWhenNull() {
         // Given
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity)).thenReturn(null);
 
@@ -241,6 +210,9 @@ class WarrantStrategyTest {
     void shouldHandleWarrantDetailsWithNoRiskToBailiff() {
         // Given
         warrantDetails.setAnyRiskToBailiff(YesNoNotSure.NO);
+        RiskProfileEntity riskProfileEntity = new RiskProfileEntity();
+        riskProfileEntity.setAnyRiskToBailiff(YesNoNotSure.NO);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(riskProfileEntity);
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
             .thenReturn(Collections.emptyList());
@@ -258,10 +230,12 @@ class WarrantStrategyTest {
     @Test
     void shouldHandleMinimalEnforcementOrder() {
         // Given
+        RiskProfileEntity riskProfileEntity = createExpectedRiskProfileEntity();
+        riskProfileEntity.setAnyRiskToBailiff(null);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(riskProfileEntity);
+        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(riskProfileEntity);
+        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity)).thenReturn(Collections.emptyList());
         EnforcementOrder minimalOrder = EnforcementOrder.builder().build();
-        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
-        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
-            .thenReturn(Collections.emptyList());
 
         // When
         underTest.process(enforcementOrderEntity, minimalOrder);
@@ -277,7 +251,9 @@ class WarrantStrategyTest {
     @Test
     void shouldMapAllRiskDetailsFieldsCorrectly() {
         // Given
-        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
+        RiskProfileEntity riskProfileEntity = createExpectedRiskProfileEntity();
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(riskProfileEntity);
+        when(riskProfileRepository.save(riskProfileEntity)).thenReturn(riskProfileEntity);
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
             .thenReturn(Collections.emptyList());
 
@@ -288,23 +264,21 @@ class WarrantStrategyTest {
         verify(riskProfileRepository).save(riskProfileCaptor.capture());
         RiskProfileEntity capturedEntity = riskProfileCaptor.getValue();
 
-        assertThat(capturedEntity.getViolentDetails()).isEqualTo(riskDetails.getEnforcementViolentDetails());
-        assertThat(capturedEntity.getFirearmsDetails()).isEqualTo(riskDetails.getEnforcementFirearmsDetails());
-        assertThat(capturedEntity.getCriminalDetails()).isEqualTo(riskDetails.getEnforcementCriminalDetails());
-        assertThat(capturedEntity.getVerbalThreatsDetails())
-            .isEqualTo(riskDetails.getEnforcementVerbalOrWrittenThreatsDetails());
-        assertThat(capturedEntity.getProtestGroupDetails())
-            .isEqualTo(riskDetails.getEnforcementProtestGroupMemberDetails());
+        assertThat(capturedEntity.getViolentDetails()).isEqualTo(riskDetails.getViolentDetails());
+        assertThat(capturedEntity.getFirearmsDetails()).isEqualTo(riskDetails.getFirearmsDetails());
+        assertThat(capturedEntity.getCriminalDetails()).isEqualTo(riskDetails.getCriminalDetails());
+        assertThat(capturedEntity.getVerbalThreatsDetails()).isEqualTo(riskDetails.getVerbalThreatsDetails());
+        assertThat(capturedEntity.getProtestGroupDetails()).isEqualTo(riskDetails.getProtestGroupDetails());
         assertThat(capturedEntity.getPoliceSocialServicesDetails())
-            .isEqualTo(riskDetails.getEnforcementPoliceOrSocialServicesDetails());
-        assertThat(capturedEntity.getAnimalsDetails())
-            .isEqualTo(riskDetails.getEnforcementDogsOrOtherAnimalsDetails());
+            .isEqualTo(riskDetails.getPoliceSocialServicesDetails());
+        assertThat(capturedEntity.getAnimalsDetails()).isEqualTo(riskDetails.getAnimalsDetails());
     }
 
     @Test
     void shouldSaveRiskProfileBeforeSelectedDefendants() {
         // Given
         List<SelectedDefendantEntity> defendants = List.of(new SelectedDefendantEntity());
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity)).thenReturn(defendants);
 
@@ -313,7 +287,25 @@ class WarrantStrategyTest {
 
         // Then
         InOrder inOrder = inOrder(riskProfileRepository, selectedDefendantRepository);
-        inOrder.verify(selectedDefendantRepository).saveAll(defendants);
         inOrder.verify(riskProfileRepository).save(any(RiskProfileEntity.class));
+        inOrder.verify(selectedDefendantRepository).saveAll(defendants);
     }
+
+    private RiskProfileEntity createExpectedRiskProfileEntity() {
+        RiskProfileEntity entity = new RiskProfileEntity();
+        entity.setEnforcementOrder(enforcementOrderEntity);
+        entity.setAnyRiskToBailiff(YesNoNotSure.YES);
+        entity.setViolentDetails("Violent behavior reported");
+        entity.setFirearmsDetails("Firearms present");
+        entity.setCriminalDetails("Criminal history");
+        entity.setVerbalThreatsDetails("Verbal threats made");
+        entity.setProtestGroupDetails("Member of protest group");
+        entity.setPoliceSocialServicesDetails("Police involvement");
+        entity.setAnimalsDetails("Aggressive dogs on premises");
+        entity.setVulnerablePeoplePresent(YesNoNotSure.YES);
+        entity.setVulnerableCategory(VULNERABLE_CHILDREN);
+        entity.setVulnerableReasonText("Young children present");
+        return entity;
+    }
+
 }

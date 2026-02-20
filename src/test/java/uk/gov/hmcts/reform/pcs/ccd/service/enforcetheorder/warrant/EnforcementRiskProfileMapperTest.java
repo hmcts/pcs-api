@@ -14,7 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdul
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEntity;
 
 import java.util.UUID;
 
@@ -46,7 +46,7 @@ class EnforcementRiskProfileMapperTest {
                             .build())
                     .build();
 
-            EnforcementRiskProfileEntity result = mapper.toEntity(orderEntity, order);
+            RiskProfileEntity result = mapper.toEntity(orderEntity, order);
 
             assertThat(result.getEnforcementOrder()).isEqualTo(orderEntity);
             assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
@@ -71,7 +71,7 @@ class EnforcementRiskProfileMapperTest {
                             .build())
                     .build();
 
-            EnforcementRiskProfileEntity result = mapper.toEntity(orderEntity, order);
+            RiskProfileEntity result = mapper.toEntity(orderEntity, order);
 
             assertThat(result.getVulnerablePeoplePresent()).isEqualTo(YesNoNotSure.YES);
             assertThat(result.getVulnerableCategory()).isEqualTo(VulnerableCategory.VULNERABLE_ADULTS);
@@ -85,7 +85,7 @@ class EnforcementRiskProfileMapperTest {
             orderEntity.setId(UUID.randomUUID());
             EnforcementOrder order = EnforcementOrder.builder().build();
 
-            EnforcementRiskProfileEntity result = mapper.toEntity(orderEntity, order);
+            RiskProfileEntity result = mapper.toEntity(orderEntity, order);
 
             assertThat(result.getEnforcementOrder()).isEqualTo(orderEntity);
             assertThat(result.getAnyRiskToBailiff()).isNull();
@@ -106,8 +106,7 @@ class EnforcementRiskProfileMapperTest {
                             .build())
                     .build();
 
-            EnforcementRiskProfileEntity result = mapper.toEntity(orderEntity, order);
-
+            RiskProfileEntity result = mapper.toEntity(orderEntity, order);
             assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.NO);
             assertThat(result.getViolentDetails()).isNull();
             assertThat(result.getVerbalThreatsDetails()).isNull();

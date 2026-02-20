@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEntity;
 
 @Component
 public class EnforcementRiskProfileMapper {
@@ -18,10 +18,9 @@ public class EnforcementRiskProfileMapper {
         this.modelMapper = modelMapper;
     }
 
-    public EnforcementRiskProfileEntity toEntity(
-            EnforcementOrderEntity enforcementOrderEntity,
-            EnforcementOrder enforcementOrder) {
-        EnforcementRiskProfileEntity entity = new EnforcementRiskProfileEntity();
+    public RiskProfileEntity toEntity(EnforcementOrderEntity enforcementOrderEntity,
+                                      EnforcementOrder enforcementOrder) {
+        RiskProfileEntity entity = new RiskProfileEntity();
         entity.setEnforcementOrder(enforcementOrderEntity);
 
         WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
