@@ -142,14 +142,21 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     }
 
     private boolean stubEnabled() {
-        String env = System.getenv("ENVIRONMENT");
-        if (env != null) {
-            String lower = env.toLowerCase(Locale.UK);
-            if ("dev".equals(lower) || "preview".equals(lower) || "aat".equals(lower)) {
-                return true;
-            }
+        if (isStubEnvironment(System.getenv("ENVIRONMENT"))) {
+            return true;
+        }
+        if (isStubEnvironment(System.getenv("SPRING_PROFILES_ACTIVE"))) {
+            return true;
         }
         return Boolean.parseBoolean(System.getenv("ENABLE_TESTING_SUPPORT"));
+    }
+
+    private boolean isStubEnvironment(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+        String lower = value.toLowerCase(Locale.UK);
+        return lower.contains("dev") || lower.contains("preview") || lower.contains("aat");
     }
 
     private List<String> validateWritTransfer(PCSCase pcsCase) {
