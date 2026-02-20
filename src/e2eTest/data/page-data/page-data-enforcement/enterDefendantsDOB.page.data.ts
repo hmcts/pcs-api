@@ -3,7 +3,7 @@ export const enterDefendantsDOB = {
   mainHeader: 'Enter the defendants’ dates of birth',
   defendantsDOBTextLabel: 'What are the defendants’ dates of birth?',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
-  errors: 'Errors',
+  eventCouldNotBeCreatedErrorMessage: 'The event could not be created',
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [
