@@ -10,6 +10,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
@@ -28,6 +29,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     private final DraftCaseDataService draftCaseDataService;
     private final ImmutablePartyFieldValidator immutableFieldValidator;
     private final ClaimResponseService claimResponseService;
+    private final DefendantResponseService defendantResponseService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
@@ -73,6 +75,9 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         //call services to save to relevant tables
         claimResponseService
             .saveDraftData(responseDraftData);
+
+        defendantResponseService.saveDefendantResponse(caseReference,
+            responseDraftData.getDefendantResponses());
 
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
