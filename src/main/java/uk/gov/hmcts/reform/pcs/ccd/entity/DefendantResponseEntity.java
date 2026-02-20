@@ -18,12 +18,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -49,32 +46,6 @@ public class DefendantResponseEntity {
 
     @Column(name = "possession_order_type", length = 30)
     private String possessionOrderType;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tenancy_type_correct")
-    private YesNoNotSure tenancyTypeCorrect;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "tenancy_start_date_correct")
-    private YesNoNotSure tenancyStartDateCorrect;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "owe_rent_arrears")
-    private YesNoNotSure oweRentArrears;
-
-    @Column(name = "rent_arrears_amount", precision = 19, scale = 2)
-    private BigDecimal rentArrearsAmount;
-
-    @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    @Column(name = "notice_received")
-    private YesNoNotSure noticeReceived;
-
-    @Column(name = "notice_received_date")
-    private LocalDate noticeReceivedDate;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

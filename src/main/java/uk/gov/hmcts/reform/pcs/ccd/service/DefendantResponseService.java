@@ -98,16 +98,10 @@ public class DefendantResponseService {
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
-        // Build defendant response entity with all response fields
+        // Build defendant response entity with receivedFreeLegalAdvice field
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
             .claim(claimRef)  // JPA proxy - efficient!
             .party(partyRef)  // JPA proxy - efficient!
-            .tenancyTypeCorrect(responses.getTenancyTypeCorrect())
-            .tenancyStartDateCorrect(responses.getTenancyStartDateCorrect())
-            .oweRentArrears(responses.getOweRentArrears())
-            .rentArrearsAmount(responses.getRentArrearsAmount())
-            .noticeReceived(responses.getNoticeReceived())
-            .noticeReceivedDate(responses.getNoticeReceivedDate())
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .build();
 
