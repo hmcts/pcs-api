@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.Enforcemen
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
@@ -76,17 +78,21 @@ public class EnforcementOrderService {
             EnforcementRiskProfileEntity riskProfile =
                     enforcementRiskProfileMapper.toEntity(enforcementOrderEntity, enforcementOrder);
             enforcementRiskProfileRepository.save(riskProfile);
+        } else if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WRIT_OF_RESTITUTION) {
+            createWritOfRestitutionEntity(enforcementOrderEntity);
         }
 
         List<EnforcementSelectedDefendantEntity> selectedDefendantsEntities =
             selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
 
-        WritOfRestitutionEntity writOfRestitutionEntity = new WritOfRestitutionEntity();
-        writOfRestitutionEntity.setEnforcementCase(enforcementOrderEntity);
-
         if (!CollectionUtils.isEmpty(selectedDefendantsEntities)) {
             enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
-            writOfRestitutionRepository.save(writOfRestitutionEntity);
         }
+    }
+
+    private void createWritOfRestitutionEntity(EnforcementOrderEntity enforcementOrderEntity) {
+        WritOfRestitutionEntity writOfRestitutionEntity = new WritOfRestitutionEntity();
+        writOfRestitutionEntity.setEnforcementCase(enforcementOrderEntity);
+        writOfRestitutionRepository.save(writOfRestitutionEntity);
     }
 }

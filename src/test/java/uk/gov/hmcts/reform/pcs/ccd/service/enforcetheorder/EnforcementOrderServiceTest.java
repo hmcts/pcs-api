@@ -30,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.Enforcemen
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -285,7 +284,7 @@ class EnforcementOrderServiceTest {
     }
 
     @Test
-    void shouldAddSelectedDefendantsAndCreateWritOfRestitutionWhenProvided() {
+    void shouldAddSelectedDefendantsWhenProvided() {
         // Given
         final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
         String jessMayID = UUID.randomUUID().toString();
@@ -331,9 +330,6 @@ class EnforcementOrderServiceTest {
             .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
         List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
         assertThat(savedEntities).hasSize(1);
-
-        verify(writOfRestitutionRepository, times(1))
-            .save(writOfRestitutionEntityCaptor.capture());
 
         EnforcementSelectedDefendantEntity savedEntity = savedEntities.getFirst();
 
@@ -427,6 +423,24 @@ class EnforcementOrderServiceTest {
 
         // Then
         verifyNoInteractions(enforcementSelectedDefendantRepository);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
+    }
+
+    @Test
+    void shouldPersistWritOfRestitutionWhenEnforcementOrderIsSaved() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+        enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WRIT_OF_RESTITUTION);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(writOfRestitutionRepository).save(writOfRestitutionEntityCaptor.capture());
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
     }
 }
