@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -94,6 +96,37 @@ class DocumentServiceTest {
         assertThat(capturedEntities)
             .extracting(DocumentEntity::getType)
             .containsExactlyInAnyOrder(DocumentType.WITNESS_STATEMENT, DocumentType.RENT_STATEMENT);
+    }
+
+    @ParameterizedTest
+    @EnumSource(AdditionalDocumentType.class)
+    void shouldMapAllAdditionalDocumentTypes(AdditionalDocumentType additionalDocumentType) {
+        // Given
+        PCSCase pcsCase = mock(PCSCase.class);
+
+        AdditionalDocument additionalDocument1 = AdditionalDocument.builder()
+            .document(Document.builder().build())
+            .documentType(additionalDocumentType)
+            .build();
+
+        List<ListValue<AdditionalDocument>> additionalDocuments = List.of(
+            ListValue.<AdditionalDocument>builder().value(additionalDocument1).build()
+        );
+
+        when(pcsCase.getAdditionalDocuments()).thenReturn(additionalDocuments);
+
+        // When
+        underTest.createAllDocuments(pcsCase);
+
+        // Then
+        DocumentType expectedDocumentType = DocumentType.valueOf(additionalDocumentType.name());
+
+        verify(documentRepository).saveAll(documentEntityListCaptor.capture());
+        List<DocumentEntity> capturedEntities = documentEntityListCaptor.getValue();
+
+        assertThat(capturedEntities)
+            .extracting(DocumentEntity::getType)
+            .containsExactly(expectedDocumentType);
     }
 
     @Test
