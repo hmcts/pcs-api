@@ -19,6 +19,9 @@ management:
     elasticsearch:
       enabled: false
 
+hmcts:
+  hmctsOrgId: AAA3
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -189,7 +192,7 @@ payments:
     callback-url: ${PAY_CALLBACK_URL:http://host.docker.internal:8096/service-request-update}
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
-    hmctsOrgId: AAA3
+    hmctsOrgId: ${hmcts.hmctsOrgId}
 
 core_case_data:
   api:
