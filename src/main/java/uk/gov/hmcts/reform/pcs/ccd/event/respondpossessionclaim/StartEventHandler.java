@@ -105,13 +105,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
     }
 
     /**
-     * Extracts fresh claimant organisation names from view-populated allClaimants.
-     * Matches the logic in PossessionClaimResponseMapper.
+     * Creates a list of claimant organisation names from case claimant parties.
+     * Transforms Party objects into simple organisation name strings.
      *
      * @param pcsCase View-populated case with allClaimants from CCD
      * @return List of claimant organisation names, or empty list if none found
      */
-    private List<ListValue<String>> extractClaimantOrganisations(PCSCase pcsCase) {
+    private List<ListValue<String>> createClaimantOrgNameList(PCSCase pcsCase) {
         List<ListValue<Party>> allClaimants = pcsCase.getAllClaimants();
 
         if (allClaimants == null || allClaimants.isEmpty()) {
@@ -137,7 +137,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
      */
     private PossessionClaimResponse mergeLatestCaseData(PCSCase latestCase,
                                                          PossessionClaimResponse savedResponses) {
-        List<ListValue<String>> latestClaimantOrgs = extractClaimantOrganisations(latestCase);
+        List<ListValue<String>> latestClaimantOrgs = createClaimantOrgNameList(latestCase);
 
         return savedResponses.toBuilder()
             .claimantOrganisations(latestClaimantOrgs)
