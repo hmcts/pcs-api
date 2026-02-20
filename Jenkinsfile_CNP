@@ -110,14 +110,6 @@ withPipeline(type, product, component) {
 
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
-    // Fallback: if E2E ran on PR (artifacts exist), send Slack (library may not expose e2eTest:preview)
-    if (env.CHANGE_ID) {
-      def e2eRan = sh(script: 'test -f e2e-output/widgets/summary.json || test -d src/e2eTest/allure-results', returnStatus: true) == 0
-      if (e2eRan) {
-        archiveE2eTestReports()
-        postAllureResultsToSlack('preview')
-      }
-    }
   }
 
   afterAlways('functionalTest:aat') {
