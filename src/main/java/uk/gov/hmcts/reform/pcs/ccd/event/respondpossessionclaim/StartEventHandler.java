@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -90,9 +91,7 @@ public class StartEventHandler implements Start<PCSCase, State> {
      */
     private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase) {
         PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
-            .orElseThrow(() -> new IllegalStateException(
-                "Draft not found for case " + caseReference
-            ));
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
         PossessionClaimResponse merged = mergeLatestCaseData(
             pcsCase,
