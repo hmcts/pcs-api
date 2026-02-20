@@ -436,5 +436,7 @@ class EnforcementOrderServiceTest {
 
         // Then
         verify(warrantOfRestitutionRepository).save(warrantOfRestitutionEntityCaptor.capture());
+        WarrantOfRestitutionEntity savedEntity = warrantOfRestitutionEntityCaptor.getValue();
+        assertThat(savedEntity.getEnforcementOrder().getEnforcementOrder()).isEqualTo(enforcementOrder);
     }
 }

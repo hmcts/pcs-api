@@ -1,5 +1,5 @@
 CREATE TABLE enf_warrant_of_restitution (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY,
     enf_case_id UUID NOT NULL REFERENCES enf_case(id) ON DELETE CASCADE,
 
     CONSTRAINT unique_warrant_of_restitution_per_enforcement UNIQUE(enf_case_id)
