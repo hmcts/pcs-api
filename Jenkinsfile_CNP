@@ -180,7 +180,7 @@ def archiveE2eTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
-// E2E Slack notification (master only, only when E2E stage has failures).
+// E2E stage notification to #hdp-qa-e2e-test-results
 def postAllureResultsToSlack(String pipelineType = 'master') {
   env.E2E_SERVICE_NAME = 'pcs-api'
   env.E2E_PIPELINE_TYPE = pipelineType
