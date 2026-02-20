@@ -56,11 +56,9 @@ withPipeline(type, product, component) {
     }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
-      enableE2eTest()
     }
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
       env.E2E_SUITE = "regression"
-      enableE2eTest()
     }
   }
 
@@ -130,18 +128,6 @@ withPipeline(type, product, component) {
     archiveE2eTestReports()
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
-    }
-  }
-
-  // Preview: library may use "e2eTest:preview" or just "e2eTest" for PR – support both
-  afterAlways('e2eTest:preview') {
-    archiveE2eTestReports()
-    postAllureResultsToSlack('preview')
-  }
-  afterAlways('e2eTest') {
-    if (env.CHANGE_ID != null && env.CHANGE_ID != '') {
-      archiveE2eTestReports()
-      postAllureResultsToSlack('preview')
     }
   }
 }
