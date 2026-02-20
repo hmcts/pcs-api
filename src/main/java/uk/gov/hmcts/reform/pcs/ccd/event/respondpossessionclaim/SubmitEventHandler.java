@@ -12,6 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,34 +27,32 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
     private final DraftCaseDataService draftCaseDataService;
     private final ImmutablePartyFieldValidator immutableFieldValidator;
+    private final ClaimResponseService claimResponseService;
 
     @Override
     public SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        PCSCase caseData = eventPayload.caseData();
+        //extract data from event
+        PossessionClaimResponse defendantResponse = eventPayload.caseData().getPossessionClaimResponse();
+        // Check if defendant clicked "Submit" (final) or "Save and come back later" (draft)
+        boolean submitDraftAnswers = Optional.ofNullable(eventPayload.caseData().getSubmitDraftAnswers())
+            .map(YesOrNo::toBoolean)
+            .orElse(false);
 
         log.info("RespondPossessionClaim submit callback invoked for Case Reference: {}", caseReference);
 
-        SubmitResponse<State> validationError = validate(caseData, caseReference);
+        SubmitResponse<State> validationError = validate(defendantResponse, caseReference);
         if (validationError != null) {
             return validationError;
         }
 
-        // Check if defendant clicked "Submit" (final) or "Save and come back later" (draft)
-        YesOrNo submitFlag = Optional.ofNullable(caseData.getSubmitDraftAnswers())
-            .orElse(YesOrNo.NO);
-
-        if (submitFlag.toBoolean()) {
-            return processFinalSubmit(caseReference, caseData);
-        }
-
-        return processDraftSubmit(caseReference, caseData);
+        //Always submit draft data, even if we are doing the 'final' submission
+        SubmitResponse<State> draftSubmitResponse = processDraftSubmit(caseReference, defendantResponse);
+        return submitDraftAnswers ? processFinalSubmit(caseReference) : draftSubmitResponse;
     }
 
-    private SubmitResponse<State> validate(PCSCase caseData, long caseReference) {
-        PossessionClaimResponse response = caseData.getPossessionClaimResponse();
-
-        if (response == null) {
+    private SubmitResponse<State> validate(PossessionClaimResponse possessionClaimResponse, long caseReference) {
+        if (possessionClaimResponse == null) {
             log.error("Submit failed for case {}: possessionClaimResponse is null", caseReference);
             return error("Invalid submission: missing response data");
         }
@@ -60,20 +60,28 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         return null;
     }
 
-    private SubmitResponse<State> processFinalSubmit(long caseReference, PCSCase caseData) {
+    private SubmitResponse<State> processFinalSubmit(long caseReference) {
         log.info("Processing final submission for case {}", caseReference);
 
-        //TODO: find draft data using idam user and case reference and event
+        //load draft data
+        PCSCase draftData = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
-        //TODO: Store defendant response to database
-        //This will be implemented in a future ticket.
-        //Note that defendants will be stored in a list
+        //get only possession response from draft
+        PossessionClaimResponse responseDraftData = draftData.getPossessionClaimResponse();
 
+        //call services to save to relevant tables
+        claimResponseService
+            .saveDraftData(responseDraftData);
+
+        //delete draft as it's no longer needed
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
+
+        log.info("Successfully saved defendant response for case: {}", caseReference);
         return success();
     }
 
-    private SubmitResponse<State> processDraftSubmit(long caseReference, PCSCase caseData) {
-        PossessionClaimResponse response = caseData.getPossessionClaimResponse();
+    private SubmitResponse<State> processDraftSubmit(long caseReference, PossessionClaimResponse response) {
 
         // Validate at least one of contact details or responses is provided
         // Frontend can send: only contact, only responses, or both
@@ -108,7 +116,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
 
         try {
-            saveDraftToDatabase(caseReference, caseData);
+            saveDraftToDatabase(caseReference, response);
             return success();
         } catch (Exception e) {
             log.error("Failed to save draft for case {}", caseReference, e);
@@ -116,8 +124,8 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         }
     }
 
-    private void saveDraftToDatabase(long caseReference, PCSCase caseData) {
-        PCSCase partialUpdate = buildDefendantOnlyUpdate(caseData);
+    private void saveDraftToDatabase(long caseReference, PossessionClaimResponse possessionClaimResponse) {
+        PCSCase partialUpdate = buildDefendantOnlyUpdate(possessionClaimResponse);
         draftCaseDataService.patchUnsubmittedEventData(caseReference, partialUpdate, respondPossessionClaim);
     }
 
@@ -131,8 +139,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
      * - patchUnsubmittedEventData merges: preserves existing fields
      * - Result: defendant's new answers merged with existing defendant data
      */
-    private PCSCase buildDefendantOnlyUpdate(PCSCase caseData) {
-        PossessionClaimResponse response = caseData.getPossessionClaimResponse();
+    private PCSCase buildDefendantOnlyUpdate(PossessionClaimResponse response) {
 
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
             .defendantContactDetails(response.getDefendantContactDetails())

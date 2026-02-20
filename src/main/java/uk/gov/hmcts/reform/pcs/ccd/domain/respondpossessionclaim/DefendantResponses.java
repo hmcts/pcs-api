@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.ccd.sdk.type.FieldType;
 import uk.gov.hmcts.reform.pcs.ccd.annotation.JacksonMoneyGBP;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 
 import java.math.BigDecimal;
@@ -36,4 +37,16 @@ public class DefendantResponses {
 
     @CCD
     private LocalDate noticeReceivedDate;
+
+    @CCD
+    private VerticalYesNo contactByEmail;
+
+    @CCD
+    private VerticalYesNo contactByText;
+
+    @CCD
+    private VerticalYesNo contactByPost;
+
+    @CCD
+    private VerticalYesNo contactByPhone;
 }

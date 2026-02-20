@@ -43,7 +43,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -318,7 +317,7 @@ class EnforcementOrderServiceTest {
         verify(draftCaseDataService)
             .deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
 
-        verify(enforcementSelectedDefendantRepository, times(1)).saveAll(captor.capture());
+        verify(enforcementSelectedDefendantRepository).saveAll(captor.capture());
         List<EnforcementSelectedDefendantEntity> savedEntities = captor.getValue();
         assertThat(savedEntities).hasSize(1);
 
@@ -377,7 +376,7 @@ class EnforcementOrderServiceTest {
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        verify(enforcementSelectedDefendantRepository, times(1)).saveAll(captor.capture());
+        verify(enforcementSelectedDefendantRepository).saveAll(captor.capture());
         List<EnforcementSelectedDefendantEntity> savedEntities = captor.getValue();
 
         assertThat(savedEntities).hasSize(2);
