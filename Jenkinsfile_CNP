@@ -72,7 +72,7 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
-//    enableE2eTest() TODO: Re-enable when the AAT environment pattern is configured
+    enableE2eTest()
   }
 
   onDemo {
@@ -121,6 +121,9 @@ withPipeline(type, product, component) {
 
   afterAlways('e2eTest:aat') {
     archiveE2eTestReports()
+    if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
+      postAllureResultsToSlack('master')
+    }
   }
 }
 
@@ -178,6 +181,25 @@ def archiveE2eTestReports() {
   ])
 
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
+}
+
+// E2E stage notification to #hdp-qa-e2e-test-results
+def postAllureResultsToSlack(String pipelineType = 'master') {
+  env.E2E_SERVICE_NAME = 'pcs-api'
+  env.E2E_PIPELINE_TYPE = pipelineType
+  def msg = sh(
+    script: "cd src/e2eTest && E2E_SERVICE_NAME=pcs-api E2E_PIPELINE_TYPE=${pipelineType} ./node_modules/.bin/tsx ./scripts/allure-slack-notifier.ts --print-only || true",
+    returnStdout: true
+  ).trim()
+  if (!msg) {
+    msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
+  }
+  try {
+    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results"
+  } catch (Exception e) {
+    echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
+  }
 }
 
 
