@@ -13,13 +13,6 @@ import java.util.UUID;
 public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
     Optional<PartyEntity> findByIdamId(UUID idamId);
 
-    /**
-     * Finds party ID by IDAM ID.
-     * Returns only the ID, not the full entity, for optimal performance.
-     *
-     * @param idamId The IDAM user ID
-     * @return Optional containing the party ID if found
-     */
     @Query("SELECT p.id FROM PartyEntity p WHERE p.idamId = :idamId")
     Optional<UUID> findIdByIdamId(@Param("idamId") UUID idamId);
 }

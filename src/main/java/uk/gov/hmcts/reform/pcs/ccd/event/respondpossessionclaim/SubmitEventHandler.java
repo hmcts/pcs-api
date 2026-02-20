@@ -76,7 +76,6 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
         claimResponseService
             .saveDraftData(responseDraftData);
 
-        //save defendant responses to defendant_response table
         defendantResponseService.saveDefendantResponse(caseReference,
             responseDraftData.getDefendantResponses());
 

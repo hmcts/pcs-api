@@ -78,7 +78,6 @@ public class DefendantResponseService {
             return;
         }
 
-        // Get IDs only (minimal lock time, fast queries)
         UUID partyId = partyRepository.findIdByIdamId(userId)
             .orElseThrow(() -> {
                 log.error("No party found for IDAM ID: {}", userId);
@@ -93,19 +92,15 @@ public class DefendantResponseService {
                     String.format("No claim found for case: %d", caseReference));
             });
 
-        // Get references (NO database query, just JPA proxies)
-        // This is the key optimization - no data loaded, no locks held
         PartyEntity partyRef = partyRepository.getReferenceById(partyId);
         ClaimEntity claimRef = claimRepository.getReferenceById(claimId);
 
-        // Build defendant response entity with receivedFreeLegalAdvice field
         DefendantResponseEntity defendantResponse = DefendantResponseEntity.builder()
-            .claim(claimRef)  // JPA proxy - efficient!
-            .party(partyRef)  // JPA proxy - efficient!
+            .claim(claimRef)
+            .party(partyRef)
             .receivedFreeLegalAdvice(responses.getReceivedFreeLegalAdvice())
             .build();
 
-        // Save to defendant_response table (only locks new row)
         defendantResponseRepository.save(defendantResponse);
 
         log.info("Successfully saved defendant response for case {} user {}", caseReference, userId);
