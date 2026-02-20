@@ -85,7 +85,7 @@ public class DefendantResponseService {
                     String.format("No party found for IDAM ID: %s", userId));
             });
 
-        UUID claimId = claimRepository.findIdByPcsCaseCaseReference(caseReference)
+        UUID claimId = claimRepository.findIdByCaseReference(caseReference)
             .orElseThrow(() -> {
                 log.error("No claim found for case: {}", caseReference);
                 return new IllegalStateException(

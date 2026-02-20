@@ -23,6 +23,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -70,7 +71,7 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         when(partyRepository.findIdByIdamId(USER_ID)).thenReturn(Optional.of(PARTY_ID));
-        when(claimRepository.findIdByPcsCaseCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
 
@@ -97,7 +98,7 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         when(partyRepository.findIdByIdamId(USER_ID)).thenReturn(Optional.of(PARTY_ID));
-        when(claimRepository.findIdByPcsCaseCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
 
@@ -122,7 +123,7 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         when(partyRepository.findIdByIdamId(USER_ID)).thenReturn(Optional.of(PARTY_ID));
-        when(claimRepository.findIdByPcsCaseCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
 
@@ -147,7 +148,7 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         when(partyRepository.findIdByIdamId(USER_ID)).thenReturn(Optional.of(PARTY_ID));
-        when(claimRepository.findIdByPcsCaseCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
 
@@ -199,7 +200,7 @@ class DefendantResponseServiceTest {
             .hasMessage("A response has already been submitted for this case.");
 
         verify(partyRepository, never()).findIdByIdamId(any());
-        verify(claimRepository, never()).findIdByPcsCaseCaseReference(any());
+        verify(claimRepository, never()).findIdByCaseReference(anyLong());
         verify(defendantResponseRepository, never()).save(any());
     }
 
@@ -215,7 +216,7 @@ class DefendantResponseServiceTest {
 
         // Then
         verify(partyRepository, never()).findIdByIdamId(any());
-        verify(claimRepository, never()).findIdByPcsCaseCaseReference(any());
+        verify(claimRepository, never()).findIdByCaseReference(anyLong());
         verify(defendantResponseRepository, never()).save(any());
     }
 
@@ -236,7 +237,7 @@ class DefendantResponseServiceTest {
             .isInstanceOf(IllegalStateException.class)
             .hasMessage(String.format("No party found for IDAM ID: %s", USER_ID));
 
-        verify(claimRepository, never()).findIdByPcsCaseCaseReference(any());
+        verify(claimRepository, never()).findIdByCaseReference(anyLong());
         verify(defendantResponseRepository, never()).save(any());
     }
 
@@ -251,7 +252,7 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         when(partyRepository.findIdByIdamId(USER_ID)).thenReturn(Optional.of(PARTY_ID));
-        when(claimRepository.findIdByPcsCaseCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         // When / Then
         assertThatThrownBy(() -> underTest.saveDefendantResponse(CASE_REFERENCE, responses))
@@ -268,7 +269,7 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         when(partyRepository.findIdByIdamId(USER_ID)).thenReturn(Optional.of(PARTY_ID));
-        when(claimRepository.findIdByPcsCaseCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
 
@@ -285,7 +286,7 @@ class DefendantResponseServiceTest {
 
         // Verify ID-only queries used (not findById which loads full entity)
         verify(partyRepository).findIdByIdamId(USER_ID);
-        verify(claimRepository).findIdByPcsCaseCaseReference(CASE_REFERENCE);
+        verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
 
         // Verify duplicate check happens first (fail-fast)
         verify(defendantResponseRepository).existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -299,7 +300,7 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         when(partyRepository.findIdByIdamId(USER_ID)).thenReturn(Optional.of(PARTY_ID));
-        when(claimRepository.findIdByPcsCaseCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
         when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
         when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
 
@@ -320,7 +321,7 @@ class DefendantResponseServiceTest {
 
         // 3. Get IDs only (minimal lock time)
         verify(partyRepository).findIdByIdamId(USER_ID);
-        verify(claimRepository).findIdByPcsCaseCaseReference(CASE_REFERENCE);
+        verify(claimRepository).findIdByCaseReference(CASE_REFERENCE);
 
         // 4. Get JPA proxies (no database query)
         verify(partyRepository).getReferenceById(PARTY_ID);

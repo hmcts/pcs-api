@@ -13,14 +13,7 @@ import java.util.UUID;
 @Repository
 public interface ClaimRepository extends JpaRepository<ClaimEntity, UUID> {
 
-    /**
-     * Finds claim ID by case reference.
-     * Returns only the ID, not the full entity, for optimal performance.
-     *
-     * @param caseReference The case reference number
-     * @return Optional containing the claim ID if found
-     */
     @Query("SELECT c.id FROM ClaimEntity c WHERE c.pcsCase.caseReference = :caseReference")
-    Optional<UUID> findIdByPcsCaseCaseReference(@Param("caseReference") Long caseReference);
+    Optional<UUID> findIdByCaseReference(@Param("caseReference") long caseReference);
 
 }
