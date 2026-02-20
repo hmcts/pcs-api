@@ -5,7 +5,7 @@ export const peopleYouWantToEvict = {
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
   continueButton: 'Continue',
-  errors: 'There is a problem',
+  thereIsAProblemErrorMessageHeader: 'There is a problem',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption', six: 'checkBoxPageLevel' },
   errorValidationField: {

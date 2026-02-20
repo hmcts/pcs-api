@@ -22,7 +22,6 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
     private final VulnerableAdultsChildrenPage vulnerableAdultsChildrenPage;
     private final AdditionalInformationPage additionalInformationPage;
     private final LandRegistryFeesPage landRegistryFeesPage;
-    private final StatementOfTruthPage statementOfTruthPage;
     private final DefendantsDOBPage defendantsDOBPage;
 
     @Override
@@ -54,6 +53,6 @@ public class WarrantPageConfigurer implements EnforcementPageConfigurer {
             .add(new RepaymentsPage())
             .add(new LanguageUsedPage())
             .add(new SuspendedOrderPage())
-            .add(statementOfTruthPage);
+            .add(new StatementOfTruthPage());
     }
 }
