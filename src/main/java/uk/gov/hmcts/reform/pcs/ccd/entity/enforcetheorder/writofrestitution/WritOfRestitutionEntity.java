@@ -32,8 +32,8 @@ public class WritOfRestitutionEntity {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "enf_case_id")
+    @JoinColumn(name = "enf_case_id", nullable = false)
     @JsonBackReference
-    private EnforcementOrderEntity enforcementCase;
+    private EnforcementOrderEntity enforcementOrder;
 }
 

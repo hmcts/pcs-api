@@ -92,7 +92,7 @@ public class EnforcementOrderService {
 
     private void createWritOfRestitutionEntity(EnforcementOrderEntity enforcementOrderEntity) {
         WritOfRestitutionEntity writOfRestitutionEntity = new WritOfRestitutionEntity();
-        writOfRestitutionEntity.setEnforcementCase(enforcementOrderEntity);
+        writOfRestitutionEntity.setEnforcementOrder(enforcementOrderEntity);
         writOfRestitutionRepository.save(writOfRestitutionEntity);
     }
 }
