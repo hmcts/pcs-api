@@ -25,7 +25,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EnforcementSelectedDefendantEntity {
+public class SelectedDefendantEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

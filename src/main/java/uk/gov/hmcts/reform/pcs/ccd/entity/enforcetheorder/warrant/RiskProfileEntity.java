@@ -25,7 +25,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Table(name = "enf_risk_profile")
 @Getter
 @Setter
-public class EnforcementRiskProfileEntity {
+public class RiskProfileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

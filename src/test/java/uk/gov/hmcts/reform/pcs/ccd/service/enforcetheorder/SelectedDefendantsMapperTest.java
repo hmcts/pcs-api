@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
@@ -73,7 +73,7 @@ class SelectedDefendantsMapperTest {
 
         // When
 
-        List<EnforcementSelectedDefendantEntity> entities =
+        List<SelectedDefendantEntity> entities =
             selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
 
         // Then
@@ -101,7 +101,7 @@ class SelectedDefendantsMapperTest {
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
         // When
-        List<EnforcementSelectedDefendantEntity> entities =
+        List<SelectedDefendantEntity> entities =
             selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
 
         // Then
