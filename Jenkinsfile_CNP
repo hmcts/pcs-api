@@ -115,11 +115,17 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
+  afterAlways('E2eTest:preview') {
+    archiveE2eTestReports()
+    postAllureResultsToSlack('preview')
+  }
+
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
   }
 
-  afterAlways('e2eTest:aat') {
+  // Stage name from cnp-jenkins-library sectionDeployToAKS.groovy: pcr.callAround("E2eTest:${environment}")
+  afterAlways('E2eTest:aat') {
     archiveE2eTestReports()
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
