@@ -24,8 +24,11 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWar
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
 
-    private static final String CLAIM_TRANSFERRED_YES = " AND writHasClaimTransferredToHighCourt=\"Yes\"";
-    private static final String STUB_GA_SUCCESSFUL_CONDITION = WRIT_FLOW + CLAIM_TRANSFERRED_YES;
+    private static final String STUB_GA_SUCCESSFUL_CONDITION =
+        WRIT_FLOW + " AND writHasClaimTransferredToHighCourt=\"Yes\"";
+    private static final String ERROR_GA_TRANSFER_UNSUCCESSFUL =
+        "You cannot continue with this application because your "
+            + "application to transfer to the High Court was unsuccessful";
 
     public static final String WRIT_OR_WARRANT_INFORMATION = """
                     <details class="govuk-details">
@@ -142,13 +145,9 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     }
 
     private boolean stubEnabled() {
-        if (isStubEnvironment(System.getenv("ENVIRONMENT"))) {
-            return true;
-        }
-        if (isStubEnvironment(System.getenv("SPRING_PROFILES_ACTIVE"))) {
-            return true;
-        }
-        return Boolean.parseBoolean(System.getenv("ENABLE_TESTING_SUPPORT"));
+        return isStubEnvironment(System.getenv("ENVIRONMENT"))
+            || isStubEnvironment(System.getenv("SPRING_PROFILES_ACTIVE"))
+            || "true".equalsIgnoreCase(System.getenv("ENABLE_TESTING_SUPPORT"));
     }
 
     private boolean isStubEnvironment(String value) {
@@ -157,6 +156,10 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
         String lower = value.toLowerCase(Locale.UK);
         return lower.contains("dev") || lower.contains("preview") || lower.contains("aat");
+    }
+
+    private static boolean toBoolean(YesOrNo yesOrNo) {
+        return Optional.ofNullable(yesOrNo).map(YesOrNo::toBoolean).orElse(false);
     }
 
     private List<String> validateWritTransfer(PCSCase pcsCase) {
@@ -171,20 +174,11 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             return List.of();
         }
 
-        boolean claimTransferred = Optional
-            .ofNullable(writDetails.getHasClaimTransferredToHighCourt())
-            .map(YesOrNo::toBoolean)
-            .orElse(false);
-
-        boolean gaSuccessful = Optional
-            .ofNullable(writDetails.getWasGeneralApplicationToTransferToHighCourtSuccessful())
-            .map(YesOrNo::toBoolean)
-            .orElse(false);
+        boolean claimTransferred = toBoolean(writDetails.getHasClaimTransferredToHighCourt());
+        boolean gaSuccessful = toBoolean(writDetails.getWasGeneralApplicationToTransferToHighCourtSuccessful());
 
         if (claimTransferred && !gaSuccessful) {
-            return List.of(
-                "You cannot continue with this application because your "
-                    + "application to transfer to the High Court was unsuccessful");
+            return List.of(ERROR_GA_TRANSFER_UNSUCCESSFUL);
         }
 
         return List.of();

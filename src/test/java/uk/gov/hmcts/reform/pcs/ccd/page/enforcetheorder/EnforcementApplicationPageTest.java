@@ -4,10 +4,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
@@ -76,7 +78,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         PCSCase caseData = createCaseWithEnforcementType(null, SelectEnforcementType.WARRANT);
 
         // When
-        var response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getErrors()).isNull();
@@ -94,7 +96,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         );
 
         // When
-        var response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getErrors()).isNull();
@@ -112,7 +114,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         );
 
         // When
-        var response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getErrors()).isNull();
@@ -130,7 +132,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
         );
 
         // When
-        var response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
 
         // Then
         assertThat(response.getErrors())
