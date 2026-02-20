@@ -94,16 +94,13 @@ public class StartEventHandler implements Start<PCSCase, State> {
                 "Draft not found for case " + caseReference
             ));
 
-        // Extract FRESH claimant organisations from view-populated incoming case
-        List<ListValue<String>> freshClaimantOrgs = extractClaimantOrganisations(pcsCase);
-
-        // Merge: Fresh claimants + saved defendant answers
-        PossessionClaimResponse mergedResponse = savedDraft.getPossessionClaimResponse().toBuilder()
-            .claimantOrganisations(freshClaimantOrgs)  // Fresh from view (always up-to-date)
-            .build();
+        PossessionClaimResponse merged = mergeLatestCaseData(
+            pcsCase,
+            savedDraft.getPossessionClaimResponse()
+        );
 
         return pcsCase.toBuilder()
-            .possessionClaimResponse(mergedResponse)
+            .possessionClaimResponse(merged)
             .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
     }
@@ -129,6 +126,23 @@ public class StartEventHandler implements Start<PCSCase, State> {
                 .value(claimant.getValue().getOrgName())
                 .build())
             .toList();
+    }
+
+    /**
+     * Merges latest case data with saved defendant responses.
+     * Takes fresh claimant organisations from latest case and combines with saved defendant answers.
+     *
+     * @param latestCase Latest case data from CCD (has up-to-date claimant info)
+     * @param savedResponses Saved defendant responses from draft
+     * @return Merged response with latest claimant orgs and saved defendant answers
+     */
+    private PossessionClaimResponse mergeLatestCaseData(PCSCase latestCase,
+                                                         PossessionClaimResponse savedResponses) {
+        List<ListValue<String>> latestClaimantOrgs = extractClaimantOrganisations(latestCase);
+
+        return savedResponses.toBuilder()
+            .claimantOrganisations(latestClaimantOrgs)
+            .build();
     }
 
     /**
