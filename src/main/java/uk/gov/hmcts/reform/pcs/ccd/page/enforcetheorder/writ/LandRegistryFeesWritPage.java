@@ -17,7 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 import static uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTemplate.WRIT;
 
 @AllArgsConstructor

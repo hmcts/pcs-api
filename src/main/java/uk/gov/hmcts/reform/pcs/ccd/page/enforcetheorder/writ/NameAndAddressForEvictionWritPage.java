@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -22,7 +22,7 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("nameAndAddressForEvictionWrit", this::midEvent)
             .pageLabel("The name and address for the eviction")
-            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .complex(PCSCase::getEnforcementOrder)
             .label(
                 "nameAndAddressForEvictionWrit-defendants-check",

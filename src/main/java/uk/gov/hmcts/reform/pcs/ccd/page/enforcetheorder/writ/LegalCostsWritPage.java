@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.LEGAL_COSTS_HELP;
-import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
 public class LegalCostsWritPage implements CcdPageConfiguration {
 

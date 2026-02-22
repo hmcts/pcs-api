@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -29,7 +29,7 @@ public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("policeOrSocialServicesRisk", this::midEvent)
                 .pageLabel("Their history of police or social services visits to the property")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                     + " AND warrantEnforcementRiskCategoriesCONTAINS\"AGENCY_VISITS\""
                     + " AND warrantAnyRiskToBailiff=\"YES\"")
                 .label("policeOrSocialServicesRisk-line-separator", "---")

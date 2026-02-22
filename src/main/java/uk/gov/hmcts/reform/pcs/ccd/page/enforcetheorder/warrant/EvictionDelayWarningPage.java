@@ -2,7 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 public class EvictionDelayWarningPage implements CcdPageConfiguration {
 
@@ -11,7 +11,7 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
         pageBuilder
             .page("evictionDelayWarning")
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                 + " AND warrantAnyRiskToBailiff=\"NOT_SURE\"")
             .label("evictionDelayWarning-line-separator", "---")
             .label(

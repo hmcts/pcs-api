@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFee
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
@@ -34,7 +34,7 @@ public class LandRegistryFeesPage implements CcdPageConfiguration {
         pageBuilder
             .page("landRegistryFees", this::midEvent)
             .pageLabel("Land Registry fees")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("landRegistryFees-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

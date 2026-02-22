@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 public class ToggleClaimSentToHighCourtPlaceholder implements CcdPageConfiguration {
 
@@ -15,7 +15,7 @@ public class ToggleClaimSentToHighCourtPlaceholder implements CcdPageConfigurati
         pageBuilder
             .page("toggleClaimSentToHighCourtPlaceholder")
             .pageLabel("Placeholder to simulate if claim has been sent to High Court")
-            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("toggleClaimSentToHighCourtPlaceholder-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)

@@ -22,6 +22,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
@@ -66,6 +67,8 @@ class EnforceTheOrderTest extends BaseEventTest {
     @Mock
     private WritPageConfigurer writPageConfigurer;
     @Mock
+    private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
+    @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
@@ -93,6 +96,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         //Then
         verify(warrantPageConfigurer).configurePages(savingPageBuilder);
         verify(writPageConfigurer).configurePages(savingPageBuilder);
+        verify(warrantOfRestitutionPageConfigurer).configurePages(savingPageBuilder);
     }
 
     @Test

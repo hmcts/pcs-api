@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 public class SuspendedOrderPage implements CcdPageConfiguration {
 
@@ -15,7 +15,7 @@ public class SuspendedOrderPage implements CcdPageConfiguration {
         pageBuilder
             .page("suspendedOrder")
             .pageLabel("Suspended order")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("suspendedOrder-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

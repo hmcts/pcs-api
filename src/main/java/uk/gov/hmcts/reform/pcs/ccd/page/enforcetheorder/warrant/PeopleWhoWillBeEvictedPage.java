@@ -11,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
@@ -26,7 +26,7 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         pageBuilder
             .page("peopleWhoWillBeEvicted", this::midEvent)
             .pageLabel("The people who will be evicted")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                 + " AND warrantShowPeopleWhoWillBeEvictedPage=\"Yes\"")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

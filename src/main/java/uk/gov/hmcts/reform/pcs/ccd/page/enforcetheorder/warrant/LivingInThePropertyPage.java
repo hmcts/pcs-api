@@ -5,7 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -16,7 +16,7 @@ public class LivingInThePropertyPage implements CcdPageConfiguration {
         pageBuilder
             .page("livingInTheProperty")
             .pageLabel("Everyone living at the property")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("livingInTheProperty-content", "---")
             .label(
                 "livingInTheProperty-information-text", """

@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -20,7 +20,7 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
         pageBuilder
             .page("hCEOfficerDetails")
             .pageLabel("Your High Court enforcement officer")
-            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
                                + " AND writHasHiredHighCourtEnforcementOfficer=\"YES\"")
             .label("hCEOfficerDetails-line-separator", "---")
             .label(

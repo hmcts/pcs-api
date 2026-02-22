@@ -5,7 +5,7 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 /**
  * Placeholder page for the writ journey Statement of truth screen.
@@ -17,7 +17,7 @@ public class StatementOfTruthPlaceholderWritPage implements CcdPageConfiguration
         pageBuilder
             .page("statementOfTruthWritPlaceholder")
             .pageLabel("Statement of truth (placeholder)")
-            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .label("statementOfTruthWritPlaceholder-content", "---")
