@@ -164,16 +164,11 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
 
     private List<String> validateWritTransfer(PCSCase pcsCase) {
         EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
-        if (enforcementOrder == null
-            || enforcementOrder.getSelectEnforcementType() != SelectEnforcementType.WRIT) {
+        if (enforcementOrder.getSelectEnforcementType() != SelectEnforcementType.WRIT) {
             return List.of();
         }
 
         WritDetails writDetails = enforcementOrder.getWritDetails();
-        if (writDetails == null) {
-            return List.of();
-        }
-
         boolean claimTransferred = toBoolean(writDetails.getHasClaimTransferredToHighCourt());
         boolean gaSuccessful = toBoolean(writDetails.getWasGeneralApplicationToTransferToHighCourtSuccessful());
 
