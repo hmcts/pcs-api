@@ -20,11 +20,17 @@ export const yourApplication = {
   quoteFromBailiffLink: 'you can get a quote from a bailiff to find out how much it will cost',
   continueButton: 'Continue',
   thereIsAProblemErrorMessageHeader: 'There is a problem',
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidation: 'YES',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [
       { type: 'none', input: '', errMessage: 'What do you want to apply for? is required' },
     ],
-  }
+  },
+  yesRadioOption: 'Yes',
+  noRadioOption: 'No',
+  errorMessageHeader: 'Errors',
+  errMessage: 'You cannot continue with this application because your application to transfer to the High Court was unsuccessful',
+  claimTransferredToHighCourtQuestion: 'TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?',
+  genAppSuccessfulQuestion: 'TEMPORARY TEST ONLY – was the general application to transfer to the High Court successful?'
 }

@@ -104,19 +104,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
-        nextPage: claimSentToHighCourt.mainHeader
-      });
-      await performAction('inputErrorValidation', {
-        validationReq: claimSentToHighCourt.errorValidation,
-        validationType: claimSentToHighCourt.errorValidationType.three,
-        inputArray: claimSentToHighCourt.errorValidationField.errorRadioOption,
-        question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
-        option: claimSentToHighCourt.yesRadioOption,
-        button: claimSentToHighCourt.continueButton
-      });
-      await performAction('confirmClaimTransferredToHighCourt', {
-        question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
-        option: claimSentToHighCourt.yesRadioOption,
+        question1: yourApplication.claimTransferredToHighCourtQuestion,
+        question2: yourApplication.genAppSuccessfulQuestion,
+        option1: yourApplication.yesRadioOption,
         nextPage: nameAndAddressForEviction.mainHeader
       });
       await performAction('inputErrorValidation', {
@@ -151,7 +141,7 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         validationReq: yourHCEO.errorValidation,
         validationType: yourHCEO.errorValidationType.two,
         inputArray: yourHCEO.errorValidationField.errorTextField,
-        header: yourHCEO.errors,
+        header: yourHCEO.thereIsAProblemErrorMessageHeader,
         label: yourHCEO.nameOfYourHCEOLabel,
         button: yourHCEO.continueButton
       });
@@ -325,11 +315,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
-      nextPage: claimSentToHighCourt.mainHeader
-    });
-    await performAction('confirmClaimTransferredToHighCourt', {
-      question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
-      option: claimSentToHighCourt.yesRadioOption,
+      question1: yourApplication.claimTransferredToHighCourtQuestion,
+      question2: yourApplication.genAppSuccessfulQuestion,
+      option1: yourApplication.yesRadioOption,
       nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
@@ -456,11 +444,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
-      nextPage: claimSentToHighCourt.mainHeader
-    });
-    await performAction('confirmClaimTransferredToHighCourt', {
-      question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
-      option: claimSentToHighCourt.yesRadioOption,
+      question1: yourApplication.claimTransferredToHighCourtQuestion,
+      question2: yourApplication.genAppSuccessfulQuestion,
+      option1: yourApplication.yesRadioOption,
       nextPage: nameAndAddressForEviction.mainHeader
     });
     await performAction('selectNameAndAddressForEviction', {
@@ -533,11 +519,14 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
     await performAction('selectApplicationType', {
       question: yourApplication.typeOfApplicationQuestion,
       option: yourApplication.typeOfApplicationOptions.writOfPossession,
-      nextPage: claimSentToHighCourt.mainHeader
+      question1: yourApplication.claimTransferredToHighCourtQuestion,
+      question2: yourApplication.genAppSuccessfulQuestion,
+      option1: yourApplication.noRadioOption,
+      nextPage: youCannotApplyForWrit.mainHeader
     });
     await performAction('confirmClaimTransferredToHighCourt', {
-      question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
-      option: claimSentToHighCourt.noRadioOption,
+      question: yourApplication.claimTransferredToHighCourtQuestion,
+      option: yourApplication.noRadioOption,
       nextPage: youCannotApplyForWrit.mainHeader
     });
     await performAction('clickButton', youCannotApplyForWrit.continueButton);
@@ -557,11 +546,9 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.writOfPossession,
-        nextPage: claimSentToHighCourt.mainHeader
-      });
-      await performAction('confirmClaimTransferredToHighCourt', {
-        question: claimSentToHighCourt.claimTransferredToHighCourtQuestion,
-        option: claimSentToHighCourt.yesRadioOption,
+        question1: yourApplication.claimTransferredToHighCourtQuestion,
+        question2: yourApplication.genAppSuccessfulQuestion,
+        option1: yourApplication.yesRadioOption,
         nextPage: nameAndAddressForEviction.mainHeader
       });
       await performAction('selectNameAndAddressForEviction', {

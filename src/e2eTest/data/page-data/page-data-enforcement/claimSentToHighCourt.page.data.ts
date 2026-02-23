@@ -4,7 +4,7 @@ export const claimSentToHighCourt = {
   claimTransferredToHighCourtQuestion: 'Has the claim been transferred to the High Court?',
   yesRadioOption: 'Yes',
   noRadioOption: 'No',
-  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidation: 'YES',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {
     errorRadioOption: [
