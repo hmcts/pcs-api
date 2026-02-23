@@ -115,13 +115,6 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
-  afterAlways('E2eTest:preview') {
-    archiveE2eTestReports()
-    if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
-        postAllureResultsToSlack('preview')
-    }
-  }
-
   afterAlways('functionalTest:aat') {
     archiveFunctionalTestReports()
   }
@@ -190,7 +183,7 @@ def archiveE2eTestReports() {
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/e2e-output/**/*'
 }
 
-// E2E stage notification to #qa-pipeline-status
+// E2E stage notification to #hdp-qa-e2e-test-results
 def postAllureResultsToSlack(String pipelineType = 'master') {
   env.E2E_SERVICE_NAME = 'pcs-api'
   env.E2E_PIPELINE_TYPE = pipelineType
@@ -202,8 +195,8 @@ def postAllureResultsToSlack(String pipelineType = 'master') {
     msg = "E2E Test Results — Build #${env.BUILD_NUMBER}\n*Service:* pcs-api  |  *Pipeline:* ${pipelineType}\n\nAllure report not available – check build logs.\n*Allure report:* ${env.BUILD_URL}E2E_20Test_20Report/"
   }
   try {
-    slackSend(channel: '#qa-pipeline-status', message: msg)
-    echo "E2E Slack notification sent to #qa-pipeline-status"
+    slackSend(channel: '#hdp-qa-e2e-test-results', message: msg)
+    echo "E2E Slack notification sent to #hdp-qa-e2e-test-results"
   } catch (Exception e) {
     echo "WARNING: Failed to send E2E Slack notification: ${e.message}. Check Jenkins Slack plugin and channel access."
   }
