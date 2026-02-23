@@ -2,6 +2,8 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.writ;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
@@ -20,10 +22,11 @@ public class WritDetailsMapper {
         mapNameAndAddressForEviction(writDetails.getNameAndAddressForEviction(), entity);
 
         // Map direct fields
-        entity.setShowPeopleWhoWillBeEvictedPage(writDetails.getShowPeopleWhoWillBeEvictedPage());
-        entity.setHasHiredHighCourtEnforcementOfficer(writDetails.getHasHiredHighCourtEnforcementOfficer());
+        entity.setShowPeopleWhoWillBeEvictedPage(convertYesOrNo(writDetails.getShowPeopleWhoWillBeEvictedPage()));
+        entity.setHasHiredHighCourtEnforcementOfficer(
+            convertToVerticalYesNo(writDetails.getHasHiredHighCourtEnforcementOfficer()));
         entity.setHceoDetails(writDetails.getHceoDetails());
-        entity.setHasClaimTransferredToHighCourt(writDetails.getHasClaimTransferredToHighCourt());
+        entity.setHasClaimTransferredToHighCourt(convertYesOrNo(writDetails.getHasClaimTransferredToHighCourt()));
 
         // Map LandRegistryFees fields
         mapLandRegistryFees(writDetails.getLandRegistryFees(), entity);
@@ -63,6 +66,14 @@ public class WritDetailsMapper {
         if (moneyOwedByDefendants != null) {
             entity.setAmountOwed(moneyOwedByDefendants.getAmountOwed());
         }
+    }
+
+    private YesOrNo convertYesOrNo(YesOrNo yesOrNo) {
+        return yesOrNo == YesOrNo.YES ? YesOrNo.YES : YesOrNo.NO;
+    }
+
+    private VerticalYesNo convertToVerticalYesNo(VerticalYesNo yesOrNo) {
+        return yesOrNo == VerticalYesNo.YES ? VerticalYesNo.YES : VerticalYesNo.NO;
     }
 
 }

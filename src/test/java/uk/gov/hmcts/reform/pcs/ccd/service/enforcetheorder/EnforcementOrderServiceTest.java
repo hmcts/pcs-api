@@ -45,7 +45,6 @@ class EnforcementOrderServiceTest {
     @Captor
     private ArgumentCaptor<EnforcementOrderEntity> enforcementOrderEntityCaptor;
 
-    private final UUID enforcementOrderId = UUID.fromString("f47ac10b-58cc-4372-a567-0e02b2c3d479");
     private final UUID claimId = UUID.fromString("a1b2c3d4-e5f6-7890-1234-567890abcdef");
     private final UUID pcsCaseId = UUID.fromString("7b9e0f1a-2b3c-4d5e-6f7a-8b9c0d1e2f3a");
 
