@@ -19,48 +19,48 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.MultiSelectList;
 public class StatementOfTruthDetails {
 
     @CCD(label = "Completed by")
-    private StatementOfTruthCompletedBy completedBy;
+    protected StatementOfTruthCompletedBy completedBy;
 
     @CCD(
         typeOverride = MultiSelectList,
         typeParameterOverride = "StatementOfTruthAgreementClaimant"
     )
-    private List<StatementOfTruthAgreementClaimant> agreementClaimant;
+    protected List<StatementOfTruthAgreementClaimant> agreementClaimant;
 
     @CCD(
         label = "Full name",
         max = 60)
-    private String fullNameClaimant;
+    protected String fullNameClaimant;
 
     @CCD(
         label = "Position or office held",
         max = 60
     )
-    private String positionClaimant;
+    protected String positionClaimant;
 
     @CCD(
         typeOverride = MultiSelectList,
         typeParameterOverride = "StatementOfTruthAgreementLegalRep"
     )
-    private List<StatementOfTruthAgreementLegalRep> agreementLegalRep;
+    protected List<StatementOfTruthAgreementLegalRep> agreementLegalRep;
 
     @CCD(
         label = "Full name",
         max = 60
     )
-    private String fullNameLegalRep;
+    protected String fullNameLegalRep;
 
     @CCD(
         label = "Name of firm",
         max = 60
     )
-    private String firmNameLegalRep;
+    protected String firmNameLegalRep;
 
     @CCD(
         label = "Position or office held",
         max = 60
     )
-    private String positionLegalRep;
+    protected String positionLegalRep;
 
 }
 
