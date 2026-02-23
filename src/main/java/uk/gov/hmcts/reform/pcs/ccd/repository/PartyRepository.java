@@ -11,8 +11,6 @@ import java.util.UUID;
 
 @Repository
 public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
-    Optional<PartyEntity> findByIdamId(UUID idamId);
-
     @Query("SELECT p.id FROM PartyEntity p WHERE p.idamId = :idamId")
     Optional<UUID> findIdByIdamId(@Param("idamId") UUID idamId);
 
