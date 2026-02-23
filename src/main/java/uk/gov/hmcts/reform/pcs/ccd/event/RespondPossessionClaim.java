@@ -13,8 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
-import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.page.RespondToPossessionClaimEventPage;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
+import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -26,7 +26,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
     private final StartEventHandler startEventHandler;
     private final SubmitEventHandler submitEventHandler;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
-    private final RespondToPossessionClaimEventPage respondToPossessionClaimEventPage;
+    private final RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
 
     @Override
     public void configureDecentralised(final DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
@@ -40,6 +40,6 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT);
         savingPageBuilderFactory.create(respondPossessionClaimEvent, respondPossessionClaim)
-            .add(respondToPossessionClaimEventPage);
+            .add(respondToPossessionDraftSavePage);
     }
 }

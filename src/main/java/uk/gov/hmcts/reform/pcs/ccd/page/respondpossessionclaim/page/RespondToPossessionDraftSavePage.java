@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.page;
+package uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,16 +17,16 @@ import java.util.List;
 @Component
 @AllArgsConstructor
 @Slf4j
-public class RespondToPossessionClaimEventPage implements CcdPageConfiguration {
+public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
 
     private final ImmutablePartyFieldValidator immutableFieldValidator;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
-        pageBuilder.page("respondToPossessionClaimEventPage", this::midEvent)
+        pageBuilder.page("respondToPossessionDraftSavePage", this::midEvent)
             .pageLabel("Respond To Claim Event Page")
-            .label("Placeholder", "Placeholder Page to save draft data via mid event");
+            .label("Placeholder", "Placeholder page to save draft data via mid event");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -53,10 +53,7 @@ public class RespondToPossessionClaimEventPage implements CcdPageConfiguration {
             );
 
             if (!violations.isEmpty()) {
-                log.error(
-                    "Draft submit rejected for case {}: immutable field violations: {}",
-                    caseRef, violations
-                );
+                log.error("Draft submit rejected for case {}: immutable field violations: {}", caseRef, violations);
 
                 List<String> errors = violations.stream()
                     .map(field -> "Invalid submission: immutable field must not be sent: " + field)
