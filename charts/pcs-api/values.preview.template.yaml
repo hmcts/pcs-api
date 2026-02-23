@@ -2,7 +2,7 @@ global:
   postgresSecret: ${SERVICE_NAME}-postgresql
 java:
   # Don't modify below here
-  image: ${IMAGE_NAME}
+  image: hmctspublic.azurecr.io/pcs/api:staging-39d82f3-20260223145211
   ingressHost: ${SERVICE_FQDN}
   keyVaults:
     pcs:
