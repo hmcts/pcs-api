@@ -16,9 +16,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.Optional;
@@ -36,6 +38,8 @@ class ClaimResponseServiceTest {
 
     private static final UUID TEST_IDAM_ID = UUID.randomUUID();
     private static final UUID TEST_PARTY_ID = UUID.randomUUID();
+    private static final UUID TEST_CASE_ID = UUID.randomUUID();
+    private static final long TEST_CASE_REFERENCE = 1234567890L;
     private static final AddressUK TEST_ADDRESS = AddressUK.builder()
         .addressLine1("123 Test Street")
         .postTown("London")
@@ -44,6 +48,9 @@ class ClaimResponseServiceTest {
 
     @Mock
     private PartyRepository partyRepository;
+
+    @Mock
+    private PcsCaseRepository pcsCaseRepository;
 
     @Mock
     private SecurityContextService securityContextService;
@@ -66,6 +73,14 @@ class ClaimResponseServiceTest {
         testParty.setIdamId(TEST_IDAM_ID);
     }
 
+    private void stubCaseLookup() {
+        PcsCaseEntity caseEntity = new PcsCaseEntity();
+        caseEntity.setId(TEST_CASE_ID);
+        caseEntity.setCaseReference(TEST_CASE_REFERENCE);
+        when(pcsCaseRepository.findByCaseReference(TEST_CASE_REFERENCE))
+            .thenReturn(Optional.of(caseEntity));
+    }
+
     @Test
     void shouldSaveDraftDataWithAllFieldsProvided() {
         // Given
@@ -83,13 +98,14 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
-        AddressEntity addressEntity = new AddressEntity();
+        final AddressEntity addressEntity = new AddressEntity();
+        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        underTest.saveDraftData(response);
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
         verify(partyRepository, times(2)).save(partyCaptor.capture());
@@ -108,7 +124,7 @@ class ClaimResponseServiceTest {
     @Test
     void shouldSaveOnlyPhoneNumber() {
         // Given
-        PossessionClaimResponse response = buildResponse(
+        final PossessionClaimResponse response = buildResponse(
             Party.builder()
                 .phoneNumber("07123456789")
                 .address(TEST_ADDRESS)
@@ -118,11 +134,12 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
+        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        underTest.saveDraftData(response);
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
         verify(partyRepository, times(2)).save(partyCaptor.capture());
@@ -134,7 +151,7 @@ class ClaimResponseServiceTest {
     @Test
     void shouldSaveOnlyEmail() {
         // Given
-        PossessionClaimResponse response = buildResponse(
+        final PossessionClaimResponse response = buildResponse(
             Party.builder()
                 .emailAddress("defendant@example.com")
                 .build(),
@@ -143,11 +160,12 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
+        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        underTest.saveDraftData(response);
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());
@@ -159,7 +177,7 @@ class ClaimResponseServiceTest {
     @Test
     void shouldNotUpdatePartyWhenContactDetailsAreBlank() {
         // Given
-        PossessionClaimResponse response = buildResponse(
+        final PossessionClaimResponse response = buildResponse(
             Party.builder()
                 .phoneNumber("")
                 .emailAddress("   ")
@@ -169,11 +187,12 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
+        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        underTest.saveDraftData(response);
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());
@@ -193,7 +212,7 @@ class ClaimResponseServiceTest {
         when(securityContextService.getCurrentUserId()).thenReturn(null);
 
         // When
-        assertThatThrownBy(() -> underTest.saveDraftData(response))
+        assertThatThrownBy(() -> underTest.saveDraftData(response, TEST_CASE_REFERENCE))
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("Current user IDAM ID is null");
 
@@ -204,27 +223,28 @@ class ClaimResponseServiceTest {
     @Test
     void shouldThrowExceptionWhenPartyNotFound() {
         // Given
-        PossessionClaimResponse response = buildResponse(
+        final PossessionClaimResponse response = buildResponse(
             Party.builder().build(),
             DefendantResponses.builder().build()
         );
 
+        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.empty());
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.empty());
 
         // When
-        assertThatThrownBy(() -> underTest.saveDraftData(response))
+        assertThatThrownBy(() -> underTest.saveDraftData(response, TEST_CASE_REFERENCE))
             .isInstanceOf(IllegalStateException.class)
             .hasMessageContaining("No party found for IDAM ID:");
 
         // Then
-        verify(partyRepository).findByIdamId(TEST_IDAM_ID);
+        verify(partyRepository).findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID);
     }
 
     @Test
     void shouldHandleAllPreferencesSetToNo() {
         // Given
-        PossessionClaimResponse response = buildResponse(Party.builder()
+        final PossessionClaimResponse response = buildResponse(Party.builder()
                 .build(),
             DefendantResponses.builder()
                 .contactByEmail(VerticalYesNo.NO)
@@ -234,11 +254,12 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
+        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
 
         // When
-        underTest.saveDraftData(response);
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
         verify(partyRepository).save(partyCaptor.capture());
@@ -266,18 +287,19 @@ class ClaimResponseServiceTest {
                 .build()
         );
 
-        AddressEntity addressEntity = AddressEntity.builder()
+        final AddressEntity addressEntity = AddressEntity.builder()
             .addressLine1("123 Test Street")
             .postTown("London")
             .postcode("SW1A 1AA")
             .build();
 
+        stubCaseLookup();
         when(securityContextService.getCurrentUserId()).thenReturn(TEST_IDAM_ID);
-        when(partyRepository.findByIdamId(TEST_IDAM_ID)).thenReturn(Optional.of(testParty));
+        when(partyRepository.findByIdamIdAndPcsCaseId(TEST_IDAM_ID, TEST_CASE_ID)).thenReturn(Optional.of(testParty));
         when(modelMapper.map(TEST_ADDRESS, AddressEntity.class)).thenReturn(addressEntity);
 
         // When
-        underTest.saveDraftData(response);
+        underTest.saveDraftData(response, TEST_CASE_REFERENCE);
 
         // Then
         //Once for address being created, once for preferences being
