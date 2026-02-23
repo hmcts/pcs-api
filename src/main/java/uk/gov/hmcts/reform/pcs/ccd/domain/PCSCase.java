@@ -71,6 +71,11 @@ public class PCSCase {
     @External
     private String feeAmount;
 
+    @CCD(
+        searchable = true
+    )
+    private Long pcsCaseNumber;
+
     private YesOrNo hasUnsubmittedCaseData;
 
     @CCD(label = "Do you want to resume your claim using your saved answers?")

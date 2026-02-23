@@ -76,6 +76,8 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
 
+        caseData.setPcsCaseNumber(caseReference);
+
         return SubmitResponse.defaultResponse();
     }
 }
