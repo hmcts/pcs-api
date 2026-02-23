@@ -119,8 +119,7 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
-  afterAlways('e2eTest:aat') {
-    archiveE2eTestReports()
+  afterAlways('E2eTest:aat') {
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
     }
