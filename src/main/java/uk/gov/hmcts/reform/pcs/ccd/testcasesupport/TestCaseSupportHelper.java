@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 public class TestCaseSupportHelper {
 
-    public static final String LOCATION_PATTERN = "classpath*:testcasegeneration/";
+    public static final String LOCATION_PATTERN = "classpath*:test-case-generation/";
     public static final String JSON = ".json";
 
     private final ResourcePatternResolver resourcePatternResolver;
