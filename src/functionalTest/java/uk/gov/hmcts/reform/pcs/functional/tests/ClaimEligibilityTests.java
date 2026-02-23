@@ -26,7 +26,7 @@ class ClaimEligibilityTests extends BaseApi {
     void shouldReturnEligible() {
         apiSteps.requestIsPreparedWithAppropriateValues();
         apiSteps.theRequestContainsValidServiceToken(TestConstants.PCS_API);
-        apiSteps.theRequestContainsTheQueryParameter("postcode", "W3 7RX");
+        apiSteps.theRequestContainsTheQueryParameter("postcode", "Y3 7RX");
         apiSteps.callIsSubmittedToTheEndpoint("ClaimEligibility", "GET");
         apiSteps.checkStatusCode(200);
         apiSteps.theResponseBodyMatchesTheExpectedResponse(
