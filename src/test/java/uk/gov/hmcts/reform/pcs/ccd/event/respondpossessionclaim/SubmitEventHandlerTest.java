@@ -29,6 +29,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -812,7 +813,7 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify contact preferences service was called
-        verify(claimResponseService).saveDraftData(response);
+        verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
 
         // Verify draft service was called once
         verify(draftCaseDataService)
@@ -856,7 +857,7 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify contact preferences service was NOT called
-        verify(claimResponseService, never()).saveDraftData(any(PossessionClaimResponse.class));
+        verify(claimResponseService, never()).saveDraftData(any(PossessionClaimResponse.class), anyLong());
 
         // Verify draft service was called once
         verify(draftCaseDataService)
@@ -913,7 +914,7 @@ class SubmitEventHandlerTest {
         // Verify the exact response object is passed to the service
         ArgumentCaptor<PossessionClaimResponse> responseCaptor =
             ArgumentCaptor.forClass(PossessionClaimResponse.class);
-        verify(claimResponseService).saveDraftData(responseCaptor.capture());
+        verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
 
         PossessionClaimResponse capturedResponse = responseCaptor.getValue();
         assertThat(capturedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.NO);
@@ -962,7 +963,7 @@ class SubmitEventHandlerTest {
         assertThat(result.getErrors()).isNullOrEmpty();
 
         // Verify service handles null values gracefully
-        verify(claimResponseService).saveDraftData(response);
+        verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
     }
 
     @Test
@@ -998,7 +999,7 @@ class SubmitEventHandlerTest {
 
         // Mock service to throw exception
         doThrow(new IllegalStateException("No party found for IDAM ID"))
-            .when(claimResponseService).saveDraftData(any());
+            .when(claimResponseService).saveDraftData(any(), anyLong());
 
         // When / Then - Exception should propagate (not caught by handler)
         // This tests that the handler doesn't swallow exceptions
@@ -1007,7 +1008,7 @@ class SubmitEventHandlerTest {
             () -> underTest.submit(eventPayload)
         )).hasMessage("No party found for IDAM ID");
 
-        verify(claimResponseService).saveDraftData(response);
+        verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
     }
 
     @Test
@@ -1044,7 +1045,7 @@ class SubmitEventHandlerTest {
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then - Verify service is called and success is returned
-        verify(claimResponseService).saveDraftData(response);
+        verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
         assertThat(result.getState()).isNull(); // Default response has null state
@@ -1064,7 +1065,7 @@ class SubmitEventHandlerTest {
         SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then - Service should NOT be called due to validation failure
-        verify(claimResponseService, never()).saveDraftData(any());
+        verify(claimResponseService, never()).saveDraftData(any(), anyLong());
         assertThat(result.getErrors()).isNotEmpty();
     }
 

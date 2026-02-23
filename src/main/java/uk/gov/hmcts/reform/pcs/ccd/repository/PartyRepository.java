@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
-    Optional<PartyEntity> findByIdamId(UUID idamId);
+    Optional<PartyEntity> findByIdamIdAndPcsCaseId(UUID idamId, UUID caseId);
 }

@@ -72,7 +72,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
 
         //call services to save to relevant tables
         claimResponseService
-            .saveDraftData(responseDraftData);
+            .saveDraftData(responseDraftData, caseReference);
 
         //delete draft as it's no longer needed
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, respondPossessionClaim);
