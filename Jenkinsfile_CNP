@@ -126,6 +126,8 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
+  // Library already publishes "E2E Test Report" in GradleBuilder.e2eTest() — do not call archiveE2eTestReports() here or the report appears twice in the build sidebar.
+  // Ref: https://github.com/hmcts/cnp-jenkins-library/blob/master/src/uk/gov/hmcts/contino/GradleBuilder.groovy (e2eTest() → publishHTML reportName: 'E2E Test Report')
   afterAlways('E2eTest:aat') {
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
