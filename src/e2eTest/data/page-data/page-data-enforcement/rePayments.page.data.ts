@@ -8,7 +8,7 @@ export const rePayments = {
     none: 'None of it',
   },
   enterTheAmountTextLabel: 'Enter the amount that you want the defendants to repay',
-  enterTheAmountTextInput: '100.50',
+  enterTheAmountTextInput: ['755559.7','119999','1099.95','6320.00','890.10','111.01'],
   continueButton: 'Continue',
   totalAmt: 'Total',
   errorValidation: 'NO',//set it to 'NO' before raising a PR

@@ -3,5 +3,5 @@ export const firearmPossession = {
   mainHeader: 'Their history of firearm possession',
   whatIsTheirHistoryOfFirearmPossession: 'What is their history of firearm possession?',
   whatIsTheirHistoryOfFirearmPossessionInput: 'Test input for What is their history of firearm possession?',
-  continue: 'Continue',
+  continueButton: 'Continue',
 }

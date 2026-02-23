@@ -19,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFee
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+
 import java.util.Set;
 
 @Builder
@@ -112,8 +114,8 @@ public class WarrantDetails {
 
     @JsonUnwrapped
     @CCD
-    private StatementOfTruthDetails statementOfTruth;
-    
+    private StatementOfTruthDetailsEnforcement statementOfTruth;
+
     @CCD
     @JsonUnwrapped
     private DefendantsDOB defendantsDOB;
