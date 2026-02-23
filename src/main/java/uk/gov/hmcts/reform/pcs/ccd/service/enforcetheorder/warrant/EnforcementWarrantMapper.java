@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
 
-
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference;
@@ -12,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFees;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
@@ -54,7 +53,7 @@ public class EnforcementWarrantMapper {
 
     private void statementOfTruth(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
         if (warrantDetails.getStatementOfTruth() != null) {
-            StatementOfTruthDetails statementOfTruth = warrantDetails.getStatementOfTruth();
+            StatementOfTruthDetailsEnforcement statementOfTruth = warrantDetails.getStatementOfTruth();
             warrantEntity.setCompletedBy(statementOfTruth.getCompletedBy());
             warrantEntity.setFullNameClaimant(statementOfTruth.getFullNameClaimant());
             warrantEntity.setPositionClaimant(statementOfTruth.getPositionClaimant());
@@ -68,7 +67,8 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void certification(EnforcementWarrantEntity warrantEntity, StatementOfTruthDetails statementOfTruth) {
+    private void certification(EnforcementWarrantEntity warrantEntity,
+                               StatementOfTruthDetailsEnforcement statementOfTruth) {
         List<StatementOfTruthAgreement> certification = statementOfTruth.getCertification();
         if (certification != null && !certification.isEmpty()) {
             warrantEntity.setCertification(
@@ -79,7 +79,8 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void agreementLegalRep(EnforcementWarrantEntity warrantEntity, StatementOfTruthDetails statementOfTruth) {
+    private void agreementLegalRep(EnforcementWarrantEntity warrantEntity,
+                                   StatementOfTruthDetailsEnforcement statementOfTruth) {
         List<StatementOfTruthAgreementLegalRep> agreementLegalRep = statementOfTruth.getAgreementLegalRep();
         if (agreementLegalRep != null && !agreementLegalRep.isEmpty()) {
             warrantEntity.setAgreementLegalRep(agreementLegalRep.stream()
@@ -89,7 +90,8 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void agreementClaimant(EnforcementWarrantEntity warrantEntity, StatementOfTruthDetails statementOfTruth) {
+    private void agreementClaimant(EnforcementWarrantEntity warrantEntity,
+                                   StatementOfTruthDetailsEnforcement statementOfTruth) {
         List<StatementOfTruthAgreementClaimant> agreementClaimant = statementOfTruth.getAgreementClaimant();
         if (agreementClaimant != null && !agreementClaimant.isEmpty()) {
             warrantEntity.setAgreementClaimant(

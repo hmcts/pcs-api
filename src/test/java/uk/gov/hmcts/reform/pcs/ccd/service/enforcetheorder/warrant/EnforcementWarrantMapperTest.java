@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthAgreementClaimant;
@@ -378,14 +379,13 @@ class EnforcementWarrantMapperTest {
     @Test
     void shouldMapStatementOfTruth() {
         // Given
-        StatementOfTruthDetails statementOfTruth = StatementOfTruthDetails.builder()
-            .completedBy(StatementOfTruthCompletedBy.CLAIMANT)
-            .fullNameClaimant("John Doe")
-            .positionClaimant("Owner")
-            .fullNameLegalRep("Jane Smith")
-            .firmNameLegalRep("Smith & Co")
-            .positionLegalRep("Solicitor")
-            .build();
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.CLAIMANT);
+        statementOfTruth.setFullNameClaimant("John Doe");
+        statementOfTruth.setPositionClaimant("Owner");
+        statementOfTruth.setFullNameLegalRep("Jane Smith");
+        statementOfTruth.setFirmNameLegalRep("Smith & Co");
+        statementOfTruth.setPositionLegalRep("Solicitor");
         WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
@@ -405,8 +405,8 @@ class EnforcementWarrantMapperTest {
     void shouldMapAgreementClaimant() {
         // Given
         List<StatementOfTruthAgreementClaimant> agreements = List.of(StatementOfTruthAgreementClaimant.BELIEVE_TRUE);
-        StatementOfTruthDetails statementOfTruth = StatementOfTruthDetails.builder().agreementClaimant(agreements)
-            .build();
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        statementOfTruth.setAgreementClaimant(agreements);
         WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
@@ -420,8 +420,8 @@ class EnforcementWarrantMapperTest {
     @Test
     void shouldHandleEmptyAgreementClaimant() {
         // Given
-        StatementOfTruthDetails statementOfTruth = StatementOfTruthDetails.builder()
-            .agreementClaimant(Collections.emptyList()).build();
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        statementOfTruth.setAgreementClaimant(Collections.emptyList());
         WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
@@ -436,8 +436,8 @@ class EnforcementWarrantMapperTest {
     void shouldMapAgreementLegalRep() {
         // Given
         List<StatementOfTruthAgreementLegalRep> agreements = List.of(StatementOfTruthAgreementLegalRep.AGREED);
-        StatementOfTruthDetails statementOfTruth = StatementOfTruthDetails.builder()
-            .agreementLegalRep(agreements).build();
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        statementOfTruth.setAgreementLegalRep(agreements);
         WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
 
@@ -452,9 +452,8 @@ class EnforcementWarrantMapperTest {
     void shouldMapCertification() {
         // Given
         List<StatementOfTruthAgreement> certifications = List.of(StatementOfTruthAgreement.CERTIFY);
-        StatementOfTruthDetails statementOfTruth = StatementOfTruthDetails.builder()
-            .certification(certifications)
-            .build();
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        statementOfTruth.setCertification(certifications);
 
         WarrantDetails warrantDetails = WarrantDetails.builder().statementOfTruth(statementOfTruth).build();
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails).build();
@@ -483,14 +482,7 @@ class EnforcementWarrantMapperTest {
     }
 
     private EnforcementOrder createCompleteEnforcementOrder() {
-        StatementOfTruthDetails statementOfTruth = StatementOfTruthDetails.builder()
-            .completedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE)
-            .fullNameLegalRep("Legal Rep Name")
-            .firmNameLegalRep("Law Firm")
-            .positionLegalRep("Senior Partner")
-            .agreementLegalRep(List.of(StatementOfTruthAgreementLegalRep.AGREED))
-            .certification(List.of(StatementOfTruthAgreement.CERTIFY))
-            .build();
+        StatementOfTruthDetailsEnforcement statementOfTruth = getStatementOfTruthDetailsEnforcement();
 
         WarrantDetails warrantDetails = WarrantDetails.builder()
             .showChangeNameAddressPage(YesOrNo.YES)
@@ -507,5 +499,16 @@ class EnforcementWarrantMapperTest {
             .build();
 
         return EnforcementOrder.builder().warrantDetails(warrantDetails).build();
+    }
+
+    private static @NotNull StatementOfTruthDetailsEnforcement getStatementOfTruthDetailsEnforcement() {
+        StatementOfTruthDetailsEnforcement statementOfTruth = new StatementOfTruthDetailsEnforcement();
+        statementOfTruth.setCompletedBy(StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE);
+        statementOfTruth.setFullNameLegalRep("Legal Rep Name");
+        statementOfTruth.setFirmNameLegalRep("Law Firm");
+        statementOfTruth.setPositionLegalRep("Senior Partner");
+        statementOfTruth.setAgreementLegalRep(List.of(StatementOfTruthAgreementLegalRep.AGREED));
+        statementOfTruth.setCertification(List.of(StatementOfTruthAgreement.CERTIFY));
+        return statementOfTruth;
     }
 }

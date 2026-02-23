@@ -112,8 +112,6 @@ public class EnforcementWarrantEntity {
     @Column(name = "defendants_dob_details")
     private String defendantsDOBDetails;
 
-    private String enforcementRiskCategories;
-
     // Statement of Truth
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
