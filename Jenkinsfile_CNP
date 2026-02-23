@@ -116,7 +116,6 @@ withPipeline(type, product, component) {
   }
 
   afterAlways('E2eTest:preview') {
-    archiveE2eTestReports()
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('preview')
     }
