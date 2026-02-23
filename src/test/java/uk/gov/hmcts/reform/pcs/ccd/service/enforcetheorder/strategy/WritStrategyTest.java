@@ -16,7 +16,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressFor
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.WritEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.WritRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WritRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.writ.WritDetailsMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;

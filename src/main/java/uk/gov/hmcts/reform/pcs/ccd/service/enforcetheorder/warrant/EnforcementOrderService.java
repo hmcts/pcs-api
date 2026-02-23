@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
@@ -10,7 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy.EnforcementTypeStrategyFactory;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
@@ -28,6 +29,7 @@ public class EnforcementOrderService {
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementTypeStrategyFactory strategyFactory;
 
+    @Transactional
     public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
         createEnforcementOrder(caseReference, enforcementOrder);
         draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
