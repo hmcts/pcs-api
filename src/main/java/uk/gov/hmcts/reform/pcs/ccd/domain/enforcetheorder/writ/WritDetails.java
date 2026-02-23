@@ -73,10 +73,16 @@ public class WritDetails {
     private LanguageUsed enforcementLanguageUsed;
     @CCD(
         searchable = false,
-        label = "Has the claim been transferred to the High Court?"
+        label = "TEMPORARY TEST ONLY – Has the claim been transferred to the High Court?"
     )
     private YesOrNo hasClaimTransferredToHighCourt;
 
+    @CCD(
+        searchable = false,
+        label = "TEMPORARY TEST ONLY – was the general application to transfer to the High Court successful?"
+    )
+    private YesOrNo wasGeneralApplicationToTransferToHighCourtSuccessful;
+    
     @JsonUnwrapped
     @CCD
     private StatementOfTruthDetailsEnforcement statementOfTruth;
