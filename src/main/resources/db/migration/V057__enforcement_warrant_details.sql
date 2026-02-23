@@ -43,9 +43,6 @@ CREATE TABLE enf_warrant(
   defendants_dob_known                    YES_NO,
   defendants_dob_details                  VARCHAR(6800),
 
-  -- Risk Assessment
-  enforcement_risk_categories             TEXT,
-
   -- Statement of Truth
   completed_by                            STATEMENT_OF_TRUTH_COMPLETED_BY,
   certification                           TEXT,
