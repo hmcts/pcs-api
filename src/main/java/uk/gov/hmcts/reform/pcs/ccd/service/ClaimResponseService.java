@@ -10,9 +10,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContac
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.UUID;
@@ -27,6 +29,7 @@ import java.util.UUID;
 public class ClaimResponseService {
 
     private final PartyRepository partyRepository;
+    private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
@@ -36,7 +39,7 @@ public class ClaimResponseService {
      *
      * @throws IllegalStateException if no party found for the current user's IDAM ID
      */
-    public void saveDraftData(PossessionClaimResponse dataFromDraftTable) {
+    public void saveDraftData(PossessionClaimResponse dataFromDraftTable, long caseReference) {
         UUID currentUserIdamId = securityContextService.getCurrentUserId();
 
         if (currentUserIdamId == null) {
@@ -44,7 +47,7 @@ public class ClaimResponseService {
             throw new IllegalStateException("Current user IDAM ID is null");
         }
 
-        PartyEntity defendant = findDefendantByIdamId(currentUserIdamId);
+        PartyEntity defendant = findDefendantByIdamId(currentUserIdamId, caseReference);
 
         //save to relevant tables
         updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
@@ -53,14 +56,15 @@ public class ClaimResponseService {
         log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
 
-    /**
-     * Finds a defendant party by their IDAM ID.
-     * Similar pattern to PcsCaseMergeService.setPcqIdForCurrentUser()
-     */
-    private PartyEntity findDefendantByIdamId(UUID idamId) {
-        return partyRepository.findByIdamId(idamId)
+    private PartyEntity findDefendantByIdamId(UUID idamId, long caseReference) {
+        UUID caseId = pcsCaseRepository.findByCaseReference(caseReference)
+            .map(PcsCaseEntity::getId)
             .orElseThrow(() -> new IllegalStateException(
-                "No party found for IDAM ID: " + idamId));
+                "No case found for case reference: " + caseReference));
+
+        return partyRepository.findByIdamIdAndPcsCaseId(idamId, caseId)
+            .orElseThrow(() -> new IllegalStateException(
+                "No party found for IDAM ID: " + idamId + " and case reference: " + caseReference));
     }
 
     /**

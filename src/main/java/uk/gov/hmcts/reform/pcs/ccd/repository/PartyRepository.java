@@ -15,4 +15,6 @@ public interface PartyRepository extends JpaRepository<PartyEntity, UUID> {
 
     @Query("SELECT p.id FROM PartyEntity p WHERE p.idamId = :idamId")
     Optional<UUID> findIdByIdamId(@Param("idamId") UUID idamId);
+
+    Optional<PartyEntity> findByIdamIdAndPcsCaseId(UUID idamId, UUID caseId);
 }
