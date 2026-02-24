@@ -12,6 +12,10 @@ const ELEMENT_TYPES = [
 
 type ValidationResult = { element: string; expected: string; status: 'pass' | 'fail' };
 
+function escapeForRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export class PageContentValidation implements IValidation {
   private static validationResults = new Map<string, ValidationResult[]>();
   private static validationExecuted = false;
@@ -24,74 +28,71 @@ export class PageContentValidation implements IValidation {
     Button: (page: Page, value: string) => page.locator(`
                     button:text-is("${value}"),
                     [value="${value}"],
-                    :has-text("${value}") + button,
-                    [role="link"]:text("${value}"),
-                    a:text("${value}"),
-                    :has-text("${value}") ~ button,
-                    button:has-text("${value}"),
-                    button >> text=${value}`),
+                    [role="link"]:text-is("${value}"),
+                    a:text-is("${value}"),
+                    button:has(:text-is("${value}"))`),
     Link: (page: Page, value: string) => page.locator(`
-                    a:text("${value}"),
-                    a.govuk-link:text("${value}"),
-                    button.govuk-js-link:text("${value}"),
-                    [role="link"]:text("${value}"),
-                    [aria-label*="${value}"]:text("${value}"),
-                    summary>span:text("${value}")`),
+                    a:text-is("${value}"),
+                    a.govuk-link:text-is("${value}"),
+                    button.govuk-js-link:text-is("${value}"),
+                    [role="link"]:text-is("${value}"),
+                    [aria-label="${value}"],
+                    summary>span:text-is("${value}")`),
     Header: (page: Page, value: string) => page.locator(`
-                    h1:text("${value}"),
-                    h2:text("${value}"),
-                    h3:text("${value}")`),
+                    h1:text-is("${value}"),
+                    h2:text-is("${value}"),
+                    h3:text-is("${value}")`),
     Caption: (page: Page, value: string) => page.locator(`
-                    caption:text("${value}"),
-                    .caption:text("${value}"),
-                    figcaption:text("${value}"),
-                    .figcaption:text("${value}"),
-                    span.govuk-caption-l:text("${value}"),
-                    [aria-label*="${value}"]:text("${value}")`),
+                    caption:text-is("${value}"),
+                    .caption:text-is("${value}"),
+                    figcaption:text-is("${value}"),
+                    .figcaption:text-is("${value}"),
+                    span.govuk-caption-l:text-is("${value}"),
+                    [aria-label="${value}"]`),
     Checkbox: (page: Page, value: string) => page.locator(`
-                    label:text("${value}") ~ input[type="checkbox"],
-                    label:text("${value}") + input[type="checkbox"],
-                    .checkbox:text("${value}") ~ input[type="checkbox"],
-                    label >> text=${value} >> xpath=..//input[@type="checkbox"]`),
-    Question: (page: Page, value: string) => page.locator(`span:has-text("${value}")`)
-      .or(page.locator(`label:text("${value}") ~ input[type="radio"]`))
-      .or(page.locator(`label:text("${value}") + input[type="radio"]`))
-      .or(page.locator(`.radio:text("${value}") ~ input[type="radio"]`))
-      .or(page.locator(`legend:text("${value}") ~ input[type="radio"]`))
-      .or(page.locator(`.question:text("${value}") ~ input[type="radio"]`))
-      .or(page.locator(`label >> text=${value} >> xpath=..//input[@type="radio"]`)),
+                    label:text-is("${value}") ~ input[type="checkbox"],
+                    label:text-is("${value}") + input[type="checkbox"],
+                    .checkbox:text-is("${value}") ~ input[type="checkbox"],
+                    label:has(:text-is("${value}")) >> xpath=..//input[@type="checkbox"]`),
+    Question: (page: Page, value: string) => page.locator(`span:text-is("${value}")`)
+      .or(page.locator(`label:text-is("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`label:text-is("${value}") + input[type="radio"]`))
+      .or(page.locator(`.radio:text-is("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`legend:text-is("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`.question:text-is("${value}") ~ input[type="radio"]`))
+      .or(page.locator(`label:has(:text-is("${value}")) >> xpath=..//input[@type="radio"]`)),
     RadioOption: (page: Page, value: string) => page.locator(`
-                    label:text("${value}") ~ input[type="radio"],
-                    label:text("${value}") + input[type="radio"],
-                    .radio-option:text("${value}") ~ input[type="radio"],
-                    label >> text=${value} >> xpath=..//input[@type="radio"]`),
+                    label:text-is("${value}") ~ input[type="radio"],
+                    label:text-is("${value}") + input[type="radio"],
+                    .radio-option:text-is("${value}") ~ input[type="radio"],
+                    label:has(:text-is("${value}")) >> xpath=..//input[@type="radio"]`),
     SelectLabel: (page: Page, value: string) => page.locator(`
-                    label:text("${value}") ~ select,
-                    .select:text("${value}") ~ select`),
+                    label:text-is("${value}") ~ select,
+                    .select:text-is("${value}") ~ select`),
     SelectOption: (page: Page, value: string) => page.locator(`
-                    option:text("${value}"),
-                    select option:text("${value}")`),
+                    option:text-is("${value}"),
+                    select option:text-is("${value}")`),
     HintText: (page: Page, value: string) => page.locator(`
-                    .hint:text("${value}"),
+                    .hint:text-is("${value}"),
                     span:text-is("${value}")`),
     TextLabel: (page: Page, value: string) => page.locator(`
-                    label:has-text("${value}"),
-                    .label:has-text("${value}"),
+                    label:text-is("${value}"),
+                    .label:text-is("${value}"),
                     span:text-is("${value}")`),
     Paragraph: (page: Page, value: string) => page.locator(`
-                     p:text("${value}"),
-                     .paragraph:text("${value}"),
-                     markdown:text("${value}"),
-                    .content:text("${value}"),
-                    .body:text("${value}"),
-                    .text-content:text("${value}"),
-                    .govuk-body:text("${value}"),
-                    .govuk-list:text("${value}"),
+                     p:text-is("${value}"),
+                     .paragraph:text-is("${value}"),
+                     markdown:text-is("${value}"),
+                    .content:text-is("${value}"),
+                    .body:text-is("${value}"),
+                    .text-content:text-is("${value}"),
+                    .govuk-body:text-is("${value}"),
+                    .govuk-list:text-is("${value}"),
                     span:text-is("${value}"),
-                    dl:has-text("${value}") > dt,
-                    strong:text("${value}")`),
-    Text: (page: Page, value: string) => page.locator(`:text("${value}")`),
-    Tab: (page: Page, value: string) => page.getByRole('tab', { name: value }),
+                    dl > dt:text-is("${value}"),
+                    strong:text-is("${value}")`),
+    Text: (page: Page, value: string) => page.locator(`:text-is("${value}")`),
+    Tab: (page: Page, value: string) => page.getByRole('tab', { name: new RegExp(`^${escapeForRegex(value)}$`) }),
   };
 
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {

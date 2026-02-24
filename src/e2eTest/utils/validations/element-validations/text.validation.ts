@@ -1,5 +1,5 @@
 import { Page, expect } from '@playwright/test';
-import {IValidation, validationRecord} from "../../interfaces/validation.interface";
+import {IValidation, validationRecord} from "@utils/interfaces";
 
 export class TextValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationRecord): Promise<void> {
@@ -25,7 +25,7 @@ export class TextValidation implements IValidation {
       case 'listItem':
         data.elementType = 'li';
     }
-    const locator = page.locator(`${data.elementType}:has-text("${data.text}")`).first()
-        await expect(locator).toHaveText(String(data.text));
+    const locator = page.locator(`${data.elementType}:text-is("${data.text}")`).first();
+    await expect(locator).toHaveText(new RegExp(`^${String(data.text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`));
   }
 }
