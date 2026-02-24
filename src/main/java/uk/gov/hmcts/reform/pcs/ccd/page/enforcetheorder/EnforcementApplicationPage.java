@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -125,12 +123,9 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         setFormattedDefendantNames(data.getAllDefendants(), data);
         List<String> errors = validateWritTransfer(data);
-        if (errors.isEmpty()) {
-            errors = null;
-        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
-            .errors(errors)
+            .errors(errors.isEmpty() ? null : errors)
             .build();
     }
 
@@ -159,7 +154,7 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     }
 
     private static boolean toBoolean(YesOrNo yesOrNo) {
-        return Optional.ofNullable(yesOrNo).map(YesOrNo::toBoolean).orElse(false);
+        return yesOrNo != null && yesOrNo.toBoolean();
     }
 
     private List<String> validateWritTransfer(PCSCase pcsCase) {
