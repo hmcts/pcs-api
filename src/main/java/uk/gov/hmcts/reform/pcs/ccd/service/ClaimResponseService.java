@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -126,7 +128,9 @@ public class ClaimResponseService {
         contactPrefs.setContactByPost(defendantResponse.getContactByPost());
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
 
-        shouldSavePhoneNumAndTextPreference = defendantResponse.getContactByPhone().toBoolean();
+        shouldSavePhoneNumAndTextPreference = Optional.ofNullable(defendantResponse.getContactByPhone())
+            .map(VerticalYesNo::toBoolean)
+            .orElse(false);
         if (shouldSavePhoneNumAndTextPreference) {
             contactPrefs.setContactByText(defendantResponse.getContactByText());
         }
