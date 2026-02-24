@@ -80,10 +80,10 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                             <p class="govuk-body govuk-!-margin-bottom-1">It is free to apply for a warrant of
                             restitution, but:</p>
                             <ul class="govuk-list govuk-list--bullet">
-                              <li class="govuk-!-font-size-19">you'll need a warrant of possession before you can apply
+                              <li class="govuk-!-font-size-19">you’ll need a warrant of possession before you can apply
                               </li>
                               <li class="govuk-!-font-size-19">you can only use it if you have already tried to evict
-                              someone, but they have returned to the property after the eviction. For example, if they
+                              someone, but they returned to the property after the eviction. For example, if they
                               unlawfully returned after the bailiffs left.</li>
                             </ul>
                             <p class="govuk-body govuk-!-margin-bottom-1">In a warrant of restitution, the judge will:

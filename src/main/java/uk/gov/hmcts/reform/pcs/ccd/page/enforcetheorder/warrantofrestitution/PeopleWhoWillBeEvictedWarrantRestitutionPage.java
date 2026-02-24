@@ -4,6 +4,8 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
+import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+
 public class PeopleWhoWillBeEvictedWarrantRestitutionPage implements CcdPageConfiguration {
 
     @Override
@@ -11,6 +13,7 @@ public class PeopleWhoWillBeEvictedWarrantRestitutionPage implements CcdPageConf
         pageBuilder
             .page("peopleWhoWillBeEvictedWarrantRestitution")
             .pageLabel("The people who will be evicted (placeholder)")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW);
+            .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
+            .label("peopleWhoWillBeEvictedWarrantRestitution-save-and-return", SAVE_AND_RETURN);
     }
 }
