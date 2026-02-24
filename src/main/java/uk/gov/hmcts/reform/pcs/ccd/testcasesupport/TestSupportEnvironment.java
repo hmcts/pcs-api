@@ -8,9 +8,21 @@ public final class TestSupportEnvironment {
     }
 
     public static boolean isNonProdTestSupportEnabled() {
-        return isStubEnvironment(System.getenv("ENVIRONMENT"))
-            || isStubEnvironment(System.getenv("SPRING_PROFILES_ACTIVE"))
-            || "true".equalsIgnoreCase(System.getenv("ENABLE_TESTING_SUPPORT"));
+        return isNonProdTestSupportEnabled(
+            System.getenv("ENVIRONMENT"),
+            System.getenv("SPRING_PROFILES_ACTIVE"),
+            System.getenv("ENABLE_TESTING_SUPPORT")
+        );
+    }
+
+    static boolean isNonProdTestSupportEnabled(
+        String environment,
+        String springProfilesActive,
+        String enableTestingSupport
+    ) {
+        return isStubEnvironment(environment)
+            || isStubEnvironment(springProfilesActive)
+            || "true".equalsIgnoreCase(enableTestingSupport);
     }
 
     private static boolean isStubEnvironment(String value) {
