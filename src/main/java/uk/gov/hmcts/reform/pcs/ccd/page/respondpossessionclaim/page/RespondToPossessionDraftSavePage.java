@@ -26,7 +26,8 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder.page("respondToPossessionDraftSavePage", this::midEvent)
             .pageLabel("Respond To Claim Event Page")
-            .label("Placeholder", "Placeholder page to save draft data via mid event");
+            .label("respondToPossessionDraftSavePage-info",
+                   "Placeholder page to save draft data via mid event");
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

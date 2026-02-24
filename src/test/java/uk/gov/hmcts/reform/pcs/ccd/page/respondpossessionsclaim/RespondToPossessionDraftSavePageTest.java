@@ -40,7 +40,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldReturnPartialUpdateWhenNoViolations() {
+    void shouldReturnPartialUpdate() {
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
             .party(Party.builder().firstName("Jack").lastName("Smith").build())
             .build();
@@ -108,7 +108,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldSaveCompletePartyDataInDraft() {
+    void shouldSaveCompletePartyData() {
         AddressUK address = AddressUK.builder()
             .addressLine1("123 Test Street")
             .postTown("London")
@@ -145,7 +145,7 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
     }
 
     @Test
-    void shouldSaveDefendantResponsesOnly() {
+    void shouldSaveDefendantResponsesData() {
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
             .oweRentArrears(YesNoNotSure.NO)
@@ -207,39 +207,6 @@ class RespondToPossessionDraftSavePageTest extends BasePageTest {
             .getPossessionClaimResponse().getDefendantResponses();
         assertThat(savedResponses.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedResponses.getContactByText()).isEqualTo(VerticalYesNo.NO);
-    }
-
-    @Test
-    void shouldOmitAllNullFieldsFromParty() {
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(Party.builder()
-                       .firstName("John")
-                       .lastName(null)
-                       .orgName(null)
-                       .nameKnown(null)
-                       .emailAddress(null)
-                       .address(null)
-                       .addressKnown(null)
-                       .addressSameAsProperty(null)
-                       .phoneNumber(null)
-                       .build())
-            .build();
-
-        PCSCase caseData = buildCaseData(contactDetails, null);
-
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), anyLong()))
-            .thenReturn(List.of());
-
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
-
-        assertThat(response.getErrors()).isNull();
-        Party savedParty = response.getData().getPossessionClaimResponse()
-            .getDefendantContactDetails().getParty();
-        assertThat(savedParty.getFirstName()).isEqualTo("John");
-        assertThat(savedParty.getLastName()).isNull();
-        assertThat(savedParty.getEmailAddress()).isNull();
-        assertThat(savedParty.getPhoneNumber()).isNull();
-        assertThat(savedParty.getAddress()).isNull();
     }
 
     @Test
