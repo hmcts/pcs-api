@@ -26,6 +26,9 @@ export class TextValidation implements IValidation {
         data.elementType = 'li';
     }
     const locator = page.locator(`${data.elementType}:text-is("${data.text}")`).first();
-    await expect(locator).toHaveText(new RegExp(`^${String(data.text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`));
+    const actual = await locator.textContent();
+    const expected = String(data.text);
+    const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
+    expect(normalized(actual ?? ''), `Expected text "${expected}"`).toBe(normalized(expected));
   }
 }
