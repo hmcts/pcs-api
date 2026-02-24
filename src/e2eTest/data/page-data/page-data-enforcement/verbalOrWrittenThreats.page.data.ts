@@ -3,5 +3,5 @@ export const verbalOrWrittenThreats = {
   mainHeader: 'Their verbal or written threats',
   verbalOrWrittenThreatsMade: 'What kind of verbal or written threats have they made?',
   verbalOrWrittenThreatsMadeInput: 'Test input What kind of verbal or written threats have they made',
-  continue: 'Continue',
+  continueButton: 'Continue',
 }
