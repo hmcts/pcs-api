@@ -104,7 +104,7 @@ export class EnforcementAction implements IAction {
     if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
       await performAction('reTryOnCallBackError', yourApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === 'Warrant of possession') {
+    } else if (applicationType.option === 'Warrant of possession' || applicationType.option === 'Warrant of restitution') {
       await performAction('reTryOnCallBackError', yourApplication.continueButton, applicationType.nextPage as string);
     }
 
