@@ -80,4 +80,15 @@ public class WritDetails {
     @JsonUnwrapped
     @CCD
     private StatementOfTruthDetailsEnforcement statementOfTruth;
+
+    @CCD(
+        label = "Have you selected the correct claim?"
+    )
+    private YesOrNo hasClaimBeenSelected;
+
+    @CCD(
+        hint = "Please provide the date",
+        max = 120
+    )
+    private String dateDetails;
 }
