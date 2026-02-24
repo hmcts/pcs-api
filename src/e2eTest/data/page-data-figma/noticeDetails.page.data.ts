@@ -1,7 +1,6 @@
 export const noticeDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Notice details`,
-  caseNumberParagraph: `Case number:`,
   propertyAddressParagraph: `Property address:`,
   howDidYouServeTheQuestion: `How did you serve the notice?`,
   byFirstClassPostOrRadioOption: `By first class post or other service which provides for delivery on the next business day`,

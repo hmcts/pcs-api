@@ -1,7 +1,6 @@
 export const claimantType = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Claimant type`,
-  caseNumberParagraph: `Case number:`,
   propertyAddressParagraph: `Property address:`,
   claimantIsThePersonOrOrganisationParagraph: `A claimant is the person or organisation who is making the possession claim.`,//what should we call this as?
   whoIsTheClaimantQuestion: `Who is the claimant in this case?`,

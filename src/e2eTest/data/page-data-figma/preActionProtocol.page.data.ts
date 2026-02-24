@@ -3,7 +3,6 @@ export const preactionProtocol = {
   mainHeader: `Pre-action protocol`,
   //appliedForArrearsToBeParagraph: `applied for arrears to be paid by the Department for Work and Pensions (DWP) by deductions from the defendants’ benefits`,
   cancelLink: `Cancel`,
-  caseNumberParagraph: `Case number:`,
   //contactedOrAttemptedToContactParagraph: `contacted, or attempted to contact, the defendants`,
   continueButton: `Continue`,
   haveYouFollowedThePreactionQuestion: `Have you followed the pre-action protocol?`,

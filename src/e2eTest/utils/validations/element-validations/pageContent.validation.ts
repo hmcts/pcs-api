@@ -12,10 +12,6 @@ const ELEMENT_TYPES = [
 
 type ValidationResult = { element: string; expected: string; status: 'pass' | 'fail' };
 
-function escapeForRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 export class PageContentValidation implements IValidation {
   private static validationResults = new Map<string, ValidationResult[]>();
   private static validationExecuted = false;
@@ -92,7 +88,7 @@ export class PageContentValidation implements IValidation {
                     dl > dt:text-is("${value}"),
                     strong:text-is("${value}")`),
     Text: (page: Page, value: string) => page.locator(`:text-is("${value}")`),
-    Tab: (page: Page, value: string) => page.getByRole('tab', { name: new RegExp(`^${escapeForRegex(value)}$`) }),
+    Tab: (page: Page, value: string) => page.locator(`[role="tab"]:text-is("${value}")`),
   };
 
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {

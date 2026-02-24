@@ -1,7 +1,6 @@
 export const asbQuestionsWales = {
   mainHeader: `Antisocial behaviour and illegal or prohibited conduct`,
   cancelLink: `Cancel`,
-  caseNumberParagraph: `Case number:`,
   continueButton: `Continue`,
   cymraegToggleLink: `Cymraeg`,
   giveDetailsOfAsbHiddenTextLabel: `Give details of the actual or threatened antisocial behaviour`,

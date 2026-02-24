@@ -1,7 +1,6 @@
 export const rentDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Rent details`,
-  caseNumberParagraph: `Case number:`,
   propertyAddressParagraph: `Property Address:`,
   howMuchIsTheRentQuestion: `How much is the rent?`,
   howFrequentlyShouldRentBePaidQuestion: `How frequently should rent be paid?`,

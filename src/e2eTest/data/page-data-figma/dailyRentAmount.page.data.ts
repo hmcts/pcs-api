@@ -1,7 +1,6 @@
 export const dailyRentAmount = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Daily rent amount`,
-  caseNumberParagraph: `Case number:`,
   propertyAddressParagraph: `Property Address:`,
   basedOnYourPreviousAnswersParagraph: `Based on your previous answers, the amount per day that unpaid rent should be charged at is: `,
   isTheAmountPerDayQuestion: `Is the amount per day that unpaid rent should be charged at correct?`,

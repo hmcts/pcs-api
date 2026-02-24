@@ -2,7 +2,6 @@
 export const defendantDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Defendant details`,
-  caseNumberParagraph: `Case number:`,
   defendantsNameSubHeader: `Defendant’s name`,
   doYouKnowTheDefendantsNameQuestion: `Do you know the defendant’s name?`,
   yesRadioOption: `Yes`,
