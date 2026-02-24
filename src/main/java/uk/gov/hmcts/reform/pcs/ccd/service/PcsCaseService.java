@@ -1,16 +1,15 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.DocumentEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.PartyService;
+import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
@@ -26,8 +25,7 @@ public class PcsCaseService {
     private final PartyService partyService;
     private final DocumentService documentService;
     private final TenancyLicenceService tenancyLicenceService;
-
-    private final ModelMapper modelMapper;
+    private final AddressMapper addressMapper;
 
     public PcsCaseEntity createCase(long caseReference,
                                     AddressUK propertyAddress,
@@ -38,7 +36,7 @@ public class PcsCaseService {
 
         PcsCaseEntity pcsCaseEntity = new PcsCaseEntity();
         pcsCaseEntity.setCaseReference(caseReference);
-        pcsCaseEntity.setPropertyAddress(modelMapper.map(propertyAddress, AddressEntity.class));
+        pcsCaseEntity.setPropertyAddress(addressMapper.toAddressEntityAndNormalise(propertyAddress));
         pcsCaseEntity.setLegislativeCountry(legislativeCountry);
 
         return pcsCaseRepository.save(pcsCaseEntity);

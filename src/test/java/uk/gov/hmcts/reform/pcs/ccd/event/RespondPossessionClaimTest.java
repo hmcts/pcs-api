@@ -13,6 +13,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantRespon
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -26,7 +28,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseAccessException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
@@ -41,7 +42,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentCaptor.forClass;
@@ -54,13 +54,13 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private DraftCaseDataService draftCaseDataService;
 
     @Mock
+    private ClaimResponseService claimResponseService;
+
+    @Mock
     private PcsCaseService pcsCaseService;
 
     @Mock
     private SecurityContextService securityContextService;
-
-    @Mock
-    private AddressMapper addressMapper;
 
     @Mock
     private PossessionClaimResponseMapper responseMapper;
@@ -72,7 +72,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private ImmutablePartyFieldValidator immutableFieldValidator;
 
     @Mock
-    private uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository defendantResponseRepository;
+    private DefendantResponseService defendantResponseService;
 
     @BeforeEach
     void setUp() {
@@ -88,10 +88,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
             draftCaseDataService,
             immutableFieldValidator,
-            pcsCaseService,
-            securityContextService,
-            addressMapper,
-            defendantResponseRepository
+            claimResponseService,
+            defendantResponseService
         );
 
         setEventUnderTest(new RespondPossessionClaim(
@@ -326,7 +324,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         callSubmitHandler(caseData);
 
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(PCSCase.class),
             eq(EventId.respondPossessionClaim)
@@ -368,7 +366,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         callSubmitHandler(caseData);
 
         // Then: draft should be saved (null defaults to NO which means save draft)
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
             eq(EventId.respondPossessionClaim)
@@ -655,7 +653,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0)).isEqualTo("Invalid submission: missing response data");
+        assertThat(response.getErrors().getFirst()).isEqualTo("Invalid submission: missing response data");
 
         verify(draftCaseDataService, never()).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
@@ -683,7 +681,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         // Then: should return error
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0))
+        assertThat(response.getErrors().getFirst())
             .isEqualTo("Invalid submission: no data to save");
 
         // And: should NOT save draft
@@ -740,7 +738,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
         assertThat(response.getErrors()).isNull();
 
         // And: draft should be saved via deep merge (preserves existing fields)
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(TEST_CASE_REFERENCE),
             any(),
             eq(EventId.respondPossessionClaim)
@@ -783,7 +781,7 @@ class RespondPossessionClaimTest extends BaseEventTest {
 
         assertThat(response.getErrors()).isNotNull();
         assertThat(response.getErrors()).hasSize(1);
-        assertThat(response.getErrors().get(0))
+        assertThat(response.getErrors().getFirst())
             .isEqualTo("We couldn't save your response. Please try again or contact support.");
     }
 

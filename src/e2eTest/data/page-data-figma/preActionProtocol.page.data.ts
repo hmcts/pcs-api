@@ -1,4 +1,4 @@
-// Disabled content will be enabled once https://tools.hmcts.net/jira/browse/HDPI-3491 bug is fixed.
+// Below commented content will be enabled once wales specific content issue also fixed  https://tools.hmcts.net/jira/browse/HDPI-3491 bug
 export const preactionProtocol = {
   mainHeader: `Pre-action protocol`,
   //appliedForArrearsToBeParagraph: `applied for arrears to be paid by the Department for Work and Pensions (DWP) by deductions from the defendants’ benefits`,

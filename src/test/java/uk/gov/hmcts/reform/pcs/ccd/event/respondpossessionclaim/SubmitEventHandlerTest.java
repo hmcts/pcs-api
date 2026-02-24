@@ -3,9 +3,6 @@ package uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -16,38 +13,27 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
-import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoPreferNotToSay;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
-import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.DefendantResponseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.DefendantResponseRepository;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
+import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
-import uk.gov.hmcts.reform.pcs.ccd.util.AddressMapper;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
@@ -64,13 +50,9 @@ class SubmitEventHandlerTest {
     @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
-    private PcsCaseService pcsCaseService;
+    private ClaimResponseService claimResponseService;
     @Mock
-    private SecurityContextService securityContextService;
-    @Mock
-    private AddressMapper addressMapper;
-    @Mock
-    private DefendantResponseRepository defendantResponseRepository;
+    private DefendantResponseService defendantResponseService;
 
     @Captor
     private ArgumentCaptor<PCSCase> pcsCaseCaptor;
@@ -79,14 +61,10 @@ class SubmitEventHandlerTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new SubmitEventHandler(
-            draftCaseDataService,
-            immutableFieldValidator,
-            pcsCaseService,
-            securityContextService,
-            addressMapper,
-            defendantResponseRepository
-        );
+        underTest =
+            new SubmitEventHandler(draftCaseDataService,
+                immutableFieldValidator, claimResponseService,
+                defendantResponseService);
     }
 
     // ========== DRAFT SAVE FLOW (submitDraftAnswers = NO) ==========
@@ -143,12 +121,12 @@ class SubmitEventHandlerTest {
     // ========== FINAL SUBMIT FLOW (submitDraftAnswers = YES) ==========
 
     @Test
-    void shouldSaveDraftWhenSubmitFlagIsYes() {
+
+    void shouldNotSaveDraftWhenSubmitFlagIsYes() {
         // Given
         Party party = Party.builder()
             .firstName("John")
             .lastName("Doe")
-            .emailAddress("john@example.com")
             .build();
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
@@ -160,10 +138,6 @@ class SubmitEventHandlerTest {
             .defendantResponses(DefendantResponses.builder().build())
             .build();
 
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
             .submitDraftAnswers(YesOrNo.YES)
@@ -171,23 +145,16 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        // Mock dependencies for final submit
-        PcsCaseEntity mockedCase = createMockedCaseEntity();
-        UUID userId = mockedCase.getParties().iterator().next().getIdamId();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(mockedCase);
-
         // When
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
         SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftCaseDataService, times(1)).patchUnsubmittedEventData(
+        verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }
@@ -198,7 +165,6 @@ class SubmitEventHandlerTest {
         Party party = Party.builder()
             .firstName("John")
             .lastName("Doe")
-            .emailAddress("john@example.com")
             .build();
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
@@ -207,19 +173,11 @@ class SubmitEventHandlerTest {
 
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(VerticalYesNo.NO)
-            .contactByPost(VerticalYesNo.YES)
-            .contactByPhone(VerticalYesNo.NO)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
             .defendantContactDetails(contactDetails)
             .defendantResponses(responses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -229,98 +187,18 @@ class SubmitEventHandlerTest {
 
         EventPayload<PCSCase, State> payload = createEventPayload(caseData);
 
-        // Mock dependencies for final submit
-        PcsCaseEntity mockedCase = createMockedCaseEntity();
-        UUID userId = mockedCase.getParties().iterator().next().getIdamId();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(mockedCase);
-
         // When
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
+
         SubmitResponse<State> result = underTest.submit(payload);
 
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(pcsCaseService, times(1)).saveCase(any(PcsCaseEntity.class)
-        );
-    }
-
-    @ParameterizedTest(name = "receivedFreeLegalAdvice = {0}")
-    @MethodSource("legalAdvicePersistenceTestCases")
-    void shouldPersistReceivedFreeLegalAdviceToDefendantResponseEntity(
-        YesNoPreferNotToSay legalAdviceValue
-    ) {
-        // Given
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress("john@example.com")
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
-            .receivedFreeLegalAdvice(legalAdviceValue)
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(VerticalYesNo.NO)
-            .contactByPost(VerticalYesNo.YES)
-            .contactByPhone(VerticalYesNo.NO)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(responses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        // Mock dependencies for final submit
-        PcsCaseEntity mockedCase = createMockedCaseEntity();
-        UUID userId = mockedCase.getParties().iterator().next().getIdamId();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(mockedCase);
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getErrors()).isNullOrEmpty();
-
-        // Verify DefendantResponseEntity was saved with correct receivedFreeLegalAdvice value
-        ArgumentCaptor<DefendantResponseEntity> entityCaptor =
-            ArgumentCaptor.forClass(DefendantResponseEntity.class);
-        verify(defendantResponseRepository).save(entityCaptor.capture());
-
-        DefendantResponseEntity savedEntity = entityCaptor.getValue();
-        assertThat(savedEntity.getReceivedFreeLegalAdvice()).isEqualTo(legalAdviceValue);
-    }
-
-    private static Stream<Arguments> legalAdvicePersistenceTestCases() {
-        return Stream.of(
-            Arguments.of(YesNoPreferNotToSay.YES),
-            Arguments.of(YesNoPreferNotToSay.NO),
-            Arguments.of(YesNoPreferNotToSay.PREFER_NOT_TO_SAY),
-            Arguments.of((YesNoPreferNotToSay) null)  // Test null handling
+        verify(draftCaseDataService).patchUnsubmittedEventData(
+            eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
     }
 
@@ -901,23 +779,71 @@ class SubmitEventHandlerTest {
         // Note: submitDraftAnswers is NOT persisted to draft - it's a transient UI flag
     }
 
-    // ========== PHASE 2: DRAFT SAVE TESTS (CONTACT PREFERENCES) ==========
+    @Test
+    void shouldSaveContactPreferencesWhenSubmitDraftAnswersIsYes() {
+        // Given
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .phoneNumber("07123456789")
+            .emailAddress("john@example.com")
+            .address(AddressUK.builder().build())
+            .build();
+
+        DefendantContactDetails defendantContactDetails =
+            DefendantContactDetails.builder()
+                .party(party)
+                .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(defendantContactDetails)
+            .build();
+
+        PCSCase caseData = PCSCase.builder()
+            .possessionClaimResponse(response)
+            .submitDraftAnswers(YesOrNo.YES)
+            .build();
+
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
+
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
+
+        // When
+        SubmitResponse<State> result = underTest.submit(eventPayload);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        // Verify contact preferences service was called
+        verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
+
+        // Verify draft service was called once
+        verify(draftCaseDataService)
+            .patchUnsubmittedEventData(eq(CASE_REFERENCE),
+                any(),
+                eq(EventId.respondPossessionClaim));
+    }
 
     @Test
-    void shouldSaveContactPreferencesToDraft() {
-        // Given - All 4 contact preferences set
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(VerticalYesNo.NO)
-            .contactByPost(VerticalYesNo.YES)
-            .contactByPhone(VerticalYesNo.NO)
+    void shouldNotSaveContactPreferencesWhenSubmitDraftAnswersIsNo() {
+        // Given
+        Party party = Party.builder()
+            .firstName("John")
+            .lastName("Doe")
+            .phoneNumber("07123456789")
+            .emailAddress("john@example.com")
+            .address(AddressUK.builder().build())
+            .build();
+
+        DefendantContactDetails defendantContactDetails =
+            DefendantContactDetails.builder()
+            .party(party)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder().firstName("John").build())
-                .build())
-            .defendantResponses(defendantResponses)
+            .defendantContactDetails(defendantContactDetails)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -925,282 +851,52 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.NO)
             .build();
 
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), eq(CASE_REFERENCE)))
-            .thenReturn(List.of());
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(payload);
+        SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then
+        assertThat(result).isNotNull();
         assertThat(result.getErrors()).isNullOrEmpty();
 
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
+        // Verify contact preferences service was NOT called
+        verify(claimResponseService, never()).saveDraftData(any(PossessionClaimResponse.class), anyLong());
 
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
-
-        assertThat(savedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.NO);
-        assertThat(savedResponse.getDefendantResponses().getContactByPost()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(VerticalYesNo.NO);
+        // Verify draft service was called once
+        verify(draftCaseDataService)
+            .patchUnsubmittedEventData(eq(CASE_REFERENCE), any(), eq(respondPossessionClaim));
     }
 
     @Test
-    void shouldSaveContactPreferencesWithContactDetails() {
-        // Given - Contact details + contact preferences
+    void shouldSaveAllContactPreferenceFieldsWhenFinalSubmit() {
+        // Given - All contact preference fields populated
+        AddressUK address = AddressUK.builder().addressLine1("123 Test Street").build();
+
         Party party = Party.builder()
             .firstName("Jane")
-            .lastName("Doe")
-            .emailAddress("jane@example.com")
-            .phoneNumber("07700900000")
+            .lastName("Smith")
+            .phoneNumber("07987654321")
+            .emailAddress("jane.smith@example.com")
+            .address(address)
             .build();
 
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(VerticalYesNo.YES)
-            .contactByPost(VerticalYesNo.NO)
-            .contactByPhone(VerticalYesNo.NO)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(DefendantContactDetails.builder()
+        DefendantContactDetails defendantContactDetails =
+            DefendantContactDetails.builder()
                 .party(party)
-                .build())
+                .build();
+
+        DefendantResponses defendantResponses =
+            DefendantResponses.builder()
+                .contactByEmail(VerticalYesNo.NO)
+                .contactByText(VerticalYesNo.YES)
+                .contactByPost(VerticalYesNo.NO)
+                .contactByPhone(VerticalYesNo.YES)
+                .build();
+
+        PossessionClaimResponse response = PossessionClaimResponse.builder()
+            .defendantContactDetails(defendantContactDetails)
             .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), eq(CASE_REFERENCE)))
-            .thenReturn(List.of());
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result.getErrors()).isNullOrEmpty();
-
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
-
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
-
-        assertThat(savedResponse.getDefendantContactDetails().getParty().getFirstName()).isEqualTo("Jane");
-        assertThat(savedResponse.getDefendantContactDetails().getParty().getEmailAddress())
-            .isEqualTo("jane@example.com");
-        assertThat(savedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @Test
-    void shouldSaveContactPreferencesWithResponses() {
-        // Given - Defendant responses + contact preferences (no contact details)
-        DefendantResponses responses = DefendantResponses.builder()
-            .tenancyTypeCorrect(YesNoNotSure.YES)
-            .oweRentArrears(YesNoNotSure.NO)
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByPost(VerticalYesNo.YES)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(null)
-            .defendantResponses(responses)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result.getErrors()).isNullOrEmpty();
-
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
-
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
-
-        assertThat(savedResponse.getDefendantContactDetails()).isNull();
-        assertThat(savedResponse.getDefendantResponses().getTenancyTypeCorrect()).isEqualTo(YesNoNotSure.YES);
-        assertThat(savedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getDefendantResponses().getContactByPost()).isEqualTo(VerticalYesNo.YES);
-    }
-
-    @Test
-    void shouldSavePartialContactPreferences() {
-        // Given - Only 2 contact preferences set, others null
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(null)
-            .contactByPost(VerticalYesNo.YES)
-            .contactByPhone(null)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder().firstName("John").build())
-                .build())
-            .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), eq(CASE_REFERENCE)))
-            .thenReturn(List.of());
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then - Null is OK for draft
-        assertThat(result.getErrors()).isNullOrEmpty();
-
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
-
-        PCSCase savedDraft = pcsCaseCaptor.getValue();
-        PossessionClaimResponse savedResponse = savedDraft.getPossessionClaimResponse();
-
-        assertThat(savedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getDefendantResponses().getContactByText()).isNull();
-        assertThat(savedResponse.getDefendantResponses().getContactByPost()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedResponse.getDefendantResponses().getContactByPhone()).isNull();
-    }
-
-    @Test
-    void shouldSaveContactPreferencesWhenAllNull() {
-        // Given - All 4 contact preferences are null
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(null)
-            .contactByText(null)
-            .contactByPost(null)
-            .contactByPhone(null)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(DefendantContactDetails.builder()
-                .party(Party.builder().firstName("John").build())
-                .build())
-            .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.NO)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(immutableFieldValidator.findImmutableFieldViolations(any(), eq(CASE_REFERENCE)))
-            .thenReturn(List.of());
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then - All null is OK for draft
-        assertThat(result.getErrors()).isNullOrEmpty();
-
-        verify(draftCaseDataService).patchUnsubmittedEventData(
-            eq(CASE_REFERENCE), pcsCaseCaptor.capture(), eq(respondPossessionClaim)
-        );
-    }
-
-    // ========== PHASE 3: FINAL SUBMIT VALIDATION TESTS (CONTACT PREFERENCES) ==========
-
-    @Test
-    void shouldRejectFinalSubmitWhenEmailPreferenceYesButNoEmailAddress() {
-        // Given
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress(null)  // Missing email
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(defendantResponses)  // Want email contact
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)  // Final submit
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result.getErrors())
-            .hasSize(1)
-            .contains("Email address is required when email contact preference is selected");
-    }
-
-    @Test
-    void shouldRejectFinalSubmitWhenEmailPreferenceYesButEmptyEmailAddress() {
-        // Given
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress("")  // Empty email
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -1208,45 +904,49 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(payload);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
+        SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then
-        assertThat(result.getErrors())
-            .hasSize(1)
-            .contains("Email address is required when email contact preference is selected");
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        // Verify the exact response object is passed to the service
+        ArgumentCaptor<PossessionClaimResponse> responseCaptor =
+            ArgumentCaptor.forClass(PossessionClaimResponse.class);
+        verify(claimResponseService).saveDraftData(responseCaptor.capture(), eq(CASE_REFERENCE));
+
+        PossessionClaimResponse capturedResponse = responseCaptor.getValue();
+        assertThat(capturedResponse.getDefendantResponses().getContactByEmail()).isEqualTo(VerticalYesNo.NO);
+        assertThat(capturedResponse.getDefendantResponses().getContactByText()).isEqualTo(VerticalYesNo.YES);
+        assertThat(capturedResponse.getDefendantResponses().getContactByPost()).isEqualTo(VerticalYesNo.NO);
+        assertThat(capturedResponse.getDefendantResponses().getContactByPhone()).isEqualTo(VerticalYesNo.YES);
+        assertThat(capturedResponse.getDefendantContactDetails().getParty().getPhoneNumber())
+            .isEqualTo("07987654321");
+        assertThat(capturedResponse.getDefendantContactDetails().getParty().getEmailAddress())
+            .isEqualTo("jane.smith@example.com");
+        assertThat(capturedResponse.getDefendantContactDetails().getParty().getAddress().getAddressLine1())
+            .isEqualTo("123 Test Street");
     }
 
     @Test
-    void shouldRejectFinalSubmitWhenTextPreferenceYesButNoPhoneNumber() {
-        // Given
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .phoneNumber(null)  // Missing phone
-            .build();
+    void shouldHandleContactPreferencesWithNullValues() {
+        // Given - Some null preferences
 
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByText(VerticalYesNo.YES)
-            .build();
+        DefendantResponses defendantResponses =
+            DefendantResponses.builder()
+                .contactByEmail(null)
+                .contactByText(VerticalYesNo.YES)
+                .contactByPost(null)
+                .contactByPhone(VerticalYesNo.YES)
+                .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
             .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -1254,46 +954,40 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(payload);
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
+
+        SubmitResponse<State> result = underTest.submit(eventPayload);
 
         // Then
-        assertThat(result.getErrors())
-            .hasSize(1)
-            .contains("Phone number is required when text or phone contact preference is selected");
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+
+        // Verify service handles null values gracefully
+        verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
     }
 
     @Test
-    void shouldRejectFinalSubmitWhenPhonePreferenceYesButNoPhoneNumber() {
+    void shouldHandleExceptionFromContactPreferencesService() {
         // Given
         Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .phoneNumber(null)  // Missing phone
+            .firstName("Test")
+            .lastName("User")
             .build();
 
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
+        DefendantContactDetails defendantContactDetails = DefendantContactDetails.builder()
+            .party(party).build();
 
         DefendantResponses defendantResponses = DefendantResponses.builder()
             .contactByPhone(VerticalYesNo.YES)
             .build();
 
-
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
+            .defendantContactDetails(defendantContactDetails)
             .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
             .build();
 
         PCSCase caseData = PCSCase.builder()
@@ -1301,367 +995,82 @@ class SubmitEventHandlerTest {
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
+        //when
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
 
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
+        // Mock service to throw exception
+        doThrow(new IllegalStateException("No party found for IDAM ID"))
+            .when(claimResponseService).saveDraftData(any(), anyLong());
 
-        // Then
-        assertThat(result.getErrors())
-            .hasSize(1)
-            .contains("Phone number is required when text or phone contact preference is selected");
+        // When / Then - Exception should propagate (not caught by handler)
+        // This tests that the handler doesn't swallow exceptions
+        assertThat(org.junit.jupiter.api.Assertions.assertThrows(
+            IllegalStateException.class,
+            () -> underTest.submit(eventPayload)
+        )).hasMessage("No party found for IDAM ID");
+
+        verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
     }
 
     @Test
-    void shouldRejectFinalSubmitWhenMultiplePreferencesYesButMissingDetails() {
-        // Given - Both email and text selected but no contact details
+    void shouldCallContactPreferencesServiceBeforeReturningSuccess() {
+        // Given
         Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress(null)  // Missing email
-            .phoneNumber(null)   // Missing phone
+            .firstName("Test")
+            .lastName("User")
             .build();
 
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
+        DefendantContactDetails defendantContactDetails = DefendantContactDetails.builder()
+            .party(party).build();
 
         DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByText(VerticalYesNo.YES)
+            .contactByPhone(VerticalYesNo.YES)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
+            .defendantContactDetails(defendantContactDetails)
             .defendantResponses(defendantResponses)
             .build();
 
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
         PCSCase caseData = PCSCase.builder()
             .possessionClaimResponse(response)
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
+        when(draftCaseDataService.getUnsubmittedCaseData(CASE_REFERENCE, respondPossessionClaim))
+            .thenReturn(Optional.of(caseData));
 
         // When
-        SubmitResponse<State> result = underTest.submit(payload);
+        SubmitResponse<State> result = underTest.submit(eventPayload);
 
-        // Then - Multiple errors returned
-        assertThat(result.getErrors())
-            .hasSize(2)
-            .contains("Email address is required when email contact preference is selected")
-            .contains("Phone number is required when text or phone contact preference is selected");
+        // Then - Verify service is called and success is returned
+        verify(claimResponseService).saveDraftData(response, CASE_REFERENCE);
+        assertThat(result).isNotNull();
+        assertThat(result.getErrors()).isNullOrEmpty();
+        assertThat(result.getState()).isNull(); // Default response has null state
     }
 
     @Test
-    void shouldAcceptFinalSubmitWhenEmailPreferenceNoAndNoEmailAddress() {
-        // Given - Email preference NO, so email address not required
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress(null)  // Missing but OK
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.NO)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(defendantResponses)  // Don't want email
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
+    void shouldNotCallContactPreferencesServiceWhenValidationFails() {
+        // Given - Missing possessionClaimResponse
         PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
+            .possessionClaimResponse(null)  // Will fail validation
             .submitDraftAnswers(YesOrNo.YES)
             .build();
 
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        UUID userId = UUID.randomUUID();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
+        EventPayload<PCSCase, State> eventPayload = createEventPayload(caseData);
 
         // When
-        SubmitResponse<State> result = underTest.submit(payload);
+        SubmitResponse<State> result = underTest.submit(eventPayload);
 
-        // Then - No validation error (may have other errors, but not email validation)
-        if (result.getErrors() != null) {
-            assertThat(result.getErrors())
-                .as("Should not have email validation error when preference is NO")
-                .noneMatch(error -> error.contains("Email address is required"));
-        }
-    }
-
-    @Test
-    void shouldAcceptFinalSubmitWhenEmailPreferenceNullAndNoEmailAddress() {
-        // Given - Email preference null, so validation skipped
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress(null)
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(null)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(defendantResponses)  // Null preference
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        UUID userId = UUID.randomUUID();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        if (result.getErrors() != null) {
-            assertThat(result.getErrors())
-                .as("Should not have email validation error when preference is null")
-                .noneMatch(error -> error.contains("Email address is required"));
-        }
-    }
-
-    @Test
-    void shouldAcceptFinalSubmitWhenPostOnlyPreference() {
-        // Given - Only post preference, no email/phone required
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .address(AddressUK.builder().addressLine1("123 Street").postCode("SW1A 1AA").build())
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByPost(VerticalYesNo.YES)
-            .contactByEmail(VerticalYesNo.NO)
-            .contactByText(VerticalYesNo.NO)
-            .contactByPhone(VerticalYesNo.NO)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        UUID userId = UUID.randomUUID();
-
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then - Post doesn't require validation
-        if (result.getErrors() != null) {
-            assertThat(result.getErrors())
-                .as("Post preference should not require email or phone validation")
-                .noneMatch(error -> error.contains("Email address is required"))
-                .noneMatch(error -> error.contains("Phone number is required"));
-        }
-    }
-
-    @Test
-    void shouldRejectFinalSubmitWhenContactDetailsNull() {
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .build();
-
-        // Given - No contact details at all but email set as preference
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(null)
-            .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result.getErrors())
-            .hasSize(1)
-            .contains("Invalid submission: contact details required for final submission");
-    }
-
-    @Test
-    void shouldRejectFinalSubmitWhenPartyNull() {
-        // Given - Contact details exist but party is null
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(null)
-            .build();
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result.getErrors())
-            .hasSize(1)
-            .contains("Invalid submission: contact details required for final submission");
-    }
-
-    @Test
-    void shouldHandleWhitespaceOnlyEmailAddress() {
-        // Given - Email is whitespace only
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress("   ")  // Whitespace
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses defendantResponses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(defendantResponses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(securityContextService.getCurrentUserId()).thenReturn(UUID.randomUUID());
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then - Whitespace treated as blank
-        assertThat(result.getErrors())
-            .hasSize(1)
-            .contains("Email address is required when email contact preference is selected");
-    }
-
-    private PcsCaseEntity createMockedCaseEntity() {
-        UUID userId = UUID.randomUUID();
-
-        PartyEntity partyEntity =
-            PartyEntity.builder()
-            .id(UUID.randomUUID())
-            .idamId(userId)
-            .contactPreferences(new HashSet<>())
-            .build();
-
-        ClaimEntity claimEntity =
-            ClaimEntity.builder()
-            .id(UUID.randomUUID())
-            .build();
-
-        return PcsCaseEntity.builder()
-        .caseReference(CASE_REFERENCE)
-        .parties(new HashSet<>(Set.of(partyEntity)))
-        .claims(List.of(claimEntity))
-        .build();
+        // Then - Service should NOT be called due to validation failure
+        verify(claimResponseService, never()).saveDraftData(any(), anyLong());
+        assertThat(result.getErrors()).isNotEmpty();
     }
 
     private EventPayload<PCSCase, State> createEventPayload(PCSCase caseData) {
@@ -1692,136 +1101,5 @@ class SubmitEventHandlerTest {
         verify(draftCaseDataService).patchUnsubmittedEventData(
             eq(CASE_REFERENCE), any(PCSCase.class), eq(respondPossessionClaim)
         );
-    }
-
-    // ========== ADDRESS UPDATE TESTS ==========
-
-    @Test
-    void shouldUpdateExistingAddressWithoutChangingId() {
-        // Given - Existing address with known ID
-        UUID existingAddressId = UUID.randomUUID();
-        UUID partyId = UUID.randomUUID();
-        UUID userId = UUID.randomUUID();
-
-        AddressEntity existingAddress = AddressEntity.builder()
-                .id(existingAddressId)
-                .addressLine1("Old Address Line 1")
-                .addressLine2("Old Address Line 2")
-                .postTown("Old Town")
-                .postcode("OLD 1AA")
-                .country("Old Country")
-                .build();
-
-        PartyEntity partyEntity = PartyEntity.builder()
-                .id(partyId)
-                .idamId(userId)
-                .address(existingAddress)
-                .build();
-
-        ClaimEntity claimEntity = ClaimEntity.builder()
-                .id(UUID.randomUUID())
-                .build();
-
-        PcsCaseEntity caseEntity = PcsCaseEntity.builder()
-                .caseReference(CASE_REFERENCE)
-                .parties(new HashSet<>(Set.of(partyEntity)))
-                .claims(List.of(claimEntity))
-                .build();
-
-        // New address from draft
-        AddressUK newAddress = AddressUK.builder()
-            .addressLine1("New Address Line 1")
-            .addressLine2("New Address Line 2")
-            .addressLine3("New Address Line 3")
-            .postTown("New Town")
-            .county("New County")
-            .postCode("NEW 2BB")
-            .country("New Country")
-            .build();
-
-        Party party = Party.builder()
-            .firstName("John")
-            .lastName("Doe")
-            .emailAddress("john@example.com")
-            .address(newAddress)
-            .build();
-
-        DefendantContactDetails contactDetails = DefendantContactDetails.builder()
-            .party(party)
-            .build();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .contactByEmail(VerticalYesNo.YES)
-            .contactByPost(VerticalYesNo.NO)
-            .contactByText(VerticalYesNo.NO)
-            .contactByPhone(VerticalYesNo.NO)
-            .build();
-
-        PossessionClaimResponse response = PossessionClaimResponse.builder()
-            .defendantContactDetails(contactDetails)
-            .defendantResponses(responses)
-            .build();
-
-        PCSCase draftData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .build();
-
-        PCSCase caseData = PCSCase.builder()
-            .possessionClaimResponse(response)
-            .submitDraftAnswers(YesOrNo.YES)
-            .build();
-
-        EventPayload<PCSCase, State> payload = createEventPayload(caseData);
-
-        when(securityContextService.getCurrentUserId()).thenReturn(userId);
-        when(draftCaseDataService.getUnsubmittedCaseData(eq(CASE_REFERENCE), eq(respondPossessionClaim)))
-            .thenReturn(Optional.of(draftData));
-        when(pcsCaseService.loadCase(CASE_REFERENCE)).thenReturn(caseEntity);
-
-        // When
-        SubmitResponse<State> result = underTest.submit(payload);
-
-        // Then
-        assertThat(result.getErrors()).isNullOrEmpty();
-
-        // Verify the address was updated in place - same ID, new values
-        assertThat(existingAddress.getId())
-            .as("Address ID should remain unchanged")
-            .isEqualTo(existingAddressId);
-
-        assertThat(existingAddress.getAddressLine1())
-            .as("AddressLine1 should be updated")
-            .isEqualTo("New Address Line 1");
-
-        assertThat(existingAddress.getAddressLine2())
-            .as("AddressLine2 should be updated")
-            .isEqualTo("New Address Line 2");
-
-        assertThat(existingAddress.getAddressLine3())
-            .as("AddressLine3 should be updated")
-            .isEqualTo("New Address Line 3");
-
-        assertThat(existingAddress.getPostTown())
-            .as("PostTown should be updated")
-            .isEqualTo("New Town");
-
-        assertThat(existingAddress.getCounty())
-            .as("County should be updated")
-            .isEqualTo("New County");
-
-        assertThat(existingAddress.getPostcode())
-            .as("Postcode should be updated")
-            .isEqualTo("NEW 2BB");
-
-        assertThat(existingAddress.getCountry())
-            .as("Country should be updated")
-            .isEqualTo("New Country");
-
-        // Verify the party still references the same address object
-        assertThat(partyEntity.getAddress())
-            .as("Party should still reference the same address entity")
-            .isSameAs(existingAddress);
-
-        verify(pcsCaseService).saveCase(caseEntity);
     }
 }

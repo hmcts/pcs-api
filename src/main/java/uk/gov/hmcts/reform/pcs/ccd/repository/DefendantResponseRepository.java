@@ -12,4 +12,14 @@ public interface DefendantResponseRepository extends JpaRepository<DefendantResp
 
     Optional<DefendantResponseEntity> findByClaimPcsCaseCaseReferenceAndPartyIdamId(
         Long caseReference, UUID partyIdamId);
+
+    /**
+     * Checks if a defendant response exists for the given case reference and party IDAM ID.
+     * More efficient than findBy...() as it only checks existence without loading the entity.
+     *
+     * @param caseReference The case reference number
+     * @param partyIdamId The party's IDAM user ID
+     * @return true if a response exists, false otherwise
+     */
+    boolean existsByClaimPcsCaseCaseReferenceAndPartyIdamId(Long caseReference, UUID partyIdamId);
 }

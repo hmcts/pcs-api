@@ -17,6 +17,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.List;
@@ -90,32 +91,27 @@ public class StartEventHandler implements Start<PCSCase, State> {
      */
     private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase) {
         PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
-            .orElseThrow(() -> new IllegalStateException(
-                "Draft not found for case " + caseReference
-            ));
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
 
-        // Extract FRESH claimant organisations from view-populated incoming case
-        List<ListValue<String>> freshClaimantOrgs = extractClaimantOrganisations(pcsCase);
-
-        // Merge: Fresh claimants + saved defendant answers
-        PossessionClaimResponse mergedResponse = savedDraft.getPossessionClaimResponse().toBuilder()
-            .claimantOrganisations(freshClaimantOrgs)  // Fresh from view (always up-to-date)
-            .build();
+        PossessionClaimResponse merged = mergeLatestCaseData(
+            pcsCase,
+            savedDraft.getPossessionClaimResponse()
+        );
 
         return pcsCase.toBuilder()
-            .possessionClaimResponse(mergedResponse)
+            .possessionClaimResponse(merged)
             .hasUnsubmittedCaseData(YesOrNo.YES)
             .build();
     }
 
     /**
-     * Extracts fresh claimant organisation names from view-populated allClaimants.
-     * Matches the logic in PossessionClaimResponseMapper.
+     * Creates a list of claimant organisation names from case claimant parties.
+     * Transforms Party objects into simple organisation name strings.
      *
      * @param pcsCase View-populated case with allClaimants from CCD
      * @return List of claimant organisation names, or empty list if none found
      */
-    private List<ListValue<String>> extractClaimantOrganisations(PCSCase pcsCase) {
+    private List<ListValue<String>> createClaimantOrgNameList(PCSCase pcsCase) {
         List<ListValue<Party>> allClaimants = pcsCase.getAllClaimants();
 
         if (allClaimants == null || allClaimants.isEmpty()) {
@@ -129,6 +125,23 @@ public class StartEventHandler implements Start<PCSCase, State> {
                 .value(claimant.getValue().getOrgName())
                 .build())
             .toList();
+    }
+
+    /**
+     * Merges latest case data with saved defendant responses.
+     * Takes fresh claimant organisations from latest case and combines with saved defendant answers.
+     *
+     * @param latestCase Latest case data from CCD (has up-to-date claimant info)
+     * @param savedResponses Saved defendant responses from draft
+     * @return Merged response with latest claimant orgs and saved defendant answers
+     */
+    private PossessionClaimResponse mergeLatestCaseData(PCSCase latestCase,
+                                                         PossessionClaimResponse savedResponses) {
+        List<ListValue<String>> latestClaimantOrgs = createClaimantOrgNameList(latestCase);
+
+        return savedResponses.toBuilder()
+            .claimantOrganisations(latestClaimantOrgs)
+            .build();
     }
 
     /**

@@ -127,7 +127,7 @@ public class CcdTestCaseOrchestrator {
     }
 
     private ObjectNode getBasePayload(LegislativeCountry legislativeCountry) {
-        String path = "testcasesupport/Create-Case-" + legislativeCountry + "-Base.json";
+        String path = "testing-support/Create-Case-" + legislativeCountry + "-Base.json";
 
         try (InputStream basePayload = getClass()
             .getClassLoader()

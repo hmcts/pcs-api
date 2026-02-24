@@ -36,7 +36,7 @@ public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementPoliceOrSocialServicesDetails).done()
+                .mandatory(EnforcementRiskDetails::getPoliceSocialServicesDetails).done()
                 .label("policeOrSocialServicesRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -51,7 +51,7 @@ public class PoliceOrSocialServicesRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementPoliceOrSocialServicesDetails();
+                .getWarrantDetails().getRiskDetails().getPoliceSocialServicesDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

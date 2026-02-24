@@ -40,9 +40,6 @@ public class DefendantResponses {
     private LocalDate noticeReceivedDate;
 
     @CCD
-    private YesNoPreferNotToSay receivedFreeLegalAdvice;
-
-    @CCD
     private VerticalYesNo contactByEmail;
 
     @CCD
@@ -53,4 +50,7 @@ public class DefendantResponses {
 
     @CCD
     private VerticalYesNo contactByPhone;
+
+    @CCD
+    private YesNoPreferNotToSay receivedFreeLegalAdvice;
 }

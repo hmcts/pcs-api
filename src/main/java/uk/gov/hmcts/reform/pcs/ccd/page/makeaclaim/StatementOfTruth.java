@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.StatementOfTruthDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class StatementOfTruth implements CcdPageConfiguration {

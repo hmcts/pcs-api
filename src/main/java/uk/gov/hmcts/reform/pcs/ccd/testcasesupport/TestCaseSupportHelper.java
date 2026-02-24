@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 public class TestCaseSupportHelper {
 
-    public static final String LOCATION_PATTERN = "classpath*:testcasesupport/";
+    public static final String LOCATION_PATTERN = "classpath*:test-case-generation/";
     public static final String JSON = ".json";
 
     private final ResourcePatternResolver resourcePatternResolver;
@@ -28,8 +28,10 @@ public class TestCaseSupportHelper {
         try {
             Resource[] resources = resourcePatternResolver.getResources(LOCATION_PATTERN + "*");
             List<DynamicListElement> listItems = Arrays.stream(resources)
+                .filter(Resource::isFile)
                 .map(Resource::getFilename)
                 .filter(Objects::nonNull)
+                .filter(name -> name.endsWith(".json"))
                 .distinct()
                 .map(name -> DynamicListElement.builder().code(UUID.nameUUIDFromBytes(name.getBytes()))
                     .label(generateLabelFromFilename(name)).build())
@@ -45,7 +47,8 @@ public class TestCaseSupportHelper {
     }
 
     private String generateLabelFromFilename(String filename) {
-        return filename.replace("-", " ").replace(JSON, "");
+        String name = filename.replace(LOCATION_PATTERN, "");
+        return name.replace("-", " ").replace(JSON, "");
     }
 
     public Resource getTestResource(String label) throws IOException {

@@ -1,4 +1,3 @@
-// Disabled content will be enabled once https://tools.hmcts.net/jira/browse/HDPI-3491 bug is fixed.
 export const tenancyLicenceDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Tenancy or licence details`,
@@ -29,7 +28,7 @@ export const tenancyLicenceDetails = {
   monthTextInput: `04`,
   uploadTenancyOrLicenceAgreementSubHeader: `Upload tenancy or licence agreement`,
   doYouWantToUploadSubHeder: `Do you want to upload a copy of the tenancy or licence agreement? (Optional)`,
-  //youCanEitherUploadThisHintText: `You can either upload this now or closer to the hearing date. Any documents you upload now will be included in the pack of documents a judge will receive before the hearing (the bundle)`,
+  youCanEitherUploadThisParagraph: `You can either upload this now or closer to the hearing date. Any documents you upload now will be included in the pack of documents a judge will receive before the hearing (the bundle)`,
   addDocumentSubHeader: `Add document`,
   uploadADocumentParagraph: `Upload a document to the system`,
   addNewButton: `Add new`,

@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -18,6 +19,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LandRegistryFee
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
+
 import java.util.Set;
 
 @Builder
@@ -51,7 +54,8 @@ public class WarrantDetails {
         typeOverride = FieldType.MultiSelectList,
         typeParameterOverride = "RiskCategory"
     )
-    private Set<RiskCategory> enforcementRiskCategories;
+    @JsonProperty("EnforcementRiskCategories")
+    private Set<RiskCategory> riskCategories;
 
     @CCD(searchable = false)
     private YesOrNo showChangeNameAddressPage;
@@ -77,7 +81,8 @@ public class WarrantDetails {
             + "ask them if they answered any questions in Welsh. We’ll use this to "
             + "make sure your claim is processed correctly"
     )
-    private LanguageUsed enforcementLanguageUsed;
+    @JsonProperty("EnforcementLanguageUsed")
+    private LanguageUsed languageUsed;
 
     @JsonUnwrapped
     @CCD
@@ -109,8 +114,8 @@ public class WarrantDetails {
 
     @JsonUnwrapped
     @CCD
-    private StatementOfTruthDetails statementOfTruth;
-    
+    private StatementOfTruthDetailsEnforcement statementOfTruth;
+
     @CCD
     @JsonUnwrapped
     private DefendantsDOB defendantsDOB;

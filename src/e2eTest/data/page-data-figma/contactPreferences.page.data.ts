@@ -1,10 +1,9 @@
-// Disabled content will be enabled once https://tools.hmcts.net/jira/browse/HDPI-3491 bug is fixed.
 export const contactPreferences = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Contact preferences`,
   caseNumberParagraph: `Case number:`,
   notificationsSubHeader: `Notifications`,
-  //youllReceiveUpdatesAboutParagraph: `You’ll receive updates about your claim by email. For example when a hearing has been scheduled or when a document is ready to view.`,
+  youllReceiveUpdatesAboutParagraph: `You’ll receive updates about your claim by email. For example, when a hearing has been scheduled or when a document is ready to view.`,
   yourMyHmctsRegisteredEmailSubHeader: `Your My HMCTS registered email address is:`,
   //Address data below can't be matched due to HDPI-3554
   //registeredEmailParagraph:`pcs-solicitor-automation@test.com`,

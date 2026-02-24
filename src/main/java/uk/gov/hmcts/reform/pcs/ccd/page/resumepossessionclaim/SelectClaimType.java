@@ -28,7 +28,7 @@ public class SelectClaimType implements CcdPageConfiguration {
                         <a href="https://www.gov.uk/squatting-law/remove-squatters"
                             rel="noreferrer noopener"
                             target="_blank"
-                            class="govuk-link">read the guidance on removing squatters (opens in a new tab)</a>.
+                            class="govuk-link">read the guidance on removing squatters (opens in new tab)</a>.
                         """)
             .mandatory(PCSCase::getClaimAgainstTrespassers)
             .label("selectClaimType-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

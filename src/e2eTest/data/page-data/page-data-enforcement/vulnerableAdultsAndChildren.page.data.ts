@@ -12,7 +12,7 @@ export const vulnerableAdultsAndChildren = {
   howAreTheyVulnerableTextLabel: 'How are they vulnerable?',
   howAreTheyVulnerableTextInput: 'Test Input How are they vulnerable',
   continueButton: 'Continue',
-  errors: 'Errors',
+  eventCouldNotBeCreatedErrorMessage: 'The event could not be created',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
   errorValidationField: {

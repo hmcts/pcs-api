@@ -3,7 +3,7 @@ import { actionData, actionRecord, actionTuple } from '@utils/interfaces/action.
 import { validationData, validationRecord, validationTuple } from '@utils/interfaces/validation.interface';
 import { ActionRegistry } from '@utils/registry/action.registry';
 import { ValidationRegistry } from '@utils/registry/validation.registry';
-import { AxeUtils} from "@hmcts/playwright-common";
+import { AxeUtils } from "@hmcts/playwright-common";
 import { cyaStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 import { logToBrowser } from '@utils/test-logger';
 
@@ -37,8 +37,8 @@ async function detectPageNavigation(): Promise<boolean> {
   return pageNavigated;
 }
 
-async function validatePageIfNavigated(action:string): Promise<void> {
-  if(action.includes('click')) {
+async function validatePageIfNavigated(action: string): Promise<void> {
+  if (action.includes('click')) {
     const pageNavigated = await detectPageNavigation();
     if (pageNavigated) {
       const executor = getExecutor();
@@ -46,7 +46,7 @@ async function validatePageIfNavigated(action:string): Promise<void> {
 
       // Skip accessibility audit for login/auth pages
       if (currentUrl.includes('/login') || currentUrl.includes('/sign-in') ||
-          currentUrl.includes('idam') || currentUrl.includes('auth')) {
+        currentUrl.includes('idam') || currentUrl.includes('auth')) {
         await performValidation('autoValidatePageContent');
         return;
       }
@@ -57,7 +57,7 @@ async function validatePageIfNavigated(action:string): Promise<void> {
       } catch (error) {
         const errorMessage = String((error as Error).message || error).toLowerCase();
         if (errorMessage.includes('execution context was destroyed') ||
-            errorMessage.includes('navigation')) {
+          errorMessage.includes('navigation')) {
           console.warn(`Accessibility audit skipped due to navigation: ${errorMessage}`);
         } else {
           throw error;
@@ -95,11 +95,10 @@ export async function performAction(action: string, fieldName?: actionData | act
   }
 
   const stepText = `${action}${displayFieldName !== undefined ? ` - ${typeof displayFieldName === 'object' ? readValuesFromInputObjects(displayFieldName) : displayFieldName}` : ''}${displayValue !== undefined ? ` with value '${typeof displayValue === 'object' ? readValuesFromInputObjects(displayValue) : displayValue}'` : ''}`;
-
-  await test.step(stepText, async () => {
-    await actionInstance.execute(executor.page, action, fieldName, value);
-    await logToBrowser(executor.page, stepText);
-  });
+    await test.step(stepText, async () => {
+      await actionInstance.execute(executor.page, action, fieldName, value);
+      await logToBrowser(executor.page, stepText);
+    });
   await validatePageIfNavigated(action);
 }
 
@@ -107,10 +106,10 @@ export async function performValidation(validation: string, inputFieldName?: val
   const executor = getExecutor();
 
   const [fieldName, data] = inputFieldName === undefined
-      ? ['', undefined]
-      : typeof inputFieldName === 'string'
-          ? [inputFieldName, inputData]
-          : ['', inputFieldName];
+    ? ['', undefined]
+    : typeof inputFieldName === 'string'
+      ? [inputFieldName, inputData]
+      : ['', inputFieldName];
 
   const validationInstance = ValidationRegistry.getValidation(validation);
   await test.step(`Validated ${validation}${fieldName ? ` - '${typeof fieldName === 'object' ? readValuesFromInputObjects(fieldName) : fieldName}'` : ''}${data !== undefined ? ` with value '${typeof data === 'object' ? readValuesFromInputObjects(data) : data}'` : ''}`, async () => {
@@ -145,9 +144,9 @@ function readValuesFromInputObjects(obj: object): string {
     let valueString: string;
     if (Array.isArray(value)) {
       valueString = `[${value.map(item =>
-          typeof item === 'object'
-              ? `{ ${readValuesFromInputObjects(item)} }`
-              : String(item)
+        typeof item === 'object'
+          ? `{ ${readValuesFromInputObjects(item)} }`
+          : String(item)
       ).join(', ')}]`;
     } else if (typeof value === 'object' && value !== null) {
       valueString = `{ ${readValuesFromInputObjects(value)} }`;
