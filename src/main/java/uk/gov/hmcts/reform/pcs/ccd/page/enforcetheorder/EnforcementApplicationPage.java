@@ -3,8 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
-import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
@@ -12,10 +12,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
@@ -125,12 +124,9 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         PCSCase data = details.getData();
         setFormattedDefendantNames(data.getAllDefendants(), data);
         List<String> errors = validateWritTransfer(data);
-        if (errors.isEmpty()) {
-            errors = null;
-        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data)
-            .errors(errors)
+            .errors(errors.isEmpty() ? null : errors)
             .build();
     }
 
@@ -144,22 +140,8 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
     }
 
-    private boolean stubEnabled() {
-        return isStubEnvironment(System.getenv("ENVIRONMENT"))
-            || isStubEnvironment(System.getenv("SPRING_PROFILES_ACTIVE"))
-            || "true".equalsIgnoreCase(System.getenv("ENABLE_TESTING_SUPPORT"));
-    }
-
-    private boolean isStubEnvironment(String value) {
-        if (value == null || value.isBlank()) {
-            return false;
-        }
-        String lower = value.toLowerCase(Locale.UK);
-        return lower.contains("dev") || lower.contains("preview") || lower.contains("aat");
-    }
-
     private static boolean toBoolean(YesOrNo yesOrNo) {
-        return Optional.ofNullable(yesOrNo).map(YesOrNo::toBoolean).orElse(false);
+        return yesOrNo != null && yesOrNo.toBoolean();
     }
 
     private List<String> validateWritTransfer(PCSCase pcsCase) {
@@ -180,10 +162,12 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     }
 
     private String claimTransferredShowCondition() {
-        return stubEnabled() ? WRIT_FLOW : NEVER_SHOW;
+        return TestSupportEnvironment.isNonProdTestSupportEnabled() ? WRIT_FLOW : NEVER_SHOW;
     }
 
     private String gaSuccessfulShowCondition() {
-        return stubEnabled() ? STUB_GA_SUCCESSFUL_CONDITION : NEVER_SHOW;
+        return TestSupportEnvironment.isNonProdTestSupportEnabled()
+            ? STUB_GA_SUCCESSFUL_CONDITION
+            : NEVER_SHOW;
     }
 }
