@@ -25,10 +25,13 @@ export class TextValidation implements IValidation {
       case 'listItem':
         data.elementType = 'li';
     }
-    const locator = page.locator(`${data.elementType}:text-is("${data.text}")`).first();
-    const actual = await locator.textContent();
-    const expected = String(data.text);
+    const text = String(data.text);
+    const locator = data.elementType === 'p'
+      ? page.getByText(text, { exact: true }).first()
+      : page.locator(`${data.elementType}:text-is("${data.text}")`).first();
+    await locator.waitFor({ state: 'visible' });
+    const actual = await locator.innerText();
     const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
-    expect(normalized(actual ?? ''), `Expected text "${expected}"`).toBe(normalized(expected));
+    expect(normalized(actual ?? ''), `Expected text "${text}"`).toBe(normalized(text));
   }
 }
