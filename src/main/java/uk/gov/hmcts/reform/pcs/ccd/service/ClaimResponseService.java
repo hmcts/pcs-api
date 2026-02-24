@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantContactDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.DefendantResponses;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.ContactPreferencesEntity;
@@ -17,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -32,6 +34,9 @@ public class ClaimResponseService {
     private final PcsCaseRepository pcsCaseRepository;
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
+
+    //when contact by phone = no, we MUST skip saving contact_by_text and phone number.
+    private boolean shouldSavePhoneNumAndTextPreference;
 
     /**
      * Saves defendant's contact preferences and contact details.
@@ -50,8 +55,8 @@ public class ClaimResponseService {
         PartyEntity defendant = findDefendantByIdamId(currentUserIdamId, caseReference);
 
         //save to relevant tables
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
 
         log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
@@ -73,7 +78,8 @@ public class ClaimResponseService {
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantResponse) {
 
-        if (StringUtils.isNotBlank(defendantResponse.getParty().getPhoneNumber())) {
+        if (shouldSavePhoneNumAndTextPreference
+            && StringUtils.isNotBlank(defendantResponse.getParty().getPhoneNumber())) {
             party.setPhoneNumber(defendantResponse.getParty().getPhoneNumber());
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
@@ -119,9 +125,15 @@ public class ClaimResponseService {
         }
 
         contactPrefs.setContactByEmail(defendantResponse.getContactByEmail());
-        contactPrefs.setContactByText(defendantResponse.getContactByText());
         contactPrefs.setContactByPost(defendantResponse.getContactByPost());
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
+
+        shouldSavePhoneNumAndTextPreference = Optional.ofNullable(defendantResponse.getContactByPhone())
+            .map(VerticalYesNo::toBoolean)
+            .orElse(false);
+        if (shouldSavePhoneNumAndTextPreference) {
+            contactPrefs.setContactByText(defendantResponse.getContactByText());
+        }
 
         //only need to trigger save when object is newly created
         if (saveNeeded) {
