@@ -1,8 +1,8 @@
 export const yourHCEO = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Your High Court enforcement officer',
-  nameOfYourHCEOLabel: 'Name of your High Court enforcement officer',
-  nameOfYourHCEOInput: 'Morgan Freeman',
+  nameOfYourHCEOTextLabel: 'Name of your High Court enforcement officer',
+  nameOfYourHCEOTextInput: 'Morgan Freeman',
   continueButton: 'Continue',
   thereIsAProblemErrorMessageHeader: 'There is a problem',
   errorValidation: 'NO',//set it to 'NO' before raising a PR

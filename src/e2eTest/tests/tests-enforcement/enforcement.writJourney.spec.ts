@@ -142,12 +142,12 @@ test.describe('[Enforcement - Writ of Possession]', async () => {
         validationType: yourHCEO.errorValidationType.two,
         inputArray: yourHCEO.errorValidationField.errorTextField,
         header: yourHCEO.thereIsAProblemErrorMessageHeader,
-        label: yourHCEO.nameOfYourHCEOLabel,
+        label: yourHCEO.nameOfYourHCEOTextLabel,
         button: yourHCEO.continueButton
       });
       await performAction('nameYourHCEO', {
-        label: yourHCEO.nameOfYourHCEOLabel,
-        input: yourHCEO.nameOfYourHCEOInput,
+        label: yourHCEO.nameOfYourHCEOTextLabel,
+        input: yourHCEO.nameOfYourHCEOTextInput,
         nextPage: moneyOwed.mainHeader
       });
       await performAction('inputErrorValidation', {
