@@ -10,17 +10,20 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
 import java.util.List;
+
+import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
 @Component
 @AllArgsConstructor
 @Slf4j
 public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
-
     private final ImmutablePartyFieldValidator immutableFieldValidator;
+    private final DraftCaseDataService draftCaseDataService;
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -33,7 +36,7 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
         PCSCase caseData = details.getData();
-        Long caseRef = details.getId();
+        long caseRef = details.getId();
         PossessionClaimResponse response = caseData.getPossessionClaimResponse();
 
         PossessionClaimResponse defendantAnswersOnly = PossessionClaimResponse.builder()
@@ -55,19 +58,28 @@ public class RespondToPossessionDraftSavePage implements CcdPageConfiguration {
 
             if (!violations.isEmpty()) {
                 log.error("Draft submit rejected for case {}: immutable field violations: {}", caseRef, violations);
-
                 List<String> errors = violations.stream()
                     .map(field -> "Invalid submission: immutable field must not be sent: " + field)
                     .toList();
-
-                return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                    .errors(errors)
-                    .build();
+                return error(errors);
             }
         }
 
+        try {
+            draftCaseDataService.patchUnsubmittedEventData(caseRef, partialUpdate, respondPossessionClaim);
+            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+                .data(partialUpdate)
+                .build();
+        } catch (Exception e) {
+            log.error("Failed to save draft for case {}", caseRef, e);
+            return error(List.of("We couldn't save your response. Please try again or contact support."));
+        }
+
+    }
+
+    private AboutToStartOrSubmitResponse<PCSCase, State> error(List<String> errorMessages) {
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(partialUpdate)
+            .errors(errorMessages)
             .build();
     }
 

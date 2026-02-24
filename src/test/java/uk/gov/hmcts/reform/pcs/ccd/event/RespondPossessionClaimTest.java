@@ -20,8 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyRole;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.respondpossessionclaim.page.RespondToPossessionDraftSavePage;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
@@ -41,7 +39,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,16 +68,10 @@ class RespondPossessionClaimTest extends BaseEventTest {
     private DefendantResponseService defendantResponseService;
 
     @Mock
-    private SavingPageBuilderFactory savingPageBuilderFactory;
-
-    @Mock
     private RespondToPossessionDraftSavePage respondToPossessionDraftSavePage;
 
     @BeforeEach
     void setUp() {
-        SavingPageBuilder savingPageBuilder = mock(SavingPageBuilder.class);
-        when(savingPageBuilderFactory.create(any(), any(EventId.class))).thenReturn(savingPageBuilder);
-        when(savingPageBuilder.add(any())).thenReturn(savingPageBuilder);
 
         // Create handlers with real dependencies
         StartEventHandler startEventHandler = new StartEventHandler(
@@ -100,7 +91,6 @@ class RespondPossessionClaimTest extends BaseEventTest {
         setEventUnderTest(new RespondPossessionClaim(
             startEventHandler,
             submitEventHandler,
-            savingPageBuilderFactory,
             respondToPossessionDraftSavePage
         ));
 

@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
@@ -21,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
-import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.ImmutablePartyFieldValidator;
 
 import java.util.Optional;
 
@@ -43,16 +41,11 @@ class SubmitEventHandlerTest {
     @Mock
     private DraftCaseDataService draftCaseDataService;
     @Mock
-    private ImmutablePartyFieldValidator immutableFieldValidator;
-    @Mock
     private EventPayload<PCSCase, State> eventPayload;
     @Mock
     private ClaimResponseService claimResponseService;
     @Mock
     private DefendantResponseService defendantResponseService;
-
-    @Captor
-    private ArgumentCaptor<PCSCase> pcsCaseCaptor;
 
     private SubmitEventHandler underTest;
 
