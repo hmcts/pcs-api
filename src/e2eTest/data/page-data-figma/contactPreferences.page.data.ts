@@ -39,7 +39,7 @@ export const contactPreferences = {
   postcodeTextInput: ``,
   contactPhoneNumberSubHeader: `Contact phone number`,
   youShouldProvideAPhoneParagraph: `You should provide a phone number so we can contact you if there are urgent updates.`,
-  doYouWantToProvideQuestion: `Do you want to provide a contact phone number?`,
+  doYouWantToProvideQuestion: `Do you want to provide a contact phone number? (Optional)`,
   enterPhoneNumberHiddenTextLabel: `Enter phone number`,
   enterPhoneNumberTextInput: `07654567345`,
   continueButton: `Continue`,
