@@ -12,6 +12,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -139,20 +140,6 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
     }
 
-    private boolean stubEnabled() {
-        return isStubEnvironment(System.getenv("ENVIRONMENT"))
-            || isStubEnvironment(System.getenv("SPRING_PROFILES_ACTIVE"))
-            || "true".equalsIgnoreCase(System.getenv("ENABLE_TESTING_SUPPORT"));
-    }
-
-    private boolean isStubEnvironment(String value) {
-        if (value == null || value.isBlank()) {
-            return false;
-        }
-        String lower = value.toLowerCase(Locale.UK);
-        return lower.contains("dev") || lower.contains("preview") || lower.contains("aat");
-    }
-
     private static boolean toBoolean(YesOrNo yesOrNo) {
         return yesOrNo != null && yesOrNo.toBoolean();
     }
@@ -175,10 +162,12 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
     }
 
     private String claimTransferredShowCondition() {
-        return stubEnabled() ? WRIT_FLOW : NEVER_SHOW;
+        return TestSupportEnvironment.isNonProdTestSupportEnabled() ? WRIT_FLOW : NEVER_SHOW;
     }
 
     private String gaSuccessfulShowCondition() {
-        return stubEnabled() ? STUB_GA_SUCCESSFUL_CONDITION : NEVER_SHOW;
+        return TestSupportEnvironment.isNonProdTestSupportEnabled()
+            ? STUB_GA_SUCCESSFUL_CONDITION
+            : NEVER_SHOW;
     }
 }
