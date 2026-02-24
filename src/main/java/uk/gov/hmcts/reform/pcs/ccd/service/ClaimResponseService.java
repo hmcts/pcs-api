@@ -33,6 +33,9 @@ public class ClaimResponseService {
     private final SecurityContextService securityContextService;
     private final ModelMapper modelMapper;
 
+    //when contact by phone = no, we MUST skip saving contact_by_text and phone number.
+    private boolean shouldSavePhoneNumAndTextPreference;
+
     /**
      * Saves defendant's contact preferences and contact details.
      * Finds the defendant party by the current user's IDAM ID and case reference updates their information.
@@ -50,8 +53,8 @@ public class ClaimResponseService {
         PartyEntity defendant = findDefendantByIdamId(currentUserIdamId, caseReference);
 
         //save to relevant tables
-        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
         saveContactPreferences(defendant, dataFromDraftTable.getDefendantResponses());
+        updatePartyContactDetails(defendant, dataFromDraftTable.getDefendantContactDetails());
 
         log.debug("Successfully saved contact preferences for defendant with IDAM ID: {}", currentUserIdamId);
     }
@@ -73,7 +76,8 @@ public class ClaimResponseService {
      */
     private void updatePartyContactDetails(PartyEntity party, DefendantContactDetails defendantResponse) {
 
-        if (StringUtils.isNotBlank(defendantResponse.getParty().getPhoneNumber())) {
+        if (shouldSavePhoneNumAndTextPreference
+            && StringUtils.isNotBlank(defendantResponse.getParty().getPhoneNumber())) {
             party.setPhoneNumber(defendantResponse.getParty().getPhoneNumber());
             log.debug("Updated phone number for party ID: {}", party.getId());
         }
@@ -119,9 +123,13 @@ public class ClaimResponseService {
         }
 
         contactPrefs.setContactByEmail(defendantResponse.getContactByEmail());
-        contactPrefs.setContactByText(defendantResponse.getContactByText());
         contactPrefs.setContactByPost(defendantResponse.getContactByPost());
         contactPrefs.setContactByPhone(defendantResponse.getContactByPhone());
+
+        shouldSavePhoneNumAndTextPreference = defendantResponse.getContactByPhone().toBoolean();
+        if (shouldSavePhoneNumAndTextPreference) {
+            contactPrefs.setContactByText(defendantResponse.getContactByText());
+        }
 
         //only need to trigger save when object is newly created
         if (saveNeeded) {
