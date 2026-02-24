@@ -1,6 +1,6 @@
 #!groovy
 
-@Library("Infrastructure@QA-WIP-1")
+@Library("Infrastructure")
 
 import uk.gov.hmcts.contino.AppPipelineDsl
 import uk.gov.hmcts.contino.GithubAPI
