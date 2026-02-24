@@ -1,7 +1,6 @@
 export const mediationAndSettlement = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Mediation and settlement`,
-  PropertyAddressParagraph: `Property address:`,
   mediationIsWhenAnImpartialParagraph: `Mediation is when an impartial professional (the mediator) helps both sides work out an agreement.`,
   haveYouAttemptedMediationWithQuestion: `Have you attempted mediation with the defendants?`,
   yesRadioOption: `Yes`,

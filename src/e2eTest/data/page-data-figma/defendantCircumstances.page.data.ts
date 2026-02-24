@@ -1,7 +1,6 @@
 export const defendantCircumstances = {
   makeAClaimCaption: 'Make a claim',
   mainHeader: `Defendants’ circumstances`,
-  propertyAddressParagraph: 'Property address',
   youCanUseThisSectionMultipleDynamicParagraph: `You can use this section to tell us anything relevant about the defendants’ financial or personal situation.`,
   youCanUseThisSectionSingleDynamicParagraph: `You can use this section to tell us anything relevant about the defendant’s financial or personal situation.`,
   isThereAnyInformationMultipleDefendantsCircumstancesDynamicQuestion: `Is there any information you’d like to provide about the defendants’ circumstances?`,

@@ -1,7 +1,6 @@
 export const checkingNotice = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Notice of your intention to begin possession proceedings`,
-  PropertyAddressParagraph: `Property address:`,
   youMayHaveAlreadyServedEnglandDynamicParagraph: `You may have already served the defendants with notice of your intention to begin possession proceedings. Notice periods vary between grounds and some do not require any notice to be served. You should read the guidance on possession notice periods (opens in new tab) to make sure your claim is valid.`,
   youMayHaveAlreadyServedWalesDynamicParagraph: `You may have already served the defendants with notice of your intention to begin possession proceedings. Notice periods vary between grounds and some do not require any notice to be served. You should read the guidance on possession notice periods (opens in new tab) to make sure your claim is valid.`,
   guidanceOnPossessionLink: `guidance on possession notice periods (opens in new tab)`,

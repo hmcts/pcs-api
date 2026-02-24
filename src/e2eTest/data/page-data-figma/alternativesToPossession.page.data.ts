@@ -1,7 +1,6 @@
 export const alternativesToPossession = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Alternatives to possession`,
-  PropertyAddressParagraph: `Property address: `,
   ifAJudgeDecidesThatParagraph: `If a judge decides that possession is not reasonable at this time, they may instead decide to order a demotion of tenancy (demotion order) or a suspension of the defendants’ right to buy (suspension order), if they’re not already in place.`,
   suspensionOfRightToBuySubHeader: `Suspension of right to buy`,
   demotionOfTenancySubHeader: `Demotion of tenancy`,
