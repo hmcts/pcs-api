@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor(access = AccessLevel. PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ShowConditionsEnforcementType {
 
     public static final String WARRANT_FLOW = "selectEnforcementType=\"WARRANT\"";
