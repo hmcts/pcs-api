@@ -25,7 +25,7 @@ import {
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
-import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcement-Utils.action';
+import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 
 export const addressInfo = {
   buildingStreet: createCaseApiData.createCasePayload.propertyAddress.AddressLine1,
