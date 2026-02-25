@@ -21,7 +21,8 @@ import {
   enterDefendantsDOB,
   suspendedOrder,
   confirmHCEOHired,
-  yourHCEO} from '@data/page-data/page-data-enforcement';
+  yourHCEO
+} from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { VERY_LONG_TIMEOUT } from 'playwright.config';
@@ -143,17 +144,15 @@ export class EnforcementAction implements IAction {
     }
 
     if (defendantsDetails.additionalDefendants === 'YES') {
+      for (const { value } of payLoad.additionalDefendants) {
+        const name = value.nameKnown === 'YES'
+          ? `${value.firstName} ${value.lastName}`
+          : 'null null';
 
-      for (const defendant of payLoad.additionalDefendants) {
-        if (defendant.value.nameKnown === 'YES') {
-          originalDefendantDetails.push(`${defendant.value.firstName} ${defendant.value.lastName}`);
-        } else {
-          originalDefendantDetails.push(
-            `null null`
-          );
-        };
+        originalDefendantDetails.push(name);
       };
-    }
+    };
+
     defendantDetails = [...new Set(originalDefendantDetails.filter(n => n.trim().toLowerCase() !== "null null")),
     ...originalDefendantDetails.filter(n => n.trim().toLowerCase() === "null null")
     ];
