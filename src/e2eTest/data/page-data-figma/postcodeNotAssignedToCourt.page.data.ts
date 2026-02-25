@@ -1,0 +1,16 @@
+export const postcodeNotAssignedToCourt = {
+  mainHeader: `You cannot use this online service`,
+  makeAClaimCaption: `Make a claim`,
+  cancelLink: `Cancel`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  basedOnPostcodeParagraph: `Based on the postcode you provided, we cannot determine which court your claim should be assigned to, so you cannot use this online service.`,
+  whatToDoNextHeader: `What to do next`,
+  PCOLLink: `Possession Claim Online (PCOL) service (opens in new tab)`,
+  claimsInEnglandContent: `For other types of claims in England – fill in form N5 and the correct particulars of claim form.`,
+  claimsInWalesContent: `For claims in Wales - Use form N5 Wales and the correct particulars of claim form.`,
+  claimsInScotlandLink: `local sheriff court (opens in new tab)`,
+  claimsInNorthernIrelandLink: `Enforcement of Judgments Office (EJO) (opens in new tab)`,
+  propertyPossessionsFullListLink: `View the full list of property possessions forms (opens in a new tab)`,
+  warningMessage: `To exit back to the case list, select 'Cancel'`,
+};
