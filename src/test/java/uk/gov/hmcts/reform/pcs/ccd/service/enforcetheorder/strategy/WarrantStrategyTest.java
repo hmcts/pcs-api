@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.strategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InOrder;
@@ -16,18 +19,24 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDeta
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.SelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.RiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.SelectedDefendantRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.RiskDetailsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.SelectedDefendantsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -45,18 +54,22 @@ class WarrantStrategyTest {
     @Mock
     private SelectedDefendantRepository selectedDefendantRepository;
     @Mock
-    private WarrantDetailsMapper riskProfileMapper;
+    private RiskDetailsMapper riskProfileMapper;
+    @Mock
+    private WarrantDetailsMapper warrantDetailsMapper;
+    @Mock
+    private EnforcementWarrantRepository enforcementWarrantRepository;
+    @Captor
+    private ArgumentCaptor<RiskProfileEntity> riskProfileCaptor;
+    @Captor
+    private ArgumentCaptor<EnforcementWarrantEntity> warrantEntityCaptor;
 
     @InjectMocks
     private WarrantStrategy underTest;
 
-    @Captor
-    private ArgumentCaptor<RiskProfileEntity> riskProfileCaptor;
-
     private EnforcementOrderEntity enforcementOrderEntity;
     private EnforcementOrder enforcementOrder;
     private WarrantDetails warrantDetails;
-    private RawWarrantDetails rawWarrantDetails;
     private EnforcementRiskDetails riskDetails;
 
     @BeforeEach
@@ -78,11 +91,136 @@ class WarrantStrategyTest {
         VulnerableAdultsChildren vulnerableAdultsChildren = VulnerableAdultsChildren.builder()
             .vulnerableCategory(VULNERABLE_CHILDREN).vulnerableReasonText("Young children present").build();
 
-        rawWarrantDetails = RawWarrantDetails.builder()
+        RawWarrantDetails rawWarrantDetails = RawWarrantDetails.builder()
             .vulnerablePeoplePresent(YesNoNotSure.YES).vulnerableAdultsChildren(vulnerableAdultsChildren).build();
 
         enforcementOrder = EnforcementOrder.builder().warrantDetails(warrantDetails)
             .rawWarrantDetails(rawWarrantDetails).build();
+    }
+
+    @Test
+    void shouldProcessWarrantDetailsAndSaveToRepository() {
+        // Given
+        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
+        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+        savedWarrantEntity.setId(UUID.randomUUID());
+
+        when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+            .thenReturn(warrantEntity);
+        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
+        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
+        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
+            .thenReturn(Collections.emptyList());
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(warrantDetailsMapper).toEntity(enforcementOrder, enforcementOrderEntity);
+        verify(enforcementWarrantRepository).save(warrantEntity);
+        verify(enforcementOrderEntity).setWarrantDetails(savedWarrantEntity);
+    }
+
+    @Test
+    void shouldSetSavedWarrantDetailsOnEnforcementOrderEntity() {
+        // Given
+        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
+        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+        UUID warrantId = UUID.randomUUID();
+        savedWarrantEntity.setId(warrantId);
+
+        when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+            .thenReturn(warrantEntity);
+        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
+        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
+        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
+            .thenReturn(Collections.emptyList());
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(enforcementWarrantRepository).save(warrantEntityCaptor.capture());
+        EnforcementWarrantEntity capturedEntity = warrantEntityCaptor.getValue();
+        assertThat(capturedEntity).isEqualTo(warrantEntity);
+        verify(enforcementOrderEntity).setWarrantDetails(savedWarrantEntity);
+    }
+
+    @Test
+    void shouldProcessWarrantBeforeRiskProfile() {
+        // Given
+        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
+        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+
+        when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+            .thenReturn(warrantEntity);
+        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
+        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
+        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
+            .thenReturn(Collections.emptyList());
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        InOrder inOrder = inOrder(enforcementWarrantRepository, riskProfileRepository);
+        inOrder.verify(enforcementWarrantRepository).save(warrantEntity);
+        inOrder.verify(riskProfileRepository).save(any(RiskProfileEntity.class));
+    }
+
+    @Test
+    void shouldCallWarrantDetailsMapper() {
+        // Given
+        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
+        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+
+        when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+            .thenReturn(warrantEntity);
+        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
+        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
+        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
+            .thenReturn(Collections.emptyList());
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(warrantDetailsMapper).toEntity(
+            argThat(order -> order.equals(enforcementOrder)),
+            argThat(entity -> entity.equals(enforcementOrderEntity))
+        );
+    }
+
+    @Test
+    void shouldProcessAllThreeStepsInCorrectOrder() {
+        // Given
+        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
+        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+        List<SelectedDefendantEntity> defendants = List.of(new SelectedDefendantEntity());
+
+        when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
+            .thenReturn(warrantEntity);
+        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
+        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
+        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity)).thenReturn(defendants);
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        InOrder inOrder = inOrder(
+            enforcementWarrantRepository,
+            riskProfileRepository,
+            selectedDefendantRepository
+        );
+        inOrder.verify(enforcementWarrantRepository).save(warrantEntity);
+        inOrder.verify(riskProfileRepository).save(any(RiskProfileEntity.class));
+        inOrder.verify(selectedDefendantRepository).saveAll(defendants);
     }
 
     @Test
@@ -115,33 +253,19 @@ class WarrantStrategyTest {
         assertThat(capturedEntity.getVulnerableReasonText()).isEqualTo("Young children present");
     }
 
-    @Test
-    void shouldHandleNullRawWarrantDetails() {
+    @ParameterizedTest
+    @MethodSource("provideNullWarrantDetailsScenarios")
+    void shouldHandleNullValuesInWarrantDetails(
+        RawWarrantDetails rawWarrantDetails,
+        YesNoNotSure expectedVulnerablePeoplePresent,
+        boolean expectNullVulnerableFields
+    ) {
         // Given
-        enforcementOrder.setRawWarrantDetails(null);
-        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
-        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
-        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
-            .thenReturn(Collections.emptyList());
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(riskProfileRepository).save(riskProfileCaptor.capture());
-        RiskProfileEntity capturedEntity = riskProfileCaptor.getValue();
-
-        assertThat(capturedEntity.getVulnerablePeoplePresent()).isNull();
-        assertThat(capturedEntity.getVulnerableCategory()).isNull();
-        assertThat(capturedEntity.getVulnerableReasonText()).isNull();
-    }
-
-    @Test
-    void shouldHandleNullVulnerableAdultsChildren() {
-        // Given
-        rawWarrantDetails.setVulnerableAdultsChildren(null);
+        enforcementOrder.setRawWarrantDetails(rawWarrantDetails);
         RiskProfileEntity riskProfileEntity = new RiskProfileEntity();
-        riskProfileEntity.setVulnerablePeoplePresent(YesNoNotSure.YES);
+        if (expectedVulnerablePeoplePresent != null) {
+            riskProfileEntity.setVulnerablePeoplePresent(expectedVulnerablePeoplePresent);
+        }
         when(riskProfileMapper.toEntity(any(), any())).thenReturn(riskProfileEntity);
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
@@ -154,17 +278,30 @@ class WarrantStrategyTest {
         verify(riskProfileRepository).save(riskProfileCaptor.capture());
         RiskProfileEntity capturedEntity = riskProfileCaptor.getValue();
 
-        assertThat(capturedEntity.getVulnerablePeoplePresent()).isEqualTo(YesNoNotSure.YES);
-        assertThat(capturedEntity.getVulnerableCategory()).isNull();
-        assertThat(capturedEntity.getVulnerableReasonText()).isNull();
+        assertThat(capturedEntity.getVulnerablePeoplePresent()).isEqualTo(expectedVulnerablePeoplePresent);
+        if (expectNullVulnerableFields) {
+            assertThat(capturedEntity.getVulnerableCategory()).isNull();
+            assertThat(capturedEntity.getVulnerableReasonText()).isNull();
+        }
     }
 
-    @Test
-    void shouldSaveSelectedDefendantsWhenPresent() {
+    private static Stream<Arguments> provideNullWarrantDetailsScenarios() {
+        RawWarrantDetails withNullVulnerableChildren = RawWarrantDetails.builder()
+            .vulnerablePeoplePresent(YesNoNotSure.YES)
+            .vulnerableAdultsChildren(null)
+            .build();
+
+        return Stream.of(
+            Arguments.of(null, null, true),
+            Arguments.of(withNullVulnerableChildren, YesNoNotSure.YES, true)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideSelectedDefendantScenarios")
+    void shouldHandleSelectedDefendantsBasedOnMapperResult(List<SelectedDefendantEntity> defendants,
+                                                           boolean shouldCallSaveAll) {
         // Given
-        SelectedDefendantEntity defendant1 = new SelectedDefendantEntity();
-        SelectedDefendantEntity defendant2 = new SelectedDefendantEntity();
-        List<SelectedDefendantEntity> defendants = List.of(defendant1, defendant2);
         when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity)).thenReturn(defendants);
@@ -173,38 +310,24 @@ class WarrantStrategyTest {
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
-        verify(selectedDefendantRepository).saveAll(defendants);
+        if (shouldCallSaveAll) {
+            verify(selectedDefendantRepository).saveAll(defendants);
+        } else {
+            verify(selectedDefendantRepository, never()).saveAll(any());
+        }
     }
 
-    @Test
-    void shouldNotSaveSelectedDefendantsWhenEmpty() {
-        // Given
-        RiskProfileEntity riskProfileEntity = createExpectedRiskProfileEntity();
-        when(riskProfileMapper.toEntity(any(), any())).thenReturn(riskProfileEntity);
-        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(riskProfileEntity);
-        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
-            .thenReturn(Collections.emptyList());
+    private static Stream<Arguments> provideSelectedDefendantScenarios() {
+        SelectedDefendantEntity defendant1 = new SelectedDefendantEntity();
+        SelectedDefendantEntity defendant2 = new SelectedDefendantEntity();
 
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(selectedDefendantRepository, never()).saveAll(any());
+        return Stream.of(
+            Arguments.of(List.of(defendant1, defendant2), true),
+            Arguments.of(Collections.emptyList(), false),
+            Arguments.of(null, false)
+        );
     }
 
-    @Test
-    void shouldNotSaveSelectedDefendantsWhenNull() {
-        // Given
-        when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
-        when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
-        when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity)).thenReturn(null);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(selectedDefendantRepository, never()).saveAll(any());
-    }
 
     @Test
     void shouldHandleWarrantDetailsWithNoRiskToBailiff() {
