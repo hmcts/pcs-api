@@ -179,7 +179,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.yesRadioOption);
     await performValidation('text', {"text": userIneligible.formN5Wales, "elementType": "paragraph"})
     await performValidation('text', {"text": userIneligible.propertyPossessionsFullListLink, "elementType": "paragraph"})
@@ -203,7 +203,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
     await performAction('submitAddressCheckYourAnswers');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.england.registeredProviderForSocialHousing);
+    await performAction('selectClaimantType', claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption);
     await performAction('selectClaimType', claimType.yesRadioOption);
     await performAction('clickButton', userIneligible.continue);
     await performValidation('errorMessage', {

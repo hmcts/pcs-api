@@ -29,6 +29,7 @@ export class TextValidation implements IValidation {
     const locator = data.elementType === 'p'
       ? page.getByText(text, { exact: true }).first()
       : page.locator(`${data.elementType}:text-is("${data.text}")`).first();
+    await locator.scrollIntoViewIfNeeded();
     await locator.waitFor({ state: 'visible' });
     const actual = await locator.innerText();
     const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
