@@ -49,12 +49,6 @@ public class PCSCase {
         "Give details of the type of tenancy or licence agreement that's in place";
     public static final String OTHER_GROUND_DESCRIPTION_LABEL = "Enter your grounds for possession";
 
-    @CCD(
-        searchable = false
-    )
-    @External
-    private String feeAmount;
-
     private YesOrNo hasUnsubmittedCaseData;
 
     @CCD(label = "Do you want to resume your claim using your saved answers?")
@@ -92,30 +86,6 @@ public class PCSCase {
     private AddressUK propertyAddress;
 
     private String formattedPropertyAddress;
-
-    @CCD(searchable = false)
-    private YesOrNo showCrossBorderPage;
-
-    @CCD(searchable = false)
-    private YesOrNo showPropertyNotEligiblePage;
-
-    @CCD(
-        typeOverride = DynamicRadioList
-    )
-    @External
-    private DynamicStringList crossBorderCountriesList;
-
-    @CCD(
-        searchable = false
-    )
-    @External
-    private String crossBorderCountry1;
-
-    @CCD(
-        searchable = false
-    )
-    @External
-    private String crossBorderCountry2;
 
     @CCD(
         searchable = false,
@@ -359,12 +329,6 @@ public class PCSCase {
 
     @CCD
     private String formattedCalculatedDailyRentChargeAmount;
-
-    @CCD(searchable = false)
-    private YesOrNo showPostcodeNotAssignedToCourt;
-
-    @CCD(searchable = false)
-    private String postcodeNotAssignedView;
 
     @CCD
     private DefendantDetails defendant1;

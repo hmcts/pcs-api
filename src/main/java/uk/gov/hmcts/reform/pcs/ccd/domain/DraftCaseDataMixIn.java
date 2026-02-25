@@ -13,8 +13,6 @@ public abstract class DraftCaseDataMixIn {
     @JsonIgnore
     private YesOrNo decentralised;
     @JsonIgnore
-    private YesOrNo showCrossBorderPage;
-    @JsonIgnore
     private String caseTitleMarkdown;
     @JsonIgnore
     private String nextStepsMarkdown;
