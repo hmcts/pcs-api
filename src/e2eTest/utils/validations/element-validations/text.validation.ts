@@ -1,38 +1,53 @@
 import { Page, expect } from '@playwright/test';
 import {IValidation, validationRecord} from "@utils/interfaces";
 
+function escapeForRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export class TextValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationRecord): Promise<void> {
+    let elementType = data.elementType;
     switch (data.elementType) {
       case 'link':
-        data.elementType = 'a';
+        elementType = 'a';
         break;
       case 'paragraphLink':
-        data.elementType = 'p > a';
+        elementType = 'p > a';
         break;
       case 'heading':
-        data.elementType = 'h1.govuk-heading-l';
+        elementType = 'h1.govuk-heading-l';
         break;
       case 'subHeader':
-        data.elementType = 'h3';
+        elementType = 'h3';
         break;
       case 'paragraph':
-        data.elementType = 'p';
+        elementType = 'p';
         break;
       case 'inlineText':
-        data.elementType = 'span';
+        elementType = 'span';
         break;
       case 'listItem':
-        data.elementType = 'li';
+        elementType = 'li';
     }
     const text = String(data.text);
-    const locator = data.elementType === 'p'
+    const regexForText = (t: string, allowDashVariants = false, allowFlexibleWhitespace = false) => {
+      let src = escapeForRegex(t);
+      if (allowDashVariants) src = src.replace(/\\-/g, '[\\-\\u2013\\u2014]');
+      if (allowFlexibleWhitespace) src = src.replace(/ /g, '\\s+');
+      return new RegExp('^\\s*' + src + '\\s*$');
+    };
+    const locator = elementType === 'p'
       ? page.getByText(text, { exact: true }).first()
-      : page.locator(`${data.elementType}:text-is("${data.text}")`).first();
+      : elementType === 'a'
+        ? page.locator('xpath=//a[not(ancestor::*[@hidden])]').filter({ hasText: regexForText(text) }).first()
+        : elementType === 'li'
+          ? page.locator('xpath=//li[not(ancestor::*[@hidden])]').filter({ hasText: regexForText(text, true, true) }).first()
+          : page.locator(`${elementType}:text-is("${data.text}")`).first();
     await locator.scrollIntoViewIfNeeded();
     await locator.waitFor({ state: 'visible' });
     const actual = await locator.innerText();
-    const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
+    const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').replace(/[\u2013\u2014]/g, '-').trim();
     expect(normalized(actual ?? ''), `Expected text "${text}"`).toBe(normalized(text));
   }
 }
