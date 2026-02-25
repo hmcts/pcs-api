@@ -85,7 +85,7 @@ export class EnforcementAction implements IAction {
       ? yourApplication.typeofFee.warrantOfPossessionFee
       : yourApplication.typeofFee.writOfPossessionFee;
 
-    const writOrWarrantFeeAmt = warrantJourney ? await EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text1 as string) : await EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text2 as string);
+    const writOrWarrantFeeAmt = warrantJourney ? EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text1 as string) : EnforcementCommonUtils.retrieveAmountFromString(summaryOption.text2 as string);
 
     moneyMap.set(feeType, writOrWarrantFeeAmt);
   }
@@ -205,7 +205,7 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(defendantsDOB);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    await performAction('inputText', defendantsDOB.label, await EnforcementCommonUtils.inputDOB(defendantsDOB.input as Array<string>));
+    await performAction('inputText', defendantsDOB.label, EnforcementCommonUtils.inputDOB(defendantsDOB.input as Array<string>));
     fieldsMap.set(defendantsDOB.label as string, await page.getByLabel(enterDefendantsDOB.defendantsDOBTextLabel).inputValue());
     await performAction('reTryOnCallBackError', enterDefendantsDOB.continueButton, defendantsDOB.nextPage as string);
   }
@@ -301,7 +301,7 @@ export class EnforcementAction implements IAction {
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     const moneyOwedEntered = EnforcementCommonUtils.getRandomElementForAnArray(totalMoneyOwed.input as Array<string>)
     await performAction('inputText', totalMoneyOwed.label, moneyOwedEntered);
-    const moneyOwedAmt = await EnforcementCommonUtils.retrieveAmountFromString(moneyOwedEntered as string);
+    const moneyOwedAmt = EnforcementCommonUtils.retrieveAmountFromString(moneyOwedEntered as string);
     moneyMap.set(moneyOwed.arrearsAndOtherCosts, moneyOwedAmt);
     fieldsMap.set(totalMoneyOwed.label as string, moneyOwedEntered as string);
     await performAction('reTryOnCallBackError', moneyOwed.continueButton, totalMoneyOwed.nextPage as string);
@@ -315,7 +315,7 @@ export class EnforcementAction implements IAction {
     if (legalCost.option === legalCosts.yesRadioOption) {
       const legalCostEntered = EnforcementCommonUtils.getRandomElementForAnArray(legalCost.input as Array<string>)
       await performAction('inputText', legalCost.label, legalCostEntered);
-      const legalCostAmt = await EnforcementCommonUtils.retrieveAmountFromString(legalCostEntered as string);
+      const legalCostAmt = EnforcementCommonUtils.retrieveAmountFromString(legalCostEntered as string);
       moneyMap.set(legalCosts.legalCostsFee, legalCostAmt);
       fieldsMap.set(legalCost.label as string, legalCostEntered as string);
     } else {
@@ -332,7 +332,7 @@ export class EnforcementAction implements IAction {
     if (landRegistry.option === accessToTheProperty.yesRadioOption) {
       const langRegistryAmtEntered = EnforcementCommonUtils.getRandomElementForAnArray(landRegistry.input as Array<string>)
       await performAction('inputText', landRegistry.label, langRegistryAmtEntered);
-      const landRegistryFeeAmt = await EnforcementCommonUtils.retrieveAmountFromString(langRegistryAmtEntered as string);
+      const landRegistryFeeAmt = EnforcementCommonUtils.retrieveAmountFromString(langRegistryAmtEntered as string);
       moneyMap.set(landRegistryFees.landRegistryFee, landRegistryFeeAmt);
       fieldsMap.set(landRegistry.label as string, langRegistryAmtEntered as string);
     } else {
@@ -348,7 +348,7 @@ export class EnforcementAction implements IAction {
       moneyMap.set(rePayments.totalAmt, totalAmt);
     };
     for (const [moneyField, amount] of moneyMap) {
-      await performValidation('formLabelValue', moneyField, `${await EnforcementCommonUtils.convertCurrencyToString(amount)}`);
+      await performValidation('formLabelValue', moneyField, `${EnforcementCommonUtils.convertCurrencyToString(amount)}`);
     }
   }
   private async provideAmountToRePay(amtToPay: actionRecord, page: Page) {
