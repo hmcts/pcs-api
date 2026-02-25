@@ -109,63 +109,63 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performValidation('text', {"text": preactionProtocol.communityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
-  //   await performAction('selectMediationAndSettlement', {
-  //     attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
-  //     settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
-  //   });
-  //   await performValidation('mainHeader', checkingNotice.mainHeader);
-  //   await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderWalesNewTab);
-  //   await performAction('selectNoticeOfYourIntention', {
-  //     question: checkingNotice.haveYouServedNoticeToQuestion,
-  //     option: checkingNotice.noRadioOption
-  //   });
-  //   await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
-  //   await performValidation('mainHeader', dailyRentAmount.mainHeader);
-  //   await performAction('selectDailyRentAmount', {
-  //     calculateRentAmount: '£32.85',
-  //     unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
-  //   });
-  //   await performValidation('mainHeader', rentArrears.mainHeader);
-  //   await performAction('provideDetailsOfRentArrears', {
-  //     files: ['rentArrears.pdf'],
-  //     rentArrearsAmountOnStatement: '1000',
-  //     rentPaidByOthersOption: rentArrears.yesRadioOption,
-  //     paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
-  //   });
-  //   await performValidation('mainHeader', moneyJudgment.mainHeader);
-  //   await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
-  //   await performValidation('mainHeader', claimantCircumstances.mainHeader);
-  //   await performAction('selectClaimantCircumstances', {
-  //     circumstanceOption: claimantCircumstances.noRadioOption,
-  //     claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
-  //   });
-  //   await performValidation('mainHeader', defendantCircumstances.mainHeader);
-  //   await performAction('selectDefendantCircumstances', {
-  //     defendantCircumstance: defendantCircumstances.yesRadioOption,
-  //     additionalDefendants: false
-  //   });
-  //   await performAction('selectProhibitedConductStandardContract', {
-  //     question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
-  //     option1: prohibitedConductStandardContractWales.no,
-  //   });
-  //   await performValidation('mainHeader', claimingCosts.mainHeader);
-  //   await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
-  //   await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
-  //   await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
-  //   await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
-  //   await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
-  //     question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
-  //     option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
-  //   await performAction('wantToUploadDocuments', {
-  //     question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
-  //     option: wantToUploadDocuments.noRadioOption
-  //   });
-  //   await performAction('selectApplications', generalApplication.yesRadioOption);
-  //   await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
-  //   await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
-  //   await performAction('clickButton', checkYourAnswers.saveAndContinue);
-  //   await performAction('claimSaved');
-  //   await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
+    await performAction('selectMediationAndSettlement', {
+      attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
+      settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
+    });
+    await performValidation('mainHeader', checkingNotice.mainHeader);
+    await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderWalesNewTab);
+    await performAction('selectNoticeOfYourIntention', {
+      question: checkingNotice.haveYouServedNoticeToQuestion,
+      option: checkingNotice.noRadioOption
+    });
+    await performAction('provideRentDetails', {rentFrequencyOption: 'Monthly', rentAmount: '1000'});
+    await performValidation('mainHeader', dailyRentAmount.mainHeader);
+    await performAction('selectDailyRentAmount', {
+      calculateRentAmount: '£32.85',
+      unpaidRentInteractiveOption: dailyRentAmount.yesRadioOption
+    });
+    await performValidation('mainHeader', rentArrears.mainHeader);
+    await performAction('provideDetailsOfRentArrears', {
+      files: ['rentArrears.pdf'],
+      rentArrearsAmountOnStatement: '1000',
+      rentPaidByOthersOption: rentArrears.yesRadioOption,
+      paymentOptions: [rentArrears.universalCreditHiddenCheckBox, rentArrears.otherHiddenCheckBox]
+    });
+    await performValidation('mainHeader', moneyJudgment.mainHeader);
+    await performAction('selectMoneyJudgment', moneyJudgment.noRadioOption);
+    await performValidation('mainHeader', claimantCircumstances.mainHeader);
+    await performAction('selectClaimantCircumstances', {
+      circumstanceOption: claimantCircumstances.noRadioOption,
+      claimantInput: claimantCircumstances.giveDetailsAboutCircumstancesIsRequiredTextInput
+    });
+    await performValidation('mainHeader', defendantCircumstances.mainHeader);
+    await performAction('selectDefendantCircumstances', {
+      defendantCircumstance: defendantCircumstances.yesRadioOption,
+      additionalDefendants: false
+    });
+    await performAction('selectProhibitedConductStandardContract', {
+      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductStandardContractWales.no,
+    });
+    await performValidation('mainHeader', claimingCosts.mainHeader);
+    await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
+    await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
+    await performAction('selectAdditionalReasonsForPossession', additionalReasonsForPossession.noRadioOption);
+    await performValidation('mainHeader', underlesseeMortgageeEntitledToClaimRelief.mainHeader);
+    await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
+      question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
+      option: underlesseeMortgageeEntitledToClaimRelief.noRadioOption});
+    await performAction('wantToUploadDocuments', {
+      question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
+      option: wantToUploadDocuments.noRadioOption
+    });
+    await performAction('selectApplications', generalApplication.yesRadioOption);
+    await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});
+    await performAction('completingYourClaim', completingYourClaim.saveItForLaterRadioOption);
+    await performAction('clickButton', checkYourAnswers.saveAndContinue);
+    await performAction('claimSaved');
+    await performValidation('bannerAlert', 'Case #.* has been updated with event: Make a claim');
   });
 
   test('Wales - Secure contract - Rent arrears + ASB + other options @regression', async () => {
