@@ -62,6 +62,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
+import uk.gov.hmcts.reform.pcs.ccd.service.CcdSupplementaryDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
@@ -107,6 +108,8 @@ class ResumePossessionClaimTest extends BaseEventTest {
 
     @Mock
     private PcsCaseService pcsCaseService;
+    @Mock
+    private CcdSupplementaryDataService ccdSupplementaryDataService;
     @Mock(strictness = LENIENT)
     private SecurityContextService securityContextService;
     @Mock
@@ -206,7 +209,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
-            pcsCaseService, securityContextService,
+            pcsCaseService, ccdSupplementaryDataService, securityContextService,
             savingPageBuilderFactory, resumeClaim,
             selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
