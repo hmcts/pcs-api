@@ -262,7 +262,6 @@ export class EnforcementAction implements IAction {
     await this.addFieldsToMap(provideRiskPosed);
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
-    //const testInput = await this.generateMoreThanMaxString(page, provideRiskPosed.label as string, provideRiskPosed.input as number);
     const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, provideRiskPosed.label as string, provideRiskPosed.input as number);
     await performAction('inputText', provideRiskPosed.label, testInput);
     fieldsMap.set(provideRiskPosed.label as string, testInput);
