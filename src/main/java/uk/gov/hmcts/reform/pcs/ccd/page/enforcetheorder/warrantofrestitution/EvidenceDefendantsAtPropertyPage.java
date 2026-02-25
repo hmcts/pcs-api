@@ -6,15 +6,16 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcemen
 
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
-public class PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder implements CcdPageConfiguration {
+public class EvidenceDefendantsAtPropertyPage implements CcdPageConfiguration {
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-            .page("peopleWhoWillBeEvictedWarrantRestitution")
-            .pageLabel("The people who will be evicted (placeholder)")
+            .page("evidenceDefendantsAtProperty")
+            .pageLabel("Evidence that the defendants are at the property")
             .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
-            .label("peopleWhoWillBeEvictedWarrantRestitution-line-separator", "---")
-            .label("peopleWhoWillBeEvictedWarrantRestitution-save-and-return", SAVE_AND_RETURN);
+            .label("evidenceDefendantsAtProperty-line-separator", "---")
+            .label("evidenceDefendantsAtProperty-save-and-return", SAVE_AND_RETURN);
     }
 }
+
