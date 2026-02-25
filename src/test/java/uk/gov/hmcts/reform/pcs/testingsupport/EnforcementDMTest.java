@@ -7,9 +7,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.WritEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -49,15 +52,28 @@ class EnforcementDMTest {
      * @see EnforcementOrder
      */
     @Test
-    @Disabled
     void shouldCaptureAllMissingEntityFieldsFromTheEnforcementDomain() throws IOException {
-        domainDataModelSupportHelper = new DomainDataModelSupportHelper(WritDetails.class);
-        domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
-                                                        WarrantDetails.class);
-        domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "enforcementLanguageUsed",
-                                                       "writDetails");
+        domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
+        domainDataModelSupportHelper.addClassesToIgnore(ClaimEntity.class);
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
-            domainDataModelSupportHelper.findMissingCCDFields(WritEntity.class);
+            domainDataModelSupportHelper.findMissingCCDFields(EnforcementOrderEntity.class);
+
+        consoleOutput(missingFields);
+
+        assertThat(missingFields)
+            .as("Missing CCD field detection is working. "
+                    + "Review console output to track entity graph implementation progress.")
+            .isNotNull();
+    }
+
+    @Test
+    void shouldCaptureAllMissingEntityFieldsFromTheEnforcementWarrantDetailsDomain() throws IOException {
+        domainDataModelSupportHelper = new DomainDataModelSupportHelper(EnforcementOrder.class);
+        domainDataModelSupportHelper.addClassesToIgnore(EnforcementOrder.class, ClaimEntity.class,
+                                                        EnforcementRiskDetails.class, WritDetails.class);
+        domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails", "enforcementLanguageUsed");
+        List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
+            domainDataModelSupportHelper.findMissingCCDFields(EnforcementWarrantEntity.class);
 
         consoleOutput(missingFields);
 

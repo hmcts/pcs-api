@@ -50,10 +50,8 @@ public class EnforcementOrderService {
         ClaimEntity claimEntity = claimEntities.getFirst();
         EnforcementOrderEntity orderEntity = enforcementOrderRepository
             .save(mapToEntity(enforcementOrder, claimEntity));
-
         strategyFactory.getStrategy(enforcementOrder.getSelectEnforcementType())
             .process(orderEntity, enforcementOrder);
-
     }
 
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
