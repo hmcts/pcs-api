@@ -1,8 +1,8 @@
-import { Page } from '@playwright/test';
-import { IValidation } from '@utils/interfaces';
+import {Page} from '@playwright/test';
+import {IValidation} from '@utils/interfaces';
 import * as fs from 'fs';
 import * as path from 'path';
-import { cyaValidation, CYAStore } from '@utils/validations/custom-validations/CYA/cyaPage.validation';
+import {CYAStore, cyaValidation} from '@utils/validations/custom-validations/CYA/cyaPage.validation';
 
 const ELEMENT_TYPES = [
   'Button', 'Link', 'Header', 'Caption', 'Checkbox', 'Question',
@@ -38,7 +38,7 @@ export class PageContentValidation implements IValidation {
                     [role="link"]:text-is("${value}"),
                     [aria-label="${value}"],
                     summary>span:text-is("${value}")`),
-    Header: (page: Page, value: string) => page.getByRole('heading', { name: new RegExp(`^${escapeForRegex(value)}(\\s*\\([^)]*\\))?$`) })
+    Header: (page: Page, value: string) => page.getByRole('heading', {name: new RegExp(`^${escapeForRegex(value)}(\\s*\\([^)]*\\))?$`)})
       .or(page.locator(`h1:text-is("${value}"),
                     h2:text-is("${value}"),
                     h3:text-is("${value}"),
@@ -51,20 +51,20 @@ export class PageContentValidation implements IValidation {
                     .figcaption:text-is("${value}"),
                     span.govuk-caption-l:text-is("${value}"),
                     [aria-label="${value}"]`),
-    Checkbox: (page: Page, value: string) => page.getByRole('checkbox', { name: new RegExp(`^${escapeForRegex(value)}$`) })
+    Checkbox: (page: Page, value: string) => page.getByRole('checkbox', {name: new RegExp(`^${escapeForRegex(value)}$`)})
       .or(page.locator(`label:text-is("${value}") ~ input[type="checkbox"],
                     label:text-is("${value}") + input[type="checkbox"],
                     .checkbox:text-is("${value}") ~ input[type="checkbox"],
                     label:has(:text-is("${value}")) >> xpath=..//input[@type="checkbox"]`)),
-    Question: (page: Page, value: string) => page.getByText(value, { exact: true })
-      .or(page.getByRole('group', { name: new RegExp(`^${escapeForRegex(value)}$`) }))
+    Question: (page: Page, value: string) => page.getByText(value, {exact: true})
+      .or(page.getByRole('group', {name: new RegExp(`^${escapeForRegex(value)}$`)}))
       .or(page.locator(`legend:text-is("${value}")`))
       .or(page.locator(`span:text-is("${value}")`))
       .or(page.locator(`label:text-is("${value}") ~ input[type="radio"]`))
       .or(page.locator(`legend:text-is("${value}") ~ input[type="radio"]`))
       .or(page.locator(`.question:text-is("${value}") ~ input[type="radio"]`))
       .or(page.locator(`label:has(:text-is("${value}")) >> xpath=..//input[@type="radio"]`)),
-    RadioOption: (page: Page, value: string) => page.getByRole('radio', { name: new RegExp(`^${escapeForRegex(value)}$`) })
+    RadioOption: (page: Page, value: string) => page.getByRole('radio', {name: new RegExp(`^${escapeForRegex(value)}$`)})
       .or(page.locator(`label:text-is("${value}") ~ input[type="radio"],
                     label:text-is("${value}") + input[type="radio"],
                     .radio-option:text-is("${value}") ~ input[type="radio"],
@@ -82,7 +82,7 @@ export class PageContentValidation implements IValidation {
                     label:text-is("${value}"),
                     .label:text-is("${value}"),
                     span:text-is("${value}")`),
-    Paragraph: (page: Page, value: string) => page.getByText(value, { exact: true })
+    Paragraph: (page: Page, value: string) => page.getByText(value, {exact: true})
       .or(page.locator(`p:text-is("${value}"),
                      .paragraph:text-is("${value}"),
                      li:text-is("${value}"),
@@ -95,9 +95,9 @@ export class PageContentValidation implements IValidation {
                     dl > dt:text-is("${value}"),
                     strong:text-is("${value}")`)),
     Text: (page: Page, value: string) => page.locator(`:text-is("${value}")`),
-    Tab: (page: Page, value: string) => page.getByRole('tab', { name: new RegExp(`^${escapeForRegex(value)}$`) })
+    Tab: (page: Page, value: string) => page.getByRole('tab', {name: new RegExp(`^${escapeForRegex(value)}$`)})
       .or(page.locator(`[role="tab"]:text-is("${value}")`))
-      .or(page.locator('[role="tab"]').filter({ has: page.locator(`:text-is("${value}")`) })),
+      .or(page.locator('[role="tab"]').filter({has: page.locator(`:text-is("${value}")`)})),
   };
 
   async validate(page: Page, validation: string, fieldName?: string, data?: any): Promise<void> {
@@ -123,7 +123,7 @@ export class PageContentValidation implements IValidation {
       if (typeof value === 'string' && value.trim() !== '') {
         const elementType = this.getElementType(key);
         const isVisible = await this.isElementVisible(page, value as string, elementType);
-        pageResults.push({ element: key, expected: value as string, status: isVisible ? 'pass' : 'fail' });
+        pageResults.push({element: key, expected: value as string, status: isVisible ? 'pass' : 'fail'});
       }
     }
 
@@ -196,7 +196,7 @@ export class PageContentValidation implements IValidation {
   private async getHeaderText(page: Page): Promise<string | null> {
     try {
       const h1Element = page.locator('h1').first();
-      if (await h1Element.isVisible({ timeout: 2000 })) {
+      if (await h1Element.isVisible({timeout: 2000})) {
         const h1Text = await h1Element.textContent();
         if (h1Text && h1Text.trim() !== '') {
           return h1Text.trim();
@@ -204,7 +204,7 @@ export class PageContentValidation implements IValidation {
       }
 
       const h2Element = page.locator('h2').first();
-      if (await h2Element.isVisible({ timeout: 2000 })) {
+      if (await h2Element.isVisible({timeout: 2000})) {
         const h2Text = await h2Element.textContent();
         if (h2Text && h2Text.trim() !== '') {
           return h2Text.trim();
@@ -234,7 +234,7 @@ export class PageContentValidation implements IValidation {
     if (!pattern) return false;
     try {
       const locator = pattern(page, expectedValue);
-      return await locator.first().isVisible({ timeout: 5000 });
+      return await locator.first().isVisible({timeout: 5000});
     } catch {
       return false;
     }
