@@ -1,4 +1,3 @@
-
 export const defendantDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Defendant details`,

@@ -83,6 +83,7 @@ export class PageContentValidation implements IValidation {
                     .label:text-is("${value}"),
                     span:text-is("${value}")`),
     Paragraph: (page: Page, value: string) => page.getByText(value, {exact: true})
+      .or(page.getByText(new RegExp('^\\s*' + escapeForRegex(value) + '\\s*$')))
       .or(page.locator(`p:text-is("${value}"),
                      .paragraph:text-is("${value}"),
                      li:text-is("${value}"),

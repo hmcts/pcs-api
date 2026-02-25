@@ -1,4 +1,3 @@
-// Disabled content will be enabled once https://tools.hmcts.net/jira/browse/HDPI-3491 bug is fixed.
 export const introductoryDemotedOrOtherGroundsForPossession = {
   mainHeader: `Grounds for possession`,
   absoluteGroundsHiddenCheckbox: `Absolute grounds`,
