@@ -4,8 +4,8 @@ export type actionRecord = Record<string, actionData>;
 export type actionTuple = [string, actionData | actionRecord] | [string, actionData | actionRecord, actionData | actionRecord];
 
 export class EnforcementCommonUtils {
-  
-  public static async  generateMoreThanMaxString(page: Page, label: string, input: string | number): Promise<string> {
+
+  public static async generateMoreThanMaxString(page: Page, label: string, input: string | number): Promise<string> {
 
     let length: number;
 
@@ -14,7 +14,7 @@ export class EnforcementCommonUtils {
         .locator(`//span[text()="${label}"]/ancestor::div[contains(@class,'form-group')]//span[contains(@class,'form-hint')]`)
         .innerText();
 
-      const limit = await EnforcementCommonUtils.retrieveAmountFromString(hintText);
+      const limit = EnforcementCommonUtils.retrieveAmountFromString(hintText);
       if (limit === 0) return '';
 
       length = limit + 1;
@@ -34,14 +34,14 @@ export class EnforcementCommonUtils {
     return finalString;
   }
 
-  public static async retrieveAmountFromString(input: string): Promise<number> {
+  public static retrieveAmountFromString(input: string): number {
     const getCharCount = input.split('You can enter').map(str => str.trim()).filter(str => str.length > 0);
     const charLimitInfo = getCharCount[getCharCount.length - 1].match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
     const amount = charLimitInfo ? Number(charLimitInfo[0].replace(/,/g, "")) : 0;
     return Number(amount.toFixed(2));
   }
 
-  public static async convertCurrencyToString(amount: number): Promise<string> {
+  public static convertCurrencyToString(amount: number): string {
 
     const cents = Math.round(amount * 100);
     const hasZeroDecimals = cents % 100 === 0;
@@ -56,7 +56,7 @@ export class EnforcementCommonUtils {
     return amtString.format(cents / 100);
   }
 
-  public static async isNumericString(s: string): Promise<boolean> {
+  public static isNumericString(s: string): boolean {
     const trimmed = s.trim();
     if (trimmed === "") return false;
 
@@ -89,11 +89,11 @@ export class EnforcementCommonUtils {
     return diff;
   }
 
-  public static async inputDOB(inputArray: string[]): Promise<string> {
+  public static inputDOB(inputArray: string[]): string {
     return inputArray.map((item) => item + " - " + EnforcementCommonUtils.getRandomDOBFromPast(18, 30)).join('\n');
   }
 
-  public static async getRandomDOBFromPast(date1: number, date2: number): Promise<string> {
+  public static getRandomDOBFromPast(date1: number, date2: number): string {
     const today = new Date();
     const maxDate = new Date(
       today.getFullYear() - date1,

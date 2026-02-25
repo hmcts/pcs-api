@@ -79,7 +79,7 @@ public class WritDetails {
 
     @CCD(
         searchable = false,
-        label = "TEMPORARY TEST ONLY – was the general application to transfer to the High Court successful?"
+        label = "TEMPORARY TEST ONLY – Was the general application to transfer to the High Court successful?"
     )
     private YesOrNo wasGeneralApplicationToTransferToHighCourtSuccessful;
     
