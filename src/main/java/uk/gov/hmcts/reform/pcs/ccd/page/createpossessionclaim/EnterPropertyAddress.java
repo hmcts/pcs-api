@@ -4,17 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
-import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
-import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
@@ -27,18 +26,17 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @AllArgsConstructor
 @Component
 @Slf4j
-public class EnterPropertyAddress implements CcdPageConfiguration {
+public class EnterPropertyAddress {
 
     private final EligibilityService eligibilityService;
     private final AddressValidator addressValidator;
 
-    @Override
-    public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
+    public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
+        eventBuilder.fields()
             .page("enterPropertyAddress", this::midEvent)
             .pageLabel("What is the address of the property you’re claiming possession of?")
             .label("enterPropertyAddress-lineSeparator", "---")
-            .complex(PCSCase::getPropertyAddress)
+            .complex(CreateClaimData::getPropertyAddress)
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)
                 .optional(AddressUK::getAddressLine3)
@@ -47,20 +45,21 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 .optional(AddressUK::getCountry)
                 .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
             .done()
-            .readonly(PCSCase::getLegislativeCountry, NEVER_SHOW, true);
+            .readonly(CreateClaimData::getLegislativeCountry, NEVER_SHOW, true);
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+    private AboutToStartOrSubmitResponse<CreateClaimData, State> midEvent(
+        CaseDetails<CreateClaimData, State> details,
+        CaseDetails<CreateClaimData, State> detailsBefore) {
 
-        PCSCase caseData = details.getData();
+        CreateClaimData caseData = details.getData();
         AddressUK propertyAddress = caseData.getPropertyAddress();
 
         List<String> validationErrors = addressValidator.validateAddressFields(propertyAddress);
 
         if (!validationErrors.isEmpty()) {
-            return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-                .errorMessageOverride(StringUtils.joinIfNotEmpty("\n", validationErrors))
+            return AboutToStartOrSubmitResponse.<CreateClaimData, State>builder()
+                .errors(validationErrors)
                 .build();
         }
 
@@ -99,7 +98,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
             }
         }
 
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+        return AboutToStartOrSubmitResponse.<CreateClaimData, State>builder()
             .data(caseData)
             .build();
     }
@@ -115,7 +114,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
         }
     }
 
-    private void setupCrossBorderData(PCSCase caseData, List<LegislativeCountry> legislativeCountries) {
+    private void setupCrossBorderData(CreateClaimData caseData, List<LegislativeCountry> legislativeCountries) {
         caseData.setShowCrossBorderPage(YesOrNo.YES);
 
         List<DynamicStringListElement> crossBorderCountries =

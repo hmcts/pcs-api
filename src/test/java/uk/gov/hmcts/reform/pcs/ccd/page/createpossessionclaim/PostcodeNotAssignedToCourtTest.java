@@ -12,8 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.stream.Stream;
@@ -30,11 +29,10 @@ import static org.mockito.Mockito.when;
 class PostcodeNotAssignedToCourtTest {
 
     @Mock
-    private EventBuilder<PCSCase, UserRole, State> eventBuilder;
+    private EventBuilder<CreateClaimData, UserRole, State> eventBuilder;
     @Mock
-    private FieldCollectionBuilder<PCSCase, State, EventBuilder<PCSCase, UserRole, State>> fieldBuilder;
+    private FieldCollectionBuilder<CreateClaimData, State, EventBuilder<CreateClaimData, UserRole, State>> fieldBuilder;
 
-    private PageBuilder pageBuilder;
     private PostcodeNotAssignedToCourt underTest;
 
     @BeforeEach
@@ -47,14 +45,13 @@ class PostcodeNotAssignedToCourtTest {
         when(fieldBuilder.label(anyString(), anyString())).thenReturn(fieldBuilder);
         when(fieldBuilder.label(anyString(), anyString(), anyString())).thenReturn(fieldBuilder);
 
-        pageBuilder = new PageBuilder(eventBuilder);
         underTest = new PostcodeNotAssignedToCourt();
     }
 
     @Test
     @DisplayName("Should build page configuration successfully")
     void shouldBuildPageConfigurationSuccessfully() {
-        underTest.addTo(pageBuilder);
+        underTest.addTo(eventBuilder);
 
         verify(fieldBuilder).page(eq("postcodeNotAssignedToCourt"), any());
         verify(fieldBuilder).pageLabel(eq("You cannot use this online service"));
@@ -64,7 +61,7 @@ class PostcodeNotAssignedToCourtTest {
     @MethodSource("showConditionScenarios")
     @DisplayName("Should apply correct show conditions for different views")
     void shouldApplyCorrectShowConditions(String expectedShowCondition, String expectedLabelId) {
-        underTest.addTo(pageBuilder);
+        underTest.addTo(eventBuilder);
 
         // Verify the main show condition is set
         verify(fieldBuilder).showCondition(eq("showPostcodeNotAssignedToCourt=\"Yes\""));

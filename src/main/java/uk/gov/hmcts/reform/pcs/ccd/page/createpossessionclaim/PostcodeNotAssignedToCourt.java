@@ -4,32 +4,33 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
-import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 @AllArgsConstructor
 @Component
 @Slf4j
-public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
+public class PostcodeNotAssignedToCourt {
 
     private static final String SHOW_PAGE = "showPostcodeNotAssignedToCourt=\"Yes\"";
     private static final String SHOW_ENGLAND = SHOW_PAGE + " AND postcodeNotAssignedView=\"ENGLAND\"";
     private static final String SHOW_WALES = SHOW_PAGE + " AND postcodeNotAssignedView=\"WALES\"";
     private static final String SHOW_ALL = SHOW_PAGE + " AND postcodeNotAssignedView=\"ALL_COUNTRIES\"";
 
-    @Override
-    public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
+    public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
+        eventBuilder.fields()
             .page("postcodeNotAssignedToCourt", this::midEvent)
             .pageLabel("You cannot use this online service")
             .showCondition(SHOW_PAGE)
-            .readonly(PCSCase::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
-            .readonly(PCSCase::getPostcodeNotAssignedView, NEVER_SHOW)
+            .readonly(CreateClaimData::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
+            .readonly(CreateClaimData::getPostcodeNotAssignedView, NEVER_SHOW)
             .label(
                 "postcodeNotAssignedToCourt-header",
                 """
@@ -108,10 +109,11 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 FOOTER);
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errorMessageOverride("Property not eligible for this online service")
+    private AboutToStartOrSubmitResponse<CreateClaimData, State> midEvent(
+        CaseDetails<CreateClaimData, State> details,
+        CaseDetails<CreateClaimData, State> detailsBefore) {
+        return AboutToStartOrSubmitResponse.<CreateClaimData, State>builder()
+            .errors(List.of("Property not eligible for this online service"))
             .build();
     }
 

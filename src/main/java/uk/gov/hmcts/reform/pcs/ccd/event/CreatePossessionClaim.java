@@ -10,9 +10,9 @@ import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.Permission;
 import uk.gov.hmcts.ccd.sdk.api.callback.SubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
-import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.CrossBorderPostcodeSelection;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.EnterPropertyAddress;
 import uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim.PostcodeNotAssignedToCourt;
@@ -38,41 +38,45 @@ public class CreatePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
     @Override
     public void configureDecentralised(DecentralisedConfigBuilder<PCSCase, State, UserRole> configBuilder) {
-        EventBuilder<PCSCase, UserRole, State> eventBuilder =
+        EventBuilder<CreateClaimData, UserRole, State> eventBuilder =
             configBuilder
-                .decentralisedEvent(createPossessionClaim.name(), this::submit, this::start)
+                .decentralisedEvent(
+                    createPossessionClaim.name(),
+                    CreateClaimData.class,
+                    "cpc",
+                    this::submit,
+                    this::start
+                )
                 .initialState(State.AWAITING_SUBMISSION_TO_HMCTS)
                 .showSummary()
                 .name("Make a claim")
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR);
 
-        new PageBuilder(eventBuilder)
-            .add(new StartTheService())
-            .add(enterPropertyAddress)
-            .add(crossBorderPostcodeSelection)
-            .add(propertyNotEligible)
-            .add(new PostcodeNotAssignedToCourt());
-
+        new StartTheService().addTo(eventBuilder);
+        enterPropertyAddress.addTo(eventBuilder);
+        crossBorderPostcodeSelection.addTo(eventBuilder);
+        propertyNotEligible.addTo(eventBuilder);
+        new PostcodeNotAssignedToCourt().addTo(eventBuilder);
     }
 
-    private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
-        PCSCase caseData = eventPayload.caseData();
+    private CreateClaimData start(EventPayload<CreateClaimData, State> eventPayload) {
+        CreateClaimData caseData = eventPayload.caseData();
 
         applyCaseIssueFeeAmount(caseData);
         return caseData;
     }
 
-    private void applyCaseIssueFeeAmount(PCSCase pcsCase) {
+    private void applyCaseIssueFeeAmount(CreateClaimData pcsCase) {
         feeApplier.applyFeeAmount(
             pcsCase,
             FeeType.CASE_ISSUE_FEE,
-            PCSCase::setFeeAmount
+            CreateClaimData::setFeeAmount
         );
     }
 
-    private SubmitResponse<State> submit(EventPayload<PCSCase, State> eventPayload) {
+    private SubmitResponse<State> submit(EventPayload<CreateClaimData, State> eventPayload) {
         long caseReference = eventPayload.caseReference();
-        PCSCase caseData = eventPayload.caseData();
+        CreateClaimData caseData = eventPayload.caseData();
 
         pcsCaseService.createCase(caseReference, caseData.getPropertyAddress(), caseData.getLegislativeCountry());
 

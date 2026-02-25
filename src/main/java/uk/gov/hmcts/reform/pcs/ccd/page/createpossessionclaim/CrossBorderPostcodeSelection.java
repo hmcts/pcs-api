@@ -6,11 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
-import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -24,19 +24,18 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 @AllArgsConstructor
 @Component
 @Slf4j
-public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
+public class CrossBorderPostcodeSelection {
 
     private final EligibilityService eligibilityService;
 
-    @Override
-    public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
+    public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
+        eventBuilder.fields()
             .page("crossBorderPostcodeSelection", this::midEvent)
             .pageLabel("Border postcode")
             .showCondition("showCrossBorderPage=\"Yes\"")
-            .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
-            .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW, true)
-            .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
+            .readonly(CreateClaimData::getShowCrossBorderPage, NEVER_SHOW)
+            .readonly(CreateClaimData::getCrossBorderCountry1, NEVER_SHOW, true)
+            .readonly(CreateClaimData::getCrossBorderCountry2, NEVER_SHOW, true)
             .label("crossBorderPostcodeSelection-info", """
                 ---
                 <section tabindex="0">
@@ -61,16 +60,17 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 </div>
                 </section>
                 """)
-            .mandatory(PCSCase::getCrossBorderCountriesList,
+            .mandatory(CreateClaimData::getCrossBorderCountriesList,
                 null,
                 null,
                 "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> detailsBefore) {
+    private AboutToStartOrSubmitResponse<CreateClaimData, State> midEvent(
+        CaseDetails<CreateClaimData, State> details,
+        CaseDetails<CreateClaimData, State> detailsBefore) {
 
-        PCSCase caseData = details.getData();
+        CreateClaimData caseData = details.getData();
         String postcode = getPostcode(caseData);
 
         String countryCode = getSelectedCountryCode(caseData);
@@ -131,16 +131,16 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         return response(caseData);
     }
 
-    private String getSelectedCountryCode(PCSCase caseData) {
+    private String getSelectedCountryCode(CreateClaimData caseData) {
         return caseData.getCrossBorderCountriesList().getValue().getCode();
     }
 
-    private String getPostcode(PCSCase caseData) {
+    private String getPostcode(CreateClaimData caseData) {
         return caseData.getPropertyAddress().getPostCode();
     }
 
-    private AboutToStartOrSubmitResponse<PCSCase, State> response(PCSCase caseData) {
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
+    private AboutToStartOrSubmitResponse<CreateClaimData, State> response(CreateClaimData caseData) {
+        return AboutToStartOrSubmitResponse.<CreateClaimData, State>builder()
             .data(caseData)
             .build();
     }

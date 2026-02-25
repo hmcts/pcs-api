@@ -15,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,6 +30,19 @@ public abstract class BasePageTest {
         event = buildPageInTestEvent(pageUnderTest);
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected <D> void setDtoPageUnderTest(Class<D> dtoClass,
+        Consumer<Event.EventBuilder<D, UserRole, State>> pageSetup) {
+        ConfigBuilderImpl<PCSCase, State, UserRole> configBuilder = createConfigBuilder();
+        Event.EventBuilder eventBuilder = (Event.EventBuilder) configBuilder
+            .decentralisedEvent(TEST_EVENT_ID, dtoClass, null)
+            .forAllStates();
+        pageSetup.accept(eventBuilder);
+        ResolvedCCDConfig<PCSCase, State, UserRole> resolvedCCDConfig = configBuilder.build();
+        event = resolvedCCDConfig.getEvents().get(TEST_EVENT_ID);
+        assertThat(event).isNotNull();
+    }
+
     protected AboutToStartOrSubmitResponse<PCSCase, State> callMidEventHandler(PCSCase caseData) {
         CaseDetails<PCSCase, State> caseDetails = CaseDetails.<PCSCase, State>builder()
             .id(TEST_CASE_REFERENCE)
@@ -36,6 +50,16 @@ public abstract class BasePageTest {
             .build();
 
         return getMidEventForPage().handle(caseDetails, null);
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected <D> AboutToStartOrSubmitResponse<D, State> callDtoMidEventHandler(D caseData) {
+        CaseDetails caseDetails = CaseDetails.builder()
+            .id(TEST_CASE_REFERENCE)
+            .data(caseData)
+            .build();
+
+        return (AboutToStartOrSubmitResponse<D, State>) getMidEventForPage().handle(caseDetails, null);
     }
 
     private Event<PCSCase, UserRole, State> buildPageInTestEvent(CcdPageConfiguration page) {

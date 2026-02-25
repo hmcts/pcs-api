@@ -13,7 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -39,7 +39,8 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
 
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new CrossBorderPostcodeSelection(eligibilityService));
+        CrossBorderPostcodeSelection page = new CrossBorderPostcodeSelection(eligibilityService);
+        setDtoPageUnderTest(CreateClaimData.class, page::addTo);
     }
 
     @ParameterizedTest
@@ -53,7 +54,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .postCode(postCode)
             .build();
 
-        PCSCase caseData = PCSCase.builder()
+        CreateClaimData caseData = CreateClaimData.builder()
             .propertyAddress(propertyAddress)
             .crossBorderCountriesList(createCountryListWithSelectedValue(expectedLegislativeCountry))
             .build();
@@ -66,7 +67,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         when(eligibilityService.checkEligibility(postCode, expectedLegislativeCountry)).thenReturn(eligibilityResult);
 
         // When
-        callMidEventHandler(caseData);
+        callDtoMidEventHandler(caseData);
 
         // Then
         assertThat(caseData.getLegislativeCountry()).isEqualTo(expectedLegislativeCountry);
@@ -80,7 +81,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         EligibilityStatus status) {
 
         // Given
-        PCSCase caseData = PCSCase.builder()
+        CreateClaimData caseData = CreateClaimData.builder()
             .propertyAddress(AddressUK.builder().postCode(postcode).build())
             .crossBorderCountriesList(createCountryListWithSelectedValue(selectedCountry))
             .build();
@@ -93,11 +94,11 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .thenReturn(eligibilityResult);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> response = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<CreateClaimData, State> response = callDtoMidEventHandler(caseData);
 
         // Then
         assertThat(response).isNotNull();
-        PCSCase resultData = response.getData();
+        CreateClaimData resultData = response.getData();
         assertThat(resultData).isNotNull();
 
         if (status == EligibilityStatus.NO_MATCH_FOUND) {
@@ -163,7 +164,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .thenReturn(result);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> resp = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<CreateClaimData, State> resp = callDtoMidEventHandler(caseData);
 
         // Then
         var data = resp.getData();
@@ -190,7 +191,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .thenReturn(result);
 
         // When
-        AboutToStartOrSubmitResponse<PCSCase, State> resp = callMidEventHandler(caseData);
+        AboutToStartOrSubmitResponse<CreateClaimData, State> resp = callDtoMidEventHandler(caseData);
 
         // Then: show PNE, keep cross-border for 'Previous'
         var data = resp.getData();
@@ -205,7 +206,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
         );
     }
 
-    private PCSCase buildCrossBorderCaseWithFlags(LegislativeCountry selectedCountry) {
+    private CreateClaimData buildCrossBorderCaseWithFlags(LegislativeCountry selectedCountry) {
 
         var selected = DynamicStringListElement.builder()
             .code(selectedCountry.name())
@@ -216,7 +217,7 @@ class CrossBorderPostcodeSelectionTest extends BasePageTest {
             .value(selected)
             .build();
 
-        return PCSCase.builder()
+        return CreateClaimData.builder()
             .propertyAddress(AddressUK.builder().postCode(CrossBorderPostcodeSelectionTest.SOME_POSTCODE).build())
             .crossBorderCountriesList(dynamicStringList)
             .showCrossBorderPage(YesOrNo.YES)

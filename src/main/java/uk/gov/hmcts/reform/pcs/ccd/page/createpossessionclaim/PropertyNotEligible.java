@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
-import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
@@ -19,15 +21,14 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 @AllArgsConstructor
 @Component
 @Slf4j
-public class PropertyNotEligible implements CcdPageConfiguration {
+public class PropertyNotEligible {
 
-    @Override
-    public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
+    public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
+        eventBuilder.fields()
             .page("propertyNotEligible", this::midEvent)
             .pageLabel("Property not eligible for this online service")
             .showCondition("showPropertyNotEligiblePage=\"Yes\"")
-            .readonly(PCSCase::getShowPropertyNotEligiblePage, NEVER_SHOW)
+            .readonly(CreateClaimData::getShowPropertyNotEligiblePage, NEVER_SHOW)
 
             // England and Wales guidance section
             .label("propertyNotEligible-england-wales", """
@@ -135,11 +136,11 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                 """, "legislativeCountry=\"Channel Islands\" OR legislativeCountry=\"Isle of Man\"");
     }
 
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                   CaseDetails<PCSCase, State> detailsBefore) {
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errorMessageOverride("Property not eligible for this online service")
+    private AboutToStartOrSubmitResponse<CreateClaimData, State> midEvent(
+        CaseDetails<CreateClaimData, State> details,
+        CaseDetails<CreateClaimData, State> detailsBefore) {
+        return AboutToStartOrSubmitResponse.<CreateClaimData, State>builder()
+            .errors(List.of("Property not eligible for this online service"))
             .build();
     }
 

@@ -1,19 +1,19 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
-import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
-import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
+import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
+import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * CCD page configuration for making a housing possession claim online.
  */
-public class StartTheService implements CcdPageConfiguration {
+public class StartTheService {
 
-    @Override
-    public void addTo(PageBuilder pageBuilder) {
-        pageBuilder
+    public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
+        eventBuilder.fields()
             .page("startTheService")
             .label("mainContent",
                    "<h1 class=\"govuk-heading-l\">Make a housing possession claim online</h1>"
@@ -49,6 +49,6 @@ public class StartTheService implements CcdPageConfiguration {
                        + "can then return to sign, submit and pay at a later date</li>"
                        + "</ul>"
             )
-            .readonly(PCSCase::getFeeAmount, NEVER_SHOW, true);
+            .readonly(CreateClaimData::getFeeAmount, NEVER_SHOW, true);
     }
 }
