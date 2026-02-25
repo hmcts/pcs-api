@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
@@ -10,11 +10,11 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrd
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEntity;
 
 @Component
-public class EnforcementRiskProfileMapper {
+public class WarrantDetailsMapper {
 
     private final ModelMapper modelMapper;
 
-    public EnforcementRiskProfileMapper(ModelMapper modelMapper) {
+    public WarrantDetailsMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
 
@@ -22,16 +22,17 @@ public class EnforcementRiskProfileMapper {
                                       EnforcementOrder enforcementOrder) {
         RiskProfileEntity entity = new RiskProfileEntity();
         entity.setEnforcementOrder(enforcementOrderEntity);
-
         WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
-        if (warrantDetails != null) {
-            entity.setAnyRiskToBailiff(warrantDetails.getAnyRiskToBailiff());
-            EnforcementRiskDetails riskDetails = warrantDetails.getRiskDetails();
-            if (riskDetails != null) {
-                modelMapper.map(riskDetails, entity);
-            }
+        entity.setAnyRiskToBailiff(warrantDetails.getAnyRiskToBailiff());
+        EnforcementRiskDetails riskDetails = warrantDetails.getRiskDetails();
+        if (riskDetails != null) {
+            modelMapper.map(riskDetails, entity);
         }
+        applyRawWarrantDetails(enforcementOrder, entity);
+        return entity;
+    }
 
+    private void applyRawWarrantDetails(EnforcementOrder enforcementOrder, RiskProfileEntity entity) {
         RawWarrantDetails rawWarrantDetails = enforcementOrder.getRawWarrantDetails();
         if (rawWarrantDetails != null) {
             entity.setVulnerablePeoplePresent(rawWarrantDetails.getVulnerablePeoplePresent());
@@ -42,7 +43,5 @@ public class EnforcementRiskProfileMapper {
                         rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableReasonText());
             }
         }
-
-        return entity;
     }
 }

@@ -9,8 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.RiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.SelectedDefendantRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.SelectedDefendantsMapper;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class WarrantStrategy implements EnforcementTypeStrategy {
     private final RiskProfileRepository riskProfileRepository;
     private final SelectedDefendantsMapper selectedDefendantsMapper;
     private final SelectedDefendantRepository selectedDefendantRepository;
-    private final EnforcementRiskProfileMapper riskProfileMapper;
+    private final WarrantDetailsMapper riskProfileMapper;
 
     @Override
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {

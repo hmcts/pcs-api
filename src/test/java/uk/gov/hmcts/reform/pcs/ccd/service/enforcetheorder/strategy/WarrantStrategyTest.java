@@ -20,8 +20,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEnt
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.RiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.SelectedDefendantRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.SelectedDefendantsMapper;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +45,7 @@ class WarrantStrategyTest {
     @Mock
     private SelectedDefendantRepository selectedDefendantRepository;
     @Mock
-    private EnforcementRiskProfileMapper riskProfileMapper;
+    private WarrantDetailsMapper riskProfileMapper;
 
     @InjectMocks
     private WarrantStrategy underTest;

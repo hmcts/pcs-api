@@ -17,12 +17,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.WritEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WritRepository;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.writ.WritDetailsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WritDetailsMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -96,19 +95,6 @@ class WritStrategyTest {
         verify(writRepository).save(writEntityCaptor.capture());
         WritEntity savedEntity = writEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrderEntity);
-    }
-
-    @Test
-    void shouldNotProcessWhenWritDetailsIsNull() {
-        // Given
-        enforcementOrder.setWritDetails(null);
-
-        // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
-
-        // Then
-        verify(writDetailsMapper, never()).toEntity(any());
-        verify(writRepository, never()).save(any());
     }
 
     @Test

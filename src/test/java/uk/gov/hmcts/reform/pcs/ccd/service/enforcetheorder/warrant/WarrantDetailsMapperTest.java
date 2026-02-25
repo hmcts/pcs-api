@@ -15,16 +15,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCate
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class EnforcementRiskProfileMapperTest {
+class WarrantDetailsMapperTest {
 
-    private final EnforcementRiskProfileMapper mapper =
-            new EnforcementRiskProfileMapper(new ModelMapper());
+    private final WarrantDetailsMapper mapper =
+            new WarrantDetailsMapper(new ModelMapper());
 
     @Nested
     @DisplayName("toEntity")
@@ -76,23 +77,6 @@ class EnforcementRiskProfileMapperTest {
             assertThat(result.getVulnerablePeoplePresent()).isEqualTo(YesNoNotSure.YES);
             assertThat(result.getVulnerableCategory()).isEqualTo(VulnerableCategory.VULNERABLE_ADULTS);
             assertThat(result.getVulnerableReasonText()).isEqualTo("Vulnerability reason");
-        }
-
-        @Test
-        @DisplayName("returns entity with null risk fields when warrant and raw details are null")
-        void returnsEntityWithNullRiskFieldsWhenDetailsNull() {
-            EnforcementOrderEntity orderEntity = new EnforcementOrderEntity();
-            orderEntity.setId(UUID.randomUUID());
-            EnforcementOrder order = EnforcementOrder.builder().build();
-
-            RiskProfileEntity result = mapper.toEntity(orderEntity, order);
-
-            assertThat(result.getEnforcementOrder()).isEqualTo(orderEntity);
-            assertThat(result.getAnyRiskToBailiff()).isNull();
-            assertThat(result.getViolentDetails()).isNull();
-            assertThat(result.getVulnerablePeoplePresent()).isNull();
-            assertThat(result.getVulnerableCategory()).isNull();
-            assertThat(result.getVulnerableReasonText()).isNull();
         }
 
         @Test

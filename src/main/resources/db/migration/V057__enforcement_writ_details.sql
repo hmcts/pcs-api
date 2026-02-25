@@ -25,4 +25,3 @@ CREATE TABLE enf_writ(
   CONSTRAINT unique_writ_per_enforcement UNIQUE(enf_case_id)
 );
 
-CREATE INDEX idx_enf_writ_case_id ON enf_writ (enf_case_id);
