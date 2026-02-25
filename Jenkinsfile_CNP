@@ -60,6 +60,9 @@ withPipeline(type, product, component) {
     else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_regression").size() > 0) {
       env.E2E_SUITE = "regression"
     }
+    else if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_enforcement_test").size() > 0) {
+      env.E2E_SUITE = "enforcement"
+    }
   }
 
   onMaster() {
@@ -69,7 +72,7 @@ withPipeline(type, product, component) {
     ])
     enableHighLevelDataSetup("", true)
     setAatEnvVars()
-    enableE2eTest()
+//    enableE2eTest() TODO: Re-enable when AAT staging can be used for e2e testing
   }
 
   onDemo {
@@ -116,8 +119,7 @@ withPipeline(type, product, component) {
     archiveFunctionalTestReports()
   }
 
-  afterAlways('e2eTest:aat') {
-    archiveE2eTestReports()
+  afterAlways('E2eTest:aat') {
     if (currentBuild.currentResult in ['FAILURE', 'UNSTABLE']) {
       postAllureResultsToSlack('master')
     }
