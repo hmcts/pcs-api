@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.pcs.idam.IdamService;
-import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,8 +21,6 @@ public class CcdSupplementaryDataService {
     private AuthTokenGenerator authTokenGenerator;
 
     private CoreCaseDataApi coreCaseDataApi;
-
-    private SecurityContextService securityContextService;
 
     @Value("${hmcts.hmctsOrgId:AAA3}")
     private String hmctsServiceId;
