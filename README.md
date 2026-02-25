@@ -12,6 +12,7 @@ To build the project execute the following command:
 ```bash
   ./gradlew build
 ```
+<!-- // SDM comment - remove after Merge -->
 
 ### Running pcs-api with local CCD
 
