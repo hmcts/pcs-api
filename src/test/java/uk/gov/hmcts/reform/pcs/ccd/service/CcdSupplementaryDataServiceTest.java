@@ -39,7 +39,7 @@ class CcdSupplementaryDataServiceTest {
         when(idamService.getSystemUserAuthorisation()).thenReturn(userAuth);
         when(authTokenGenerator.generate()).thenReturn(serviceAuth);
 
-        underTest.submitSupplementaryDataToCcd(String.valueOf(CASE_REFERENCE));
+        underTest.submitSupplementaryDataRequestToCcd(String.valueOf(CASE_REFERENCE));
 
         verify(coreCaseDataApi).submitSupplementaryData(eq(userAuth),
             eq(serviceAuth), eq(String.valueOf(CASE_REFERENCE)), any());
