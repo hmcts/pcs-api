@@ -92,7 +92,7 @@ class ClaimResponseServiceTest {
                 .build(),
             DefendantResponses.builder()
                 .contactByEmail(VerticalYesNo.YES)
-                .contactByPhone(VerticalYesNo.NO)
+                .contactByPhone(VerticalYesNo.YES)
                 .contactByText(VerticalYesNo.YES)
                 .contactByPost(VerticalYesNo.NO)
                 .build()
@@ -116,7 +116,7 @@ class ClaimResponseServiceTest {
 
         ContactPreferencesEntity savedPrefs = savedParty.getContactPreferences();
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.YES);
-        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.YES);
         assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
     }
@@ -249,7 +249,7 @@ class ClaimResponseServiceTest {
             DefendantResponses.builder()
                 .contactByEmail(VerticalYesNo.NO)
                 .contactByPhone(VerticalYesNo.NO)
-                .contactByText(VerticalYesNo.NO)
+                //no text option is possible when contact by phone = no
                 .contactByPost(VerticalYesNo.NO)
                 .build()
         );
@@ -266,7 +266,7 @@ class ClaimResponseServiceTest {
         ContactPreferencesEntity savedPrefs = partyCaptor.getValue().getContactPreferences();
         assertThat(savedPrefs.getContactByEmail()).isEqualTo(VerticalYesNo.NO);
         assertThat(savedPrefs.getContactByPhone()).isEqualTo(VerticalYesNo.NO);
-        assertThat(savedPrefs.getContactByText()).isEqualTo(VerticalYesNo.NO);
+        assertThat(savedPrefs.getContactByText()).isEqualTo(null);
         assertThat(savedPrefs.getContactByPost()).isEqualTo(VerticalYesNo.NO);
     }
 
