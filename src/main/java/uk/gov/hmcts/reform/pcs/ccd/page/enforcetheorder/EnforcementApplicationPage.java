@@ -3,20 +3,32 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit.WRIT_FLOW;
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
+
+    private static final String STUB_GA_SUCCESSFUL_CONDITION =
+        WRIT_FLOW + " AND writHasClaimTransferredToHighCourt=\"Yes\"";
+    private static final String ERROR_GA_TRANSFER_UNSUCCESSFUL =
+        "You cannot continue with this application because your "
+            + "application to transfer to the High Court was unsuccessful";
+
     public static final String WRIT_OR_WARRANT_INFORMATION = """
                     <details class="govuk-details">
                         <summary class="govuk-details__summary">
@@ -92,6 +104,16 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .mandatory(EnforcementOrder::getSelectEnforcementType)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
+            .complex(EnforcementOrder::getWritDetails)
+            .mandatory(
+                WritDetails::getHasClaimTransferredToHighCourt,
+                claimTransferredShowCondition()
+            )
+            .mandatory(
+                WritDetails::getWasGeneralApplicationToTransferToHighCourtSuccessful,
+                gaSuccessfulShowCondition()
+            )
+            .done()
             .done()
             .label("enforcementApplication-clarification", WRIT_OR_WARRANT_INFORMATION)
             .label("enforcementApplication-save-and-return", SAVE_AND_RETURN);
@@ -101,8 +123,11 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
         setFormattedDefendantNames(data.getAllDefendants(), data);
+        List<String> errors = validateWritTransfer(data);
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(data).build();
+            .data(data)
+            .errors(errors.isEmpty() ? null : errors)
+            .build();
     }
 
     private void setFormattedDefendantNames(List<ListValue<Party>> defendants, PCSCase pcsCase) {
@@ -115,4 +140,34 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
     }
 
+    private static boolean toBoolean(YesOrNo yesOrNo) {
+        return yesOrNo != null && yesOrNo.toBoolean();
+    }
+
+    private List<String> validateWritTransfer(PCSCase pcsCase) {
+        EnforcementOrder enforcementOrder = pcsCase.getEnforcementOrder();
+        if (enforcementOrder.getSelectEnforcementType() != SelectEnforcementType.WRIT) {
+            return List.of();
+        }
+
+        WritDetails writDetails = enforcementOrder.getWritDetails();
+        boolean claimTransferred = toBoolean(writDetails.getHasClaimTransferredToHighCourt());
+        boolean gaSuccessful = toBoolean(writDetails.getWasGeneralApplicationToTransferToHighCourtSuccessful());
+
+        if (claimTransferred && !gaSuccessful) {
+            return List.of(ERROR_GA_TRANSFER_UNSUCCESSFUL);
+        }
+
+        return List.of();
+    }
+
+    private String claimTransferredShowCondition() {
+        return TestSupportEnvironment.isNonProdTestSupportEnabled() ? WRIT_FLOW : NEVER_SHOW;
+    }
+
+    private String gaSuccessfulShowCondition() {
+        return TestSupportEnvironment.isNonProdTestSupportEnabled()
+            ? STUB_GA_SUCCESSFUL_CONDITION
+            : NEVER_SHOW;
+    }
 }
