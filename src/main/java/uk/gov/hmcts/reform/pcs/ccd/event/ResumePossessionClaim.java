@@ -327,7 +327,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
 
-        ccdSupplementaryDataService.submitSupplementaryDataToCcd(String.valueOf(caseReference));
+        ccdSupplementaryDataService.submitSupplementaryDataRequestToCcd(String.valueOf(caseReference));
 
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))

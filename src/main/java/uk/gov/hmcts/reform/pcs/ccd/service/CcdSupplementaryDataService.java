@@ -29,15 +29,15 @@ public class CcdSupplementaryDataService {
     private static final String SERVICE_ID_FIELD = "HMCTSServiceId";
     private static final String SET_OPERATION = "$set";
 
-    public void submitSupplementaryDataToCcd(String caseId) {
-        Map<String, Map<String, Map<String, Object>>> supplementaryDataUpdates = new HashMap<>();
-        supplementaryDataUpdates.put(SUPPLEMENTARY_FIELD,
+    public void submitSupplementaryDataRequestToCcd(String caseId) {
+        Map<String, Map<String, Map<String, Object>>> supplementaryDataRequest = new HashMap<>();
+        supplementaryDataRequest.put(SUPPLEMENTARY_FIELD,
             singletonMap(SET_OPERATION, singletonMap(SERVICE_ID_FIELD,
                 hmctsServiceId)));
 
         coreCaseDataApi.submitSupplementaryData(idamService.getSystemUserAuthorisation(),
             authTokenGenerator.generate(),
             caseId,
-            supplementaryDataUpdates);
+            supplementaryDataRequest);
     }
 }
