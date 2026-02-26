@@ -1,5 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,18 +19,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-
-import java.util.stream.Stream;
-
-import static org.junit.jupiter.params.provider.Arguments.arguments;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @DisplayName("PostcodeNotAssignedToCourt Page Tests")
 @ExtendWith(MockitoExtension.class)
@@ -40,10 +40,10 @@ class PostcodeNotAssignedToCourtTest {
         when(eventBuilder.fields()).thenReturn(fieldBuilder);
         when(fieldBuilder.page(anyString(), any())).thenReturn(fieldBuilder);
         when(fieldBuilder.pageLabel(anyString())).thenReturn(fieldBuilder);
-        when(fieldBuilder.showCondition(anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.showCondition(any(ShowCondition.class))).thenReturn(fieldBuilder);
         when(fieldBuilder.readonly(any(), anyString())).thenReturn(fieldBuilder);
         when(fieldBuilder.label(anyString(), anyString())).thenReturn(fieldBuilder);
-        when(fieldBuilder.label(anyString(), anyString(), anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.label(anyString(), anyString(), any(ShowCondition.class))).thenReturn(fieldBuilder);
 
         underTest = new PostcodeNotAssignedToCourt();
     }
@@ -63,11 +63,17 @@ class PostcodeNotAssignedToCourtTest {
     void shouldApplyCorrectShowConditions(String expectedShowCondition, String expectedLabelId) {
         underTest.addTo(eventBuilder);
 
-        // Verify the main show condition is set
-        verify(fieldBuilder).showCondition(eq("showPostcodeNotAssignedToCourt=\"Yes\""));
+        // Verify the main page show condition is set
+        verify(fieldBuilder).showCondition(
+            org.mockito.ArgumentMatchers.argThat(
+                (ShowCondition sc) -> sc.toString().equals("showPostcodeNotAssignedToCourt=\"Yes\"")
+            ));
 
         // Verify specific show conditions for each view are configured
-        verify(fieldBuilder).label(eq(expectedLabelId), anyString(), eq(expectedShowCondition));
+        verify(fieldBuilder).label(eq(expectedLabelId), anyString(),
+            org.mockito.ArgumentMatchers.argThat(
+                (ShowCondition sc) -> sc.toString().equals(expectedShowCondition)
+            ));
     }
 
     private static Stream<Arguments> showConditionScenarios() {

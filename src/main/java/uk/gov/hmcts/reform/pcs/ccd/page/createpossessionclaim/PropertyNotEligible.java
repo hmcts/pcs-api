@@ -1,18 +1,21 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-
-import java.util.List;
-
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 /**
  * CCD page configuration for postcode not eligible.
@@ -24,10 +27,19 @@ import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 public class PropertyNotEligible {
 
     public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
+        ShowCondition showEnglandOrWales = when(CreateClaimData::getLegislativeCountry)
+            .isAnyOf(LegislativeCountry.ENGLAND, LegislativeCountry.WALES);
+        ShowCondition showScotland = when(CreateClaimData::getLegislativeCountry)
+            .is(LegislativeCountry.SCOTLAND);
+        ShowCondition showNorthernIreland = when(CreateClaimData::getLegislativeCountry)
+            .is(LegislativeCountry.NORTHERN_IRELAND);
+        ShowCondition showChannelIslandsOrIom = when(CreateClaimData::getLegislativeCountry)
+            .isAnyOf(LegislativeCountry.CHANNEL_ISLANDS, LegislativeCountry.ISLE_OF_MAN);
+
         eventBuilder.fields()
             .page("propertyNotEligible", this::midEvent)
             .pageLabel("Property not eligible for this online service")
-            .showCondition("showPropertyNotEligiblePage=\"Yes\"")
+            .showCondition(when(CreateClaimData::getShowPropertyNotEligiblePage).is(YesOrNo.YES))
             .readonly(CreateClaimData::getShowPropertyNotEligiblePage, NEVER_SHOW)
 
             // England and Wales guidance section
@@ -71,7 +83,7 @@ public class PropertyNotEligible {
                       </strong>
                     </div>
                     </section>
-                    """, "legislativeCountry=\"England\" OR legislativeCountry=\"Wales\"")
+                    """, showEnglandOrWales)
 
 
             // Scotland-specific guidance section
@@ -94,7 +106,7 @@ public class PropertyNotEligible {
                   </strong>
                 </div>
                 </section>
-                """, "legislativeCountry=\"Scotland\"")
+                """, showScotland)
 
             // Northern Ireland guidance section
             .label("propertyNotEligible-northern-ireland", """
@@ -116,7 +128,7 @@ public class PropertyNotEligible {
                   </strong>
                 </div>
                 </section>
-                """, "legislativeCountry=\"Northern Ireland\"")
+                """, showNorthernIreland)
 
             // Channel Islands and Isle of Man guidance section
             .label("propertyNotEligible-channel-islands-iom", """
@@ -133,7 +145,7 @@ public class PropertyNotEligible {
                   </strong>
                 </div>
                 </section>
-                """, "legislativeCountry=\"Channel Islands\" OR legislativeCountry=\"Isle of Man\"");
+                """, showChannelIslandsOrIom);
     }
 
 

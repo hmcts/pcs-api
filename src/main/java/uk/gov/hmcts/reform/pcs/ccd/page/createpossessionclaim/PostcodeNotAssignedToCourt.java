@@ -1,27 +1,34 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
-import java.util.List;
 
 @AllArgsConstructor
 @Component
 @Slf4j
 public class PostcodeNotAssignedToCourt {
 
-    private static final String SHOW_PAGE = "showPostcodeNotAssignedToCourt=\"Yes\"";
-    private static final String SHOW_ENGLAND = SHOW_PAGE + " AND postcodeNotAssignedView=\"ENGLAND\"";
-    private static final String SHOW_WALES = SHOW_PAGE + " AND postcodeNotAssignedView=\"WALES\"";
-    private static final String SHOW_ALL = SHOW_PAGE + " AND postcodeNotAssignedView=\"ALL_COUNTRIES\"";
+    private static final ShowCondition SHOW_PAGE =
+        when(CreateClaimData::getShowPostcodeNotAssignedToCourt).is(YesOrNo.YES);
+    private static final ShowCondition SHOW_ENGLAND =
+        SHOW_PAGE.and(when(CreateClaimData::getPostcodeNotAssignedView).is("ENGLAND"));
+    private static final ShowCondition SHOW_WALES =
+        SHOW_PAGE.and(when(CreateClaimData::getPostcodeNotAssignedView).is("WALES"));
+    private static final ShowCondition SHOW_ALL =
+        SHOW_PAGE.and(when(CreateClaimData::getPostcodeNotAssignedView).is("ALL_COUNTRIES"));
 
     public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
         eventBuilder.fields()

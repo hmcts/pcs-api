@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.ccd.sdk.api.TypedLabel.label;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 import lombok.AllArgsConstructor;
@@ -32,15 +34,15 @@ public class CrossBorderPostcodeSelection {
         eventBuilder.fields()
             .page("crossBorderPostcodeSelection", this::midEvent)
             .pageLabel("Border postcode")
-            .showCondition("showCrossBorderPage=\"Yes\"")
+            .showCondition(when(CreateClaimData::getShowCrossBorderPage).is(YesOrNo.YES))
             .readonly(CreateClaimData::getShowCrossBorderPage, NEVER_SHOW)
             .readonly(CreateClaimData::getCrossBorderCountry1, NEVER_SHOW, true)
             .readonly(CreateClaimData::getCrossBorderCountry2, NEVER_SHOW, true)
-            .label("crossBorderPostcodeSelection-info", """
+            .label("crossBorderPostcodeSelection-info", label("""
                 ---
                 <section tabindex="0">
                 <p class="govuk-body">
-                Your postcode includes properties in ${crossBorderCountry1} and ${crossBorderCountry2}. We need to know
+                Your postcode includes properties in %s and %s. We need to know
                 which country your property is in, as the law is different in each country.
                 </p>
 
@@ -59,11 +61,13 @@ public class CrossBorderPostcodeSelection {
                   </strong>
                 </div>
                 </section>
-                """)
+                """, CreateClaimData::getCrossBorderCountry1, CreateClaimData::getCrossBorderCountry2))
             .mandatory(CreateClaimData::getCrossBorderCountriesList,
                 null,
                 null,
-                "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
+                label("Is the property located in %s or %s?",
+                    CreateClaimData::getCrossBorderCountry1,
+                    CreateClaimData::getCrossBorderCountry2).toString());
     }
 
     private AboutToStartOrSubmitResponse<CreateClaimData, State> midEvent(

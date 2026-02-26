@@ -1,11 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
+import static uk.gov.hmcts.ccd.sdk.api.TypedLabel.label;
+import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 
 /**
  * CCD page configuration for making a housing possession claim online.
@@ -15,14 +16,14 @@ public class StartTheService {
     public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
         eventBuilder.fields()
             .page("startTheService")
-            .label("mainContent",
+            .label("mainContent", label(
                    "<h1 class=\"govuk-heading-l\">Make a housing possession claim online</h1>"
                        + "<p class=\"govuk-body\">You can use this online service if you're a registered "
                        + "provider of social housing or a community landlord and the property "
                        + "you want to claim possession of is in England or Wales.</p>"
                        + "<p class=\"govuk-body\">This service is also available "
                        + "<a href=\"javascript:void(0)\" class=\"govuk-link\">in Welsh (Cymraeg)</a>.</p>"
-                       + "<p class=\"govuk-body\">The claim fee is ${feeAmount}. You can pay by card or through "
+                       + "<p class=\"govuk-body\">The claim fee is %s. You can pay by card or through "
                        + "Payment By Account (PBA).</p>"
                        + "<p class=\"govuk-body\">Your claim will be saved as you answer the questions, so you'll be "
                        + "able to close and return to your draft.</p>"
@@ -47,7 +48,8 @@ public class StartTheService {
                        + "now, or</li>"
                        + "<li class=\"govuk-list govuk-!-font-size-19\">save it as a draft. You or someone else "
                        + "can then return to sign, submit and pay at a later date</li>"
-                       + "</ul>"
+                       + "</ul>",
+                   CreateClaimData::getFeeAmount)
             )
             .readonly(CreateClaimData::getFeeAmount, NEVER_SHOW, true);
     }
