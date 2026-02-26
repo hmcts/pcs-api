@@ -49,7 +49,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
   statementOfTruth,
-  uploadAdditionalDocuments,
+  uploadAdditionalDocuments
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -120,7 +120,7 @@ test.describe('[Create Case - England]', async () => {
      await performAction('enterReasonForPossession',
        [whatAreYourGroundsForPossession.mandatory.holidayLet,whatAreYourGroundsForPossession.mandatory.ownerOccupier,
          whatAreYourGroundsForPossession.discretionary.domesticViolence14A,whatAreYourGroundsForPossession.discretionary.suitableAlternativeAccommodation])
-     await performValidation('text', {"text": preactionProtocol.registeredProvidersDynamicParagraph, "elementType": "paragraph"});
+     await performValidation('text', {"text": preactionProtocol.englandRegisteredProvidersDynamicParagraph, "elementType": "paragraph"});
      await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
      await performValidation('mainHeader', mediationAndSettlement.mainHeader);
      await performAction('selectMediationAndSettlement', {
@@ -128,8 +128,6 @@ test.describe('[Create Case - England]', async () => {
        settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
      });
      await performValidation('mainHeader', checkingNotice.mainHeader);
-     await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
-     await performValidation('text', {"text": checkingNotice.youMayHaveAlreadyServedEnglandDynamicParagraph, "elementType": "paragraph"});
      await performAction('clickLinkAndVerifyNewTabTitle', checkingNotice.guidanceOnPossessionLink, checkingNotice.mainHeaderEnglandNewTab);
      await performAction('selectNoticeOfYourIntention', {
        question: checkingNotice.haveYouServedNoticeToQuestion,
@@ -246,8 +244,6 @@ test.describe('[Create Case - England]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption
@@ -370,8 +366,6 @@ test.describe('[Create Case - England]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.noRadioOption
@@ -461,8 +455,6 @@ test.describe('[Create Case - England]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption
@@ -571,8 +563,6 @@ test.describe('[Create Case - England]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption
@@ -656,8 +646,6 @@ test.describe('[Create Case - England]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption
@@ -1079,8 +1067,6 @@ test.describe('[Create Case - England]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.guidanceOnPossessionLink, "elementType": "paragraphLink"})
-    await performValidation('text', {"text": checkingNotice.haveYouServedNoticeToQuestion, "elementType": "inlineText"});
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption

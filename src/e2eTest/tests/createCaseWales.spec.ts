@@ -107,7 +107,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
-    await performValidation('text', {"text": preactionProtocol.communityLandlordsDynamicParagraph, "elementType": "paragraph"})
+    await performValidation('text', {"text": preactionProtocol.walesCommunityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
@@ -455,7 +455,6 @@ test.describe('[Create Case - Wales]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.youMayHaveAlreadyServedWalesDynamicParagraph, "elementType": "paragraph"});
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption,

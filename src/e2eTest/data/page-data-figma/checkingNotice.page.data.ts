@@ -1,8 +1,7 @@
 export const checkingNotice = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Notice of your intention to begin possession proceedings`,
-  youMayHaveAlreadyServedEnglandDynamicParagraph: `You may have already served the defendants with notice of your intention to begin possession proceedings. Notice periods vary between grounds and some do not require any notice to be served. You should read the guidance on possession notice periods (opens in new tab) to make sure your claim is valid.`,
-  youMayHaveAlreadyServedWalesDynamicParagraph: `You may have already served the defendants with notice of your intention to begin possession proceedings. Notice periods vary between grounds and some do not require any notice to be served. You should read the guidance on possession notice periods (opens in new tab) to make sure your claim is valid.`,
+  youMayHaveAlreadyServedParagraph: `You may have already served the defendants with notice of your intention to begin possession proceedings. Notice periods vary between grounds and some do not require any notice to be served. You should read the guidance on possession notice periods (opens in new tab) to make sure your claim is valid.`,
   guidanceOnPossessionLink: `guidance on possession notice periods (opens in new tab)`,
   mainHeaderEnglandNewTab: `Understanding the possession action process: A guide for private landlords in England`,
   mainHeaderWalesNewTab: `Understanding the possession process: guidance for private landlords | GOV.WALES`,

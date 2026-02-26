@@ -2,8 +2,8 @@
 export const preactionProtocol = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Pre-action protocol`,
-  registeredProvidersDynamicParagraph: `Registered providers of social housing should follow the pre-action protocol before making a housing possession claim. You should have:`,
-  communityLandlordsDynamicParagraph: `Community landlords should follow the pre-action protocol before making a housing possession claim. You should have:`,
+  englandRegisteredProvidersDynamicParagraph: `Registered providers of social housing should follow the pre-action protocol before making a housing possession claim. You should have:`,
+  walesCommunityLandlordsDynamicParagraph: `Community landlords should follow the pre-action protocol before making a housing possession claim. You should have:`,
   //contactedOrAttemptedToContactParagraph: `contacted, or attempted to contact, the defendants`,
   ifYourClaimIsOnDynamicParagraph: `If your claim is on the grounds of rent arrears, you should have:`,
   //triedToAgreeARepaymentParagraph: `tried to agree a repayment plan`,
