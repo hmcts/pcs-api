@@ -11,7 +11,6 @@ export class UploadFileAction implements IAction {
       for (const [index, file] of files.entries()) {
         await this.uploadFile(page, file);
         if (index === files.length - 1) break;
-        await page.waitForTimeout(5000);
       }
     }
   }
@@ -22,7 +21,7 @@ export class UploadFileAction implements IAction {
     const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
     await fileInput.last().setInputFiles(filePath);
     await performValidation('waitUntilElementDisappears', 'Uploading...');
-    await page.waitForTimeout(5000);
     await performValidation('waitUntilElementDisappears', 'Your request was rate limited. Please wait a few seconds before retrying your document upload');
+    await page.waitForTimeout(5000);
   }
 }
