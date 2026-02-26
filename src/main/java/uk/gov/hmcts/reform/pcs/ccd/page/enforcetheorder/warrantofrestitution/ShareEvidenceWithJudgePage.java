@@ -4,7 +4,6 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW;
 
-import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class ShareEvidenceWithJudgePage implements CcdPageConfiguration {
 
@@ -22,7 +21,6 @@ public class ShareEvidenceWithJudgePage implements CcdPageConfiguration {
                        or refuse your request for a warrant of restitution.
                        </p>
                        """
-                   )
-            .label("shareEvidenceWithJudge-save-and-return", SAVE_AND_RETURN);
+            );
     }
 }
