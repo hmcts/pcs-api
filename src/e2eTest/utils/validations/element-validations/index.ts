@@ -7,4 +7,3 @@ export * from '@utils/validations/element-validations/radioButton.validation';
 export * from '@utils/validations/element-validations/text.validation';
 export * from '@utils/validations/element-validations/visibility.validation';
 export * from '@utils/validations/element-validations/inputError.validation';
-export * from '@utils/validations/element-validations/link.validation';

@@ -232,7 +232,8 @@ export class PageContentValidation implements IValidation {
     if (!pattern) return false;
     try {
       const locator = pattern(page, expectedValue);
-      return await locator.first().isVisible({timeout: 5000});
+      const firstVisible = locator.filter({ visible: true }).first();
+      return await firstVisible.isVisible({ timeout: 5000 });
     } catch {
       return false;
     }
