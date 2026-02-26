@@ -199,7 +199,7 @@ test.describe('[Create Case - Wales]', async () => {
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
-     await performAction('selectOccupationContractOrLicenceDetails', {
+    await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
       occupationContractType: occupationContractOrLicenceDetailsWales.secureContract
     });

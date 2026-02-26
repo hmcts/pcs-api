@@ -383,7 +383,7 @@ export class CreateCaseAction implements IAction {
   private async selectTenancyOrLicenceDetails(tenancyData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-     await performAction('clickRadioButton', {question: tenancyLicenceDetails.whatTypeOfTenancyOrQuestion, option: tenancyData.tenancyOrLicenceType});
+    await performAction('clickRadioButton', {question: tenancyLicenceDetails.whatTypeOfTenancyOrQuestion, option: tenancyData.tenancyOrLicenceType});
     if (tenancyData.tenancyOrLicenceType === tenancyLicenceDetails.otherRadioOption) {
       await performAction('inputText', tenancyLicenceDetails.giveDetailsOfTheTypeHiddenTextLabel, tenancyLicenceDetails.detailsOfLicenceTextInput);
     }
