@@ -43,7 +43,7 @@ export const noticeDetails = {
   removeHiddenButton: `Remove`,
   chooseFileHiddenButton: `Choose file`,
   cancelUploadHiddenButton: `Cancel upload`,
-  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
   chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
   onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,

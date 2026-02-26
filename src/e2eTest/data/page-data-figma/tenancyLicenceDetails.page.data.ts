@@ -13,7 +13,7 @@ export const tenancyLicenceDetails = {
   demotedTenancyRadioOption: `Demoted tenancy`,
   otherRadioOption: `Other`,
   giveDetailsOfTheTypeHiddenTextLabel: `Give details of the type of tenancy or licence agreement that’s in place`,
-  detailsOfLicenceTextInput: 'This is the details of Licence or Tenancy agreement.',
+  detailsOfLicenceTextInput: `This is the details of Licence or Tenancy agreement.`,
   youCanEnterUpToHiddenHintText: `You can enter up to 500 characters`,
   tenancyOrLicenceStartDateSubHeader: `Tenancy or licence start date`,
   whatDateDidTheTenancyQuestion: `What date did the tenancy or licence begin? (Optional)`,

@@ -9,10 +9,12 @@ import {ErrorMessageValidation} from "@utils/validations/element-validations/err
 import {RadioButtonValidation} from "@utils/validations/element-validations/radioButton.validation";
 import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
 import {InputErrorValidation} from "@utils/validations/element-validations/inputError.validation";
+import {LinkValidation} from "@utils/validations/element-validations/link.validation";
 
 export class ValidationRegistry {
   private static validations: Map<string, IValidation> = new Map([
     ['text', new TextValidation()],
+    ['link', new LinkValidation()],
     ['bannerAlert', new BannerAlertValidation()],
     ['formLabelValue', new FormLabelValueValidation()],
     ['optionList', new OptionListValidation()],

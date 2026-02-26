@@ -1,5 +1,6 @@
 import {Page} from '@playwright/test';
 import {IValidation} from '@utils/interfaces';
+import {escapeForRegex} from '@utils/common/string.utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import {CYAStore, cyaValidation} from '@utils/validations/custom-validations/CYA/cyaPage.validation';
@@ -11,10 +12,6 @@ const ELEMENT_TYPES = [
 ] as const;
 
 type ValidationResult = { element: string; expected: string; status: 'pass' | 'fail' };
-
-function escapeForRegex(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
 
 export class PageContentValidation implements IValidation {
   private static validationResults = new Map<string, ValidationResult[]>();

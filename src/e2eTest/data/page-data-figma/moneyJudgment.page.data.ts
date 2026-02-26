@@ -4,7 +4,7 @@ export const moneyJudgment = {
   doYouWantTheCourtQuestion: `Do you want the court to make a judgment for the outstanding arrears?`,
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
-  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
   chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
   onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,

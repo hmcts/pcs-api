@@ -6,7 +6,7 @@ export const dailyRentAmount = {
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
   enterAmountPerDayHiddenTextLabel: `Enter amount per day that unpaid rent should be charged at`,
-  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
   chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
   onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,

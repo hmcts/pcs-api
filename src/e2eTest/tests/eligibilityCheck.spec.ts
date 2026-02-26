@@ -3,8 +3,6 @@ import {
   addressCheckYourAnswers,
   addressDetails,
   borderPostcode,
-  canNotUseOnlineService,
-  housingPossessionClaim,
   propertyIneligible,
   userIneligible,
   home
@@ -12,6 +10,7 @@ import {
 import {
   claimantType,
   claimType,
+  postcodeNotAssignedToCourt,
 } from '@data/page-data-figma';
 import {
   initializeExecutor,
@@ -112,14 +111,7 @@ test.describe('[Eligibility Check - Create Case]', async () => {
       postcode: addressDetails.englandNoCourtAssignedPostcodeTextInput,
       addressIndex: addressDetails.addressIndex
     });
-    await performValidation('mainHeader', canNotUseOnlineService.mainHeader);
-    await performValidation('text', {"text": canNotUseOnlineService.basedOnPostcodeContent, "elementType": "paragraph"});
-    await performValidation('text', {"text": canNotUseOnlineService.PCOLLink, "elementType": "link"});
-    await performValidation('text', {"text": canNotUseOnlineService.claimsInWalesContent, "elementType": "listItem"});
-    await performValidation('text', {"text": canNotUseOnlineService.claimsInEnglandContent, "elementType": "listItem"});
-    await performValidation('text', {"text": canNotUseOnlineService.claimsInScotlandLink, "elementType": "link"});
-    await performValidation('text', {"text": canNotUseOnlineService.claimsInNorthernIrelandLink, "elementType": "link"});
-    await performValidation('text', {"text": canNotUseOnlineService.propertyPossessionsFullListLink, "elementType": "link"});
+    await performValidation('link', {text: postcodeNotAssignedToCourt.possessionClaimOnlineDynamicLink});
   });
 
   test('England - Unsuccessful case creation journey due to claimant type not in scope of Release1 @R1only @regression', async () => {
