@@ -21,9 +21,6 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnf
 @Component
 public class ExplainHowDefendantsReturnedPage implements CcdPageConfiguration {
 
-    private static final String FIELD_LABEL =
-            "How did the defendants return to the property?";
-
     private final TextAreaValidationService textAreaValidationService;
 
     @Override
@@ -74,7 +71,7 @@ public class ExplainHowDefendantsReturnedPage implements CcdPageConfiguration {
             .getHowDefendantsReturned();
         List<String> errors = textAreaValidationService.validateSingleTextArea(
             value,
-            FIELD_LABEL,
+            WarrantOfRestitutionDetails.HOW_DEFENDANTS_RETURNED_LABEL,
             TextAreaValidationService.RISK_CATEGORY_EXTRA_LONG_TEXT_LIMIT
         );
         return textAreaValidationService.createValidationResponse(caseData, errors);
