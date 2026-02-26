@@ -51,11 +51,6 @@ public class EnforcementOrderService {
     private final EnforcementWarrantRepository enforcementWarrantRepository;
     private final WritOfRestitutionRepository writOfRestitutionRepository;
 
-    public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
-        return enforcementOrderRepository.findById(id)
-                .orElseThrow(() -> new EnforcementOrderNotFoundException(id));
-    }
-
     @Transactional
     public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
         createEnforcementOrder(caseReference, enforcementOrder);
@@ -105,8 +100,7 @@ public class EnforcementOrderService {
         EnforcementWarrantEntity saved = enforcementWarrantRepository.save(warrantEntity);
         enforcementOrderEntity.setWarrantDetails(saved);
     }
-
-
+    
     private void createWritOfRestitutionEntity(EnforcementOrderEntity enforcementOrderEntity) {
         WritOfRestitutionEntity writOfRestitutionEntity = new WritOfRestitutionEntity();
         writOfRestitutionEntity.setEnforcementOrder(enforcementOrderEntity);
