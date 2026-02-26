@@ -54,6 +54,19 @@ public class EnforcementOrderService {
             .process(orderEntity, enforcementOrder);
     }
 
+    private void storeWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
+        EnforcementWarrantEntity warrantEntity = enforcementWarrantMapper.toEntity(enforcementOrder,
+                                                                                   enforcementOrderEntity);
+        EnforcementWarrantEntity saved = enforcementWarrantRepository.save(warrantEntity);
+        enforcementOrderEntity.setWarrantDetails(saved);
+    }
+
+    private void createWritOfRestitutionEntity(EnforcementOrderEntity enforcementOrderEntity) {
+        WritOfRestitutionEntity writOfRestitutionEntity = new WritOfRestitutionEntity();
+        writOfRestitutionEntity.setEnforcementOrder(enforcementOrderEntity);
+        writOfRestitutionRepository.save(writOfRestitutionEntity);
+    }
+
     private EnforcementOrderEntity mapToEntity(EnforcementOrder enforcementOrder, ClaimEntity claimEntity) {
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
         enforcementOrderEntity.setClaim(claimEntity);
