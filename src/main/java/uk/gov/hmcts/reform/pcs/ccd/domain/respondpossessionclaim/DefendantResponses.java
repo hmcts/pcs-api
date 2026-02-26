@@ -55,5 +55,5 @@ public class DefendantResponses {
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
 
     @CCD
-    private String tenancyStartDate;
+    private LocalDate tenancyStartDate;
 }
