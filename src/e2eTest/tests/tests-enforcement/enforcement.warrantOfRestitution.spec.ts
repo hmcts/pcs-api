@@ -3,35 +3,8 @@ import { initializeExecutor } from '@utils/controller';
 import { initializeEnforcementExecutor, performAction, performValidation } from '@utils/controller-enforcement';
 import { caseSummary } from '@data/page-data';
 import {
-  accessToTheProperty,
-  animalsAtTheProperty,
-  anythingElseHelpWithEviction,
-  criminalOrAntisocialBehaviour,
-  everyoneLivingAtTheProperty,
-  evictionCouldBeDelayed,
-  firearmPossession,
-  groupProtestsEviction,
-  nameAndAddressForEviction,
-  policeOrSocialServiceVisit,
-  riskPosedByEveryoneAtProperty,
-  verbalOrWrittenThreats,
-  violentOrAggressiveBehaviour,
-  vulnerableAdultsAndChildren,
   yourApplication,
-  moneyOwed,
-  legalCosts,
-  landRegistryFees,
-  rePayments,
-  peopleWillBeEvicted,
-  youNeedPermission,
-  languageUsed,
-  peopleYouWantToEvict,
-  confirmDefendantsDOB,
-  enterDefendantsDOB,
-  suspendedOrder,
-  statementOfTruthOne,
-  statementOfTruthTwo,
-  checkYourAnswers
+  peopleWillBeEvicted
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
