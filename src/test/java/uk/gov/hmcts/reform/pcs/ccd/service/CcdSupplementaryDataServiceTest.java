@@ -41,6 +41,7 @@ class CcdSupplementaryDataServiceTest {
 
         underTest.submitSupplementaryDataToCcd(String.valueOf(CASE_REFERENCE));
 
-        verify(coreCaseDataApi).submitSupplementaryData(eq(userAuth), eq(serviceAuth), eq(String.valueOf(CASE_REFERENCE)), any());
+        verify(coreCaseDataApi).submitSupplementaryData(eq(userAuth),
+            eq(serviceAuth), eq(String.valueOf(CASE_REFERENCE)), any());
     }
 }
