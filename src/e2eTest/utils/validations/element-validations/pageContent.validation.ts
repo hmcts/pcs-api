@@ -48,20 +48,21 @@ export class PageContentValidation implements IValidation {
                     .figcaption:text-is("${value}"),
                     span.govuk-caption-l:text-is("${value}"),
                     [aria-label="${value}"]`),
-    Checkbox: (page: Page, value: string) => page.locator(`
-                    label:text-is("${value}") ~ input[type="checkbox"],
+    Checkbox: (page: Page, value: string) => page.getByRole('checkbox', { name: new RegExp(`^${escapeForRegex(value)}$`) })
+      .or(page.locator(`label:text-is("${value}") ~ input[type="checkbox"],
                     label:text-is("${value}") + input[type="checkbox"],
-                    .checkbox:text-is("${value}") ~ input[type="checkbox"]`),
-    Question: (page: Page, value: string) => page.locator(`
+                    .checkbox:text-is("${value}") ~ input[type="checkbox"]`)),
+    Question: (page: Page, value: string) => page.getByText(value, { exact: true })
+      .or(page.getByRole('group', { name: new RegExp(`^${escapeForRegex(value)}$`) }))
+      .or(page.locator(`legend:text-is("${value}"),
                     span:text-is("${value}"),
-                    legend:text-is("${value}"),
                     label:text-is("${value}") ~ input[type="radio"],
                     legend:text-is("${value}") ~ input[type="radio"],
-                    .question:text-is("${value}") ~ input[type="radio"]`),
-    RadioOption: (page: Page, value: string) => page.locator(`
-                    label:text-is("${value}") ~ input[type="radio"],
+                    .question:text-is("${value}") ~ input[type="radio"]`)),
+    RadioOption: (page: Page, value: string) => page.getByRole('radio', { name: new RegExp(`^${escapeForRegex(value)}$`) })
+      .or(page.locator(`label:text-is("${value}") ~ input[type="radio"],
                     label:text-is("${value}") + input[type="radio"],
-                    .radio-option:text-is("${value}") ~ input[type="radio"]`),
+                    .radio-option:text-is("${value}") ~ input[type="radio"]`)),
     SelectLabel: (page: Page, value: string) => page.locator(`
                     label:text-is("${value}") ~ select,
                     .select:text-is("${value}") ~ select`),
