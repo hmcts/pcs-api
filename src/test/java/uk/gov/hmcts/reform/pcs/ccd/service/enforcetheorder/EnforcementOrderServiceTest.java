@@ -7,31 +7,32 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrantofrestitution.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestitution.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
@@ -73,6 +74,8 @@ class EnforcementOrderServiceTest {
 
     @Mock
     private EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
+    @Mock
+    private WarrantOfRestitutionRepository warrantOfRestitutionRepository;
     @InjectMocks
     private EnforcementOrderService enforcementOrderService;
 
@@ -84,6 +87,9 @@ class EnforcementOrderServiceTest {
 
     @Captor
     private ArgumentCaptor<EnforcementRiskProfileEntity> enforcementRiskProfileEntityCaptor;
+
+    @Captor
+    private ArgumentCaptor<WarrantOfRestitutionEntity> warrantOfRestitutionEntityCaptor;
 
     @Mock
     private SelectedDefendantsMapper selectedDefendantsMapper;
@@ -459,5 +465,24 @@ class EnforcementOrderServiceTest {
             .thenReturn(mock(EnforcementWarrantEntity.class));
         when(enforcementWarrantRepository.save(any()))
             .thenReturn(mock(EnforcementWarrantEntity.class));
+    }
+
+    @Test
+    void shouldPersistWarrantOfRestitutionWhenEnforcementOrderIsSaved() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+        enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WARRANT_OF_RESTITUTION);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+                .thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(warrantOfRestitutionRepository).save(warrantOfRestitutionEntityCaptor.capture());
+        WarrantOfRestitutionEntity savedEntity = warrantOfRestitutionEntityCaptor.getValue();
+        assertThat(savedEntity.getEnforcementOrder().getEnforcementOrder()).isEqualTo(enforcementOrder);
     }
 }
