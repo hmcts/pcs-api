@@ -25,7 +25,7 @@ public class WarrantOfRestitutionDetails {
     @CCD(
         label = HOW_DEFENDANTS_RETURNED_LABEL,
         hint = "You can upload your evidence on the next page, for example a photograph. You can enter up to 6,800 "
-            + "characters",
+            + "characters.",
         typeOverride = FieldType.TextArea
     )
     private String howDefendantsReturned;
