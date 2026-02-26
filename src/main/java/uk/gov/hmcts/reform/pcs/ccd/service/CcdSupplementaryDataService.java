@@ -16,11 +16,11 @@ import static java.util.Collections.singletonMap;
 @Service
 public class CcdSupplementaryDataService {
 
-    private IdamService idamService;
+    private final IdamService idamService;
 
-    private AuthTokenGenerator authTokenGenerator;
+    private final AuthTokenGenerator authTokenGenerator;
 
-    private CoreCaseDataApi coreCaseDataApi;
+    private final CoreCaseDataApi coreCaseDataApi;
 
     @Value("${hmcts.hmctsOrgId:AAA3}")
     private String hmctsServiceId;
