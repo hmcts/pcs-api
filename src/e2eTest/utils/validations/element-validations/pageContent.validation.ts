@@ -1,6 +1,6 @@
 import {Page} from '@playwright/test';
 import {IValidation} from '@utils/interfaces';
-import {escapeForRegex} from '@utils/common/string.utils';
+import { escapeForRegex, exactTextWithOptionalWhitespaceRegex } from '@utils/common/string.utils';
 import * as fs from 'fs';
 import * as path from 'path';
 import {CYAStore, cyaValidation} from '@utils/validations/custom-validations/CYA/cyaPage.validation';
@@ -80,7 +80,7 @@ export class PageContentValidation implements IValidation {
                     .label:text-is("${value}"),
                     span:text-is("${value}")`),
     Paragraph: (page: Page, value: string) => page.getByText(value, {exact: true})
-      .or(page.getByText(new RegExp('^\\s*' + escapeForRegex(value) + '\\s*$')))
+      .or(page.getByText(exactTextWithOptionalWhitespaceRegex(value)))
       .or(page.locator(`p:text-is("${value}"),
                      .paragraph:text-is("${value}"),
                      li:text-is("${value}"),

@@ -1,6 +1,6 @@
 import { Page, expect } from '@playwright/test';
 import { IValidation, validationRecord } from '@utils/interfaces';
-import { escapeForRegex } from '@utils/common/string.utils';
+import { exactTextWithOptionalWhitespaceRegex } from '@utils/common/string.utils';
 
 export class TextValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationRecord): Promise<void> {
@@ -43,10 +43,9 @@ export class TextValidation implements IValidation {
   private async linkValidation(page: Page, data: validationRecord): Promise<void> {
     const text = data?.text != null ? String(data.text) : '';
     if (!text) throw new Error('Link validation requires data: { text: "link text" }');
-    const re = new RegExp('^\\s*' + escapeForRegex(text) + '\\s*$');
     const locator = page
-        .locator('xpath=//a[not(ancestor::*[@hidden])]')
-        .filter({ hasText: re })
+      .locator('xpath=//a[not(ancestor::*[@hidden])]')
+      .filter({ hasText: exactTextWithOptionalWhitespaceRegex(text) })
         .filter({ visible: true })
         .first();
     await locator.scrollIntoViewIfNeeded();
