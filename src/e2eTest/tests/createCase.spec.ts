@@ -298,11 +298,21 @@ test.describe('[Create Case - England]', async () => {
       option: wantToUploadDocuments.yesRadioOption
     });
     await performAction('uploadAdditionalDocs', {
-      documents: [{
-        type: uploadAdditionalDocuments.tenancyAgreementDropDownInput,
-        fileName: 'tenancy.pdf',
-        description: uploadAdditionalDocuments.shortDescriptionHiddenTextInput
-      }]
+      documents: [
+        {type: uploadAdditionalDocuments.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: uploadAdditionalDocuments.witnessStatementDropDownInput},
+        {type: uploadAdditionalDocuments.rentStatementDropDownInput, fileName: 'rentStatement.pdf', description: uploadAdditionalDocuments.rentStatementDropDownInput},
+        {type: uploadAdditionalDocuments.tenancyAgreementDropDownInput, fileName: 'tenancy.pdf', description: uploadAdditionalDocuments.tenancyAgreementDropDownInput},
+        {type: uploadAdditionalDocuments.certificateOfServiceDropDownInput, fileName: 'certificateOfService.pdf', description: uploadAdditionalDocuments.certificateOfServiceDropDownInput},
+        {type: uploadAdditionalDocuments.correspondenceFromClaimantDropDownInput, fileName: 'correspondenceFromClaimant.pdf', description: uploadAdditionalDocuments.correspondenceFromClaimantDropDownInput},
+        {type: uploadAdditionalDocuments.correspondenceFromDefendantDropDownInput, fileName: 'correspondenceFromDefendant.pdf', description: uploadAdditionalDocuments.correspondenceFromDefendantDropDownInput},
+        {type: uploadAdditionalDocuments.possessionNoticeDropDownInput, fileName: 'possessionNotice.pdf', description: uploadAdditionalDocuments.possessionNoticeDropDownInput},
+        {type: uploadAdditionalDocuments.noticeForServiceDropDownInput, fileName: 'noticeForService.pdf', description: uploadAdditionalDocuments.noticeForServiceDropDownInput},
+        {type: uploadAdditionalDocuments.photographicEvidenceDropDownInput, fileName: 'photographicEvidence.pdf', description: uploadAdditionalDocuments.photographicEvidenceDropDownInput},
+        {type: uploadAdditionalDocuments.inspectionOrReportDropDownInput, fileName: 'inspectionOrReport.pdf', description: uploadAdditionalDocuments.inspectionOrReportDropDownInput},
+        {type: uploadAdditionalDocuments.certificateOfSuitabilityDropDownInput, fileName: 'certificateOfSuitability.pdf', description: uploadAdditionalDocuments.certificateOfSuitabilityDropDownInput},
+        {type: uploadAdditionalDocuments.legalAidCertificateDropDownInput, fileName: 'legalAidCertificate.pdf', description: uploadAdditionalDocuments.legalAidCertificateDropDownInput},
+        {type: uploadAdditionalDocuments.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: uploadAdditionalDocuments.otherDocumentDropDownInput},
+      ]
     });
     await performAction('selectApplications', generalApplication.yesRadioOption);
     await performAction('selectLanguageUsed', {question: claimLanguageUsed.whichLanguageDidYouUseQuestion, option: claimLanguageUsed.englishLRadioOption});

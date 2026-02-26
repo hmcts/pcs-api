@@ -677,16 +677,16 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     if (Array.isArray(documentsData.documents)) {
-      for (const document of documentsData.documents) {
-        await performActions(
+      for (let index = 0; index < documentsData.documents.length; index++) {
+        const document = documentsData.documents[index]; await performActions(
           'Add Document',
           ['uploadFile', document.fileName],
-          ['select', uploadAdditionalDocuments.typeOfDocumentHiddenTextLabel, document.type],
-          ['inputText', uploadAdditionalDocuments.shortDescriptionHiddenTextLabel, document.description]
+          ['select', {dropdown: uploadAdditionalDocuments.typeOfDocumentHiddenTextLabel, index: index}, document.type],
+          ['inputText', {text: uploadAdditionalDocuments.shortDescriptionHiddenTextLabel, index: index}, document.description]
         );
       }
-      await performAction('clickButton', uploadAdditionalDocuments.continueButton);
     }
+    await performAction('clickButton', uploadAdditionalDocuments.continueButton);
   }
 
   private async completingYourClaim(option: actionData) {
