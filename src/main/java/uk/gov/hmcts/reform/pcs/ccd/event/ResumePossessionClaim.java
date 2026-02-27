@@ -19,7 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantInformation;
 import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferenceTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim.StatementOfTruth;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
@@ -79,7 +79,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.OccupationLi
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ProhibitedConductWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.ReasonsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales.SecureContractGroundsForPossessionWalesPage;
-import uk.gov.hmcts.reform.pcs.ccd.service.CcdSupplementaryDataService;
+import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferenceTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -104,6 +104,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep.SUBMIT_AND_P
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 import static uk.gov.hmcts.reform.pcs.ccd.task.AccessCodeGenerationComponent.ACCESS_CODE_TASK_DESCRIPTOR;
+import static uk.gov.hmcts.reform.pcs.ccd.task.SupplementaryDataTaskComponent.SUPPLEMENTARY_DATA_TASK_DESCRIPTOR;
 import static uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter.BR_DELIMITER;
 import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FEE_CASE_ISSUED_TASK_DESCRIPTOR;
 
@@ -113,7 +114,6 @@ import static uk.gov.hmcts.reform.pcs.feesandpay.task.FeesAndPayTaskComponent.FE
 public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole> {
 
     private final PcsCaseService pcsCaseService;
-    private final CcdSupplementaryDataService ccdSupplementaryDataService;
     private final SecurityContextService securityContextService;
     private final SavingPageBuilderFactory savingPageBuilderFactory;
     private final ResumeClaim resumeClaim;
@@ -327,7 +327,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
 
         String caseIssueFee = moneyFormatter.formatFee(feeDetails.getFeeAmount());
 
-        ccdSupplementaryDataService.submitSupplementaryDataRequestToCcd(String.valueOf(caseReference));
+        scheduleSupplementaryDataSubmission(caseReference);
 
         return SubmitResponse.<State>builder()
             .confirmationBody(getPaymentConfirmationMarkdown(caseIssueFee, caseReference))
@@ -371,11 +371,26 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
         return feeDetails;
     }
 
+    private void scheduleSupplementaryDataSubmission(long caseReference) {
+        String taskId = UUID.randomUUID().toString();
+
+        CaseReferenceTaskData taskData = CaseReferenceTaskData.builder()
+            .caseReference(String.valueOf(caseReference))
+            .build();
+
+        schedulerClient.scheduleIfNotExists(
+            SUPPLEMENTARY_DATA_TASK_DESCRIPTOR
+                .instance(taskId)
+                .data(taskData)
+                .scheduledTo(Instant.now())
+        );
+    }
+
     private void schedulePartyAccessCodeGeneration(long caseReference) {
 
         String taskId = UUID.randomUUID().toString();
 
-        AccessCodeTaskData taskData = AccessCodeTaskData.builder()
+        CaseReferenceTaskData taskData = CaseReferenceTaskData.builder()
             .caseReference(String.valueOf(caseReference))
             .build();
 
