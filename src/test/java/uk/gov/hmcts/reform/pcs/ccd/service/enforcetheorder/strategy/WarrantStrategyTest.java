@@ -12,22 +12,30 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.RiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.SelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.RiskDetailsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 
 import java.util.Collections;
 import java.util.List;
@@ -37,10 +45,12 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory.VULNERABLE_CHILDREN;
 
@@ -63,6 +73,8 @@ class WarrantStrategyTest {
     private ArgumentCaptor<RiskProfileEntity> riskProfileCaptor;
     @Captor
     private ArgumentCaptor<WarrantEntity> warrantEntityCaptor;
+    @Captor
+    private ArgumentCaptor<List<SelectedDefendantEntity>> selectedDefendantEntityCaptor;
 
     @InjectMocks
     private WarrantStrategy underTest;
@@ -412,6 +424,102 @@ class WarrantStrategyTest {
         InOrder inOrder = inOrder(riskProfileRepository, selectedDefendantRepository);
         inOrder.verify(riskProfileRepository).save(any(RiskProfileEntity.class));
         inOrder.verify(selectedDefendantRepository).saveAll(defendants);
+    }
+
+    @Test
+    void shouldPersistVulnerabilityDetailsInRiskProfile() {
+        // Given: order with raw warrant details (vulnerability)
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrderWithVulnerability();
+        final RiskProfileEntity stubbedRiskProfile = new RiskProfileEntity();
+        stubbedRiskProfile.setVulnerablePeoplePresent(YesNoNotSure.YES);
+        stubbedRiskProfile.setVulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS);
+        stubbedRiskProfile.setVulnerableReasonText("Vulnerability reason");
+        when(riskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enforcementOrder)))
+            .thenReturn(stubbedRiskProfile);
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then: service calls mapper and saves returned risk profile
+        verify(riskProfileMapper).toEntity(any(), any());
+        verify(riskProfileRepository).save(riskProfileCaptor.capture());
+    }
+
+    @Test
+    void shouldAddMultipleSelectedDefendantsWhenProvided() {
+        // Given
+        String jessMayID = UUID.randomUUID().toString();
+        String jamesMayID = UUID.randomUUID().toString();
+
+        List<DynamicStringListElement> selected = List.of(
+            new DynamicStringListElement(jessMayID, "Jess May"),
+            new DynamicStringListElement(jamesMayID, "James May")
+        );
+
+        List<DynamicStringListElement> listItems = List.of(
+            new DynamicStringListElement(jessMayID, "Jess May"),
+            new DynamicStringListElement(jamesMayID, "James May")
+        );
+
+        final EnforcementOrder enforcementOrder =
+            EnforcementDataUtil.buildEnforcementOrderWithSelectedDefendants(selected, listItems);
+
+        PartyEntity partyJessMay = PartyEntity.builder()
+            .id(UUID.fromString(jessMayID))
+            .firstName("Jess")
+            .lastName("May")
+            .build();
+
+        PartyEntity partyJamesMay = PartyEntity.builder()
+            .id(UUID.fromString(jamesMayID))
+            .firstName("James")
+            .lastName("May")
+            .build();
+
+        SelectedDefendantEntity entityJess = new SelectedDefendantEntity();
+        entityJess.setParty(partyJessMay);
+
+        SelectedDefendantEntity entityJames = new SelectedDefendantEntity();
+        entityJames.setParty(partyJamesMay);
+
+        when(selectedDefendantsMapper.mapToEntities(any(EnforcementOrderEntity.class)))
+            .thenReturn(List.of(entityJess, entityJames));
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verify(selectedDefendantRepository)
+            .saveAll(selectedDefendantEntityCaptor.capture());
+        List<SelectedDefendantEntity> savedEntities = selectedDefendantEntityCaptor.getValue();
+
+        assertThat(savedEntities).hasSize(2);
+        assertThat(savedEntities)
+            .extracting(SelectedDefendantEntity::getParty)
+            .containsExactlyInAnyOrder(partyJessMay, partyJamesMay);
+    }
+
+    @Test
+    void shouldNotAddAnySelectedDefendantsWhenEvictEveryoneIsYes() {
+        // Given
+        final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
+            .selectEnforcementType(SelectEnforcementType.WARRANT)
+            .warrantDetails(WarrantDetails.builder()
+                                .nameAndAddressForEviction(NameAndAddressForEviction.builder()
+                                                               .correctNameAndAddress(VerticalYesNo.YES)
+                                                               .build())
+                                .peopleToEvict(PeopleToEvict.builder()
+                                                   .evictEveryone(VerticalYesNo.YES)
+                                                   .build())
+                                .build())
+            .rawWarrantDetails(RawWarrantDetails.builder().selectedDefendants(null).build())
+            .build();
+
+        // When
+        underTest.process(enforcementOrderEntity, enforcementOrder);
+
+        // Then
+        verifyNoInteractions(selectedDefendantRepository);
     }
 
     private RiskProfileEntity createExpectedRiskProfileEntity() {
