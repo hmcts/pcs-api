@@ -60,12 +60,10 @@ public class CrossBorderPostcodeSelection {
                 </div>
                 </section>
                 """, CreateClaimData::getCrossBorderCountry1, CreateClaimData::getCrossBorderCountry2))
-            .mandatory(CreateClaimData::getCrossBorderCountriesList,
-                null,
-                null,
+            .mandatoryWithLabel(CreateClaimData::getCrossBorderCountriesList,
                 label("Is the property located in %s or %s?",
                     CreateClaimData::getCrossBorderCountry1,
-                    CreateClaimData::getCrossBorderCountry2).toString());
+                    CreateClaimData::getCrossBorderCountry2));
     }
 
     private AboutToStartOrSubmitResponse<CreateClaimData, State> midEvent(
