@@ -12,11 +12,13 @@ public class EnforcementTypeStrategyFactory {
 
     private final WarrantStrategy warrantStrategy;
     private final WritStrategy writStrategy;
+    private final WritOfRestitutionStrategy writOfRestitutionStrategy;
 
     public EnforcementTypeStrategy getStrategy(SelectEnforcementType type) {
         return Map.of(
             SelectEnforcementType.WARRANT, warrantStrategy,
-            SelectEnforcementType.WRIT, writStrategy
+            SelectEnforcementType.WRIT, writStrategy,
+            SelectEnforcementType.WRIT_OF_RESTITUTION, writOfRestitutionStrategy
         ).get(type);
     }
 

@@ -22,27 +22,28 @@ class EnforcementTypeStrategyFactoryTest {
     private WarrantStrategy warrantStrategy;
     @Mock
     private WritStrategy writStrategy;
+    @Mock
+    private WritOfRestitutionStrategy writOfRestitutionStrategy;
 
     @InjectMocks
     private EnforcementTypeStrategyFactory underTest;
 
     @ParameterizedTest
     @MethodSource("provideEnforcementTypeAndExpectedStrategy")
-    void shouldReturnCorrectStrategyForEnforcementType(SelectEnforcementType type, String expectedStrategyField) {
+    void shouldReturnCorrectStrategyForEnforcementType(SelectEnforcementType type, String expectedStrategy) {
         // When
         EnforcementTypeStrategy strategy = underTest.getStrategy(type);
 
         // Then
-        EnforcementTypeStrategy expectedStrategy = expectedStrategyField.equals("warrant")
-            ? warrantStrategy
-            : writStrategy;
-        assertThat(strategy).isSameAs(expectedStrategy);
+        assertThat(strategy.getClass().getSimpleName()).isEqualTo(expectedStrategy);
     }
 
     private static Stream<Arguments> provideEnforcementTypeAndExpectedStrategy() {
         return Stream.of(
-            Arguments.of(SelectEnforcementType.WARRANT, "warrant"),
-            Arguments.of(SelectEnforcementType.WRIT, "writ")
+            Arguments.of(SelectEnforcementType.WARRANT, WarrantStrategy.class.getSimpleName()),
+            Arguments.of(SelectEnforcementType.WRIT, WritStrategy.class.getSimpleName()),
+            Arguments.of(SelectEnforcementType.WRIT_OF_RESTITUTION,
+                         WritOfRestitutionStrategy.class.getSimpleName())
         );
     }
 
@@ -51,21 +52,13 @@ class EnforcementTypeStrategyFactoryTest {
         // When
         EnforcementTypeStrategy warrantResult = underTest.getStrategy(SelectEnforcementType.WARRANT);
         EnforcementTypeStrategy writResult = underTest.getStrategy(SelectEnforcementType.WRIT);
+        EnforcementTypeStrategy writOfRestitutionResult = underTest
+            .getStrategy(SelectEnforcementType.WRIT_OF_RESTITUTION);
 
         // Then
-        assertThat(warrantResult).isNotSameAs(writResult);
         assertThat(warrantResult).isSameAs(warrantStrategy);
         assertThat(writResult).isSameAs(writStrategy);
+        assertThat(writOfRestitutionResult).isSameAs(writOfRestitutionStrategy);
     }
 
-    @Test
-    void shouldConsistentlyReturnSameStrategyInstance() {
-        // When
-        EnforcementTypeStrategy firstCall = underTest.getStrategy(SelectEnforcementType.WARRANT);
-        EnforcementTypeStrategy secondCall = underTest.getStrategy(SelectEnforcementType.WARRANT);
-
-        // Then
-        assertThat(firstCall).isSameAs(secondCall);
-        assertThat(firstCall).isSameAs(warrantStrategy);
-    }
 }
