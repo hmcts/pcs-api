@@ -58,11 +58,14 @@ class EnforcementTypeStrategyFactoryTest {
         EnforcementTypeStrategy writResult = underTest.getStrategy(SelectEnforcementType.WRIT);
         EnforcementTypeStrategy writOfRestitutionResult = underTest
             .getStrategy(SelectEnforcementType.WRIT_OF_RESTITUTION);
+        EnforcementTypeStrategy warrantOfRestitutionResult = underTest
+            .getStrategy(SelectEnforcementType.WARRANT_OF_RESTITUTION);
 
         // Then
         assertThat(warrantResult).isSameAs(warrantStrategy);
         assertThat(writResult).isSameAs(writStrategy);
         assertThat(writOfRestitutionResult).isSameAs(writOfRestitutionStrategy);
+        assertThat(warrantOfRestitutionResult).isSameAs(warrantOfRestitutionStrategy);
     }
 
 }
