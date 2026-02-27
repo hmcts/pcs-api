@@ -9,22 +9,23 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writofrestitution.WritOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrantofrestitution.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestitution.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
@@ -37,6 +38,7 @@ public class EnforcementOrderService {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final EnforcementRiskProfileRepository enforcementRiskProfileRepository;
+    private final WarrantOfRestitutionRepository warrantOfRestitutionRepository;
     private final EnforcementRiskProfileMapper enforcementRiskProfileMapper;
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
@@ -77,12 +79,17 @@ public class EnforcementOrderService {
                 enforcementRiskProfileMapper.toEntity(enforcementOrderEntity, enforcementOrder);
             enforcementRiskProfileRepository.save(riskProfile);
             storeWarrant(enforcementOrder, saved);
+        } else if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WARRANT_OF_RESTITUTION) {
+            createWarrantOfRestitution(enforcementOrderEntity);
         } else if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WRIT_OF_RESTITUTION) {
             createWritOfRestitutionEntity(enforcementOrderEntity);
         }
+        createSelectedDefendants(enforcementOrderEntity);
+    }
 
+    private void createSelectedDefendants(EnforcementOrderEntity enforcementOrderEntity) {
         List<EnforcementSelectedDefendantEntity> selectedDefendantsEntities =
-            selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
+                selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
 
         if (!CollectionUtils.isEmpty(selectedDefendantsEntities)) {
             enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
@@ -91,9 +98,15 @@ public class EnforcementOrderService {
 
     private void storeWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
         EnforcementWarrantEntity warrantEntity = enforcementWarrantMapper.toEntity(enforcementOrder,
-                                                                                   enforcementOrderEntity);
+                enforcementOrderEntity);
         EnforcementWarrantEntity saved = enforcementWarrantRepository.save(warrantEntity);
         enforcementOrderEntity.setWarrantDetails(saved);
+    }
+
+    private void createWarrantOfRestitution(EnforcementOrderEntity enforcementOrderEntity) {
+        WarrantOfRestitutionEntity warrantOfRestitutionEntity = new WarrantOfRestitutionEntity();
+        warrantOfRestitutionEntity.setEnforcementOrder(enforcementOrderEntity);
+        warrantOfRestitutionRepository.save(warrantOfRestitutionEntity);
     }
 
     private void createWritOfRestitutionEntity(EnforcementOrderEntity enforcementOrderEntity) {
