@@ -21,7 +21,7 @@ import java.util.Map;
 
 import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
 
-@Tag("Functional")
+@Tag("Smoke")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
