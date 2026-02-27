@@ -10,7 +10,7 @@ export const vulnerableAdultsAndChildren = {
   vulnerableChildrenRadioOption: 'Vulnerable children',
   vulnerableAdultsAndChildrenRadioOption: 'Vulnerable adults and children',
   howAreTheyVulnerableTextLabel: 'How are they vulnerable?',
-  howAreTheyVulnerableTextInput: 'Test Input How are they vulnerable',
+  howAreTheyVulnerableTextInput: 1000,
   continueButton: 'Continue',
   eventCouldNotBeCreatedErrorMessage: 'The event could not be created',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
