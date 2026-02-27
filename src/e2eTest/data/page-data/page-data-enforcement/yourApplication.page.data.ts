@@ -5,7 +5,8 @@ export const yourApplication = {
   typeOfApplicationQuestion: 'What do you want to apply for?',
   typeOfApplicationOptions: {
     warrantOfPossession: 'Warrant of possession',
-    writOfPossession: 'Writ of possession'
+    writOfPossession: 'Writ of possession',
+    warrantOfRestitution: 'Warrant of restitution'
   },
   typeofFee: {
     warrantOfPossessionFee: 'Warrant of possession fee',
