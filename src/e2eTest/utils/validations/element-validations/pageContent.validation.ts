@@ -166,7 +166,7 @@ export class PageContentValidation implements IValidation {
     try {
       let mappingPath;
       if(page.url().includes("enforceTheOrder")){
-         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.page.data.ts');
+         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       }
       else{
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
@@ -354,7 +354,7 @@ export class PageContentValidation implements IValidation {
     try {
       let mappingPath;
       if(url.includes("enforceTheOrder")){
-         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.page.data.ts');
+         mappingPath = path.join(__dirname, '../../../data/page-data-figma/page-data-enforcement-figma/urlToFileMappingEnforcement.ts');
       }
       else{
          mappingPath = path.join(__dirname, '../../../data/page-data-figma/urlToFileMapping.ts');
