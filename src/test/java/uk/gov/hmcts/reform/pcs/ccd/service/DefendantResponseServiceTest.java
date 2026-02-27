@@ -79,6 +79,17 @@ class DefendantResponseServiceTest {
             .thenReturn(Optional.of(caseEntity));
     }
 
+    private void stubPartyLookup() {
+        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+    }
+
+    private void stubClaimLookup() {
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+    }
+
     @Test
     void shouldSaveDefendantResponseWithJpaProxies() {
         // Given
@@ -86,11 +97,8 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -115,11 +123,8 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.NO)
@@ -142,11 +147,8 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.PREFER_NOT_TO_SAY)
@@ -169,11 +171,8 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(null)
@@ -196,11 +195,8 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubPartyLookup();
+        stubClaimLookup();
 
         LocalDate tenancyStartDate = LocalDate.of(2010, 1, 1);
         DefendantResponses responses = DefendantResponses.builder()
@@ -225,11 +221,8 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -330,8 +323,7 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        stubPartyLookup();
         when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.empty());
 
         DefendantResponses responses = DefendantResponses.builder()
@@ -353,11 +345,8 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
@@ -386,11 +375,8 @@ class DefendantResponseServiceTest {
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
             CASE_REFERENCE, USER_ID)).thenReturn(false);
         stubCaseLookup();
-        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
-        when(partyEntity.getId()).thenReturn(PARTY_ID);
-        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
-        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
-        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+        stubPartyLookup();
+        stubClaimLookup();
 
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
