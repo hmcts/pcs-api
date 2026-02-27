@@ -49,7 +49,7 @@ public class EnforcementOrder {
     @External
     private String writFeeAmount;
 
-    @JsonUnwrapped(prefix = "warrantres")
+    @JsonUnwrapped(prefix = "warrant_of_res")
     @CCD
     private WarrantOfRestitutionDetails warrantOfRestitutionDetails;
 
