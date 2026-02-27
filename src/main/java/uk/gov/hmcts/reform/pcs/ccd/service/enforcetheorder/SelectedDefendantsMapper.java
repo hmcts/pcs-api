@@ -1,9 +1,9 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;

@@ -6,7 +6,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 /**
  * CCD page configuration for the writ journey Language used screen.
@@ -19,7 +19,7 @@ public class LanguageUsedWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("languageUsedWrit")
             .pageLabel("Language used")
-            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("languageUsedWrit-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)

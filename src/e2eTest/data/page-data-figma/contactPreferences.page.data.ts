@@ -1,7 +1,6 @@
 export const contactPreferences = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Contact preferences`,
-  caseNumberParagraph: `Case number:`,
   notificationsSubHeader: `Notifications`,
   youllReceiveUpdatesAboutParagraph: `You’ll receive updates about your claim by email. For example, when a hearing has been scheduled or when a document is ready to view.`,
   yourMyHmctsRegisteredEmailSubHeader: `Your My HMCTS registered email address is:`,
@@ -40,7 +39,7 @@ export const contactPreferences = {
   postcodeTextInput: ``,
   contactPhoneNumberSubHeader: `Contact phone number`,
   youShouldProvideAPhoneParagraph: `You should provide a phone number so we can contact you if there are urgent updates.`,
-  doYouWantToProvideQuestion: `Do you want to provide a contact phone number?`,
+  doYouWantToProvideQuestion: `Do you want to provide a contact phone number? (Optional)`,
   enterPhoneNumberHiddenTextLabel: `Enter phone number`,
   enterPhoneNumberTextInput: `07654567345`,
   continueButton: `Continue`,

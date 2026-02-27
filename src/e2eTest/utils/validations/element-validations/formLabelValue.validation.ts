@@ -1,10 +1,10 @@
 import { Page, expect, Locator } from '@playwright/test';
-import { IValidation, validationData } from '../../interfaces/validation.interface';
+import { IValidation, validationData } from '@utils/interfaces';
 
 export class FormLabelValueValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data?: validationData): Promise<void> {
     const valueLocator = await this.findFieldValueLocator(page, fieldName);
-    
+
     if (data !== undefined) {
       const locText = await valueLocator.innerText();
       expect(locText.replace(/\s+/g, ' ').trim().split(' ').sort().join(' '),`Original inner text => ${locText}, Original user input => ${String(data)}`).toBe(String(data).split(' ').sort().join(' '));
@@ -18,17 +18,17 @@ export class FormLabelValueValidation implements IValidation {
 
   private async findFieldValueLocator(page: Page, fieldName: string): Promise<Locator> {
     const locators = [
-      page.locator(`.case-viewer-label:has-text("${fieldName}")`)
+      page.locator(`.case-viewer-label:text-is("${fieldName}")`)
         .locator('xpath=../following-sibling::td[1]')
         .locator('.text-16 span'),
 
-      page.locator(`th#complex-panel-simple-field-label > span.text-16:has-text("${fieldName}")`)
+      page.locator(`th#complex-panel-simple-field-label > span.text-16:text-is("${fieldName}")`)
         .locator('xpath=../..')
         .locator('td span.text-16:not(:has(ccd-field-read-label))'),
 
-      page.locator(`//th[contains(text(),"${fieldName}")]/following-sibling::td`),
+      page.locator(`//th[normalize-space(.)="${fieldName}"]/following-sibling::td`),
 
-      page.locator(`//p[text()="${fieldName}"]/following-sibling::ul[1]/li[1]`)
+      page.locator(`//p[normalize-space(.)="${fieldName}"]/following-sibling::ul[1]/li[1]`)
     ];
 
     for (const locator of locators) {
