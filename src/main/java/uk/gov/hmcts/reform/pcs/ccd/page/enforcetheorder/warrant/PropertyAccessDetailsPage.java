@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PropertyAccessDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
@@ -34,7 +34,7 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("propertyAccessDetails", this::midEvent)
                 .pageLabel("Access to the property")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW)
+                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
                 .label("propertyAccessDetails-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
