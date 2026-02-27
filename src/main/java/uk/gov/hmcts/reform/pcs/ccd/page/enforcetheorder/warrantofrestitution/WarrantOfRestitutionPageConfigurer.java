@@ -12,6 +12,8 @@ public class WarrantOfRestitutionPageConfigurer implements EnforcementPageConfig
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
-            .add(new PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder());
+            .add(new PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder())
+            .add(new ShareEvidenceWithJudgePage())
+            .add(new ExplainHowDefendantsReturnedPlaceholder());
     }
 }
