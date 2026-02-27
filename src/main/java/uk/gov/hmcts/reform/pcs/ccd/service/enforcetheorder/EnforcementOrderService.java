@@ -18,9 +18,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrantofrestitution.W
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementSelectedDefendantRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.RiskProfileRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.SelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.WarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestitution.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -37,15 +37,15 @@ import java.util.List;
 public class EnforcementOrderService {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
-    private final EnforcementRiskProfileRepository enforcementRiskProfileRepository;
+    private final RiskProfileRepository riskProfileRepository;
     private final WarrantOfRestitutionRepository warrantOfRestitutionRepository;
     private final EnforcementRiskProfileMapper enforcementRiskProfileMapper;
     private final PcsCaseRepository pcsCaseRepository;
     private final DraftCaseDataService draftCaseDataService;
-    private final EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
+    private final SelectedDefendantRepository selectedDefendantRepository;
     private final SelectedDefendantsMapper selectedDefendantsMapper;
     private final EnforcementWarrantMapper enforcementWarrantMapper;
-    private final EnforcementWarrantRepository enforcementWarrantRepository;
+    private final WarrantRepository warrantRepository;
     private final WritOfRestitutionRepository writOfRestitutionRepository;
 
     @Transactional
@@ -77,7 +77,7 @@ public class EnforcementOrderService {
             && enforcementOrder.getWarrantDetails() != null) {
             EnforcementRiskProfileEntity riskProfile =
                 enforcementRiskProfileMapper.toEntity(enforcementOrderEntity, enforcementOrder);
-            enforcementRiskProfileRepository.save(riskProfile);
+            riskProfileRepository.save(riskProfile);
             storeWarrant(enforcementOrder, saved);
         } else if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WARRANT_OF_RESTITUTION) {
             createWarrantOfRestitution(enforcementOrderEntity);
@@ -92,14 +92,14 @@ public class EnforcementOrderService {
                 selectedDefendantsMapper.mapToEntities(enforcementOrderEntity);
 
         if (!CollectionUtils.isEmpty(selectedDefendantsEntities)) {
-            enforcementSelectedDefendantRepository.saveAll(selectedDefendantsEntities);
+            selectedDefendantRepository.saveAll(selectedDefendantsEntities);
         }
     }
 
     private void storeWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
         EnforcementWarrantEntity warrantEntity = enforcementWarrantMapper.toEntity(enforcementOrder,
                 enforcementOrderEntity);
-        EnforcementWarrantEntity saved = enforcementWarrantRepository.save(warrantEntity);
+        EnforcementWarrantEntity saved = warrantRepository.save(warrantEntity);
         enforcementOrderEntity.setWarrantDetails(saved);
     }
 

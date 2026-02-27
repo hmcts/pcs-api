@@ -5,6 +5,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRis
 
 import java.util.UUID;
 
-public interface EnforcementRiskProfileRepository
+public interface RiskProfileRepository
         extends JpaRepository<EnforcementRiskProfileEntity, UUID> {
 }

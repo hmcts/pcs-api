@@ -27,9 +27,9 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementSelectedDefendantRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.RiskProfileRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.SelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.WarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestitution.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
@@ -61,7 +61,7 @@ class EnforcementOrderServiceTest {
     private EnforcementOrderRepository enforcementOrderRepository;
 
     @Mock
-    private EnforcementRiskProfileRepository enforcementRiskProfileRepository;
+    private RiskProfileRepository riskProfileRepository;
 
     @Mock
     private EnforcementRiskProfileMapper enforcementRiskProfileMapper;
@@ -73,10 +73,10 @@ class EnforcementOrderServiceTest {
     private EnforcementWarrantMapper enforcementWarrantMapper;
 
     @Mock
-    private EnforcementWarrantRepository enforcementWarrantRepository;
+    private WarrantRepository warrantRepository;
 
     @Mock
-    private EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
+    private SelectedDefendantRepository selectedDefendantRepository;
     @Mock
     private WarrantOfRestitutionRepository warrantOfRestitutionRepository;
 
@@ -137,7 +137,7 @@ class EnforcementOrderServiceTest {
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
 
         verify(enforcementRiskProfileMapper).toEntity(savedEntity, enforcementOrder);
-        verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
+        verify(riskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
         assertThat(enforcementRiskProfileEntityCaptor.getValue()).isSameAs(stubbedRiskProfile);
     }
 
@@ -159,7 +159,7 @@ class EnforcementOrderServiceTest {
                 .hasMessageContaining("No claim found for case reference");
         verifyNoInteractions(draftCaseDataService);
         verifyNoInteractions(enforcementRiskProfileMapper);
-        verifyNoInteractions(enforcementRiskProfileRepository);
+        verifyNoInteractions(riskProfileRepository);
     }
 
     @Test
@@ -173,7 +173,7 @@ class EnforcementOrderServiceTest {
         EnforcementWarrantEntity mockWarrantEntity = EnforcementWarrantEntity.builder().build();
         when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
             .thenReturn(mockWarrantEntity);
-        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
+        when(warrantRepository.save(any(EnforcementWarrantEntity.class)))
             .thenReturn(mockWarrantEntity);
 
         // When
@@ -194,7 +194,7 @@ class EnforcementOrderServiceTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
         when(enforcementWarrantMapper.toEntity(any(), any())).thenReturn(mock(EnforcementWarrantEntity.class));
         enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WARRANT);
-        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
+        when(warrantRepository.save(any(EnforcementWarrantEntity.class)))
             .thenReturn(mock(EnforcementWarrantEntity.class));
 
         // When
@@ -204,7 +204,7 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        verify(enforcementWarrantRepository).save(any(EnforcementWarrantEntity.class));
+        verify(warrantRepository).save(any(EnforcementWarrantEntity.class));
     }
 
     @Test
@@ -225,7 +225,7 @@ class EnforcementOrderServiceTest {
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         EnforcementOrderEntity savedEntity = enforcementOrderEntityCaptor.getValue();
         assertThat(savedEntity.getEnforcementOrder()).isEqualTo(enforcementOrder);
-        verifyNoInteractions(enforcementWarrantRepository);
+        verifyNoInteractions(warrantRepository);
         verifyNoInteractions(enforcementWarrantMapper);
     }
 
@@ -252,7 +252,7 @@ class EnforcementOrderServiceTest {
         // Then: service calls mapper and saves returned risk profile
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         verify(enforcementRiskProfileMapper).toEntity(enforcementOrderEntityCaptor.getValue(), enforcementOrder);
-        verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
+        verify(riskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
         assertThat(enforcementRiskProfileEntityCaptor.getValue()).isSameAs(stubbedRiskProfile);
     }
 
@@ -273,7 +273,7 @@ class EnforcementOrderServiceTest {
         // Then
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         verifyNoInteractions(enforcementRiskProfileMapper);
-        verifyNoInteractions(enforcementRiskProfileRepository);
+        verifyNoInteractions(riskProfileRepository);
     }
 
     @Test
@@ -291,7 +291,7 @@ class EnforcementOrderServiceTest {
         // Then
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         verifyNoInteractions(enforcementRiskProfileMapper);
-        verifyNoInteractions(enforcementRiskProfileRepository);
+        verifyNoInteractions(riskProfileRepository);
     }
 
     @Test
@@ -316,7 +316,7 @@ class EnforcementOrderServiceTest {
         // Then: service calls mapper and saves returned risk profile
         verify(enforcementOrderRepository).save(enforcementOrderEntityCaptor.capture());
         verify(enforcementRiskProfileMapper).toEntity(enforcementOrderEntityCaptor.getValue(), enforcementOrder);
-        verify(enforcementRiskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
+        verify(riskProfileRepository).save(enforcementRiskProfileEntityCaptor.capture());
         assertThat(enforcementRiskProfileEntityCaptor.getValue()).isSameAs(stubbedRiskProfile);
     }
 
@@ -364,7 +364,7 @@ class EnforcementOrderServiceTest {
         verify(draftCaseDataService)
             .deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
 
-        verify(enforcementSelectedDefendantRepository)
+        verify(selectedDefendantRepository)
             .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
         List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
         assertThat(savedEntities).hasSize(1);
@@ -425,7 +425,7 @@ class EnforcementOrderServiceTest {
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        verify(enforcementSelectedDefendantRepository)
+        verify(selectedDefendantRepository)
             .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
         List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
 
@@ -459,14 +459,14 @@ class EnforcementOrderServiceTest {
             .thenReturn(mock(EnforcementOrderEntity.class));
         when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
             .thenReturn(mock(EnforcementWarrantEntity.class));
-        when(enforcementWarrantRepository.save(any(EnforcementWarrantEntity.class)))
+        when(warrantRepository.save(any(EnforcementWarrantEntity.class)))
             .thenReturn(mock(EnforcementWarrantEntity.class));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        verifyNoInteractions(enforcementSelectedDefendantRepository);
+        verifyNoInteractions(selectedDefendantRepository);
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
     }
 
@@ -493,7 +493,7 @@ class EnforcementOrderServiceTest {
             .thenReturn(mock(EnforcementOrderEntity.class));
         when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
             .thenReturn(mock(EnforcementWarrantEntity.class));
-        when(enforcementWarrantRepository.save(any()))
+        when(warrantRepository.save(any()))
             .thenReturn(mock(EnforcementWarrantEntity.class));
     }
 
