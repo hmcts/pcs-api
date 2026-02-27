@@ -292,6 +292,15 @@ class PCSCaseViewTest {
             .containsExactly("doc1.pdf", "doc2.pdf");
     }
 
+    @Test
+    void shouldSetOtherCaseReference() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getOtherCaseReference()).isEqualTo(Long.toString(CASE_REFERENCE));
+    }
+
     private static ListValue<Party> asListValue(UUID id, Party party) {
         return ListValue.<Party>builder().id(id.toString()).value(party).build();
     }

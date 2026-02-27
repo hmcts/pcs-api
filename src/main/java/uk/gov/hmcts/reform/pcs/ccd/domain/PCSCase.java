@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
+import uk.gov.hmcts.ccd.sdk.type.SearchCriteria;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.DynamicList;
@@ -496,5 +497,17 @@ public class PCSCase {
 
     @CCD(access = {ClaimantAccess.class, DefendantAccess.class})
     private List<ListValue<ClaimGroundSummary>> claimGroundSummaries;
+
+
+    @CCD(
+        label = "Search Criteria"
+    )
+    @SuppressWarnings("MemberName") // Field name is case-sensitive in CCD
+    private SearchCriteria SearchCriteria;
+
+    @CCD(
+        access = {ClaimantAccess.class}
+    )
+    private String otherCaseReference;
 
 }
