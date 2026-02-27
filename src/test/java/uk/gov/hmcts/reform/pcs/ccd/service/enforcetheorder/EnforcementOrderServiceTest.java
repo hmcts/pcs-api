@@ -21,6 +21,7 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrantofrestitution.WarrantOfRestitutionEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writofrestitution.WritOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
@@ -30,6 +31,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.Enforcemen
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestitution.WarrantOfRestitutionRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
@@ -45,7 +47,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -67,8 +68,10 @@ class EnforcementOrderServiceTest {
 
     @Mock
     private PcsCaseRepository pcsCaseRepository;
+
     @Mock
     private EnforcementWarrantMapper enforcementWarrantMapper;
+
     @Mock
     private EnforcementWarrantRepository enforcementWarrantRepository;
 
@@ -76,11 +79,15 @@ class EnforcementOrderServiceTest {
     private EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
     @Mock
     private WarrantOfRestitutionRepository warrantOfRestitutionRepository;
+
+    @Mock
+    private WritOfRestitutionRepository writOfRestitutionRepository;
+
     @InjectMocks
     private EnforcementOrderService enforcementOrderService;
 
     @Captor
-    private ArgumentCaptor<List<EnforcementSelectedDefendantEntity>> captor;
+    private ArgumentCaptor<List<EnforcementSelectedDefendantEntity>> enforcementSelectedDefendantEntityCaptor;
 
     @Captor
     private ArgumentCaptor<EnforcementOrderEntity> enforcementOrderEntityCaptor;
@@ -90,6 +97,9 @@ class EnforcementOrderServiceTest {
 
     @Captor
     private ArgumentCaptor<WarrantOfRestitutionEntity> warrantOfRestitutionEntityCaptor;
+
+    @Captor
+    private ArgumentCaptor<WritOfRestitutionEntity> writOfRestitutionEntityCaptor;
 
     @Mock
     private SelectedDefendantsMapper selectedDefendantsMapper;
@@ -354,8 +364,9 @@ class EnforcementOrderServiceTest {
         verify(draftCaseDataService)
             .deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
 
-        verify(enforcementSelectedDefendantRepository, times(1)).saveAll(captor.capture());
-        List<EnforcementSelectedDefendantEntity> savedEntities = captor.getValue();
+        verify(enforcementSelectedDefendantRepository)
+            .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
+        List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
         assertThat(savedEntities).hasSize(1);
 
         EnforcementSelectedDefendantEntity savedEntity = savedEntities.getFirst();
@@ -414,8 +425,9 @@ class EnforcementOrderServiceTest {
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
 
         // Then
-        verify(enforcementSelectedDefendantRepository, times(1)).saveAll(captor.capture());
-        List<EnforcementSelectedDefendantEntity> savedEntities = captor.getValue();
+        verify(enforcementSelectedDefendantRepository)
+            .saveAll(enforcementSelectedDefendantEntityCaptor.capture());
+        List<EnforcementSelectedDefendantEntity> savedEntities = enforcementSelectedDefendantEntityCaptor.getValue();
 
         assertThat(savedEntities).hasSize(2);
         assertThat(savedEntities)
@@ -455,6 +467,24 @@ class EnforcementOrderServiceTest {
 
         // Then
         verifyNoInteractions(enforcementSelectedDefendantRepository);
+        verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
+    }
+
+    @Test
+    void shouldPersistWritOfRestitutionWhenEnforcementOrderIsSaved() {
+        // Given
+        final PcsCaseEntity pcsCaseEntity = EnforcementDataUtil.buildPcsCaseEntity(pcsCaseId, claimId);
+        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrder();
+        enforcementOrder.setSelectEnforcementType(SelectEnforcementType.WRIT_OF_RESTITUTION);
+
+        when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
+            .thenReturn(Optional.of(pcsCaseEntity));
+
+        // When
+        enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
+
+        // Then
+        verify(writOfRestitutionRepository).save(writOfRestitutionEntityCaptor.capture());
         verify(draftCaseDataService).deleteUnsubmittedCaseData(CASE_REFERENCE, EventId.enforceTheOrder);
     }
 
