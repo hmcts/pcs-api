@@ -18,6 +18,7 @@ export * from '@data/page-data-figma/enterPropertyAddress.page.data';
 export * from '@data/page-data-figma/mediationAndSettlement.page.data';
 export * from '@data/page-data-figma/moneyJudgment.page.data';
 export * from '@data/page-data-figma/noticeDetails.page.data';
+export * from '@data/page-data-figma/postcodeNotAssignedToCourt.page.data';
 export * from '@data/page-data-figma/provideMoreDetailsOfClaim.page.data';
 export * from '@data/page-data-figma/rentDetails.page.data';
 export * from '@data/page-data-figma/startTheService.page.data';

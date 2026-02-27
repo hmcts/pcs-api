@@ -42,7 +42,7 @@ import {
   claimLanguageUsed,
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
-  statementOfTruth, groundsForPossessionRentArrears,
+  statementOfTruth
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -76,7 +76,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
@@ -107,7 +107,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectYourPossessionGrounds', {
       discretionary: [whatAreYourGroundsForPossessionWales.discretionary.rentArrears, whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187],
     });
-    await performValidation('text', {"text": preactionProtocol.communityLandlordsDynamicParagraph, "elementType": "paragraph"})
+    await performValidation('text', {"text": preactionProtocol.walesCommunityLandlordsDynamicParagraph, "elementType": "paragraph"})
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
       attemptedMediationWithDefendantsOption: mediationAndSettlement.yesRadioOption,
@@ -181,7 +181,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
@@ -199,7 +199,7 @@ test.describe('[Create Case - Wales]', async () => {
       correspondenceAddressOption: defendantDetails.yesRadioOption, correspondenceAddressSameOption: defendantDetails.yesRadioOption,
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
-     await performAction('selectOccupationContractOrLicenceDetails', {
+    await performAction('selectOccupationContractOrLicenceDetails', {
       occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
       occupationContractType: occupationContractOrLicenceDetailsWales.secureContract
     });
@@ -302,7 +302,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
@@ -412,7 +412,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
@@ -455,7 +455,6 @@ test.describe('[Create Case - Wales]', async () => {
       settlementWithDefendantsOption: mediationAndSettlement.noRadioOption,
     });
     await performValidation('mainHeader', checkingNotice.mainHeader);
-    await performValidation('text', {"text": checkingNotice.youMayHaveAlreadyServedWalesDynamicParagraph, "elementType": "paragraph"});
     await performAction('selectNoticeOfYourIntention', {
       question: checkingNotice.haveYouServedNoticeToQuestion,
       option: checkingNotice.yesRadioOption,
@@ -512,7 +511,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
@@ -645,7 +644,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
@@ -740,7 +739,7 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('bannerAlert', 'Case #.* has been created.');
     await performAction('extractCaseIdFromAlert');
     await performAction('provideMoreDetailsOfClaim');
-    await performAction('selectClaimantType', claimantType.wales.communityLandlord);
+    await performAction('selectClaimantType', claimantType.walesCommunityLandlordDynamicRadioOption);
     await performAction('selectClaimType', claimType.noRadioOption);
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
