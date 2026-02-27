@@ -82,6 +82,8 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
 
+        pcsCase.setPcsCaseReference(Long.toString(caseReference));
+
         return pcsCase;
     }
 

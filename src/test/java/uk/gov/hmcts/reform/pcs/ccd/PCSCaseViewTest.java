@@ -329,6 +329,15 @@ class PCSCaseViewTest {
         verify(statementOfTruthView).setCaseFields(pcsCase, pcsCaseEntity);
     }
 
+    @Test
+    void shouldReturnCaseWithPcsCaseNumberPopulated() {
+        // When
+        PCSCase pcsCase = underTest.getCase(request(CASE_REFERENCE, DEFAULT_STATE));
+
+        // Then
+        assertThat(pcsCase.getPcsCaseReference()).isNotNull();
+    }
+
     private AddressUK stubAddressEntityModelMapper(AddressEntity addressEntity) {
         AddressUK addressUK = mock(AddressUK.class);
         when(modelMapper.map(addressEntity, AddressUK.class)).thenReturn(addressUK);
