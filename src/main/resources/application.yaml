@@ -186,6 +186,11 @@ access-code:
     max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
     backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
+supplementary-data:
+  request:
+    max-retries: ${SUPPLEMENTARY_DATA_MAX_RETRIES:5}
+    backoff-delay-seconds: ${SUPPLEMENTARY_DATA_BACKOFF_DELAY_SECONDS:3600s}
+
 payments:
   api:
     url: ${PAYMENT_API_URL:http://localhost:8083}
