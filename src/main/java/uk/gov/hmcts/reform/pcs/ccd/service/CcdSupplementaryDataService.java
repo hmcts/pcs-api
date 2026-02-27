@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.authorisation.generators.AuthTokenGenerator;
@@ -12,18 +11,23 @@ import java.util.Map;
 
 import static java.util.Collections.singletonMap;
 
-@RequiredArgsConstructor
 @Service
 public class CcdSupplementaryDataService {
 
     private final IdamService idamService;
-
     private final AuthTokenGenerator authTokenGenerator;
-
     private final CoreCaseDataApi coreCaseDataApi;
+    private final String hmctsServiceId;
 
-    @Value("${hmcts.hmctsOrgId:AAA3}")
-    private String hmctsServiceId;
+    public CcdSupplementaryDataService(IdamService idamService,
+                                       AuthTokenGenerator authTokenGenerator,
+                                       CoreCaseDataApi coreCaseDataApi,
+                                       @Value("${hmcts.hmctsOrgId}") String hmctsServiceId) {
+        this.idamService = idamService;
+        this.authTokenGenerator = authTokenGenerator;
+        this.coreCaseDataApi = coreCaseDataApi;
+        this.hmctsServiceId = hmctsServiceId;
+    }
 
     private static final String SUPPLEMENTARY_FIELD = "supplementary_data_updates";
     private static final String SERVICE_ID_FIELD = "HMCTSServiceId";
