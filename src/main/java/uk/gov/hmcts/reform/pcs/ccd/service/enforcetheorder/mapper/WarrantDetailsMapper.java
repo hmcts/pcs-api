@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper;
 
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -14,17 +14,17 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class EnforcementWarrantMapper {
+public class WarrantDetailsMapper {
 
-    public EnforcementWarrantEntity toEntity(EnforcementOrder enforcementOrder,
-        EnforcementOrderEntity enforcementOrderEntity) {
-        EnforcementWarrantEntity warrantEntity = EnforcementWarrantEntity.builder()
+    public WarrantEntity toEntity(EnforcementOrder enforcementOrder,
+                                  EnforcementOrderEntity enforcementOrderEntity) {
+        WarrantEntity warrantEntity = WarrantEntity.builder()
             .enforcementOrder(enforcementOrderEntity).build();
         if (enforcementOrder.getWarrantDetails() != null) {
             WarrantDetails warrantDetails = enforcementOrder.getWarrantDetails();
@@ -44,14 +44,14 @@ public class EnforcementWarrantMapper {
         return warrantEntity;
     }
 
-    private void controlFlags(EnforcementWarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+    private void controlFlags(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
         warrantEntity.setShowPeopleWhoWillBeEvictedPage(
             convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleWhoWillBeEvictedPage()));
         warrantEntity.setShowPeopleYouWantToEvictPage(
             convertYesOrNoToVerticalYesNo(warrantDetails.getShowPeopleYouWantToEvictPage()));
     }
 
-    private void statementOfTruth(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void statementOfTruth(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getStatementOfTruth() != null) {
             StatementOfTruthDetailsEnforcement statementOfTruth = warrantDetails.getStatementOfTruth();
             warrantEntity.setCompletedBy(statementOfTruth.getCompletedBy());
@@ -67,7 +67,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void certification(EnforcementWarrantEntity warrantEntity,
+    private void certification(WarrantEntity warrantEntity,
                                StatementOfTruthDetailsEnforcement statementOfTruth) {
         List<StatementOfTruthAgreement> certification = statementOfTruth.getCertification();
         if (certification != null && !certification.isEmpty()) {
@@ -79,7 +79,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void agreementLegalRep(EnforcementWarrantEntity warrantEntity,
+    private void agreementLegalRep(WarrantEntity warrantEntity,
                                    StatementOfTruthDetailsEnforcement statementOfTruth) {
         List<StatementOfTruthAgreementLegalRep> agreementLegalRep = statementOfTruth.getAgreementLegalRep();
         if (agreementLegalRep != null && !agreementLegalRep.isEmpty()) {
@@ -90,7 +90,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void agreementClaimant(EnforcementWarrantEntity warrantEntity,
+    private void agreementClaimant(WarrantEntity warrantEntity,
                                    StatementOfTruthDetailsEnforcement statementOfTruth) {
         List<StatementOfTruthAgreementClaimant> agreementClaimant = statementOfTruth.getAgreementClaimant();
         if (agreementClaimant != null && !agreementClaimant.isEmpty()) {
@@ -102,24 +102,24 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void suspendTheOrder(EnforcementWarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+    private void suspendTheOrder(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
         warrantEntity.setIsSuspendedOrder(warrantDetails.getIsSuspendedOrder());
     }
 
-    private void peopleToEvict(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void peopleToEvict(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getPeopleToEvict() != null) {
             warrantEntity.setEvictEveryone(warrantDetails.getPeopleToEvict().getEvictEveryone());
         }
     }
 
-    private void nameAndAddressForEviction(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void nameAndAddressForEviction(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getNameAndAddressForEviction() != null) {
             warrantEntity.setCorrectNameAndAddress(
                 warrantDetails.getNameAndAddressForEviction().getCorrectNameAndAddress());
         }
     }
 
-    private void additionalInformation(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void additionalInformation(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getAdditionalInformation() != null) {
             warrantEntity.setAdditionalInformationSelect(
                 warrantDetails.getAdditionalInformation().getAdditionalInformationSelect());
@@ -128,7 +128,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void propertyAccessDetails(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void propertyAccessDetails(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getPropertyAccessDetails() != null) {
             warrantEntity.setIsDifficultToAccessProperty(
                 warrantDetails.getPropertyAccessDetails().getIsDifficultToAccessProperty());
@@ -137,7 +137,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void legalCosts(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void legalCosts(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         LegalCosts legalCosts = warrantDetails.getLegalCosts();
         if (legalCosts != null) {
             warrantEntity.setAreLegalCostsToBeClaimed(legalCosts.getAreLegalCostsToBeClaimed());
@@ -145,7 +145,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void landRegistry(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void landRegistry(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         LandRegistryFees landRegistryFees = warrantDetails.getLandRegistryFees();
         if (landRegistryFees != null) {
             warrantEntity.setHaveLandRegistryFeesBeenPaid(landRegistryFees.getHaveLandRegistryFeesBeenPaid());
@@ -153,7 +153,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void repayment(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void repayment(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getRepaymentCosts() != null) {
             RepaymentCosts repaymentCosts = warrantDetails.getRepaymentCosts();
             RepaymentPreference repaymentChoice = repaymentCosts.getRepaymentChoice();
@@ -165,7 +165,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void defendantsDOB(EnforcementWarrantEntity warrantEntity, WarrantDetails warrantDetails) {
+    private void defendantsDOB(WarrantEntity warrantEntity, WarrantDetails warrantDetails) {
         warrantEntity.setDefendantsDOBKnown(warrantDetails.getDefendantsDOBKnown());
         if (warrantDetails.getDefendantsDOB() != null) {
             warrantEntity.setDefendantsDOBDetails(
@@ -173,7 +173,7 @@ public class EnforcementWarrantMapper {
         }
     }
 
-    private void moneyOwed(WarrantDetails warrantDetails, EnforcementWarrantEntity warrantEntity) {
+    private void moneyOwed(WarrantDetails warrantDetails, WarrantEntity warrantEntity) {
         if (warrantDetails.getMoneyOwedByDefendants() != null) {
             warrantEntity.setAmountOwed(warrantDetails.getMoneyOwedByDefendants().getAmountOwed());
         }
