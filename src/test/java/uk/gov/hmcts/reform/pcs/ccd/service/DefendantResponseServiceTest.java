@@ -19,6 +19,7 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.PartyRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -186,6 +187,63 @@ class DefendantResponseServiceTest {
         DefendantResponseEntity savedResponse = responseCaptor.getValue();
 
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isNull();
+    }
+
+    @Test
+    void shouldSaveDefendantResponseWhenTenancyStartDateIsSet() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubCaseLookup();
+        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+
+        LocalDate tenancyStartDate = LocalDate.of(2010, 1, 1);
+        DefendantResponses responses = DefendantResponses.builder()
+            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .tenancyStartDate(tenancyStartDate)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getTenancyStartDate()).isEqualTo(tenancyStartDate);
+    }
+
+    @Test
+    void shouldSaveDefendantResponseWhenTenancyStartDateIsNull() {
+        // Given
+        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
+        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
+            CASE_REFERENCE, USER_ID)).thenReturn(false);
+        stubCaseLookup();
+        when(partyRepository.findByIdamIdAndPcsCaseId(USER_ID, CASE_ID)).thenReturn(Optional.of(partyEntity));
+        when(partyEntity.getId()).thenReturn(PARTY_ID);
+        when(claimRepository.findIdByCaseReference(CASE_REFERENCE)).thenReturn(Optional.of(CLAIM_ID));
+        when(partyRepository.getReferenceById(PARTY_ID)).thenReturn(partyEntity);
+        when(claimRepository.getReferenceById(CLAIM_ID)).thenReturn(claimEntity);
+
+        DefendantResponses responses = DefendantResponses.builder()
+            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
+            .tenancyStartDate(null)
+            .build();
+
+        // When
+        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
+
+        // Then
+        verify(defendantResponseRepository).save(responseCaptor.capture());
+        DefendantResponseEntity savedResponse = responseCaptor.getValue();
+
+        assertThat(savedResponse.getTenancyStartDate()).isNull();
     }
 
     @Test
