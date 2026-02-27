@@ -26,7 +26,6 @@ import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestituti
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
@@ -115,4 +114,5 @@ public class EnforcementOrderService {
         writOfRestitutionEntity.setEnforcementOrder(enforcementOrderEntity);
         writOfRestitutionRepository.save(writOfRestitutionEntity);
     }
+
 }
