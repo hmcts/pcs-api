@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +38,7 @@ public class PropertyNotEligible {
             .page("propertyNotEligible", this::midEvent)
             .pageLabel("Property not eligible for this online service")
             .showCondition(when(CreateClaimData::getShowPropertyNotEligiblePage).is(YesOrNo.YES))
-            .readonly(CreateClaimData::getShowPropertyNotEligiblePage, NEVER_SHOW)
+            .hidden(CreateClaimData::getShowPropertyNotEligiblePage)
 
             // England and Wales guidance section
             .label("propertyNotEligible-england-wales", """

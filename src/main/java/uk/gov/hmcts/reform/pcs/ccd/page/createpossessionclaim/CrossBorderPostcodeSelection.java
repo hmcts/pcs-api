@@ -2,8 +2,6 @@ package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.ccd.sdk.api.TypedLabel.label;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -35,9 +33,9 @@ public class CrossBorderPostcodeSelection {
             .page("crossBorderPostcodeSelection", this::midEvent)
             .pageLabel("Border postcode")
             .showCondition(when(CreateClaimData::getShowCrossBorderPage).is(YesOrNo.YES))
-            .readonly(CreateClaimData::getShowCrossBorderPage, NEVER_SHOW)
-            .readonly(CreateClaimData::getCrossBorderCountry1, NEVER_SHOW, true)
-            .readonly(CreateClaimData::getCrossBorderCountry2, NEVER_SHOW, true)
+            .hidden(CreateClaimData::getShowCrossBorderPage)
+            .hidden(CreateClaimData::getCrossBorderCountry1)
+            .hidden(CreateClaimData::getCrossBorderCountry2)
             .label("crossBorderPostcodeSelection-info", label("""
                 ---
                 <section tabindex="0">

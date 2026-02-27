@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import static uk.gov.hmcts.ccd.sdk.api.TypedLabel.label;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.dto.CreateClaimData;
@@ -51,6 +49,6 @@ public class StartTheService {
                        + "</ul>",
                    CreateClaimData::getFeeAmount)
             )
-            .readonly(CreateClaimData::getFeeAmount, NEVER_SHOW, true);
+            .hidden(CreateClaimData::getFeeAmount);
     }
 }

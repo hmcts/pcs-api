@@ -1,8 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +33,8 @@ public class PostcodeNotAssignedToCourt {
             .page("postcodeNotAssignedToCourt", this::midEvent)
             .pageLabel("You cannot use this online service")
             .showCondition(SHOW_PAGE)
-            .readonly(CreateClaimData::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
-            .readonly(CreateClaimData::getPostcodeNotAssignedView, NEVER_SHOW)
+            .hidden(CreateClaimData::getShowPostcodeNotAssignedToCourt)
+            .hidden(CreateClaimData::getPostcodeNotAssignedView)
             .label(
                 "postcodeNotAssignedToCourt-header",
                 """

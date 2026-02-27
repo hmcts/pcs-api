@@ -21,8 +21,6 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
-
 @AllArgsConstructor
 @Component
 @Slf4j
@@ -45,7 +43,7 @@ public class EnterPropertyAddress {
                 .optional(AddressUK::getCountry)
                 .mandatoryWithLabel(AddressUK::getPostCode, "Postcode")
             .done()
-            .readonly(CreateClaimData::getLegislativeCountry, NEVER_SHOW, true);
+            .hidden(CreateClaimData::getLegislativeCountry);
     }
 
     private AboutToStartOrSubmitResponse<CreateClaimData, State> midEvent(
