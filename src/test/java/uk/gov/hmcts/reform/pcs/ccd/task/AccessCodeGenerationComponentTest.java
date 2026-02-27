@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferenceTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 
 import java.time.Duration;
@@ -34,7 +34,7 @@ class AccessCodeGenerationComponentTest {
     private AccessCodeGenerationService accessCodeGenerationService;
 
     @Mock
-    private TaskInstance<AccessCodeTaskData> taskInstance;
+    private TaskInstance<CaseReferenceTaskData> taskInstance;
 
     @Mock
     private ExecutionContext executionContext;
@@ -61,7 +61,7 @@ class AccessCodeGenerationComponentTest {
         assertThat(ACCESS_CODE_TASK_DESCRIPTOR.getTaskName())
             .isEqualTo("access-code-generation-task");
         assertThat(ACCESS_CODE_TASK_DESCRIPTOR.getDataClass())
-            .isEqualTo(AccessCodeTaskData.class);
+            .isEqualTo(CaseReferenceTaskData.class);
     }
 
     @Test
@@ -69,15 +69,15 @@ class AccessCodeGenerationComponentTest {
     void shouldExecuteTaskAndCallService() {
         //Given
         String caseReference = "123";
-        AccessCodeTaskData data = AccessCodeTaskData.builder()
+        CaseReferenceTaskData data = CaseReferenceTaskData.builder()
             .caseReference(caseReference)
             .build();
 
         when(taskInstance.getData()).thenReturn(data);
-        CustomTask<AccessCodeTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
+        CustomTask<CaseReferenceTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
 
         //When
-        CompletionHandler<AccessCodeTaskData> result = task.execute(taskInstance, executionContext);
+        CompletionHandler<CaseReferenceTaskData> result = task.execute(taskInstance, executionContext);
 
         //Then
         verify(accessCodeGenerationService).createAccessCodesForParties(caseReference);
@@ -90,7 +90,7 @@ class AccessCodeGenerationComponentTest {
     void shouldRetryOnFailure() {
         //Given
         String caseReference = "999";
-        AccessCodeTaskData data = AccessCodeTaskData.builder()
+        CaseReferenceTaskData data = CaseReferenceTaskData.builder()
             .caseReference(caseReference)
             .build();
 
@@ -103,7 +103,7 @@ class AccessCodeGenerationComponentTest {
             .createAccessCodesForParties(caseReference);
 
         //When
-        CustomTask<AccessCodeTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
+        CustomTask<CaseReferenceTaskData> task = accessCodeGenerationComponent.accessCodeGenerationTask();
 
         //Then
         assertThatThrownBy(() -> task.execute(taskInstance, executionContext))

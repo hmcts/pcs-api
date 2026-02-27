@@ -24,7 +24,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.ClaimantType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferenceTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.builder.SavingPageBuilderFactory;
 import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.AdditionalReasonsForPossession;
@@ -589,7 +589,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
             callSubmitHandler(caseData);
 
             // Then
-            AccessCodeTaskData taskData = getScheduledTaskData(ACCESS_CODE_TASK_DESCRIPTOR);
+            CaseReferenceTaskData taskData = getScheduledTaskData(ACCESS_CODE_TASK_DESCRIPTOR);
             assertThat(taskData.getCaseReference()).isEqualTo(String.valueOf(TEST_CASE_REFERENCE));
         }
 

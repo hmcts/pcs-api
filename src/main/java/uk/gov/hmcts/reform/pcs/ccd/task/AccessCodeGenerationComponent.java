@@ -9,7 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import uk.gov.hmcts.reform.pcs.ccd.model.AccessCodeTaskData;
+import uk.gov.hmcts.reform.pcs.ccd.model.CaseReferenceTaskData;
 import uk.gov.hmcts.reform.pcs.ccd.service.AccessCodeGenerationService;
 
 import java.time.Duration;
@@ -19,8 +19,8 @@ import java.time.Duration;
 public class AccessCodeGenerationComponent {
     private static final String ACCESS_CODE_GENERATION_TASK_NAME = "access-code-generation-task";
 
-    public static final TaskDescriptor<AccessCodeTaskData> ACCESS_CODE_TASK_DESCRIPTOR =
-        TaskDescriptor.of(ACCESS_CODE_GENERATION_TASK_NAME, AccessCodeTaskData.class);
+    public static final TaskDescriptor<CaseReferenceTaskData> ACCESS_CODE_TASK_DESCRIPTOR =
+        TaskDescriptor.of(ACCESS_CODE_GENERATION_TASK_NAME, CaseReferenceTaskData.class);
 
     private final AccessCodeGenerationService accessCodeGenerationService;
     private final int maxRetries;
@@ -43,7 +43,7 @@ public class AccessCodeGenerationComponent {
      * @return CustomTask configured with retry logic and exponential backoff on failure
      */
     @Bean
-    public CustomTask<AccessCodeTaskData> accessCodeGenerationTask() {
+    public CustomTask<CaseReferenceTaskData> accessCodeGenerationTask() {
         return Tasks.custom(ACCESS_CODE_TASK_DESCRIPTOR)
             .onFailure(new FailureHandler.MaxRetriesFailureHandler<>(
                 maxRetries,
