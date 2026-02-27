@@ -32,3 +32,5 @@ export * from '@data/page-data/page-data-enforcement/suspendedOrder.page.data';
 export * from '@data/page-data/page-data-enforcement/statementOfTruth1.page.data';
 export * from '@data/page-data/page-data-enforcement/statementOfTruth2.page.data';
 export * from '@data/page-data/page-data-enforcement/checkYourAnswers.page.data';
+export * from '@data/page-data/page-data-enforcement/shareEvidenceWithJudge.page.data';
+export * from '@data/page-data/page-data-enforcement/explainHowDefendantsReturned.page.data';
