@@ -1,8 +1,6 @@
 export const rentDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Rent details`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property Address:`,
   howMuchIsTheRentQuestion: `How much is the rent?`,
   howFrequentlyShouldRentBePaidQuestion: `How frequently should rent be paid?`,
   weeklyRadioOption: `Weekly`,
@@ -12,7 +10,7 @@ export const rentDetails = {
   enterFrequencyHiddenTextLabel: `Enter frequency`,
   enterFrequencyHiddenTextInput: `fortnightly`,
   enterTheAmountPerDayHiddenTextLabel: `Enter the amount per day that unpaid rent should be charged at`,
-  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
   chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
   onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,

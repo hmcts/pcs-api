@@ -1,15 +1,20 @@
 import { Page, expect } from '@playwright/test';
-import {IValidation, validationRecord} from "../../interfaces/validation.interface";
+import { IValidation, validationRecord } from '@utils/interfaces';
+import { exactTextWithOptionalWhitespaceRegex } from '@utils/common/string.utils';
 
 export class TextValidation implements IValidation {
   async validate(page: Page, validation: string, fieldName: string, data: validationRecord): Promise<void> {
+    const validationsMap = new Map<string, () => Promise<void>>([
+      ['link', () => this.linkValidation(page, data)],
+      ['text', () => this.textValidation(page, data)],
+    ]);
+    const validationToPerform = validationsMap.get(validation);
+    if (!validationToPerform) throw new Error(`No action found for '${validation}'`);
+    await validationToPerform();
+  }
+
+  private async textValidation(page: Page, data: validationRecord): Promise<void> {
     switch (data.elementType) {
-      case 'link':
-        data.elementType = 'a';
-        break;
-      case 'paragraphLink':
-        data.elementType = 'p > a';
-        break;
       case 'heading':
         data.elementType = 'h1.govuk-heading-l';
         break;
@@ -25,7 +30,25 @@ export class TextValidation implements IValidation {
       case 'listItem':
         data.elementType = 'li';
     }
-    const locator = page.locator(`${data.elementType}:has-text("${data.text}")`).first()
-        await expect(locator).toHaveText(String(data.text));
+    const text = String(data.text);
+    const locator = data.elementType === 'p'
+      ? page.getByText(text, { exact: true }).filter({ visible: true }).first()
+      : page.locator(`${data.elementType}:text-is("${data.text}")`).filter({ visible: true }).first();
+    await locator.waitFor({ state: 'visible' });
+    const actual = await locator.innerText();
+    const normalized = (s: string) => (s ?? '').replace(/\s+/g, ' ').trim();
+    expect(normalized(actual ?? ''), `Expected text "${text}"`).toBe(normalized(text));
+  }
+
+  private async linkValidation(page: Page, data: validationRecord): Promise<void> {
+    const text = data?.text != null ? String(data.text) : '';
+    if (!text) throw new Error('Link validation requires data: { text: "link text" }');
+    const locator = page
+      .locator('xpath=//a[not(ancestor::*[@hidden])]')
+      .filter({ hasText: exactTextWithOptionalWhitespaceRegex(text) })
+        .filter({ visible: true })
+        .first();
+    await locator.scrollIntoViewIfNeeded();
+    await locator.waitFor({ state: 'visible' });
   }
 }

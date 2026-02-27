@@ -31,5 +31,6 @@ export default {
   'resumePossessionClaimlanguageUsed': 'claimLanguageUsed',
   'resumePossessionClaimcompletingYourClaim': 'completingYourClaim',
   'resumePossessionClaimstatementOfTruth': 'statementOfTruth',
-  'confirm': 'confirm'
+  'confirm': 'confirm',
+  'createPossessionClaimpostcodeNotAssignedToCourt': 'postcodeNotAssignedToCourt',
 };
