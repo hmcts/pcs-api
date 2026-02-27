@@ -22,6 +22,6 @@ export class UploadFileAction implements IAction {
     await fileInput.last().setInputFiles(filePath);
     await performValidation('waitUntilElementDisappears', 'Uploading...');
     await performValidation('waitUntilElementDisappears', 'Your request was rate limited. Please wait a few seconds before retrying your document upload');
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(5000); //Forcing wait time to support a smoother multiple file upload task in preview environment
   }
 }
