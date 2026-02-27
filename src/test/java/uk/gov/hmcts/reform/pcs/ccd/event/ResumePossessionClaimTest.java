@@ -209,7 +209,7 @@ class ResumePossessionClaimTest extends BaseEventTest {
         when(userDetails.getUid()).thenReturn(USER_ID.toString());
 
         ResumePossessionClaim underTest = new ResumePossessionClaim(
-            pcsCaseService, ccdSupplementaryDataService, securityContextService,
+            pcsCaseService, securityContextService,
             savingPageBuilderFactory, resumeClaim,
             selectClaimantType, noticeDetails,
             uploadAdditionalDocumentsDetails, tenancyLicenceDetails, contactPreferences,
