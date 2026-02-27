@@ -8,7 +8,7 @@ import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
@@ -37,7 +37,7 @@ public class EnforcementOrderService {
 
     private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow(() -> new CaseNotFoundException(caseReference));
+            .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
         // This should never happen

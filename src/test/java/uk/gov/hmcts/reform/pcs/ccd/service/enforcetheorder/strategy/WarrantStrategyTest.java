@@ -18,11 +18,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.SelectedDefendantEntity;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementWarrantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.RiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.SelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.RiskDetailsMapper;
@@ -58,11 +58,11 @@ class WarrantStrategyTest {
     @Mock
     private WarrantDetailsMapper warrantDetailsMapper;
     @Mock
-    private EnforcementWarrantRepository enforcementWarrantRepository;
+    private WarrantRepository warrantRepository;
     @Captor
     private ArgumentCaptor<RiskProfileEntity> riskProfileCaptor;
     @Captor
-    private ArgumentCaptor<EnforcementWarrantEntity> warrantEntityCaptor;
+    private ArgumentCaptor<WarrantEntity> warrantEntityCaptor;
 
     @InjectMocks
     private WarrantStrategy underTest;
@@ -101,13 +101,13 @@ class WarrantStrategyTest {
     @Test
     void shouldProcessWarrantDetailsAndSaveToRepository() {
         // Given
-        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
-        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+        WarrantEntity warrantEntity = new WarrantEntity();
+        WarrantEntity savedWarrantEntity = new WarrantEntity();
         savedWarrantEntity.setId(UUID.randomUUID());
 
         when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
             .thenReturn(warrantEntity);
-        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(warrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
         when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
@@ -118,21 +118,21 @@ class WarrantStrategyTest {
 
         // Then
         verify(warrantDetailsMapper).toEntity(enforcementOrder, enforcementOrderEntity);
-        verify(enforcementWarrantRepository).save(warrantEntity);
+        verify(warrantRepository).save(warrantEntity);
         verify(enforcementOrderEntity).setWarrantDetails(savedWarrantEntity);
     }
 
     @Test
     void shouldSetSavedWarrantDetailsOnEnforcementOrderEntity() {
         // Given
-        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
-        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+        WarrantEntity warrantEntity = new WarrantEntity();
+        WarrantEntity savedWarrantEntity = new WarrantEntity();
         UUID warrantId = UUID.randomUUID();
         savedWarrantEntity.setId(warrantId);
 
         when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
             .thenReturn(warrantEntity);
-        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(warrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
         when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
@@ -142,8 +142,8 @@ class WarrantStrategyTest {
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
-        verify(enforcementWarrantRepository).save(warrantEntityCaptor.capture());
-        EnforcementWarrantEntity capturedEntity = warrantEntityCaptor.getValue();
+        verify(warrantRepository).save(warrantEntityCaptor.capture());
+        WarrantEntity capturedEntity = warrantEntityCaptor.getValue();
         assertThat(capturedEntity).isEqualTo(warrantEntity);
         verify(enforcementOrderEntity).setWarrantDetails(savedWarrantEntity);
     }
@@ -151,12 +151,12 @@ class WarrantStrategyTest {
     @Test
     void shouldProcessWarrantBeforeRiskProfile() {
         // Given
-        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
-        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+        WarrantEntity warrantEntity = new WarrantEntity();
+        WarrantEntity savedWarrantEntity = new WarrantEntity();
 
         when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
             .thenReturn(warrantEntity);
-        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(warrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
         when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
@@ -166,20 +166,20 @@ class WarrantStrategyTest {
         underTest.process(enforcementOrderEntity, enforcementOrder);
 
         // Then
-        InOrder inOrder = inOrder(enforcementWarrantRepository, riskProfileRepository);
-        inOrder.verify(enforcementWarrantRepository).save(warrantEntity);
+        InOrder inOrder = inOrder(warrantRepository, riskProfileRepository);
+        inOrder.verify(warrantRepository).save(warrantEntity);
         inOrder.verify(riskProfileRepository).save(any(RiskProfileEntity.class));
     }
 
     @Test
     void shouldCallWarrantDetailsMapper() {
         // Given
-        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
-        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+        WarrantEntity warrantEntity = new WarrantEntity();
+        WarrantEntity savedWarrantEntity = new WarrantEntity();
 
         when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
             .thenReturn(warrantEntity);
-        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(warrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
         when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity))
@@ -198,13 +198,13 @@ class WarrantStrategyTest {
     @Test
     void shouldProcessAllThreeStepsInCorrectOrder() {
         // Given
-        EnforcementWarrantEntity warrantEntity = new EnforcementWarrantEntity();
-        EnforcementWarrantEntity savedWarrantEntity = new EnforcementWarrantEntity();
+        WarrantEntity warrantEntity = new WarrantEntity();
+        WarrantEntity savedWarrantEntity = new WarrantEntity();
         List<SelectedDefendantEntity> defendants = List.of(new SelectedDefendantEntity());
 
         when(warrantDetailsMapper.toEntity(enforcementOrder, enforcementOrderEntity))
             .thenReturn(warrantEntity);
-        when(enforcementWarrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
+        when(warrantRepository.save(warrantEntity)).thenReturn(savedWarrantEntity);
         when(riskProfileMapper.toEntity(any(), any())).thenReturn(new RiskProfileEntity());
         when(riskProfileRepository.save(any(RiskProfileEntity.class))).thenReturn(new RiskProfileEntity());
         when(selectedDefendantsMapper.mapToEntities(enforcementOrderEntity)).thenReturn(defendants);
@@ -214,11 +214,11 @@ class WarrantStrategyTest {
 
         // Then
         InOrder inOrder = inOrder(
-            enforcementWarrantRepository,
+            warrantRepository,
             riskProfileRepository,
             selectedDefendantRepository
         );
-        inOrder.verify(enforcementWarrantRepository).save(warrantEntity);
+        inOrder.verify(warrantRepository).save(warrantEntity);
         inOrder.verify(riskProfileRepository).save(any(RiskProfileEntity.class));
         inOrder.verify(selectedDefendantRepository).saveAll(defendants);
     }

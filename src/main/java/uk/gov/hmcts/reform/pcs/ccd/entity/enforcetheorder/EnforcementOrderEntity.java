@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
@@ -41,6 +41,6 @@ public class EnforcementOrderEntity {
     private EnforcementOrder enforcementOrder;
 
     @OneToOne(mappedBy = "enforcementOrder", fetch = LAZY)
-    private EnforcementWarrantEntity warrantDetails;
+    private WarrantEntity warrantDetails;
 
 }

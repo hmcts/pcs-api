@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
@@ -31,7 +31,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "enf_warrant")
-public class EnforcementWarrantEntity {
+public class WarrantEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

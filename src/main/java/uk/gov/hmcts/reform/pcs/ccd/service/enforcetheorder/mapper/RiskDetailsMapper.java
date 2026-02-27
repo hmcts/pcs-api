@@ -6,8 +6,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
 
 @Component
 public class RiskDetailsMapper {
@@ -38,9 +38,9 @@ public class RiskDetailsMapper {
             entity.setVulnerablePeoplePresent(rawWarrantDetails.getVulnerablePeoplePresent());
             if (rawWarrantDetails.getVulnerableAdultsChildren() != null) {
                 entity.setVulnerableCategory(
-                        rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableCategory());
+                    rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableCategory());
                 entity.setVulnerableReasonText(
-                        rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableReasonText());
+                    rawWarrantDetails.getVulnerableAdultsChildren().getVulnerableReasonText());
             }
         }
     }

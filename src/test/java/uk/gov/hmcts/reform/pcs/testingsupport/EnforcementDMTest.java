@@ -7,9 +7,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.WritEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -70,7 +70,7 @@ class EnforcementDMTest {
                                                         EnforcementRiskDetails.class, WritDetails.class);
         domainDataModelSupportHelper.addFieldsToIgnore("enforcementOrder", "writDetails", "enforcementLanguageUsed");
         List<DomainDataModelSupportHelper.MissingCCDFieldInfo> missingFields =
-            domainDataModelSupportHelper.findMissingCCDFields(EnforcementWarrantEntity.class);
+            domainDataModelSupportHelper.findMissingCCDFields(WarrantEntity.class);
 
         consoleOutput(missingFields);
 

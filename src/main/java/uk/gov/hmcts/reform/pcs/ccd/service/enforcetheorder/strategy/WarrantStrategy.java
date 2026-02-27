@@ -4,16 +4,16 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.RiskProfileEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.SelectedDefendantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.SelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.RiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.SelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.WarrantDetailsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.RiskDetailsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.SelectedDefendantsMapper;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementWarrantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.WarrantRepository;
 
 import java.util.List;
 
@@ -26,7 +26,7 @@ public class WarrantStrategy implements EnforcementTypeStrategy {
     private final SelectedDefendantRepository selectedDefendantRepository;
     private final WarrantDetailsMapper warrantDetailsMapper;
     private final RiskDetailsMapper riskProfileMapper;
-    private final EnforcementWarrantRepository enforcementWarrantRepository;
+    private final WarrantRepository warrantRepository;
 
     @Override
     public void process(EnforcementOrderEntity enforcementOrderEntity, EnforcementOrder enforcementOrder) {
@@ -36,9 +36,9 @@ public class WarrantStrategy implements EnforcementTypeStrategy {
     }
 
     private void processWarrant(EnforcementOrder enforcementOrder, EnforcementOrderEntity enforcementOrderEntity) {
-        EnforcementWarrantEntity warrantEntity = warrantDetailsMapper.toEntity(enforcementOrder,
-                                                                                   enforcementOrderEntity);
-        EnforcementWarrantEntity saved = enforcementWarrantRepository.save(warrantEntity);
+        WarrantEntity warrantEntity = warrantDetailsMapper.toEntity(enforcementOrder,
+                                                                    enforcementOrderEntity);
+        WarrantEntity saved = warrantRepository.save(warrantEntity);
         enforcementOrderEntity.setWarrantDetails(saved);
     }
 

@@ -9,7 +9,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writ.WritEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.WritEntity;
 
 @Component
 @Slf4j

@@ -24,6 +24,8 @@ class EnforcementTypeStrategyFactoryTest {
     private WritStrategy writStrategy;
     @Mock
     private WritOfRestitutionStrategy writOfRestitutionStrategy;
+    @Mock
+    private WarrantOfRestitutionStrategy warrantOfRestitutionStrategy;
 
     @InjectMocks
     private EnforcementTypeStrategyFactory underTest;
@@ -43,7 +45,9 @@ class EnforcementTypeStrategyFactoryTest {
             Arguments.of(SelectEnforcementType.WARRANT, WarrantStrategy.class.getSimpleName()),
             Arguments.of(SelectEnforcementType.WRIT, WritStrategy.class.getSimpleName()),
             Arguments.of(SelectEnforcementType.WRIT_OF_RESTITUTION,
-                         WritOfRestitutionStrategy.class.getSimpleName())
+                         WritOfRestitutionStrategy.class.getSimpleName()),
+            Arguments.of(SelectEnforcementType.WARRANT_OF_RESTITUTION,
+                         WarrantOfRestitutionStrategy.class.getSimpleName())
         );
     }
 
