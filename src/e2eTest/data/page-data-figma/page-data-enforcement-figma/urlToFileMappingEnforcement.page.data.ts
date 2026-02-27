@@ -1,0 +1,30 @@
+export default {
+    'enforceTheOrderenforcementApplication': 'enforcementApplication',
+    //'enforceTheOrdernameAndAddressForEviction': 'nameAndAddressForEviction',
+   /*
+    'enforceTheOrderchangeNameAddress': 'changeNameAddress',
+    'enforceTheOrderconfirmDefendantsDOB': 'confirmDefendantsDOB',
+    'enforceTheOrderpeopleWhoWillBeEvicted': 'peopleWhoWillBeEvicted',
+    'enforceTheOrderknownDefendantsDOBInformation': 'knownDefendantsDOBInformation',
+    'enforceTheOrderpeopleYouWantToEvict': 'peopleYouWantToEvict',
+    'enforceTheOrderevictionDelayWarning': 'evictionDelayWarning',
+    'enforceTheOrderevictionRisksPosed': 'evictionRisksPosed',
+    'enforceTheOrderviolentAggressiveRisk': 'violentAggressiveRisk',
+    'enforceTheOrderfirearmsPossessionRisk': 'firearmsPossessionRisk',
+    'enforceTheOrdercriminalAntisocialRisk': 'criminalAntisocialRisk',
+    'enforceTheOrderverbalOrWrittenThreatsRisk': 'verbalOrWrittenThreatsRisk',
+    'enforceTheOrderprotestorGroupRisk': 'protestorGroupRisk',
+    'enforceTheOrderpoliceOrSocialServicesRisk': 'policeOrSocialServicesRisk',
+    'enforceTheOrderaggressiveAnimalsRisk': 'aggressiveAnimalsRisk',
+    'enforceTheOrdervulnerableAdultsChildren': 'vulnerableAdultsChildren',
+    'enforceTheOrderpropertyAccessDetails': 'propertyAccessDetails',
+    'enforceTheOrderadditionalInformation': 'additionalInformation',
+    'enforceTheOrdermoneyOwed': 'moneyOwed',
+    'enforceTheOrderlegalCosts': 'legalCosts',
+    'enforceTheOrderlandRegistryFees': 'landRegistryFees',
+    'enforceTheOrderrepayments': 'repayments',
+    'enforceTheOrderlanguageUsed': 'languageUsed',
+    'enforceTheOrdersuspendedOrder': 'suspendedOrder',
+    'enforceTheOrderstatementOfTruth': 'statementOfTruth'
+    */
+};

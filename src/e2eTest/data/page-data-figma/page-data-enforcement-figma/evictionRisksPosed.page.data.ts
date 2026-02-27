@@ -1,0 +1,21 @@
+export const evictionRisksPosed = {
+  title: `Create a case - HM Courts & Tribunals Service - GOV.UK`,
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: `The risks posed by everyone at the property`,
+  caseNumberParagraph: `Case number:`,
+  propertyAddressParagraph: `Property address:`,
+  kindOfRiskQuestion: `What kind of risks do they pose to the bailiff?`,
+  includeanyRisksHintText: `Include any risks posed by the defendants and also anyone else living at the property`,
+  violentOrAggressiveBehaviourCheckbox: `Violent or aggressive behaviour`,
+  historyOfFirearmPossessionCheckbox: `History of firearm possession`,
+  criminalOrAntisocialBehaviourCheckbox: `Criminal or antisocial behaviour`,
+  verbalOrWrittenThreatsCheckbox: `Verbal or written threats`,
+  protestGroupCheckbox: `Member of a group that protests evictions`,
+  policeOrSocialServiceCheckbox: `Police or social services visits to the property`,
+  aggressiveAnimalsCheckbox: `Aggressive dogs or other animals`,
+  summarySaveApplicationLink: `I want to save this application and return to it later`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`,
+  whatKindOfRisksErrMessage: `What kind of risks do they pose to the bailiff? is required` 
+}

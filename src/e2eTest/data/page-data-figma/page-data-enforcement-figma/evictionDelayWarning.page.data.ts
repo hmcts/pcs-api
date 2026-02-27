@@ -1,0 +1,12 @@
+export const evictionDelayWarning = {
+  title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',  
+  EnforceTheOrderCaption: `Enforce the order`,
+  mainHeader: 'The eviction could be delayed if the bailiff identifies a risk on the day',
+  caseNumberParagraph: `Case number:`,
+  propertyAddressParagraph: `Property address:`, 
+  theBailiffMayNotParagraph: `The bailiff may not be able to carry out the eviction if they identify a risk on the eviction day`,
+  forExampleParagraph: `For example, if the bailiffs arrive to carry out the eviction and they discover a dangerous dog on the premises.`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`    
+}

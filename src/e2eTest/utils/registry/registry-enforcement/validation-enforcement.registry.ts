@@ -7,6 +7,7 @@ import {OptionListValidation} from '@utils/validations/element-validations/optio
 import {MainHeaderValidation} from '@utils/validations/element-validations/pageHeader.validation';
 import {ErrorMessageValidation} from '@utils/validations/element-validations/error-message.validation';
 import {RadioButtonValidation} from '@utils/validations/element-validations/radioButton.validation';
+import {PageContentValidation} from "@utils/validations/element-validations/pageContent.validation";
 import {InputErrorValidation} from "@utils/validations/element-validations/inputError.validation";
 
 export class ValidationRegistry {
@@ -21,6 +22,7 @@ export class ValidationRegistry {
     ['elementToBeVisible', new VisibilityValidation()],
     ['elementNotToBeVisible', new VisibilityValidation()],
     ['waitUntilElementDisappears', new VisibilityValidation()],
+    ['autoValidatePageContent', new PageContentValidation()],
     ['inputError', new InputErrorValidation()],
   ]);
 
