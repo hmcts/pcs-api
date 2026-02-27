@@ -12,7 +12,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTruthDetailsEnforcement;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 public class StatementOfTruthWritPage implements CcdPageConfiguration {
 
@@ -24,7 +24,7 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("statementOfTruthWrit")
             .pageLabel("Statement of truth")
-            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("statementOfTruthWrit-line-separator", "---")
             .label("statementOfTruthWrit-declaration",
                    """
