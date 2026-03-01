@@ -20,7 +20,6 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrantofrestitution.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writofrestitution.WritOfRestitutionEntity;
@@ -29,14 +28,13 @@ import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
-import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementSelectedDefendantRepository;
+import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestitution.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.writofrestitution.WritOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.SelectedDefendantsMapper;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
@@ -130,7 +128,7 @@ class EnforcementOrderServiceTest {
             .thenReturn(stubbedRiskProfile);
         when(enforcementWarrantMapper.toEntity(any(), any())).thenReturn(mock(EnforcementWarrantEntity.class));
         when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenReturn(mock(EnforcementOrderEntity.class));
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -308,7 +306,7 @@ class EnforcementOrderServiceTest {
         stubbedRiskProfile.setVulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS);
         stubbedRiskProfile.setVulnerableReasonText("Vulnerability reason");
         when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenReturn(mock(EnforcementOrderEntity.class));
+            .thenAnswer(invocation -> invocation.getArgument(0));
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
                 .thenReturn(Optional.of(pcsCaseEntity));
         when(enforcementRiskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enforcementOrder)))
@@ -483,6 +481,8 @@ class EnforcementOrderServiceTest {
 
         when(pcsCaseRepository.findByCaseReference(CASE_REFERENCE))
             .thenReturn(Optional.of(pcsCaseEntity));
+        when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
         enforcementOrderService.saveAndClearDraftData(CASE_REFERENCE, enforcementOrder);
@@ -514,7 +514,7 @@ class EnforcementOrderServiceTest {
 
     private void mockStoreWarrant() {
         when(enforcementOrderRepository.save(any(EnforcementOrderEntity.class)))
-            .thenReturn(mock(EnforcementOrderEntity.class));
+            .thenAnswer(invocation -> invocation.getArgument(0));
         when(enforcementWarrantMapper.toEntity(any(EnforcementOrder.class), any(EnforcementOrderEntity.class)))
             .thenReturn(mock(EnforcementWarrantEntity.class));
         when(enforcementWarrantRepository.save(any()))
