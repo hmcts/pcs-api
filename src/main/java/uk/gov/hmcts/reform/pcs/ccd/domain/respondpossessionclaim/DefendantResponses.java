@@ -24,6 +24,9 @@ public class DefendantResponses {
     private YesNoNotSure tenancyTypeCorrect;
 
     @CCD
+    private LocalDate tenancyStartDate;
+
+    @CCD
     private YesNoNotSure tenancyStartDateCorrect;
 
     @CCD
