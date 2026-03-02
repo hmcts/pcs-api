@@ -3,6 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -22,6 +25,7 @@ import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -188,8 +192,9 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getReceivedFreeLegalAdvice()).isNull();
     }
 
-    @Test
-    void shouldSaveDefendantResponseWhenTenancyStartDateIsSet() {
+    @ParameterizedTest(name = "tenancyStartDate={0}")
+    @MethodSource("tenancyStartDatePersistenceScenarios")
+    void shouldPersistTenancyStartDate(LocalDate tenancyStartDate) {
         // Given
         when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
         when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
@@ -198,7 +203,6 @@ class DefendantResponseServiceTest {
         stubPartyLookup();
         stubClaimLookup();
 
-        LocalDate tenancyStartDate = LocalDate.of(2010, 1, 1);
         DefendantResponses responses = DefendantResponses.builder()
             .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
             .tenancyStartDate(tenancyStartDate)
@@ -214,29 +218,11 @@ class DefendantResponseServiceTest {
         assertThat(savedResponse.getTenancyStartDate()).isEqualTo(tenancyStartDate);
     }
 
-    @Test
-    void shouldSaveDefendantResponseWhenTenancyStartDateIsNull() {
-        // Given
-        when(securityContextService.getCurrentUserId()).thenReturn(USER_ID);
-        when(defendantResponseRepository.existsByClaimPcsCaseCaseReferenceAndPartyIdamId(
-            CASE_REFERENCE, USER_ID)).thenReturn(false);
-        stubCaseLookup();
-        stubPartyLookup();
-        stubClaimLookup();
-
-        DefendantResponses responses = DefendantResponses.builder()
-            .receivedFreeLegalAdvice(YesNoPreferNotToSay.YES)
-            .tenancyStartDate(null)
-            .build();
-
-        // When
-        underTest.saveDefendantResponse(CASE_REFERENCE, responses);
-
-        // Then
-        verify(defendantResponseRepository).save(responseCaptor.capture());
-        DefendantResponseEntity savedResponse = responseCaptor.getValue();
-
-        assertThat(savedResponse.getTenancyStartDate()).isNull();
+    private static Stream<Arguments> tenancyStartDatePersistenceScenarios() {
+        return Stream.of(
+            Arguments.of(LocalDate.of(2010, 1, 1)),
+            Arguments.of((LocalDate) null)
+        );
     }
 
     @Test
