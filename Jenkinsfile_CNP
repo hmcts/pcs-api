@@ -115,6 +115,14 @@ withPipeline(type, product, component) {
   }
 
   afterAlways('functionalTest:preview') {
+    archiveSmokeTestReports()
+  }
+
+  afterAlways('functionalTest:aat') {
+    archiveSmokeTestReports()
+  }
+
+  afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
   }
 
@@ -170,6 +178,19 @@ def archiveFunctionalTestReports() {
   ])
 
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
+}
+
+def archiveSmokeTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "report-for-smoke-tests",
+    reportFiles: 'index.html',
+    reportName: 'API Smoke Test Report'
+  ])
+
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/site/serenity/*'
 }
 
 def archiveE2eTestReports() {
