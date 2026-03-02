@@ -21,7 +21,7 @@ import java.util.Map;
 @Slf4j
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
-@Disabled("Flaky test - disabled until stability issues are resolved")
+@Disabled("Flaky test - disabled until issues are resolved")
 class PartyAccessCodeEndpointTests extends BaseApi {
 
     @Steps
