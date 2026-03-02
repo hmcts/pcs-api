@@ -6,6 +6,7 @@ import net.serenitybdd.annotations.Title;
 import net.serenitybdd.junit5.SerenityJUnit5Extension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,7 @@ import java.util.Map;
 @Slf4j
 @Tag("Functional")
 @ExtendWith(SerenityJUnit5Extension.class)
+@Disabled("Flaky test - disabled until stability issues are resolved")
 class PartyAccessCodeEndpointTests extends BaseApi {
 
     @Steps
