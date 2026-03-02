@@ -4,7 +4,9 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseSummary } from '@data/page-data';
 import {
   yourApplication,
-  peopleWillBeEvicted
+  peopleWillBeEvicted,
+  evidenceUpload,
+  checkYourAnswers
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -92,5 +94,15 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
         nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
       });
+      await performAction('reTryOnCallBackError', peopleWillBeEvicted.continueButton, evidenceUpload.mainHeader);
+      await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
+        documents: [
+          { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.photoGraphicEvidenceDropDownInput, fileName: 'photoGraphicEvidence.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.otherDocumentDropDownInput, fileName: 'otherDocument.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+          { type: evidenceUpload.policeReportDropDownInput, fileName: 'tenancyLicence.docx', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
+        ],
+        nextPage: checkYourAnswers.mainHeader
+      })
     });
 });

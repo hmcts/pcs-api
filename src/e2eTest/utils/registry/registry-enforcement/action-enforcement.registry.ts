@@ -10,7 +10,7 @@ import { LoginAction } from '@utils/actions/custom-actions/login.action';
 import { SearchCaseAction } from '@utils/actions/custom-actions/searchCase.action';
 import { EnforcementAction } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
 import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI.action';
-import { ExpandSummaryAction } from '@utils/actions/element-actions';
+import { ExpandSummaryAction, UploadFileAction } from '@utils/actions/element-actions';
 import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import { RetryOnCallBackError } from '@utils/actions/element-actions/reTryOnCallBackError.action';
 
@@ -60,8 +60,10 @@ export class ActionEnforcementRegistry {
     ['confirmSuspendedOrder', new EnforcementAction()],
     ['selectStatementOfTruth', new EnforcementAction()],
     ['selectStatementOfTruthWrit', new EnforcementAction()],
+    ['uploadEvidenceThatDefendantsAreAtProperty', new EnforcementAction()],
     ['inputErrorValidation', new EnforcementAction()],
     ['generateRandomString', new EnforcementAction()],
+    ['uploadFile', new UploadFileAction()]
   ]);
 
   static getAction(actionName: string): IAction {
