@@ -59,7 +59,6 @@ public class PartyAccessCodeLinkService {
         );
 
         partyEntity.setIdamId(idamUserId);
-        partyEntity.setEmailAddress(userInfo.getSub());
 
         caseAssignmentService.assignDefendantRole(caseReference, idamUserId.toString());
     }

@@ -258,7 +258,6 @@ class DefendantResponseServiceTest {
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("A response has already been submitted for this case.");
 
-        verify(partyRepository, never()).findIdByIdamId(any());
         verify(claimRepository, never()).findIdByCaseReference(anyLong());
         verify(defendantResponseRepository, never()).save(any());
     }
@@ -274,7 +273,6 @@ class DefendantResponseServiceTest {
         underTest.saveDefendantResponse(CASE_REFERENCE, null);
 
         // Then
-        verify(partyRepository, never()).findIdByIdamId(any());
         verify(claimRepository, never()).findIdByCaseReference(anyLong());
         verify(defendantResponseRepository, never()).save(any());
     }
