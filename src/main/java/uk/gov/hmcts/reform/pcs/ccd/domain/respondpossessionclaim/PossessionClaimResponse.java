@@ -11,7 +11,12 @@ import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.CitizenAccess;
 
 import java.util.List;
 
-@Builder
+/**
+ * Defendant's response to a possession claim.
+ *
+ * <p><b>IMPORTANT:</b> {@code @Builder(toBuilder = true)} is REQUIRED.
+ */
+@Builder(toBuilder = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
