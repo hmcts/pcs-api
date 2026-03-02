@@ -440,7 +440,7 @@ export class CreateCaseAction implements IAction {
       rentArrearsOrBreach: string[];
     }
     await performAction('check', rentArrearsOrBreachOfTenancyGrounds.rentArrearsOrBreach);
-    await performAction('clickButton', rentArrearsOrBreachOfTenancyGround.continue);
+    await performAction('clickButton', rentArrearsOrBreachOfTenancyGround.continueButton);
   }
 
   private async enterReasonForPossession(reasons: actionData) {
@@ -636,8 +636,8 @@ export class CreateCaseAction implements IAction {
   private async enterReasonForDemotionOrder(reason: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('inputText', reason, demotionOfTenancyOrderReason.sampleTestReason);
-    await performAction('clickButton', demotionOfTenancyOrderReason.continue);
+    await performAction('inputText', reason, demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderInputText);
+    await performAction('clickButton', demotionOfTenancyOrderReason.continueButton);
   }
 
   private async enterReasonForSuspensionOrder(reason: actionData) {
@@ -651,7 +651,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('inputText', reason.suspension, suspensionOfRightToBuyOrderReason.sampleTestReason);
-    await performAction('inputText', reason.demotion, demotionOfTenancyOrderReason.sampleTestReason);
+    await performAction('inputText', reason.demotion, demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderInputText);
     await performAction('clickButton', suspensionToBuyDemotionOfTenancyOrderReasons.continue);
   }
 

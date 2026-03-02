@@ -512,7 +512,7 @@ test.describe('[Create Case - England]', async () => {
       , option: demotionOfTenancyHousingActOptions.section82A1985RadioOption}]);
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
     await performValidation('mainHeader', demotionOfTenancyOrderReason.mainHeader);
-    await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.requestDemotionOrderQuestion);
+    await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -603,7 +603,7 @@ test.describe('[Create Case - England]', async () => {
       , option: demotionOfTenancyHousingActOptions.section82A1985RadioOption}]);
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
     await performValidation('mainHeader', demotionOfTenancyOrderReason.mainHeader);
-    await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.requestDemotionOrderQuestion);
+    await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -788,7 +788,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
     await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
     await performValidation('mainHeader', demotionOfTenancyOrderReason.mainHeader);
-    await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.requestDemotionOrderQuestion);
+    await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -845,7 +845,7 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', rentArrearsOrBreachOfTenancyGround.mainHeader);
     await performAction('selectRentArrearsOrBreachOfTenancy', {
-      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancyGround.rentArrears]
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancyGround.rentArrearsCheckbox]
     });
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
     await performAction('selectMediationAndSettlement', {
@@ -951,7 +951,7 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', rentArrearsOrBreachOfTenancyGround.mainHeader);
     await performAction('selectRentArrearsOrBreachOfTenancy', {
-      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancyGround.breachOfTenancy, rentArrearsOrBreachOfTenancyGround.rentArrears]
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancyGround.breachOfTheTenancyCheckbox, rentArrearsOrBreachOfTenancyGround.rentArrearsCheckbox]
     });
     await performValidation('mainHeader', reasonsForPossession.mainHeader);
     await performAction('enterReasonForPossession'
@@ -1174,7 +1174,7 @@ test.describe('[Create Case - England]', async () => {
     });
     await performValidation('mainHeader', rentArrearsOrBreachOfTenancyGround.mainHeader);
     await performAction('selectRentArrearsOrBreachOfTenancy', {
-      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancyGround.breachOfTenancy]
+      rentArrearsOrBreach: [rentArrearsOrBreachOfTenancyGround.breachOfTheTenancyCheckbox]
     });
     await performAction('enterReasonForPossession', [reasonsForPossession.breachOfTenancy]);
     await performAction('selectPreActionProtocol', preactionProtocol.yesRadioOption);
