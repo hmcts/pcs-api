@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaim
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.StartEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.event.respondpossessionclaim.SubmitEventHandler;
 import uk.gov.hmcts.reform.pcs.ccd.service.ClaimResponseService;
+import uk.gov.hmcts.reform.pcs.ccd.service.DefendantResponseService;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.entity.AddressEntity;
@@ -70,6 +71,9 @@ class RespondPossessionClaimTest extends BaseEventTest {
     @Mock
     private ImmutablePartyFieldValidator immutableFieldValidator;
 
+    @Mock
+    private DefendantResponseService defendantResponseService;
+
     @BeforeEach
     void setUp() {
         // Create handlers with real dependencies
@@ -84,7 +88,8 @@ class RespondPossessionClaimTest extends BaseEventTest {
         SubmitEventHandler submitEventHandler = new SubmitEventHandler(
             draftCaseDataService,
             immutableFieldValidator,
-            claimResponseService
+            claimResponseService,
+            defendantResponseService
         );
 
         setEventUnderTest(new RespondPossessionClaim(
