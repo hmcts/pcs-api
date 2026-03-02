@@ -13,4 +13,12 @@ export const prohibitedConductWales = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
+  yes: `Yes`,
+  no: `No`,
+  continue: `Continue`,
+  haveYouAndContractHolderAgreedQuestion: `Have you and the contract holder agreed terms of the periodic standard contract in addition to those incorporated by statute?`,
+  giveDetailsOfTermsLabel: `Give details of the terms you've agreed`,
+  giveDetailsOfTermsSampleData: `Sample Test Input Data for Give details of the terms`,
+  whyAreYouMakingThisClaimLabel: `Why are you making this claim?`,
+  whyAreYouMakingThisClaimSampleData: `Sample Test Input Data for Why are you making this claim`,
 };

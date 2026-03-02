@@ -8,15 +8,9 @@ import {
   resumeClaimOptions,
   reasonsForPossession,
   borderPostcode,
-  rentArrearsOrBreachOfTenancy,
   whatAreYourGroundsForPossession,
-  reasonsForRequestingADemotionOrder,
-  statementOfExpressTerms,
-  reasonsForRequestingASuspensionOrder,
   userIneligible,
   whatAreYourGroundsForPossessionWales,
-  underlesseeOrMortgageeDetails,
-  reasonsForRequestingASuspensionAndDemotionOrder,
   addressCheckYourAnswers
 } from '@data/page-data';
 import {
@@ -49,6 +43,12 @@ import {
   confirm,
   statementOfTruth,
   uploadAdditionalDocuments,
+  demotionOfTenancyOrderReason,
+  rentArrearsOrBreachOfTenancyGround,
+  statementOfExpressTerms,
+  suspensionOfRightToBuyOrderReason,
+  suspensionToBuyDemotionOfTenancyOrderReasons,
+  underlesseeOrMortgageeDetails
 } from '@data/page-data-figma';
 import {MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT} from 'playwright.config';
 export let caseNumber: string;
@@ -440,7 +440,7 @@ export class CreateCaseAction implements IAction {
       rentArrearsOrBreach: string[];
     }
     await performAction('check', rentArrearsOrBreachOfTenancyGrounds.rentArrearsOrBreach);
-    await performAction('clickButton', rentArrearsOrBreachOfTenancy.continue);
+    await performAction('clickButton', rentArrearsOrBreachOfTenancyGround.continue);
   }
 
   private async enterReasonForPossession(reasons: actionData) {
@@ -636,23 +636,23 @@ export class CreateCaseAction implements IAction {
   private async enterReasonForDemotionOrder(reason: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('inputText', reason, reasonsForRequestingADemotionOrder.sampleTestReason);
-    await performAction('clickButton', reasonsForRequestingADemotionOrder.continue);
+    await performAction('inputText', reason, demotionOfTenancyOrderReason.sampleTestReason);
+    await performAction('clickButton', demotionOfTenancyOrderReason.continue);
   }
 
   private async enterReasonForSuspensionOrder(reason: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('inputText', reason, reasonsForRequestingASuspensionOrder.sampleTestReason);
-    await performAction('clickButton', reasonsForRequestingASuspensionOrder.continue);
+    await performAction('inputText', reason, suspensionOfRightToBuyOrderReason.sampleTestReason);
+    await performAction('clickButton', suspensionOfRightToBuyOrderReason.continue);
   }
 
   private async enterReasonForSuspensionAndDemotionOrder(reason: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('inputText', reason.suspension, reasonsForRequestingASuspensionOrder.sampleTestReason);
-    await performAction('inputText', reason.demotion, reasonsForRequestingADemotionOrder.sampleTestReason);
-    await performAction('clickButton', reasonsForRequestingASuspensionAndDemotionOrder.continue);
+    await performAction('inputText', reason.suspension, suspensionOfRightToBuyOrderReason.sampleTestReason);
+    await performAction('inputText', reason.demotion, demotionOfTenancyOrderReason.sampleTestReason);
+    await performAction('clickButton', suspensionToBuyDemotionOfTenancyOrderReasons.continue);
   }
 
   private async selectApplications(option: actionData) {

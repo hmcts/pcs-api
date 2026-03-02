@@ -10,8 +10,6 @@ import {
   checkYourAnswers,
   propertyDetails,
   reasonsForPossession,
-  statementOfExpressTerms,
-  underlesseeOrMortgageeDetails,
   whatAreYourGroundsForPossession,
   home
 } from '@data/page-data';
@@ -45,13 +43,15 @@ import {
   wantToUploadDocuments,
   statementOfTruth,
   uploadAdditionalDocuments,
-  suspensionOfRightToBuyHousingActOptions,
   demotionOfTenancyHousingActOptions,
   demotionOfTenancyOrderReason,
-  suspensionToBuyDemotionOfTenancyOrderReasons,
-  suspensionOfRightToBuyOrderReason,
   rentArrearsOrBreachOfTenancyGround,
-  suspensionToBuyDemotionOfTenancyActs
+  statementOfExpressTerms,
+  suspensionOfRightToBuyHousingActOptions,
+  suspensionOfRightToBuyOrderReason,
+  suspensionToBuyDemotionOfTenancyActs,
+  suspensionToBuyDemotionOfTenancyOrderReasons,
+  underlesseeOrMortgageeDetails
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';

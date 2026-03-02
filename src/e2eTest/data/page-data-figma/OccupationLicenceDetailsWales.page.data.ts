@@ -1,4 +1,4 @@
-export const OccupationLicenceDetailsWales = {
+export const occupationLicenceDetailsWales = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Occupation contract or licence details`,
   occupationContractOrLicenceTypeSubHeader: `Occupation contract or licence type`,
@@ -32,4 +32,17 @@ export const OccupationLicenceDetailsWales = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
+  occupationContractOrLicenceType: `What type of occupation contract or licence is in place?`,
+  secureContract: `Secure contract`,
+  standardContract: `Standard contract`,
+  other: `Other`,
+  dayLabel: `Day`,
+  monthLabel: `Month`,
+  yearLabel: `Year`,
+  dayInput: `16`,
+  monthInput: `04`,
+  yearInput: `2021`,
+  continue: `Continue`,
+  giveDetailsOfTypeOfOccupationContractAgreementLabel: `Give details about what type of occupation contract or licence is in place`,
+  detailsOfLicenceInput: `This is the details of Licence or Tenancy agreement.`,
 };

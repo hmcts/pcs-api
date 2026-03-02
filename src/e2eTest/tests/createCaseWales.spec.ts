@@ -8,15 +8,11 @@ import {
 import {
   addressCheckYourAnswers,
   addressDetails,
-  claimantDetailsWales,
-  occupationContractOrLicenceDetailsWales,
-  prohibitedConductStandardContractWales,
   reasonsForPossession,
   asbQuestionsWales,
   whatAreYourGroundsForPossessionWales,
   checkYourAnswers,
   propertyDetails,
-  underlesseeOrMortgageeDetails,
   home
 } from '@data/page-data';
 import {
@@ -42,7 +38,11 @@ import {
   claimLanguageUsed,
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
-  statementOfTruth
+  statementOfTruth,
+  claimantDetailsWales,
+  occupationLicenceDetailsWales,
+  prohibitedConductWales,
+  underlesseeOrMortgageeDetails
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -95,11 +95,11 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract,
-      day: occupationContractOrLicenceDetailsWales.dayInput,
-      month: occupationContractOrLicenceDetailsWales.monthInput,
-      year: occupationContractOrLicenceDetailsWales.yearInput,
+      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationLicenceDetailsWales.standardContract,
+      day: occupationLicenceDetailsWales.dayInput,
+      month: occupationLicenceDetailsWales.monthInput,
+      year: occupationLicenceDetailsWales.yearInput,
       files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
@@ -145,8 +145,8 @@ test.describe('[Create Case - Wales]', async () => {
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
-      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductStandardContractWales.no,
+      question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
@@ -200,8 +200,8 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract
+      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationLicenceDetailsWales.secureContract
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performValidation('elementNotToBeVisible',[whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187]);
@@ -254,16 +254,16 @@ test.describe('[Create Case - Wales]', async () => {
       defendantCircumstance: defendantCircumstances.noRadioOption,
       additionalDefendants: false
     });
-    await performValidation('mainHeader', prohibitedConductStandardContractWales.mainHeader);
+    await performValidation('mainHeader', prohibitedConductWales.mainHeader);
     await performAction('selectProhibitedConductStandardContract', {
-      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductStandardContractWales.yes,
-      label1: prohibitedConductStandardContractWales.whyAreYouMakingThisClaimLabel,
-      input1: prohibitedConductStandardContractWales.whyAreYouMakingThisClaimSampleData,
-      question2: prohibitedConductStandardContractWales.haveYouAndContractHolderAgreedQuestion,
-      option2: prohibitedConductStandardContractWales.yes,
-      label2: prohibitedConductStandardContractWales.giveDetailsOfTermsLabel,
-      input2: prohibitedConductStandardContractWales.giveDetailsOfTermsSampleData
+      question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductWales.yes,
+      label1: prohibitedConductWales.whyAreYouMakingThisClaimLabel,
+      input1: prohibitedConductWales.whyAreYouMakingThisClaimSampleData,
+      question2: prohibitedConductWales.haveYouAndContractHolderAgreedQuestion,
+      option2: prohibitedConductWales.yes,
+      label2: prohibitedConductWales.giveDetailsOfTermsLabel,
+      input2: prohibitedConductWales.giveDetailsOfTermsSampleData
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     // The following sections are commented out pending development of the Wales journey.
@@ -321,11 +321,11 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract,
-      day: occupationContractOrLicenceDetailsWales.dayInput,
-      month: occupationContractOrLicenceDetailsWales.monthInput,
-      year: occupationContractOrLicenceDetailsWales.yearInput
+      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationLicenceDetailsWales.standardContract,
+      day: occupationLicenceDetailsWales.dayInput,
+      month: occupationLicenceDetailsWales.monthInput,
+      year: occupationLicenceDetailsWales.yearInput
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -372,12 +372,12 @@ test.describe('[Create Case - Wales]', async () => {
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
-      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductStandardContractWales.yes,
-      label1: prohibitedConductStandardContractWales.whyAreYouMakingThisClaimLabel,
-      input1: prohibitedConductStandardContractWales.whyAreYouMakingThisClaimSampleData,
-      question2: prohibitedConductStandardContractWales.haveYouAndContractHolderAgreedQuestion,
-      option2: prohibitedConductStandardContractWales.no,
+      question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductWales.yes,
+      label1: prohibitedConductWales.whyAreYouMakingThisClaimLabel,
+      input1: prohibitedConductWales.whyAreYouMakingThisClaimSampleData,
+      question2: prohibitedConductWales.haveYouAndContractHolderAgreedQuestion,
+      option2: prohibitedConductWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
@@ -431,8 +431,8 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.other
+      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationLicenceDetailsWales.other
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -475,8 +475,8 @@ test.describe('[Create Case - Wales]', async () => {
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
-      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductStandardContractWales.no,
+      question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
@@ -533,11 +533,11 @@ test.describe('[Create Case - Wales]', async () => {
       name2Option: defendantDetails.noRadioOption,
       correspondenceAddress2Option: defendantDetails.yesRadioOption, correspondenceAddressSame2Option: defendantDetails.yesRadioOption});
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract,
-      day: occupationContractOrLicenceDetailsWales.dayInput,
-      month: occupationContractOrLicenceDetailsWales.monthInput,
-      year: occupationContractOrLicenceDetailsWales.yearInput,
+      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationLicenceDetailsWales.secureContract,
+      day: occupationLicenceDetailsWales.dayInput,
+      month: occupationLicenceDetailsWales.monthInput,
+      year: occupationLicenceDetailsWales.yearInput,
       files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
@@ -586,8 +586,8 @@ test.describe('[Create Case - Wales]', async () => {
       additionalDefendants: true
     });
     await performAction('selectProhibitedConductStandardContract', {
-      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductStandardContractWales.no,
+      question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
@@ -663,8 +663,8 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.standardContract
+      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationLicenceDetailsWales.standardContract
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -694,8 +694,8 @@ test.describe('[Create Case - Wales]', async () => {
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
-      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductStandardContractWales.no,
+      question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
@@ -758,8 +758,8 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationContractOrLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationContractOrLicenceDetailsWales.secureContract
+      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
+      occupationContractType: occupationLicenceDetailsWales.secureContract
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -804,8 +804,8 @@ test.describe('[Create Case - Wales]', async () => {
       additionalDefendants: false
     });
     await performAction('selectProhibitedConductStandardContract', {
-      question1: prohibitedConductStandardContractWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductStandardContractWales.no,
+      question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
+      option1: prohibitedConductWales.no,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);

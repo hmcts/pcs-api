@@ -10,4 +10,10 @@ export const statementOfExpressTerms = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
+  statementOfExpressTermsQuestion: `Have you served the defendants with a statement of the express terms which will apply to the demoted tenancy?`,
+  yes: `Yes`,
+  no: `No`,
+  giveDetailsOfTermsLabel: `Give details of the terms`,
+  sampleTestReason: `This is the sample text for - details of the terms`,
+  continue: `Continue`,
 };

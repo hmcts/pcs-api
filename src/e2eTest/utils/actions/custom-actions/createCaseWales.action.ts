@@ -1,10 +1,12 @@
 import {actionData, actionRecord, IAction} from '@utils/interfaces';
 import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
-import {claimantDetailsWales} from '@data/page-data/claimantDetailsWales.page.data';
 import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
-import {prohibitedConductStandardContractWales} from '@data/page-data/prohibitedConductStandardContractWales.page.data';
-import {occupationContractOrLicenceDetailsWales} from '@data/page-data/occupationContractOrLicenceDetailsWales.page.data';
+import {
+  claimantDetailsWales,
+  prohibitedConductWales,
+  occupationLicenceDetailsWales
+} from '@data/page-data-figma';
 import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
 
 export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
@@ -51,34 +53,34 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       question: occupationContractData.occupationContractQuestion,
       option: occupationContractData.occupationContractType
     });
-    if (occupationContractData.occupationContractType === occupationContractOrLicenceDetailsWales.other) {
-      await performAction('inputText', occupationContractOrLicenceDetailsWales.giveDetailsOfTypeOfOccupationContractAgreementLabel, occupationContractOrLicenceDetailsWales.detailsOfLicenceInput);
+    if (occupationContractData.occupationContractType === occupationLicenceDetailsWales.other) {
+      await performAction('inputText', occupationLicenceDetailsWales.giveDetailsOfTypeOfOccupationContractAgreementLabel, occupationLicenceDetailsWales.detailsOfLicenceInput);
     }
     if (occupationContractData.day && occupationContractData.month && occupationContractData.year) {
       await performActions(
         'Enter Date',
-        ['inputText', occupationContractOrLicenceDetailsWales.dayLabel, occupationContractData.day],
-        ['inputText', occupationContractOrLicenceDetailsWales.monthLabel, occupationContractData.month],
-        ['inputText', occupationContractOrLicenceDetailsWales.yearLabel, occupationContractData.year]);
+        ['inputText', occupationLicenceDetailsWales.dayLabel, occupationContractData.day],
+        ['inputText', occupationLicenceDetailsWales.monthLabel, occupationContractData.month],
+        ['inputText', occupationLicenceDetailsWales.yearLabel, occupationContractData.year]);
     }
     if (occupationContractData.files) {
       await performAction('uploadFile', occupationContractData.files);
     }
-    await performAction('clickButton', occupationContractOrLicenceDetailsWales.continue);
+    await performAction('clickButton', occupationLicenceDetailsWales.continue);
   }
 
   private async selectProhibitedConductStandardContract(prohibitedConduct: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: prohibitedConduct.question1, option: prohibitedConduct.option1});
-    if (prohibitedConduct.option1 == prohibitedConductStandardContractWales.yes) {
+    if (prohibitedConduct.option1 == prohibitedConductWales.yes) {
       await performAction('inputText', prohibitedConduct.label1, prohibitedConduct.input1);
       await performAction('clickRadioButton', {question: prohibitedConduct.question2, option: prohibitedConduct.option2});
-      if (prohibitedConduct.option2 == prohibitedConductStandardContractWales.yes) {
+      if (prohibitedConduct.option2 == prohibitedConductWales.yes) {
         await performAction('inputText', prohibitedConduct.label2, prohibitedConduct.input2);
       }
     }
-    await performAction('clickButton', claimantDetailsWales.continue);
+    await performAction('clickButton', prohibitedConductWales.continue);
   }
 
   private async selectAsb(asbQuestions: actionRecord) {

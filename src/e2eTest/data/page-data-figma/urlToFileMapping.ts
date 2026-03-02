@@ -36,7 +36,7 @@ export default {
   'resumePossessionClaimsuspensionToBuyDemotionOfTenancyActs': 'suspensionToBuyDemotionOfTenancyActs',
   'resumePossessionClaimsuspensionOfRightToBuyHousingActOptions': 'suspensionOfRightToBuyHousingActOptions',
   'resumePossessionClaimdemotionOfTenancyHousingActOptions': 'demotionOfTenancyHousingActOptions',
-  'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'reasonsForRequestingASuspensionAndDemotionOrder',
+  'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimsuspensionOfRightToBuyOrderReason': 'suspensionOfRightToBuyOrderReason',
   'resumePossessionClaimdemotionOfTenancyOrderReason': 'demotionOfTenancyOrderReason',
   'resumePossessionClaimrentArrearsOrBreachOfTenancyGround': 'rentArrearsOrBreachOfTenancyGround',
