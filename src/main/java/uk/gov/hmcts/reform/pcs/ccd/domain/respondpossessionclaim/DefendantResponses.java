@@ -36,4 +36,7 @@ public class DefendantResponses {
 
     @CCD
     private LocalDate noticeReceivedDate;
+
+    @CCD
+    private YesNoNotSure registeredLandlord;
 }
