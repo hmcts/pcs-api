@@ -195,42 +195,42 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         validationType: violentOrAggressiveBehaviour.errorValidationType.two,
         inputArray: violentOrAggressiveBehaviour.errorValidationField.errorTextField,
         header: violentOrAggressiveBehaviour.eventCouldNotBeCreatedErrorMessage,
-        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
+        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveTextLabel,
         button: violentOrAggressiveBehaviour.continueButton
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressive,
-        input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveInput,
+        label: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveTextLabel,
+        input: violentOrAggressiveBehaviour.howHaveTheyBeenViolentAndAggressiveTextInput,
         nextPage: firearmPossession.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: firearmPossession.whatIsTheirHistoryOfFirearmPossession,
-        input: firearmPossession.whatIsTheirHistoryOfFirearmPossessionInput,
+        label: firearmPossession.whatIsTheirHistoryOfFirearmPossessionTextLabel,
+        input: firearmPossession.whatIsTheirHistoryOfFirearmPossessionTextInput,
         nextPage: criminalOrAntisocialBehaviour.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviour,
-        input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourInput,
+        label: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourTextLabel,
+        input: criminalOrAntisocialBehaviour.whatIsTheirHistoryOfCriminalAntisocialBehaviourTextInput,
         nextPage: verbalOrWrittenThreats.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: verbalOrWrittenThreats.verbalOrWrittenThreatsMade,
-        input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeInput,
+        label: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeTextLabel,
+        input: verbalOrWrittenThreats.verbalOrWrittenThreatsMadeTextInput,
         nextPage: groupProtestsEviction.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: groupProtestsEviction.whichGroupMember,
-        input: groupProtestsEviction.whichGroupMemberInput,
+        label: groupProtestsEviction.whichGroupMemberTextLabel,
+        input: groupProtestsEviction.whichGroupMemberTextInput,
         nextPage: policeOrSocialServiceVisit.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
-        input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput,
+        label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyTextLabel,
+        input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyTextInput,
         nextPage: animalsAtTheProperty.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: animalsAtTheProperty.whatKindOfAnimalDoTheyHave,
-        input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveInput,
+        label: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveTextLabel,
+        input: animalsAtTheProperty.whatKindOfAnimalDoTheyHaveTextInput,
         nextPage: vulnerableAdultsAndChildren.mainHeader
       });
       await performAction('inputErrorValidation', {
@@ -832,13 +832,13 @@ test.describe('[Enforcement - Warrant of Possession]', async () => {
         nextPage: groupProtestsEviction.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: groupProtestsEviction.whichGroupMember,
-        input: groupProtestsEviction.whichGroupMemberInput,
+        label: groupProtestsEviction.whichGroupMemberTextLabel,
+        input: groupProtestsEviction.whichGroupMemberTextInput,
         nextPage: policeOrSocialServiceVisit.mainHeader
       });
       await performAction('provideRiskPosedByEveryoneAtProperty', {
-        label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitTheProperty,
-        input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyInput,
+        label: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyTextLabel,
+        input: policeOrSocialServiceVisit.whyDidThePoliceOrSSVisitThePropertyTextInput,
         nextPage: vulnerableAdultsAndChildren.mainHeader
       });
       await performAction('selectVulnerablePeopleInTheProperty', {
