@@ -1,8 +1,6 @@
 export const noticeDetails = {
   makeAClaimCaption: `Make a claim`,
   mainHeader: `Notice details`,
-  caseNumberParagraph: `Case number:`,
-  propertyAddressParagraph: `Property address:`,
   howDidYouServeTheQuestion: `How did you serve the notice?`,
   byFirstClassPostOrRadioOption: `By first class post or other service which provides for delivery on the next business day`,
   byFirstClassPostOrOtherServiceHiddenSubheader: `By first class post or other service which provides for delivery on the next business day`,
@@ -45,7 +43,7 @@ export const noticeDetails = {
   removeHiddenButton: `Remove`,
   chooseFileHiddenButton: `Choose file`,
   cancelUploadHiddenButton: `Cancel upload`,
-  iWantToSaveThisApplicationAndReturnToItLaterLink: 'I want to save this application and return to it later',
+  iWantToSaveThisApplicationAndReturnToItLaterLink: `I want to save this application and return to it later`,
   ifYouWantToSaveYourApplicationAndReturnToItLaterHiddenParagraph: `If you want to save this application and return to it later:`,
   chooseContinueHiddenParagraph: `Choose ‘Continue'.`,
   onTheNextPageChooseCancelHiddenParagraph: `On the next page choose ‘Cancel’.`,

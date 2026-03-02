@@ -102,15 +102,15 @@ public class TestCaseGeneration implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     PCSCase loadTestPcsCase(String label) {
-        PCSCase loadedCase;
         try {
             Resource testResource = testCaseSupportHelper.getTestResource(label);
-            String jsonString = StreamUtils.copyToString(testResource.getInputStream(), StandardCharsets.UTF_8);
-            loadedCase = draftCaseDataService.parseCaseDataJson(jsonString);
+            try (var inputStream = testResource.getInputStream()) {
+                String jsonString = StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8);
+                return draftCaseDataService.parseCaseDataJson(jsonString);
+            }
         } catch (IOException e) {
             throw new TestCaseSupportException(e);
         }
-        return loadedCase;
     }
 
     public DynamicList getTestFilesList(PCSCase fromEvent) {

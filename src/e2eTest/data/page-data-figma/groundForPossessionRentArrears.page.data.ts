@@ -1,7 +1,6 @@
 export const groundsForPossessionRentArrears = {
   mainHeader: `Grounds for possession`,
   cancelButton: `Cancel`,
-  caseNumber: `Case number:`,
   continueButton: `Continue`,
   youMayHaveAlreadyGivenParagraph: `You may have already given the defendants notice of your intention to begin possession proceedings and written which grounds you’re making the possession claim under. You should select these grounds here.`,
   seriousRentArrearsSubHeader: `Serious rent arrears (ground 8)`,
