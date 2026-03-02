@@ -7,6 +7,7 @@ export const detailsOfRentArrears = {
   periodShownOnRentStatementLabel: 'For the period shown on the rent statement, have any rent payments been paid by someone other than the defendants?',
   yes: 'Yes',
   no: 'No',
+  whereHaveThePaymentsComeQuestion: 'Where have the payments come from?',
   universalCreditOption: 'Universal Credit',
   paymentOtherOption: 'Other',
   paymentSourceLabel: 'Payment source',

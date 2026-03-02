@@ -9,25 +9,30 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import net.serenitybdd.annotations.Step;
 import net.serenitybdd.rest.SerenityRest;
 import org.hamcrest.Matchers;
 import uk.gov.hmcts.reform.pcs.functional.config.Endpoints;
 import uk.gov.hmcts.reform.pcs.functional.config.TestConstants;
-import uk.gov.hmcts.reform.pcs.functional.testutils.IdamAuthenticationGenerator;
+import uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient;
 import uk.gov.hmcts.reform.pcs.functional.testutils.ServiceAuthenticationGenerator;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.citizenUser;
+import static uk.gov.hmcts.reform.pcs.functional.testutils.PcsIdamTokenClient.UserType.systemUser;
 
 public class ApiSteps {
 
     private RequestSpecification request;
+    private Response response;
     private static final String baseUrl = System.getenv("TEST_URL");
-    private static String pcsApiS2sToken;
+    public static String pcsApiS2sToken;
     private static String pcsFrontendS2sToken;
     private static String unauthorisedS2sToken;
-    private static String idamToken;
+    public static String systemUserIdamToken;
+    public static String citizenUserIdamToken;
 
     @Step("Generate S2S tokens")
     public static void setUp() {
@@ -36,7 +41,8 @@ public class ApiSteps {
         pcsFrontendS2sToken = serviceAuthenticationGenerator.generate(TestConstants.PCS_FRONTEND);
         unauthorisedS2sToken = serviceAuthenticationGenerator.generate(TestConstants.CIVIL_SERVICE);
 
-        idamToken = IdamAuthenticationGenerator.generateToken();
+        systemUserIdamToken = PcsIdamTokenClient.generateToken(systemUser);
+        citizenUserIdamToken = PcsIdamTokenClient.generateToken(citizenUser);
 
         SerenityRest.given().baseUri(baseUrl);
     }
@@ -60,18 +66,18 @@ public class ApiSteps {
         }
 
         String validS2sToken = serviceTokens.get(microservice.toLowerCase());
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, validS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, validS2sToken);
     }
 
     @Step("the request contains an unauthorised service token")
     public void theRequestContainsUnauthorisedServiceToken() {
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, unauthorisedS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, unauthorisedS2sToken);
     }
 
     @Step("the request contains an expired service token")
     public void theRequestContainsExpiredServiceToken() {
         String expiredS2sToken = TestConstants.EXPIRED_S2S_TOKEN;
-        request = request.request().header(TestConstants.SERVICE_AUTHORIZATION, expiredS2sToken);
+        request = request.header(TestConstants.SERVICE_AUTHORIZATION, expiredS2sToken);
     }
 
     @Step("the request contains the path parameter {0} as {1}")
@@ -84,22 +90,28 @@ public class ApiSteps {
     public void callIsSubmittedToTheEndpoint(String resource, String method) {
         Endpoints resourceAPI = Endpoints.valueOf(resource);
 
-        switch (method.toUpperCase()) {
-            case "POST" -> SerenityRest.when().post(resourceAPI.getResource());
-            case "GET" -> SerenityRest.when().get(resourceAPI.getResource());
-            case "DELETE" -> SerenityRest.when().delete(resourceAPI.getResource());
+        response = switch (method.toUpperCase()) {
+            case "POST" -> request.when().post(resourceAPI.getResource());
+            case "GET" -> request.when().get(resourceAPI.getResource());
+            case "DELETE" -> request.when().delete(resourceAPI.getResource());
             default -> throw new IllegalStateException("Unexpected value: " + method.toUpperCase());
-        }
+        };
     }
 
     @Step("Check status code is {0}")
     public void checkStatusCode(int statusCode) {
-        SerenityRest.then().assertThat().statusCode(statusCode);
+        if (response == null) {
+            throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
+        }
+        response.then().assertThat().statusCode(statusCode);
     }
 
     @Step("the response body contains {0} as a string: {1}")
     public void theResponseBodyContainsAString(String attribute, String value) {
-        SerenityRest.then().assertThat().body(attribute, Matchers.equalTo(value));
+        if (response == null) {
+            throw new IllegalStateException("No response available. Did you call callIsSubmittedToTheEndpoint first?");
+        }
+        response.then().assertThat().body(attribute, Matchers.equalTo(value));
     }
 
     @Step("the response body matches the expected list")
@@ -124,8 +136,14 @@ public class ApiSteps {
     }
 
     @Step("the request contains a valid IDAM token")
-    public void theRequestContainsValidIdamToken() {
-        request = request.header(TestConstants.AUTHORIZATION, "Bearer " + idamToken);
+    public void theRequestContainsValidIdamToken(PcsIdamTokenClient.UserType user) {
+
+        String userToken = switch (user) {
+            case systemUser -> systemUserIdamToken;
+            case citizenUser -> citizenUserIdamToken;
+        };
+
+        request = request.header(TestConstants.AUTHORIZATION, "Bearer " + userToken);
     }
 
     @Step("the request contains an expired IDAM token")
@@ -138,4 +156,10 @@ public class ApiSteps {
     public void theRequestContainsTheQueryParameter(String queryParam, String value) {
         request = request.queryParam(queryParam, value);
     }
+
+    @Step("the request contains a request body")
+    public void theRequestContainsBody(Object body) {
+        request = request.body(body);
+    }
+
 }

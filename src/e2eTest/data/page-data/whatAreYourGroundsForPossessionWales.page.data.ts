@@ -3,6 +3,7 @@ export const whatAreYourGroundsForPossessionWales = {
   mainHeader: 'What are your grounds for possession?',
   mandatory:
     {
+      mandatoryGroundsCategoryQuestion: 'Mandatory grounds (Optional)',
       failureToGiveupPossession: 'Failure to give up possession on date specified in contract-holder’s notice (section 170)',
       section186: 'Landlord’s notice in connection with end of fixed term given (section 186)',
       section191: 'Failure to give up possession on date specified in contract-holder’s break clause notice (section 191)',
@@ -14,6 +15,7 @@ export const whatAreYourGroundsForPossessionWales = {
     },
   discretionary:
     {
+      discretionaryGroundsCategoryQuestion: 'Discretionary grounds (Optional)',
       rentArrears: 'Rent arrears (breach of contract) (section 157)',
       antiSocialBehaviour: 'Antisocial behaviour (breach of contract) (section 157)',
       otherBreachOfContract: 'Other breach of contract (section 157)',

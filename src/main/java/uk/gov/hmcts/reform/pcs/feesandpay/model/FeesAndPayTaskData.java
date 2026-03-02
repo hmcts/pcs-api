@@ -19,6 +19,8 @@ public class FeesAndPayTaskData implements Serializable {
 
     private String feeType;
 
+    private FeeDetails feeDetails;
+
     private String caseReference;
 
     private String ccdCaseNumber;

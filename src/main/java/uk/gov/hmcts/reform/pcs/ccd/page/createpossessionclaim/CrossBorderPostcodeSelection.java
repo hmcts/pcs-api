@@ -45,7 +45,7 @@ public class CrossBorderPostcodeSelection {
                 </p>
 
                 <p class="govuk-body">
-                If you're not sure which country your property is in, try searching for your
+                If you’re not sure which country your property is in, try searching for your
                 address on the land and property register.
                 </p>
 

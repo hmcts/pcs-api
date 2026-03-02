@@ -1,23 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcement;
 
-import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
-import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
 public class LegalCostsPage implements CcdPageConfiguration {
-
-    static final String VALID_AMOUNT_ERROR_MESSAGE = "Please enter a valid amount of legal costs.";
 
     @SuppressWarnings("checkstyle:LineLength")
     static final String LEGAL_COSTS_HELP = """
@@ -64,7 +54,7 @@ public class LegalCostsPage implements CcdPageConfiguration {
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
-                .page("legalCosts", this::midEvent)
+                .page("legalCosts")
                 .pageLabel("Legal costs")
                 .label("legalCosts-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
@@ -75,37 +65,5 @@ public class LegalCostsPage implements CcdPageConfiguration {
                 .done()
                 .label("legalCosts-help", LEGAL_COSTS_HELP)
                 .label("legalCosts-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-    }
-
-    private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
-                                                                  CaseDetails<PCSCase, State> before) {
-        PCSCase data = details.getData();
-        return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .data(data)
-            .errors(validateUserInput(data))
-            .build();
-    }
-
-    List<String> validateUserInput(PCSCase data) {
-        List<String> errors = new ArrayList<>();
-        if (VerticalYesNo.YES == data.getEnforcementOrder().getLegalCosts().getAreLegalCostsToBeClaimed()) {
-            String amountOfLegalCosts = data.getEnforcementOrder().getLegalCosts().getAmountOfLegalCosts();
-            if (!isValidLegalCostsAmount(amountOfLegalCosts)) {
-                errors.add(VALID_AMOUNT_ERROR_MESSAGE);
-            }
-        }
-        return errors;
-    }
-
-    private boolean isValidLegalCostsAmount(String amountOfLegalCosts) {
-        if (amountOfLegalCosts == null || amountOfLegalCosts.trim().isEmpty()) {
-            return false;
-        }
-        try {
-            BigDecimal amount = new BigDecimal(amountOfLegalCosts);
-            return amount.compareTo(BigDecimal.ZERO) > 0;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }

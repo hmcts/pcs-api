@@ -10,8 +10,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.TenancyLicenceDetailsPage;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.time.Clock;
@@ -40,7 +42,7 @@ class TenancyLicenceDetailsTest extends BasePageTest {
         when(ukClock.instant()).thenReturn(FIXED_CURRENT_DATE.atTime(10, 20).atZone(UK_ZONE_ID).toInstant());
         when(ukClock.getZone()).thenReturn(UK_ZONE_ID);
 
-        setPageUnderTest(new TenancyLicenceDetails(ukClock, textAreaValidationService));
+        setPageUnderTest(new TenancyLicenceDetailsPage(ukClock, textAreaValidationService));
     }
 
     @ParameterizedTest
@@ -50,8 +52,12 @@ class TenancyLicenceDetailsTest extends BasePageTest {
                                                       TenancyLicenceType  tenancyLicence) {
         // Given
         PCSCase caseData = PCSCase.builder()
-            .tenancyLicenceDate(date)
-            .typeOfTenancyLicence(tenancyLicence)
+            .tenancyLicenceDetails(
+                TenancyLicenceDetails.builder()
+                    .tenancyLicenceDate(date)
+                    .typeOfTenancyLicence(tenancyLicence)
+                    .build()
+            )
             .build();
 
         // When
@@ -63,14 +69,8 @@ class TenancyLicenceDetailsTest extends BasePageTest {
                 .containsExactly("Date the tenancy or licence began must be in the past");
         } else {
             assertThat(response.getErrors()).isNull();
-            assertThat(response.getData().getTenancyLicenceDate())
+            assertThat(response.getData().getTenancyLicenceDetails().getTenancyLicenceDate())
                 .isEqualTo(date);
-
-            assertThat(caseData.getSecureOrFlexibleDiscretionaryGrounds()).isEmpty();
-            assertThat(caseData.getSecureOrFlexibleDiscretionaryGroundsAlt()).isEmpty();
-            assertThat(caseData.getSecureOrFlexibleMandatoryGrounds()).isEmpty();
-            assertThat(caseData.getSecureOrFlexibleMandatoryGroundsAlt()).isEmpty();
-            assertThat(caseData.getRentArrearsOrBreachOfTenancy()).isEmpty();
         }
 
     }

@@ -21,7 +21,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
                 .label("uploadAdditionalDocuments-separator-help",
                        """
                        <p class="govuk-body govuk-!-font-size-19">
-                       You must select the type of document you're uploading and give it a short description.
+                       You must select the type of document you’re uploading and give it a short description.
                        </p>
                        """
                 )

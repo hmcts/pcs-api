@@ -25,8 +25,8 @@ spring:
 
 idam:
   system-user:
-    username: pcs-system-user-it
-    password: pcs-system-password-it
+    username: ${PLACEHOLDER_INTEGRATION_IDAM_USERNAME:pcs-system-user-it}
+    password: ${PLACEHOLDER_INTEGRATION_IDAM_PASSWORD:pcs-system-password-it}
 
 flyway:
   noop:

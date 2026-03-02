@@ -1,13 +1,18 @@
 package uk.gov.hmcts.reform.pcs.ccd.service.enforcement;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcement.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcement.EnforcementOrderEntity;
+import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcement.EnforcementOrderRepository;
+import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 import uk.gov.hmcts.reform.pcs.exception.EnforcementOrderNotFoundException;
@@ -17,29 +22,31 @@ import java.util.UUID;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class EnforcementOrderService {
 
     private final EnforcementOrderRepository enforcementOrderRepository;
     private final PcsCaseRepository pcsCaseRepository;
-
-    public EnforcementOrderService(EnforcementOrderRepository enforcementOrderRepository,
-                                   PcsCaseRepository pcsCaseRepository) {
-        this.enforcementOrderRepository = enforcementOrderRepository;
-        this.pcsCaseRepository = pcsCaseRepository;
-    }
+    private final DraftCaseDataService draftCaseDataService;
 
     public EnforcementOrderEntity loadEnforcementOrder(UUID id) {
         return enforcementOrderRepository.findById(id)
                 .orElseThrow(() -> new EnforcementOrderNotFoundException(id));
     }
 
-    public void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
+    @Transactional
+    public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
+        createEnforcementOrder(caseReference, enforcementOrder);
+        draftCaseDataService.deleteUnsubmittedCaseData(caseReference, EventId.enforceTheOrder);
+    }
+
+    private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
         PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
                 .orElseThrow(() -> new CaseNotFoundException(caseReference));
 
         Set<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
         // This should never happen
-        if (claimEntities.isEmpty()) {
+        if (CollectionUtils.isEmpty(claimEntities)) {
             log.error("No claim found for case reference {}", caseReference);
             throw new ClaimNotFoundException(pcsCaseEntity.getCaseReference());
         }
@@ -52,6 +59,5 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
         enforcementOrderRepository.save(enforcementOrderEntity);
-        log.debug("Created Enforcement Order for case reference {}", caseReference);
     }
 }

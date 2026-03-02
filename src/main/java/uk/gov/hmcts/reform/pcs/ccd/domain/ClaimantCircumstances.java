@@ -11,8 +11,8 @@ import static uk.gov.hmcts.ccd.sdk.type.FieldType.TextArea;
 public class ClaimantCircumstances {
 
     @CCD(
-        label = "Is there any information you'd like to provide about ${claimantNamePossessiveForm} circumstances?",
-        hint = "This can be any information about your financial or general situation that you'd "
+        label = "Is there any information you’d like to provide about ${claimantNamePossessiveForm} circumstances?",
+        hint = "This can be any information about your financial or general situation that you’d "
             + "like the court to consider when making its decision whether or not to grant a possession order"
     )
     private VerticalYesNo claimantCircumstancesSelect;

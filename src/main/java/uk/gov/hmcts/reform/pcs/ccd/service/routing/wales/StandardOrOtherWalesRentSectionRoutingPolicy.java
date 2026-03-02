@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales;
 
 import java.util.Set;
@@ -15,7 +16,11 @@ public class StandardOrOtherWalesRentSectionRoutingPolicy implements WalesRentSe
 
     @Override
     public YesOrNo shouldShowRentSection(PCSCase caseData) {
-        Set<DiscretionaryGroundWales> discretionary = caseData.getDiscretionaryGroundsWales();
+        GroundsForPossessionWales grounds = caseData.getGroundsForPossessionWales();
+        if (grounds == null) {
+            return YesOrNo.NO;
+        }
+        Set<DiscretionaryGroundWales> discretionary = grounds.getDiscretionaryGroundsWales();
         if (discretionary == null) {
             return YesOrNo.NO;
         }

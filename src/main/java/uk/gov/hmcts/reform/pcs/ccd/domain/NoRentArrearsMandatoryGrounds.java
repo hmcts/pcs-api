@@ -8,7 +8,7 @@ import uk.gov.hmcts.ccd.sdk.api.HasLabel;
 @Getter
 public enum NoRentArrearsMandatoryGrounds implements HasLabel {
     OWNER_OCCUPIER("Owner occupier (ground 1)"),
-    REPOSSESSION_BY_LENDER("Repossession by the landlord's mortgage lender (ground 2)"),
+    REPOSSESSION_BY_LENDER("Repossession by the landlord’s mortgage lender (ground 2)"),
     HOLIDAY_LET("Holiday let (ground 3)"),
     STUDENT_LET("Student let (ground 4)"),
     MINISTER_OF_RELIGION("Property required for minister of religion (ground 5)"),

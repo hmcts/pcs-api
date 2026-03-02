@@ -45,7 +45,7 @@ class DefendantCircumstancesPageTest extends BasePageTest {
                 .errors(errors.isEmpty() ? null : errors)
                 .build();
         }).when(textAreaValidationService).createValidationResponse(any(), anyList());
-        
+
         setPageUnderTest(new DefendantCircumstancesPage(textAreaValidationService));
     }
 
@@ -61,7 +61,7 @@ class DefendantCircumstancesPageTest extends BasePageTest {
                 .defendantCircumstances(DefendantCircumstances.builder()
                     .hasDefendantCircumstancesInfo(VerticalYesNo.YES)
                     .defendantCircumstancesInfo("Defendant circumstances details")
-                    .defendantTermPossessive("tenant's")
+                    .defendantTermPossessive("tenant’s")
                     .build())
                 .build();
 
@@ -97,7 +97,7 @@ class DefendantCircumstancesPageTest extends BasePageTest {
                 .defendantCircumstances(DefendantCircumstances.builder()
                     .hasDefendantCircumstancesInfo(VerticalYesNo.YES)
                     .defendantCircumstancesInfo(null)
-                    .defendantTermPossessive("tenant's")
+                    .defendantTermPossessive("tenant’s")
                     .build())
                 .build();
 

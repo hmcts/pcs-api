@@ -49,7 +49,7 @@ public class PropertyNotEligible {
                       This service is currently only available for claimants claiming possession of a property
                       in Bedfordshire.
                     </p>
-                    <p class="govuk-body">If you're making a claim in another area:</p>
+                    <p class="govuk-body">If you’re making a claim in another area:</p>
 
                     <ul class="govuk-list govuk-list--bullet">
                       <li class="govuk-!-font-size-19">
@@ -77,7 +77,7 @@ public class PropertyNotEligible {
                       <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                       <strong class="govuk-warning-text__text">
                         <span class="govuk-visually-hidden">Warning</span>
-                          To exit back to the case list, select 'Cancel'
+                          To exit back to the case list, select ‘Cancel’
                       </strong>
                     </div>
                     </section>
@@ -100,7 +100,7 @@ public class PropertyNotEligible {
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                      To exit back to the case list, select 'Cancel'
+                      To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
                 </section>
@@ -122,7 +122,7 @@ public class PropertyNotEligible {
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                      To exit back to the case list, select 'Cancel'
+                      To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
                 </section>
@@ -139,7 +139,7 @@ public class PropertyNotEligible {
                   <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-visually-hidden">Warning</span>
-                      To exit back to the case list, select 'Cancel'
+                      To exit back to the case list, select ‘Cancel’
                   </strong>
                 </div>
                 </section>

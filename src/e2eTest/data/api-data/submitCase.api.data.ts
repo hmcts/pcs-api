@@ -36,15 +36,40 @@ export const submitCaseApiData = {
     isCorrectClaimantContactAddress: 'YES',
     claimantProvidePhoneNumber: 'NO',
     defendant1: {
-      nameKnown: 'NO',
-      addressKnown: 'NO'
+      nameKnown: 'YES',
+      addressKnown: 'YES',
+      addressSameAsPossession: 'YES',
+      firstName: 'John',
+      lastName: 'Doe',
     },
-    addAnotherDefendant: 'NO',
-    typeOfTenancyLicence: 'DEMOTED_TENANCY',
-    tenancyLicenceDate: null,
-    tenancyLicenceDocuments: [],
+    addAnotherDefendant: 'YES',
+    additionalDefendants: [
+      {
+        value: {
+          nameKnown: 'YES',
+          firstName: 'Peter',
+          lastName: 'Parker',
+          addressKnown: 'YES',
+          addressSameAsPossession: 'YES'
+        },
+        id: null
+      },
+      {
+        value: {
+          nameKnown: 'YES',
+          firstName: 'Jen',
+          lastName: 'Parker',
+          addressKnown: 'YES',
+          addressSameAsPossession: 'YES'
+        },
+        id: null
+      },
+    ],
+    tenancy_TypeOfTenancyLicence: 'DEMOTED_TENANCY',
+    tenancy_TenancyLicenceDate: null,
+    tenancy_TenancyLicenceDocuments: [],
     showIntroductoryDemotedOtherGroundReasonPage: 'Yes',
-    hasIntroductoryDemotedOtherGroundsForPossession: 'NO',
+    introGrounds_HasIntroductoryDemotedOtherGroundsForPossession: 'NO',
     noGrounds: 'text no grounds',
     preActionProtocolCompleted: 'NO',
     mediationAttempted: 'NO',

@@ -32,7 +32,7 @@ public class EnterPropertyAddress {
     public void addTo(EventBuilder<CreateClaimData, UserRole, State> eventBuilder) {
         eventBuilder.fields()
             .page("enterPropertyAddress", this::midEvent)
-            .pageLabel("What is the address of the property you're claiming possession of?")
+            .pageLabel("What is the address of the property you’re claiming possession of?")
             .label("enterPropertyAddress-lineSeparator", "---")
             .complex(CreateClaimData::getPropertyAddress)
                 .mandatory(AddressUK::getAddressLine1)

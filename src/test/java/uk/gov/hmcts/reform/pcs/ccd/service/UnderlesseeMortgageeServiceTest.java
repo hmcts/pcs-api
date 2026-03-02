@@ -193,10 +193,10 @@ class UnderlesseeMortgageeServiceTest {
                                                                                   VerticalYesNo addressKnown,
                                                                                   AddressUK address) {
         return UnderlesseeMortgageeDetails.builder()
-            .underlesseeOrMortgageeNameKnown(nameKnown)
-            .underlesseeOrMortgageeName(name)
-            .underlesseeOrMortgageeAddressKnown(addressKnown)
-            .underlesseeOrMortgageeAddress(address)
+            .nameKnown(nameKnown)
+            .name(name)
+            .addressKnown(addressKnown)
+            .address(address)
             .build();
     }
 

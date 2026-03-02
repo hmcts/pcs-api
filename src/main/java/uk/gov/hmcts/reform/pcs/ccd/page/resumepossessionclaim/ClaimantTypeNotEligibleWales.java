@@ -17,13 +17,13 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("claimantTypeNotEligibleWales", this::midEvent)
-            .pageLabel("You're not eligible for this online service")
+            .pageLabel("You’re not eligible for this online service")
             .showCondition("showClaimantTypeNotEligibleWales=\"Yes\"")
             .readonly(PCSCase::getShowClaimantTypeNotEligibleWales, NEVER_SHOW)
             .label("claimantTypeNotEligibleWales-info", """
                 ---
                 <p class="govuk-body">
-                This service is currently only available for registered community landlords.
+                This service is currently only available for community landlords.
 
                 <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
 
@@ -39,7 +39,7 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
                   <strong class="govuk-warning-text__text">
                     <span class="govuk-warning-text__assistive">Warning</span>
                     <span id="warning-message">
-                      To exit back to the case list, select 'Cancel'
+                      To exit back to the case list, select ‘Cancel’
                     </span>
                   </strong>
                 </div>
@@ -50,7 +50,7 @@ public class ClaimantTypeNotEligibleWales implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> detailsBefore) {
 
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
-            .errors(List.of("You're not eligible for this online service"))
+            .errors(List.of("You’re not eligible for this online service"))
             .build();
     }
 

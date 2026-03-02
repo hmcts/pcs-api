@@ -146,19 +146,42 @@ fees:
   mock: false
   api:
     url: ${FEES_REGISTER_API_URL:http://localhost:8991}
-    service: possession claim
-    jurisdiction1: civil
-    jurisdiction2: county court
   lookup:
     caseIssueFee:
+      service: possession claim
+      jurisdiction1: civil
+      jurisdiction2: county court
       channel: default
       event: issue
       applicantType: all
       amountOrVolume: 1
       keyword: PossessionCC
+    enforcementWarrantFee: # FEE0380 - County Court
+      service: civil money claims
+      jurisdiction1: civil
+      jurisdiction2: county court
+      channel: default
+      event: enforcement
+      applicantType: all
+      amountOrVolume: 1
+      keyword: WarrantPossorDelivery
+    enforcementWritFee: # FEE0397 - High Court
+      service: other
+      jurisdiction1: civil
+      jurisdiction2: high court
+      channel: default
+      event: enforcement
+      applicantType: all
+      amountOrVolume: 1
+      keyword: SealWrit
   request:
     max-retries: ${NOTIFY_CHECK_STATUS_MAX_RETRIES:5}
     backoff-delay-seconds: ${NOTIFY_CHECK_STATUS_BACKOFF_DELAY_SECONDS:3600s}
+
+access-code:
+  request:
+    max-retries: ${ACCESS_CODE_MAX_RETRIES:5}
+    backoff-delay-seconds: ${ACCESS_CODE_BACKOFF_DELAY_SECONDS:3600s}
 
 payments:
   api:
@@ -167,3 +190,7 @@ payments:
   params:
     organisationUrn: Mortgage and Landlord Possession Claims
     hmctsOrgId: AAA3
+
+core_case_data:
+  api:
+    url: ${CCD_DATA_STORE_URL:localhost:4452}

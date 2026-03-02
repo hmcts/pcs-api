@@ -16,18 +16,26 @@ public class PreActionProtocol implements CcdPageConfiguration {
                         """
                   ---
                   <section tabindex="0">
-                    <p class="govuk-body">
+                    <p class="govuk-body govuk-!-margin-bottom-3">
                     Registered providers of social housing should follow the pre-action protocol
                     before making a housing possession claim. You should have:
                     </p>
 
-                    <ul class="govuk-list govuk-list--bullet">
+                    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-3">
                         <li class="govuk-!-font-size-19">Contacted, or attempted to contact, the defendants.</li>
-                        <li class="govuk-!-font-size-19">Tried to agree a repayment plan.</li>
-                        <li class="govuk-!-font-size-19">Applied for arrears to be paid by the
-                        Department for Work and Pensions (DWP) by deductions from the defendants' benefits.</li>
-                        <li class="govuk-!-font-size-19">Offered to assist the defendants in a claim for
-                        housing benefit or Universal Credit.</li>
+                    </ul>
+
+                    <p class="govuk-body govuk-!-margin-bottom-3">
+                        If your claim is on the grounds of rent arrears, you should have:
+                    </p>
+
+                    <ul class="govuk-list govuk-list--bullet">    
+                        <li class="govuk-!-font-size-19 govuk-!-margin-bottom-3">Tried to agree a repayment plan.</li>
+                        <li class="govuk-!-font-size-19 govuk-!-margin-bottom-3">Applied for arrears to be paid by the
+                            Department for Work and Pensions (DWP) by deductions from the defendants’ benefits.</li>
+                        <li class="govuk-!-font-size-19 govuk-!-margin-bottom-3">
+                            Offered to assist the defendants in a claim for housing benefit or Universal Credit.
+                        </li>
                     </ul>
 
                     <div class="govuk-warning-text">
@@ -46,18 +54,26 @@ public class PreActionProtocol implements CcdPageConfiguration {
                         """
                   ---
                   <section tabindex="0">
-                    <p class="govuk-body">
+                    <p class="govuk-body govuk-!-margin-bottom-3">
                     Community landlords should follow the pre-action protocol
                     before making a housing possession claim. You should have:
                     </p>
 
-                    <ul class="govuk-list govuk-list--bullet">
+                    <ul class="govuk-list govuk-list--bullet govuk-!-margin-bottom-3">
                         <li class="govuk-!-font-size-19">Contacted, or attempted to contact, the defendants.</li>
-                        <li class="govuk-!-font-size-19">Tried to agree a repayment plan.</li>
-                        <li class="govuk-!-font-size-19">Applied for arrears to be paid by the
-                        Department for Work and Pensions (DWP) by deductions from the defendants' benefits.</li>
-                        <li class="govuk-!-font-size-19">Offered to assist the defendants in a claim for
-                        housing benefit or Universal Credit.</li>
+                    </ul>
+
+                    <p class="govuk-body govuk-!-margin-bottom-3">
+                        If your claim is on the grounds of rent arrears, you should have:
+                    </p>
+
+                    <ul class="govuk-list govuk-list--bullet">
+                        <li class="govuk-!-font-size-19 govuk-!-margin-bottom-3">Tried to agree a repayment plan.</li>
+                        <li class="govuk-!-font-size-19 govuk-!-margin-bottom-3">Applied for arrears to be paid by the
+                        Department for Work and Pensions (DWP) by deductions from the defendants’ benefits.</li>
+                        <li class="govuk-!-font-size-19 govuk-!-margin-bottom-3">
+                            Offered to assist the defendants in a claim for housing benefit or Universal Credit.
+                        </li>
                     </ul>
 
                     <div class="govuk-warning-text">

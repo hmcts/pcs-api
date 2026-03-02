@@ -13,7 +13,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       ['selectClaimantDetails', () => this.selectClaimantDetails(fieldName as actionRecord)],
       ['selectProhibitedConductStandardContract', () => this.selectProhibitedConductStandardContract(fieldName as actionRecord)],
       ['selectOccupationContractOrLicenceDetails', () => this.selectOccupationContractOrLicenceDetails(fieldName as actionRecord)],
-      ['selectAsbQuestions', () => this.selectAsbQuestions(fieldName as actionRecord)]
+      ['selectAsb', () => this.selectAsb(fieldName as actionRecord)]
     ]);
     const actionToPerform = actionsMap.get(action);
     if (!actionToPerform) throw new Error(`No action found for '${action}'`);
@@ -81,7 +81,7 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     await performAction('clickButton', claimantDetailsWales.continue);
   }
 
-  private async selectAsbQuestions(asbQuestions: actionRecord) {
+  private async selectAsb(asbQuestions: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {
       elementType: 'paragraph',
