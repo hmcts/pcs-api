@@ -367,7 +367,6 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .data(taskData)
                 .scheduledTo(Instant.now())
         );
-
         return feeDetails;
     }
 
