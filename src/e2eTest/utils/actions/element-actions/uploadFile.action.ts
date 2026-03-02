@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test';
 import path from 'path';
 import { actionData, IAction } from '@utils/interfaces/action.interface';
 import { performAction, performValidation } from '@utils/controller';
-import { SHORT_TIMEOUT } from 'playwright.config';
+import { MEDIUM_TIMEOUT, SHORT_TIMEOUT } from 'playwright.config';
 
 export class UploadFileAction implements IAction {
   async execute(page: Page, action: string, files: actionData): Promise<void> {
@@ -22,12 +22,17 @@ export class UploadFileAction implements IAction {
     const filePath = path.resolve(__dirname, '../../../data/inputFiles', file);
     await fileInput.last().setInputFiles(filePath);
 
+    await performValidation('waitUntilElementDisappears', 'Uploading...');
     await expect(async () => {
-      await performValidation('waitUntilElementDisappears', 'Uploading...');
-      await performValidation('waitUntilElementDisappears', 'Your request was rate limited. Please wait a few seconds before retrying your document upload');
+      const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
+                                         span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
+
+      if (await rateLimit.count() > 0) {
+        await page.waitForTimeout(6000);
+        await fileInput.last().setInputFiles(filePath);
+      }
     }).toPass({
-      timeout: SHORT_TIMEOUT,
+      timeout: MEDIUM_TIMEOUT + MEDIUM_TIMEOUT,
     });
-    //await page.waitForTimeout(5000); //Forcing wait time to support a smoother multiple file upload task in preview environment
   }
 }
