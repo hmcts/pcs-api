@@ -77,6 +77,9 @@ public class PartyEntity {
     @OneToOne(cascade = ALL)
     private AddressEntity address;
 
+    @OneToOne(cascade = ALL)
+    private ContactPreferencesEntity contactPreferences;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private VerticalYesNo addressKnown;
