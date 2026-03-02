@@ -215,19 +215,6 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                        ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
                                                     MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178))
 
-            .label("wales-seriousArrearsPeriodicS181-label", """
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Contract-holder under a periodic standard contract seriously in arrears with rent (section 181)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181))
-            .mandatory(GroundsReasonsWales::getSeriousArrearsPeriodicS181Reason,
-                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181))
-
             .label("wales-landlordNoticeFtEndS186-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice in connection with end of fixed term given (section 186)
@@ -240,19 +227,6 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
             .mandatory(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
                        ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
                                                     MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186))
-
-            .label("wales-seriousArrearsFixedTermS187-label", """
-                <h2 class="govuk-heading-l" tabindex="0">
-                    Contract-holder under a fixed term standard contract seriously in arrears with rent (section 187)
-                </h2>
-                <h3 class="govuk-heading-m" tabindex="0">
-                    Why are you making a claim for possession under this ground?
-                </h3>
-                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187))
-            .mandatory(GroundsReasonsWales::getSeriousArrearsFixedTermS187Reason,
-                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187))
 
             .label("wales-failToGiveUpBreakNoticeS191-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
@@ -570,18 +544,8 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(
-                grounds.getSeriousArrearsPeriodicS181Reason(),
-                MandatoryGroundWales.SERIOUS_ARREARS_PERIODIC_S181.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
                 grounds.getLandlordNoticeFtEndS186Reason(),
                 MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186.getLabel(),
-                TextAreaValidationService.MEDIUM_TEXT_LIMIT
-            ),
-            TextAreaValidationService.FieldValidation.of(
-                grounds.getSeriousArrearsFixedTermS187Reason(),
-                MandatoryGroundWales.SERIOUS_ARREARS_FIXED_TERM_S187.getLabel(),
                 TextAreaValidationService.MEDIUM_TEXT_LIMIT
             ),
             TextAreaValidationService.FieldValidation.of(

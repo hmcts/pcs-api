@@ -22,9 +22,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.event.BaseEventTest;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -66,6 +67,8 @@ class EnforceTheOrderTest extends BaseEventTest {
     @Mock
     private WritPageConfigurer writPageConfigurer;
     @Mock
+    private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
+    @Mock
     private SavingPageBuilderFactory savingPageBuilderFactory;
     @InjectMocks
     private EnforceTheOrder enforceTheOrder;
@@ -85,7 +88,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         // Given
         PCSCase caseData = PCSCase.builder()
             .enforcementOrder(EnforcementOrder.builder().build())
-                .build();
+            .build();
 
         // When
         callStartHandler(caseData);
@@ -93,6 +96,7 @@ class EnforceTheOrderTest extends BaseEventTest {
         //Then
         verify(warrantPageConfigurer).configurePages(savingPageBuilder);
         verify(writPageConfigurer).configurePages(savingPageBuilder);
+        verify(warrantOfRestitutionPageConfigurer).configurePages(savingPageBuilder);
     }
 
     @Test
@@ -331,8 +335,8 @@ class EnforceTheOrderTest extends BaseEventTest {
                 "Writ fee",
                 FeeType.ENFORCEMENT_WRIT_FEE,
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWritFeeAmount
-            ),
-            argumentSet(
+        ),
+        argumentSet(
                 "Warrant fee",
                 FeeType.ENFORCEMENT_WARRANT_FEE,
                 (Function<EnforcementOrder, String>) EnforcementOrder::getWarrantFeeAmount

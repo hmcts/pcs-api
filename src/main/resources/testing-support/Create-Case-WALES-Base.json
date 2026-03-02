@@ -1,0 +1,94 @@
+{
+  "legislativeCountry":"Wales",
+  "claimantType":{
+    "value":{
+      "code":"COMMUNITY_LANDLORD",
+      "label":"Community landlord"
+    },
+    "list_items":[
+      {
+        "code":"PRIVATE_LANDLORD",
+        "label":"Private landlord"
+      },
+      {
+        "code":"COMMUNITY_LANDLORD",
+        "label":"Community landlord"
+      },
+      {
+        "code":"MORTGAGE_LENDER",
+        "label":"Mortgage lender"
+      },
+      {
+        "code":"OTHER",
+        "label":"Other"
+      }
+    ],
+    "valueCode":"COMMUNITY_LANDLORD"
+  },
+  "claimAgainstTrespassers":"NO",
+  "orgNameFound":"Yes",
+  "claimantName":"Possession Claims Solicitor Org",
+  "isClaimantNameCorrect":"YES",
+  "walesRegistered":"NO",
+  "walesLicensed":"NO",
+  "walesLicensedAgentAppointed":"NO",
+  "claimantContactEmail":"pcs-solicitor1@test.com",
+  "isCorrectClaimantContactEmail":"YES",
+  "orgAddressFound":"Yes",
+  "organisationAddress":{
+    "AddressLine1":"Ministry Of Justice",
+    "AddressLine2":"Seventh Floor 102 Petty France",
+    "PostTown":"London",
+    "PostCode":"SW1H 9AJ",
+    "Country":"United Kingdom"
+  },
+  "formattedClaimantContactAddress":"Ministry Of Justice<br>Seventh Floor 102 Petty France<br>London<br>SW1H 9AJ",
+  "isCorrectClaimantContactAddress":"YES",
+  "defendant1":{
+    "nameKnown":"YES",
+    "firstName":"Jane",
+    "lastName":"Doe",
+    "addressKnown":"NO"
+  },
+  "addAnotherDefendant":"NO",
+  "occupationLicenceTypeWales":"SECURE_CONTRACT",
+  "licenceDocuments":[
+
+  ],
+  "secureGroundsWales_DiscretionaryGrounds":[
+    "ANTISOCIAL_BEHAVIOUR_S157"
+  ],
+  "secureGroundsWales_MandatoryGrounds":[
+
+  ],
+  "showASBQuestionsPageWales":"Yes",
+  "walesAntisocialBehaviour":"NO",
+  "walesIllegalPurposesUse":"NO",
+  "walesOtherProhibitedConduct":"NO",
+  "preActionProtocolCompleted":"NO",
+  "mediationAttempted":"NO",
+  "settlementAttempted":"NO",
+  "walesNoticeServed":"No",
+  "claimantNamePossessiveForm":"Possession Claims Solicitor Org’s",
+  "claimantCircumstancesSelect":"NO",
+  "hasDefendantCircumstancesInfo":"NO",
+  "prohibitedConductWalesClaim":"NO",
+  "claimingCostsWanted":"NO",
+  "additionalReasonsForPossession":{
+    "hasReasons":"NO"
+  },
+  "hasUnderlesseeOrMortgagee":"NO",
+  "wantToUploadDocuments":"NO",
+  "applicationWithClaim":"NO",
+  "languageUsed":"WELSH",
+  "completionNextStep":"SUBMIT_AND_PAY_NOW",
+  "statementOfTruth":{
+    "completedBy":"LEGAL_REPRESENTATIVE",
+    "fullNameLegalRep":"John",
+    "firmNameLegalRep":"Doe",
+    "positionLegalRep":"Solicitor",
+    "agreementLegalRep":[
+      "AGREED"
+    ]
+  }
+}

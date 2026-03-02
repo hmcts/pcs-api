@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -29,14 +29,14 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("criminalAntisocialRisk", this::midEvent)
             .pageLabel("Their history of criminal or antisocial behaviour")
-            .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                 + " AND warrantEnforcementRiskCategoriesCONTAINS\"CRIMINAL_OR_ANTISOCIAL\""
                 + " AND warrantAnyRiskToBailiff=\"YES\"")
             .label("criminalAntisocialRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .complex(WarrantDetails::getRiskDetails)
-            .mandatory(EnforcementRiskDetails::getEnforcementCriminalDetails)
+            .mandatory(EnforcementRiskDetails::getCriminalDetails)
             .done()
             .label("criminalAntisocialRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementCriminalDetails();
+                .getWarrantDetails().getRiskDetails().getCriminalDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

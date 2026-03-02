@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -26,6 +27,9 @@ class WritPageConfigurerTest extends BasePageTest {
     @InjectMocks
     private WritPageConfigurer writPageConfigurer;
 
+    @Mock
+    private LandRegistryFeesWritPage landRegistryFeesWritPage;
+
     @Test
     void shouldConfigurePagesInCorrectOrder() {
         // Given
@@ -40,7 +44,6 @@ class WritPageConfigurerTest extends BasePageTest {
         InOrder inOrder = Mockito.inOrder(pageBuilder);
         Mockito.verify(pageBuilder, Mockito.atLeastOnce()).add(pageCaptor.capture());
         AtomicInteger verificationCount = new AtomicInteger(0);
-        verifyAndCount(inOrder, pageBuilder, ToggleClaimSentToHighCourtPlaceholder.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, CannotApplyForWritInfoPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, NameAndAddressForEvictionWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, ChangeNameAddressWritPage.class, verificationCount);
@@ -49,8 +52,10 @@ class WritPageConfigurerTest extends BasePageTest {
         verifyAndCount(inOrder, pageBuilder, EnforcementOfficerSelectionPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, MoneyOwedWritPage.class, verificationCount);
         verifyAndCount(inOrder, pageBuilder, LegalCostsWritPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, LandRegistryFeesPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, RepaymentsPlaceholder.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, landRegistryFeesWritPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, RepaymentsWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, LanguageUsedWritPage.class, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, StatementOfTruthWritPage.class, verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);

@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -29,14 +29,14 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("verbalOrWrittenThreatsRisk", this::midEvent)
                 .pageLabel("Their verbal or written threats")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                     + " AND warrantEnforcementRiskCategoriesCONTAINS\"VERBAL_OR_WRITTEN_THREATS\""
                     + " AND warrantAnyRiskToBailiff=\"YES\"")
                 .label("verbalOrWrittenThreatsRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementVerbalOrWrittenThreatsDetails)
+                .mandatory(EnforcementRiskDetails::getVerbalThreatsDetails)
                 .done()
                 .label("verbalOrWrittenThreatsRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementVerbalOrWrittenThreatsDetails();
+                .getWarrantDetails().getRiskDetails().getVerbalThreatsDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

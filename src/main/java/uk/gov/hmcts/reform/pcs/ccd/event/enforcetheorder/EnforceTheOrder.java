@@ -17,9 +17,10 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant.WarrantPageConfi
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrantofrestitution.WarrantOfRestitutionPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ.WritPageConfigurer;
 import uk.gov.hmcts.reform.pcs.ccd.service.DefendantService;
-import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicMultiSelectStringList;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringListElement;
 import uk.gov.hmcts.reform.pcs.ccd.util.AddressFormatter;
@@ -40,6 +41,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     // Business requirements to be agreed on for the conditions when this event can be triggered
     private final WarrantPageConfigurer warrantPagesConfigurer;
     private final WritPageConfigurer writPageConfigurer;
+    private final WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
     private final EnforcementOrderService enforcementOrderService;
     private final AddressFormatter addressFormatter;
     private final DefendantService defendantService;
@@ -58,6 +60,7 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
         SavingPageBuilder pageBuilder = savingPageBuilderFactory.create(eventBuilder, enforceTheOrder);
         warrantPagesConfigurer.configurePages(pageBuilder);
         writPageConfigurer.configurePages(pageBuilder);
+        warrantOfRestitutionPageConfigurer.configurePages(pageBuilder);
     }
 
     private PCSCase start(EventPayload<PCSCase, State> eventPayload) {
@@ -88,16 +91,13 @@ public class EnforceTheOrder implements CCDConfig<PCSCase, State, UserRole> {
     }
 
     private void applyWarrantFeeAmount(PCSCase pcsCase) {
-        feeApplier.applyFeeAmount(
-            pcsCase,
+        feeApplier.applyFeeAmount(pcsCase,
             FeeType.ENFORCEMENT_WARRANT_FEE,
-            (caseData, fee) -> caseData.getEnforcementOrder().setWarrantFeeAmount(fee)
-        );
+            (caseData, fee) -> caseData.getEnforcementOrder().setWarrantFeeAmount(fee));
     }
 
     private void applyWritFeeAmount(PCSCase pcsCase) {
-        feeApplier.applyFeeAmount(
-            pcsCase,
+        feeApplier.applyFeeAmount(pcsCase,
             FeeType.ENFORCEMENT_WRIT_FEE,
             (caseData, fee) -> caseData.getEnforcementOrder().setWritFeeAmount(fee)
         );

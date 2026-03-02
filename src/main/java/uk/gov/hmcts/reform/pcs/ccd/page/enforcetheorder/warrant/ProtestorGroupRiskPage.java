@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRis
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
@@ -29,14 +29,14 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("protestorGroupRisk", this::midEvent)
                 .pageLabel("Their membership of a group that protests evictions")
-                .showCondition(ShowConditionsWarrantOrWrit.WARRANT_FLOW
+                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
                     + " AND warrantEnforcementRiskCategoriesCONTAINS\"PROTEST_GROUP_MEMBER\""
                     + " AND warrantAnyRiskToBailiff=\"YES\"")
                 .label("protestorGroupRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getRiskDetails)
-                .mandatory(EnforcementRiskDetails::getEnforcementProtestGroupMemberDetails)
+                .mandatory(EnforcementRiskDetails::getProtestGroupDetails)
                 .done()
                 .label("protestorGroupRisk-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
@@ -52,7 +52,7 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
 
     private List<String> getValidationErrors(PCSCase caseData) {
         String txt = caseData.getEnforcementOrder()
-                .getWarrantDetails().getRiskDetails().getEnforcementProtestGroupMemberDetails();
+                .getWarrantDetails().getRiskDetails().getProtestGroupDetails();
 
         return textAreaValidationService.validateSingleTextArea(
             txt,

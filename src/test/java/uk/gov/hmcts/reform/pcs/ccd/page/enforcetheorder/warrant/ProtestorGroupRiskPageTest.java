@@ -36,9 +36,9 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
+                                .riskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementProtestGroupMemberDetails(riskDetails)
+                                        .protestGroupDetails(riskDetails)
                                         .build())
                                 .build())
                         .build())
@@ -50,7 +50,7 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         // Then
         assertThat(response.getErrors()).isNullOrEmpty();
         assertThat(response.getData().getEnforcementOrder().getWarrantDetails()
-                       .getRiskDetails().getEnforcementProtestGroupMemberDetails()).isEqualTo(riskDetails);
+                       .getRiskDetails().getProtestGroupDetails()).isEqualTo(riskDetails);
     }
 
     @Test
@@ -61,9 +61,9 @@ class ProtestorGroupRiskPageTest extends BasePageTest {
         PCSCase caseData = PCSCase.builder()
                 .enforcementOrder(EnforcementOrder.builder()
                         .warrantDetails(WarrantDetails.builder()
-                                .enforcementRiskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
+                                .riskCategories(Set.of(RiskCategory.PROTEST_GROUP_MEMBER))
                                 .riskDetails(EnforcementRiskDetails.builder()
-                                        .enforcementProtestGroupMemberDetails(longText)
+                                        .protestGroupDetails(longText)
                                         .build())
                                 .build())
                         .build())

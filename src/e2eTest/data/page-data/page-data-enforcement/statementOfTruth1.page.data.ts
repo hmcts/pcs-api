@@ -1,6 +1,7 @@
 export const statementOfTruthOne = {
   title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   mainHeader: 'Statement of truth',
+  mainHeaderWrit: 'Statement of truth (placeholder)',
   iCertifyCheckbox: 'I certify that:',
   completedByLabel: 'Completed by',
   claimantRadioOption: 'Claimant',
@@ -14,7 +15,7 @@ export const statementOfTruthOne = {
   positionOrOfficeHeldHiddenTextInput: 'Solicitor',
   signThisStatementHiddenCheckbox: 'The claimant believes that the facts stated in this claim form are true.  I am authorised by the claimant to sign this statement.',
   continueButton: 'Continue',
-  errors: 'There is a problem',
+  thereIsAProblemErrorMessageHeader: 'There is a problem',
   checkBoxGenericErrorLabel: 'Field is required',
   errorValidation: 'NO',//set it to 'NO' before raising a PR
   errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption' },
@@ -30,6 +31,10 @@ export const statementOfTruthOne = {
       { type: 'empty', input: 'EMPTY', errMessage: 'Full name is required' },
     ],
     errorTextField2: [
+      { type: 'moreThanMax', input: 60, errMessage: 'Name of firm exceeds the maximum length' },
+      { type: 'empty', input: 'EMPTY', errMessage: 'Name of firm is required' },
+    ],
+    errorTextField3: [
       { type: 'moreThanMax', input: 60, errMessage: 'Position or office held exceeds the maximum length' },
       { type: 'empty', input: 'EMPTY', errMessage: 'Position or office held is required' },
     ]
