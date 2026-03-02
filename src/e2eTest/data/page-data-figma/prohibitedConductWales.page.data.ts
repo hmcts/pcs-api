@@ -7,7 +7,7 @@ export const prohibitedConductWales = {
   yesRadioOption: `Yes`,
   noRadioOption: `No`,
   haveYouAndContractHolderAgreedHiddenQuestion: `Have you and the contract holder agreed terms of the periodic standard contract in addition to those incorporated by statute?`,
-  giveDetailsOfTermsHiddenTextLabel: `Give details of the terms you've agreed`,
+  giveDetailsOfTermsHiddenTextLabel: `Give details of the terms you’ve agreed`,
   whyAreYouMakingThisClaimHiddenQuestion: `Why are you making this claim?`,
   youCanEnterUpTo250CharactersHiddenHintText: `You can enter up to 250 characters`,
   previousButton: `Previous`,
