@@ -190,7 +190,7 @@ def archiveSmokeTestReports() {
     reportName: 'API Smoke Test Report'
   ])
 
-  archiveArtifacts allowEmptyArchive: true, artifacts: '**/target/site/serenity/*'
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-smoke-tests/*'
 }
 
 def archiveE2eTestReports() {

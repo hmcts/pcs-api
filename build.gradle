@@ -222,7 +222,27 @@ tasks.register('smoke', Test) {
   useJUnitPlatform {
     includeTags System.getProperty("tags", "Smoke")
   }
+
+  doFirst {
+    delete "${rootDir}/target/site/serenity"
+    delete "${rootDir}/report-for-smoke-tests"
+    logger.quiet("Smoke test results directory cleaned before running smoke tests")
+  }
+
+  finalizedBy {
+    aggregate {
+      doLast {
+        new File("${rootDir}/report-for-smoke-tests").mkdirs()
+        file("${rootDir}/target/site/serenity").renameTo(file("${rootDir}/report-for-smoke-tests"))
+        logger.quiet("Smoke test report moved to ---> file://${rootDir}/report-for-smoke-tests/index.html")
+      }
+    }
+  }
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED"
+  }
 }
+smoke.finalizedBy(aggregate)
 
 tasks.register('yarnInstall', Exec) {
   workingDir = file("${project.projectDir}/src/e2eTest")
