@@ -19,7 +19,6 @@ export * from '@data/user-data/permanent.user.data';
 export * from '@data/page-data/checkYourAnswers.page.data';
 export * from '@data/page-data/propertyDetails.page.data';
 export * from "@data/page-data/underlesseeOrMortgageeDetails.page.data";
-export * from '@data/page-data/housingAct.page.data';
 export * from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 export * from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 export * from '@data/page-data/claimantDetailsWales.page.data';
