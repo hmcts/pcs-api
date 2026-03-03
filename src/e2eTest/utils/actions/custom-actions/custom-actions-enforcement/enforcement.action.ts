@@ -57,6 +57,7 @@ export class EnforcementAction implements IAction {
       ['selectPeopleYouWantToEvict', () => this.selectPeopleYouWantToEvict(fieldName as actionRecord, page)],
       ['selectRiskPosedByEveryoneAtProperty', () => this.selectRiskPosedByEveryoneAtProperty(fieldName as actionRecord, page)],
       ['provideRiskPosedByEveryoneAtProperty', () => this.provideRiskPosedByEveryoneAtProperty(fieldName as actionRecord, page)],
+      ['provideHowDefendantReturnToProperty', () => this.provideHowDefendantReturnToProperty(fieldName as actionRecord, page)],
       ['selectVulnerablePeopleInTheProperty', () => this.selectVulnerablePeopleInTheProperty(fieldName as actionRecord, page)],
       ['provideDetailsBasedOnRadioOptionSelection', () => this.provideDetailsBasedOnRadioOptionSelection(fieldName as actionRecord, page)],
       ['provideMoneyOwed', () => this.provideMoneyOwed(fieldName as actionRecord, page)],
@@ -104,7 +105,7 @@ export class EnforcementAction implements IAction {
     if (applicationType.option === 'Writ of possession' && applicationType.option1 !== 'No') {
       await this.checkClaimTransferredToHighCourt(applicationType.question1 as string, applicationType.question2 as string);
       await performAction('reTryOnCallBackError', yourApplication.continueButton, applicationType.nextPage as string);
-    } else if (applicationType.option === 'Warrant of possession') {
+    } else if (applicationType.option === 'Warrant of possession'|| applicationType.option === 'Warrant of restitution') {
       await performAction('reTryOnCallBackError', yourApplication.continueButton, applicationType.nextPage as string);
     }
 
@@ -362,6 +363,16 @@ export class EnforcementAction implements IAction {
       fieldsMap.set(amtToPay.label as string, amtToRepayEntered as string);
     };
     await performAction('reTryOnCallBackError', rePayments.continueButton, amtToPay.nextPage as string);
+  }
+
+  private async provideHowDefendantReturnToProperty(provideEvidence: actionRecord, page: Page) {
+    await this.addFieldsToMap(provideEvidence);
+    await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
+    await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
+    const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, provideEvidence.label as string, provideEvidence.input as number);
+    await performAction('inputText', provideEvidence.label, testInput);
+    fieldsMap.set(provideEvidence.label as string, testInput);
+    await performAction('reTryOnCallBackError', !provideEvidence?.button ? provideEvidence.button = 'Continue' : provideEvidence.button as string, provideEvidence.nextPage as string);
   }
 
   private async selectLanguageUsed(languageDetails: actionRecord, page: Page) {
