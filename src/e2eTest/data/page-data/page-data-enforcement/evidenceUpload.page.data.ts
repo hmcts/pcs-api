@@ -11,4 +11,22 @@ export const evidenceUpload = {
   shortDescriptionHiddenTextLabel: 'Short description',
   shortDescriptionHiddenTextInput: 20,
   continueButton: 'Continue',
+  thereIsAProblemErrorMessageHeader: 'There is a problem',
+  errorValidation: 'NO',//set it to 'NO' before raising a PR
+  errorValidationType: { one: 'moneyField', two: 'textField', three: 'radioOptions', four: 'checkBox', five: 'moneyFieldAndRadioOption', six: 'checkBoxPageLevel', seven: 'addDocument', eight: 'dropDown', nine: 'upLoad' },
+  errorValidationField: {
+    errorAddDocument: [
+      { type: 'none', input: '', errMessage: 'Add document is required' },
+    ],
+    errorDropDown: [
+      { type: 'none', input: '', errMessage: 'Type document is required' },
+    ],
+    errorUpload: [
+      { type: 'none', input: '', errMessage: 'Select or fill the required Document field' },
+    ],
+    errorTextField: [
+      { type: 'moreThanMax', input: 'MAXPLUS', errMessage: 'Short description exceeds the maximum length' },
+      { type: 'empty', input: 'EMPTY', errMessage: 'Short description is required' },
+    ]
+  },
 }

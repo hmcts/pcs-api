@@ -13,6 +13,7 @@ import { CreateCaseAPIAction } from '@utils/actions/custom-actions/createCaseAPI
 import { ExpandSummaryAction, UploadFileAction } from '@utils/actions/element-actions';
 import { ClickLinkAndVerifyNewTabTitleAction } from '@utils/actions/element-actions/clickLinkAndVerifyNewTabTitle.action';
 import { RetryOnCallBackError } from '@utils/actions/element-actions/reTryOnCallBackError.action';
+import { RemoveFileAction } from '@utils/actions/element-actions/removeFile.action';
 
 export class ActionEnforcementRegistry {
   private static actions: Map<string, IAction> = new Map<string, IAction>([
@@ -27,6 +28,7 @@ export class ActionEnforcementRegistry {
     ['navigateToUrl', new NavigateToUrlAction()],
     ['clickRadioButton', new ClickRadioButtonAction()],
     ['clickLinkAndVerifyNewTabTitle', new ClickLinkAndVerifyNewTabTitleAction()],
+    ['removeFile', new RemoveFileAction()],
     ['reTryOnCallBackError', new RetryOnCallBackError()],
     ['expandSummary', new ExpandSummaryAction()],
     ['filterCaseFromCaseList', new SearchCaseAction()],

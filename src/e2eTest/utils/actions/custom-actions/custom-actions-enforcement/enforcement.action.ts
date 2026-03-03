@@ -434,6 +434,7 @@ export class EnforcementAction implements IAction {
         );
       }
     }
+    await performAction('removeFile');
     await performAction('reTryOnCallBackError', evidenceUpload.continueButton, uploadEvidence.nextPage as string);
 
   }
@@ -503,6 +504,22 @@ export class EnforcementAction implements IAction {
               await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               await performAction('check', validationArr.checkBox);
               break;
+
+            case 'addDocument':
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              await performAction('clickButton', 'Add new');
+              break;
+            
+            case 'dropDown':
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              await performAction('select', validationArr.docType, validationArr.type);
+              break;
+
+            case 'upLoad':
+              await performAction('clickButton', validationArr.button);
+              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
 
             default:
               throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);

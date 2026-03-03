@@ -95,6 +95,28 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
       });
       await performAction('reTryOnCallBackError', peopleWillBeEvicted.continueButton, evidenceUpload.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.seven,
+        inputArray: evidenceUpload.errorValidationField.errorAddDocument,
+        button: evidenceUpload.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.eight,
+        inputArray: evidenceUpload.errorValidationField.errorDropDown,
+        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
+        type: evidenceUpload.witnessStatementDropDownInput,
+        button: evidenceUpload.continueButton
+      });
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.nine,
+        inputArray: evidenceUpload.errorValidationField.errorUpload,
+        docType: evidenceUpload.typeOfDocumentHiddenTextLabel,
+        type: evidenceUpload.witnessStatementDropDownInput,
+        button: evidenceUpload.continueButton
+      });
       await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
         documents: [
           { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },
