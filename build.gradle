@@ -98,10 +98,7 @@ configurations {
   }
 }
 
-def integrationBuild = gradle.startParameter.taskNames.any {
-  def name = it.toLowerCase()
-  name.contains("integration") || name == "build" || name == "check"
-}
+def integrationBuild = gradle.startParameter.taskNames.any { it.toLowerCase() in ['integration', 'build', 'check'] }
 
 ccd {
   configDir = file('build/definitions')
