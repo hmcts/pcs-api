@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.EventPayload;
 import uk.gov.hmcts.ccd.sdk.api.callback.Start;
+import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.respondpossessionclaim.PossessionClaimResponse;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -15,7 +17,10 @@ import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.party.DefendantAccessValidator;
 import uk.gov.hmcts.reform.pcs.ccd.service.respondpossessionclaim.PossessionClaimResponseMapper;
+import uk.gov.hmcts.reform.pcs.exception.DraftNotFoundException;
 import uk.gov.hmcts.reform.pcs.security.SecurityContextService;
+
+import java.util.List;
 
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.respondPossessionClaim;
 
@@ -79,16 +84,63 @@ public class StartEventHandler implements Start<PCSCase, State> {
      * - savedDraft: Defendant's saved answers from draft table
      *
      * <p>Sets hasUnsubmittedCaseData=YES so UI shows "Continue" button instead of "Start"
+     *
+     * <p><b>IMPORTANT:</b> Uses {@code .toBuilder()} to safely merge fresh claimantOrganisations
+     * with saved defendant data. This automatically copies all defendant fields (defendantContactDetails,
+     * defendantResponses) while only overriding claimantOrganisations with fresh view data.
      */
     private PCSCase restoreSavedDraftAnswers(long caseReference, PCSCase pcsCase) {
         PCSCase savedDraft = draftCaseDataService.getUnsubmittedCaseData(caseReference, respondPossessionClaim)
-            .orElseThrow(() -> new IllegalStateException(
-                "Draft not found for case " + caseReference
-            ));
+            .orElseThrow(() -> new DraftNotFoundException(caseReference, respondPossessionClaim));
+
+        PossessionClaimResponse merged = mergeLatestCaseData(
+            pcsCase,
+            savedDraft.getPossessionClaimResponse()
+        );
 
         return pcsCase.toBuilder()
-            .possessionClaimResponse(savedDraft.getPossessionClaimResponse())
+            .possessionClaimResponse(merged)
             .hasUnsubmittedCaseData(YesOrNo.YES)
+            .build();
+    }
+
+    /**
+     * Creates a list of claimant organisation names from case claimant parties.
+     * Transforms Party objects into simple organisation name strings.
+     *
+     * @param pcsCase View-populated case with allClaimants from CCD
+     * @return List of claimant organisation names, or empty list if none found
+     */
+    private List<ListValue<String>> createClaimantOrgNameList(PCSCase pcsCase) {
+        List<ListValue<Party>> allClaimants = pcsCase.getAllClaimants();
+
+        if (allClaimants == null || allClaimants.isEmpty()) {
+            log.warn("No claimant parties found in case, returning empty organisation list");
+            return List.of();
+        }
+
+        return allClaimants.stream()
+            .map(claimant -> ListValue.<String>builder()
+                .id(claimant.getId())
+                .value(claimant.getValue().getOrgName())
+                .build())
+            .toList();
+    }
+
+    /**
+     * Merges latest case data with saved defendant responses.
+     * Takes fresh claimant organisations from latest case and combines with saved defendant answers.
+     *
+     * @param latestCase Latest case data from CCD (has up-to-date claimant info)
+     * @param savedResponses Saved defendant responses from draft
+     * @return Merged response with latest claimant orgs and saved defendant answers
+     */
+    private PossessionClaimResponse mergeLatestCaseData(PCSCase latestCase,
+                                                         PossessionClaimResponse savedResponses) {
+        List<ListValue<String>> latestClaimantOrgs = createClaimantOrgNameList(latestCase);
+
+        return savedResponses.toBuilder()
+            .claimantOrganisations(latestClaimantOrgs)
             .build();
     }
 
@@ -98,10 +150,19 @@ public class StartEventHandler implements Start<PCSCase, State> {
      * <p>Only saves defendant contact details and responses (editable defendant data). Claim data
      * comes from view classes on each START callback. Case metadata (state, dates) is managed by
      * CCD, not stored in draft.
+     *
+     * <p><b>IMPORTANT:</b> claimantOrganisations is intentionally excluded from the draft.
+     * It's view-only data that comes fresh from CCD allClaimants on each START callback.
      */
     private void createInitialDraft(long caseReference, PossessionClaimResponse response) {
+        // Filter to ONLY defendant's editable fields (exclude claimantOrganisations)
+        PossessionClaimResponse defendantFieldsOnly = PossessionClaimResponse.builder()
+            .defendantContactDetails(response.getDefendantContactDetails())
+            .defendantResponses(response.getDefendantResponses())
+            .build();  // claimantOrganisations intentionally excluded - view data only
+
         PCSCase draftWithOnlyResponseData = PCSCase.builder()
-            .possessionClaimResponse(response)
+            .possessionClaimResponse(defendantFieldsOnly)
             .build();
 
         draftCaseDataService.patchUnsubmittedEventData(
