@@ -55,6 +55,7 @@ public class DefendantResponseEntity {
     private YesNoPreferNotToSay receivedFreeLegalAdvice;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "tenancy_start_date_correct")
     private YesNoNotSure tenancyStartDateCorrect;
 
