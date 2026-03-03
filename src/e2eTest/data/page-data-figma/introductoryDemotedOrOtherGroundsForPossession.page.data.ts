@@ -1,11 +1,9 @@
-// Disabled content will be enabled once https://tools.hmcts.net/jira/browse/HDPI-3491 bug is fixed.
 export const introductoryDemotedOrOtherGroundsForPossession = {
   mainHeader: `Grounds for possession`,
   absoluteGroundsHiddenCheckbox: `Absolute grounds`,
   antisocialBehaviourHiddenCheckbox: `Antisocial behaviour`,
   breachOfTheTenancyHiddenCheckbox: `Breach of the tenancy`,
   cancelLink: `Cancel`,
-  caseNumberParagraph: `Case number:`,
   continueButton: `Continue`,
   doYouHaveGroundsForPossessionQuestion: `Do you have grounds for possession?`,
   inSomeCasesAClaimantParagraph: `In some cases, a claimant can make a claim for possession of a property without having to rely on a specific ground. If your claim meets these requirements, you can select that you have no grounds for possession.`,

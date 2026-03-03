@@ -23,7 +23,6 @@ export * from '@data/page-data/housingAct.page.data';
 export * from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';
 export * from '@data/page-data/whatAreYourGroundsForPossessionWales.page.data';
 export * from '@data/page-data/claimantDetailsWales.page.data';
-export * from '@data/page-data/canNotUseOnlineService.page.data';
 export * from '@data/page-data/propertyIneligible.page.data';
 export * from '@data/page-data/userIneligible.page.data';
 export * from '@data/page-data/reasonsForRequestingASuspensionAndDemotionOrder.page.data';

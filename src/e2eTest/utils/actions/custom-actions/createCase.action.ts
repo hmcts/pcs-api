@@ -178,7 +178,7 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question:claimantType.whoIsTheClaimantQuestion, option: caseData});
-    if(caseData === claimantType.england.registeredProviderForSocialHousing || caseData === claimantType.wales.communityLandlord){
+    if(caseData === claimantType.englandRegisteredProviderForSocialHousingDynamicRadioOption || caseData === claimantType.walesCommunityLandlordDynamicRadioOption){
       await performAction('clickButtonAndVerifyPageNavigation', claimantType.continueButton, claimType.mainHeader);
     }
     else{
@@ -227,7 +227,6 @@ export class CreateCaseAction implements IAction {
   private async selectPreActionProtocol(caseData: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performValidation('text', {elementType: 'paragraph', text: preactionProtocol.ifYourClaimIsOnDynamicParagraph});
     await performAction('clickRadioButton', {question:preactionProtocol.haveYouFollowedThePreactionQuestion, option: caseData});
     await performAction('clickButton', preactionProtocol.continueButton);
   }
@@ -384,7 +383,7 @@ export class CreateCaseAction implements IAction {
   private async selectTenancyOrLicenceDetails(tenancyData: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-     await performAction('clickRadioButton', {question: tenancyLicenceDetails.whatTypeOfTenancyOrQuestion, option: tenancyData.tenancyOrLicenceType});
+    await performAction('clickRadioButton', {question: tenancyLicenceDetails.whatTypeOfTenancyOrQuestion, option: tenancyData.tenancyOrLicenceType});
     if (tenancyData.tenancyOrLicenceType === tenancyLicenceDetails.otherRadioOption) {
       await performAction('inputText', tenancyLicenceDetails.giveDetailsOfTheTypeHiddenTextLabel, tenancyLicenceDetails.detailsOfLicenceTextInput);
     }
@@ -677,16 +676,16 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     if (Array.isArray(documentsData.documents)) {
-      for (const document of documentsData.documents) {
-        await performActions(
+      for (let fileIndex = 0; fileIndex < documentsData.documents.length; fileIndex++) {
+        const document = documentsData.documents[fileIndex]; await performActions(
           'Add Document',
           ['uploadFile', document.fileName],
-          ['select', uploadAdditionalDocuments.typeOfDocumentHiddenTextLabel, document.type],
-          ['inputText', uploadAdditionalDocuments.shortDescriptionHiddenTextLabel, document.description]
+          ['select', {dropdown: uploadAdditionalDocuments.typeOfDocumentHiddenTextLabel, index: fileIndex}, document.type],
+          ['inputText', {text: uploadAdditionalDocuments.shortDescriptionHiddenTextLabel, index: fileIndex}, document.description]
         );
       }
-      await performAction('clickButton', uploadAdditionalDocuments.continueButton);
     }
+    await performAction('clickButton', uploadAdditionalDocuments.continueButton);
   }
 
   private async completingYourClaim(option: actionData) {
