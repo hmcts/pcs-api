@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
 /**
@@ -40,10 +39,6 @@ public class EnforcementOrder {
     @JsonUnwrapped
     @CCD
     private RawWarrantDetails rawWarrantDetails;
-
-    @JsonUnwrapped(prefix = "warrantOfRestitution")
-    @CCD
-    private WarrantOfRestitutionDetails warrantOfRestitutionDetails;
 
     @CCD(searchable = false)
     @External
