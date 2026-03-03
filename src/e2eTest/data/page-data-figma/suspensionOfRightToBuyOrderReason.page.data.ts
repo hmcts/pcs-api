@@ -6,5 +6,5 @@ export const suspensionOfRightToBuyOrderReason = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  sampleTestReasonInputText: `Sample text for suspension order reason`,
+  whyAreYouRequestingSuspensionOrderInputText: `Sample text for suspension order reason`,
 };
