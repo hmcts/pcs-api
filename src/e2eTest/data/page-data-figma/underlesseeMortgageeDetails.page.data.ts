@@ -37,4 +37,3 @@ export const underlesseeMortgageeDetails = {
   underlesseeNameTextInput: `UnderlesseeMortgagee Name`,
   underlesseePostcodeTextInput: `SL6`,
 };
-export const underlesseeOrMortgageeDetails = underlesseeMortgageeDetails;

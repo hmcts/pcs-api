@@ -50,8 +50,7 @@ import {
   suspensionOfRightToBuyHousingActOptions,
   suspensionOfRightToBuyOrderReason,
   suspensionToBuyDemotionOfTenancyActs,
-  suspensionToBuyDemotionOfTenancyOrderReasons,
-  underlesseeOrMortgageeDetails
+  suspensionToBuyDemotionOfTenancyOrderReasons, underlesseeMortgageeDetails
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -399,7 +398,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectHousingAct', [{question: suspensionOfRightToBuyHousingActOptions.whichSectionSuspensionOfRightToBuyQuestion
       , option: suspensionOfRightToBuyHousingActOptions.section6A1988RadioOption}]);
     await performValidation('mainHeader', suspensionOfRightToBuyOrderReason.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', suspensionOfRightToBuyOrderReason.requestSuspensionOrderQuestion);
+    await performAction('enterReasonForSuspensionOrder', suspensionOfRightToBuyOrderReason.whyAreYouRequestingSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -408,14 +407,14 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
-      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
-      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
-      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
-      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
-      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
+    await performAction('selectunderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.yesRadioOption, name: underlesseeMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeMortgageeDetails.noRadioOption,
+      name2Option: underlesseeMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeMortgageeDetails.noRadioOption,
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -510,7 +509,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', demotionOfTenancyHousingActOptions.mainHeader);
     await performAction('selectHousingAct', [{question: demotionOfTenancyHousingActOptions.whichSectionDemotionOfTenancyQuestion
       , option: demotionOfTenancyHousingActOptions.section82A1985RadioOption}]);
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yesRadioOption);
     await performValidation('mainHeader', demotionOfTenancyOrderReason.mainHeader);
     await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -521,10 +520,10 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
-      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
+    await performAction('selectunderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.yesRadioOption, name: underlesseeMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -601,7 +600,7 @@ test.describe('[Create Case - England]', async () => {
     await performValidation('mainHeader', demotionOfTenancyHousingActOptions.mainHeader);
     await performAction('selectHousingAct', [{question: demotionOfTenancyHousingActOptions.whichSectionDemotionOfTenancyQuestion
       , option: demotionOfTenancyHousingActOptions.section82A1985RadioOption}]);
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yesRadioOption);
     await performValidation('mainHeader', demotionOfTenancyOrderReason.mainHeader);
     await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -687,7 +686,7 @@ test.describe('[Create Case - England]', async () => {
       , {question: suspensionToBuyDemotionOfTenancyActs.whichSectionDemotionOfTenancyQuestion
       , option: suspensionToBuyDemotionOfTenancyActs.section82A1985RadioOption}]);
     await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yes);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.yesRadioOption);
     await performValidation('mainHeader', suspensionToBuyDemotionOfTenancyOrderReasons.mainHeader);
     await performAction('enterReasonForSuspensionAndDemotionOrder'
       , {suspension: suspensionToBuyDemotionOfTenancyOrderReasons.requestSuspensionOrderQuestion
@@ -700,10 +699,10 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
-      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
+    await performAction('selectunderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.noRadioOption,
+      addressOption: underlesseeMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -786,7 +785,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectHousingAct', [{question: demotionOfTenancyHousingActOptions.whichSectionDemotionOfTenancyQuestion
       , option: demotionOfTenancyHousingActOptions.section6A1988RadioOption}]);
     await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.noRadioOption);
     await performValidation('mainHeader', demotionOfTenancyOrderReason.mainHeader);
     await performAction('enterReasonForDemotionOrder', demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
@@ -797,10 +796,10 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
-      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
+    await performAction('selectunderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.noRadioOption,
+      addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -889,7 +888,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectHousingAct', [{question: suspensionToBuyDemotionOfTenancyActs.whichSectionSuspensionOfRightToBuyQuestion
       , option: suspensionToBuyDemotionOfTenancyActs.section82A1985RadioOption}]);
     await performValidation('mainHeader', suspensionOfRightToBuyOrderReason.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', suspensionOfRightToBuyOrderReason.requestSuspensionOrderQuestion);
+    await performAction('enterReasonForSuspensionOrder', suspensionOfRightToBuyOrderReason.whyAreYouRequestingSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -898,10 +897,10 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
-      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
+    await performAction('selectunderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.noRadioOption,
+      addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -1008,7 +1007,7 @@ test.describe('[Create Case - England]', async () => {
       , {question: suspensionToBuyDemotionOfTenancyActs.whichSectionDemotionOfTenancyQuestion
         , option: suspensionToBuyDemotionOfTenancyActs.section82A1985RadioOption}]);
     await performValidation('mainHeader', statementOfExpressTerms.mainHeader);
-    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.no);
+    await performAction('selectStatementOfExpressTerms', statementOfExpressTerms.noRadioOption);
     await performValidation('mainHeader', suspensionToBuyDemotionOfTenancyOrderReasons.mainHeader);
     await performAction('enterReasonForSuspensionAndDemotionOrder'
       , {suspension: suspensionToBuyDemotionOfTenancyOrderReasons.requestSuspensionOrderQuestion
@@ -1021,10 +1020,10 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.noRadioOption,
-      addressOption: underlesseeOrMortgageeDetails.noRadioOption,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.noRadioOption
+    await performAction('selectunderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.noRadioOption,
+      addressOption: underlesseeMortgageeDetails.noRadioOption,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -1122,7 +1121,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectHousingAct', [{question: suspensionToBuyDemotionOfTenancyActs.whichSectionSuspensionOfRightToBuyQuestion
       , option: suspensionToBuyDemotionOfTenancyActs.section6A1988RadioOption}]);
     await performValidation('mainHeader', suspensionOfRightToBuyOrderReason.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', suspensionOfRightToBuyOrderReason.requestSuspensionOrderQuestion);
+    await performAction('enterReasonForSuspensionOrder', suspensionOfRightToBuyOrderReason.whyAreYouRequestingSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
@@ -1208,7 +1207,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectHousingAct', [{question: suspensionToBuyDemotionOfTenancyActs.whichSectionSuspensionOfRightToBuyQuestion
       , option: suspensionToBuyDemotionOfTenancyActs.section121A1985RadioOption}]);
     await performValidation('mainHeader', suspensionOfRightToBuyOrderReason.mainHeader);
-    await performAction('enterReasonForSuspensionOrder', suspensionOfRightToBuyOrderReason.requestSuspensionOrderQuestion);
+    await performAction('enterReasonForSuspensionOrder', suspensionOfRightToBuyOrderReason.whyAreYouRequestingSuspensionOrderQuestion);
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
     await performValidation('mainHeader', additionalReasonsForPossession.mainHeader);
