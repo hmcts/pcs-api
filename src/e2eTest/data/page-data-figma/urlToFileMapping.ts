@@ -33,4 +33,16 @@ export default {
   'resumePossessionClaimstatementOfTruth': 'statementOfTruth',
   'confirm': 'confirm',
   'createPossessionClaimpostcodeNotAssignedToCourt': 'postcodeNotAssignedToCourt',
+  'resumePossessionClaimsuspensionToBuyDemotionOfTenancyActs': 'suspensionToBuyDemotionOfTenancyActs',
+  'resumePossessionClaimsuspensionOfRightToBuyHousingActOptions': 'suspensionOfRightToBuyHousingActOptions',
+  'resumePossessionClaimdemotionOfTenancyHousingActOptions': 'demotionOfTenancyHousingActOptions',
+  'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'suspensionToBuyDemotionOfTenancyOrderReasons',
+  'resumePossessionClaimsuspensionOfRightToBuyOrderReason': 'suspensionOfRightToBuyOrderReason',
+  'resumePossessionClaimdemotionOfTenancyOrderReason': 'demotionOfTenancyOrderReason',
+  'resumePossessionClaimrentArrearsOrBreachOfTenancyGround': 'rentArrearsOrBreachOfTenancyGround',
+  'resumePossessionClaimclaimantDetailsWales': 'claimantDetailsWales',
+  'resumePossessionClaimOccupationLicenceDetailsWales': 'occupationLicenceDetailsWales',
+  'resumePossessionClaimprohibitedConductWales': 'prohibitedConductWales',
+  'resumePossessionClaimstatementOfExpressTerms': 'statementOfExpressTerms',
+  'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails'
 };

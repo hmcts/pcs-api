@@ -1,0 +1,18 @@
+export const prohibitedConductWales = {
+  makeAClaimCaption: `Make a claim`,
+  mainHeader: `Prohibited conduct standard contract`,
+  ifJudgeDecidesParagraph: `If a judge decides that possession is not reasonable at this time, they may instead decide to make an order imposing a prohibited conduct standard contract.`,
+  thisIsA12MonthParagraph: `This is a 12-month probationary contract.`,
+  areYouAlsoMakingAClaimQuestion: `Are you also making a claim for an order imposing a prohibited conduct standard contract?`,
+  yesRadioOption: `Yes`,
+  noRadioOption: `No`,
+  haveYouAndContractHolderAgreedHiddenQuestion: `Have you and the contract holder agreed terms of the periodic standard contract in addition to those incorporated by statute?`,
+  giveDetailsOfTermsHiddenTextLabel: `Give details of the terms you’ve agreed`,
+  giveDetailsOfTermsHiddenTextInput: `Sample Test Input Data for Give details of the terms`,
+  whyAreYouMakingThisClaimHiddenQuestion: `Why are you making this claim?`,
+  youCanEnterUpTo250CharactersHiddenHintText: `You can enter up to 250 characters`,
+  whyAreYouMakingThisClaimTextInput: `Sample Test Input Data for Why are you making this claim`,
+  previousButton: `Previous`,
+  continueButton: `Continue`,
+  cancelLink: `Cancel`
+};
