@@ -7,8 +7,4 @@ export const suspensionToBuyDemotionOfTenancyOrderReasons = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  requestSuspensionOrderQuestion: `Why are you requesting a suspension order?`,
-  requestDemotionOrderQuestion: `Why are you requesting a demotion order?`,
-  sampleTestReason: `This is the sample text for suspension and demotion order reasons.`,
-  continue: `Continue`,
 };

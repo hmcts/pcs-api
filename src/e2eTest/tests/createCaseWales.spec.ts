@@ -39,6 +39,7 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
   statementOfTruth,
+  // migration (page-data → page-data-figma)
   claimantDetailsWales,
   occupationLicenceDetailsWales,
   prohibitedConductWales,
@@ -81,9 +82,9 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
-         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
+         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
@@ -95,11 +96,11 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationLicenceDetailsWales.standardContract,
-      day: occupationLicenceDetailsWales.dayInput,
-      month: occupationLicenceDetailsWales.monthInput,
-      year: occupationLicenceDetailsWales.yearInput,
+      occupationContractQuestion: occupationLicenceDetailsWales.whatTypeOfOccupationContractQuestion,
+      occupationContractType: occupationLicenceDetailsWales.standardContractRadioOption,
+      day: occupationLicenceDetailsWales.dayTextInput,
+      month: occupationLicenceDetailsWales.monthTextInput,
+      year: occupationLicenceDetailsWales.yearTextInput,
       files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
@@ -146,7 +147,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductWales.no,
+      option1: prohibitedConductWales.noRadioOption,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
@@ -186,9 +187,9 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
-        question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
+        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
+        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
@@ -200,8 +201,8 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationLicenceDetailsWales.secureContract
+      occupationContractQuestion: occupationLicenceDetailsWales.whatTypeOfOccupationContractQuestion,
+      occupationContractType: occupationLicenceDetailsWales.secureContractRadioOption
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performValidation('elementNotToBeVisible',[whatAreYourGroundsForPossessionWales.mandatory.section181, whatAreYourGroundsForPossessionWales.mandatory.section187]);
@@ -257,13 +258,13 @@ test.describe('[Create Case - Wales]', async () => {
     await performValidation('mainHeader', prohibitedConductWales.mainHeader);
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductWales.yes,
-      label1: prohibitedConductWales.whyAreYouMakingThisClaimLabel,
-      input1: prohibitedConductWales.whyAreYouMakingThisClaimSampleData,
-      question2: prohibitedConductWales.haveYouAndContractHolderAgreedQuestion,
-      option2: prohibitedConductWales.yes,
-      label2: prohibitedConductWales.giveDetailsOfTermsLabel,
-      input2: prohibitedConductWales.giveDetailsOfTermsSampleData
+      option1: prohibitedConductWales.yesRadioOption,
+      label1: prohibitedConductWales.whyAreYouMakingThisClaimHiddenQuestion,
+      input1: prohibitedConductWales.whyAreYouMakingThisClaimSampleDataInput,
+      question2: prohibitedConductWales.haveYouAndContractHolderAgreedHiddenQuestion,
+      option2: prohibitedConductWales.yesRadioOption,
+      label2: prohibitedConductWales.giveDetailsOfTermsHiddenTextLabel,
+      input2: prohibitedConductWales.giveDetailsOfTermsSampleDataInput
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     // The following sections are commented out pending development of the Wales journey.
@@ -307,9 +308,9 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.no,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.no,
-         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.no});
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.noRadioOption,
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.noRadioOption,
+         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.noRadioOption});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.yesRadioOption,
       correspondenceAddress: contactPreferences.yesRadioOption,
@@ -321,11 +322,11 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationLicenceDetailsWales.standardContract,
-      day: occupationLicenceDetailsWales.dayInput,
-      month: occupationLicenceDetailsWales.monthInput,
-      year: occupationLicenceDetailsWales.yearInput
+      occupationContractQuestion: occupationLicenceDetailsWales.whatTypeOfOccupationContractQuestion,
+      occupationContractType: occupationLicenceDetailsWales.standardContractRadioOption,
+      day: occupationLicenceDetailsWales.dayTextInput,
+      month: occupationLicenceDetailsWales.monthTextInput,
+      year: occupationLicenceDetailsWales.yearTextInput
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -373,11 +374,11 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductWales.yes,
-      label1: prohibitedConductWales.whyAreYouMakingThisClaimLabel,
-      input1: prohibitedConductWales.whyAreYouMakingThisClaimSampleData,
-      question2: prohibitedConductWales.haveYouAndContractHolderAgreedQuestion,
-      option2: prohibitedConductWales.no,
+      option1: prohibitedConductWales.yesRadioOption,
+      label1: prohibitedConductWales.whyAreYouMakingThisClaimHiddenQuestion,
+      input1: prohibitedConductWales.whyAreYouMakingThisClaimSampleDataInput,
+      question2: prohibitedConductWales.haveYouAndContractHolderAgreedHiddenQuestion,
+      option2: prohibitedConductWales.noRadioOption,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.noRadioOption);
@@ -417,9 +418,9 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectClaimantName', claimantInformation.noRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.notApplicable,
-         question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.notApplicable,
-         question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.notApplicable});
+        {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.notApplicableRadioOption,
+         question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.notApplicableRadioOption,
+         question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.notApplicableRadioOption});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
@@ -431,8 +432,8 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationLicenceDetailsWales.other
+      occupationContractQuestion: occupationLicenceDetailsWales.whatTypeOfOccupationContractQuestion,
+      occupationContractType: occupationLicenceDetailsWales.otherRadioOption
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -476,7 +477,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductWales.no,
+      option1: prohibitedConductWales.noRadioOption,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
@@ -516,9 +517,9 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
-        question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
+        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
+        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
@@ -533,11 +534,11 @@ test.describe('[Create Case - Wales]', async () => {
       name2Option: defendantDetails.noRadioOption,
       correspondenceAddress2Option: defendantDetails.yesRadioOption, correspondenceAddressSame2Option: defendantDetails.yesRadioOption});
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationLicenceDetailsWales.secureContract,
-      day: occupationLicenceDetailsWales.dayInput,
-      month: occupationLicenceDetailsWales.monthInput,
-      year: occupationLicenceDetailsWales.yearInput,
+      occupationContractQuestion: occupationLicenceDetailsWales.whatTypeOfOccupationContractQuestion,
+      occupationContractType: occupationLicenceDetailsWales.secureContractRadioOption,
+      day: occupationLicenceDetailsWales.dayTextInput,
+      month: occupationLicenceDetailsWales.monthTextInput,
+      year: occupationLicenceDetailsWales.yearTextInput,
       files: 'occupationContract.pdf'
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
@@ -587,7 +588,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductWales.no,
+      option1: prohibitedConductWales.noRadioOption,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
@@ -649,9 +650,9 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
-        question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
+        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
+        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
@@ -663,8 +664,8 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationLicenceDetailsWales.standardContract
+      occupationContractQuestion: occupationLicenceDetailsWales.whatTypeOfOccupationContractQuestion,
+      occupationContractType: occupationLicenceDetailsWales.standardContractRadioOption
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -695,7 +696,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductWales.no,
+      option1: prohibitedConductWales.noRadioOption,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);
@@ -744,9 +745,9 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectClaimantName', claimantInformation.yesRadioOption);
     await performAction('clickButtonAndVerifyPageNavigation', claimantInformation.continueButton, claimantDetailsWales.mainHeader);
     await performAction('selectClaimantDetails',
-      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1OfTheHousingAct2014, option1: claimantDetailsWales.yes,
-        question2: claimantDetailsWales.wereYouLicensedUnderPart1OfTheHousingAct2014, option2: claimantDetailsWales.yes,
-        question3: claimantDetailsWales.haveYouAppointedALicenseAgent, option3: claimantDetailsWales.yes});
+      {question1: claimantDetailsWales.wereYouRegisteredUnderPart1Question, option1: claimantDetailsWales.yesRadioOption,
+        question2: claimantDetailsWales.wereYouLicensedUnderPart1Question, option2: claimantDetailsWales.yesRadioOption,
+        question3: claimantDetailsWales.haveYouAppointedALicensedAgentQuestion, option3: claimantDetailsWales.yesRadioOption});
     await performAction('selectContactPreferences', {
       notifications: contactPreferences.noRadioOption,
       correspondenceAddress: contactPreferences.noRadioOption,
@@ -758,8 +759,8 @@ test.describe('[Create Case - Wales]', async () => {
       addAdditionalDefendantsOption: defendantDetails.noRadioOption
     });
     await performAction('selectOccupationContractOrLicenceDetails', {
-      occupationContractQuestion: occupationLicenceDetailsWales.occupationContractOrLicenceType,
-      occupationContractType: occupationLicenceDetailsWales.secureContract
+      occupationContractQuestion: occupationLicenceDetailsWales.whatTypeOfOccupationContractQuestion,
+      occupationContractType: occupationLicenceDetailsWales.secureContractRadioOption
     });
     await performValidation('mainHeader', whatAreYourGroundsForPossessionWales.mainHeader);
     await performAction('selectYourPossessionGrounds', {
@@ -805,7 +806,7 @@ test.describe('[Create Case - Wales]', async () => {
     });
     await performAction('selectProhibitedConductStandardContract', {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
-      option1: prohibitedConductWales.no,
+      option1: prohibitedConductWales.noRadioOption,
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     await performAction('selectClaimingCosts', claimingCosts.yesRadioOption);

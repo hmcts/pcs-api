@@ -36,13 +36,15 @@ export default {
   'resumePossessionClaimsuspensionToBuyDemotionOfTenancyActs': 'suspensionToBuyDemotionOfTenancyActs',
   'resumePossessionClaimsuspensionOfRightToBuyHousingActOptions': 'suspensionOfRightToBuyHousingActOptions',
   'resumePossessionClaimdemotionOfTenancyHousingActOptions': 'demotionOfTenancyHousingActOptions',
-  'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimsuspensionOfRightToBuyOrderReason': 'suspensionOfRightToBuyOrderReason',
   'resumePossessionClaimdemotionOfTenancyOrderReason': 'demotionOfTenancyOrderReason',
+  'resumePossessionClaimsuspensionToBuyDemotionOfTenancyOrderReasons': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimrentArrearsOrBreachOfTenancyGround': 'rentArrearsOrBreachOfTenancyGround',
   'resumePossessionClaimclaimantDetailsWales': 'claimantDetailsWales',
   'resumePossessionClaimOccupationLicenceDetailsWales': 'occupationLicenceDetailsWales',
   'resumePossessionClaimprohibitedConductWales': 'prohibitedConductWales',
+  'resumePossessionClaimrentArrearsOrBreachOfTenancy': 'rentArrearsOrBreachOfTenancyGround',
+  'resumePossessionClaimreasonsForRequestingASuspensionAndDemotionOrder': 'suspensionToBuyDemotionOfTenancyOrderReasons',
   'resumePossessionClaimstatementOfExpressTerms': 'statementOfExpressTerms',
-  'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails'
+  'resumePossessionClaimunderlesseeMortgageeDetails': 'underlesseeMortgageeDetails',
 };

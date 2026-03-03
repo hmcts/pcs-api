@@ -3,9 +3,10 @@ import {Page} from '@playwright/test';
 import {performAction, performActions, performValidation} from '@utils/controller';
 import {addressInfo, caseNumber, CreateCaseAction} from "@utils/actions/custom-actions/createCase.action";
 import {
+  // migration (page-data → page-data-figma)
   claimantDetailsWales,
-  prohibitedConductWales,
-  occupationLicenceDetailsWales
+  occupationLicenceDetailsWales,
+  prohibitedConductWales
 } from '@data/page-data-figma';
 import {asbQuestionsWales} from '@data/page-data/asbQuestionsWales.page.data';
 
@@ -26,24 +27,24 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: claimant.question1, option: claimant.option1});
-    if (claimant.option1 == claimantDetailsWales.yes) {
-      await performAction('inputText', claimantDetailsWales.whatsYourRegistrationNumber, claimantDetailsWales.sampleTestRegistrationNumberInput);
+    if (claimant.option1 == claimantDetailsWales.yesRadioOption) {
+      await performAction('inputText', claimantDetailsWales.whatsYourRegistrationNumberHiddenTextLabel, claimantDetailsWales.whatsYourRegistrationNumberHiddenTextInput);
     }
     await performAction('clickRadioButton', {question: claimant.question2, option: claimant.option2});
-    if (claimant.option2 == claimantDetailsWales.yes) {
-      await performAction('inputText', claimantDetailsWales.whatsYourLicenseNumber, claimantDetailsWales.sampleTestLicenseNumberInput);
+    if (claimant.option2 == claimantDetailsWales.yesRadioOption) {
+      await performAction('inputText', claimantDetailsWales.whatsYourLicenceNumberHiddenTextLabel, claimantDetailsWales.whatsYourLicenceNumberHiddenTextInput);
     }
     await performAction('clickRadioButton', {question: claimant.question3, option: claimant.option3});
-    if (claimant.option3 == claimantDetailsWales.yes) {
-      await performAction('inputText', claimantDetailsWales.agentsFirstnameLabel, claimantDetailsWales.agentsFirstnameInput);
-      await performAction('inputText', claimantDetailsWales.agentsLastnameLabel, claimantDetailsWales.agentsLastnameInput);
-      await performAction('inputText', claimantDetailsWales.agentsLicenseNumberLabel, claimantDetailsWales.agentsLicenseNumberInput);
+    if (claimant.option3 == claimantDetailsWales.yesRadioOption) {
+      await performAction('inputText', claimantDetailsWales.agentsFirstNameHiddenTextLabel, claimantDetailsWales.agentsFirstNameHiddenTextInput);
+      await performAction('inputText', claimantDetailsWales.agentsLastNameHiddenTextLabel, claimantDetailsWales.agentsLastNameHiddenTextInput);
+      await performAction('inputText', claimantDetailsWales.agentsLicenceNumberHiddenTextLabel, claimantDetailsWales.agentsLicenceNumberHiddenTextInput);
       await performActions('Enter Date',
-        ['inputText', claimantDetailsWales.dayLabel, claimantDetailsWales.dayInput],
-        ['inputText', claimantDetailsWales.monthLabel, claimantDetailsWales.monthInput],
-        ['inputText', claimantDetailsWales.yearLabel, claimantDetailsWales.yearInput]);
+        ['inputText', claimantDetailsWales.dayHiddenTextLabel, claimantDetailsWales.dayHiddenTextInput],
+        ['inputText', claimantDetailsWales.monthHiddenTextLabel, claimantDetailsWales.monthHiddenTextInput],
+        ['inputText', claimantDetailsWales.yearHiddenTextLabel, claimantDetailsWales.yearHiddenTextInput]);
     }
-    await performAction('clickButton', claimantDetailsWales.continue);
+    await performAction('clickButton', claimantDetailsWales.continueButton);
   }
 
   private async selectOccupationContractOrLicenceDetails(occupationContractData: actionRecord) {
@@ -53,34 +54,34 @@ export class CreateCaseWalesAction extends CreateCaseAction implements IAction {
       question: occupationContractData.occupationContractQuestion,
       option: occupationContractData.occupationContractType
     });
-    if (occupationContractData.occupationContractType === occupationLicenceDetailsWales.other) {
-      await performAction('inputText', occupationLicenceDetailsWales.giveDetailsOfTypeOfOccupationContractAgreementLabel, occupationLicenceDetailsWales.detailsOfLicenceInput);
+    if (occupationContractData.occupationContractType === occupationLicenceDetailsWales.otherRadioOption) {
+      await performAction('inputText', occupationLicenceDetailsWales.GiveDetailsAboutHiddenTextLabel, occupationLicenceDetailsWales.GiveDetailsAboutHiddenTextInput);
     }
     if (occupationContractData.day && occupationContractData.month && occupationContractData.year) {
       await performActions(
         'Enter Date',
-        ['inputText', occupationLicenceDetailsWales.dayLabel, occupationContractData.day],
-        ['inputText', occupationLicenceDetailsWales.monthLabel, occupationContractData.month],
-        ['inputText', occupationLicenceDetailsWales.yearLabel, occupationContractData.year]);
+        ['inputText', occupationLicenceDetailsWales.dayTextLabel, occupationContractData.day],
+        ['inputText', occupationLicenceDetailsWales.monthTextLabel, occupationContractData.month],
+        ['inputText', occupationLicenceDetailsWales.yearTextLabel, occupationContractData.year]);
     }
     if (occupationContractData.files) {
       await performAction('uploadFile', occupationContractData.files);
     }
-    await performAction('clickButton', occupationLicenceDetailsWales.continue);
+    await performAction('clickButton', occupationLicenceDetailsWales.continueButton);
   }
 
   private async selectProhibitedConductStandardContract(prohibitedConduct: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: ' + caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {question: prohibitedConduct.question1, option: prohibitedConduct.option1});
-    if (prohibitedConduct.option1 == prohibitedConductWales.yes) {
+    if (prohibitedConduct.option1 == prohibitedConductWales.yesRadioOption) {
       await performAction('inputText', prohibitedConduct.label1, prohibitedConduct.input1);
       await performAction('clickRadioButton', {question: prohibitedConduct.question2, option: prohibitedConduct.option2});
-      if (prohibitedConduct.option2 == prohibitedConductWales.yes) {
+      if (prohibitedConduct.option2 == prohibitedConductWales.yesRadioOption) {
         await performAction('inputText', prohibitedConduct.label2, prohibitedConduct.input2);
       }
     }
-    await performAction('clickButton', prohibitedConductWales.continue);
+    await performAction('clickButton', prohibitedConductWales.continueButton);
   }
 
   private async selectAsb(asbQuestions: actionRecord) {

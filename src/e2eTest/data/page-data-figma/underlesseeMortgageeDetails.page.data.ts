@@ -31,9 +31,6 @@ export const underlesseeMortgageeDetails = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  doYouKnowTheNameTextLabel: `What is their name?`,
-  addAnotherUnderlesseeOrMortgageeQuestion: `Do you need to add another underlessee or mortgagee?`,
-  addNewButton: `Add new`,
   underlesseeNameTextInput: `UnderlesseeMortgagee Name`,
   underlesseePostcodeTextInput: `SL6`,
 };

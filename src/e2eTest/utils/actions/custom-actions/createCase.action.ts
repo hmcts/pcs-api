@@ -43,6 +43,7 @@ import {
   confirm,
   statementOfTruth,
   uploadAdditionalDocuments,
+  // migration (page-data → page-data-figma)
   demotionOfTenancyOrderReason,
   rentArrearsOrBreachOfTenancyGround,
   statementOfExpressTerms,
@@ -624,13 +625,13 @@ export class CreateCaseAction implements IAction {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {
-      question: statementOfExpressTerms.statementOfExpressTermsQuestion,
+      question: statementOfExpressTerms.haveYouServedStatementQuestion,
       option: option
     });
-    if(option == statementOfExpressTerms.yes){
-      await performAction('inputText', statementOfExpressTerms.giveDetailsOfTermsLabel, statementOfExpressTerms.sampleTestReason);
+    if(option == statementOfExpressTerms.yesRadioOption){
+      await performAction('inputText', statementOfExpressTerms.giveDetailsOfTheTermsHiddenTextLabel, statementOfExpressTerms.giveDetailsOfTheTermsHiddenTextInput);
     }
-    await performAction('clickButton', statementOfExpressTerms.continue);
+    await performAction('clickButton', statementOfExpressTerms.continueButton);
   }
 
   private async enterReasonForDemotionOrder(reason: actionData) {
@@ -643,16 +644,16 @@ export class CreateCaseAction implements IAction {
   private async enterReasonForSuspensionOrder(reason: actionData) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('inputText', reason, suspensionOfRightToBuyOrderReason.sampleTestReason);
-    await performAction('clickButton', suspensionOfRightToBuyOrderReason.continue);
+    await performAction('inputText', reason, suspensionOfRightToBuyOrderReason.sampleTestReasonInputText);
+    await performAction('clickButton', suspensionOfRightToBuyOrderReason.continueButton);
   }
 
   private async enterReasonForSuspensionAndDemotionOrder(reason: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
-    await performAction('inputText', reason.suspension, suspensionOfRightToBuyOrderReason.sampleTestReason);
+    await performAction('inputText', reason.suspension, suspensionOfRightToBuyOrderReason.sampleTestReasonInputText);
     await performAction('inputText', reason.demotion, demotionOfTenancyOrderReason.whyAreYouRequestingDemotionOrderInputText);
-    await performAction('clickButton', suspensionToBuyDemotionOfTenancyOrderReasons.continue);
+    await performAction('clickButton', suspensionToBuyDemotionOfTenancyOrderReasons.continueButton);
   }
 
   private async selectApplications(option: actionData) {
@@ -786,7 +787,7 @@ export class CreateCaseAction implements IAction {
       option: underlesseeOrMortgageeDetail.nameOption
     });
     if (underlesseeOrMortgageeDetail.nameOption === underlesseeOrMortgageeDetails.yesRadioOption) {
-      await performAction('inputText', underlesseeOrMortgageeDetails.doYouKnowTheNameTextLabel, underlesseeOrMortgageeDetail.name);
+      await performAction('inputText', underlesseeOrMortgageeDetails.whatIsTheirNameHiddenTextLabel, underlesseeOrMortgageeDetail.name);
     }
     await performAction('clickRadioButton', {
       question: underlesseeOrMortgageeDetails.doYouKnowTheAddressQuestion,
@@ -801,13 +802,13 @@ export class CreateCaseAction implements IAction {
       );
     }
     await performAction('clickRadioButton', {
-      question: underlesseeOrMortgageeDetails.addAnotherUnderlesseeOrMortgageeQuestion,
+      question: underlesseeOrMortgageeDetails.doYouNeedToAddAnotherQuestion,
       option: underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption
     });
     const additionalUnderlesseeMortgagee = Number(underlesseeOrMortgageeDetail.additionalUnderlesseeMortgagees) || 0;
     if (underlesseeOrMortgageeDetail.anotherUnderlesseeOrMortgageeOption === underlesseeOrMortgageeDetails.yesRadioOption && additionalUnderlesseeMortgagee > 0) {
       for (let i = 0; i < additionalUnderlesseeMortgagee; i++) {
-        await performAction('clickButton', underlesseeOrMortgageeDetails.addNewButton);
+        await performAction('clickButton', underlesseeOrMortgageeDetails.addNewHiddenButton);
         const index = i + 1;
         const nameQuestion = underlesseeOrMortgageeDetails.doYouKnowTheNameQuestion;
         const nameOption = underlesseeOrMortgageeDetail[`name${index}Option`] || underlesseeOrMortgageeDetails.noRadioOption;
@@ -822,7 +823,7 @@ export class CreateCaseAction implements IAction {
           index,
         });
         if (nameOption === underlesseeOrMortgageeDetails.yesRadioOption) {
-          await performAction('inputText', {text: underlesseeOrMortgageeDetails.doYouKnowTheNameTextLabel, index: index}, `${underlesseeOrMortgageeDetail.name}${index}`);
+          await performAction('inputText', {text: underlesseeOrMortgageeDetails.whatIsTheirNameHiddenTextLabel, index: index}, `${underlesseeOrMortgageeDetail.name}${index}`);
         }
         const addressQuestion = underlesseeOrMortgageeDetails.doYouKnowTheAddressQuestion;
         const correspondenceAddressOption =
