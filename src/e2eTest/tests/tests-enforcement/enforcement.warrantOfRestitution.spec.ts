@@ -117,6 +117,16 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         type: evidenceUpload.witnessStatementDropDownInput,
         button: evidenceUpload.continueButton
       });
+
+      await performAction('inputErrorValidation', {
+        validationReq: evidenceUpload.errorValidation,
+        validationType: evidenceUpload.errorValidationType.two,
+        inputArray: evidenceUpload.errorValidationField.errorTextField,
+        header: evidenceUpload.thereIsAProblemErrorMessageHeader,
+        label: evidenceUpload.shortDescriptionHiddenTextLabel,
+        button: evidenceUpload.continueButton,
+        buttonRemove: evidenceUpload.removeButton
+      });
       await performAction('uploadEvidenceThatDefendantsAreAtProperty', {
         documents: [
           { type: evidenceUpload.witnessStatementDropDownInput, fileName: 'witnessStatement.pdf', description: evidenceUpload.shortDescriptionHiddenTextInput, docType: evidenceUpload.typeOfDocumentHiddenTextLabel, label: evidenceUpload.shortDescriptionHiddenTextLabel },

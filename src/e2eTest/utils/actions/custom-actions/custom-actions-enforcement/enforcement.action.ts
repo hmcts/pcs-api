@@ -26,7 +26,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { VERY_LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 
 export const addressInfo = {
@@ -418,7 +418,7 @@ export class EnforcementAction implements IAction {
     await performAction('reTryOnCallBackError', statementOfTruthOne.continueButton, claimantSOT.nextPage as string);
   }
 
-  private async uploadEvidenceThatDefendantsAreAtProperty(uploadEvidence: actionRecord,page: Page) {
+  private async uploadEvidenceThatDefendantsAreAtProperty(uploadEvidence: actionRecord, page: Page) {
     await performValidation('text', { elementType: 'paragraph', text: 'Case number: ' + caseInfo.fid });
     await performValidation('text', { elementType: 'paragraph', text: `Property address: ${addressInfo.buildingStreet}, ${addressInfo.townCity}, ${addressInfo.engOrWalPostcode}` });
     if (Array.isArray(uploadEvidence.documents)) {
@@ -427,14 +427,14 @@ export class EnforcementAction implements IAction {
         const testInput = await EnforcementCommonUtils.generateMoreThanMaxString(page, document.label as string, document.description as number);
         await performActions(
           'Add Document',
-          ['uploadFile', document.fileName],  
-          ['select', { dropdown: document.docType, index: fileIndex }, document.type],                  
-         // ['inputText', { text: document.label, index: fileIndex }, document.description]
+          ['uploadFile', document.fileName],
+          ['select', { dropdown: document.docType, index: fileIndex }, document.type],
+          // ['inputText', { text: document.label, index: fileIndex }, document.description]
           ['inputText', { text: document.label, index: fileIndex }, testInput]
         );
       }
     }
-    await performAction('removeFile');
+    // await performAction('removeFile');
     await performAction('reTryOnCallBackError', evidenceUpload.continueButton, uploadEvidence.nextPage as string);
 
   }
@@ -488,8 +488,9 @@ export class EnforcementAction implements IAction {
                   await performValidation('errorMessage', validationArr.label, item.errMessage);
                 }
               }).toPass({
-                timeout: VERY_LONG_TIMEOUT,
+                timeout: LONG_TIMEOUT,
               });
+
               break;
 
             case 'checkBox':
@@ -506,26 +507,43 @@ export class EnforcementAction implements IAction {
               break;
 
             case 'addDocument':
-              await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              }).toPass({
+                timeout: MEDIUM_TIMEOUT,
+              });
               await performAction('clickButton', 'Add new');
               break;
-            
+
             case 'dropDown':
               await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              }).toPass({
+                timeout: LONG_TIMEOUT,
+              });
               await performAction('select', validationArr.docType, validationArr.type);
               break;
 
             case 'upLoad':
-              await performAction('clickButton', validationArr.button);
-              await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              await expect(async () => {
+                await performAction('clickButton', validationArr.button);
+                await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
+              }).toPass({
+                timeout: MEDIUM_TIMEOUT,
+              });
+              break;
 
             default:
               throw new Error(`Validation type :"${validationArr.validationType}" is not valid`);
           };
         }
       }
+    }
+    if (validationArr.buttonRemove) {
+      await performAction('removeFile');
     }
   }
 
