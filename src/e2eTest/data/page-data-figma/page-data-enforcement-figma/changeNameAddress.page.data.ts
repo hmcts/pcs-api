@@ -1,5 +1,5 @@
 export const changeNameAddress = {
-  title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+  //title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: 'You need permission from a judge to change the name and address for the eviction',
   caseNumberParagraph: `Case number:`,
@@ -10,7 +10,7 @@ export const changeNameAddress = {
   mustStartAgainList: `must start again, with a new application (if the change is more significant, like a completely different address)`,
   youCannotcontinueParagraph: `You cannot continue with your application until you have asked the judge for permission to make this change.`,
   ifyouWantToProceedParagraph: `If you want to proceed with changing the name or address for the eviction`,
-  askTheJudgeLink: `Ask the judge if you can change the name or address for the eviction (GOV.UK, opens in a new tab). `,
+  askTheJudgeLink: `Ask the judge if you can change the name or address for the eviction (GOV.UK, opens in a new tab).`, //to chk for this
   ifyouWantToKeepParagraph: `If you want to keep the existing name or address`,
   ifYouAreconfidentParagraph: `If you are confident that the name or address is correct, you can go back to the previous page and change your answer to the last question.`,
   ifTheNameAndAddressParagraph: `If the name and address is incorrect, the bailiff will not be able to carry out the eviction.`,

@@ -1,5 +1,5 @@
 export const nameAndAddressForEviction = {
-  title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
+  //title: 'Create a case - HM Courts & Tribunals Service - GOV.UK',
   EnforceTheOrderCaption: `Enforce the order`,
   mainHeader: 'The name and address for the eviction',
   caseNumberParagraph: `Case number:`,
@@ -15,5 +15,5 @@ export const nameAndAddressForEviction = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  ErrMessage: `Is this the correct name and address for the eviction? is required`
+  //ErrMessage: `Is this the correct name and address for the eviction? is required`
 }
