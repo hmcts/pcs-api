@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccessCodeTaskData implements Serializable {
+public class CaseReferenceTaskData implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
