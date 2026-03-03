@@ -41,11 +41,8 @@ class TestCaseSupportHelperTest {
         throws IOException {
         // Given
         when(resource1.getFilename()).thenReturn("test-file-one.json");
-        when(resource1.isFile()).thenReturn(true);
         when(resource2.getFilename()).thenReturn("test-file-two.json");
-        when(resource2.isFile()).thenReturn(true);
         when(resource3.getFilename()).thenReturn("test-file-three.json");
-        when(resource3.isFile()).thenReturn(true);
         Resource[] resources = {resource1, resource2, resource3};
         when(resourcePatternResolver.getResources(LOCATION_PATTERN + "*")).thenReturn(resources);
 
@@ -82,9 +79,7 @@ class TestCaseSupportHelperTest {
         String filename2 = "test-file-two.json";
 
         when(resource1.getFilename()).thenReturn(filename1);
-        when(resource1.isFile()).thenReturn(true);
         when(resource2.getFilename()).thenReturn(filename2);
-        when(resource2.isFile()).thenReturn(true);
 
         Resource[] resources = {resource1, resource2};
         when(resourcePatternResolver.getResources(LOCATION_PATTERN + "*")).thenReturn(resources);
@@ -105,11 +100,8 @@ class TestCaseSupportHelperTest {
     void shouldReplaceHyphensWithSpacesAndRemoveJsonExtensionInLabels() throws IOException {
         // Given
         when(resource1.getFilename()).thenReturn("test-file-one.json");
-        when(resource1.isFile()).thenReturn(true);
         when(resource2.getFilename()).thenReturn("another-test-file.json");
-        when(resource2.isFile()).thenReturn(true);
         when(resource3.getFilename()).thenReturn("final-test-file.json");
-        when(resource3.isFile()).thenReturn(true);
 
         Resource[] resources = {resource1, resource2, resource3};
         when(resourcePatternResolver.getResources(LOCATION_PATTERN + "*")).thenReturn(resources);
@@ -132,7 +124,6 @@ class TestCaseSupportHelperTest {
     void shouldReturnDynamicListWithDefaultPleaseSelectValueElement() throws IOException {
         // Given
         when(resource1.getFilename()).thenReturn("test-file.json");
-        when(resource1.isFile()).thenReturn(true);
         Resource[] resources = {resource1};
         when(resourcePatternResolver.getResources(LOCATION_PATTERN + "*")).thenReturn(resources);
 

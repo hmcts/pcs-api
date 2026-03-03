@@ -14,17 +14,18 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdul
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.mapper.RiskDetailsMapper;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class EnforcementRiskProfileMapperTest {
+class RiskDetailsMapperTest {
 
-    private final EnforcementRiskProfileMapper mapper =
-            new EnforcementRiskProfileMapper(new ModelMapper());
+    private final RiskDetailsMapper mapper =
+            new RiskDetailsMapper(new ModelMapper());
 
     @Nested
     @DisplayName("toEntity")
@@ -46,7 +47,7 @@ class EnforcementRiskProfileMapperTest {
                             .build())
                     .build();
 
-            EnforcementRiskProfileEntity result = mapper.toEntity(orderEntity, order);
+            RiskProfileEntity result = mapper.toEntity(orderEntity, order);
 
             assertThat(result.getEnforcementOrder()).isEqualTo(orderEntity);
             assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.YES);
@@ -71,28 +72,11 @@ class EnforcementRiskProfileMapperTest {
                             .build())
                     .build();
 
-            EnforcementRiskProfileEntity result = mapper.toEntity(orderEntity, order);
+            RiskProfileEntity result = mapper.toEntity(orderEntity, order);
 
             assertThat(result.getVulnerablePeoplePresent()).isEqualTo(YesNoNotSure.YES);
             assertThat(result.getVulnerableCategory()).isEqualTo(VulnerableCategory.VULNERABLE_ADULTS);
             assertThat(result.getVulnerableReasonText()).isEqualTo("Vulnerability reason");
-        }
-
-        @Test
-        @DisplayName("returns entity with null risk fields when warrant and raw details are null")
-        void returnsEntityWithNullRiskFieldsWhenDetailsNull() {
-            EnforcementOrderEntity orderEntity = new EnforcementOrderEntity();
-            orderEntity.setId(UUID.randomUUID());
-            EnforcementOrder order = EnforcementOrder.builder().build();
-
-            EnforcementRiskProfileEntity result = mapper.toEntity(orderEntity, order);
-
-            assertThat(result.getEnforcementOrder()).isEqualTo(orderEntity);
-            assertThat(result.getAnyRiskToBailiff()).isNull();
-            assertThat(result.getViolentDetails()).isNull();
-            assertThat(result.getVulnerablePeoplePresent()).isNull();
-            assertThat(result.getVulnerableCategory()).isNull();
-            assertThat(result.getVulnerableReasonText()).isNull();
         }
 
         @Test
@@ -106,8 +90,7 @@ class EnforcementRiskProfileMapperTest {
                             .build())
                     .build();
 
-            EnforcementRiskProfileEntity result = mapper.toEntity(orderEntity, order);
-
+            RiskProfileEntity result = mapper.toEntity(orderEntity, order);
             assertThat(result.getAnyRiskToBailiff()).isEqualTo(YesNoNotSure.NO);
             assertThat(result.getViolentDetails()).isNull();
             assertThat(result.getVerbalThreatsDetails()).isNull();

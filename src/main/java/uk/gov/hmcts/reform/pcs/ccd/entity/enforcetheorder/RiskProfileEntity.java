@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Entity;
@@ -26,7 +26,7 @@ import static jakarta.persistence.FetchType.LAZY;
 @Table(name = "enf_risk_profile")
 @Getter
 @Setter
-public class EnforcementRiskProfileEntity {
+public class RiskProfileEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
