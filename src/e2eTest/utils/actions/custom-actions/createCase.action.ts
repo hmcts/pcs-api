@@ -102,7 +102,7 @@ export class CreateCaseAction implements IAction {
       ['completingYourClaim', () => this.completingYourClaim(fieldName)],
       ['selectAdditionalReasonsForPossession', () => this.selectAdditionalReasonsForPossession(fieldName)],
       ['selectUnderlesseeOrMortgageeEntitledToClaim', () => this.selectUnderlesseeOrMortgageeEntitledToClaim(fieldName as actionRecord)],
-      ['selectunderlesseeMortgageeDetails', () => this.selectunderlesseeMortgageeDetails(fieldName as actionRecord)],
+      ['selectUnderlesseeMortgageeDetails', () => this.selectUnderlesseeMortgageeDetails(fieldName as actionRecord)],
       ['wantToUploadDocuments', () => this.wantToUploadDocuments(fieldName as actionRecord)],
       ['uploadAdditionalDocs', () => this.uploadAdditionalDocs(fieldName as actionRecord)],
       ['selectStatementOfTruth', () => this.selectStatementOfTruth(fieldName as actionRecord)],
@@ -778,7 +778,7 @@ export class CreateCaseAction implements IAction {
     await performAction('clickButton', underlesseeMortgageeDetails.continueButton);
   }
 
-  private async selectunderlesseeMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
+  private async selectUnderlesseeMortgageeDetails(underlesseeOrMortgageeDetail: actionRecord) {
     await performValidation('text', {elementType: 'paragraph', text: 'Case number: '+caseNumber});
     await performValidation('text', {elementType: 'paragraph', text: 'Property address: '+addressInfo.buildingStreet+', '+addressInfo.townCity+', '+addressInfo.engOrWalPostcode});
     await performAction('clickRadioButton', {

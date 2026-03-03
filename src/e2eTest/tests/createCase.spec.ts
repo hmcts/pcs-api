@@ -408,7 +408,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectunderlesseeMortgageeDetails', {
+    await performAction('selectUnderlesseeMortgageeDetails', {
       nameOption: underlesseeMortgageeDetails.yesRadioOption, name: underlesseeMortgageeDetails.underlesseeNameTextInput,
       addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
       anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
@@ -521,7 +521,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectunderlesseeMortgageeDetails', {
+    await performAction('selectUnderlesseeMortgageeDetails', {
       nameOption: underlesseeMortgageeDetails.yesRadioOption, name: underlesseeMortgageeDetails.underlesseeNameTextInput,
       addressOption: underlesseeMortgageeDetails.noRadioOption,
       anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
@@ -700,7 +700,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectunderlesseeMortgageeDetails', {
+    await performAction('selectUnderlesseeMortgageeDetails', {
       nameOption: underlesseeMortgageeDetails.noRadioOption,
       addressOption: underlesseeMortgageeDetails.noRadioOption,
       anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
@@ -797,7 +797,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectunderlesseeMortgageeDetails', {
+    await performAction('selectUnderlesseeMortgageeDetails', {
       nameOption: underlesseeMortgageeDetails.noRadioOption,
       addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
       anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
@@ -898,7 +898,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectunderlesseeMortgageeDetails', {
+    await performAction('selectUnderlesseeMortgageeDetails', {
       nameOption: underlesseeMortgageeDetails.noRadioOption,
       addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
       anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption
@@ -1021,7 +1021,7 @@ test.describe('[Create Case - England]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectunderlesseeMortgageeDetails', {
+    await performAction('selectUnderlesseeMortgageeDetails', {
       nameOption: underlesseeMortgageeDetails.noRadioOption,
       addressOption: underlesseeMortgageeDetails.noRadioOption,
       anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.noRadioOption

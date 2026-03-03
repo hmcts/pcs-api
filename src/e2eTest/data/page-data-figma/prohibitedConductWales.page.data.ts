@@ -13,6 +13,6 @@ export const prohibitedConductWales = {
   previousButton: `Previous`,
   continueButton: `Continue`,
   cancelLink: `Cancel`,
-  whyAreYouMakingThisClaimSampleDataInput: `Sample text for why you are making this claim`,
-  giveDetailsOfTermsSampleDataInput: `Sample text for details of the terms agreed`,
+  whyAreYouMakingThisClaimTextInput: `Sample text for why you are making this claim`,
+  giveDetailsOfTermsTextInput: `Sample text for details of the terms agreed`,
 };

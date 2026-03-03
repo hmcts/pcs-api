@@ -39,11 +39,10 @@ import {
   underlesseeMortgageeEntitledToClaimRelief,
   wantToUploadDocuments,
   statementOfTruth,
-  // migration (page-data → page-data-figma)
   claimantDetailsWales,
   occupationLicenceDetailsWales,
   prohibitedConductWales,
-  underlesseeOrMortgageeDetails
+  underlesseeMortgageeDetails
 } from '@data/page-data-figma';
 import { PageContentValidation } from '@utils/validations/element-validations/pageContent.validation';
 import { caseNumber } from '@utils/actions/custom-actions/createCase.action';
@@ -260,11 +259,11 @@ test.describe('[Create Case - Wales]', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.yesRadioOption,
       label1: prohibitedConductWales.whyAreYouMakingThisClaimHiddenQuestion,
-      input1: prohibitedConductWales.whyAreYouMakingThisClaimSampleDataInput,
+      input1: prohibitedConductWales.whyAreYouMakingThisClaimTextInput,
       question2: prohibitedConductWales.haveYouAndContractHolderAgreedHiddenQuestion,
       option2: prohibitedConductWales.yesRadioOption,
       label2: prohibitedConductWales.giveDetailsOfTermsHiddenTextLabel,
-      input2: prohibitedConductWales.giveDetailsOfTermsSampleDataInput
+      input2: prohibitedConductWales.giveDetailsOfTermsTextInput
     });
     await performValidation('mainHeader', claimingCosts.mainHeader);
     // The following sections are commented out pending development of the Wales journey.
@@ -376,7 +375,7 @@ test.describe('[Create Case - Wales]', async () => {
       question1: prohibitedConductWales.areYouAlsoMakingAClaimQuestion,
       option1: prohibitedConductWales.yesRadioOption,
       label1: prohibitedConductWales.whyAreYouMakingThisClaimHiddenQuestion,
-      input1: prohibitedConductWales.whyAreYouMakingThisClaimSampleDataInput,
+      input1: prohibitedConductWales.whyAreYouMakingThisClaimTextInput,
       question2: prohibitedConductWales.haveYouAndContractHolderAgreedHiddenQuestion,
       option2: prohibitedConductWales.noRadioOption,
     });
@@ -598,14 +597,14 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
-      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
-      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
-      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
-      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
-      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
+    await performAction('selectUnderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.yesRadioOption, name: underlesseeMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeMortgageeDetails.noRadioOption,
+      name2Option: underlesseeMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeMortgageeDetails.noRadioOption,
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -706,14 +705,14 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
-      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
-      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
-      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
-      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
-      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
+    await performAction('selectUnderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.yesRadioOption, name: underlesseeMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeMortgageeDetails.noRadioOption,
+      name2Option: underlesseeMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeMortgageeDetails.noRadioOption,
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
@@ -816,14 +815,14 @@ test.describe('[Create Case - Wales]', async () => {
     await performAction('selectUnderlesseeOrMortgageeEntitledToClaim', {
       question: underlesseeMortgageeEntitledToClaimRelief.isThereAnUnderlesseeQuestion,
       option: underlesseeMortgageeEntitledToClaimRelief.yesRadioOption});
-    await performAction('selectUnderlesseeOrMortgageeDetails', {
-      nameOption: underlesseeOrMortgageeDetails.yesRadioOption, name: underlesseeOrMortgageeDetails.underlesseeNameTextInput,
-      addressOption: underlesseeOrMortgageeDetails.yesRadioOption, address: underlesseeOrMortgageeDetails.underlesseePostcodeTextInput,
-      anotherUnderlesseeOrMortgageeOption: underlesseeOrMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
-      name1Option: underlesseeOrMortgageeDetails.yesRadioOption,
-      correspondenceAddress1Option: underlesseeOrMortgageeDetails.noRadioOption,
-      name2Option: underlesseeOrMortgageeDetails.noRadioOption,
-      correspondenceAddress2Option: underlesseeOrMortgageeDetails.noRadioOption,
+    await performAction('selectUnderlesseeMortgageeDetails', {
+      nameOption: underlesseeMortgageeDetails.yesRadioOption, name: underlesseeMortgageeDetails.underlesseeNameTextInput,
+      addressOption: underlesseeMortgageeDetails.yesRadioOption, address: underlesseeMortgageeDetails.underlesseePostcodeTextInput,
+      anotherUnderlesseeOrMortgageeOption: underlesseeMortgageeDetails.yesRadioOption, additionalUnderlesseeMortgagees: 2,
+      name1Option: underlesseeMortgageeDetails.yesRadioOption,
+      correspondenceAddress1Option: underlesseeMortgageeDetails.noRadioOption,
+      name2Option: underlesseeMortgageeDetails.noRadioOption,
+      correspondenceAddress2Option: underlesseeMortgageeDetails.noRadioOption,
     });
     await performAction('wantToUploadDocuments', {
       question: wantToUploadDocuments.uploadAnyAdditionalDocumentsQuestion,
