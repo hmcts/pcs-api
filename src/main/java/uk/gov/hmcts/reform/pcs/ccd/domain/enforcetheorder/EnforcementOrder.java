@@ -10,7 +10,12 @@ import uk.gov.hmcts.ccd.sdk.External;
 import uk.gov.hmcts.ccd.sdk.api.CCD;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.RawWarrantRestDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantRestDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
+import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
+
+import static uk.gov.hmcts.ccd.sdk.type.FieldType.DynamicRadioList;
 
 /**
  * The main domain model representing an enforcement order.
@@ -24,9 +29,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 public class EnforcementOrder {
 
     @CCD(
-        label = "What do you want to apply for?"
+        label = "What do you want to apply for?",
+        typeOverride = DynamicRadioList
     )
-    private SelectEnforcementType selectEnforcementType;
+    private DynamicStringList selectEnforcementType;
 
     @JsonUnwrapped(prefix = "warrant")
     @CCD
@@ -36,9 +42,17 @@ public class EnforcementOrder {
     @CCD
     private WritDetails writDetails;
 
+    @JsonUnwrapped(prefix = "warrantofrestitution")
+    @CCD
+    private WarrantRestDetails warrantRestDetails;
+
     @JsonUnwrapped
     @CCD
     private RawWarrantDetails rawWarrantDetails;
+
+    @JsonUnwrapped
+    @CCD
+    private RawWarrantRestDetails rawWarrantRestDetails;
 
     @CCD(searchable = false)
     @External
@@ -47,5 +61,4 @@ public class EnforcementOrder {
     @CCD(searchable = false)
     @External
     private String writFeeAmount;
-
 }

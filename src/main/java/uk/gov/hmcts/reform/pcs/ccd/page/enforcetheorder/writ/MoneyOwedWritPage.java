@@ -7,7 +7,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.MoneyOwedByDefendants;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsWarrantOrWrit;
+import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
 public class MoneyOwedWritPage implements CcdPageConfiguration {
 
@@ -16,7 +16,7 @@ public class MoneyOwedWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("amountDefendantOwes")
             .pageLabel("The amount the defendants owe you")
-            .showCondition(ShowConditionsWarrantOrWrit.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("amountDefendantOwes-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)

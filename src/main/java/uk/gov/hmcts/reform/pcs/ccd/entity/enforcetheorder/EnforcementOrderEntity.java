@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;

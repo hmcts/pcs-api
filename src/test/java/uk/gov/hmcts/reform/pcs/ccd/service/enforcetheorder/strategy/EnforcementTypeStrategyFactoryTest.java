@@ -7,6 +7,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
@@ -16,6 +18,8 @@ class EnforcementTypeStrategyFactoryTest {
     private WarrantStrategy warrantStrategy;
     @Mock
     private WritStrategy writStrategy;
+    @Mock
+    private WarrantOfRestitutionStrategy warrantOfRestitutionStrategy;
 
     @InjectMocks
     private EnforcementTypeStrategyFactory underTest;
@@ -39,15 +43,23 @@ class EnforcementTypeStrategyFactoryTest {
     }
 
     @Test
+    void shouldReturnWarrantRestStrategyForWarrantRestType() {
+        // When
+        EnforcementTypeStrategy strategy = underTest.getStrategy(SelectEnforcementType.WARRANT_OF_RESTITUTION);
+
+        // Then
+        assertThat(strategy).isSameAs(warrantOfRestitutionStrategy);
+    }
+
+    @Test
     void shouldReturnDifferentStrategiesForDifferentTypes() {
         // When
         EnforcementTypeStrategy warrantResult = underTest.getStrategy(SelectEnforcementType.WARRANT);
         EnforcementTypeStrategy writResult = underTest.getStrategy(SelectEnforcementType.WRIT);
 
         // Then
-        assertThat(warrantResult).isNotSameAs(writResult);
-        assertThat(warrantResult).isSameAs(warrantStrategy);
-        assertThat(writResult).isSameAs(writStrategy);
+        assertThat(List.of(warrantResult, writResult))
+            .containsExactly(warrantStrategy, writStrategy);
     }
 
     @Test
@@ -57,7 +69,6 @@ class EnforcementTypeStrategyFactoryTest {
         EnforcementTypeStrategy secondCall = underTest.getStrategy(SelectEnforcementType.WARRANT);
 
         // Then
-        assertThat(firstCall).isSameAs(secondCall);
-        assertThat(firstCall).isSameAs(warrantStrategy);
+        assertThat(List.of(firstCall, secondCall)).containsOnly(warrantStrategy);
     }
 }

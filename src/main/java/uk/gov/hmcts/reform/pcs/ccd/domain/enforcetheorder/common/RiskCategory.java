@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant;
+package uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

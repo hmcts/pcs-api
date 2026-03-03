@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.party.PartyEntity;
 
 import java.util.UUID;
