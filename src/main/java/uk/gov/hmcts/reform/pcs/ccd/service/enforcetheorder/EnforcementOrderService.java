@@ -15,19 +15,18 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementSelectedDef
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrantofrestitution.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
-import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementOrderRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementRiskProfileRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.EnforcementSelectedDefendantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrant.EnforcementWarrantRepository;
 import uk.gov.hmcts.reform.pcs.ccd.repository.enforcetheorder.warrantofrestitution.WarrantOfRestitutionRepository;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
+import uk.gov.hmcts.reform.pcs.ccd.service.PcsCaseService;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementRiskProfileMapper;
 import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrant.EnforcementWarrantMapper;
-import uk.gov.hmcts.reform.pcs.exception.CaseNotFoundException;
-import uk.gov.hmcts.reform.pcs.exception.ClaimNotFoundException;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -38,12 +37,36 @@ public class EnforcementOrderService {
     private final EnforcementRiskProfileRepository enforcementRiskProfileRepository;
     private final WarrantOfRestitutionRepository warrantOfRestitutionRepository;
     private final EnforcementRiskProfileMapper enforcementRiskProfileMapper;
-    private final PcsCaseRepository pcsCaseRepository;
+    private final PcsCaseService pcsCaseService;
     private final DraftCaseDataService draftCaseDataService;
     private final EnforcementSelectedDefendantRepository enforcementSelectedDefendantRepository;
     private final SelectedDefendantsMapper selectedDefendantsMapper;
     private final EnforcementWarrantMapper enforcementWarrantMapper;
     private final EnforcementWarrantRepository enforcementWarrantRepository;
+
+    public EnforcementOrder retrieveEnforcementOrder(long caseReference, SelectEnforcementType enforcementType) {
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
+        ClaimEntity claimEntity = retrieveClaimEntity(pcsCaseEntity);
+        Set<EnforcementOrderEntity> enforcementEntitySet = claimEntity.getEnforcementOrders();
+        if (CollectionUtils.isEmpty(enforcementEntitySet)) {
+            return null;
+        }
+
+        return enforcementEntitySet
+                .stream()
+                .map(EnforcementOrderEntity::getEnforcementOrder)
+                .filter(order ->
+                        order.getSelectEnforcementType().getValue().getCode().equals(enforcementType.name()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    ClaimEntity retrieveClaimEntity(PcsCaseEntity pcsCaseEntity) {
+        List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
+
+        // Assuming 1 claim per PcsCase
+        return claimEntities.getFirst();
+    }
 
     @Transactional
     public void saveAndClearDraftData(long caseReference, EnforcementOrder enforcementOrder) {
@@ -52,31 +75,20 @@ public class EnforcementOrderService {
     }
 
     private void createEnforcementOrder(long caseReference, EnforcementOrder enforcementOrder) {
-        PcsCaseEntity pcsCaseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow(() -> new CaseNotFoundException(caseReference));
-
-        List<ClaimEntity> claimEntities = pcsCaseEntity.getClaims();
-        // This should never happen
-        if (CollectionUtils.isEmpty(claimEntities)) {
-            log.error("No claim found for case reference {}", caseReference);
-            throw new ClaimNotFoundException(pcsCaseEntity.getCaseReference());
-        }
-
-        // Assuming 1 claim per PcsCase
-        ClaimEntity claimEntity = claimEntities.getFirst();
-
+        PcsCaseEntity pcsCaseEntity = pcsCaseService.loadCase(caseReference);
         EnforcementOrderEntity enforcementOrderEntity = new EnforcementOrderEntity();
-        enforcementOrderEntity.setClaim(claimEntity);
+        enforcementOrderEntity.setClaim(retrieveClaimEntity(pcsCaseEntity));
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
         EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcementOrderEntity);
-        if (SelectEnforcementType.WARRANT == enforcementOrder.getSelectEnforcementType()
+        if (SelectEnforcementType.WARRANT.name().equals(enforcementOrder.getSelectEnforcementType().getValueCode())
                 && enforcementOrder.getWarrantDetails() != null) {
             EnforcementRiskProfileEntity riskProfile =
                     enforcementRiskProfileMapper.toEntity(enforcementOrderEntity, enforcementOrder);
             enforcementRiskProfileRepository.save(riskProfile);
             storeWarrant(enforcementOrder, saved);
-        } else if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WARRANT_OF_RESTITUTION) {
+        } else if (SelectEnforcementType.WARRANT_OF_RESTITUTION.name()
+                .equals(enforcementOrder.getSelectEnforcementType().getValueCode())) {
             createWarrantOfRestitution(enforcementOrderEntity);
         }
         createSelectedDefendants(enforcementOrderEntity);
@@ -97,7 +109,6 @@ public class EnforcementOrderService {
         EnforcementWarrantEntity saved = enforcementWarrantRepository.save(warrantEntity);
         enforcementOrderEntity.setWarrantDetails(saved);
     }
-
 
     private void createWarrantOfRestitution(EnforcementOrderEntity enforcementOrderEntity) {
         WarrantOfRestitutionEntity warrantOfRestitutionEntity = new WarrantOfRestitutionEntity();

@@ -1,5 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -9,6 +11,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrantofrestitution.WarrantOfRestitutionMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,7 +21,13 @@ import java.util.stream.Collectors;
 import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
+@Component
+@AllArgsConstructor
 public class EnforcementApplicationPage implements CcdPageConfiguration {
+
+    private EnforcementOrderService enforcementOrderService;
+    private WarrantOfRestitutionMapper warrantOfRestitutionMapper;
+
     public static final String ENFORCEMENT_TYPES_INFORMATION = """
                     <details class="govuk-details">
                         <summary class="govuk-details__summary">
@@ -118,6 +129,11 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
                                                                   CaseDetails<PCSCase, State> before) {
         PCSCase data = details.getData();
         setFormattedDefendantNames(data.getAllDefendants(), data);
+        EnforcementOrder enforcementOrder = data.getEnforcementOrder();
+        if ((SelectEnforcementType.WARRANT_OF_RESTITUTION).name()
+                .equals(enforcementOrder.getSelectEnforcementType().getValueCode())) {
+            populateWarrantRestDetails(enforcementOrder, details.getId());
+        }
         return AboutToStartOrSubmitResponse.<PCSCase, State>builder()
             .data(data).build();
     }
@@ -132,4 +148,12 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         }
     }
 
+    private void populateWarrantRestDetails(EnforcementOrder currentEnforcementOrder, long caseReference) {
+        EnforcementOrder warrantEnforcementOrder =
+                enforcementOrderService.retrieveEnforcementOrder(caseReference, SelectEnforcementType.WARRANT);
+        if (warrantEnforcementOrder != null) {
+            warrantOfRestitutionMapper.prePopulateFieldsFromWarrantDetails(
+                    warrantEnforcementOrder, currentEnforcementOrder);
+        }
+    }
 }
