@@ -62,7 +62,7 @@ test.afterEach(async () => {
 });
 
 test.describe('[Enforcement - Warrant of Restitution]', async () => {
-  test('Warrant - Apply for a Warrant of Restitution @enforcement @PR @regression',
+  test('Warrant - Apply for a Warrant of Restitution - upload more than one evidence @enforcement @PR @regression',
     async () => {
       await performAction('select', caseSummary.nextStepEventList, caseSummary.enforceTheOrderEvent);
       await performAction('clickButton', caseSummary.go);
