@@ -4,7 +4,9 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseSummary } from '@data/page-data';
 import {
   yourApplication,
-  peopleWillBeEvicted
+  peopleWillBeEvicted,
+  shareEvidenceWithJudge,
+  explainHowDefendantsReturned
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -92,5 +94,7 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
         option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
         nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
       });
+      await performAction('reTryOnCallBackError', peopleWillBeEvicted.continueButton, shareEvidenceWithJudge.mainHeader);
+      await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
     });
 });
