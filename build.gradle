@@ -97,11 +97,12 @@ configurations {
     transitive = false
   }
 }
+def integrationBuild = gradle.startParameter.taskNames.any { it.toLowerCase().contains("integration") }
 
 ccd {
   configDir = file('build/definitions')
   decentralised = true
-  runtimeIndexing = !project.hasProperty("noRuntimeIndexing")
+  runtimeIndexing = !integrationBuild
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -208,7 +209,6 @@ tasks.register('integration', Test) {
   testClassesDirs = sourceSets.integrationTest.output.classesDirs
   classpath = sourceSets.integrationTest.runtimeClasspath
   failFast = true
-  project.ext.set("noRuntimeIndexing", "true")
 }
 
 tasks.register('smoke', Test) {
