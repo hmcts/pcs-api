@@ -1,0 +1,49 @@
+{% macro showLineIfNotEmpty(value) %}
+{%- if value -%}{{ value }}<br>{% endif %}
+{%- endmacro %}
+
+<table class="govuk-table govuk-table--small-text-until-tablet">
+  <caption class="govuk-table__caption govuk-table__caption--m">Defendant Details</caption>
+  <thead class="govuk-table__head">
+  <tr class="govuk-table__row">
+    <th scope="col" class="govuk-table__header">#</th>
+    <th scope="col" class="govuk-table__header">Name</th>
+    <th scope="col" class="govuk-table__header">Address</th>
+  </tr>
+  </thead>
+  <tbody class="govuk-table__body">
+
+{% for defendant in defendants %}
+  <tr class="govuk-table__row">
+    <th scope="row" class="govuk-table__header">
+      {{ loop.index + 1 }}
+    </th>
+    <td class="govuk-table__cell">
+      {%- if defendant.nameKnown.toBoolean() -%}
+        {{- defendant.firstName }} {{ defendant.lastName -}}
+      {%- else -%}
+        Person unknown
+      {%- endif -%}
+    </td>
+    <td class="govuk-table__cell">
+      {%- if defendant.addressKnown.toBoolean() -%}
+        {%- if defendant.addressSameAsProperty.toBoolean() -%}
+          Same as claim property
+        {%- else -%}
+          {{- showLineIfNotEmpty(defendant.address.addressLine1) }}
+          {{- showLineIfNotEmpty(defendant.address.addressLine2) }}
+          {{- showLineIfNotEmpty(defendant.address.addressLine3) }}
+          {{- showLineIfNotEmpty(defendant.address.postTown) }}
+          {{- showLineIfNotEmpty(defendant.address.county) }}
+          {{- showLineIfNotEmpty(defendant.address.postCode) }}
+          {{- showLineIfNotEmpty(defendant.address.country) }}
+        {%- endif %}
+      {%- else -%}
+        Address unknown
+      {%- endif -%}
+    </td>
+  </tr>
+{% endfor %}
+
+  </tbody>
+</table>

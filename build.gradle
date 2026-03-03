@@ -300,13 +300,7 @@ sonarqube {
     property "sonar.coverage.exclusions", "**/config/**/*Configuration.java," +
       "**/*Constants.java," +
       "**/model/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/Application.java," +
-      "**/uk/gov/hmcts/reform/pcs/config/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/accesscontrol/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/config/HighLevelDataSetupApp.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/domain/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/page/**/*.java," +
-      "**/uk/gov/hmcts/reform/pcs/ccd/entity/**/*.java," +
+      "**/uk/gov/hmcts/reform/pcs/**/*.java," +
       "**/entities/**," + "**/model/**," + "**/uk/gov/hmcts/reform/pcs/testingsupport/**/*.java"
     property "sonar.cpd.exclusions", "**/uk/gov/hmcts/reform/pcs/ccd/domain/enforcetheorder/warrant/StatementOfTruthDetails.java"
   }
@@ -368,6 +362,8 @@ dependencies {
   implementation platform(group: 'com.azure.spring', name :'spring-cloud-azure-dependencies', version :'6.1.0')
   implementation "com.azure.spring:spring-cloud-azure-starter-servicebus-jms"
   implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.6'
+
+  implementation group: 'com.github.hmcts', 'name':'task-management', 'version': 'task-mgmt'
 
   implementation group: 'com.github.hmcts.java-logging', name: 'logging', version: '8.0.0'
   implementation group: 'com.github.hmcts', name: 'core-case-data-store-client', version: '5.2.0'
@@ -518,9 +514,36 @@ tasks.withType(CftlibExec).configureEach {
   environment 'SPRING_FLYWAY_ENABLED', 'true'
   environment 'SPRING_PROFILES_ACTIVE', 'dev'
   environment 'XUI_JURISDICTIONS', 'PCS'
+  environment 'WA_SUPPORTED_JURISDICTIONS', 'IA,CIVIL,ST_CIC,PCS'
   environment 'XUI_DOCUMENTS_API_V2', 'http://ccd-case-document-am-api-aat.service.core-compute-aat.internal'
   environment 'DATA_STORE_S2S_AUTHORISED_SERVICES', 'ccd_data,ccd_gw,pcs_frontend,pcs_api'
   environment 'CCD_S2S-AUTHORISED_SERVICES_CASE_USER_ROLES', 'aac_manage_case_assignment,pcs_api'
+  environment 'WA_S2S_AUTHORIZED_SERVICES', 'ccd,ccd_data,ccd_gw,ccd_ps,iac,wa_task_management_api,xui_webapp,wa_task_monitor,camunda_bpm,wa_workflow_api,wa_case_event_handler,pcs_api'
+  environment 'IDAM_SYSTEM_UPDATE_USERNAME', 'pcs-system-user@localhost'
+  environment 'IDAM_SYSTEM_UPDATE_PASSWORD', 'password'
+
+  // Disable the CftLib auth stub to keep WA bearer token auth happy as it doesn't like the fake tokens
+  environment 'RSE_LIB_STUB_AUTH_OUTBOUND', 'false'
+  environment 'IDAM_API_BASEURL', 'http://localhost:5062'
+  environment 'IDAM_URL', 'http://localhost:5062'
+  environment 'OPEN_ID_IDAM_URL', 'http://localhost:5062'
+  environment 'IDAM_S2S_AUTH_URL', 'http://localhost:8489'
+
+  environment 'WA_SYSTEM_USERNAME', 'wa-system-user@localhost'
+  environment 'WA_SYSTEM_PASSWORD', 'anything'
+
+  environment 'IDAM_URL', 'http://localhost:5062'
+  environment 'OPEN_ID_IDAM_URL', 'http://localhost:5062'
+  environment 'TASK_MANAGEMENT_API_URL', 'http://localhost:8087'
+  environment 'TASK_MONITOR_API_URL', 'http://localhost:8087'
+
+  environment 'ALLOWED_CASE_TYPES', 'pcs'
+  environment 'ALLOWED_JURISDICTIONS', 'pcs'
+
+  environment 'TASK_MANAGEMENT_EXCLUSIVE_CLIENTS',
+    'wa_task_management_api,wa_task_monitor,wa_case_event_handler,wa_workflow_api,nfdiv_case_api,pcs_api'
+  environment 'TASK_MANAGEMENT_PRIVILEGED_CLIENTS',
+    'wa_task_management_api,xui_webapp,ccd_case_disposer,pcs_api'
 }
 
 tasks.register('highLevelDataSetup', JavaExec) {

@@ -1,0 +1,31 @@
+java:
+  environment:
+    TASK_MANAGEMENT_API_URL: wa-task-management-api-${SERVICE_FQDN}
+
+wa:
+  enabled: true
+
+  wa-task-management-api:
+    java:
+      ingressHost: wa-task-management-api-${SERVICE_FQDN}
+      image: 'hmctspublic.azurecr.io/wa/task-management-api:pr-1576'
+      environment:
+        ALLOWED_CASE_TYPES: wacasetype,criminalinjuriescompensation
+        ALLOWED_JURISDICTIONS: wa,st_cic,pcs
+        WA_S2S_AUTHORIZED_SERVICES: ccd,ccd_data,ccd_gw,ccd_ps,iac,wa_task_management_api,xui_webapp,wa_task_monitor,camunda_bpm,wa_workflow_api,wa_case_event_handler,ccd_case_disposer,civil_service,sscs,sptribs_case_api,pcs_api
+        TASK_MANAGEMENT_EXCLUSIVE_CLIENTS: wa_task_management_api,wa_task_monitor,wa_case_event_handler,wa_workflow_api,nfdiv_case_api,sptribs_case_api,pcs_api
+        TASK_MANAGEMENT_PRIVILEGED_CLIENTS: wa_task_management_api,xui_webapp,ccd_case_disposer,sptribs_case_api,pcs_api
+
+  #disable wa db as we are using the postgres flexible server
+  wa:
+    postgresql:
+      enabled: false
+
+xui-webapp:
+  nodejs:
+    environment:
+      SERVICES_WA_WORKFLOW_API_URL: http://{{ .Release.Name }}-wa-workflow-api
+      HEALTH_WORK_ALLOCATION_TASK_API: http://{{ .Release.Name }}-wa-task-management-api/health
+      SERVICES_WORK_ALLOCATION_TASK_API: http://{{ .Release.Name }}-wa-task-management-api
+      SERVICES_ROLE_ASSIGNMENT_MAPPING_API: http://{{ .Release.Name }}-am-org-role-mapping-service
+      WA_SUPPORTED_JURISDICTIONS: PCS

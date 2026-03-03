@@ -4,6 +4,9 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ShowConditions {
 
@@ -13,8 +16,20 @@ public class ShowConditions {
         return "[STATE]=\"%s\"".formatted(state.name());
     }
 
+    public static String stateIn(State... states) {
+        return Arrays.stream(states)
+            .map(state -> "[STATE]=\"%s\"".formatted(state.name()))
+            .collect(Collectors.joining(" OR "));
+    }
+
     public static String stateNotEquals(State state) {
         return "[STATE]!=\"%s\"".formatted(state.name());
+    }
+
+    public static String stateNotIn(State... states) {
+        return Arrays.stream(states)
+            .map(state -> "[STATE]!=\"%s\"".formatted(state.name()))
+            .collect(Collectors.joining(" AND "));
     }
 
     public static String fieldEquals(String fieldId, Enum<?> value) {

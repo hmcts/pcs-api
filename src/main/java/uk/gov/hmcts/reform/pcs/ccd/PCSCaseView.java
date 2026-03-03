@@ -9,6 +9,7 @@ import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.Document;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import uk.gov.hmcts.reform.idam.client.models.UserInfo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.Party;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
@@ -42,6 +43,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_CLAIM_VALIDATION;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 /**
@@ -80,7 +82,7 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
 
         boolean hasUnsubmittedCaseData = caseHasUnsubmittedData(caseReference, state);
 
-        setMarkdownFields(pcsCase, hasUnsubmittedCaseData);
+        setMarkdownFields(pcsCase, hasUnsubmittedCaseData, state);
 
         return pcsCase;
     }
@@ -159,10 +161,37 @@ public class PCSCaseView implements CaseView<PCSCase, State> {
         pcsCase.setParties(mapAndWrapParties(pcsCaseEntity.getParties()));
     }
 
-    private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData) {
+    private void setMarkdownFields(PCSCase pcsCase, boolean hasUnsubmittedCaseData, State state) {
         pcsCase.setCaseTitleMarkdown(caseTitleService.buildCaseTitle(pcsCase));
 
-        if (hasUnsubmittedCaseData) {
+        UserInfo currentUserDetails = securityContextService.getCurrentUserDetails();
+        System.out.println("roles = " + currentUserDetails.getRoles());
+
+
+        if (state == AWAITING_CLAIM_VALIDATION) {
+            pcsCase.setNextStepsMarkdown("""
+                                             <h2 class="govuk-heading-m">Awaiting caseworker review</h2>
+                                             Your claim needs to be reviewed by a caseworker before it can be issued.
+                                             Please check back later etc....
+                                             <br>
+                                             <br>
+                                             <p class="govuk-body govuk-!-font-size-19">
+                                             <span><a class="govuk-link--no-visited-state" href="/cases">Return
+                                             to case list</a></span>
+                                             </p>
+                                             """);
+        } else if (state == State.STRUCK_OUT) {
+            pcsCase.setNextStepsMarkdown("""
+                                             <h2 class="govuk-heading-m">Claim struck out</h2>
+                                             This claim has been struck out because of ....
+                                             <br>
+                                             <br>
+                                             <p class="govuk-body govuk-!-font-size-19">
+                                             <span><a class="govuk-link--no-visited-state" href="/cases">Return
+                                             to case list</a></span>
+                                             </p>
+                                             """);
+        } else if (hasUnsubmittedCaseData) {
             pcsCase.setNextStepsMarkdown("""
                                              <h2 class="govuk-heading-m">Resume claim</h2>
                                              You've already answered some questions about this claim.
