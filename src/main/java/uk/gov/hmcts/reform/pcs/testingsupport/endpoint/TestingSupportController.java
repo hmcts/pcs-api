@@ -44,6 +44,7 @@ import uk.gov.hmcts.reform.pcs.postcodecourt.service.EligibilityService;
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -341,19 +342,21 @@ public class TestingSupportController {
             Long caseReference = Optional.ofNullable(request.getCaseReference())
                 .orElseGet(this::generateCaseReference);
 
-            // Create case using PcsCaseService
-            pcsCaseService.createCase(
-                caseReference,
-                request.getPropertyAddress(),
-                request.getLegislativeCountry()
-            );
-
-            // Load the created case entity
-            PcsCaseEntity caseEntity = pcsCaseRepository.findByCaseReference(caseReference)
-                .orElseThrow(() -> new RuntimeException("Failed to create case"));
+            // Create a new case when absent, or reuse the existing one for CASE data already in CCD.
+            PcsCaseEntity caseEntity = pcsCaseRepository.findByCaseReference(caseReference).orElseGet(() -> {
+                pcsCaseService.createCase(
+                    caseReference,
+                    request.getPropertyAddress(),
+                    request.getLegislativeCountry()
+                );
+                return pcsCaseRepository.findByCaseReference(caseReference)
+                    .orElseThrow(() -> new RuntimeException("Failed to create case"));
+            });
 
             // Create defendants and party entities
-            List<Defendant> defendants = new ArrayList<>();
+            List<Defendant> defendants = Optional.ofNullable(caseEntity.getDefendants())
+                .map(ArrayList::new)
+                .orElseGet(ArrayList::new);
             List<CreateTestCaseResponse.DefendantInfo> defendantInfos = new ArrayList<>();
 
             for (CreateTestCaseRequest.DefendantRequest defendantRequest : request.getDefendants()) {
@@ -437,6 +440,48 @@ public class TestingSupportController {
 
         } catch (Exception e) {
             log.error("Failed to create test case", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(
+        summary = "Get access codes (PINs) for a case",
+        description = "Returns access codes for all parties in the case. "
+            + "If none exist yet, generates them synchronously for test usage."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Access codes returned"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing authorization token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Invalid or missing service authorization token"),
+        @ApiResponse(responseCode = "404", description = "Case not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping(value = "/pins/{caseReference}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, UUID>> getPinsForCase(
+        @RequestHeader(value = AUTHORIZATION, defaultValue = "DummyId") String authorisation,
+        @RequestHeader(value = "ServiceAuthorization") String serviceAuthorization,
+        @PathVariable long caseReference
+    ) {
+        try {
+            Optional<PcsCaseEntity> maybeCase = pcsCaseRepository.findByCaseReference(caseReference);
+            if (maybeCase.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            PcsCaseEntity pcsCaseEntity = maybeCase.get();
+            List<PartyAccessCodeEntity> accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(pcsCaseEntity.getId());
+
+            if (accessCodes.isEmpty()) {
+                accessCodeGenerationService.createAccessCodesForParties(String.valueOf(caseReference));
+                accessCodes = partyAccessCodeRepository.findAllByPcsCase_Id(pcsCaseEntity.getId());
+            }
+
+            Map<String, UUID> pins = new LinkedHashMap<>();
+            accessCodes.forEach(accessCode -> pins.put(accessCode.getCode(), accessCode.getPartyId()));
+
+            return ResponseEntity.ok(pins);
+        } catch (Exception e) {
+            log.error("Failed to get access codes for case {}", caseReference, e);
             return ResponseEntity.internalServerError().build();
         }
     }

@@ -41,7 +41,7 @@ class PostcodeNotAssignedToCourtTest {
         when(fieldBuilder.page(anyString(), any())).thenReturn(fieldBuilder);
         when(fieldBuilder.pageLabel(anyString())).thenReturn(fieldBuilder);
         when(fieldBuilder.showCondition(any(ShowCondition.class))).thenReturn(fieldBuilder);
-        when(fieldBuilder.readonly(any(), anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.hidden(any())).thenReturn(fieldBuilder);
         when(fieldBuilder.label(anyString(), anyString())).thenReturn(fieldBuilder);
         when(fieldBuilder.label(anyString(), anyString(), any(ShowCondition.class))).thenReturn(fieldBuilder);
 

@@ -102,6 +102,11 @@ ccd {
   configDir = file('build/definitions')
   decentralised = true
   runtimeIndexing = true // brings the custom ES indexer in as an implementation dependency
+  tsBindings {
+    enabled = true
+    outputDir.set(file('../pcs-frontend/src/main/generated/ccd'))
+    moduleName = 'pcs'
+  }
 }
 
 tasks.withType(JavaCompile).configureEach {
