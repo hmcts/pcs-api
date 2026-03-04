@@ -51,6 +51,7 @@ import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(OrderAnnotation.class)
 @TestPropertySource(properties = {
+    "spring.sql.init.mode=always",
     "spring.sql.init.schema-locations=classpath:init-task-outbox.sql"
 })
 class WorkAllocationTasksTest extends CftlibTest {
