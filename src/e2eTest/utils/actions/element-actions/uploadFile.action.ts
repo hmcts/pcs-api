@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test';
 import path from 'path';
 import { actionData, IAction } from '@utils/interfaces/action.interface';
 import { performAction, performValidation } from '@utils/controller';
-import { LONG_TIMEOUT } from 'playwright.config';
+import { LONG_TIMEOUT, SHORT_TIMEOUT } from 'playwright.config';
 
 export class UploadFileAction implements IAction {
   async execute(page: Page, action: string, files: actionData): Promise<void> {
@@ -27,12 +27,13 @@ export class UploadFileAction implements IAction {
       const rateLimit = page.locator(`label:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload"),
                                          span:text-is("Your request was rate limited. Please wait a few seconds before retrying your document upload")`);
       let limit = await rateLimit.count();
-      if (limit > 0) {
+
+      while (limit > 0) {
         await page.waitForTimeout(8000);
         await fileInput.last().setInputFiles(filePath);
         await performValidation('waitUntilElementDisappears', 'Uploading...');
-        limit = 0;
-      }
+        limit = await rateLimit.count();
+      };
     }).toPass({
       timeout: LONG_TIMEOUT,
     });
