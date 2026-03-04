@@ -429,12 +429,10 @@ export class EnforcementAction implements IAction {
           'Add Document',
           ['uploadFile', document.fileName],
           ['select', { dropdown: document.docType, index: fileIndex }, document.type],
-          // ['inputText', { text: document.label, index: fileIndex }, document.description]
           ['inputText', { text: document.label, index: fileIndex }, testInput]
         );
       }
     }
-    // await performAction('removeFile');
     await performAction('reTryOnCallBackError', evidenceUpload.continueButton, uploadEvidence.nextPage as string);
 
   }
@@ -490,7 +488,6 @@ export class EnforcementAction implements IAction {
               }).toPass({
                 timeout: VERY_LONG_TIMEOUT,
               });
-
               break;
 
             case 'checkBox':
