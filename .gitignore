@@ -59,3 +59,4 @@ node_modules
 
 # Playwright authentication state
 /src/e2eTest/.auth/
+/report-for-smoke-tests/
