@@ -60,11 +60,6 @@ public class PCSCase {
     public static final int MAX_MONETARY_AMOUNT = 1_000_000_000;
 
     @CCD(
-        access = {DefendantAccess.class}
-    )
-    private YesOrNo submitDraftAnswers;
-
-    @CCD(
         searchable = false
     )
     @External
