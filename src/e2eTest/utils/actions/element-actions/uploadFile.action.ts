@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test';
 import path from 'path';
 import { actionData, IAction } from '@utils/interfaces/action.interface';
 import { performAction, performValidation } from '@utils/controller';
-import { LONG_TIMEOUT, SHORT_TIMEOUT } from 'playwright.config';
+import { VERY_LONG_TIMEOUT } from 'playwright.config';
 
 export class UploadFileAction implements IAction {
   async execute(page: Page, action: string, files: actionData): Promise<void> {
@@ -35,7 +35,7 @@ export class UploadFileAction implements IAction {
         limit = await rateLimit.count();
       };
     }).toPass({
-      timeout: LONG_TIMEOUT,
+      timeout: VERY_LONG_TIMEOUT,
     });
   }
 }
