@@ -11,8 +11,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 

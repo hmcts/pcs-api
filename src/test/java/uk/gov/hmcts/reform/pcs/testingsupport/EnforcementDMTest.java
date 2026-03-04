@@ -3,7 +3,7 @@ package uk.gov.hmcts.reform.pcs.testingsupport;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.ClaimEntity;

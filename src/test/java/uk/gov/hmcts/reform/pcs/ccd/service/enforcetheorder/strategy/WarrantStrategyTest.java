@@ -16,12 +16,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.NameAndAddressForEviction;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableAdultsChildren;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableAdultsChildren;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.RiskProfileEntity;
@@ -52,7 +52,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory.VULNERABLE_CHILDREN;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.VulnerableCategory.VULNERABLE_CHILDREN;
+import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementTypes;
 
 @ExtendWith(MockitoExtension.class)
 class WarrantStrategyTest {
@@ -429,16 +430,16 @@ class WarrantStrategyTest {
     @Test
     void shouldPersistVulnerabilityDetailsInRiskProfile() {
         // Given: order with raw warrant details (vulnerability)
-        final EnforcementOrder enforcementOrder = EnforcementDataUtil.buildEnforcementOrderWithVulnerability();
+        final EnforcementOrder enfOrder = EnforcementDataUtil.buildEnforcementOrderWithVulnerability();
         final RiskProfileEntity stubbedRiskProfile = new RiskProfileEntity();
         stubbedRiskProfile.setVulnerablePeoplePresent(YesNoNotSure.YES);
         stubbedRiskProfile.setVulnerableCategory(VulnerableCategory.VULNERABLE_ADULTS);
         stubbedRiskProfile.setVulnerableReasonText("Vulnerability reason");
-        when(riskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enforcementOrder)))
+        when(riskProfileMapper.toEntity(any(EnforcementOrderEntity.class), eq(enfOrder)))
             .thenReturn(stubbedRiskProfile);
 
         // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
+        underTest.process(enforcementOrderEntity, enfOrder);
 
         // Then: service calls mapper and saves returned risk profile
         verify(riskProfileMapper).toEntity(any(), any());
@@ -461,7 +462,7 @@ class WarrantStrategyTest {
             new DynamicStringListElement(jamesMayID, "James May")
         );
 
-        final EnforcementOrder enforcementOrder =
+        final EnforcementOrder enfOrder =
             EnforcementDataUtil.buildEnforcementOrderWithSelectedDefendants(selected, listItems);
 
         PartyEntity partyJessMay = PartyEntity.builder()
@@ -486,7 +487,7 @@ class WarrantStrategyTest {
             .thenReturn(List.of(entityJess, entityJames));
 
         // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
+        underTest.process(enforcementOrderEntity, enfOrder);
 
         // Then
         verify(selectedDefendantRepository)
@@ -502,8 +503,8 @@ class WarrantStrategyTest {
     @Test
     void shouldNotAddAnySelectedDefendantsWhenEvictEveryoneIsYes() {
         // Given
-        final EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .selectEnforcementType(SelectEnforcementType.WARRANT)
+        final EnforcementOrder enfOrder = EnforcementOrder.builder()
+            .selectEnforcementType(buildEnforcementTypes(SelectEnforcementType.WARRANT))
             .warrantDetails(WarrantDetails.builder()
                                 .nameAndAddressForEviction(NameAndAddressForEviction.builder()
                                                                .correctNameAndAddress(VerticalYesNo.YES)
@@ -516,7 +517,7 @@ class WarrantStrategyTest {
             .build();
 
         // When
-        underTest.process(enforcementOrderEntity, enforcementOrder);
+        underTest.process(enforcementOrderEntity, enfOrder);
 
         // Then
         verifyNoInteractions(selectedDefendantRepository);

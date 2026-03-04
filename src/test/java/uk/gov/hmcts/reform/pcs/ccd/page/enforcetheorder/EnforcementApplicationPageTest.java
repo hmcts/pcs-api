@@ -3,6 +3,8 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
@@ -14,24 +16,42 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementOrderService;
+import uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.warrantofrestitution.WarrantOfRestitutionMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
+import static uk.gov.hmcts.reform.pcs.ccd.service.enforcetheorder.EnforcementDataUtil.buildEnforcementOrder;
 
 @ExtendWith(MockitoExtension.class)
 class EnforcementApplicationPageTest extends BasePageTest {
 
+    @Mock
+    private EnforcementOrderService enforcementOrderService;
+    @Mock
+    private WarrantOfRestitutionMapper warrantOfRestitutionMapper;
+    @InjectMocks
+    private EnforcementApplicationPage enforcementApplicationPage;
+
     @BeforeEach
     void setUp() {
-        setPageUnderTest(new EnforcementApplicationPage());
+        setPageUnderTest(enforcementApplicationPage);
     }
 
     @Test
     void shouldSetFormattedDefendantNames_SingleDefendant() {
         // Given
         PCSCase caseData = createCaseWithDefendants(createDefendant("John", "Doe"));
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
 
         // When
         callMidEventHandler(caseData);
@@ -49,6 +69,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
                 createDefendant("Test", "Testing"),
                 createDefendant("Third", "Def")
         );
+        caseData.setEnforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT));
 
         // When
         callMidEventHandler(caseData);
@@ -63,7 +84,9 @@ class EnforcementApplicationPageTest extends BasePageTest {
     @Test
     void shouldSetFormattedDefendantNames_NoDefendants() {
         // Given
-        PCSCase caseData = createCaseWithDefendants();
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT))
+                .build();
 
         // When
         callMidEventHandler(caseData);
@@ -143,6 +166,41 @@ class EnforcementApplicationPageTest extends BasePageTest {
             );
     }
 
+    @Test
+    void shouldPrepopulateWarrantRestDetailsIfSelected() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT_OF_RESTITUTION))
+                .build();
+
+        EnforcementOrder warrantEnforcementOrder = buildEnforcementOrder();
+
+        when(enforcementOrderService.retrieveEnforcementOrder(TEST_CASE_REFERENCE, WARRANT))
+                .thenReturn(warrantEnforcementOrder);
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        verify(warrantOfRestitutionMapper).prePopulateFieldsFromWarrantDetails(warrantEnforcementOrder,
+                caseData.getEnforcementOrder());
+    }
+
+    @Test
+    void shouldNotPrepopulateWarrantRestDetailsIfNoWarrantOrder() {
+        // Given
+        PCSCase caseData = PCSCase.builder()
+                .enforcementOrder(EnforcementDataUtil.buildEnforcementOrderWithSpecifiedType(WARRANT_OF_RESTITUTION))
+                .build();
+
+        when(enforcementOrderService.retrieveEnforcementOrder(TEST_CASE_REFERENCE, WARRANT))
+                .thenReturn(null);
+        // When
+        callMidEventHandler(caseData);
+
+        // Then
+        verify(warrantOfRestitutionMapper, never()).prePopulateFieldsFromWarrantDetails(any(), any());
+    }
+
     private PCSCase createCaseWithDefendants(Party... defendants) {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder().build();
         List<ListValue<Party>> defendantList = new ArrayList<>();
@@ -158,7 +216,7 @@ class EnforcementApplicationPageTest extends BasePageTest {
 
     private PCSCase createCaseWithEnforcementType(WritDetails writDetails, SelectEnforcementType enforcementType) {
         EnforcementOrder enforcementOrder = EnforcementOrder.builder()
-            .selectEnforcementType(enforcementType)
+            .selectEnforcementType(EnforcementDataUtil.buildEnforcementTypes(enforcementType))
             .writDetails(writDetails)
             .build();
 
