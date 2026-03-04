@@ -19,7 +19,9 @@ import uk.gov.hmcts.reform.pcs.functional.testutils.RandomNumberUtil;
 
 import java.util.Map;
 
-@Tag("Functional")
+import static uk.gov.hmcts.reform.pcs.functional.testutils.EnvUtils.getEnv;
+
+@Tag("Smoke")
 @ExtendWith(SerenityJUnit5Extension.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
@@ -28,7 +30,17 @@ class CreateAndResumePossessionClaimEventsCallbackTests extends BaseApi {
     ApiSteps apiSteps;
 
     private static final Long caseId = RandomNumberUtil.generateRandomNumber(16);
-    private static final String caseType = CaseType.getCaseType();
+    private static final String caseType;
+
+    static {
+        String ccdFlagEnabled = getEnv("CCD_ENABLED");
+
+        if (Boolean.parseBoolean(ccdFlagEnabled)) {
+            caseType = CaseType.getCaseType();
+        } else {
+            caseType = "PCS";
+        }
+    }
 
     @Title("createPossessionClaim start event callback test - returns 200")
     @Order(1)
