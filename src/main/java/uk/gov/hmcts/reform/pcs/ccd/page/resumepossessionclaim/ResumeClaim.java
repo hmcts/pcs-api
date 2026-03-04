@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -14,7 +15,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.DraftCaseDataService;
 import uk.gov.hmcts.reform.pcs.exception.UnsubmittedDataException;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
 import static uk.gov.hmcts.reform.pcs.ccd.event.EventId.resumePossessionClaim;
 
 @Slf4j
@@ -24,13 +26,15 @@ public class ResumeClaim implements CcdPageConfiguration {
 
     private final DraftCaseDataService draftCaseDataService;
     private final ModelMapper modelMapper;
+    private static final ShowCondition HAS_UNSUBMITTED_CASE_DATA = when(PCSCase::getHasUnsubmittedCaseData)
+        .is(YesOrNo.YES);
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("resumeClaim", this::midEvent)
             .pageLabel("Resume claim")
-            .showCondition("hasUnsubmittedCaseData=\"Yes\"")
+            .showWhen(HAS_UNSUBMITTED_CASE_DATA)
             .readonly(PCSCase::getHasUnsubmittedCaseData, NEVER_SHOW)
             .label("resumeClaim-info", """
                 ---

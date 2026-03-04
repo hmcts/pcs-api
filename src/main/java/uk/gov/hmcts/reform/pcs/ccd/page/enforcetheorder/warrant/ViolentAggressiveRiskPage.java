@@ -8,15 +8,18 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
 
 @AllArgsConstructor
 @Component
@@ -30,9 +33,11 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("violentAggressiveRisk", this::midEvent)
             .pageLabel("Their violent or aggressive behaviour")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                + " AND warrantEnforcementRiskCategoriesCONTAINS\"VIOLENT_OR_AGGRESSIVE\""
-                + " AND warrantAnyRiskToBailiff=\"YES\"")
+            .showWhen(WARRANT_FLOW
+                .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getRiskCategories)
+                    .contains(RiskCategory.VIOLENT_OR_AGGRESSIVE))
+                .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff)
+                    .is(YesNoNotSure.YES)))
             .label("violentAggressiveRisk-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
@@ -63,5 +68,3 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
     }
 
 }
-
-

@@ -11,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.ccd.sdk.api.Event.EventBuilder;
 import uk.gov.hmcts.ccd.sdk.api.FieldCollection.FieldCollectionBuilder;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.reform.pcs.ccd.accesscontrol.UserRole;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,10 +44,10 @@ class PostcodeNotAssignedToCourtTest {
         when(eventBuilder.fields()).thenReturn(fieldBuilder);
         when(fieldBuilder.page(anyString(), any())).thenReturn(fieldBuilder);
         when(fieldBuilder.pageLabel(anyString())).thenReturn(fieldBuilder);
-        when(fieldBuilder.showCondition(anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.showWhen(any(ShowCondition.class))).thenReturn(fieldBuilder);
         when(fieldBuilder.readonly(any(), anyString())).thenReturn(fieldBuilder);
         when(fieldBuilder.label(anyString(), anyString())).thenReturn(fieldBuilder);
-        when(fieldBuilder.label(anyString(), anyString(), anyString())).thenReturn(fieldBuilder);
+        when(fieldBuilder.labelWhen(anyString(), anyString(), any(ShowCondition.class))).thenReturn(fieldBuilder);
 
         pageBuilder = new PageBuilder(eventBuilder);
         underTest = new PostcodeNotAssignedToCourt();
@@ -67,10 +69,12 @@ class PostcodeNotAssignedToCourtTest {
         underTest.addTo(pageBuilder);
 
         // Verify the main show condition is set
-        verify(fieldBuilder).showCondition(eq("showPostcodeNotAssignedToCourt=\"Yes\""));
+        verify(fieldBuilder).showWhen(argThat(condition ->
+            "showPostcodeNotAssignedToCourt=\"Yes\"".equals(condition.toString())));
 
         // Verify specific show conditions for each view are configured
-        verify(fieldBuilder).label(eq(expectedLabelId), anyString(), eq(expectedShowCondition));
+        verify(fieldBuilder).labelWhen(eq(expectedLabelId), anyString(), argThat(condition ->
+            expectedShowCondition.equals(condition.toString())));
     }
 
     private static Stream<Arguments> showConditionScenarios() {

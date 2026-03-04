@@ -12,9 +12,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.PeriodicContractTermsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 @Component
 @AllArgsConstructor
@@ -27,7 +30,7 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
         pageBuilder
             .page("prohibitedConductWales", this::midEvent)
             .pageLabel("Prohibited conduct standard contract")
-            .showCondition("legislativeCountry=\"Wales\"")
+            .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
             .label("prohibitedConductWales-info", """
                  ---
                 <p class="govuk-body" tabindex="0">
@@ -38,12 +41,15 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
             .mandatory(PCSCase::getProhibitedConductWalesClaim)
-            .complex(PCSCase::getPeriodicContractTermsWales, "prohibitedConductWalesClaim=\"YES\"")
+            .complexWhen(PCSCase::getPeriodicContractTermsWales, when(PCSCase::getProhibitedConductWalesClaim)
+                .is(VerticalYesNo.YES))
                 .mandatory(PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract)
-                .mandatory(PeriodicContractTermsWales::getDetailsOfTerms,
-                    "periodicContractTermsWales.agreedTermsOfPeriodicContract=\"YES\"")
+                .mandatoryWhen(PeriodicContractTermsWales::getDetailsOfTerms,
+                    when(PCSCase::getPeriodicContractTermsWales,
+                        PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract).is(VerticalYesNo.YES))
             .done()
-            .mandatory(PCSCase::getProhibitedConductWalesClaimDetails, "prohibitedConductWalesClaim=\"YES\"")
+            .mandatoryWhen(PCSCase::getProhibitedConductWalesClaimDetails,
+                when(PCSCase::getProhibitedConductWalesClaim).is(VerticalYesNo.YES))
             .label("prohibitedConductWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
@@ -79,4 +85,3 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
         return textAreaValidationService.createValidationResponse(caseData, validationErrors);
     }
 }
-

@@ -4,30 +4,37 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PostcodeNotAssignedView;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 @AllArgsConstructor
 @Component
 @Slf4j
 public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
 
-    private static final String SHOW_PAGE = "showPostcodeNotAssignedToCourt=\"Yes\"";
-    private static final String SHOW_ENGLAND = SHOW_PAGE + " AND postcodeNotAssignedView=\"ENGLAND\"";
-    private static final String SHOW_WALES = SHOW_PAGE + " AND postcodeNotAssignedView=\"WALES\"";
-    private static final String SHOW_ALL = SHOW_PAGE + " AND postcodeNotAssignedView=\"ALL_COUNTRIES\"";
+    private static final ShowCondition SHOW_PAGE = when(PCSCase::getShowPostcodeNotAssignedToCourt).is(YesOrNo.YES);
+    private static final ShowCondition SHOW_ENGLAND =
+        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is(PostcodeNotAssignedView.ENGLAND));
+    private static final ShowCondition SHOW_WALES =
+        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is(PostcodeNotAssignedView.WALES));
+    private static final ShowCondition SHOW_ALL =
+        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is(PostcodeNotAssignedView.ALL_COUNTRIES));
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("postcodeNotAssignedToCourt", this::midEvent)
             .pageLabel("You cannot use this online service")
-            .showCondition(SHOW_PAGE)
+            .showWhen(SHOW_PAGE)
             .readonly(PCSCase::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
             .readonly(PCSCase::getPostcodeNotAssignedView, NEVER_SHOW)
             .label(
@@ -43,7 +50,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
                 """
             )
-            .label(
+            .labelWhen(
                 "postcodeNotAssignedToCourt-england",
                 """
                 <ul class="govuk-list govuk-list--bullet">
@@ -59,14 +66,14 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 """.formatted(PCOL_LINK),
                 SHOW_ENGLAND
             )
-            .label(
+            .labelWhen(
                 "postcodeNotAssignedToCourt-wales",
                 """
                 <p class="govuk-body">Use form N5 Wales and the correct particulars of claim form.</p>
                 """,
                 SHOW_WALES
             )
-            .label(
+            .labelWhen(
                 "postcodeNotAssignedToCourt-all",
                 """
                 <ul class="govuk-list govuk-list--bullet">

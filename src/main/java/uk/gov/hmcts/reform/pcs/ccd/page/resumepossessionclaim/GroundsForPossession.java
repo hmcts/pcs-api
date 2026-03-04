@@ -10,10 +10,15 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 
 import java.util.Set;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 
 /**
@@ -29,12 +34,9 @@ public class GroundsForPossession implements CcdPageConfiguration {
         pageBuilder
             .page("groundsForPossession", this::midEvent)
             .pageLabel("Grounds for possession")
-            .showCondition("tenancy_TypeOfTenancyLicence!=\"SECURE_TENANCY\" "
-                    + "AND tenancy_TypeOfTenancyLicence!=\"FLEXIBLE_TENANCY\" "
-                    + "AND tenancy_TypeOfTenancyLicence!=\"INTRODUCTORY_TENANCY\" "
-                    + "AND tenancy_TypeOfTenancyLicence!=\"DEMOTED_TENANCY\" "
-                    + "AND tenancy_TypeOfTenancyLicence!=\"OTHER\""
-                    + " AND legislativeCountry=\"England\"")
+            .showWhen(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                .is(TenancyLicenceType.ASSURED_TENANCY)
+                .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
             .label("groundsForPossession-lineSeparator", "---")
             .mandatory(PCSCase::getClaimDueToRentArrears)
             .label("groundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

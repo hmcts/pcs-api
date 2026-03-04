@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.ListValue;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -17,14 +18,17 @@ import uk.gov.hmcts.reform.pcs.ccd.testcasesupport.TestSupportEnvironment;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
 public class EnforcementApplicationPage implements CcdPageConfiguration {
 
-    private static final String STUB_GA_SUCCESSFUL_CONDITION =
-        WRIT_FLOW + " AND writHasClaimTransferredToHighCourt=\"Yes\"";
+    private static final ShowCondition STUB_GA_SUCCESSFUL_CONDITION =
+        WRIT_FLOW.and(
+            when(EnforcementOrder::getWritDetails, WritDetails::getHasClaimTransferredToHighCourt).is(YesOrNo.YES));
     private static final String ERROR_GA_TRANSFER_UNSUCCESSFUL =
         "You cannot continue with this application because your "
             + "application to transfer to the High Court was unsuccessful";
@@ -122,11 +126,11 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
             .complex(EnforcementOrder::getWritDetails)
-            .mandatory(
+            .mandatoryWhen(
                 WritDetails::getHasClaimTransferredToHighCourt,
                 claimTransferredShowCondition()
             )
-            .mandatory(
+            .mandatoryWhen(
                 WritDetails::getWasGeneralApplicationToTransferToHighCourtSuccessful,
                 gaSuccessfulShowCondition()
             )
@@ -178,13 +182,13 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
         return List.of();
     }
 
-    private String claimTransferredShowCondition() {
-        return TestSupportEnvironment.isNonProdTestSupportEnabled() ? WRIT_FLOW : NEVER_SHOW;
+    private ShowCondition claimTransferredShowCondition() {
+        return TestSupportEnvironment.isNonProdTestSupportEnabled() ? WRIT_FLOW : NEVER;
     }
 
-    private String gaSuccessfulShowCondition() {
+    private ShowCondition gaSuccessfulShowCondition() {
         return TestSupportEnvironment.isNonProdTestSupportEnabled()
             ? STUB_GA_SUCCESSFUL_CONDITION
-            : NEVER_SHOW;
+            : NEVER;
     }
 }

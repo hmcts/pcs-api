@@ -10,6 +10,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.routing.RentSectionRoutingService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +25,7 @@ public class CheckingNotice implements CcdPageConfiguration {
         pageBuilder
                 .page("checkingNotice", this::midEvent)
                 .pageLabel("Notice of your intention to begin possession proceedings")
-                .showCondition("legislativeCountry=\"England\"")
+                .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
                 .label("checkingNotice-info",
                         """
                         ---

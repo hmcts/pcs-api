@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -18,18 +19,25 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+
 @Component
 @AllArgsConstructor
 public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
 
     private final UnderlesseeMortgageeValidator underlesseeMortgageeValidator;
+    private static final ShowCondition HAS_UNDERLESSEE_OR_MORTGAGEE = when(PCSCase::getHasUnderlesseeOrMortgagee)
+        .is(VerticalYesNo.YES);
+    private static final ShowCondition ADD_ADDITIONAL_UNDERLESSEE_OR_MORTGAGEE = when(
+        PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
+        .is(VerticalYesNo.YES);
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("underlesseeMortgageeDetails", this::midEvent)
             .pageLabel("Underlessee or mortgagee details")
-            .showCondition("hasUnderlesseeOrMortgagee=\"YES\"")
+            .showWhen(HAS_UNDERLESSEE_OR_MORTGAGEE)
             .complex(PCSCase::getUnderlesseeOrMortgagee1)
                 .readonlyNoSummary(UnderlesseeMortgageeDetails::getNameSectionLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getNameKnown)
@@ -51,8 +59,7 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
                 <h2 class="govuk-heading-m">Additional underlessees or mortgagees</h2>
                 """)
             .mandatory(PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
-            .list(PCSCase::getAdditionalUnderlesseeOrMortgagee,
-                       "addAdditionalUnderlesseeOrMortgagee=\"YES\"")
+            .listWhen(PCSCase::getAdditionalUnderlesseeOrMortgagee, ADD_ADDITIONAL_UNDERLESSEE_OR_MORTGAGEE)
                 .readonlyNoSummary(UnderlesseeMortgageeDetails::getNameSectionLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getNameKnown)
                 .mandatory(UnderlesseeMortgageeDetails::getName)

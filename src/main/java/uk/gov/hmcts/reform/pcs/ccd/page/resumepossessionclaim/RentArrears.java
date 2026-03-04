@@ -1,19 +1,28 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsSection;
+import uk.gov.hmcts.reform.pcs.ccd.domain.ThirdPartyPaymentSource;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 public class RentArrears implements CcdPageConfiguration {
+
+    private static final ShowCondition SHOW_RENT_ARREARS_PAGE = when(PCSCase::getShowRentSectionPage)
+        .is(YesOrNo.YES)
+        .and(when(PCSCase::getShowRentArrearsPage).is(YesOrNo.YES));
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("rentArrears")
-                .showCondition("showRentSectionPage=\"Yes\" AND showRentArrearsPage=\"Yes\"")
+                .showWhen(SHOW_RENT_ARREARS_PAGE)
                 .pageLabel("Details of rent arrears")
                 .readonly(PCSCase::getShowRentArrearsPage, NEVER_SHOW)
 
@@ -67,13 +76,14 @@ public class RentArrears implements CcdPageConfiguration {
                     .label("rentArrears-thirdPartyPayments-separator", "---")
                     .mandatory(RentArrearsSection::getThirdPartyPayments)
 
-                    .mandatory(RentArrearsSection::getThirdPartyPaymentSources,
-                            "rentArrears_ThirdPartyPayments=\"YES\"")
+                    .mandatoryWhen(RentArrearsSection::getThirdPartyPaymentSources,
+                        when(PCSCase::getRentArrears, RentArrearsSection::getThirdPartyPayments).is(YES))
 
                     // "Other" free text is mandatory when OTHER is selected
-                    .mandatory(RentArrearsSection::getPaymentSourceOther,
-                            "rentArrears_ThirdPartyPayments=\"YES\" "
-                            + "AND rentArrears_ThirdPartyPaymentSources CONTAINS \"OTHER\"")
+                    .mandatoryWhen(RentArrearsSection::getPaymentSourceOther,
+                        when(PCSCase::getRentArrears, RentArrearsSection::getThirdPartyPayments).is(YES)
+                            .and(when(PCSCase::getRentArrears, RentArrearsSection::getThirdPartyPaymentSources)
+                                .contains(ThirdPartyPaymentSource.OTHER)))
                 .done()
                 .label("rentArrears-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

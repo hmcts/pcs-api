@@ -6,7 +6,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
@@ -16,15 +19,12 @@ import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcemen
 
 public class StatementOfTruthWritPage implements CcdPageConfiguration {
 
-    private static final String WRIT_COMPLETED_BY_CLAIMANT = "writCompletedBy=\"CLAIMANT\"";
-    private static final String WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE = "writCompletedBy=\"LEGAL_REPRESENTATIVE\"";
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("statementOfTruthWrit")
             .pageLabel("Statement of truth")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("statementOfTruthWrit-line-separator", "---")
             .label("statementOfTruthWrit-declaration",
                    """
@@ -44,27 +44,27 @@ public class StatementOfTruthWritPage implements CcdPageConfiguration {
             .done()
             .complex(WritDetails::getStatementOfTruth)
             .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
-            .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
-                       WRIT_COMPLETED_BY_CLAIMANT
-            )
-            .mandatory(StatementOfTruthDetailsEnforcement::getFullNameClaimant,
-                       WRIT_COMPLETED_BY_CLAIMANT
-            )
-            .mandatory(StatementOfTruthDetailsEnforcement::getPositionClaimant,
-                       WRIT_COMPLETED_BY_CLAIMANT
-            )
-            .mandatory(StatementOfTruthDetailsEnforcement::getAgreementLegalRep,
-                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
-            )
-            .mandatory(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
-                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
-            )
-            .mandatory(StatementOfTruthDetailsEnforcement::getFirmNameLegalRep,
-                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
-            )
-            .mandatory(StatementOfTruthDetailsEnforcement::getPositionLegalRep,
-                       WRIT_COMPLETED_BY_LEGAL_REPRESENTATIVE
-            )
+            .mandatoryWhen(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
+                       when(EnforcementOrder::getWritDetails, WritDetails::getStatementOfTruth,
+                           StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
+            .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFullNameClaimant,
+                       when(EnforcementOrder::getWritDetails, WritDetails::getStatementOfTruth,
+                           StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
+            .mandatoryWhen(StatementOfTruthDetailsEnforcement::getPositionClaimant,
+                       when(EnforcementOrder::getWritDetails, WritDetails::getStatementOfTruth,
+                           StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
+            .mandatoryWhen(StatementOfTruthDetailsEnforcement::getAgreementLegalRep,
+                       when(EnforcementOrder::getWritDetails, WritDetails::getStatementOfTruth,
+                           StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
+            .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
+                       when(EnforcementOrder::getWritDetails, WritDetails::getStatementOfTruth,
+                           StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
+            .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFirmNameLegalRep,
+                       when(EnforcementOrder::getWritDetails, WritDetails::getStatementOfTruth,
+                           StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
+            .mandatoryWhen(StatementOfTruthDetailsEnforcement::getPositionLegalRep,
+                       when(EnforcementOrder::getWritDetails, WritDetails::getStatementOfTruth,
+                           StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
             .done()
             .done()
             .done()

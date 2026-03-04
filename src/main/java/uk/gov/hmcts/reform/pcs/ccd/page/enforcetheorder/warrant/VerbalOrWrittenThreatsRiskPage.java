@@ -8,15 +8,18 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RiskCategory;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
 
 @AllArgsConstructor
 @Component
@@ -29,9 +32,11 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("verbalOrWrittenThreatsRisk", this::midEvent)
                 .pageLabel("Their verbal or written threats")
-                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                    + " AND warrantEnforcementRiskCategoriesCONTAINS\"VERBAL_OR_WRITTEN_THREATS\""
-                    + " AND warrantAnyRiskToBailiff=\"YES\"")
+                .showWhen(WARRANT_FLOW
+                    .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getRiskCategories)
+                        .contains(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
+                    .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff)
+                        .is(YesNoNotSure.YES)))
                 .label("verbalOrWrittenThreatsRisk-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)

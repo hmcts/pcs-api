@@ -16,6 +16,8 @@ import uk.gov.hmcts.reform.pcs.ccd.model.EnforcementCosts;
 import uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTableRenderer;
 import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 import static uk.gov.hmcts.reform.pcs.ccd.renderer.RepaymentTemplate.WRIT;
@@ -34,14 +36,15 @@ public class LandRegistryFeesWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("landRegistryFeesWrit", this::midEvent)
             .pageLabel("Land Registry fees")
-            .showCondition(WRIT_FLOW)
+            .showWhen(WRIT_FLOW)
             .label("landRegistryFeesWrit-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .complex(WritDetails::getLandRegistryFees)
             .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
-            .mandatory(LandRegistryFees::getAmountOfLandRegistryFees,
-                    "writHaveLandRegistryFeesBeenPaid=\"YES\"")
+            .mandatoryWhen(LandRegistryFees::getAmountOfLandRegistryFees,
+                when(EnforcementOrder::getWritDetails, WritDetails::getLandRegistryFees,
+                    LandRegistryFees::getHaveLandRegistryFeesBeenPaid).is(YES))
             .done()
             .done()
             .done()

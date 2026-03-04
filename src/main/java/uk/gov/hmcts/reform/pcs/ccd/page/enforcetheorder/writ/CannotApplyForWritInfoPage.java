@@ -2,13 +2,18 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 
 import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
 public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
 
@@ -36,8 +41,8 @@ public class CannotApplyForWritInfoPage implements CcdPageConfiguration {
         pageBuilder
             .page("cannotApplyForWritInfo", this::midEvent)
             .pageLabel("You cannot apply for a writ until you have transferred your claim to the High Court")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
-                    + " AND writHasClaimTransferredToHighCourt=\"No\"")
+            .showWhen(WRIT_FLOW.and(
+                when(EnforcementOrder::getWritDetails, WritDetails::getHasClaimTransferredToHighCourt).is(YesOrNo.NO)))
             .label("cannotApplyForWritInfo-line-separator", "---")
             .label("cannotApplyForWritInfo-text", MARKDOWN_TEXT);
     }

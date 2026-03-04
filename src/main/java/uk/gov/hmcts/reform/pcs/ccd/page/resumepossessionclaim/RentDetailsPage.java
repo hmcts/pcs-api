@@ -17,7 +17,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.MoneyFormatter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 /**
  * Page configuration for the Rent Details section.
@@ -34,7 +35,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .showCondition("showRentSectionPage=\"Yes\"")
+                .showWhen(when(PCSCase::getShowRentSectionPage).is(YesOrNo.YES))
                 .label("rentDetails-content",
                         """
                         ---
@@ -42,8 +43,10 @@ public class RentDetailsPage implements CcdPageConfiguration {
                 .complex(PCSCase::getRentDetails)
                     .mandatory(RentDetails::getCurrentRent)
                     .mandatory(RentDetails::getFrequency)
-                    .mandatory(RentDetails::getOtherFrequency, "rentDetails_Frequency=\"OTHER\"")
-                    .mandatory(RentDetails::getDailyCharge, "rentDetails_Frequency=\"OTHER\"")
+                    .mandatoryWhen(RentDetails::getOtherFrequency, when(PCSCase::getRentDetails,
+                        RentDetails::getFrequency).is(RentPaymentFrequency.OTHER))
+                    .mandatoryWhen(RentDetails::getDailyCharge, when(PCSCase::getRentDetails,
+                        RentDetails::getFrequency).is(RentPaymentFrequency.OTHER))
                     .readonly(RentDetails::getCalculatedDailyCharge, NEVER_SHOW)
                 .done()
                 .label("rentDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

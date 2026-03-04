@@ -20,6 +20,9 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
+
 @AllArgsConstructor
 @Component
 public class PropertyAccessDetailsPage implements CcdPageConfiguration {
@@ -34,14 +37,15 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("propertyAccessDetails", this::midEvent)
                 .pageLabel("Access to the property")
-                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+                .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
                 .label("propertyAccessDetails-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getPropertyAccessDetails)
                 .mandatory(PropertyAccessDetails::getIsDifficultToAccessProperty)
-                .mandatory(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
-                        "warrantIsDifficultToAccessProperty=\"YES\"")
+                .mandatoryWhen(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
+                    when(EnforcementOrder::getWarrantDetails, WarrantDetails::getPropertyAccessDetails,
+                        PropertyAccessDetails::getIsDifficultToAccessProperty).is(YES))
                 .done()
                 .label("propertyAccessDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

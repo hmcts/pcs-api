@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.AdditionalReasons;
@@ -16,6 +15,7 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 @AllArgsConstructor
@@ -32,9 +32,9 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
             .label("additionalReasonsForPossession-separator", "---")
             .complex(PCSCase::getAdditionalReasonsForPossession)
                 .mandatory(AdditionalReasons::getHasReasons)
-                .mandatory(
+                .mandatoryWhen(
                     AdditionalReasons::getReasons,
-                    ShowConditions.fieldEquals("additionalReasonsForPossession.hasReasons", YES))
+                    when(PCSCase::getAdditionalReasonsForPossession, AdditionalReasons::getHasReasons).is(YES))
             .done()
             .label("additionalReasonsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

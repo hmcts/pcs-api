@@ -11,12 +11,16 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredNoArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 
 @Slf4j
@@ -28,9 +32,10 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
         pageBuilder
             .page("assuredNoArrearsGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("claimDueToRentArrears=\"No\" AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                             + " AND legislativeCountry=\"England\""
-            )
+            .showWhen(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.NO)
+                .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                    .is(TenancyLicenceType.ASSURED_TENANCY))
+                .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
             .readonly(PCSCase::getShowRentSectionPage, NEVER_SHOW)
             .complex(PCSCase::getNoRentArrearsGroundsOptions)
             .readonly(AssuredNoArrearsPossessionGrounds::getShowGroundReasonPage, NEVER_SHOW)

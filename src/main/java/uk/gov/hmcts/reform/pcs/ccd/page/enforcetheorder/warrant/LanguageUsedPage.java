@@ -19,7 +19,7 @@ public class LanguageUsedPage implements CcdPageConfiguration {
         pageBuilder
             .page("languageUsed")
             .pageLabel("Language used")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("languageUsed-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

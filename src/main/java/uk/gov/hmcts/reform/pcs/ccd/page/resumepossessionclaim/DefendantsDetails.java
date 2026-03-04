@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+
 @AllArgsConstructor
 @Component
 public class DefendantsDetails implements CcdPageConfiguration {
@@ -52,7 +54,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
                 ---
                 <h2>Additional defendants</h2>""")
             .mandatory(PCSCase::getAddAnotherDefendant)
-            .list(PCSCase::getAdditionalDefendants, "addAnotherDefendant=\"YES\"")
+            .listWhen(PCSCase::getAdditionalDefendants, when(PCSCase::getAddAnotherDefendant).is(VerticalYesNo.YES))
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)
                 .mandatory(DefendantDetails::getFirstName)

@@ -13,6 +13,7 @@ import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.AddressUK;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PostcodeNotAssignedView;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.BasePageTest;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
@@ -119,7 +120,7 @@ class EnterPropertyAddressTest extends BasePageTest {
             assertThat(resultData.getShowCrossBorderPage()).isEqualTo(NO);
             assertThat(resultData.getShowPropertyNotEligiblePage()).isEqualTo(NO);
             assertThat(resultData.getShowPostcodeNotAssignedToCourt()).isEqualTo(YES);
-            assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo("ALL_COUNTRIES");
+            assertThat(resultData.getPostcodeNotAssignedView()).isEqualTo(PostcodeNotAssignedView.ALL_COUNTRIES);
         }
 
         if (expectedShowCrossBorder == YES) {

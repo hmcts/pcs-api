@@ -1,11 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 /**
  * Page for selecting rent arrears grounds for possession.
@@ -18,9 +24,10 @@ public class RentArrearsGroundsForPossessionPage implements CcdPageConfiguration
         pageBuilder
                 .page("groundForPossessionRentArrears")
                 .pageLabel("Grounds for possession")
-                .showCondition("claimDueToRentArrears=\"Yes\""
-                               +  " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND legislativeCountry=\"England\"")
+                .showWhen(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.YES)
+                    .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                        .is(TenancyLicenceType.ASSURED_TENANCY))
+                    .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
                 .complex(PCSCase::getAssuredRentArrearsPossessionGrounds)
                 .label("groundForPossessionRentArrears-info", """
                 ---

@@ -1,9 +1,14 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
 public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
 
@@ -39,8 +44,9 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
             .page("enforcementOfficerSelection")
             .pageLabel("The National Information Centre for Enforcement will choose a High Court enforcement officer "
                            + "for you")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
-                               + " AND writHasHiredHighCourtEnforcementOfficer=\"NO\"")
+            .showWhen(WRIT_FLOW.and(
+                when(EnforcementOrder::getWritDetails, WritDetails::getHasHiredHighCourtEnforcementOfficer)
+                    .is(VerticalYesNo.NO)))
             .label("enforcementOfficerSelection-line-separator", "---")
             .label("enforcementOfficerSelection-notice", APPLICATION_INFORMATION)
             .label("enforcementOfficerSelection-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

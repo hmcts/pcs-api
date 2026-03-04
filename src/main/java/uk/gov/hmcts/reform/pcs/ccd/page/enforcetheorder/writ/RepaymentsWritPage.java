@@ -8,7 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference.SOME;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class RepaymentsWritPage implements CcdPageConfiguration {
@@ -18,7 +20,7 @@ public class RepaymentsWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("repayments-writ")
             .pageLabel("Repayments")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("repayments-writ-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
@@ -27,7 +29,8 @@ public class RepaymentsWritPage implements CcdPageConfiguration {
             .readonly(RepaymentCosts::getRepaymentSummaryMarkdown, NEVER_SHOW, true)
             .label("repayments-writ-table-content", "${writRepaymentSummaryMarkdown}")
             .mandatory(RepaymentCosts::getRepaymentChoice)
-            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "writRepaymentChoice=\"SOME\"")
+            .mandatoryWhen(RepaymentCosts::getAmountOfRepaymentCosts, when(EnforcementOrder::getWritDetails,
+                WritDetails::getRepaymentCosts, RepaymentCosts::getRepaymentChoice).is(SOME))
             .done()
             .done()
             .done()

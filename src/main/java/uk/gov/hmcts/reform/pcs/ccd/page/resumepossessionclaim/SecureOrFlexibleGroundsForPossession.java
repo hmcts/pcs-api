@@ -12,10 +12,15 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroun
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleMandatoryGroundsAlternativeAccomm;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.Set;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.FLEXIBLE_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 
 public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguration {
@@ -25,9 +30,12 @@ public class SecureOrFlexibleGroundsForPossession implements CcdPageConfiguratio
         pageBuilder
             .page("secureOrFlexibleGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("(tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
-                        + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\")"
-                        + " AND legislativeCountry=\"England\"")
+            .showWhen(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                .is(SECURE_TENANCY)
+                .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
+                .or(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                    .is(FLEXIBLE_TENANCY)
+                    .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))))
             .label("secureOrFlexibleGroundsForPossession-info", """
                ---
                <p class="govuk-body" tabindex="0">

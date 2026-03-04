@@ -255,7 +255,7 @@ public class PCSCase {
     private YesOrNo showPostcodeNotAssignedToCourt;
 
     @CCD(searchable = false)
-    private String postcodeNotAssignedView;
+    private PostcodeNotAssignedView postcodeNotAssignedView;
 
     /**
      * The primary defendant in the case.

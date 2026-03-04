@@ -2,12 +2,14 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 public class ClaimTypeNotEligibleWales implements CcdPageConfiguration {
 
@@ -16,7 +18,7 @@ public class ClaimTypeNotEligibleWales implements CcdPageConfiguration {
         pageBuilder
             .page("claimTypeNotEligibleWales", this::midEvent)
             .pageLabel("You’re not eligible for this online service")
-            .showCondition("showClaimTypeNotEligibleWales=\"Yes\"")
+            .showWhen(when(PCSCase::getShowClaimTypeNotEligibleWales).is(YesOrNo.YES))
             .readonly(PCSCase::getShowClaimTypeNotEligibleWales, NEVER_SHOW)
             .label("claimTypeNotEligibleWales-info", """
                 ---

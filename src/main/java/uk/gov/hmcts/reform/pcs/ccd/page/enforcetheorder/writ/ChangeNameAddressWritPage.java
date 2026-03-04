@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.writ;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -9,9 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
 public class ChangeNameAddressWritPage implements CcdPageConfiguration {
 
@@ -24,8 +26,8 @@ public class ChangeNameAddressWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("changeNameAddressWrit", this::midEvent)
             .pageLabel("You need permission from a judge to change the name and address for the eviction")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
-                + " AND writShowChangeNameAddressPage=\"Yes\"")
+            .showWhen(WRIT_FLOW.and(
+                when(EnforcementOrder::getWritDetails, WritDetails::getShowChangeNameAddressPage).is(YesOrNo.YES)))
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .readonly(WritDetails::getShowChangeNameAddressPage, NEVER_SHOW)

@@ -1,7 +1,12 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.makeaclaim;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
+
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.CompletionNextStep;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
@@ -12,7 +17,7 @@ public class StatementOfTruth implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder.page("statementOfTruth")
             .pageLabel("Statement of truth")
-            .showCondition("completionNextStep=\"SUBMIT_AND_PAY_NOW\"")
+            .showWhen(when(PCSCase::getCompletionNextStep).is(CompletionNextStep.SUBMIT_AND_PAY_NOW))
             .label("statementOfTruth-body",
                 """
                 ---
@@ -25,20 +30,24 @@ public class StatementOfTruth implements CcdPageConfiguration {
             )
             .complex(PCSCase::getStatementOfTruth)
                 .mandatory(StatementOfTruthDetails::getCompletedBy)
-                .mandatory(StatementOfTruthDetails::getAgreementClaimant,
-                    "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getFullNameClaimant,
-                    "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getPositionClaimant,
-                    "statementOfTruth.completedBy=\"CLAIMANT\"")
-                .mandatory(StatementOfTruthDetails::getAgreementLegalRep,
-                    "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
-                .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
-                    "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
-                .mandatory(StatementOfTruthDetails::getFirmNameLegalRep,
-                    "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
-                .mandatory(StatementOfTruthDetails::getPositionLegalRep,
-                    "statementOfTruth.completedBy=\"LEGAL_REPRESENTATIVE\"")
+                .mandatoryWhen(StatementOfTruthDetails::getAgreementClaimant,
+                    when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy).is(CLAIMANT))
+                .mandatoryWhen(StatementOfTruthDetails::getFullNameClaimant,
+                    when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy).is(CLAIMANT))
+                .mandatoryWhen(StatementOfTruthDetails::getPositionClaimant,
+                    when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy).is(CLAIMANT))
+                .mandatoryWhen(StatementOfTruthDetails::getAgreementLegalRep,
+                    when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy)
+                        .is(LEGAL_REPRESENTATIVE))
+                .mandatoryWhen(StatementOfTruthDetails::getFullNameLegalRep,
+                    when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy)
+                        .is(LEGAL_REPRESENTATIVE))
+                .mandatoryWhen(StatementOfTruthDetails::getFirmNameLegalRep,
+                    when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy)
+                        .is(LEGAL_REPRESENTATIVE))
+                .mandatoryWhen(StatementOfTruthDetails::getPositionLegalRep,
+                    when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy)
+                        .is(LEGAL_REPRESENTATIVE))
             .done()
             .label("statementOfTruth-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

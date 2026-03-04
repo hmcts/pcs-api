@@ -1,15 +1,17 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.RawWarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
 
 /**
  * Page for selecting specific defendants to evict.
@@ -21,8 +23,9 @@ public class PeopleYouWantToEvictPage implements CcdPageConfiguration {
         pageBuilder
             .page("peopleYouWantToEvict")
             .pageLabel("The people you want to evict")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                + " AND warrantShowPeopleYouWantToEvictPage=\"Yes\"")
+            .showWhen(WARRANT_FLOW.and(
+                when(EnforcementOrder::getWarrantDetails, WarrantDetails::getShowPeopleYouWantToEvictPage)
+                    .is(YesOrNo.YES)))
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowPeopleYouWantToEvictPage, NEVER_SHOW)
@@ -36,4 +39,3 @@ public class PeopleYouWantToEvictPage implements CcdPageConfiguration {
     }
 
 }
-

@@ -4,6 +4,9 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 public class PreActionProtocol implements CcdPageConfiguration {
 
@@ -12,7 +15,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
         pageBuilder
                 .page("preActionProtocol")
                 .pageLabel("Pre-action protocol")
-                .label("preActionProtocol-info-england",
+                .labelWhen("preActionProtocol-info-england",
                         """
                   ---
                   <section tabindex="0">
@@ -49,8 +52,8 @@ public class PreActionProtocol implements CcdPageConfiguration {
                   </section>
 
                   """,
-                        "legislativeCountry=\"England\"")
-                .label("preActionProtocol-info-wales",
+                    when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
+                .labelWhen("preActionProtocol-info-wales",
                         """
                   ---
                   <section tabindex="0">
@@ -87,7 +90,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
                   </section>
 
                   """,
-                        "legislativeCountry=\"Wales\"")
+                    when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
                 .mandatoryWithLabel(PCSCase::getPreActionProtocolCompleted,
                         "Have you followed the pre-action protocol?")
                 .label("preActionProtocol-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

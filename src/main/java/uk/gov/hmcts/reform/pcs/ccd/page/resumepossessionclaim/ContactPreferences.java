@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -20,7 +21,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
 
 @AllArgsConstructor
 @Component
@@ -30,8 +32,21 @@ public class ContactPreferences implements CcdPageConfiguration {
     private final TextAreaValidationService textAreaValidationService;
     private static final String EMAIL_LABEL = "Enter email address";
 
-    private static final String ORG_ADDRESS_FOUND = "orgAddressFound=\"Yes\"";
-    private static final String ORG_ADDRESS_NOT_FOUND = "orgAddressFound=\"No\"";
+    private static final ShowCondition INCORRECT_EMAIL_ADDRESS = when(
+        ClaimantContactPreferences::getIsCorrectClaimantContactEmail)
+        .is(VerticalYesNo.NO);
+    private static final ShowCondition ORG_ADDRESS_FOUND = when(
+        ClaimantContactPreferences::getOrgAddressFound)
+        .is(YesOrNo.YES);
+    private static final ShowCondition ORG_ADDRESS_NOT_FOUND = when(
+        ClaimantContactPreferences::getOrgAddressFound)
+        .is(YesOrNo.NO);
+    private static final ShowCondition INCORRECT_ADDRESS = when(
+        ClaimantContactPreferences::getIsCorrectClaimantContactAddress)
+        .is(VerticalYesNo.NO);
+    private static final ShowCondition PROVIDE_PHONE_NUMBER = when(
+        ClaimantContactPreferences::getClaimantProvidePhoneNumber)
+        .is(VerticalYesNo.YES);
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -57,9 +72,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     </p>
                     """)
             .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactEmail)
-            .mandatory(ClaimantContactPreferences::getOverriddenClaimantContactEmail,
-        "isCorrectClaimantContactEmail=\"NO\""
-            )
+            .mandatoryWhen(ClaimantContactPreferences::getOverriddenClaimantContactEmail, INCORRECT_EMAIL_ADDRESS)
             .done()
 
             // Address section
@@ -68,7 +81,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             // Address found
             .readonly(ClaimantContactPreferences::getOrganisationAddress, NEVER_SHOW, true)
             .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
-            .label("contactPreferences-address-info-yes", """
+            .labelWhen("contactPreferences-address-info-yes", """
                     ----
                     <h2 class="govuk-heading-m">Correspondence address</h2>
                     <p class="govuk-body-m">
@@ -78,7 +91,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                         the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .label("contactPreferences-address-registered", """
+            .labelWhen("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         Your organisation’s My HMCTS registered address is:
                     </h3>
@@ -86,10 +99,10 @@ public class ContactPreferences implements CcdPageConfiguration {
                         ${formattedClaimantContactAddress}
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, ORG_ADDRESS_FOUND)
+            .mandatoryWhen(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, ORG_ADDRESS_FOUND)
 
             // Address not found
-            .label("contactPreferences-address-info-no", """
+            .labelWhen("contactPreferences-address-info-no", """
                 ----
                 <h2 class="govuk-heading-m">Correspondence address</h2>
                 <p class="govuk-body-m">
@@ -97,7 +110,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     My HMCTS.
                 </p>
                 """, ORG_ADDRESS_NOT_FOUND)
-            .label("contactPreferences-address-missing", """
+            .labelWhen("contactPreferences-address-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         We could not retrieve your organisation’s correspondence address that’s linked to your My
                         HMCTS account
@@ -108,9 +121,9 @@ public class ContactPreferences implements CcdPageConfiguration {
                     """, ORG_ADDRESS_NOT_FOUND)
 
             // Rest of address
-            .complex(
+            .complexWhen(
                 ClaimantContactPreferences::getOverriddenClaimantContactAddress,
-                "isCorrectClaimantContactAddress=\"NO\" OR orgAddressFound=\"No\""
+                INCORRECT_ADDRESS.or(ORG_ADDRESS_NOT_FOUND)
             )
                 .mandatory(AddressUK::getAddressLine1)
                 .optional(AddressUK::getAddressLine2)
@@ -132,10 +145,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     </p>
                     """)
                 .optional(ClaimantContactPreferences::getClaimantProvidePhoneNumber)
-                .mandatory(
-                    ClaimantContactPreferences::getClaimantContactPhoneNumber,
-                    "claimantProvidePhoneNumber=\"YES\""
-                )
+                .mandatoryWhen(ClaimantContactPreferences::getClaimantContactPhoneNumber, PROVIDE_PHONE_NUMBER)
             .done()
             .label("contactPreferences-phoneNumber-separator", "---")
             .label("contactPreferences-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
@@ -172,4 +182,3 @@ public class ContactPreferences implements CcdPageConfiguration {
     }
 
 }
-

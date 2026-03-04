@@ -10,10 +10,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.WalesHousingAct;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Clock;
 import java.time.LocalDate;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotApplicable.YES;
 
 @Component
@@ -30,28 +32,28 @@ public class ClaimantDetailsWalesPage implements CcdPageConfiguration {
         pageBuilder
             .page("claimantDetailsWales", this::midEvent)
             .pageLabel("Claimant details")
-            .showCondition("legislativeCountry=\"Wales\"")
+            .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
             .label("claimantDetailsWales-info", "---")
             .complex(PCSCase::getWalesHousingAct)
                 .mandatory(WalesHousingAct::getRegistered)
-                .mandatory(WalesHousingAct::getRegistrationNumber,
-                    "walesRegistered=\"YES\"")
+                .mandatoryWhen(WalesHousingAct::getRegistrationNumber,
+                    when(PCSCase::getWalesHousingAct, WalesHousingAct::getRegistered).is(YES))
                 .mandatory(WalesHousingAct::getLicensed)
-                .mandatory(WalesHousingAct::getLicenceNumber,
-                    "walesLicensed=\"YES\"")
+                .mandatoryWhen(WalesHousingAct::getLicenceNumber,
+                    when(PCSCase::getWalesHousingAct, WalesHousingAct::getLicensed).is(YES))
                 .mandatory(WalesHousingAct::getLicensedAgentAppointed)
-                .label("walesAgentDetails-label", """
+                .labelWhen("walesAgentDetails-label", """
                 <h3 class="govuk-heading-s">Give details of your licensed agent</h3>
                 """,
-                    "walesLicensedAgentAppointed=\"YES\"")
-                .mandatory(WalesHousingAct::getAgentFirstName,
-                    "walesLicensedAgentAppointed=\"YES\"")
-                .mandatory(WalesHousingAct::getAgentLastName,
-                    "walesLicensedAgentAppointed=\"YES\"")
-                .mandatory(WalesHousingAct::getAgentLicenceNumber,
-                    "walesLicensedAgentAppointed=\"YES\"")
-                .mandatory(WalesHousingAct::getAgentAppointmentDate,
-                    "walesLicensedAgentAppointed=\"YES\"")
+                    when(PCSCase::getWalesHousingAct, WalesHousingAct::getLicensedAgentAppointed).is(YES))
+                .mandatoryWhen(WalesHousingAct::getAgentFirstName,
+                    when(PCSCase::getWalesHousingAct, WalesHousingAct::getLicensedAgentAppointed).is(YES))
+                .mandatoryWhen(WalesHousingAct::getAgentLastName,
+                    when(PCSCase::getWalesHousingAct, WalesHousingAct::getLicensedAgentAppointed).is(YES))
+                .mandatoryWhen(WalesHousingAct::getAgentLicenceNumber,
+                    when(PCSCase::getWalesHousingAct, WalesHousingAct::getLicensedAgentAppointed).is(YES))
+                .mandatoryWhen(WalesHousingAct::getAgentAppointmentDate,
+                    when(PCSCase::getWalesHousingAct, WalesHousingAct::getLicensedAgentAppointed).is(YES))
             .done()
             .label("claimantDetailsWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

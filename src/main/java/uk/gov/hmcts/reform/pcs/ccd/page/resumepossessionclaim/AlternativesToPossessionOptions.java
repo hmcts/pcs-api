@@ -14,10 +14,12 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuyDemotionOfTenancy;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 @AllArgsConstructor
 @Component
@@ -28,7 +30,7 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
         pageBuilder
             .page("alternativesToPossession", this::midEvent)
             .pageLabel("Alternatives to possession")
-            .showCondition("legislativeCountry!=\"Wales\"")
+            .showWhen(when(PCSCase::getLegislativeCountry).isNot(LegislativeCountry.WALES))
             .complex(PCSCase::getSuspensionOfRightToBuy)
             .readonlyNoSummary(SuspensionOfRightToBuy::getShowHousingActsPage, NEVER_SHOW)
             .done()

@@ -14,14 +14,14 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.PossessiveNameService;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.NO;
+import static uk.gov.hmcts.ccd.sdk.type.YesOrNo.YES;
 
 @Component
 @AllArgsConstructor
 public class ClaimantInformationPage implements CcdPageConfiguration {
-
-    private static final String ORG_NAME_FOUND = "orgNameFound=\"Yes\"";
-    private static final String ORG_NAME_NOT_FOUND = "orgNameFound=\"No\"";
 
     private final PossessiveNameService possessiveNameService;
 
@@ -33,23 +33,25 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             .label("claimantInformation-separator", "---")
             .complex(PCSCase::getClaimantInformation)
             .readonly(ClaimantInformation::getOrgNameFound, NEVER_SHOW, true)
-            .readonlyNoSummary(ClaimantInformation::getClaimantName, ORG_NAME_FOUND)
-            .mandatory(ClaimantInformation::getIsClaimantNameCorrect, ORG_NAME_FOUND)
-            .label("claimantInformation-name-missing", """
+            .readonlyNoSummaryWhen(ClaimantInformation::getClaimantName,
+                when(ClaimantInformation::getOrgNameFound).is(YES))
+            .mandatoryWhen(ClaimantInformation::getIsClaimantNameCorrect,
+                when(ClaimantInformation::getOrgNameFound).is(YES))
+            .labelWhen("claimantInformation-name-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         We could not retrieve the claimant name linked to your My HMCTS account
                     </h3>
                     <p class="govuk-hint govuk-!-margin-top-1">
                         You must enter the claimant name you’d like to use for this claim
                     </p>
-                    """, ORG_NAME_NOT_FOUND)
-            .mandatory(
+                    """, when(ClaimantInformation::getOrgNameFound).is(NO))
+            .mandatoryWhen(
                 ClaimantInformation::getOverriddenClaimantName,
-                "isClaimantNameCorrect=\"NO\""
+                when(ClaimantInformation::getIsClaimantNameCorrect).is(VerticalYesNo.NO)
             )
-            .mandatory(
+            .mandatoryWhen(
                 ClaimantInformation::getFallbackClaimantName,
-                ORG_NAME_NOT_FOUND
+                when(ClaimantInformation::getOrgNameFound).is(NO)
             )
             .done()
             .label("claimantInformation-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

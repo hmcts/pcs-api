@@ -5,11 +5,13 @@ import org.springframework.stereotype.Component;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
 @AllArgsConstructor
 @Component
@@ -20,8 +22,9 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
         pageBuilder
             .page("hCEOfficerDetails")
             .pageLabel("Your High Court enforcement officer")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW
-                               + " AND writHasHiredHighCourtEnforcementOfficer=\"YES\"")
+            .showWhen(WRIT_FLOW.and(
+                when(EnforcementOrder::getWritDetails, WritDetails::getHasHiredHighCourtEnforcementOfficer)
+                    .is(VerticalYesNo.YES)))
             .label("hCEOfficerDetails-line-separator", "---")
             .label(
                 "hCEOfficerDetails-information-text", """

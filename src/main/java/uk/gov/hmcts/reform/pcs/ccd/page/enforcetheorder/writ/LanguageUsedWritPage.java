@@ -19,7 +19,7 @@ public class LanguageUsedWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("languageUsedWrit")
             .pageLabel("Language used")
-            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("languageUsedWrit-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)

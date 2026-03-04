@@ -11,6 +11,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOrOtherGrou
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.IntroductoryDemotedOtherGroundsForPossession;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
@@ -20,7 +21,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.DEMOTED_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.INTRODUCTORY_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.OTHER;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.ENGLAND;
 
 @AllArgsConstructor
 @Component
@@ -33,11 +39,13 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
         pageBuilder
             .page("introductoryDemotedOrOtherGroundsForPossession", this::midEvent)
             .pageLabel("Grounds for possession")
-            .showCondition(
-                "tenancy_TypeOfTenancyLicence=\"INTRODUCTORY_TENANCY\" "
-                  + "OR tenancy_TypeOfTenancyLicence=\"DEMOTED_TENANCY\" "
-                  + "OR tenancy_TypeOfTenancyLicence=\"OTHER\""
-                  + " AND legislativeCountry=\"England\"")
+            .showWhen(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                .is(INTRODUCTORY_TENANCY)
+                .or(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                    .is(DEMOTED_TENANCY))
+                .or(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                    .is(OTHER)
+                    .and(when(PCSCase::getLegislativeCountry).is(ENGLAND))))
             .readonly(PCSCase::getShowIntroductoryDemotedOtherGroundReasonPage, NEVER_SHOW)
             .complex(PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession)
                 .label(
@@ -60,14 +68,17 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                        """)
                 .mandatory(
                     IntroductoryDemotedOtherGroundsForPossession::getHasIntroductoryDemotedOtherGroundsForPossession)
-                .mandatory(IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds,
-                    "introGrounds_"
-                        + "HasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
-                .mandatory(IntroductoryDemotedOtherGroundsForPossession::getOtherGroundDescription,
-                            "introGrounds_"
-                                + "IntroductoryDemotedOrOtherGroundsCONTAINS\"OTHER\""
-                            + "AND introGrounds_"
-                                + "HasIntroductoryDemotedOtherGroundsForPossession=\"YES\"")
+                .mandatoryWhen(IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds,
+                    when(PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession,
+                        IntroductoryDemotedOtherGroundsForPossession
+                            ::getHasIntroductoryDemotedOtherGroundsForPossession).is(VerticalYesNo.YES))
+                .mandatoryWhen(IntroductoryDemotedOtherGroundsForPossession::getOtherGroundDescription,
+                    when(PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession,
+                        IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds)
+                        .contains(IntroductoryDemotedOrOtherGrounds.OTHER)
+                        .and(when(PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession,
+                            IntroductoryDemotedOtherGroundsForPossession
+                                ::getHasIntroductoryDemotedOtherGroundsForPossession).is(VerticalYesNo.YES)))
                 .done()
             .label(
                 "introductoryDemotedOrOtherGroundsForPossession-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

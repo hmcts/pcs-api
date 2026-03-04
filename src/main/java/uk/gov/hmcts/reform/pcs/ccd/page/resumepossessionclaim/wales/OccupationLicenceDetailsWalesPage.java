@@ -17,6 +17,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.OTHER;
 
 /**
  * CCD page configuration for the Occupation contract or licence details screen.
@@ -26,7 +30,6 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 @Component
 public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
 
-    private static final String SHOW_OTHER_DETAILS_CONDITION = "occupationLicenceTypeWales=\"OTHER\"";
     private static final String OCCUPATION_CONTRACT_DETAILS = "OccupationLicenceDetailsWales";
     private static final String OCCUPATION_CONTRACT_DETAILS_LABEL = "Occupation contract or licence details";
     private static final String DATE_NOT_TODAY_ERROR_MESSAGE = 
@@ -42,14 +45,15 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
         pageBuilder
             .page(OCCUPATION_CONTRACT_DETAILS, this::midEvent)
             .pageLabel(OCCUPATION_CONTRACT_DETAILS_LABEL)
-            .showCondition("legislativeCountry=\"Wales\"")
+            .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
             .complex(PCSCase::getOccupationLicenceDetailsWales)
             .label("OccupationLicenceDetailsWales-info", """
                 ---
                 <h2 class="govuk-heading-m">Occupation contract or licence type</h2>
                 """)
             .mandatory(OccupationLicenceDetailsWales::getOccupationLicenceTypeWales)
-            .mandatory(OccupationLicenceDetailsWales::getOtherLicenceTypeDetails, SHOW_OTHER_DETAILS_CONDITION)
+            .mandatoryWhen(OccupationLicenceDetailsWales::getOtherLicenceTypeDetails,
+                when(OccupationLicenceDetailsWales::getOccupationLicenceTypeWales).is(OTHER))
             .label("OccupationLicenceDetailsWales-date-section", """
                ---
                <h2 class="govuk-heading-m">Occupation contract or licence start date</h2>

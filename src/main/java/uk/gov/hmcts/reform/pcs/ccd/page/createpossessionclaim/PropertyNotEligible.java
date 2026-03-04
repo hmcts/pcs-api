@@ -5,12 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 /**
  * CCD page configuration for postcode not eligible.
@@ -26,11 +29,11 @@ public class PropertyNotEligible implements CcdPageConfiguration {
         pageBuilder
             .page("propertyNotEligible", this::midEvent)
             .pageLabel("Property not eligible for this online service")
-            .showCondition("showPropertyNotEligiblePage=\"Yes\"")
+            .showWhen(when(PCSCase::getShowPropertyNotEligiblePage).is(YesOrNo.YES))
             .readonly(PCSCase::getShowPropertyNotEligiblePage, NEVER_SHOW)
 
             // England and Wales guidance section
-            .label("propertyNotEligible-england-wales", """
+            .labelWhen("propertyNotEligible-england-wales", """
                     <section tabindex="0">
                     <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                     <h2 class="govuk-heading-m">What to do next</h2>
@@ -70,11 +73,12 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       </strong>
                     </div>
                     </section>
-                    """, "legislativeCountry=\"England\" OR legislativeCountry=\"Wales\"")
+                    """, when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)
+                .or(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES)))
 
 
             // Scotland-specific guidance section
-            .label("propertyNotEligible-scotland", """
+            .labelWhen("propertyNotEligible-scotland", """
                 <section tabindex="0">
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <h2 class="govuk-heading-m">What to do next</h2>
@@ -93,10 +97,10 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                   </strong>
                 </div>
                 </section>
-                """, "legislativeCountry=\"Scotland\"")
+                """, when(PCSCase::getLegislativeCountry).is(LegislativeCountry.SCOTLAND))
 
             // Northern Ireland guidance section
-            .label("propertyNotEligible-northern-ireland", """
+            .labelWhen("propertyNotEligible-northern-ireland", """
                 <section tabindex="0">
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <h2 class="govuk-heading-m">What to do next</h2>
@@ -115,10 +119,10 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                   </strong>
                 </div>
                 </section>
-                """, "legislativeCountry=\"Northern Ireland\"")
+                """, when(PCSCase::getLegislativeCountry).is(LegislativeCountry.NORTHERN_IRELAND))
 
             // Channel Islands and Isle of Man guidance section
-            .label("propertyNotEligible-channel-islands-iom", """
+            .labelWhen("propertyNotEligible-channel-islands-iom", """
                 <section tabindex="0">
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <p class="govuk-body">
@@ -132,7 +136,8 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                   </strong>
                 </div>
                 </section>
-                """, "legislativeCountry=\"Channel Islands\" OR legislativeCountry=\"Isle of Man\"");
+                """, when(PCSCase::getLegislativeCountry).is(LegislativeCountry.CHANNEL_ISLANDS)
+                .or(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ISLE_OF_MAN)));
     }
 
 

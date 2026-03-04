@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -16,7 +17,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.ASBQuestionsDetailsWales;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 @AllArgsConstructor
 @Component
@@ -30,20 +33,20 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
             .page("asbQuestionsWales", this::midEvent)
             .pageLabel("Antisocial behaviour and illegal or prohibited conduct")
             .label("asbQuestionsWales-separator", "---")
-            .showCondition("showASBQuestionsPageWales=\"Yes\"")
+            .showWhen(when(PCSCase::getShowASBQuestionsPageWales).is(YesOrNo.YES))
             .readonly(PCSCase::getShowASBQuestionsPageWales, NEVER_SHOW)
             .complex(PCSCase::getAsbQuestionsWales)
             .mandatory(ASBQuestionsDetailsWales::getAntisocialBehaviour)
-            .mandatory(ASBQuestionsDetailsWales::getAntisocialBehaviourDetails,
-                    "walesAntisocialBehaviour=\"YES\"")
+            .mandatoryWhen(ASBQuestionsDetailsWales::getAntisocialBehaviourDetails,
+                when(PCSCase::getAsbQuestionsWales, ASBQuestionsDetailsWales::getAntisocialBehaviour).is(YES))
             .label("asbQuestionsWales-separator-2", "---")
             .mandatory(ASBQuestionsDetailsWales::getIllegalPurposesUse)
-            .mandatory(ASBQuestionsDetailsWales::getIllegalPurposesUseDetails,
-                    "walesIllegalPurposesUse=\"YES\"")
+            .mandatoryWhen(ASBQuestionsDetailsWales::getIllegalPurposesUseDetails,
+                when(PCSCase::getAsbQuestionsWales, ASBQuestionsDetailsWales::getIllegalPurposesUse).is(YES))
             .label("asbQuestionsWales-separator-3", "---")
             .mandatory(ASBQuestionsDetailsWales::getOtherProhibitedConduct)
-            .mandatory(ASBQuestionsDetailsWales::getOtherProhibitedConductDetails,
-                    "walesOtherProhibitedConduct=\"YES\"")
+            .mandatoryWhen(ASBQuestionsDetailsWales::getOtherProhibitedConductDetails,
+                when(PCSCase::getAsbQuestionsWales, ASBQuestionsDetailsWales::getOtherProhibitedConduct).is(YES))
             .done()
             .label("asbQuestionsWales-end-separator", "---")
             .label(

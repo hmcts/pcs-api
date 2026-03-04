@@ -3,9 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -26,19 +26,39 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
 
 @AllArgsConstructor
 @Component
 public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
-    private static final String STANDARD_MANDATORY_GROUNDS = "possessionGroundsWales_MandatoryGrounds";
-    private static final String STANDARD_DISCRETIONARY_GROUNDS = "possessionGroundsWales_DiscretionaryGrounds";
-    private static final String STANDARD_ESTATE_MANAGEMENT_GROUNDS = "possessionGroundsWales_EstateManagementGrounds";
-    private static final String SECURE_MANDATORY_GROUNDS = "secureGroundsWales_MandatoryGrounds";
-    private static final String SECURE_DISCRETIONARY_GROUNDS = "secureGroundsWales_DiscretionaryGrounds";
-    private static final String SECURE_ESTATE_MANAGEMENT_GROUNDS = "secureGroundsWales_EstateManagementGrounds";
+    private static final ShowCondition.NamedFieldCondition STANDARD_MANDATORY_GROUNDS = when(
+        PCSCase::getGroundsForPossessionWales,
+        GroundsForPossessionWales::getMandatoryGrounds
+    );
+    private static final ShowCondition.NamedFieldCondition STANDARD_DISCRETIONARY_GROUNDS = when(
+        PCSCase::getGroundsForPossessionWales,
+        GroundsForPossessionWales::getDiscretionaryGrounds
+    );
+    private static final ShowCondition.NamedFieldCondition STANDARD_ESTATE_MANAGEMENT_GROUNDS = when(
+        PCSCase::getGroundsForPossessionWales,
+        GroundsForPossessionWales::getEstateManagementGrounds
+    );
+    private static final ShowCondition.NamedFieldCondition SECURE_MANDATORY_GROUNDS = when(
+        PCSCase::getSecureContractGroundsForPossessionWales,
+        SecureContractGroundsForPossessionWales::getMandatoryGrounds
+    );
+    private static final ShowCondition.NamedFieldCondition SECURE_DISCRETIONARY_GROUNDS = when(
+        PCSCase::getSecureContractGroundsForPossessionWales,
+        SecureContractGroundsForPossessionWales::getDiscretionaryGrounds
+    );
+    private static final ShowCondition.NamedFieldCondition SECURE_ESTATE_MANAGEMENT_GROUNDS = when(
+        PCSCase::getSecureContractGroundsForPossessionWales,
+        SecureContractGroundsForPossessionWales::getEstateManagementGrounds
+    );
 
     private final TextAreaValidationService textAreaValidationService;
 
@@ -47,188 +67,237 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         pageBuilder
             .page("reasonsForPossessionWales", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition("legislativeCountry=\"Wales\" AND showReasonsForGroundsPageWales=\"Yes\"")
+            .showWhen(when(PCSCase::getLegislativeCountry).is(WALES)
+                .and(when(PCSCase::getShowReasonsForGroundsPageWales).is(YesOrNo.YES)))
             .readonly(PCSCase::getShowReasonsForGroundsPageWales, NEVER_SHOW)
-            .label("reasonsForPossessionWales-separator", "---")
+            .labelWhen("reasonsForPossessionWales-separator", "---")
             .complex(PCSCase::getGroundsReasonsWales)
 
             // ---------- Standard/Other Contract - Discretionary grounds ----------
-            .label("wales-otherBreachSection157-label","""
+            .labelWhen("wales-otherBreachSection157-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Other breach of contract (section 157)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_DISCRETIONARY_GROUNDS,
-                                                  DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
-            ))
-            .mandatory(GroundsReasonsWales::getOtherBreachSection157Reason,
-                       ShowConditions.fieldContains(STANDARD_DISCRETIONARY_GROUNDS,
-                                                    DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
-                       ))
+                """, contains(
+                    STANDARD_DISCRETIONARY_GROUNDS,
+                    DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getOtherBreachSection157Reason,
+                       contains(
+                    STANDARD_DISCRETIONARY_GROUNDS,
+                    DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
+                ))
 
             // ---------- Standard/Other Contract - Estate Management grounds ----------
-            .label("wales-buildingWorks-label","""
+            .labelWhen("wales-buildingWorks-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Building works (ground A)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.BUILDING_WORKS))
-            .mandatory(GroundsReasonsWales::getBuildingWorksReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.BUILDING_WORKS))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.BUILDING_WORKS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getBuildingWorksReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.BUILDING_WORKS
+                ))
 
-            .label("wales-redevelopmentSchemes-label","""
+            .labelWhen("wales-redevelopmentSchemes-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Redevelopment schemes (ground B)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES))
-            .mandatory(GroundsReasonsWales::getRedevelopmentSchemesReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getRedevelopmentSchemesReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
+                ))
 
-            .label("wales-charities-label","""
+            .labelWhen("wales-charities-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Charities (ground C)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.CHARITIES))
-            .mandatory(GroundsReasonsWales::getCharitiesReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.CHARITIES))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.CHARITIES
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getCharitiesReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.CHARITIES
+                ))
 
-            .label("wales-disabledSuitableDwelling-label","""
+            .labelWhen("wales-disabledSuitableDwelling-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Dwelling suitable for disabled people (ground D)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING))
-            .mandatory(GroundsReasonsWales::getDisabledSuitableDwellingReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getDisabledSuitableDwellingReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING
+                ))
 
-            .label("wales-housingAssociationsAndTrusts-label","""
+            .labelWhen("wales-housingAssociationsAndTrusts-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Housing associations and housing trusts: people difficult to house (ground E)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS))
-            .mandatory(GroundsReasonsWales::getHousingAssociationsAndTrustsReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getHousingAssociationsAndTrustsReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS
+                ))
 
-            .label("wales-specialNeedsDwellings-label","""
+            .labelWhen("wales-specialNeedsDwellings-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Groups of dwellings for people with special needs (ground F)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS))
-            .mandatory(GroundsReasonsWales::getSpecialNeedsDwellingsReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSpecialNeedsDwellingsReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS
+                ))
 
-            .label("wales-reserveSuccessors-label","""
+            .labelWhen("wales-reserveSuccessors-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Reserve successors (ground G)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.RESERVE_SUCCESSORS))
-            .mandatory(GroundsReasonsWales::getReserveSuccessorsReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.RESERVE_SUCCESSORS))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.RESERVE_SUCCESSORS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getReserveSuccessorsReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.RESERVE_SUCCESSORS
+                ))
 
-            .label("wales-jointContractHolders-label", """
+            .labelWhen("wales-jointContractHolders-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Joint contract-holders (ground H)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS))
-            .mandatory(GroundsReasonsWales::getJointContractHoldersReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getJointContractHoldersReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS
+                ))
 
-            .label("wales-otherEstateManagementReasons-label", """
+            .labelWhen("wales-otherEstateManagementReasons-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Other estate management reasons (ground I)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS))
-            .mandatory(GroundsReasonsWales::getOtherEstateManagementReasonsReason,
-                       ShowConditions.fieldContains(STANDARD_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS))
+                """, contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getOtherEstateManagementReasonsReason,
+                       contains(
+                    STANDARD_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
+                ))
 
             // ---------- Standard/Other Contract - Mandatory grounds ----------
-            .label("wales-failToGiveUpS170-label","""
+            .labelWhen("wales-failToGiveUpS170-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in contract-holder’s notice (section 170)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
-            ))
-            .mandatory(GroundsReasonsWales::getFailToGiveUpS170Reason,
-                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
-                       ))
+                """, contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getFailToGiveUpS170Reason,
+                       contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
+                ))
 
-            .label("wales-landlordNoticePeriodicS178-label","""
+            .labelWhen("wales-landlordNoticePeriodicS178-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice given in relation to periodic standard contract (section 178)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178))
-            .mandatory(GroundsReasonsWales::getLandlordNoticePeriodicS178Reason,
-                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178))
+                """, contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getLandlordNoticePeriodicS178Reason,
+                       contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178
+                ))
 
-            .label("wales-landlordNoticeFtEndS186-label","""
+            .labelWhen("wales-landlordNoticeFtEndS186-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice in connection with end of fixed term given (section 186)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186))
-            .mandatory(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
-                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186))
+                """, contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
+                       contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186
+                ))
 
-            .label("wales-failToGiveUpBreakNoticeS191-label","""
+            .labelWhen("wales-failToGiveUpBreakNoticeS191-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in
                     contract-holder’s break clause notice (section 191)
@@ -236,26 +305,34 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191))
-            .mandatory(GroundsReasonsWales::getFailToGiveUpBreakNoticeS191Reason,
-                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191))
+                """, contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getFailToGiveUpBreakNoticeS191Reason,
+                       contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191
+                ))
 
-            .label("wales-landlordBreakClauseS199-label","""
+            .labelWhen("wales-landlordBreakClauseS199-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Notice given under a landlord’s break clause (section 199)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
-            .mandatory(GroundsReasonsWales::getLandlordBreakClauseS199Reason,
-                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199))
+                """, contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getLandlordBreakClauseS199Reason,
+                       contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199
+                ))
 
-            .label("wales-convertedFixedTermSch1225B2-label","""
+            .labelWhen("wales-convertedFixedTermSch1225B2-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Notice given in relation to end of converted fixed term standard contract
                     (paragraph 25B(2) of Schedule 12)
@@ -263,15 +340,19 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                  MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2))
-            .mandatory(GroundsReasonsWales::getConvertedFixedTermSch1225B2Reason,
-                       ShowConditions.fieldContains(STANDARD_MANDATORY_GROUNDS,
-                                                    MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2))
+                """, contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getConvertedFixedTermSch1225B2Reason,
+                       contains(
+                    STANDARD_MANDATORY_GROUNDS,
+                    MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2
+                ))
 
 
             // ---------- Secure Contract - Discretionary grounds ----------
-            .label("wales-secure-otherBreachOfContract-label", """
+            .labelWhen("wales-secure-otherBreachOfContract-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Other breach of contract (section 157)
                 </h2>
@@ -279,161 +360,205 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     Why are you making a claim for possession under this ground?
                 </h3>
                 """,
-                   ShowConditions.fieldContains(SECURE_DISCRETIONARY_GROUNDS,
-                                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157
-                   ))
-            .mandatory(GroundsReasonsWales::getSecureOtherBreachOfContractReason,
-                       ShowConditions.fieldContains(SECURE_DISCRETIONARY_GROUNDS,
-                                                SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157
-                       ))
+                   contains(
+                    SECURE_DISCRETIONARY_GROUNDS,
+                    SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureOtherBreachOfContractReason,
+                       contains(
+                    SECURE_DISCRETIONARY_GROUNDS,
+                    SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157
+                ))
 
             // ---------- Secure Contract - Estate Management grounds ----------
-            .label("wales-secure-buildingWorks-label", """
+            .labelWhen("wales-secure-buildingWorks-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Building works (ground A)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.BUILDING_WORKS))
-            .mandatory(GroundsReasonsWales::getSecureBuildingWorksReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.BUILDING_WORKS))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.BUILDING_WORKS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureBuildingWorksReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.BUILDING_WORKS
+                ))
 
-            .label("wales-secure-redevelopmentSchemes-label", """
+            .labelWhen("wales-secure-redevelopmentSchemes-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Redevelopment schemes (ground B)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES))
-            .mandatory(GroundsReasonsWales::getSecureRedevelopmentSchemesReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureRedevelopmentSchemesReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
+                ))
 
-            .label("wales-secure-charities-label", """
+            .labelWhen("wales-secure-charities-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Charities (ground C)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.CHARITIES))
-            .mandatory(GroundsReasonsWales::getSecureCharitiesReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.CHARITIES))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.CHARITIES
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureCharitiesReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.CHARITIES
+                ))
 
-            .label("wales-secure-disabledSuitableDwelling-label", """
+            .labelWhen("wales-secure-disabledSuitableDwelling-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Dwelling suitable for disabled people (ground D)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING))
-            .mandatory(GroundsReasonsWales::getSecureDisabledSuitableDwellingReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureDisabledSuitableDwellingReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING
+                ))
 
-            .label("wales-secure-housingAssociationsAndTrusts-label", """
+            .labelWhen("wales-secure-housingAssociationsAndTrusts-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Housing associations and housing trusts: people difficult to house (ground E)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS))
-            .mandatory(GroundsReasonsWales::getSecureHousingAssociationsAndTrustsReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureHousingAssociationsAndTrustsReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS
+                ))
 
-            .label("wales-secure-specialNeedsDwellings-label", """
+            .labelWhen("wales-secure-specialNeedsDwellings-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Groups of dwellings for people with special needs (ground F)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS))
-            .mandatory(GroundsReasonsWales::getSecureSpecialNeedsDwellingsReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureSpecialNeedsDwellingsReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS
+                ))
 
-            .label("wales-secure-reserveSuccessors-label", """
+            .labelWhen("wales-secure-reserveSuccessors-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Reserve successors (ground G)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.RESERVE_SUCCESSORS))
-            .mandatory(GroundsReasonsWales::getSecureReserveSuccessorsReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.RESERVE_SUCCESSORS))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.RESERVE_SUCCESSORS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureReserveSuccessorsReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.RESERVE_SUCCESSORS
+                ))
 
-            .label("wales-secure-jointContractHolders-label", """
+            .labelWhen("wales-secure-jointContractHolders-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Joint contract-holders (ground H)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS))
-            .mandatory(GroundsReasonsWales::getSecureJointContractHoldersReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureJointContractHoldersReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS
+                ))
 
-            .label("wales-secure-otherEstateManagementReasons-label", """
+            .labelWhen("wales-secure-otherEstateManagementReasons-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Other estate management reasons (ground I)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                  EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS))
-            .mandatory(GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason,
-                       ShowConditions.fieldContains(SECURE_ESTATE_MANAGEMENT_GROUNDS,
-                                                    EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS))
+                """, contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason,
+                       contains(
+                    SECURE_ESTATE_MANAGEMENT_GROUNDS,
+                    EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
+                ))
 
             // ---------- Secure Contract - Mandatory grounds ----------
-            .label("wales-secure-failureToGiveUpPossessionSection170-label", """
+            .labelWhen("wales-secure-failureToGiveUpPossessionSection170-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in contract-holder’s notice (section 170)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
-                                           SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170))
-            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason,
-                       ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
-                                           SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170))
-            .label("wales-secure-landlordNoticeSection186-label", """
+                """, contains(
+                    SECURE_MANDATORY_GROUNDS,
+                    SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason,
+                       contains(
+                    SECURE_MANDATORY_GROUNDS,
+                    SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
+                ))
+            .labelWhen("wales-secure-landlordNoticeSection186-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice in connection with end of fixed term given (section 186)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
-                                                  SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
-            ))
-            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection186Reason,
-                       ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
-                                                    SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
-                       ))
+                """, contains(
+                    SECURE_MANDATORY_GROUNDS,
+                    SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureLandlordNoticeSection186Reason,
+                       contains(
+                    SECURE_MANDATORY_GROUNDS,
+                    SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
+                ))
 
-            .label("wales-secure-failureToGiveUpPossessionSection191-label", """
+            .labelWhen("wales-secure-failureToGiveUpPossessionSection191-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in contract-holder’s break
                     clause notice (section 191)
@@ -441,31 +566,41 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
-                                                SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191)
+                """, contains(
+                    SECURE_MANDATORY_GROUNDS,
+                    SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191
+                )
             )
-            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason,
-                       ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
-                                                 SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191)
+            .mandatoryWhen(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason,
+                       contains(
+                    SECURE_MANDATORY_GROUNDS,
+                    SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191
+                )
             )
 
-            .label("wales-secure-landlordNoticeSection199-label", """
+            .labelWhen("wales-secure-landlordNoticeSection199-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Notice given under a landlord’s break clause (section 199)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
-                                                  SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
-            ))
-            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection199Reason,
-                       ShowConditions.fieldContains(SECURE_MANDATORY_GROUNDS,
-                                                    SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
-                       ))
+                """, contains(
+                    SECURE_MANDATORY_GROUNDS,
+                    SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
+                ))
+            .mandatoryWhen(GroundsReasonsWales::getSecureLandlordNoticeSection199Reason,
+                       contains(
+                    SECURE_MANDATORY_GROUNDS,
+                    SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
+                ))
 
             .done()
-            .label("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .labelWhen("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+
+    private static ShowCondition contains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
+        return field.contains(value);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
@@ -716,4 +851,3 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         };
     }
 }
-

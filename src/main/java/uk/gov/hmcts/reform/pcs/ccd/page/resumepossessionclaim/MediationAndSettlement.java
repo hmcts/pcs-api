@@ -1,5 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -8,10 +9,13 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 /**
  * Page configuration for the Mediation and Settlement section.
@@ -23,6 +27,10 @@ import java.util.List;
 public class MediationAndSettlement implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
+    private static final ShowCondition MEDIATION_ATTEMPTED = when(PCSCase::getMediationAttempted)
+        .is(VerticalYesNo.YES);
+    private static final ShowCondition SETTLEMENT_ATTEMPTED = when(PCSCase::getSettlementAttempted)
+        .is(VerticalYesNo.YES);
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
@@ -40,7 +48,7 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         </section>
                         """)
                 .mandatory(PCSCase::getMediationAttempted)
-                .mandatory(PCSCase::getMediationAttemptedDetails, "mediationAttempted=\"YES\"")
+                .mandatoryWhen(PCSCase::getMediationAttemptedDetails, MEDIATION_ATTEMPTED)
                 .label("settlement-section",
                         """
                         ---
@@ -52,7 +60,7 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         </section>
                         """)
                 .mandatory(PCSCase::getSettlementAttempted)
-                .mandatory(PCSCase::getSettlementAttemptedDetails, "settlementAttempted=\"YES\"")
+                .mandatoryWhen(PCSCase::getSettlementAttemptedDetails, SETTLEMENT_ATTEMPTED)
                 .label("mediationAndSettlement-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 

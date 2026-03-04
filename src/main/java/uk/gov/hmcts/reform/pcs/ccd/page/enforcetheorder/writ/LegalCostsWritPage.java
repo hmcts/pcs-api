@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.LegalCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.writ.WritDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.LEGAL_COSTS_HELP;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WRIT_FLOW;
 
@@ -18,14 +20,15 @@ public class LegalCostsWritPage implements CcdPageConfiguration {
         pageBuilder
                 .page("legalCostsWrit")
                 .pageLabel("Legal costs")
-                .showCondition(WRIT_FLOW)
+                .showWhen(WRIT_FLOW)
                 .label("legalCostsWrit-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWritDetails)
                 .complex(WritDetails::getLegalCosts)
                 .mandatory(LegalCosts::getAreLegalCostsToBeClaimed)
-                .mandatory(LegalCosts::getAmountOfLegalCosts,
-                        "writAreLegalCostsToBeClaimed=\"YES\"")
+                .mandatoryWhen(LegalCosts::getAmountOfLegalCosts,
+                    when(EnforcementOrder::getWritDetails, WritDetails::getLegalCosts,
+                        LegalCosts::getAreLegalCostsToBeClaimed).is(YES))
                 .done()
                 .done()
                 .done()

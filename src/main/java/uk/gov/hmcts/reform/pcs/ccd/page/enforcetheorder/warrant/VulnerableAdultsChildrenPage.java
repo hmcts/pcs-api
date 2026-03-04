@@ -20,6 +20,12 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory.VULNERABLE_ADULTS;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory.VULNERABLE_ADULTS_AND_CHILDREN;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.VulnerableCategory.VULNERABLE_CHILDREN;
+
 @AllArgsConstructor
 @Component
 public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
@@ -30,7 +36,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         pageBuilder
             .page("vulnerableAdultsChildren", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("vulnerableAdultsChildren-line-separator", "---")
             .label(
                 "vulnerableAdultsChildren-information-text", """
@@ -50,14 +56,14 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRawWarrantDetails)
             .mandatory(RawWarrantDetails::getVulnerablePeoplePresent)
-            .complex(RawWarrantDetails::getVulnerableAdultsChildren,
-                    "vulnerablePeoplePresent=\"YES\"")
+            .complexWhen(RawWarrantDetails::getVulnerableAdultsChildren,
+                when(EnforcementOrder::getRawWarrantDetails, RawWarrantDetails::getVulnerablePeoplePresent).is(YES))
             .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
-            .mandatory(VulnerableAdultsChildren::getVulnerableReasonText,
-                    "vulnerablePeoplePresent=\"YES\" "
-                    + "AND (vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS\" "
-                    + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_CHILDREN\" "
-                    + "OR vulnerableAdultsChildren.vulnerableCategory=\"VULNERABLE_ADULTS_AND_CHILDREN\")")
+            .mandatoryWhen(VulnerableAdultsChildren::getVulnerableReasonText,
+                when(EnforcementOrder::getRawWarrantDetails, RawWarrantDetails::getVulnerablePeoplePresent).is(YES)
+                    .and(when(RawWarrantDetails::getVulnerableAdultsChildren,
+                        VulnerableAdultsChildren::getVulnerableCategory).isAnyOf(
+                            VULNERABLE_ADULTS, VULNERABLE_CHILDREN, VULNERABLE_ADULTS_AND_CHILDREN)))
             .done()
             .done()
             .done()

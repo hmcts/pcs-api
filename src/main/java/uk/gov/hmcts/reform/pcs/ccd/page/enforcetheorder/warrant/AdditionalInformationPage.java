@@ -18,6 +18,8 @@ import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.AdditionalInformation.ADDITIONAL_INFORMATION_DETAILS_LABEL;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
@@ -26,14 +28,13 @@ import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN
 public class AdditionalInformationPage implements CcdPageConfiguration {
 
     private final TextAreaValidationService textAreaValidationService;
-    private static final String SHOW_CONDITION = "warrantAdditionalInformationSelect=\"YES\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("additionalInformation", this::midEvent)
             .pageLabel("Anything else that could help with the eviction ")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("additionalInformation-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
@@ -42,7 +43,9 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
                 AdditionalInformation::getAdditionalInformationSelect,
                 "Do you want to tell us anything else that could help with the eviction?"
             )
-            .mandatory(AdditionalInformation::getAdditionalInformationDetails, SHOW_CONDITION)
+            .mandatoryWhen(AdditionalInformation::getAdditionalInformationDetails,
+                when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAdditionalInformation,
+                    AdditionalInformation::getAdditionalInformationSelect).is(YES))
             .done()
             .label("additionalInformation-details-save-and-return", SAVE_AND_RETURN);
 

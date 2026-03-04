@@ -1,10 +1,13 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.SuspensionOfRightToBuy;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfiguration {
 
@@ -13,7 +16,8 @@ public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfigura
         pageBuilder
             .page("suspensionOfRightToBuyHousingActOptions")
             .pageLabel("Housing Act")
-            .showCondition("suspensionOfRTB_ShowHousingActsPage=\"Yes\"")
+            .showWhen(when(PCSCase::getSuspensionOfRightToBuy, SuspensionOfRightToBuy::getShowHousingActsPage)
+                .is(YesOrNo.YES))
             .label("suspensionOfRightToBuyHousingActOptions-info", """
                 ---
                   <ul tabindex="0">

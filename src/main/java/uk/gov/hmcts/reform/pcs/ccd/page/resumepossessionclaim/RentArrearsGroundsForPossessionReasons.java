@@ -3,17 +3,23 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredRentArrearsPossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredDiscretionaryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.RentArrearsGroundsReasons;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.AssuredMandatoryGround;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +28,14 @@ import java.util.List;
 @Component
 public class RentArrearsGroundsForPossessionReasons implements CcdPageConfiguration {
 
-    private static final String ADDITIONAL_MANDATORY_GROUNDS = "rentArrears_AdditionalMandatoryGrounds";
-    private static final String ADDITIONAL_DISCRETIONARY_GROUNDS = "rentArrears_AdditionalDiscretionaryGrounds";
+    private static final ShowCondition.NamedFieldCondition ADDITIONAL_MANDATORY_GROUNDS = when(
+        PCSCase::getAssuredRentArrearsPossessionGrounds,
+        AssuredRentArrearsPossessionGrounds::getAdditionalMandatoryGrounds
+    );
+    private static final ShowCondition.NamedFieldCondition ADDITIONAL_DISCRETIONARY_GROUNDS = when(
+        PCSCase::getAssuredRentArrearsPossessionGrounds,
+        AssuredRentArrearsPossessionGrounds::getAdditionalDiscretionaryGrounds
+    );
 
     private final TextAreaValidationService textAreaValidationService;
 
@@ -32,107 +44,135 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         pageBuilder
             .page("rentArrearsGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showCondition("claimDueToRentArrears=\"Yes\""
-                               + " AND tenancy_TypeOfTenancyLicence=\"ASSURED_TENANCY\""
-                               + " AND hasOtherAdditionalGrounds=\"Yes\""
-                               + " AND legislativeCountry=\"England\""
-            )
-            .label("rentArrearsGrounds-lineSeparator","---")
+            .showWhen(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.YES)
+                .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                    .is(TenancyLicenceType.ASSURED_TENANCY))
+                .and(when(PCSCase::getHasOtherAdditionalGrounds).is(YesOrNo.YES))
+                .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
+            .labelWhen("rentArrearsGrounds-lineSeparator","---")
             .complex(PCSCase::getRentArrearsGroundsReasons)
 
             // ---------- Mandatory grounds ----------
-            .label("rentArrears-ownerOccupier-label", """
+            .labelWhen("rentArrears-ownerOccupier-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Owner occupier (ground 1)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                  AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1))
-            .mandatory(RentArrearsGroundsReasons::getOwnerOccupierReason,
-                       ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                    AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1))
+                """, contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getOwnerOccupierReason,
+                       contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1
+                ))
 
-            .label("rentArrears-repossessionByLender-label", """
+            .labelWhen("rentArrears-repossessionByLender-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Repossession by the landlord’s mortgage lender (ground 2)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                  AssuredMandatoryGround.REPOSSESSION_GROUND2))
-            .mandatory(RentArrearsGroundsReasons::getRepossessionByLenderReason,
-                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                             AssuredMandatoryGround.REPOSSESSION_GROUND2))
+                """, contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.REPOSSESSION_GROUND2
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getRepossessionByLenderReason,
+                contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.REPOSSESSION_GROUND2
+                ))
 
-            .label("rentArrears-holidayLet-label", """
+            .labelWhen("rentArrears-holidayLet-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Holiday let (ground 3)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                  AssuredMandatoryGround.HOLIDAY_LET_GROUND3))
-            .mandatory(RentArrearsGroundsReasons::getHolidayLetReason,
-                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                             AssuredMandatoryGround.HOLIDAY_LET_GROUND3))
+                """, contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.HOLIDAY_LET_GROUND3
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getHolidayLetReason,
+                contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.HOLIDAY_LET_GROUND3
+                ))
 
-            .label("rentArrears-studentLet-label", """
+            .labelWhen("rentArrears-studentLet-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Student let (ground 4)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                  AssuredMandatoryGround.STUDENT_LET_GROUND4))
-            .mandatory(RentArrearsGroundsReasons::getStudentLetReason,
-                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                             AssuredMandatoryGround.STUDENT_LET_GROUND4))
+                """, contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.STUDENT_LET_GROUND4
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getStudentLetReason,
+                contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.STUDENT_LET_GROUND4
+                ))
 
-            .label("rentArrears-ministerOfReligion-label", """
+            .labelWhen("rentArrears-ministerOfReligion-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Property required for minister of religion (ground 5)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                  AssuredMandatoryGround.MINISTER_RELIGION_GROUND5))
-            .mandatory(RentArrearsGroundsReasons::getMinisterOfReligionReason,
-                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                             AssuredMandatoryGround.MINISTER_RELIGION_GROUND5))
+                """, contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.MINISTER_RELIGION_GROUND5
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getMinisterOfReligionReason,
+                contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.MINISTER_RELIGION_GROUND5
+                ))
 
-            .label("rentArrears-redevelopment-label", """
+            .labelWhen("rentArrears-redevelopment-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Property required for redevelopment (ground 6)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                  AssuredMandatoryGround.REDEVELOPMENT_GROUND6))
-            .mandatory(RentArrearsGroundsReasons::getRedevelopmentReason,
-                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                             AssuredMandatoryGround.REDEVELOPMENT_GROUND6))
+                """, contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.REDEVELOPMENT_GROUND6
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getRedevelopmentReason,
+                contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.REDEVELOPMENT_GROUND6
+                ))
 
-            .label("rentArrears-deathOfTenant-label", """
+            .labelWhen("rentArrears-deathOfTenant-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Death of the tenant (ground 7)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                  AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7))
-            .mandatory(RentArrearsGroundsReasons::getDeathOfTenantReason,
-                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                             AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7))
+                """, contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getDeathOfTenantReason,
+                contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7
+                ))
 
-            .label("rentArrears-antisocialBehaviour-label", """
+            .labelWhen("rentArrears-antisocialBehaviour-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Antisocial behaviour (ground 7A)
                 </h2>
@@ -140,161 +180,192 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     Why are you making a claim for possession under this ground?
                 </h3>
                 """,
-                   ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A))
-            .mandatory(RentArrearsGroundsReasons::getAntisocialBehaviourReason,
-                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                             AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A))
+                   contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getAntisocialBehaviourReason,
+                contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A
+                ))
 
-            .label("rentArrears-noRightToRent-label", """
+            .labelWhen("rentArrears-noRightToRent-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Tenant does not have a right to rent (ground 7B)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                                  AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B))
-            .mandatory(RentArrearsGroundsReasons::getNoRightToRentReason,
-                ShowConditions.fieldContains(ADDITIONAL_MANDATORY_GROUNDS,
-                                             AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B))
+                """, contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getNoRightToRentReason,
+                contains(
+                    ADDITIONAL_MANDATORY_GROUNDS,
+                    AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B
+                ))
 
             // ---------- Discretionary grounds ----------
-            .label("rentArrears-suitableAlternativeAccommodation-label", """
+            .labelWhen("rentArrears-suitableAlternativeAccommodation-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Suitable alternative accommodation (ground 9)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9))
-            .mandatory(RentArrearsGroundsReasons::getSuitableAltAccommodationReason,
-                ShowConditions.fieldContains(
+                """, contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
-                    AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9))
+                    AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getSuitableAltAccommodationReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9
+                ))
 
-            .label("rentArrears-breachOfTenancyConditions-label", """
+            .labelWhen("rentArrears-breachOfTenancyConditions-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Breach of tenancy conditions (ground 12)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12))
-            .mandatory(RentArrearsGroundsReasons::getBreachOfTenancyConditionsReason,
-                ShowConditions.fieldContains(ADDITIONAL_DISCRETIONARY_GROUNDS,
-                                             AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12))
+                """, contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getBreachOfTenancyConditionsReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12
+                ))
 
-            .label("rentArrears-propertyDeterioration-label", """
+            .labelWhen("rentArrears-propertyDeterioration-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Deterioration in the condition of the property (ground 13)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13))
-            .mandatory(RentArrearsGroundsReasons::getPropertyDeteriorationReason,
-                ShowConditions.fieldContains(
+                """, contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
-                    AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13))
+                    AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getPropertyDeteriorationReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13
+                ))
 
-            .label("rentArrears-nuisanceAnnoyance-label", """
+            .labelWhen("rentArrears-nuisanceAnnoyance-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Nuisance, annoyance, illegal or immoral use of the property (ground 14)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14))
-            .mandatory(RentArrearsGroundsReasons::getNuisanceAnnoyanceReason,
-                ShowConditions.fieldContains(
+                """, contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
-                    AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14))
+                    AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getNuisanceAnnoyanceReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14
+                ))
 
-            .label("rentArrears-domesticViolence-label", """
+            .labelWhen("rentArrears-domesticViolence-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Domestic violence (ground 14A)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A))
-            .mandatory(RentArrearsGroundsReasons::getDomesticViolenceReason,
-                ShowConditions.fieldContains(
+                """, contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
-                    AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A))
+                    AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getDomesticViolenceReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A
+                ))
 
-            .label("rentArrears-offenceDuringRiot-label", """
+            .labelWhen("rentArrears-offenceDuringRiot-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Offence during a riot (ground 14ZA)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA))
-            .mandatory(RentArrearsGroundsReasons::getOffenceDuringRiotReason,
-                ShowConditions.fieldContains(
+                """, contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
-                    AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA))
+                    AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getOffenceDuringRiotReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA
+                ))
 
-            .label("rentArrears-furnitureDeterioration-label", """
+            .labelWhen("rentArrears-furnitureDeterioration-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Deterioration of furniture (ground 15)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15))
-            .mandatory(RentArrearsGroundsReasons::getFurnitureDeteriorationReason,
-                ShowConditions.fieldContains(
+                """, contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
-                    AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15))
+                    AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getFurnitureDeteriorationReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15
+                ))
 
-            .label("rentArrears-employeeOfLandlord-label", """
+            .labelWhen("rentArrears-employeeOfLandlord-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Employee of the landlord (ground 16)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16))
-            .mandatory(RentArrearsGroundsReasons::getEmployeeOfLandlordReason,
-                ShowConditions.fieldContains(
+                """, contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
-                    AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16))
+                    AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getEmployeeOfLandlordReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16
+                ))
 
-            .label("rentArrears-tenancyByFalseStatement-label", """
+            .labelWhen("rentArrears-tenancyByFalseStatement-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Tenancy obtained by false statement (ground 17)
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
-                """, ShowConditions.fieldContains(
-                ADDITIONAL_DISCRETIONARY_GROUNDS,
-                AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17))
-            .mandatory(RentArrearsGroundsReasons::getTenancyByFalseStatementReason,
-                ShowConditions.fieldContains(
+                """, contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
-                    AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17))
+                    AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17
+                ))
+            .mandatoryWhen(RentArrearsGroundsReasons::getTenancyByFalseStatementReason,
+                contains(
+                    ADDITIONAL_DISCRETIONARY_GROUNDS,
+                    AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17
+                ))
             .done()
-            .label("rentArrearsGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .labelWhen("rentArrearsGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+
+    private static ShowCondition contains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
+        return field.contains(value);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

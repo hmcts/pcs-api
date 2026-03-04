@@ -1,6 +1,5 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
@@ -10,12 +9,16 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
 
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 @Component
 public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
@@ -34,7 +37,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
         pageBuilder
             .page("tenancyLicenceDetails", this::midEvent)
             .pageLabel("Tenancy or licence details")
-            .showCondition("legislativeCountry=\"England\"")
+            .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
             .label("tenancyLicenceDetails-info", """
                ---
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>
@@ -43,9 +46,10 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                 .mandatory(
                     TenancyLicenceDetails::getTypeOfTenancyLicence
                 )
-                .mandatory(
+                .mandatoryWhen(
                     TenancyLicenceDetails::getDetailsOfOtherTypeOfTenancyLicence,
-                    "tenancy_TypeOfTenancyLicence=\"OTHER\""
+                    when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                        .is(TenancyLicenceType.OTHER)
                 )
             .done()
             .label("tenancyLicenceDetails-date-section", """
@@ -103,5 +107,3 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
             .build();
     }
 }
-
-

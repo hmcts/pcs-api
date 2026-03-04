@@ -9,6 +9,8 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.LEGAL_COSTS_HELP;
 
 public class LegalCostsPage implements CcdPageConfiguration {
@@ -18,14 +20,15 @@ public class LegalCostsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("legalCosts")
                 .pageLabel("Legal costs")
-                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+                .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
                 .label("legalCosts-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getLegalCosts)
                 .mandatory(LegalCosts::getAreLegalCostsToBeClaimed)
-                .mandatory(LegalCosts::getAmountOfLegalCosts,
-                        "warrantAreLegalCostsToBeClaimed=\"YES\"")
+                .mandatoryWhen(LegalCosts::getAmountOfLegalCosts,
+                    when(EnforcementOrder::getWarrantDetails, WarrantDetails::getLegalCosts,
+                        LegalCosts::getAreLegalCostsToBeClaimed).is(YES))
                 .done()
                 .label("legalCosts-help", LEGAL_COSTS_HELP)
                 .label("legalCosts-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

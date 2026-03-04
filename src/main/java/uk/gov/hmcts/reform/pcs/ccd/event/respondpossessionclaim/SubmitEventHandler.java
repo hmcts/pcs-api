@@ -137,8 +137,7 @@ public class SubmitEventHandler implements Submit<PCSCase, State> {
     /**
      * Builds partial update containing ONLY defendant's contact details and responses.
      *
-     * <p>
-     * Why partial? UI may send only defendant responses OR only contact details.
+     * <p>Why partial? UI may send only defendant responses OR only contact details.
      * Partial update preserves existing fields via deep merge:
      * - Sends: defendant contact details and responses only
      * - patchUnsubmittedEventData merges: preserves existing fields

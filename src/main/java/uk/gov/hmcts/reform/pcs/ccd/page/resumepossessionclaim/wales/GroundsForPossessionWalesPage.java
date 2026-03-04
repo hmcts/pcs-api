@@ -3,9 +3,9 @@ package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim.wales;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
+import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
-import uk.gov.hmcts.reform.pcs.ccd.ShowConditions;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -14,6 +14,7 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.wales.DiscretionaryGroundWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.EstateManagementGroundsWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.GroundsForPossessionWales;
 import uk.gov.hmcts.reform.pcs.ccd.domain.wales.MandatoryGroundWales;
+import uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceDetailsWales;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.util.StringUtils;
 
@@ -22,20 +23,30 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.OTHER;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
+import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
+
 // Grounds for possession Standard Contract and Other Contract
 @Component
 @Slf4j
 public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
 
-    private static final String DISCRETIONARY_GROUNDS = "possessionGroundsWales_DiscretionaryGrounds";
+    private static final ShowCondition.NamedFieldCondition DISCRETIONARY_GROUNDS =
+        when(PCSCase::getGroundsForPossessionWales, GroundsForPossessionWales::getDiscretionaryGrounds);
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("groundsForPossessionWales", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showCondition("legislativeCountry=\"Wales\" AND "
-                + "(occupationLicenceTypeWales=\"STANDARD_CONTRACT\" OR occupationLicenceTypeWales=\"OTHER\")")
+            .showWhen(when(PCSCase::getLegislativeCountry).is(WALES)
+                .and(when(PCSCase::getOccupationLicenceDetailsWales,
+                    OccupationLicenceDetailsWales::getOccupationLicenceTypeWales).is(STANDARD_CONTRACT))
+                .or(when(PCSCase::getLegislativeCountry).is(WALES)
+                    .and(when(PCSCase::getOccupationLicenceDetailsWales,
+                        OccupationLicenceDetailsWales::getOccupationLicenceTypeWales).is(OTHER))))
             .label(
                 "groundsForPossessionWales-info",
                 """
@@ -51,15 +62,20 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
             )
             .complex(PCSCase::getGroundsForPossessionWales)
                 .optional(GroundsForPossessionWales::getDiscretionaryGrounds)
-                .optional(
+                .optionalWhen(
                     GroundsForPossessionWales::getEstateManagementGrounds,
-                    ShowConditions.fieldContains(DISCRETIONARY_GROUNDS,
-                                                 DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160
-                    )
+                    contains(
+                    DISCRETIONARY_GROUNDS,
+                    DiscretionaryGroundWales.ESTATE_MANAGEMENT_GROUNDS_S160
+                )
                 )
                 .optional(GroundsForPossessionWales::getMandatoryGrounds)
                 .done()
             .label("groundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+
+    private static ShowCondition contains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
+        return field.contains(value);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(

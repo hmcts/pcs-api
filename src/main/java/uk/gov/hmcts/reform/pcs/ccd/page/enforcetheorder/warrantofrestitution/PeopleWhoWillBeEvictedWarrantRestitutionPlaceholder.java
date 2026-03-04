@@ -13,7 +13,7 @@ public class PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder implements CcdP
         pageBuilder
             .page("peopleWhoWillBeEvictedWarrantRestitution")
             .pageLabel("The people who will be evicted (placeholder)")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW)
             .label("peopleWhoWillBeEvictedWarrantRestitution-line-separator", "---")
             .label("peopleWhoWillBeEvictedWarrantRestitution-save-and-return", SAVE_AND_RETURN);
     }

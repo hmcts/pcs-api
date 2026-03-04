@@ -8,14 +8,17 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.DefendantsDOB;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
 
 @AllArgsConstructor
 @Component
@@ -28,8 +31,8 @@ public class DefendantsDOBPage implements CcdPageConfiguration {
         pageBuilder
             .page("knownDefendantsDOBInformation", this::midEvent)
             .pageLabel("Enter the defendants’ dates of birth")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                + " AND warrantDefendantsDOBKnown=\"YES\"")
+            .showWhen(WARRANT_FLOW.and(
+                when(EnforcementOrder::getWarrantDetails, WarrantDetails::getDefendantsDOBKnown).is(VerticalYesNo.YES)))
             .label("knownDefendantsDOBInformation-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

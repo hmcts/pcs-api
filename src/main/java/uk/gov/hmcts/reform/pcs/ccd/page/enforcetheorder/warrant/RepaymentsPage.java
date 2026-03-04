@@ -8,7 +8,9 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.RepaymentCosts;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.RepaymentPreference.SOME;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class RepaymentsPage implements CcdPageConfiguration {
@@ -18,7 +20,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
         pageBuilder
             .page("repayments")
             .pageLabel("Repayments")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("repayments-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
@@ -27,7 +29,8 @@ public class RepaymentsPage implements CcdPageConfiguration {
             .readonly(RepaymentCosts::getRepaymentSummaryMarkdown, NEVER_SHOW, true)
             .label("repayments-table-content", "${warrantRepaymentSummaryMarkdown}")
             .mandatory(RepaymentCosts::getRepaymentChoice)
-            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, "warrantRepaymentChoice=\"SOME\"")
+            .mandatoryWhen(RepaymentCosts::getAmountOfRepaymentCosts, when(EnforcementOrder::getWarrantDetails,
+                WarrantDetails::getRepaymentCosts, RepaymentCosts::getRepaymentChoice).is(SOME))
             .done()
             .done()
             .done()

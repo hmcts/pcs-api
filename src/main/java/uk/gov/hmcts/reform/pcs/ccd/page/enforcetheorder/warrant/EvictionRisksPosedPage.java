@@ -6,12 +6,14 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.EnforcementRiskDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
 
 public class EvictionRisksPosedPage implements CcdPageConfiguration {
 
@@ -20,8 +22,8 @@ public class EvictionRisksPosedPage implements CcdPageConfiguration {
         pageBuilder
             .page("evictionRisksPosed", this::midEvent)
             .pageLabel("The risks posed by everyone at the property")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                + " AND warrantAnyRiskToBailiff=\"YES\"")
+            .showWhen(WARRANT_FLOW.and(
+                when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff).is(YesNoNotSure.YES)))
             .label("evictionRisksPosed-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

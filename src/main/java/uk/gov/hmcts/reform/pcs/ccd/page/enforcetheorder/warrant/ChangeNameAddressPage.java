@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
@@ -9,9 +10,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
 
 /**
  * Error page shown when user indicates the name or address for eviction is incorrect.
@@ -28,8 +30,8 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
         pageBuilder
             .page("changeNameAddress", this::midEvent)
             .pageLabel("You need permission from a judge to change the name and address for the eviction")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                    + " AND warrantShowChangeNameAddressPage=\"Yes\"")
+            .showWhen(WARRANT_FLOW.and(when(EnforcementOrder::getWarrantDetails,
+                WarrantDetails::getShowChangeNameAddressPage).is(YesOrNo.YES)))
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowChangeNameAddressPage, NEVER_SHOW)
@@ -82,4 +84,3 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
             .build();
     }
 }
-

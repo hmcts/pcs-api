@@ -9,26 +9,28 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.StatementOfTrut
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.NO;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.CLAIMANT;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.statementoftruth.StatementOfTruthCompletedBy.LEGAL_REPRESENTATIVE;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
 
 public class StatementOfTruthPage implements CcdPageConfiguration {
-
-    private static final String WARRANT_COMPLETED_BY_CLAIMANT = "warrantCompletedBy=\"CLAIMANT\"";
-    private static final String WARRANT_COMPLETED_BY_LEGAL_REP = "warrantCompletedBy=\"LEGAL_REPRESENTATIVE\"";
 
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("statementOfTruth")
             .pageLabel("Statement of truth")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                     .label("statementOfTruth-lineSeparator", "---")
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
-                        .label("statementOfTruth-cert-suspended",
+                        .labelWhen("statementOfTruth-cert-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
                                 <li>the defendant has not vacated the land as ordered (*and that the whole or part
@@ -40,9 +42,8 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                                 this request.††</li>
                             </ul>
                             """,
-                            "warrantIsSuspendedOrder=\"YES\""
-                        )
-                        .label("statementOfTruth-cert-not-suspended",
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getIsSuspendedOrder).is(YES))
+                        .labelWhen("statementOfTruth-cert-not-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
                                 <li>the defendant has not vacated the land as ordered (*and that the whole or part
@@ -52,8 +53,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                                 Possession Orders by Mortgagees) Regulations 2010.</li>
                             </ul>
                             """,
-                            "warrantIsSuspendedOrder=\"NO\""
-                        )
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getIsSuspendedOrder).is(NO))
                     .done()
                     .complex(WarrantDetails::getRepaymentCosts)
                         .readonly(RepaymentCosts::getStatementOfTruthRepaymentSummaryMarkdown, NEVER_SHOW, true)
@@ -62,24 +62,30 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
-                            WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getFullNameClaimant,
-                            WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getPositionClaimant,
-                            WARRANT_COMPLETED_BY_CLAIMANT)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getAgreementLegalRep,
-                            WARRANT_COMPLETED_BY_LEGAL_REP)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
-                            WARRANT_COMPLETED_BY_LEGAL_REP)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getFirmNameLegalRep,
-                            WARRANT_COMPLETED_BY_LEGAL_REP)
-                        .mandatory(StatementOfTruthDetailsEnforcement::getPositionLegalRep,
-                            WARRANT_COMPLETED_BY_LEGAL_REP)
+                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
+                                StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
+                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFullNameClaimant,
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
+                                StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
+                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getPositionClaimant,
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
+                                StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
+                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getAgreementLegalRep,
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
+                                StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
+                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
+                                StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
+                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFirmNameLegalRep,
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
+                                StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
+                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getPositionLegalRep,
+                            when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
+                                StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
                     .done()
                 .done()
             .done()
             .label("statementOfTruth-saveAndReturn", SAVE_AND_RETURN);
     }
 }
-

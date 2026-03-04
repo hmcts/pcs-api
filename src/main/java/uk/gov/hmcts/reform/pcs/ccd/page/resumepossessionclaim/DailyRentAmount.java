@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.resumepossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
@@ -8,7 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.RentPaymentFrequency;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 public class DailyRentAmount implements CcdPageConfiguration {
@@ -19,7 +22,8 @@ public class DailyRentAmount implements CcdPageConfiguration {
                 .page("dailyRentAmount", this::midEvent)
                 .pageLabel("Daily rent amount")
                 .readonly(PCSCase::getRentSectionPaymentFrequency, NEVER_SHOW)
-                .showCondition("showRentSectionPage=\"Yes\" AND rentSectionPaymentFrequency!=\"OTHER\"")
+                .showWhen(when(PCSCase::getShowRentSectionPage).is(YesOrNo.YES)
+                    .and(when(PCSCase::getRentSectionPaymentFrequency).isNot(RentPaymentFrequency.OTHER)))
                 .complex(PCSCase::getRentDetails)
                     .readonly(RentDetails::getFormattedCalculatedDailyCharge, NEVER_SHOW)
                     .label("dailyRentAmount-content",
@@ -36,7 +40,8 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                     </section>
                                     """)
                     .mandatory(RentDetails::getPerDayCorrect)
-                    .mandatory(RentDetails::getAmendedDailyCharge, "rentDetails_PerDayCorrect=\"NO\"")
+                    .mandatoryWhen(RentDetails::getAmendedDailyCharge, when(PCSCase::getRentDetails,
+                        RentDetails::getPerDayCorrect).is(VerticalYesNo.NO))
                 .done()
                 .label("dailyRentAmount-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

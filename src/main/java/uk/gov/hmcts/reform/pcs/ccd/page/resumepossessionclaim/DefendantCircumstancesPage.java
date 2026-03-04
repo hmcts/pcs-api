@@ -15,7 +15,9 @@ import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 import java.util.ArrayList;
 import java.util.List;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo.YES;
 
 @AllArgsConstructor
 @Component
@@ -32,8 +34,8 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
             .mandatory(DefendantCircumstances::getDefendantTermPossessive,NEVER_SHOW)
             .readonlyNoSummary(DefendantCircumstances::getDefendantCircumstancesLabel)
             .mandatory(DefendantCircumstances::getHasDefendantCircumstancesInfo)
-            .mandatory(DefendantCircumstances::getDefendantCircumstancesInfo,
-                       "hasDefendantCircumstancesInfo=\"YES\"")
+            .mandatoryWhen(DefendantCircumstances::getDefendantCircumstancesInfo,
+                when(DefendantCircumstances::getHasDefendantCircumstancesInfo).is(YES))
             .done()
             .label("defendantCircumstances-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

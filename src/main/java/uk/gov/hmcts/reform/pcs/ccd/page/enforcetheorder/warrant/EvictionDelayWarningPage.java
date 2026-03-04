@@ -2,7 +2,12 @@ package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.warrant;
 
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
+import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
+import uk.gov.hmcts.reform.pcs.ccd.domain.YesNoNotSure;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
 
 public class EvictionDelayWarningPage implements CcdPageConfiguration {
 
@@ -11,8 +16,8 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
         pageBuilder
             .page("evictionDelayWarning")
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                + " AND warrantAnyRiskToBailiff=\"NOT_SURE\"")
+            .showWhen(WARRANT_FLOW.and(when(EnforcementOrder::getWarrantDetails,
+                WarrantDetails::getAnyRiskToBailiff).is(YesNoNotSure.NOT_SURE)))
             .label("evictionDelayWarning-line-separator", "---")
             .label(
                 "evictionDelayWarning-text",

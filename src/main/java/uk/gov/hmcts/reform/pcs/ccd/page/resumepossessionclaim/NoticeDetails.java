@@ -4,17 +4,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
+import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServedDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.NoticeServiceMethod;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
+import uk.gov.hmcts.reform.pcs.ccd.domain.WalesNoticeDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import uk.gov.hmcts.reform.pcs.ccd.service.NoticeDetailsService;
 import uk.gov.hmcts.reform.pcs.ccd.service.TextAreaValidationService;
 
 import java.util.List;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 /**
  * CCD page configuration for Notice Details.
@@ -27,84 +31,82 @@ public class NoticeDetails implements CcdPageConfiguration {
     private final NoticeDetailsService noticeDetailsService;
     private final TextAreaValidationService textAreaValidationService;
 
-    private static final String NOTICE_SERVICE_METHOD_CONDITION = "notice_NoticeServiceMethod=\"";
-
     @Override
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
             .page("noticeDetails", this::midEvent)
             .pageLabel("Notice details")
-            .showCondition("noticeServed=\"Yes\""
-                               + " OR walesNoticeServed=\"Yes\"")
+            .showWhen(when(PCSCase::getNoticeServed).is(YesOrNo.YES)
+                .or(when(PCSCase::getWalesNoticeDetails, WalesNoticeDetails::getNoticeServed).is(YesOrNo.YES)))
             .label("noticeDetails-separator", "---")
             .complex(PCSCase::getNoticeServedDetails)
             .mandatory(NoticeServedDetails::getNoticeServiceMethod)
 
             // First class post
-            .label("noticeDetails-firstClassPost-section", """
+            .labelWhen("noticeDetails-firstClassPost-section", """
                 <h3 class="govuk-heading-s">By first class post or other service which provides for
                 delivery on the next business day</h3>
-                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\"")
-            .optional(
+                """, noticeServiceMethodIs(NoticeServiceMethod.FIRST_CLASS_POST))
+            .optionalWhen(
                 NoticeServedDetails::getNoticePostedDate,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.FIRST_CLASS_POST + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.FIRST_CLASS_POST)
             )
 
             // Delivered to permitted place
-            .label("noticeDetails-deliveredPermittedPlace-section", """
+            .labelWhen("noticeDetails-deliveredPermittedPlace-section", """
                 <h3 class="govuk-heading-s">By delivering it to or leaving it at a permitted place</h3>
-                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\"")
-            .optional(
+                """, noticeServiceMethodIs(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE))
+            .optionalWhen(
                 NoticeServedDetails::getNoticeDeliveredDate,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.DELIVERED_PERMITTED_PLACE + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
             )
 
             // Personally handed
-            .label("noticeDetails-personallyHanded-section", """
+            .labelWhen("noticeDetails-personallyHanded-section", """
                 <h3 class="govuk-heading-s">By personally handing it to or leaving it with someone</h3>
-                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\"")
-            .optional(
+                """, noticeServiceMethodIs(NoticeServiceMethod.PERSONALLY_HANDED))
+            .optionalWhen(
                 NoticeServedDetails::getNoticePersonName,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.PERSONALLY_HANDED)
             )
-            .optional(
+            .optionalWhen(
                 NoticeServedDetails::getNoticeHandedOverDateTime,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.PERSONALLY_HANDED + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.PERSONALLY_HANDED)
             )
 
             // Email
-            .label("noticeDetails-email-section", """
+            .labelWhen("noticeDetails-email-section", """
                 <h3 class="govuk-heading-s">By email</h3>
-                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\"")
-            .optional(
+                """, noticeServiceMethodIs(NoticeServiceMethod.EMAIL))
+            .optionalWhen(
                 NoticeServedDetails::getNoticeEmailExplanation,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.EMAIL)
             )
-            .optional(
+            .optionalWhen(
                 NoticeServedDetails::getNoticeEmailSentDateTime,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.EMAIL + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.EMAIL)
             )
 
             // Other electronic method
-            .label("noticeDetails-otherElectronic-section", """
+            .labelWhen("noticeDetails-otherElectronic-section", """
                 <h3 class="govuk-heading-s">By other electronic method</h3>
-                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\"")
-            .optional(
+                """, noticeServiceMethodIs(NoticeServiceMethod.OTHER_ELECTRONIC))
+            .optionalWhen(
                 NoticeServedDetails::getNoticeOtherElectronicDateTime,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER_ELECTRONIC + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.OTHER_ELECTRONIC)
             )
 
             // Other
-            .label("noticeDetails-other-section", """
+            .labelWhen("noticeDetails-other-section", """
                 <h3 class="govuk-heading-s">Other</h3>
-                """, NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\"")
-            .optional(
+                """, noticeServiceMethodIs(NoticeServiceMethod.OTHER))
+            .optionalWhen(
                 NoticeServedDetails::getNoticeOtherExplanation,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.OTHER)
             )
-            .optional(
+            .optionalWhen(
                 NoticeServedDetails::getNoticeOtherDateTime,
-                NOTICE_SERVICE_METHOD_CONDITION + NoticeServiceMethod.OTHER + "\""
+                noticeServiceMethodIs(NoticeServiceMethod.OTHER)
             )
 
             // Document upload section
@@ -118,6 +120,10 @@ public class NoticeDetails implements CcdPageConfiguration {
                 """)
               .optional(NoticeServedDetails::getNoticeDocuments)
               .label("noticeDetails-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+    }
+
+    private static uk.gov.hmcts.ccd.sdk.api.ShowCondition noticeServiceMethodIs(NoticeServiceMethod method) {
+        return when(PCSCase::getNoticeServedDetails, NoticeServedDetails::getNoticeServiceMethod).is(method);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

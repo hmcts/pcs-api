@@ -9,7 +9,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.stateIs;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.stateIsNot;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
 
 /**
@@ -64,24 +67,24 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getPropertyAddress, "Property Address");
 
         builder.tab("nextSteps", "Next steps")
-            .showCondition(ShowConditions.stateEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .showWhen(stateIs(AWAITING_SUBMISSION_TO_HMCTS))
             .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
-            .field("nextStepsMarkdown", NEVER_SHOW);
+            .field(PCSCase::getNextStepsMarkdown, NEVER_SHOW);
 
         builder.tab("summary", "Summary")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .showWhen(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
+            .showWhen(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
 
         builder.tab("hidden", "HiddenFields")
-            .showCondition(NEVER_SHOW)
+            .showWhen(NEVER)
             .field(PCSCase::getCaseTitleMarkdown);
 
         builder.tab("serviceRequest", "Service Request")
-            .showCondition(ShowConditions.stateNotEquals(AWAITING_SUBMISSION_TO_HMCTS))
-            .field("waysToPay");
+            .showWhen(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
+            .field(PCSCase::getWaysToPay);
     }
 }

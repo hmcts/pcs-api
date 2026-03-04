@@ -11,10 +11,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.PeopleToEvict;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
-import uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent.SAVE_AND_RETURN;
+import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_FLOW;
 
 /**
  * Page for selecting whether to evict everyone or specific people.
@@ -26,8 +27,9 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
         pageBuilder
             .page("peopleWhoWillBeEvicted", this::midEvent)
             .pageLabel("The people who will be evicted")
-            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW
-                + " AND warrantShowPeopleWhoWillBeEvictedPage=\"Yes\"")
+            .showWhen(WARRANT_FLOW.and(
+                when(EnforcementOrder::getWarrantDetails, WarrantDetails::getShowPeopleWhoWillBeEvictedPage)
+                    .is(YesOrNo.YES)))
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
             .readonly(WarrantDetails::getShowPeopleWhoWillBeEvictedPage, NEVER_SHOW)
@@ -61,4 +63,3 @@ public class PeopleWhoWillBeEvictedPage implements CcdPageConfiguration {
             .build();
     }
 }
-

@@ -6,10 +6,18 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.RentArrearsOrBreachOfTenancy;
+import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexiblePossessionGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
+import uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry;
+
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.FLEXIBLE_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
+import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY;
 
 public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration {
 
@@ -18,11 +26,14 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
         pageBuilder
             .page("rentArrearsOrBreachOfTenancyGround", this::midEvent)
             .pageLabel(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel())
-            .showCondition("tenancy_TypeOfTenancyLicence=\"SECURE_TENANCY\""
-                               + " OR tenancy_TypeOfTenancyLicence=\"FLEXIBLE_TENANCY\""
-                               + " AND secureOrFlexibleDiscretionaryGroundsCONTAINS"
-                               + "\"RENT_ARREARS_OR_BREACH_OF_TENANCY\""
-                               + " AND legislativeCountry=\"England\"")
+            .showWhen(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                .is(SECURE_TENANCY)
+                .or(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                    .is(FLEXIBLE_TENANCY))
+                .and(when(PCSCase::getSecureOrFlexiblePossessionGrounds,
+                    SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds)
+                    .contains(RENT_ARREARS_OR_BREACH_OF_TENANCY))
+                .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
             .label("rentArrearsOrBreachOfTenancyGround-lineSeparator", "---")
             .mandatory(PCSCase::getRentArrearsOrBreachOfTenancy)
             .label("rentArrearsOrBreachOfTenancyGround-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

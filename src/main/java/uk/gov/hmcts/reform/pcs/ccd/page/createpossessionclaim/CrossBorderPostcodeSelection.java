@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.createpossessionclaim;
 
-import static uk.gov.hmcts.reform.pcs.ccd.ShowConditions.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
+import uk.gov.hmcts.reform.pcs.ccd.domain.PostcodeNotAssignedView;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -33,7 +35,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         pageBuilder
             .page("crossBorderPostcodeSelection", this::midEvent)
             .pageLabel("Border postcode")
-            .showCondition("showCrossBorderPage=\"Yes\"")
+            .showWhen(when(PCSCase::getShowCrossBorderPage).is(YesOrNo.YES))
             .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
             .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW, true)
             .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
@@ -108,10 +110,10 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
 
                 // Determine which view to show based on selected country
-                String view = switch (selectedCountry) {
-                    case ENGLAND -> "ENGLAND";
-                    case WALES -> "WALES";
-                    default -> "ALL_COUNTRIES";
+                PostcodeNotAssignedView view = switch (selectedCountry) {
+                    case ENGLAND -> PostcodeNotAssignedView.ENGLAND;
+                    case WALES -> PostcodeNotAssignedView.WALES;
+                    default -> PostcodeNotAssignedView.ALL_COUNTRIES;
                 };
                 caseData.setPostcodeNotAssignedView(view);
             }
