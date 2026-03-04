@@ -14,11 +14,11 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ShowConditionsEnforcementType {
 
-    private static final ShowCondition.FieldRef SELECT_ENFORCEMENT_TYPE =
-        ref(EnforcementOrder::getSelectEnforcementType);
-
-    public static final ShowCondition WARRANT_FLOW = is(SELECT_ENFORCEMENT_TYPE, WARRANT);
-    public static final ShowCondition WRIT_FLOW = is(SELECT_ENFORCEMENT_TYPE, WRIT);
-    public static final ShowCondition WARRANT_OF_RESTITUTION_FLOW = is(SELECT_ENFORCEMENT_TYPE, WARRANT_OF_RESTITUTION);
+    public static final ShowCondition WARRANT_FLOW =
+        is(ref(EnforcementOrder::getSelectEnforcementType), WARRANT);
+    public static final ShowCondition WRIT_FLOW =
+        is(ref(EnforcementOrder::getSelectEnforcementType), WRIT);
+    public static final ShowCondition WARRANT_OF_RESTITUTION_FLOW =
+        is(ref(EnforcementOrder::getSelectEnforcementType), WARRANT_OF_RESTITUTION);
 
 }
