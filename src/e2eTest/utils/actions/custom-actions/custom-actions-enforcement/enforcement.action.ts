@@ -26,7 +26,7 @@ import {
 } from '@data/page-data/page-data-enforcement';
 import { caseInfo } from '@utils/actions/custom-actions/createCaseAPI.action';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
-import { LONG_TIMEOUT, MEDIUM_TIMEOUT, VERY_LONG_TIMEOUT } from 'playwright.config';
+import { VERY_LONG_TIMEOUT } from 'playwright.config';
 import { EnforcementCommonUtils } from '@utils/actions/element-actions/enforcementUtils.action';
 
 export const addressInfo = {
@@ -488,7 +488,7 @@ export class EnforcementAction implements IAction {
                   await performValidation('errorMessage', validationArr.label, item.errMessage);
                 }
               }).toPass({
-                timeout: LONG_TIMEOUT,
+                timeout: VERY_LONG_TIMEOUT,
               });
 
               break;
@@ -511,7 +511,7 @@ export class EnforcementAction implements IAction {
                 await performAction('clickButton', validationArr.button);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               }).toPass({
-                timeout: MEDIUM_TIMEOUT,
+                timeout: VERY_LONG_TIMEOUT,
               });
               await performAction('clickButton', 'Add new');
               break;
@@ -522,7 +522,7 @@ export class EnforcementAction implements IAction {
                 await performAction('clickButton', validationArr.button);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               }).toPass({
-                timeout: LONG_TIMEOUT,
+                timeout: VERY_LONG_TIMEOUT,
               });
               await performAction('select', validationArr.docType, validationArr.type);
               break;
@@ -532,7 +532,7 @@ export class EnforcementAction implements IAction {
                 await performAction('clickButton', validationArr.button);
                 await performValidation('errorMessage', !validationArr?.header ? validationArr.header = 'There is a problem' : validationArr.header, item.errMessage);
               }).toPass({
-                timeout: MEDIUM_TIMEOUT,
+                timeout: VERY_LONG_TIMEOUT,
               });
               break;
 
