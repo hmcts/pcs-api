@@ -30,6 +30,7 @@ export class UploadFileAction implements IAction {
       if (await rateLimit.count() > 0) {
         await page.waitForTimeout(6000);
         await fileInput.last().setInputFiles(filePath);
+        await performValidation('waitUntilElementDisappears', 'Uploading...');
       }
     }).toPass({
       timeout: MEDIUM_TIMEOUT + MEDIUM_TIMEOUT,
