@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.allOf;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.OTHER;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.STANDARD_CONTRACT;
@@ -41,12 +43,11 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
         pageBuilder
             .page("groundsForPossessionWales", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showWhen(when(PCSCase::getLegislativeCountry).is(WALES)
-                .and(when(PCSCase::getOccupationLicenceDetailsWales,
-                    OccupationLicenceDetailsWales::getOccupationLicenceTypeWales).is(STANDARD_CONTRACT))
-                .or(when(PCSCase::getLegislativeCountry).is(WALES)
-                    .and(when(PCSCase::getOccupationLicenceDetailsWales,
-                        OccupationLicenceDetailsWales::getOccupationLicenceTypeWales).is(OTHER))))
+            .showWhen(allOf(
+                when(PCSCase::getLegislativeCountry).is(WALES),
+                when(PCSCase::getOccupationLicenceDetailsWales,
+                    OccupationLicenceDetailsWales::getOccupationLicenceTypeWales)
+                    .isAnyOf(STANDARD_CONTRACT, OTHER)))
             .label(
                 "groundsForPossessionWales-info",
                 """
@@ -72,10 +73,6 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
                 .optional(GroundsForPossessionWales::getMandatoryGrounds)
                 .done()
             .label("groundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-    }
-
-    private static ShowCondition contains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
-        return field.contains(value);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(

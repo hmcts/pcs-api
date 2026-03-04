@@ -7,6 +7,7 @@ import uk.gov.hmcts.ccd.sdk.api.CaseDetails;
 import uk.gov.hmcts.ccd.sdk.api.ShowCondition;
 import uk.gov.hmcts.ccd.sdk.api.callback.AboutToStartOrSubmitResponse;
 import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
@@ -399,10 +400,6 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
             )
             .done()
             .labelWhen("noRentArrearsGroundsForPossessionReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-    }
-
-    private static ShowCondition contains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
-        return field.contains(value);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

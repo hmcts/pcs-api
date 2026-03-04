@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.postcodecourt.model.LegislativeCountry.WALES;
 
@@ -597,10 +598,6 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
             .done()
             .labelWhen("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-    }
-
-    private static ShowCondition contains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
-        return field.contains(value);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

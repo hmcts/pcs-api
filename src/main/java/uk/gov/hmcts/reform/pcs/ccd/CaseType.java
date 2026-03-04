@@ -10,7 +10,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import static java.lang.System.getenv;
 import static java.util.Optional.ofNullable;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER;
-import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.stateIs;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.stateIsNot;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.State.AWAITING_SUBMISSION_TO_HMCTS;
@@ -68,8 +67,8 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("nextSteps", "Next steps")
             .showWhen(stateIs(AWAITING_SUBMISSION_TO_HMCTS))
-            .label("nextStepsMarkdownLabel", null, "${nextStepsMarkdown}")
-            .field(PCSCase::getNextStepsMarkdown, NEVER_SHOW);
+            .label("nextStepsMarkdownLabel", (String) null, "${nextStepsMarkdown}")
+            .field(PCSCase::getNextStepsMarkdown, NEVER);
 
         builder.tab("summary", "Summary")
             .showWhen(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))

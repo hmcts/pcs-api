@@ -18,6 +18,7 @@ import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 
 import java.util.Set;
 
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.OccupationLicenceTypeWales.SECURE_CONTRACT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.wales.SecureContractDiscretionaryGroundsWales.ANTISOCIAL_BEHAVIOUR_S157;
@@ -63,10 +64,6 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                 .optional(SecureContractGroundsForPossessionWales::getMandatoryGrounds)
                 .done()
                 .label("secureOrFlexibleGroundsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
-    }
-
-    private static ShowCondition contains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
-        return field.contains(value);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

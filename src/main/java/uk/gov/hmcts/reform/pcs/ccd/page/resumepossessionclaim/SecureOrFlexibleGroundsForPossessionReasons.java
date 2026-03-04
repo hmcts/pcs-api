@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.allOf;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.anyOf;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.contains;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.FLEXIBLE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.TenancyLicenceType.SECURE_TENANCY;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.grounds.SecureOrFlexibleDiscretionaryGrounds.DOMESTIC_VIOLENCE;
@@ -59,6 +62,14 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
     private static final String BREACH_OF_TENANCY_GROUND_LABEL = "Breach of the tenancy (ground 1)";
     private static final String SAVE_AND_RETURN_LABEL_ID =
         "secureOrFlexibleGroundsForPossessionReasons-saveAndReturn";
+    private static final ShowCondition SHOW_BREACH_OF_TENANCY_TEXTAREA =
+        when(PCSCase::getShowBreachOfTenancyTextarea).is(YesOrNo.YES);
+    private static final ShowCondition SHOW_REASONS_FOR_GROUNDS_PAGE =
+        when(PCSCase::getShowReasonsForGroundsPage).is(YesOrNo.YES);
+    private static final ShowCondition IS_ENGLAND =
+        when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND);
+    private static final ShowCondition IS_FLEXIBLE_TENANCY =
+        when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence).is(FLEXIBLE_TENANCY);
     private static final ShowCondition.NamedFieldCondition MANDATORY_GROUNDS = when(
         PCSCase::getSecureOrFlexiblePossessionGrounds,
         SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleMandatoryGrounds
@@ -79,16 +90,13 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
         pageBuilder
             .page("secureOrFlexibleGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showWhen(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
-                .is(SECURE_TENANCY)
-                .or(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
-                    .is(FLEXIBLE_TENANCY)
-                    .and(when(PCSCase::getShowBreachOfTenancyTextarea).is(YesOrNo.YES))
-                    .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
-                .or(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
-                    .is(FLEXIBLE_TENANCY)
-                    .and(when(PCSCase::getShowReasonsForGroundsPage).is(YesOrNo.YES))
-                    .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))))
+            .showWhen(anyOf(
+                when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+                    .is(SECURE_TENANCY),
+                allOf(
+                    IS_FLEXIBLE_TENANCY,
+                    IS_ENGLAND,
+                    anyOf(SHOW_BREACH_OF_TENANCY_TEXTAREA, SHOW_REASONS_FOR_GROUNDS_PAGE))))
             .labelWhen("possessionReasons-lineSeparator","---")
             .complex(PCSCase::getSecureOrFlexibleGroundsReasons)
 
@@ -99,9 +107,13 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                 </h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                 Why are you making a claim for possession under this ground?</h3>
-                """, showBreachContains(DISCRETIONARY_GROUNDS, RENT_ARREARS_OR_BREACH_OF_TENANCY))
+                """, allOf(
+                    SHOW_BREACH_OF_TENANCY_TEXTAREA,
+                    contains(DISCRETIONARY_GROUNDS, RENT_ARREARS_OR_BREACH_OF_TENANCY)))
             .mandatoryWhen(SecureOrFlexibleGroundsReasons::getBreachOfTenancyGround,
-                showBreachContains(DISCRETIONARY_GROUNDS, RENT_ARREARS_OR_BREACH_OF_TENANCY))
+                allOf(
+                    SHOW_BREACH_OF_TENANCY_TEXTAREA,
+                    contains(DISCRETIONARY_GROUNDS, RENT_ARREARS_OR_BREACH_OF_TENANCY)))
 
             .labelWhen("possessionReasons-nuisanceOrImmoralUse-label",
                    """
@@ -447,15 +459,6 @@ public class SecureOrFlexibleGroundsForPossessionReasons implements CcdPageConfi
                 .readonly(PCSCase::getShowReasonsForGroundsPage,NEVER_SHOW)
                 .labelWhen(SAVE_AND_RETURN_LABEL_ID, CommonPageContent.SAVE_AND_RETURN);
 
-    }
-
-    private static ShowCondition contains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
-        return field.contains(value);
-    }
-
-    private static ShowCondition showBreachContains(ShowCondition.NamedFieldCondition field, Enum<?> value) {
-        return when(PCSCase::getShowBreachOfTenancyTextarea).is(YesOrNo.YES)
-            .and(field.contains(value));
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,
