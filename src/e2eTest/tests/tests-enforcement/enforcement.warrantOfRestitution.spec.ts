@@ -4,7 +4,10 @@ import { initializeEnforcementExecutor, performAction, performValidation } from 
 import { caseSummary } from '@data/page-data';
 import {
   yourApplication,
-  peopleWillBeEvicted
+  peopleWillBeEvicted,
+  explainHowDefendantsReturned,
+  shareEvidenceWithJudge,
+  provideEvidence,
 } from '@data/page-data/page-data-enforcement';
 import { createCaseApiData, submitCaseApiData } from '@data/api-data';
 import { defendantDetails, fieldsMap, moneyMap } from '@utils/actions/custom-actions/custom-actions-enforcement/enforcement.action';
@@ -90,7 +93,21 @@ test.describe('[Enforcement - Warrant of Restitution]', async () => {
       await performAction('selectApplicationType', {
         question: yourApplication.typeOfApplicationQuestion,
         option: yourApplication.typeOfApplicationOptions.warrantOfRestitution,
-        nextPage: peopleWillBeEvicted.mainHeaderWarrantOfRestitution
+        nextPage: shareEvidenceWithJudge.mainHeader
+      });
+      await performAction('reTryOnCallBackError', shareEvidenceWithJudge.continueButton, explainHowDefendantsReturned.mainHeader);
+      await performAction('inputErrorValidation', {
+        validationReq: explainHowDefendantsReturned.errorValidation,
+        validationType: explainHowDefendantsReturned.errorValidationType.two,
+        inputArray: explainHowDefendantsReturned.errorValidationField.errorTextField,
+        header: explainHowDefendantsReturned.eventCouldNotBeCreatedErrorMessage,
+        label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
+        button: explainHowDefendantsReturned.continueButton
+      });
+      await performAction('provideHowDefendantReturnToProperty', {
+        label: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextLabel,
+        input: explainHowDefendantsReturned.howDidTheDefendantsReturnToThePropertyTextInput,
+        nextPage: provideEvidence.mainHeader
       });
     });
 });

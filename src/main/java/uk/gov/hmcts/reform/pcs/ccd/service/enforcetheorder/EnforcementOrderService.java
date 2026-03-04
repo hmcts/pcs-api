@@ -12,8 +12,8 @@ import uk.gov.hmcts.reform.pcs.ccd.entity.PcsCaseEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementOrderEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.EnforcementSelectedDefendantEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementRiskProfileEntity;
-import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writofrestitution.WritOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrant.EnforcementWarrantEntity;
+import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.writofrestitution.WritOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.entity.enforcetheorder.warrantofrestitution.WarrantOfRestitutionEntity;
 import uk.gov.hmcts.reform.pcs.ccd.event.EventId;
 import uk.gov.hmcts.reform.pcs.ccd.repository.PcsCaseRepository;
@@ -73,18 +73,20 @@ public class EnforcementOrderService {
         enforcementOrderEntity.setEnforcementOrder(enforcementOrder);
 
         EnforcementOrderEntity saved = enforcementOrderRepository.save(enforcementOrderEntity);
+
+        createSelectedDefendants(saved);
+
         if (SelectEnforcementType.WARRANT == enforcementOrder.getSelectEnforcementType()
             && enforcementOrder.getWarrantDetails() != null) {
             EnforcementRiskProfileEntity riskProfile =
-                enforcementRiskProfileMapper.toEntity(enforcementOrderEntity, enforcementOrder);
+                enforcementRiskProfileMapper.toEntity(saved, enforcementOrder);
             enforcementRiskProfileRepository.save(riskProfile);
             storeWarrant(enforcementOrder, saved);
         } else if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WARRANT_OF_RESTITUTION) {
-            createWarrantOfRestitution(enforcementOrderEntity);
+            createWarrantOfRestitution(saved);
         } else if (enforcementOrder.getSelectEnforcementType() == SelectEnforcementType.WRIT_OF_RESTITUTION) {
-            createWritOfRestitutionEntity(enforcementOrderEntity);
+            createWritOfRestitutionEntity(saved);
         }
-        createSelectedDefendants(enforcementOrderEntity);
     }
 
     private void createSelectedDefendants(EnforcementOrderEntity enforcementOrderEntity) {
