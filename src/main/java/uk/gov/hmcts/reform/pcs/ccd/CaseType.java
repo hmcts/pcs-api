@@ -67,7 +67,7 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
 
         builder.tab("nextSteps", "Next steps")
             .showWhen(stateIs(AWAITING_SUBMISSION_TO_HMCTS))
-            .label("nextStepsMarkdownLabel", (String) null, "${nextStepsMarkdown}")
+            .label("nextStepsMarkdownLabel", "${nextStepsMarkdown}")
             .field(PCSCase::getNextStepsMarkdown, NEVER);
 
         builder.tab("summary", "Summary")
