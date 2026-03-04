@@ -432,7 +432,7 @@ class SubmitEventHandlerTest {
         // Given - Only defendantResponses, defendantContactDetails is null
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.YES)
-            .rent_arrears_amount_confirmation(YesNoNotSure.NO)
+            .oweRentArrears(YesNoNotSure.NO)
             .build();
 
         PossessionClaimResponse response = PossessionClaimResponse.builder()
@@ -534,7 +534,7 @@ class SubmitEventHandlerTest {
         // Given
         DefendantResponses responses = DefendantResponses.builder()
             .tenancyTypeCorrect(YesNoNotSure.NO)
-            .rent_arrears_amount_confirmation(YesNoNotSure.YES)
+            .oweRentArrears(YesNoNotSure.YES)
             .build();
 
         DefendantContactDetails contactDetails = DefendantContactDetails.builder()
