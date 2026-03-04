@@ -114,11 +114,11 @@ withPipeline(type, product, component) {
     generateDefinitions(builder)
   }
 
-  afterAlways('smokeTest:preview') {
+  afterAlways('smoketest:preview') {
     archiveSmokeTestReports()
   }
 
-  afterAlways('smokeTest:aat') {
+  afterAlways('smoketest:aat') {
     archiveSmokeTestReports()
   }
 
