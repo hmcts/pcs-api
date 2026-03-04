@@ -52,7 +52,10 @@ withPipeline(type, product, component) {
     ])
     setPreviewEnvVars()
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "pr-values:ccd").size() > 0) {
+      env.CCD_ENABLED = "true"
       enableHighLevelDataSetup()
+    } else {
+      env.CCD_ENABLED = "false"
     }
     if (githubApi.getLabelsbyPattern(env.BRANCH_NAME, "enable_e2e_full_regression").size() > 0) {
       env.E2E_SUITE = "chrome"
@@ -111,6 +114,14 @@ withPipeline(type, product, component) {
     generateDefinitions(builder)
   }
 
+  afterAlways('smoketest:preview') {
+    archiveSmokeTestReports()
+  }
+
+  afterAlways('smoketest:aat') {
+    archiveSmokeTestReports()
+  }
+
   afterAlways('functionalTest:preview') {
     archiveFunctionalTestReports()
   }
@@ -167,6 +178,19 @@ def archiveFunctionalTestReports() {
   ])
 
   archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-functional-tests/*'
+}
+
+def archiveSmokeTestReports() {
+  publishHTML([
+    allowMissing: true,
+    alwaysLinkToLastBuild: true,
+    keepAll: true,
+    reportDir: "report-for-smoke-tests",
+    reportFiles: 'index.html',
+    reportName: 'API Smoke Test Report'
+  ])
+
+  archiveArtifacts allowEmptyArchive: true, artifacts: '**/report-for-smoke-tests/*'
 }
 
 def archiveE2eTestReports() {

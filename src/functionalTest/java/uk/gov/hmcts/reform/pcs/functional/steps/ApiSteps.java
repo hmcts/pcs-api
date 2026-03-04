@@ -174,20 +174,27 @@ public class ApiSteps {
 
     @Step("a case for {0} is created")
     public Long ccdCaseIsCreated(String legislativeCountry) {
-        caseId = SerenityRest.given()
-            .baseUri(baseUrl)
-            .contentType(ContentType.JSON)
-            .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
-            .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
-            .pathParam("legislativeCountry", legislativeCountry)
-            .when()
-            .post(Endpoints.CreateTestCase.getResource())
-            .then()
-            .statusCode(201)
-            .extract()
-            .path("caseId");
+        final int maxAttempts = 3;
 
-        return caseId;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            var response = SerenityRest.given()
+                .baseUri(baseUrl)
+                .contentType(ContentType.JSON)
+                .header(TestConstants.AUTHORIZATION, "Bearer " + solicitorUserIdamToken)
+                .header(TestConstants.SERVICE_AUTHORIZATION, pcsApiS2sToken)
+                .pathParam("legislativeCountry", legislativeCountry)
+                .when()
+                .post(Endpoints.CreateTestCase.getResource());
+
+            if (response.statusCode() == 201) {
+                return response.then().extract().path("caseId");
+            }
+
+            if (attempt == maxAttempts) {
+                response.then().statusCode(201);
+            }
+        }
+        throw new IllegalStateException("Unexpected retry failure");
     }
 
     @Step("a pin is fetched")
