@@ -53,7 +53,7 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
         pageBuilder
             .page("introductoryDemotedOtherGroundsReasons", this::midEvent)
             .pageLabel("Reasons for possession ")
-            .showWhen(when(PCSCase::getShowIntroductoryDemotedOtherGroundReasonPage).is(YesOrNo.YES)
+            .showCondition(when(PCSCase::getShowIntroductoryDemotedOtherGroundReasonPage).is(YesOrNo.YES)
                 .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                     .isNot(TenancyLicenceType.ASSURED_TENANCY))
                 .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
@@ -62,47 +62,47 @@ public class IntroductoryDemotedOtherGroundsReasons implements CcdPageConfigurat
                     .isNot(TenancyLicenceType.FLEXIBLE_TENANCY))
                 .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
             .complex(PCSCase::getIntroductoryDemotedOtherGroundReason)
-            .labelWhen("introductoryDemotedOtherGroundsReasons-antiSocial-label","""
+            .label("introductoryDemotedOtherGroundsReasons-antiSocial-label","""
                 ---
                 <h2 class="govuk-heading-l" tabindex="0">Antisocial behaviour</h2>
                 <h3 class="govuk-heading-m" tabindex="0" >
                     Why are you making a claim for possession under this ground?
                 </h3>
                 """, ANTI_SOCIAL_SELECTED)
-            .mandatoryWhen(IntroductoryDemotedOtherGroundReason::getAntiSocialBehaviourGround,
+            .mandatory(IntroductoryDemotedOtherGroundReason::getAntiSocialBehaviourGround,
                 ANTI_SOCIAL_SELECTED)
 
-            .labelWhen("introductoryDemotedOtherGroundsReasons-breachOfTenancy-label","""
+            .label("introductoryDemotedOtherGroundsReasons-breachOfTenancy-label","""
                 ---
                 <h2 class="govuk-heading-l" tabindex="0">Breach of the tenancy</h2>
                 <h3 class="govuk-heading-m" tabindex="0">
                     Why are you making a claim for possession under this ground?
                 </h3>
                 """, BREACH_SELECTED)
-            .mandatoryWhen(IntroductoryDemotedOtherGroundReason::getBreachOfTheTenancyGround,
+            .mandatory(IntroductoryDemotedOtherGroundReason::getBreachOfTheTenancyGround,
                 BREACH_SELECTED)
 
-            .labelWhen("introductoryDemotedOtherGroundsReasons-absoluteGrounds-label","""
+            .label("introductoryDemotedOtherGroundsReasons-absoluteGrounds-label","""
                 ---
                 <h2 class="govuk-heading-l" tabindex="0">Absolute grounds</h2>
                 <h3 class="govuk-heading-m" tabindex="0"> Why are you claiming possession?</h3>
                 """, ABSOLUTE_SELECTED)
-            .mandatoryWhen(IntroductoryDemotedOtherGroundReason::getAbsoluteGrounds,
+            .mandatory(IntroductoryDemotedOtherGroundReason::getAbsoluteGrounds,
                 ABSOLUTE_SELECTED)
 
-            .labelWhen("introductoryDemotedOtherGroundsReasons-otherGround-label","""
+            .label("introductoryDemotedOtherGroundsReasons-otherGround-label","""
                 ---
                 <h2 class="govuk-heading-l" tabindex="0">Other grounds</h2>
                 <h3 class="govuk-heading-m" tabindex="0"> Why are you claiming possession?</h3>
                 """, OTHER_SELECTED)
-            .mandatoryWhen(IntroductoryDemotedOtherGroundReason::getOtherGround,
+            .mandatory(IntroductoryDemotedOtherGroundReason::getOtherGround,
                 OTHER_SELECTED)
-            .labelWhen("introductoryDemotedOtherGroundsReasons-noGrounds-label","""
+            .label("introductoryDemotedOtherGroundsReasons-noGrounds-label","""
                 ---
                 <h2 class="govuk-heading-l" tabindex="0">No grounds</h2>
                 <h3 class="govuk-heading-m" tabindex="0"> Why are you claiming possession?</h3>
                 """, NO_GROUNDS_SELECTED)
-            .mandatoryWhen(IntroductoryDemotedOtherGroundReason::getNoGrounds,
+            .mandatory(IntroductoryDemotedOtherGroundReason::getNoGrounds,
                 NO_GROUNDS_SELECTED)
             .done()
             .label("introductoryDemotedOtherGroundsReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

@@ -34,7 +34,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
         pageBuilder
             .page("postcodeNotAssignedToCourt", this::midEvent)
             .pageLabel("You cannot use this online service")
-            .showWhen(SHOW_PAGE)
+            .showCondition(SHOW_PAGE)
             .readonly(PCSCase::getShowPostcodeNotAssignedToCourt, NEVER_SHOW)
             .readonly(PCSCase::getPostcodeNotAssignedView, NEVER_SHOW)
             .label(
@@ -50,7 +50,7 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 <h3 class="govuk-heading-s govuk-!-font-size-19">What to do next</h3>
                 """
             )
-            .labelWhen(
+            .label(
                 "postcodeNotAssignedToCourt-england",
                 """
                 <ul class="govuk-list govuk-list--bullet">
@@ -66,14 +66,14 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
                 """.formatted(PCOL_LINK),
                 SHOW_ENGLAND
             )
-            .labelWhen(
+            .label(
                 "postcodeNotAssignedToCourt-wales",
                 """
                 <p class="govuk-body">Use form N5 Wales and the correct particulars of claim form.</p>
                 """,
                 SHOW_WALES
             )
-            .labelWhen(
+            .label(
                 "postcodeNotAssignedToCourt-all",
                 """
                 <ul class="govuk-list govuk-list--bullet">

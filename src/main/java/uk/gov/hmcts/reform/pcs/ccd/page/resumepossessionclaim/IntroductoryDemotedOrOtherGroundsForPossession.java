@@ -39,7 +39,7 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
         pageBuilder
             .page("introductoryDemotedOrOtherGroundsForPossession", this::midEvent)
             .pageLabel("Grounds for possession")
-            .showWhen(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+            .showCondition(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                 .is(INTRODUCTORY_TENANCY)
                 .or(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                     .is(DEMOTED_TENANCY))
@@ -68,11 +68,11 @@ public class IntroductoryDemotedOrOtherGroundsForPossession implements CcdPageCo
                        """)
                 .mandatory(
                     IntroductoryDemotedOtherGroundsForPossession::getHasIntroductoryDemotedOtherGroundsForPossession)
-                .mandatoryWhen(IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds,
+                .mandatory(IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds,
                     when(PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession,
                         IntroductoryDemotedOtherGroundsForPossession
                             ::getHasIntroductoryDemotedOtherGroundsForPossession).is(VerticalYesNo.YES))
-                .mandatoryWhen(IntroductoryDemotedOtherGroundsForPossession::getOtherGroundDescription,
+                .mandatory(IntroductoryDemotedOtherGroundsForPossession::getOtherGroundDescription,
                     when(PCSCase::getIntroductoryDemotedOrOtherGroundsForPossession,
                         IntroductoryDemotedOtherGroundsForPossession::getIntroductoryDemotedOrOtherGrounds)
                         .contains(IntroductoryDemotedOrOtherGrounds.OTHER)

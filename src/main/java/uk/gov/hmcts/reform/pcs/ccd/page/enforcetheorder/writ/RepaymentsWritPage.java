@@ -20,7 +20,7 @@ public class RepaymentsWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("repayments-writ")
             .pageLabel("Repayments")
-            .showWhen(ShowConditionsEnforcementType.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("repayments-writ-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
@@ -29,7 +29,7 @@ public class RepaymentsWritPage implements CcdPageConfiguration {
             .readonly(RepaymentCosts::getRepaymentSummaryMarkdown, NEVER_SHOW, true)
             .label("repayments-writ-table-content", "${writRepaymentSummaryMarkdown}")
             .mandatory(RepaymentCosts::getRepaymentChoice)
-            .mandatoryWhen(RepaymentCosts::getAmountOfRepaymentCosts, when(EnforcementOrder::getWritDetails,
+            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, when(EnforcementOrder::getWritDetails,
                 WritDetails::getRepaymentCosts, RepaymentCosts::getRepaymentChoice).is(SOME))
             .done()
             .done()

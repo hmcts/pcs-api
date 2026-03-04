@@ -163,7 +163,7 @@ public class ResumePossessionClaim implements CCDConfig<PCSCase, State, UserRole
                 .decentralisedEvent(resumePossessionClaim.name(), this::submit, this::start)
                 .forState(AWAITING_SUBMISSION_TO_HMCTS)
                 .name("Make a claim")
-                .showWhen(NEVER)
+                .showCondition(NEVER)
                 .grant(Permission.CRUD, UserRole.PCS_SOLICITOR)
                 .showSummary();
 

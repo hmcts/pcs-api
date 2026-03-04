@@ -31,7 +31,7 @@ public class DefendantsDOBPage implements CcdPageConfiguration {
         pageBuilder
             .page("knownDefendantsDOBInformation", this::midEvent)
             .pageLabel("Enter the defendants’ dates of birth")
-            .showWhen(WARRANT_FLOW.and(
+            .showCondition(WARRANT_FLOW.and(
                 when(EnforcementOrder::getWarrantDetails, WarrantDetails::getDefendantsDOBKnown).is(VerticalYesNo.YES)))
             .label("knownDefendantsDOBInformation-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)

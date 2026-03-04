@@ -17,7 +17,7 @@ public class StatementOfTruth implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder.page("statementOfTruth")
             .pageLabel("Statement of truth")
-            .showWhen(when(PCSCase::getCompletionNextStep).is(CompletionNextStep.SUBMIT_AND_PAY_NOW))
+            .showCondition(when(PCSCase::getCompletionNextStep).is(CompletionNextStep.SUBMIT_AND_PAY_NOW))
             .label("statementOfTruth-body",
                 """
                 ---
@@ -30,22 +30,22 @@ public class StatementOfTruth implements CcdPageConfiguration {
             )
             .complex(PCSCase::getStatementOfTruth)
                 .mandatory(StatementOfTruthDetails::getCompletedBy)
-                .mandatoryWhen(StatementOfTruthDetails::getAgreementClaimant,
+                .mandatory(StatementOfTruthDetails::getAgreementClaimant,
                     when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy).is(CLAIMANT))
-                .mandatoryWhen(StatementOfTruthDetails::getFullNameClaimant,
+                .mandatory(StatementOfTruthDetails::getFullNameClaimant,
                     when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy).is(CLAIMANT))
-                .mandatoryWhen(StatementOfTruthDetails::getPositionClaimant,
+                .mandatory(StatementOfTruthDetails::getPositionClaimant,
                     when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy).is(CLAIMANT))
-                .mandatoryWhen(StatementOfTruthDetails::getAgreementLegalRep,
+                .mandatory(StatementOfTruthDetails::getAgreementLegalRep,
                     when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy)
                         .is(LEGAL_REPRESENTATIVE))
-                .mandatoryWhen(StatementOfTruthDetails::getFullNameLegalRep,
+                .mandatory(StatementOfTruthDetails::getFullNameLegalRep,
                     when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy)
                         .is(LEGAL_REPRESENTATIVE))
-                .mandatoryWhen(StatementOfTruthDetails::getFirmNameLegalRep,
+                .mandatory(StatementOfTruthDetails::getFirmNameLegalRep,
                     when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy)
                         .is(LEGAL_REPRESENTATIVE))
-                .mandatoryWhen(StatementOfTruthDetails::getPositionLegalRep,
+                .mandatory(StatementOfTruthDetails::getPositionLegalRep,
                     when(PCSCase::getStatementOfTruth, StatementOfTruthDetails::getCompletedBy)
                         .is(LEGAL_REPRESENTATIVE))
             .done()

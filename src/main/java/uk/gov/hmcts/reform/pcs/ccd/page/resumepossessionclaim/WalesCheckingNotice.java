@@ -27,7 +27,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
         pageBuilder
             .page("walesCheckingNotice", this::midEvent)
             .pageLabel("Notice of your intention to begin possession proceedings")
-            .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
+            .showCondition(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
             .label("walesCheckingNotice-info",
                    """
                    ---
@@ -53,7 +53,7 @@ public class WalesCheckingNotice implements CcdPageConfiguration {
                    """)
             .complex(PCSCase::getWalesNoticeDetails)
             .mandatory(WalesNoticeDetails::getNoticeServed)
-            .mandatoryWhen(WalesNoticeDetails::getTypeOfNoticeServed, when(PCSCase::getWalesNoticeDetails,
+            .mandatory(WalesNoticeDetails::getTypeOfNoticeServed, when(PCSCase::getWalesNoticeDetails,
                 WalesNoticeDetails::getNoticeServed).is(YesOrNo.YES))
             .done()
             .label("walesCheckingNotice-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

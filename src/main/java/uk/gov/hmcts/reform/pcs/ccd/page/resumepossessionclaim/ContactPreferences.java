@@ -72,7 +72,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     </p>
                     """)
             .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactEmail)
-            .mandatoryWhen(ClaimantContactPreferences::getOverriddenClaimantContactEmail, INCORRECT_EMAIL_ADDRESS)
+            .mandatory(ClaimantContactPreferences::getOverriddenClaimantContactEmail, INCORRECT_EMAIL_ADDRESS)
             .done()
 
             // Address section
@@ -81,7 +81,7 @@ public class ContactPreferences implements CcdPageConfiguration {
             // Address found
             .readonly(ClaimantContactPreferences::getOrganisationAddress, NEVER_SHOW, true)
             .readonly(ClaimantContactPreferences::getFormattedClaimantContactAddress, NEVER_SHOW)
-            .labelWhen("contactPreferences-address-info-yes", """
+            .label("contactPreferences-address-info-yes", """
                     ----
                     <h2 class="govuk-heading-m">Correspondence address</h2>
                     <p class="govuk-body-m">
@@ -91,7 +91,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                         the address registered with My HMCTS.
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .labelWhen("contactPreferences-address-registered", """
+            .label("contactPreferences-address-registered", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         Your organisation’s My HMCTS registered address is:
                     </h3>
@@ -99,10 +99,10 @@ public class ContactPreferences implements CcdPageConfiguration {
                         ${formattedClaimantContactAddress}
                     </p>
                     """, ORG_ADDRESS_FOUND)
-            .mandatoryWhen(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, ORG_ADDRESS_FOUND)
+            .mandatory(ClaimantContactPreferences::getIsCorrectClaimantContactAddress, ORG_ADDRESS_FOUND)
 
             // Address not found
-            .labelWhen("contactPreferences-address-info-no", """
+            .label("contactPreferences-address-info-no", """
                 ----
                 <h2 class="govuk-heading-m">Correspondence address</h2>
                 <p class="govuk-body-m">
@@ -110,7 +110,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     My HMCTS.
                 </p>
                 """, ORG_ADDRESS_NOT_FOUND)
-            .labelWhen("contactPreferences-address-missing", """
+            .label("contactPreferences-address-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         We could not retrieve your organisation’s correspondence address that’s linked to your My
                         HMCTS account
@@ -121,7 +121,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     """, ORG_ADDRESS_NOT_FOUND)
 
             // Rest of address
-            .complexWhen(
+            .complex(
                 ClaimantContactPreferences::getOverriddenClaimantContactAddress,
                 INCORRECT_ADDRESS.or(ORG_ADDRESS_NOT_FOUND)
             )
@@ -145,7 +145,7 @@ public class ContactPreferences implements CcdPageConfiguration {
                     </p>
                     """)
                 .optional(ClaimantContactPreferences::getClaimantProvidePhoneNumber)
-                .mandatoryWhen(ClaimantContactPreferences::getClaimantContactPhoneNumber, PROVIDE_PHONE_NUMBER)
+                .mandatory(ClaimantContactPreferences::getClaimantContactPhoneNumber, PROVIDE_PHONE_NUMBER)
             .done()
             .label("contactPreferences-phoneNumber-separator", "---")
             .label("contactPreferences-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

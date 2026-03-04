@@ -72,7 +72,7 @@ public class ConfirmHCEOfficerPage implements CcdPageConfiguration {
         pageBuilder
             .page("confirmHCEOfficer")
             .pageLabel("Confirm if you have already hired a High Court enforcement officer")
-            .showWhen(ShowConditionsEnforcementType.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("confirmHCEOfficer-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)

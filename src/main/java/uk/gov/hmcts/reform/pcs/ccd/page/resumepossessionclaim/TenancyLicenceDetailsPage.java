@@ -37,7 +37,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
         pageBuilder
             .page("tenancyLicenceDetails", this::midEvent)
             .pageLabel("Tenancy or licence details")
-            .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
+            .showCondition(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
             .label("tenancyLicenceDetails-info", """
                ---
                <h2 class="govuk-heading-m">Tenancy or licence type</h2>
@@ -46,7 +46,7 @@ public class TenancyLicenceDetailsPage implements CcdPageConfiguration {
                 .mandatory(
                     TenancyLicenceDetails::getTypeOfTenancyLicence
                 )
-                .mandatoryWhen(
+                .mandatory(
                     TenancyLicenceDetails::getDetailsOfOtherTypeOfTenancyLicence,
                     when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                         .is(TenancyLicenceType.OTHER)

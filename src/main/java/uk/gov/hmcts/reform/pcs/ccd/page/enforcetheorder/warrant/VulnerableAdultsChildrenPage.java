@@ -36,7 +36,7 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
         pageBuilder
             .page("vulnerableAdultsChildren", this::midEvent)
             .pageLabel("Vulnerable adults and children at the property")
-            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("vulnerableAdultsChildren-line-separator", "---")
             .label(
                 "vulnerableAdultsChildren-information-text", """
@@ -56,10 +56,10 @@ public class VulnerableAdultsChildrenPage implements CcdPageConfiguration {
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getRawWarrantDetails)
             .mandatory(RawWarrantDetails::getVulnerablePeoplePresent)
-            .complexWhen(RawWarrantDetails::getVulnerableAdultsChildren,
+            .complex(RawWarrantDetails::getVulnerableAdultsChildren,
                 when(EnforcementOrder::getRawWarrantDetails, RawWarrantDetails::getVulnerablePeoplePresent).is(YES))
             .mandatory(VulnerableAdultsChildren::getVulnerableCategory)
-            .mandatoryWhen(VulnerableAdultsChildren::getVulnerableReasonText,
+            .mandatory(VulnerableAdultsChildren::getVulnerableReasonText,
                 when(EnforcementOrder::getRawWarrantDetails, RawWarrantDetails::getVulnerablePeoplePresent).is(YES)
                     .and(when(RawWarrantDetails::getVulnerableAdultsChildren,
                         VulnerableAdultsChildren::getVulnerableCategory).isAnyOf(

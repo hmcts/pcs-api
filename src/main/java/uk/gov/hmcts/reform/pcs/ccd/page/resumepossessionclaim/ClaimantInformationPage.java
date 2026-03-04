@@ -33,11 +33,11 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
             .label("claimantInformation-separator", "---")
             .complex(PCSCase::getClaimantInformation)
             .readonly(ClaimantInformation::getOrgNameFound, NEVER_SHOW, true)
-            .readonlyNoSummaryWhen(ClaimantInformation::getClaimantName,
+            .readonlyNoSummary(ClaimantInformation::getClaimantName,
                 when(ClaimantInformation::getOrgNameFound).is(YES))
-            .mandatoryWhen(ClaimantInformation::getIsClaimantNameCorrect,
+            .mandatory(ClaimantInformation::getIsClaimantNameCorrect,
                 when(ClaimantInformation::getOrgNameFound).is(YES))
-            .labelWhen("claimantInformation-name-missing", """
+            .label("claimantInformation-name-missing", """
                     <h3 class="govuk-heading-m govuk-!-margin-bottom-1">
                         We could not retrieve the claimant name linked to your My HMCTS account
                     </h3>
@@ -45,11 +45,11 @@ public class ClaimantInformationPage implements CcdPageConfiguration {
                         You must enter the claimant name you’d like to use for this claim
                     </p>
                     """, when(ClaimantInformation::getOrgNameFound).is(NO))
-            .mandatoryWhen(
+            .mandatory(
                 ClaimantInformation::getOverriddenClaimantName,
                 when(ClaimantInformation::getIsClaimantNameCorrect).is(VerticalYesNo.NO)
             )
-            .mandatoryWhen(
+            .mandatory(
                 ClaimantInformation::getFallbackClaimantName,
                 when(ClaimantInformation::getOrgNameFound).is(NO)
             )

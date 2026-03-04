@@ -66,24 +66,24 @@ public class CaseType implements CCDConfig<PCSCase, State, UserRole> {
             .field(PCSCase::getPropertyAddress, "Property Address");
 
         builder.tab("nextSteps", "Next steps")
-            .showWhen(stateIs(AWAITING_SUBMISSION_TO_HMCTS))
+            .showCondition(stateIs(AWAITING_SUBMISSION_TO_HMCTS))
             .label("nextStepsMarkdownLabel", "${nextStepsMarkdown}")
             .field(PCSCase::getNextStepsMarkdown, NEVER);
 
         builder.tab("summary", "Summary")
-            .showWhen(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
+            .showCondition(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getPropertyAddress);
 
         builder.tab("CaseHistory", "History")
-            .showWhen(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
+            .showCondition(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
             .field("caseHistory");
 
         builder.tab("hidden", "HiddenFields")
-            .showWhen(NEVER)
+            .showCondition(NEVER)
             .field(PCSCase::getCaseTitleMarkdown);
 
         builder.tab("serviceRequest", "Service Request")
-            .showWhen(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
+            .showCondition(stateIsNot(AWAITING_SUBMISSION_TO_HMCTS))
             .field(PCSCase::getWaysToPay);
     }
 }

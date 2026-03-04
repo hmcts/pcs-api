@@ -29,11 +29,11 @@ public class PropertyNotEligible implements CcdPageConfiguration {
         pageBuilder
             .page("propertyNotEligible", this::midEvent)
             .pageLabel("Property not eligible for this online service")
-            .showWhen(when(PCSCase::getShowPropertyNotEligiblePage).is(YesOrNo.YES))
+            .showCondition(when(PCSCase::getShowPropertyNotEligiblePage).is(YesOrNo.YES))
             .readonly(PCSCase::getShowPropertyNotEligiblePage, NEVER_SHOW)
 
             // England and Wales guidance section
-            .labelWhen("propertyNotEligible-england-wales", """
+            .label("propertyNotEligible-england-wales", """
                     <section tabindex="0">
                     <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                     <h2 class="govuk-heading-m">What to do next</h2>
@@ -78,7 +78,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
 
 
             // Scotland-specific guidance section
-            .labelWhen("propertyNotEligible-scotland", """
+            .label("propertyNotEligible-scotland", """
                 <section tabindex="0">
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <h2 class="govuk-heading-m">What to do next</h2>
@@ -100,7 +100,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                 """, when(PCSCase::getLegislativeCountry).is(LegislativeCountry.SCOTLAND))
 
             // Northern Ireland guidance section
-            .labelWhen("propertyNotEligible-northern-ireland", """
+            .label("propertyNotEligible-northern-ireland", """
                 <section tabindex="0">
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <h2 class="govuk-heading-m">What to do next</h2>
@@ -122,7 +122,7 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                 """, when(PCSCase::getLegislativeCountry).is(LegislativeCountry.NORTHERN_IRELAND))
 
             // Channel Islands and Isle of Man guidance section
-            .labelWhen("propertyNotEligible-channel-islands-iom", """
+            .label("propertyNotEligible-channel-islands-iom", """
                 <section tabindex="0">
                 <hr class="govuk-section-break govuk-section-break--l govuk-section-break--visible">
                 <p class="govuk-body">

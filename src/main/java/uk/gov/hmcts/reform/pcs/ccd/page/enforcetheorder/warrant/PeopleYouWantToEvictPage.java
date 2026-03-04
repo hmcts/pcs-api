@@ -23,7 +23,7 @@ public class PeopleYouWantToEvictPage implements CcdPageConfiguration {
         pageBuilder
             .page("peopleYouWantToEvict")
             .pageLabel("The people you want to evict")
-            .showWhen(WARRANT_FLOW.and(
+            .showCondition(WARRANT_FLOW.and(
                 when(EnforcementOrder::getWarrantDetails, WarrantDetails::getShowPeopleYouWantToEvictPage)
                     .is(YesOrNo.YES)))
             .complex(PCSCase::getEnforcementOrder)

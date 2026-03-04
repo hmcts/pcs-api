@@ -30,7 +30,7 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
         pageBuilder
             .page("prohibitedConductWales", this::midEvent)
             .pageLabel("Prohibited conduct standard contract")
-            .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
+            .showCondition(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
             .label("prohibitedConductWales-info", """
                  ---
                 <p class="govuk-body" tabindex="0">
@@ -41,14 +41,14 @@ public class ProhibitedConductWales implements CcdPageConfiguration {
                 <p class="govuk-body" tabindex="0">This is a 12-month probationary contract.</p>
                 """)
             .mandatory(PCSCase::getProhibitedConductWalesClaim)
-            .complexWhen(PCSCase::getPeriodicContractTermsWales, when(PCSCase::getProhibitedConductWalesClaim)
+            .complex(PCSCase::getPeriodicContractTermsWales, when(PCSCase::getProhibitedConductWalesClaim)
                 .is(VerticalYesNo.YES))
                 .mandatory(PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract)
-                .mandatoryWhen(PeriodicContractTermsWales::getDetailsOfTerms,
+                .mandatory(PeriodicContractTermsWales::getDetailsOfTerms,
                     when(PCSCase::getPeriodicContractTermsWales,
                         PeriodicContractTermsWales::getAgreedTermsOfPeriodicContract).is(VerticalYesNo.YES))
             .done()
-            .mandatoryWhen(PCSCase::getProhibitedConductWalesClaimDetails,
+            .mandatory(PCSCase::getProhibitedConductWalesClaimDetails,
                 when(PCSCase::getProhibitedConductWalesClaim).is(VerticalYesNo.YES))
             .label("prohibitedConductWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }

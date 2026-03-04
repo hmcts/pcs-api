@@ -33,7 +33,7 @@ public class ViolentAggressiveRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("violentAggressiveRisk", this::midEvent)
             .pageLabel("Their violent or aggressive behaviour")
-            .showWhen(WARRANT_FLOW
+            .showCondition(WARRANT_FLOW
                 .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getRiskCategories)
                     .contains(RiskCategory.VIOLENT_OR_AGGRESSIVE))
                 .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff)

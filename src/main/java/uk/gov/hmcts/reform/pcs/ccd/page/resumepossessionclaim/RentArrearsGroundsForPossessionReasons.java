@@ -46,16 +46,16 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
         pageBuilder
             .page("rentArrearsGroundsForPossessionReasons", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showWhen(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.YES)
+            .showCondition(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.YES)
                 .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                     .is(TenancyLicenceType.ASSURED_TENANCY))
                 .and(when(PCSCase::getHasOtherAdditionalGrounds).is(YesOrNo.YES))
                 .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
-            .labelWhen("rentArrearsGrounds-lineSeparator","---")
+            .label("rentArrearsGrounds-lineSeparator","---")
             .complex(PCSCase::getRentArrearsGroundsReasons)
 
             // ---------- Mandatory grounds ----------
-            .labelWhen("rentArrears-ownerOccupier-label", """
+            .label("rentArrears-ownerOccupier-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Owner occupier (ground 1)
                 </h2>
@@ -66,13 +66,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getOwnerOccupierReason,
+            .mandatory(RentArrearsGroundsReasons::getOwnerOccupierReason,
                        contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1
                 ))
 
-            .labelWhen("rentArrears-repossessionByLender-label", """
+            .label("rentArrears-repossessionByLender-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Repossession by the landlord’s mortgage lender (ground 2)
                 </h2>
@@ -83,13 +83,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.REPOSSESSION_GROUND2
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getRepossessionByLenderReason,
+            .mandatory(RentArrearsGroundsReasons::getRepossessionByLenderReason,
                 contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.REPOSSESSION_GROUND2
                 ))
 
-            .labelWhen("rentArrears-holidayLet-label", """
+            .label("rentArrears-holidayLet-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Holiday let (ground 3)
                 </h2>
@@ -100,13 +100,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.HOLIDAY_LET_GROUND3
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getHolidayLetReason,
+            .mandatory(RentArrearsGroundsReasons::getHolidayLetReason,
                 contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.HOLIDAY_LET_GROUND3
                 ))
 
-            .labelWhen("rentArrears-studentLet-label", """
+            .label("rentArrears-studentLet-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Student let (ground 4)
                 </h2>
@@ -117,13 +117,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.STUDENT_LET_GROUND4
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getStudentLetReason,
+            .mandatory(RentArrearsGroundsReasons::getStudentLetReason,
                 contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.STUDENT_LET_GROUND4
                 ))
 
-            .labelWhen("rentArrears-ministerOfReligion-label", """
+            .label("rentArrears-ministerOfReligion-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Property required for minister of religion (ground 5)
                 </h2>
@@ -134,13 +134,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.MINISTER_RELIGION_GROUND5
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getMinisterOfReligionReason,
+            .mandatory(RentArrearsGroundsReasons::getMinisterOfReligionReason,
                 contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.MINISTER_RELIGION_GROUND5
                 ))
 
-            .labelWhen("rentArrears-redevelopment-label", """
+            .label("rentArrears-redevelopment-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Property required for redevelopment (ground 6)
                 </h2>
@@ -151,13 +151,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.REDEVELOPMENT_GROUND6
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getRedevelopmentReason,
+            .mandatory(RentArrearsGroundsReasons::getRedevelopmentReason,
                 contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.REDEVELOPMENT_GROUND6
                 ))
 
-            .labelWhen("rentArrears-deathOfTenant-label", """
+            .label("rentArrears-deathOfTenant-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Death of the tenant (ground 7)
                 </h2>
@@ -168,13 +168,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getDeathOfTenantReason,
+            .mandatory(RentArrearsGroundsReasons::getDeathOfTenantReason,
                 contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7
                 ))
 
-            .labelWhen("rentArrears-antisocialBehaviour-label", """
+            .label("rentArrears-antisocialBehaviour-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Antisocial behaviour (ground 7A)
                 </h2>
@@ -186,13 +186,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getAntisocialBehaviourReason,
+            .mandatory(RentArrearsGroundsReasons::getAntisocialBehaviourReason,
                 contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A
                 ))
 
-            .labelWhen("rentArrears-noRightToRent-label", """
+            .label("rentArrears-noRightToRent-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Tenant does not have a right to rent (ground 7B)
                 </h2>
@@ -203,14 +203,14 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getNoRightToRentReason,
+            .mandatory(RentArrearsGroundsReasons::getNoRightToRentReason,
                 contains(
                     ADDITIONAL_MANDATORY_GROUNDS,
                     AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B
                 ))
 
             // ---------- Discretionary grounds ----------
-            .labelWhen("rentArrears-suitableAlternativeAccommodation-label", """
+            .label("rentArrears-suitableAlternativeAccommodation-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Suitable alternative accommodation (ground 9)
                 </h2>
@@ -221,13 +221,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getSuitableAltAccommodationReason,
+            .mandatory(RentArrearsGroundsReasons::getSuitableAltAccommodationReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9
                 ))
 
-            .labelWhen("rentArrears-breachOfTenancyConditions-label", """
+            .label("rentArrears-breachOfTenancyConditions-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Breach of tenancy conditions (ground 12)
                 </h2>
@@ -238,13 +238,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getBreachOfTenancyConditionsReason,
+            .mandatory(RentArrearsGroundsReasons::getBreachOfTenancyConditionsReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12
                 ))
 
-            .labelWhen("rentArrears-propertyDeterioration-label", """
+            .label("rentArrears-propertyDeterioration-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Deterioration in the condition of the property (ground 13)
                 </h2>
@@ -255,13 +255,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getPropertyDeteriorationReason,
+            .mandatory(RentArrearsGroundsReasons::getPropertyDeteriorationReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13
                 ))
 
-            .labelWhen("rentArrears-nuisanceAnnoyance-label", """
+            .label("rentArrears-nuisanceAnnoyance-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Nuisance, annoyance, illegal or immoral use of the property (ground 14)
                 </h2>
@@ -272,13 +272,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getNuisanceAnnoyanceReason,
+            .mandatory(RentArrearsGroundsReasons::getNuisanceAnnoyanceReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14
                 ))
 
-            .labelWhen("rentArrears-domesticViolence-label", """
+            .label("rentArrears-domesticViolence-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Domestic violence (ground 14A)
                 </h2>
@@ -289,13 +289,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getDomesticViolenceReason,
+            .mandatory(RentArrearsGroundsReasons::getDomesticViolenceReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A
                 ))
 
-            .labelWhen("rentArrears-offenceDuringRiot-label", """
+            .label("rentArrears-offenceDuringRiot-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Offence during a riot (ground 14ZA)
                 </h2>
@@ -306,13 +306,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getOffenceDuringRiotReason,
+            .mandatory(RentArrearsGroundsReasons::getOffenceDuringRiotReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA
                 ))
 
-            .labelWhen("rentArrears-furnitureDeterioration-label", """
+            .label("rentArrears-furnitureDeterioration-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Deterioration of furniture (ground 15)
                 </h2>
@@ -323,13 +323,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getFurnitureDeteriorationReason,
+            .mandatory(RentArrearsGroundsReasons::getFurnitureDeteriorationReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15
                 ))
 
-            .labelWhen("rentArrears-employeeOfLandlord-label", """
+            .label("rentArrears-employeeOfLandlord-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Employee of the landlord (ground 16)
                 </h2>
@@ -340,13 +340,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getEmployeeOfLandlordReason,
+            .mandatory(RentArrearsGroundsReasons::getEmployeeOfLandlordReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16
                 ))
 
-            .labelWhen("rentArrears-tenancyByFalseStatement-label", """
+            .label("rentArrears-tenancyByFalseStatement-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Tenancy obtained by false statement (ground 17)
                 </h2>
@@ -357,13 +357,13 @@ public class RentArrearsGroundsForPossessionReasons implements CcdPageConfigurat
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17
                 ))
-            .mandatoryWhen(RentArrearsGroundsReasons::getTenancyByFalseStatementReason,
+            .mandatory(RentArrearsGroundsReasons::getTenancyByFalseStatementReason,
                 contains(
                     ADDITIONAL_DISCRETIONARY_GROUNDS,
                     AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17
                 ))
             .done()
-            .labelWhen("rentArrearsGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("rentArrearsGroundsForPossessionReasons-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

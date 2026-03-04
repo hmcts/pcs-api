@@ -34,7 +34,7 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
         pageBuilder
             .page("additionalInformation", this::midEvent)
             .pageLabel("Anything else that could help with the eviction ")
-            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("additionalInformation-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)
@@ -43,7 +43,7 @@ public class AdditionalInformationPage implements CcdPageConfiguration {
                 AdditionalInformation::getAdditionalInformationSelect,
                 "Do you want to tell us anything else that could help with the eviction?"
             )
-            .mandatoryWhen(AdditionalInformation::getAdditionalInformationDetails,
+            .mandatory(AdditionalInformation::getAdditionalInformationDetails,
                 when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAdditionalInformation,
                     AdditionalInformation::getAdditionalInformationSelect).is(YES))
             .done()

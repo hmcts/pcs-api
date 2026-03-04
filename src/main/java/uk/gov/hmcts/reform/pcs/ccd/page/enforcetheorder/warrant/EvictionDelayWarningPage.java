@@ -16,7 +16,7 @@ public class EvictionDelayWarningPage implements CcdPageConfiguration {
         pageBuilder
             .page("evictionDelayWarning")
             .pageLabel("The eviction could be delayed if the bailiff identifies a risk on the day")
-            .showWhen(WARRANT_FLOW.and(when(EnforcementOrder::getWarrantDetails,
+            .showCondition(WARRANT_FLOW.and(when(EnforcementOrder::getWarrantDetails,
                 WarrantDetails::getAnyRiskToBailiff).is(YesNoNotSure.NOT_SURE)))
             .label("evictionDelayWarning-line-separator", "---")
             .label(

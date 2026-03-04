@@ -31,14 +31,15 @@ public class StatementOfExpressTerms implements CcdPageConfiguration {
         pageBuilder
             .page("statementOfExpressTerms", this::midEvent)
             .pageLabel("Statement of express terms")
-            .showWhen(when(PCSCase::getDemotionOfTenancy, DemotionOfTenancy::getShowHousingActsPage).is(YesOrNo.YES)
+            .showCondition(
+                when(PCSCase::getDemotionOfTenancy, DemotionOfTenancy::getShowHousingActsPage).is(YesOrNo.YES)
                 .or(when(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy,
                     SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionToBuyDemotionOfTenancyPages)
                     .is(YesOrNo.YES)))
             .label("statementOfExpressTerms-info", "---")
                 .complex(PCSCase::getDemotionOfTenancy)
                 .mandatory(DemotionOfTenancy::getStatementOfExpressTermsServed)
-                .mandatoryWhen(DemotionOfTenancy::getStatementOfExpressTermsDetails,
+                .mandatory(DemotionOfTenancy::getStatementOfExpressTermsDetails,
                     when(PCSCase::getDemotionOfTenancy, DemotionOfTenancy::getStatementOfExpressTermsServed)
                         .is(VerticalYesNo.YES))
                 .done()

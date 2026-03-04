@@ -28,7 +28,7 @@ public class ExplainHowDefendantsReturnedPage implements CcdPageConfiguration {
         pageBuilder
             .page("explainHowDefendantsReturned", this::midEvent)
             .pageLabel("Explain how the defendants returned to the property after the eviction")
-            .showWhen(WARRANT_OF_RESTITUTION_FLOW)
+            .showCondition(WARRANT_OF_RESTITUTION_FLOW)
             .label("explainHowDefendantsReturned-line-separator", "---")
             .label(
                 "explainHowDefendantsReturned-examples",

@@ -34,7 +34,7 @@ public class DefendantCircumstancesPage implements CcdPageConfiguration {
             .mandatory(DefendantCircumstances::getDefendantTermPossessive,NEVER_SHOW)
             .readonlyNoSummary(DefendantCircumstances::getDefendantCircumstancesLabel)
             .mandatory(DefendantCircumstances::getHasDefendantCircumstancesInfo)
-            .mandatoryWhen(DefendantCircumstances::getDefendantCircumstancesInfo,
+            .mandatory(DefendantCircumstances::getDefendantCircumstancesInfo,
                 when(DefendantCircumstances::getHasDefendantCircumstancesInfo).is(YES))
             .done()
             .label("defendantCircumstances-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

@@ -22,7 +22,7 @@ public class RentArrears implements CcdPageConfiguration {
     public void addTo(PageBuilder pageBuilder) {
         pageBuilder
                 .page("rentArrears")
-                .showWhen(SHOW_RENT_ARREARS_PAGE)
+                .showCondition(SHOW_RENT_ARREARS_PAGE)
                 .pageLabel("Details of rent arrears")
                 .readonly(PCSCase::getShowRentArrearsPage, NEVER_SHOW)
 
@@ -76,11 +76,11 @@ public class RentArrears implements CcdPageConfiguration {
                     .label("rentArrears-thirdPartyPayments-separator", "---")
                     .mandatory(RentArrearsSection::getThirdPartyPayments)
 
-                    .mandatoryWhen(RentArrearsSection::getThirdPartyPaymentSources,
+                    .mandatory(RentArrearsSection::getThirdPartyPaymentSources,
                         when(PCSCase::getRentArrears, RentArrearsSection::getThirdPartyPayments).is(YES))
 
                     // "Other" free text is mandatory when OTHER is selected
-                    .mandatoryWhen(RentArrearsSection::getPaymentSourceOther,
+                    .mandatory(RentArrearsSection::getPaymentSourceOther,
                         when(PCSCase::getRentArrears, RentArrearsSection::getThirdPartyPayments).is(YES)
                             .and(when(PCSCase::getRentArrears, RentArrearsSection::getThirdPartyPaymentSources)
                                 .contains(ThirdPartyPaymentSource.OTHER)))

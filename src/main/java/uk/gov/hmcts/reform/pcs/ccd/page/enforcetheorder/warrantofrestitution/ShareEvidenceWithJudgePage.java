@@ -13,7 +13,7 @@ public class ShareEvidenceWithJudgePage implements CcdPageConfiguration {
         pageBuilder
             .page("shareEvidenceWithJudge")
             .pageLabel("On the next few questions, we will ask you to share evidence with a judge")
-            .showWhen(WARRANT_OF_RESTITUTION_FLOW)
+            .showCondition(WARRANT_OF_RESTITUTION_FLOW)
             .label("shareEvidenceWithJudge-line-separator", "---")
             .label("shareEvidenceWithJudge-save-and-return", SAVE_AND_RETURN);
     }

@@ -16,7 +16,7 @@ public class MoneyOwedWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("amountDefendantOwes")
             .pageLabel("The amount the defendants owe you")
-            .showWhen(ShowConditionsEnforcementType.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .label("amountDefendantOwes-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)

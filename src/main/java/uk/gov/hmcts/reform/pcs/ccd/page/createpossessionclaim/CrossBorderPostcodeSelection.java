@@ -35,7 +35,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
         pageBuilder
             .page("crossBorderPostcodeSelection", this::midEvent)
             .pageLabel("Border postcode")
-            .showWhen(when(PCSCase::getShowCrossBorderPage).is(YesOrNo.YES))
+            .showCondition(when(PCSCase::getShowCrossBorderPage).is(YesOrNo.YES))
             .readonly(PCSCase::getShowCrossBorderPage, NEVER_SHOW)
             .readonly(PCSCase::getCrossBorderCountry1, NEVER_SHOW, true)
             .readonly(PCSCase::getCrossBorderCountry2, NEVER_SHOW, true)
@@ -63,9 +63,7 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 </div>
                 </section>
                 """)
-            .mandatory(PCSCase::getCrossBorderCountriesList,
-                null,
-                null,
+            .mandatoryWithLabel(PCSCase::getCrossBorderCountriesList,
                 "Is the property located in ${crossBorderCountry1} or ${crossBorderCountry2}?");
     }
 

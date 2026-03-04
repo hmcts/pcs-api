@@ -36,75 +36,75 @@ public class NoticeDetails implements CcdPageConfiguration {
         pageBuilder
             .page("noticeDetails", this::midEvent)
             .pageLabel("Notice details")
-            .showWhen(when(PCSCase::getNoticeServed).is(YesOrNo.YES)
+            .showCondition(when(PCSCase::getNoticeServed).is(YesOrNo.YES)
                 .or(when(PCSCase::getWalesNoticeDetails, WalesNoticeDetails::getNoticeServed).is(YesOrNo.YES)))
             .label("noticeDetails-separator", "---")
             .complex(PCSCase::getNoticeServedDetails)
             .mandatory(NoticeServedDetails::getNoticeServiceMethod)
 
             // First class post
-            .labelWhen("noticeDetails-firstClassPost-section", """
+            .label("noticeDetails-firstClassPost-section", """
                 <h3 class="govuk-heading-s">By first class post or other service which provides for
                 delivery on the next business day</h3>
                 """, noticeServiceMethodIs(NoticeServiceMethod.FIRST_CLASS_POST))
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticePostedDate,
                 noticeServiceMethodIs(NoticeServiceMethod.FIRST_CLASS_POST)
             )
 
             // Delivered to permitted place
-            .labelWhen("noticeDetails-deliveredPermittedPlace-section", """
+            .label("noticeDetails-deliveredPermittedPlace-section", """
                 <h3 class="govuk-heading-s">By delivering it to or leaving it at a permitted place</h3>
                 """, noticeServiceMethodIs(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE))
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticeDeliveredDate,
                 noticeServiceMethodIs(NoticeServiceMethod.DELIVERED_PERMITTED_PLACE)
             )
 
             // Personally handed
-            .labelWhen("noticeDetails-personallyHanded-section", """
+            .label("noticeDetails-personallyHanded-section", """
                 <h3 class="govuk-heading-s">By personally handing it to or leaving it with someone</h3>
                 """, noticeServiceMethodIs(NoticeServiceMethod.PERSONALLY_HANDED))
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticePersonName,
                 noticeServiceMethodIs(NoticeServiceMethod.PERSONALLY_HANDED)
             )
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticeHandedOverDateTime,
                 noticeServiceMethodIs(NoticeServiceMethod.PERSONALLY_HANDED)
             )
 
             // Email
-            .labelWhen("noticeDetails-email-section", """
+            .label("noticeDetails-email-section", """
                 <h3 class="govuk-heading-s">By email</h3>
                 """, noticeServiceMethodIs(NoticeServiceMethod.EMAIL))
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticeEmailExplanation,
                 noticeServiceMethodIs(NoticeServiceMethod.EMAIL)
             )
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticeEmailSentDateTime,
                 noticeServiceMethodIs(NoticeServiceMethod.EMAIL)
             )
 
             // Other electronic method
-            .labelWhen("noticeDetails-otherElectronic-section", """
+            .label("noticeDetails-otherElectronic-section", """
                 <h3 class="govuk-heading-s">By other electronic method</h3>
                 """, noticeServiceMethodIs(NoticeServiceMethod.OTHER_ELECTRONIC))
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticeOtherElectronicDateTime,
                 noticeServiceMethodIs(NoticeServiceMethod.OTHER_ELECTRONIC)
             )
 
             // Other
-            .labelWhen("noticeDetails-other-section", """
+            .label("noticeDetails-other-section", """
                 <h3 class="govuk-heading-s">Other</h3>
                 """, noticeServiceMethodIs(NoticeServiceMethod.OTHER))
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticeOtherExplanation,
                 noticeServiceMethodIs(NoticeServiceMethod.OTHER)
             )
-            .optionalWhen(
+            .optional(
                 NoticeServedDetails::getNoticeOtherDateTime,
                 noticeServiceMethodIs(NoticeServiceMethod.OTHER)
             )

@@ -30,7 +30,7 @@ public class AlternativesToPossessionOptions implements CcdPageConfiguration {
         pageBuilder
             .page("alternativesToPossession", this::midEvent)
             .pageLabel("Alternatives to possession")
-            .showWhen(when(PCSCase::getLegislativeCountry).isNot(LegislativeCountry.WALES))
+            .showCondition(when(PCSCase::getLegislativeCountry).isNot(LegislativeCountry.WALES))
             .complex(PCSCase::getSuspensionOfRightToBuy)
             .readonlyNoSummary(SuspensionOfRightToBuy::getShowHousingActsPage, NEVER_SHOW)
             .done()

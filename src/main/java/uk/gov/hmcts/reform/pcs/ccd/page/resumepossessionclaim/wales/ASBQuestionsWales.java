@@ -33,19 +33,19 @@ public class ASBQuestionsWales implements CcdPageConfiguration {
             .page("asbQuestionsWales", this::midEvent)
             .pageLabel("Antisocial behaviour and illegal or prohibited conduct")
             .label("asbQuestionsWales-separator", "---")
-            .showWhen(when(PCSCase::getShowASBQuestionsPageWales).is(YesOrNo.YES))
+            .showCondition(when(PCSCase::getShowASBQuestionsPageWales).is(YesOrNo.YES))
             .readonly(PCSCase::getShowASBQuestionsPageWales, NEVER_SHOW)
             .complex(PCSCase::getAsbQuestionsWales)
             .mandatory(ASBQuestionsDetailsWales::getAntisocialBehaviour)
-            .mandatoryWhen(ASBQuestionsDetailsWales::getAntisocialBehaviourDetails,
+            .mandatory(ASBQuestionsDetailsWales::getAntisocialBehaviourDetails,
                 when(PCSCase::getAsbQuestionsWales, ASBQuestionsDetailsWales::getAntisocialBehaviour).is(YES))
             .label("asbQuestionsWales-separator-2", "---")
             .mandatory(ASBQuestionsDetailsWales::getIllegalPurposesUse)
-            .mandatoryWhen(ASBQuestionsDetailsWales::getIllegalPurposesUseDetails,
+            .mandatory(ASBQuestionsDetailsWales::getIllegalPurposesUseDetails,
                 when(PCSCase::getAsbQuestionsWales, ASBQuestionsDetailsWales::getIllegalPurposesUse).is(YES))
             .label("asbQuestionsWales-separator-3", "---")
             .mandatory(ASBQuestionsDetailsWales::getOtherProhibitedConduct)
-            .mandatoryWhen(ASBQuestionsDetailsWales::getOtherProhibitedConductDetails,
+            .mandatory(ASBQuestionsDetailsWales::getOtherProhibitedConductDetails,
                 when(PCSCase::getAsbQuestionsWales, ASBQuestionsDetailsWales::getOtherProhibitedConduct).is(YES))
             .done()
             .label("asbQuestionsWales-end-separator", "---")

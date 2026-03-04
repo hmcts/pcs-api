@@ -15,7 +15,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
         pageBuilder
                 .page("preActionProtocol")
                 .pageLabel("Pre-action protocol")
-                .labelWhen("preActionProtocol-info-england",
+                .label("preActionProtocol-info-england",
                         """
                   ---
                   <section tabindex="0">
@@ -53,7 +53,7 @@ public class PreActionProtocol implements CcdPageConfiguration {
 
                   """,
                     when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
-                .labelWhen("preActionProtocol-info-wales",
+                .label("preActionProtocol-info-wales",
                         """
                   ---
                   <section tabindex="0">

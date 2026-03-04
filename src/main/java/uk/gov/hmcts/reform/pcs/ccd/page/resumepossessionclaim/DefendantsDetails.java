@@ -54,7 +54,7 @@ public class DefendantsDetails implements CcdPageConfiguration {
                 ---
                 <h2>Additional defendants</h2>""")
             .mandatory(PCSCase::getAddAnotherDefendant)
-            .listWhen(PCSCase::getAdditionalDefendants, when(PCSCase::getAddAnotherDefendant).is(VerticalYesNo.YES))
+            .list(PCSCase::getAdditionalDefendants, when(PCSCase::getAddAnotherDefendant).is(VerticalYesNo.YES))
                 .readonly(DefendantDetails::getNameSectionLabel)
                 .mandatory(DefendantDetails::getNameKnown)
                 .mandatory(DefendantDetails::getFirstName)

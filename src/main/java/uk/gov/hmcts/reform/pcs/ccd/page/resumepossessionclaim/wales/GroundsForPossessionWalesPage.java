@@ -44,7 +44,7 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
         pageBuilder
             .page("groundsForPossessionWales", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showWhen(allOf(
+            .showCondition(allOf(
                 when(PCSCase::getLegislativeCountry).is(WALES),
                 when(PCSCase::getOccupationLicenceDetailsWales,
                     OccupationLicenceDetailsWales::getOccupationLicenceTypeWales)
@@ -64,7 +64,7 @@ public class GroundsForPossessionWalesPage implements CcdPageConfiguration {
             )
             .complex(PCSCase::getGroundsForPossessionWales)
                 .optional(GroundsForPossessionWales::getDiscretionaryGrounds)
-                .optionalWhen(
+                .optional(
                     GroundsForPossessionWales::getEstateManagementGrounds,
                     contains(
                     DISCRETIONARY_GROUNDS,

@@ -24,13 +24,13 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
         pageBuilder
             .page("statementOfTruth")
             .pageLabel("Statement of truth")
-            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                     .label("statementOfTruth-lineSeparator", "---")
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCertification)
-                        .labelWhen("statementOfTruth-cert-suspended",
+                        .label("statementOfTruth-cert-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
                                 <li>the defendant has not vacated the land as ordered (*and that the whole or part
@@ -43,7 +43,7 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                             </ul>
                             """,
                             when(EnforcementOrder::getWarrantDetails, WarrantDetails::getIsSuspendedOrder).is(YES))
-                        .labelWhen("statementOfTruth-cert-not-suspended",
+                        .label("statementOfTruth-cert-not-suspended",
                             """
                             <ul class="govuk-list govuk-list--bullet">
                                 <li>the defendant has not vacated the land as ordered (*and that the whole or part
@@ -62,25 +62,25 @@ public class StatementOfTruthPage implements CcdPageConfiguration {
                     .done()
                     .complex(WarrantDetails::getStatementOfTruth)
                         .mandatory(StatementOfTruthDetailsEnforcement::getCompletedBy)
-                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getAgreementClaimant,
                             when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
                                 StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
-                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFullNameClaimant,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getFullNameClaimant,
                             when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
                                 StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
-                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getPositionClaimant,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getPositionClaimant,
                             when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
                                 StatementOfTruthDetailsEnforcement::getCompletedBy).is(CLAIMANT))
-                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getAgreementLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getAgreementLegalRep,
                             when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
                                 StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
-                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getFullNameLegalRep,
                             when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
                                 StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
-                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getFirmNameLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getFirmNameLegalRep,
                             when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
                                 StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
-                        .mandatoryWhen(StatementOfTruthDetailsEnforcement::getPositionLegalRep,
+                        .mandatory(StatementOfTruthDetailsEnforcement::getPositionLegalRep,
                             when(EnforcementOrder::getWarrantDetails, WarrantDetails::getStatementOfTruth,
                                 StatementOfTruthDetailsEnforcement::getCompletedBy).is(LEGAL_REPRESENTATIVE))
                     .done()

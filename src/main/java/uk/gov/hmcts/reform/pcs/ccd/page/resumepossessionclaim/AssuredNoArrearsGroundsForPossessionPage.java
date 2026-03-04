@@ -32,7 +32,7 @@ public class AssuredNoArrearsGroundsForPossessionPage implements CcdPageConfigur
         pageBuilder
             .page("assuredNoArrearsGroundsForPossession", this::midEvent)
             .pageLabel("What are your grounds for possession?")
-            .showWhen(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.NO)
+            .showCondition(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.NO)
                 .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                     .is(TenancyLicenceType.ASSURED_TENANCY))
                 .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))

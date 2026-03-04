@@ -22,7 +22,7 @@ public class HCEOfficerDetailsPage implements CcdPageConfiguration {
         pageBuilder
             .page("hCEOfficerDetails")
             .pageLabel("Your High Court enforcement officer")
-            .showWhen(WRIT_FLOW.and(
+            .showCondition(WRIT_FLOW.and(
                 when(EnforcementOrder::getWritDetails, WritDetails::getHasHiredHighCourtEnforcementOfficer)
                     .is(VerticalYesNo.YES)))
             .label("hCEOfficerDetails-line-separator", "---")

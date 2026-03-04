@@ -44,10 +44,10 @@ class PostcodeNotAssignedToCourtTest {
         when(eventBuilder.fields()).thenReturn(fieldBuilder);
         when(fieldBuilder.page(anyString(), any())).thenReturn(fieldBuilder);
         when(fieldBuilder.pageLabel(anyString())).thenReturn(fieldBuilder);
-        when(fieldBuilder.showWhen(any(ShowCondition.class))).thenReturn(fieldBuilder);
+        when(fieldBuilder.showCondition(any(ShowCondition.class))).thenReturn(fieldBuilder);
         when(fieldBuilder.readonly(any(), anyString())).thenReturn(fieldBuilder);
         when(fieldBuilder.label(anyString(), anyString())).thenReturn(fieldBuilder);
-        when(fieldBuilder.labelWhen(anyString(), anyString(), any(ShowCondition.class))).thenReturn(fieldBuilder);
+        when(fieldBuilder.label(anyString(), anyString(), any(ShowCondition.class))).thenReturn(fieldBuilder);
 
         pageBuilder = new PageBuilder(eventBuilder);
         underTest = new PostcodeNotAssignedToCourt();
@@ -69,11 +69,11 @@ class PostcodeNotAssignedToCourtTest {
         underTest.addTo(pageBuilder);
 
         // Verify the main show condition is set
-        verify(fieldBuilder).showWhen(argThat(condition ->
+        verify(fieldBuilder).showCondition(argThat((ShowCondition condition) ->
             "showPostcodeNotAssignedToCourt=\"Yes\"".equals(condition.toString())));
 
         // Verify specific show conditions for each view are configured
-        verify(fieldBuilder).labelWhen(eq(expectedLabelId), anyString(), argThat(condition ->
+        verify(fieldBuilder).label(eq(expectedLabelId), anyString(), argThat((ShowCondition condition) ->
             expectedShowCondition.equals(condition.toString())));
     }
 

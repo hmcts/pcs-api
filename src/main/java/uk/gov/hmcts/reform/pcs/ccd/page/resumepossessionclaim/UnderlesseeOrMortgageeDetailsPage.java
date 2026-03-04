@@ -37,7 +37,7 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
         pageBuilder
             .page("underlesseeMortgageeDetails", this::midEvent)
             .pageLabel("Underlessee or mortgagee details")
-            .showWhen(HAS_UNDERLESSEE_OR_MORTGAGEE)
+            .showCondition(HAS_UNDERLESSEE_OR_MORTGAGEE)
             .complex(PCSCase::getUnderlesseeOrMortgagee1)
                 .readonlyNoSummary(UnderlesseeMortgageeDetails::getNameSectionLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getNameKnown)
@@ -59,7 +59,7 @@ public class UnderlesseeOrMortgageeDetailsPage implements CcdPageConfiguration {
                 <h2 class="govuk-heading-m">Additional underlessees or mortgagees</h2>
                 """)
             .mandatory(PCSCase::getAddAdditionalUnderlesseeOrMortgagee)
-            .listWhen(PCSCase::getAdditionalUnderlesseeOrMortgagee, ADD_ADDITIONAL_UNDERLESSEE_OR_MORTGAGEE)
+            .list(PCSCase::getAdditionalUnderlesseeOrMortgagee, ADD_ADDITIONAL_UNDERLESSEE_OR_MORTGAGEE)
                 .readonlyNoSummary(UnderlesseeMortgageeDetails::getNameSectionLabel)
                 .mandatory(UnderlesseeMortgageeDetails::getNameKnown)
                 .mandatory(UnderlesseeMortgageeDetails::getName)

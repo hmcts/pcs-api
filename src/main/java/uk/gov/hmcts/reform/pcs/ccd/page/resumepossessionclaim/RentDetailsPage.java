@@ -35,7 +35,7 @@ public class RentDetailsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("rentDetails", this::midEvent)
                 .pageLabel("Rent details")
-                .showWhen(when(PCSCase::getShowRentSectionPage).is(YesOrNo.YES))
+                .showCondition(when(PCSCase::getShowRentSectionPage).is(YesOrNo.YES))
                 .label("rentDetails-content",
                         """
                         ---
@@ -43,9 +43,9 @@ public class RentDetailsPage implements CcdPageConfiguration {
                 .complex(PCSCase::getRentDetails)
                     .mandatory(RentDetails::getCurrentRent)
                     .mandatory(RentDetails::getFrequency)
-                    .mandatoryWhen(RentDetails::getOtherFrequency, when(PCSCase::getRentDetails,
+                    .mandatory(RentDetails::getOtherFrequency, when(PCSCase::getRentDetails,
                         RentDetails::getFrequency).is(RentPaymentFrequency.OTHER))
-                    .mandatoryWhen(RentDetails::getDailyCharge, when(PCSCase::getRentDetails,
+                    .mandatory(RentDetails::getDailyCharge, when(PCSCase::getRentDetails,
                         RentDetails::getFrequency).is(RentPaymentFrequency.OTHER))
                     .readonly(RentDetails::getCalculatedDailyCharge, NEVER_SHOW)
                 .done()

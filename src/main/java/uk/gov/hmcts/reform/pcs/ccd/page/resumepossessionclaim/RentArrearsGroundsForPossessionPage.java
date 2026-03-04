@@ -24,7 +24,7 @@ public class RentArrearsGroundsForPossessionPage implements CcdPageConfiguration
         pageBuilder
                 .page("groundForPossessionRentArrears")
                 .pageLabel("Grounds for possession")
-                .showWhen(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.YES)
+                .showCondition(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.YES)
                     .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                         .is(TenancyLicenceType.ASSURED_TENANCY))
                     .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))

@@ -35,7 +35,7 @@ public class UploadAdditionalDocumentsDetails implements CcdPageConfiguration {
         pageBuilder
             .page("uploadAdditionalDocuments", this::midEvent)
             .pageLabel("Upload additional documents")
-            .showWhen(WANT_TO_UPLOAD_DOCUMENTS)
+            .showCondition(WANT_TO_UPLOAD_DOCUMENTS)
 
             // ---------- Horizontal separator ----------
             .label("uploadAdditionalDocuments-separator", "---")

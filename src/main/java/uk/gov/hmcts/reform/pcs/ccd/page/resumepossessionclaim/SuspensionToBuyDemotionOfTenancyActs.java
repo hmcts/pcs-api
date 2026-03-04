@@ -16,7 +16,7 @@ public class SuspensionToBuyDemotionOfTenancyActs implements CcdPageConfiguratio
         pageBuilder
             .page("suspensionToBuyDemotionOfTenancyActs")
             .pageLabel("Housing Act")
-            .showWhen(when(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy,
+            .showCondition(when(PCSCase::getSuspensionOfRightToBuyDemotionOfTenancy,
                 SuspensionOfRightToBuyDemotionOfTenancy::getSuspensionToBuyDemotionOfTenancyPages).is(YesOrNo.YES))
             .label("suspensionToBuyDemotionOfTenancyActs-info", """
                 ---

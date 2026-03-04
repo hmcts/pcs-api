@@ -30,7 +30,7 @@ public class ChangeNameAddressPage implements CcdPageConfiguration {
         pageBuilder
             .page("changeNameAddress", this::midEvent)
             .pageLabel("You need permission from a judge to change the name and address for the eviction")
-            .showWhen(WARRANT_FLOW.and(when(EnforcementOrder::getWarrantDetails,
+            .showCondition(WARRANT_FLOW.and(when(EnforcementOrder::getWarrantDetails,
                 WarrantDetails::getShowChangeNameAddressPage).is(YesOrNo.YES)))
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

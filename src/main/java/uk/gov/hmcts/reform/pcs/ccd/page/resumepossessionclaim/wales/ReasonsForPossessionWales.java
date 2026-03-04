@@ -68,14 +68,14 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
         pageBuilder
             .page("reasonsForPossessionWales", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showWhen(when(PCSCase::getLegislativeCountry).is(WALES)
+            .showCondition(when(PCSCase::getLegislativeCountry).is(WALES)
                 .and(when(PCSCase::getShowReasonsForGroundsPageWales).is(YesOrNo.YES)))
             .hidden(PCSCase::getShowReasonsForGroundsPageWales)
-            .labelWhen("reasonsForPossessionWales-separator", "---")
+            .label("reasonsForPossessionWales-separator", "---")
             .complex(PCSCase::getGroundsReasonsWales)
 
             // ---------- Standard/Other Contract - Discretionary grounds ----------
-            .labelWhen("wales-otherBreachSection157-label","""
+            .label("wales-otherBreachSection157-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Other breach of contract (section 157)
                 </h2>
@@ -86,14 +86,14 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_DISCRETIONARY_GROUNDS,
                     DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getOtherBreachSection157Reason,
+            .mandatory(GroundsReasonsWales::getOtherBreachSection157Reason,
                        contains(
                     STANDARD_DISCRETIONARY_GROUNDS,
                     DiscretionaryGroundWales.OTHER_BREACH_OF_CONTRACT_S157
                 ))
 
             // ---------- Standard/Other Contract - Estate Management grounds ----------
-            .labelWhen("wales-buildingWorks-label","""
+            .label("wales-buildingWorks-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Building works (ground A)
                 </h2>
@@ -104,13 +104,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.BUILDING_WORKS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getBuildingWorksReason,
+            .mandatory(GroundsReasonsWales::getBuildingWorksReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.BUILDING_WORKS
                 ))
 
-            .labelWhen("wales-redevelopmentSchemes-label","""
+            .label("wales-redevelopmentSchemes-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Redevelopment schemes (ground B)
                 </h2>
@@ -121,13 +121,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getRedevelopmentSchemesReason,
+            .mandatory(GroundsReasonsWales::getRedevelopmentSchemesReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
                 ))
 
-            .labelWhen("wales-charities-label","""
+            .label("wales-charities-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Charities (ground C)
                 </h2>
@@ -138,13 +138,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.CHARITIES
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getCharitiesReason,
+            .mandatory(GroundsReasonsWales::getCharitiesReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.CHARITIES
                 ))
 
-            .labelWhen("wales-disabledSuitableDwelling-label","""
+            .label("wales-disabledSuitableDwelling-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Dwelling suitable for disabled people (ground D)
                 </h2>
@@ -155,13 +155,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getDisabledSuitableDwellingReason,
+            .mandatory(GroundsReasonsWales::getDisabledSuitableDwellingReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING
                 ))
 
-            .labelWhen("wales-housingAssociationsAndTrusts-label","""
+            .label("wales-housingAssociationsAndTrusts-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Housing associations and housing trusts: people difficult to house (ground E)
                 </h2>
@@ -172,13 +172,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getHousingAssociationsAndTrustsReason,
+            .mandatory(GroundsReasonsWales::getHousingAssociationsAndTrustsReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS
                 ))
 
-            .labelWhen("wales-specialNeedsDwellings-label","""
+            .label("wales-specialNeedsDwellings-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Groups of dwellings for people with special needs (ground F)
                 </h2>
@@ -189,13 +189,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSpecialNeedsDwellingsReason,
+            .mandatory(GroundsReasonsWales::getSpecialNeedsDwellingsReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS
                 ))
 
-            .labelWhen("wales-reserveSuccessors-label","""
+            .label("wales-reserveSuccessors-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Reserve successors (ground G)
                 </h2>
@@ -206,13 +206,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.RESERVE_SUCCESSORS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getReserveSuccessorsReason,
+            .mandatory(GroundsReasonsWales::getReserveSuccessorsReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.RESERVE_SUCCESSORS
                 ))
 
-            .labelWhen("wales-jointContractHolders-label", """
+            .label("wales-jointContractHolders-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Joint contract-holders (ground H)
                 </h2>
@@ -223,13 +223,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getJointContractHoldersReason,
+            .mandatory(GroundsReasonsWales::getJointContractHoldersReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS
                 ))
 
-            .labelWhen("wales-otherEstateManagementReasons-label", """
+            .label("wales-otherEstateManagementReasons-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Other estate management reasons (ground I)
                 </h2>
@@ -240,14 +240,14 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getOtherEstateManagementReasonsReason,
+            .mandatory(GroundsReasonsWales::getOtherEstateManagementReasonsReason,
                        contains(
                     STANDARD_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
                 ))
 
             // ---------- Standard/Other Contract - Mandatory grounds ----------
-            .labelWhen("wales-failToGiveUpS170-label","""
+            .label("wales-failToGiveUpS170-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in contract-holder’s notice (section 170)
                 </h2>
@@ -258,13 +258,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getFailToGiveUpS170Reason,
+            .mandatory(GroundsReasonsWales::getFailToGiveUpS170Reason,
                        contains(
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
                 ))
 
-            .labelWhen("wales-landlordNoticePeriodicS178-label","""
+            .label("wales-landlordNoticePeriodicS178-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice given in relation to periodic standard contract (section 178)
                 </h2>
@@ -275,13 +275,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getLandlordNoticePeriodicS178Reason,
+            .mandatory(GroundsReasonsWales::getLandlordNoticePeriodicS178Reason,
                        contains(
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.LANDLORD_NOTICE_PERIODIC_S178
                 ))
 
-            .labelWhen("wales-landlordNoticeFtEndS186-label","""
+            .label("wales-landlordNoticeFtEndS186-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice in connection with end of fixed term given (section 186)
                 </h2>
@@ -292,13 +292,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
+            .mandatory(GroundsReasonsWales::getLandlordNoticeFtEndS186Reason,
                        contains(
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.LANDLORD_NOTICE_FT_END_S186
                 ))
 
-            .labelWhen("wales-failToGiveUpBreakNoticeS191-label","""
+            .label("wales-failToGiveUpBreakNoticeS191-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in
                     contract-holder’s break clause notice (section 191)
@@ -310,13 +310,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getFailToGiveUpBreakNoticeS191Reason,
+            .mandatory(GroundsReasonsWales::getFailToGiveUpBreakNoticeS191Reason,
                        contains(
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.FAIL_TO_GIVE_UP_BREAK_NOTICE_S191
                 ))
 
-            .labelWhen("wales-landlordBreakClauseS199-label","""
+            .label("wales-landlordBreakClauseS199-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Notice given under a landlord’s break clause (section 199)
                 </h2>
@@ -327,13 +327,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getLandlordBreakClauseS199Reason,
+            .mandatory(GroundsReasonsWales::getLandlordBreakClauseS199Reason,
                        contains(
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.LANDLORD_BREAK_CLAUSE_S199
                 ))
 
-            .labelWhen("wales-convertedFixedTermSch1225B2-label","""
+            .label("wales-convertedFixedTermSch1225B2-label","""
                 <h2 class="govuk-heading-l" tabindex="0">
                     Notice given in relation to end of converted fixed term standard contract
                     (paragraph 25B(2) of Schedule 12)
@@ -345,7 +345,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getConvertedFixedTermSch1225B2Reason,
+            .mandatory(GroundsReasonsWales::getConvertedFixedTermSch1225B2Reason,
                        contains(
                     STANDARD_MANDATORY_GROUNDS,
                     MandatoryGroundWales.CONVERTED_FIXED_TERM_SCH12_25B2
@@ -353,7 +353,7 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
 
 
             // ---------- Secure Contract - Discretionary grounds ----------
-            .labelWhen("wales-secure-otherBreachOfContract-label", """
+            .label("wales-secure-otherBreachOfContract-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Other breach of contract (section 157)
                 </h2>
@@ -365,14 +365,14 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_DISCRETIONARY_GROUNDS,
                     SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureOtherBreachOfContractReason,
+            .mandatory(GroundsReasonsWales::getSecureOtherBreachOfContractReason,
                        contains(
                     SECURE_DISCRETIONARY_GROUNDS,
                     SecureContractDiscretionaryGroundsWales.OTHER_BREACH_OF_CONTRACT_S157
                 ))
 
             // ---------- Secure Contract - Estate Management grounds ----------
-            .labelWhen("wales-secure-buildingWorks-label", """
+            .label("wales-secure-buildingWorks-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Building works (ground A)
                 </h2>
@@ -383,13 +383,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.BUILDING_WORKS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureBuildingWorksReason,
+            .mandatory(GroundsReasonsWales::getSecureBuildingWorksReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.BUILDING_WORKS
                 ))
 
-            .labelWhen("wales-secure-redevelopmentSchemes-label", """
+            .label("wales-secure-redevelopmentSchemes-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Redevelopment schemes (ground B)
                 </h2>
@@ -400,13 +400,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureRedevelopmentSchemesReason,
+            .mandatory(GroundsReasonsWales::getSecureRedevelopmentSchemesReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.REDEVELOPMENT_SCHEMES
                 ))
 
-            .labelWhen("wales-secure-charities-label", """
+            .label("wales-secure-charities-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Charities (ground C)
                 </h2>
@@ -417,13 +417,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.CHARITIES
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureCharitiesReason,
+            .mandatory(GroundsReasonsWales::getSecureCharitiesReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.CHARITIES
                 ))
 
-            .labelWhen("wales-secure-disabledSuitableDwelling-label", """
+            .label("wales-secure-disabledSuitableDwelling-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Dwelling suitable for disabled people (ground D)
                 </h2>
@@ -434,13 +434,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureDisabledSuitableDwellingReason,
+            .mandatory(GroundsReasonsWales::getSecureDisabledSuitableDwellingReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.DISABLED_SUITABLE_DWELLING
                 ))
 
-            .labelWhen("wales-secure-housingAssociationsAndTrusts-label", """
+            .label("wales-secure-housingAssociationsAndTrusts-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Housing associations and housing trusts: people difficult to house (ground E)
                 </h2>
@@ -451,13 +451,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureHousingAssociationsAndTrustsReason,
+            .mandatory(GroundsReasonsWales::getSecureHousingAssociationsAndTrustsReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.HOUSING_ASSOCIATIONS_AND_TRUSTS
                 ))
 
-            .labelWhen("wales-secure-specialNeedsDwellings-label", """
+            .label("wales-secure-specialNeedsDwellings-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Groups of dwellings for people with special needs (ground F)
                 </h2>
@@ -468,13 +468,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureSpecialNeedsDwellingsReason,
+            .mandatory(GroundsReasonsWales::getSecureSpecialNeedsDwellingsReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.SPECIAL_NEEDS_DWELLINGS
                 ))
 
-            .labelWhen("wales-secure-reserveSuccessors-label", """
+            .label("wales-secure-reserveSuccessors-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Reserve successors (ground G)
                 </h2>
@@ -485,13 +485,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.RESERVE_SUCCESSORS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureReserveSuccessorsReason,
+            .mandatory(GroundsReasonsWales::getSecureReserveSuccessorsReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.RESERVE_SUCCESSORS
                 ))
 
-            .labelWhen("wales-secure-jointContractHolders-label", """
+            .label("wales-secure-jointContractHolders-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Joint contract-holders (ground H)
                 </h2>
@@ -502,13 +502,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureJointContractHoldersReason,
+            .mandatory(GroundsReasonsWales::getSecureJointContractHoldersReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.JOINT_CONTRACT_HOLDERS
                 ))
 
-            .labelWhen("wales-secure-otherEstateManagementReasons-label", """
+            .label("wales-secure-otherEstateManagementReasons-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Other estate management reasons (ground I)
                 </h2>
@@ -519,14 +519,14 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason,
+            .mandatory(GroundsReasonsWales::getSecureOtherEstateManagementReasonsReason,
                        contains(
                     SECURE_ESTATE_MANAGEMENT_GROUNDS,
                     EstateManagementGroundsWales.OTHER_ESTATE_MANAGEMENT_REASONS
                 ))
 
             // ---------- Secure Contract - Mandatory grounds ----------
-            .labelWhen("wales-secure-failureToGiveUpPossessionSection170-label", """
+            .label("wales-secure-failureToGiveUpPossessionSection170-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in contract-holder’s notice (section 170)
                 </h2>
@@ -537,12 +537,12 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_MANDATORY_GROUNDS,
                     SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason,
+            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection170Reason,
                        contains(
                     SECURE_MANDATORY_GROUNDS,
                     SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S170
                 ))
-            .labelWhen("wales-secure-landlordNoticeSection186-label", """
+            .label("wales-secure-landlordNoticeSection186-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Landlord’s notice in connection with end of fixed term given (section 186)
                 </h2>
@@ -553,13 +553,13 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_MANDATORY_GROUNDS,
                     SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureLandlordNoticeSection186Reason,
+            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection186Reason,
                        contains(
                     SECURE_MANDATORY_GROUNDS,
                     SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S186
                 ))
 
-            .labelWhen("wales-secure-failureToGiveUpPossessionSection191-label", """
+            .label("wales-secure-failureToGiveUpPossessionSection191-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Failure to give up possession on date specified in contract-holder’s break
                     clause notice (section 191)
@@ -572,14 +572,14 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191
                 )
             )
-            .mandatoryWhen(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason,
+            .mandatory(GroundsReasonsWales::getSecureFailureToGiveUpPossessionSection191Reason,
                        contains(
                     SECURE_MANDATORY_GROUNDS,
                     SecureContractMandatoryGroundsWales.FAILURE_TO_GIVE_UP_POSSESSION_S191
                 )
             )
 
-            .labelWhen("wales-secure-landlordNoticeSection199-label", """
+            .label("wales-secure-landlordNoticeSection199-label", """
                 <h2 class="govuk-heading-l" tabindex="0">
                     Notice given under a landlord’s break clause (section 199)
                 </h2>
@@ -590,14 +590,14 @@ public class ReasonsForPossessionWales implements CcdPageConfiguration {
                     SECURE_MANDATORY_GROUNDS,
                     SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
                 ))
-            .mandatoryWhen(GroundsReasonsWales::getSecureLandlordNoticeSection199Reason,
+            .mandatory(GroundsReasonsWales::getSecureLandlordNoticeSection199Reason,
                        contains(
                     SECURE_MANDATORY_GROUNDS,
                     SecureContractMandatoryGroundsWales.LANDLORD_NOTICE_S199
                 ))
 
             .done()
-            .labelWhen("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("reasonsForPossessionWales-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

@@ -44,7 +44,7 @@ public class EnforcementOfficerSelectionPage implements CcdPageConfiguration {
             .page("enforcementOfficerSelection")
             .pageLabel("The National Information Centre for Enforcement will choose a High Court enforcement officer "
                            + "for you")
-            .showWhen(WRIT_FLOW.and(
+            .showCondition(WRIT_FLOW.and(
                 when(EnforcementOrder::getWritDetails, WritDetails::getHasHiredHighCourtEnforcementOfficer)
                     .is(VerticalYesNo.NO)))
             .label("enforcementOfficerSelection-line-separator", "---")

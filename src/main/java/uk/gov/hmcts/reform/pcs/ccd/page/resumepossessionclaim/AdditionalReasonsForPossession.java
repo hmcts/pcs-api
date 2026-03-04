@@ -32,7 +32,7 @@ public class AdditionalReasonsForPossession implements CcdPageConfiguration {
             .label("additionalReasonsForPossession-separator", "---")
             .complex(PCSCase::getAdditionalReasonsForPossession)
                 .mandatory(AdditionalReasons::getHasReasons)
-                .mandatoryWhen(
+                .mandatory(
                     AdditionalReasons::getReasons,
                     when(PCSCase::getAdditionalReasonsForPossession, AdditionalReasons::getHasReasons).is(YES))
             .done()

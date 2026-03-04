@@ -32,7 +32,7 @@ public class AggressiveAnimalsRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("aggressiveAnimalsRisk", this::midEvent)
                 .pageLabel("The animals at the property")
-                .showWhen(WARRANT_FLOW
+                .showCondition(WARRANT_FLOW
                     .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getRiskCategories)
                         .contains(RiskCategory.AGGRESSIVE_ANIMALS))
                     .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff)

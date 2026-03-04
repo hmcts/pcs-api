@@ -16,7 +16,8 @@ public class DemotionOfTenancyHousingActOptions implements CcdPageConfiguration 
         pageBuilder
             .page("demotionOfTenancyHousingActOptions")
             .pageLabel("Housing Act")
-            .showWhen(when(PCSCase::getDemotionOfTenancy, DemotionOfTenancy::getShowHousingActsPage).is(YesOrNo.YES))
+            .showCondition(
+                when(PCSCase::getDemotionOfTenancy, DemotionOfTenancy::getShowHousingActsPage).is(YesOrNo.YES))
             .label("demotionOfTenancyHousingActOptions-info", """
                 ---
                   <ul tabindex="0">

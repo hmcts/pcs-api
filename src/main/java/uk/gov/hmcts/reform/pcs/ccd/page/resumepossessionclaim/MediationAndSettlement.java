@@ -48,7 +48,7 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         </section>
                         """)
                 .mandatory(PCSCase::getMediationAttempted)
-                .mandatoryWhen(PCSCase::getMediationAttemptedDetails, MEDIATION_ATTEMPTED)
+                .mandatory(PCSCase::getMediationAttemptedDetails, MEDIATION_ATTEMPTED)
                 .label("settlement-section",
                         """
                         ---
@@ -60,7 +60,7 @@ public class MediationAndSettlement implements CcdPageConfiguration {
                         </section>
                         """)
                 .mandatory(PCSCase::getSettlementAttempted)
-                .mandatoryWhen(PCSCase::getSettlementAttemptedDetails, SETTLEMENT_ATTEMPTED)
+                .mandatory(PCSCase::getSettlementAttemptedDetails, SETTLEMENT_ATTEMPTED)
                 .label("mediationAndSettlement-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 

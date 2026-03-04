@@ -29,7 +29,7 @@ public class SuspensionOfRightToBuyOrderReason implements CcdPageConfiguration {
         pageBuilder
             .page("suspensionOfRightToBuyOrderReason", this::midEvent)
             .pageLabel("Reasons for requesting a suspension order")
-            .showWhen(when(PCSCase::getAlternativesToPossession)
+            .showCondition(when(PCSCase::getAlternativesToPossession)
                 .is(AlternativesToPossession.SUSPENSION_OF_RIGHT_TO_BUY))
             .label("suspensionOfRightToBuyOrderReason-info", "---")
                 .complex(PCSCase::getSuspensionOfRightToBuy)

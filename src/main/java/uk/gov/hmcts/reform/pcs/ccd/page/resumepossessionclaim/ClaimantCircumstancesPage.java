@@ -44,7 +44,7 @@ public class ClaimantCircumstancesPage implements CcdPageConfiguration {
                     ---
                     """)
                 .mandatory(ClaimantCircumstances::getClaimantCircumstancesSelect)
-                .mandatoryWhen(ClaimantCircumstances::getClaimantCircumstancesDetails,
+                .mandatory(ClaimantCircumstances::getClaimantCircumstancesDetails,
                            when(ClaimantCircumstances::getClaimantCircumstancesSelect).is(YES),
                            "",
                            GIVE_DETAILS_ABOUT_THE_CLAIMANT_NAME_CIRCUMSTANCES,

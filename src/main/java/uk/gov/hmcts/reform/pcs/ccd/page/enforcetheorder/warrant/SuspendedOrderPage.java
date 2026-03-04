@@ -15,7 +15,7 @@ public class SuspendedOrderPage implements CcdPageConfiguration {
         pageBuilder
             .page("suspendedOrder")
             .pageLabel("Suspended order")
-            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("suspendedOrder-line-separator", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWarrantDetails)

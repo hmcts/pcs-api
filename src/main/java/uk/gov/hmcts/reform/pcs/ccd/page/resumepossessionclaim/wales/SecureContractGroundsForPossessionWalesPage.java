@@ -41,7 +41,7 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
         pageBuilder
                 .page("secureOrFlexibleGroundsForPossessionWales", this::midEvent)
                 .pageLabel("What are your grounds for possession?")
-                .showWhen(when(PCSCase::getOccupationLicenceDetailsWales,
+                .showCondition(when(PCSCase::getOccupationLicenceDetailsWales,
                     OccupationLicenceDetailsWales::getOccupationLicenceTypeWales).is(SECURE_CONTRACT)
                     .and(when(PCSCase::getLegislativeCountry).is(WALES)))
                 .label("secureOrFlexibleGroundsForPossessionWales-info", """
@@ -56,7 +56,7 @@ public class SecureContractGroundsForPossessionWalesPage implements CcdPageConfi
                """)
             .complex(PCSCase::getSecureContractGroundsForPossessionWales)
                 .optional(SecureContractGroundsForPossessionWales::getDiscretionaryGrounds)
-                .optionalWhen(SecureContractGroundsForPossessionWales::getEstateManagementGrounds,
+                .optional(SecureContractGroundsForPossessionWales::getEstateManagementGrounds,
                           contains(
                     DISCRETIONARY_GROUNDS,
                     ESTATE_MANAGEMENT_GROUNDS_S160

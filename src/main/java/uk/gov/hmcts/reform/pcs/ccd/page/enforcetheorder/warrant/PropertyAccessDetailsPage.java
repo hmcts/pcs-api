@@ -37,13 +37,13 @@ public class PropertyAccessDetailsPage implements CcdPageConfiguration {
         pageBuilder
                 .page("propertyAccessDetails", this::midEvent)
                 .pageLabel("Access to the property")
-                .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
+                .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
                 .label("propertyAccessDetails-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWarrantDetails)
                 .complex(WarrantDetails::getPropertyAccessDetails)
                 .mandatory(PropertyAccessDetails::getIsDifficultToAccessProperty)
-                .mandatoryWhen(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
+                .mandatory(PropertyAccessDetails::getClarificationOnAccessDifficultyText,
                     when(EnforcementOrder::getWarrantDetails, WarrantDetails::getPropertyAccessDetails,
                         PropertyAccessDetails::getIsDifficultToAccessProperty).is(YES))
                 .done()

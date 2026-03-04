@@ -35,7 +35,7 @@ public class RespondPossessionClaim implements CCDConfig<PCSCase, State, UserRol
             // TODO: HDPI-3580 - Revert to .forState(State.CASE_ISSUED) once payments flow is implemented
             // Temporarily enabled for all states to allow testing before case submission/payment
             .forAllStates()
-            .showWhen(NEVER)
+            .showCondition(NEVER)
             .name("Defendant Response Submission")
             .description("Save defendants response as draft or to a case based on flag")
             .grant(Permission.CRU, UserRole.DEFENDANT);

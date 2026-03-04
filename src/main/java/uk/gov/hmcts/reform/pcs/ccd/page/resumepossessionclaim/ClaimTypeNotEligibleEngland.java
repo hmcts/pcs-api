@@ -18,7 +18,7 @@ public class ClaimTypeNotEligibleEngland implements CcdPageConfiguration {
         pageBuilder
             .page("claimTypeNotEligibleEngland", this::midEvent)
             .pageLabel("You’re not eligible for this online service")
-            .showWhen(when(PCSCase::getShowClaimTypeNotEligibleEngland).is(YesOrNo.YES))
+            .showCondition(when(PCSCase::getShowClaimTypeNotEligibleEngland).is(YesOrNo.YES))
             .readonly(PCSCase::getShowClaimTypeNotEligibleEngland, NEVER_SHOW)
             .label("claimTypeNotEligibleEngland-info", """
                 ---

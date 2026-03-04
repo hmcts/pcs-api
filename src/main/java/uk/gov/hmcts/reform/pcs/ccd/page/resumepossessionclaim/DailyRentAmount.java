@@ -22,7 +22,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                 .page("dailyRentAmount", this::midEvent)
                 .pageLabel("Daily rent amount")
                 .readonly(PCSCase::getRentSectionPaymentFrequency, NEVER_SHOW)
-                .showWhen(when(PCSCase::getShowRentSectionPage).is(YesOrNo.YES)
+                .showCondition(when(PCSCase::getShowRentSectionPage).is(YesOrNo.YES)
                     .and(when(PCSCase::getRentSectionPaymentFrequency).isNot(RentPaymentFrequency.OTHER)))
                 .complex(PCSCase::getRentDetails)
                     .readonly(RentDetails::getFormattedCalculatedDailyCharge, NEVER_SHOW)
@@ -40,7 +40,7 @@ public class DailyRentAmount implements CcdPageConfiguration {
                                     </section>
                                     """)
                     .mandatory(RentDetails::getPerDayCorrect)
-                    .mandatoryWhen(RentDetails::getAmendedDailyCharge, when(PCSCase::getRentDetails,
+                    .mandatory(RentDetails::getAmendedDailyCharge, when(PCSCase::getRentDetails,
                         RentDetails::getPerDayCorrect).is(VerticalYesNo.NO))
                 .done()
                 .label("dailyRentAmount-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);

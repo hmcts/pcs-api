@@ -25,7 +25,7 @@ public class CheckingNotice implements CcdPageConfiguration {
         pageBuilder
                 .page("checkingNotice", this::midEvent)
                 .pageLabel("Notice of your intention to begin possession proceedings")
-                .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
+                .showCondition(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND))
                 .label("checkingNotice-info",
                         """
                         ---

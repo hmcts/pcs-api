@@ -22,7 +22,7 @@ public class NameAndAddressForEvictionWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("nameAndAddressForEvictionWrit", this::midEvent)
             .pageLabel("The name and address for the eviction")
-            .showWhen(ShowConditionsEnforcementType.WRIT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WRIT_FLOW)
             .complex(PCSCase::getEnforcementOrder)
             .label(
                 "nameAndAddressForEvictionWrit-defendants-check",

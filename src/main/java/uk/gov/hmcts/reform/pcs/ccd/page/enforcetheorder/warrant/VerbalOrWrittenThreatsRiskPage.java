@@ -32,7 +32,7 @@ public class VerbalOrWrittenThreatsRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("verbalOrWrittenThreatsRisk", this::midEvent)
                 .pageLabel("Their verbal or written threats")
-                .showWhen(WARRANT_FLOW
+                .showCondition(WARRANT_FLOW
                     .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getRiskCategories)
                         .contains(RiskCategory.VERBAL_OR_WRITTEN_THREATS))
                     .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff)

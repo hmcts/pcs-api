@@ -32,7 +32,7 @@ public class ProtestorGroupRiskPage implements CcdPageConfiguration {
         pageBuilder
                 .page("protestorGroupRisk", this::midEvent)
                 .pageLabel("Their membership of a group that protests evictions")
-                .showWhen(WARRANT_FLOW
+                .showCondition(WARRANT_FLOW
                     .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getRiskCategories)
                         .contains(RiskCategory.PROTEST_GROUP_MEMBER))
                     .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff)

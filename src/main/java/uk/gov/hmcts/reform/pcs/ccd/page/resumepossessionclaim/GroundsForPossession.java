@@ -34,7 +34,7 @@ public class GroundsForPossession implements CcdPageConfiguration {
         pageBuilder
             .page("groundsForPossession", this::midEvent)
             .pageLabel("Grounds for possession")
-            .showWhen(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
+            .showCondition(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                 .is(TenancyLicenceType.ASSURED_TENANCY)
                 .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
             .label("groundsForPossession-lineSeparator", "---")

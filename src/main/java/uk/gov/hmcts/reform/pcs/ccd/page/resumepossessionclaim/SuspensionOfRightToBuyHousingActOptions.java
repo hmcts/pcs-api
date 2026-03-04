@@ -16,7 +16,7 @@ public class SuspensionOfRightToBuyHousingActOptions implements CcdPageConfigura
         pageBuilder
             .page("suspensionOfRightToBuyHousingActOptions")
             .pageLabel("Housing Act")
-            .showWhen(when(PCSCase::getSuspensionOfRightToBuy, SuspensionOfRightToBuy::getShowHousingActsPage)
+            .showCondition(when(PCSCase::getSuspensionOfRightToBuy, SuspensionOfRightToBuy::getShowHousingActsPage)
                 .is(YesOrNo.YES))
             .label("suspensionOfRightToBuyHousingActOptions-info", """
                 ---

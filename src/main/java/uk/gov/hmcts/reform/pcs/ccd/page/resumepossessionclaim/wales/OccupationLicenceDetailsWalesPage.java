@@ -45,14 +45,14 @@ public class OccupationLicenceDetailsWalesPage implements CcdPageConfiguration {
         pageBuilder
             .page(OCCUPATION_CONTRACT_DETAILS, this::midEvent)
             .pageLabel(OCCUPATION_CONTRACT_DETAILS_LABEL)
-            .showWhen(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
+            .showCondition(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES))
             .complex(PCSCase::getOccupationLicenceDetailsWales)
             .label("OccupationLicenceDetailsWales-info", """
                 ---
                 <h2 class="govuk-heading-m">Occupation contract or licence type</h2>
                 """)
             .mandatory(OccupationLicenceDetailsWales::getOccupationLicenceTypeWales)
-            .mandatoryWhen(OccupationLicenceDetailsWales::getOtherLicenceTypeDetails,
+            .mandatory(OccupationLicenceDetailsWales::getOtherLicenceTypeDetails,
                 when(OccupationLicenceDetailsWales::getOccupationLicenceTypeWales).is(OTHER))
             .label("OccupationLicenceDetailsWales-date-section", """
                ---

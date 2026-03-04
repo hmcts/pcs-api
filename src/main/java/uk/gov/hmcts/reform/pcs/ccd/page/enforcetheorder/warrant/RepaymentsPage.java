@@ -20,7 +20,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
         pageBuilder
             .page("repayments")
             .pageLabel("Repayments")
-            .showWhen(ShowConditionsEnforcementType.WARRANT_FLOW)
+            .showCondition(ShowConditionsEnforcementType.WARRANT_FLOW)
             .label("repayments-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
@@ -29,7 +29,7 @@ public class RepaymentsPage implements CcdPageConfiguration {
             .readonly(RepaymentCosts::getRepaymentSummaryMarkdown, NEVER_SHOW, true)
             .label("repayments-table-content", "${warrantRepaymentSummaryMarkdown}")
             .mandatory(RepaymentCosts::getRepaymentChoice)
-            .mandatoryWhen(RepaymentCosts::getAmountOfRepaymentCosts, when(EnforcementOrder::getWarrantDetails,
+            .mandatory(RepaymentCosts::getAmountOfRepaymentCosts, when(EnforcementOrder::getWarrantDetails,
                 WarrantDetails::getRepaymentCosts, RepaymentCosts::getRepaymentChoice).is(SOME))
             .done()
             .done()

@@ -48,16 +48,16 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
         pageBuilder
             .page("noRentArrearsGroundsForPossessionReason", this::midEvent)
             .pageLabel("Reasons for possession")
-            .showWhen(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.NO)
+            .showCondition(when(PCSCase::getClaimDueToRentArrears).is(YesOrNo.NO)
                 .and(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
                     .is(TenancyLicenceType.ASSURED_TENANCY))
                 .and(when(PCSCase::getNoRentArrearsGroundsOptions,
                     AssuredNoArrearsPossessionGrounds::getShowGroundReasonPage).is(YesOrNo.YES))
                 .and(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)))
-            .labelWhen("noRentArrearsOptions-lineSeparator", "---")
+            .label("noRentArrearsOptions-lineSeparator", "---")
             .complex(PCSCase::getNoRentArrearsReasonForGrounds)
             // Ground 1
-            .labelWhen(
+            .label(
                 "ownerOccupier-label",
                 """
                     <h2 class="govuk-heading-l">Owner occupier (ground 1)</h2>
@@ -68,7 +68,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.OWNER_OCCUPIER_GROUND1
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getOwnerOccupier,
                 contains(
                     MANDATORY_GROUNDS,
@@ -76,7 +76,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 2
-            .labelWhen(
+            .label(
                 "repossessionByLender-label",
                 """
                     <h2 class="govuk-heading-l">Repossession by the landlord’s mortgage lender (ground 2)</h2>
@@ -87,7 +87,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.REPOSSESSION_GROUND2
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getRepossessionByLender,
                 contains(
                     MANDATORY_GROUNDS,
@@ -95,7 +95,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 3
-            .labelWhen(
+            .label(
                 "holidayLet-label",
                 """
                     <h2 class="govuk-heading-l">Holiday let (ground 3)</h2>
@@ -106,7 +106,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.HOLIDAY_LET_GROUND3
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getHolidayLet,
                 contains(
                     MANDATORY_GROUNDS,
@@ -114,7 +114,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 4
-            .labelWhen(
+            .label(
                 "studentLet-label",
                 """
                     <h2 class="govuk-heading-l">Student let (ground 4)</h2>
@@ -125,7 +125,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.STUDENT_LET_GROUND4
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getStudentLet,
                 contains(
                     MANDATORY_GROUNDS,
@@ -133,7 +133,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 5
-            .labelWhen(
+            .label(
                 "ministerOfReligion-label",
                 """
                     <h2 class="govuk-heading-l">Property required for minister of religion (ground 5)</h2>
@@ -144,7 +144,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.MINISTER_RELIGION_GROUND5
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getMinisterOfReligion,
                 contains(
                     MANDATORY_GROUNDS,
@@ -152,7 +152,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 6
-            .labelWhen(
+            .label(
                 "redevelopment-label",
                 """
                     <h2 class="govuk-heading-l">Property required for redevelopment (ground 6)</h2>
@@ -163,7 +163,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.REDEVELOPMENT_GROUND6
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getRedevelopment,
                 contains(
                     MANDATORY_GROUNDS,
@@ -171,7 +171,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 7
-            .labelWhen(
+            .label(
                 "deathOfTenant-label",
                 """
                     <h2 class="govuk-heading-l">Death of the tenant (ground 7)</h2>
@@ -182,7 +182,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.DEATH_OF_TENANT_GROUND7
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getDeathOfTenant,
                 contains(
                     MANDATORY_GROUNDS,
@@ -190,7 +190,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 7A
-            .labelWhen(
+            .label(
                 "antisocialBehaviour-label",
                 """
                     <h2 class="govuk-heading-l">Antisocial behaviour (ground 7A)</h2>
@@ -201,7 +201,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.ANTISOCIAL_BEHAVIOUR_GROUND7A
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getAntisocialBehaviour,
                 contains(
                     MANDATORY_GROUNDS,
@@ -209,7 +209,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 7B
-            .labelWhen(
+            .label(
                 "noRightToRent-label",
                 """
                     <h2 class="govuk-heading-l">Tenant does not have a right to rent (ground 7B)</h2>
@@ -220,7 +220,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredMandatoryGround.NO_RIGHT_TO_RENT_GROUND7B
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getNoRightToRent,
                 contains(
                     MANDATORY_GROUNDS,
@@ -228,7 +228,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 9
-            .labelWhen(
+            .label(
                 "suitableAccom-label",
                 """
                     <h2 class="govuk-heading-l">Suitable alternative accommodation (ground 9)</h2>
@@ -239,7 +239,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.ALTERNATIVE_ACCOMMODATION_GROUND9
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getSuitableAlternativeAccomodation,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -247,7 +247,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 12
-            .labelWhen(
+            .label(
                 "breachOfTenancyConditions-label",
                 """
                     <h2 class="govuk-heading-l">Breach of tenancy conditions (ground 12)</h2>
@@ -258,7 +258,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.BREACH_TENANCY_GROUND12
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getBreachOfTenancyConditions,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -266,7 +266,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 13
-            .labelWhen(
+            .label(
                 "propertyDeterioration-label",
                 """
                     <h2 class="govuk-heading-l">Deterioration in the condition of the property (ground 13)</h2>
@@ -277,7 +277,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.DETERIORATION_PROPERTY_GROUND13
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getPropertyDeterioration,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -285,7 +285,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 14
-            .labelWhen(
+            .label(
                 "nuisanceOrIllegalUse-label",
                 """
                     <h2 class="govuk-heading-l">Nuisance, annoyance, illegal or immoral use of the property
@@ -297,7 +297,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.NUISANCE_ANNOYANCE_GROUND14
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getNuisanceOrIllegalUse,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -305,7 +305,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 14A
-            .labelWhen(
+            .label(
                 "domesticViolence-label",
                 """
                     <h2 class="govuk-heading-l">Domestic violence (ground 14A)</h2>
@@ -316,7 +316,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.DOMESTIC_VIOLENCE_GROUND14A
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getDomesticViolence,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -324,7 +324,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 14ZA
-            .labelWhen(
+            .label(
                 "offenceDuringRiot-label",
                 """
                     <h2 class="govuk-heading-l">Offence during a riot (ground 14ZA)</h2>
@@ -335,7 +335,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.OFFENCE_RIOT_GROUND14ZA
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getOffenceDuringRiot,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -343,7 +343,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 15
-            .labelWhen(
+            .label(
                 "furnitureDeterioration-label",
                 """
                     <h2 class="govuk-heading-l">Deterioration of furniture (ground 15)</h2>
@@ -354,7 +354,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.DETERIORATION_FURNITURE_GROUND15
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getFurnitureDeterioration,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -362,7 +362,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 16
-            .labelWhen(
+            .label(
                 "landlordEmployee-label",
                 """
                     <h2 class="govuk-heading-l">Employee of the landlord (ground 16)</h2>
@@ -373,7 +373,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.EMPLOYEE_LANDLORD_GROUND16
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getLandlordEmployee,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -381,7 +381,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             // Ground 17
-            .labelWhen(
+            .label(
                 "falseStatement-label",
                 """
                     <h2 class="govuk-heading-l">Tenancy obtained by false statement (ground 17)</h2>
@@ -392,7 +392,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                     AssuredDiscretionaryGround.FALSE_STATEMENT_GROUND17
                 )
             )
-            .mandatoryWhen(
+            .mandatory(
                 NoRentArrearsReasonForGrounds::getFalseStatement,
                 contains(
                     DISCRETIONARY_GROUNDS,
@@ -400,7 +400,7 @@ public class NoRentArrearsGroundsForPossessionReason implements CcdPageConfigura
                 )
             )
             .done()
-            .labelWhen("noRentArrearsGroundsForPossessionReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
+            .label("noRentArrearsGroundsForPossessionReason-saveAndReturn", CommonPageContent.SAVE_AND_RETURN);
     }
 
     private AboutToStartOrSubmitResponse<PCSCase, State> midEvent(CaseDetails<PCSCase, State> details,

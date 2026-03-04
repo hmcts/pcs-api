@@ -36,13 +36,13 @@ public class LandRegistryFeesWritPage implements CcdPageConfiguration {
         pageBuilder
             .page("landRegistryFeesWrit", this::midEvent)
             .pageLabel("Land Registry fees")
-            .showWhen(WRIT_FLOW)
+            .showCondition(WRIT_FLOW)
             .label("landRegistryFeesWrit-content", "---")
             .complex(PCSCase::getEnforcementOrder)
             .complex(EnforcementOrder::getWritDetails)
             .complex(WritDetails::getLandRegistryFees)
             .mandatory(LandRegistryFees::getHaveLandRegistryFeesBeenPaid)
-            .mandatoryWhen(LandRegistryFees::getAmountOfLandRegistryFees,
+            .mandatory(LandRegistryFees::getAmountOfLandRegistryFees,
                 when(EnforcementOrder::getWritDetails, WritDetails::getLandRegistryFees,
                     LandRegistryFees::getHaveLandRegistryFeesBeenPaid).is(YES))
             .done()

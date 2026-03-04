@@ -126,11 +126,11 @@ public class EnforcementApplicationPage implements CcdPageConfiguration {
             .readonly(EnforcementOrder::getWarrantFeeAmount, NEVER_SHOW, true)
             .readonly(EnforcementOrder::getWritFeeAmount, NEVER_SHOW, true)
             .complex(EnforcementOrder::getWritDetails)
-            .mandatoryWhen(
+            .mandatory(
                 WritDetails::getHasClaimTransferredToHighCourt,
                 claimTransferredShowCondition()
             )
-            .mandatoryWhen(
+            .mandatory(
                 WritDetails::getWasGeneralApplicationToTransferToHighCourtSuccessful,
                 gaSuccessfulShowCondition()
             )

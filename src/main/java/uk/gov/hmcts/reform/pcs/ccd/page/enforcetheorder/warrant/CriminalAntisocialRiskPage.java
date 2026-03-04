@@ -32,7 +32,7 @@ public class CriminalAntisocialRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("criminalAntisocialRisk", this::midEvent)
             .pageLabel("Their history of criminal or antisocial behaviour")
-            .showWhen(WARRANT_FLOW
+            .showCondition(WARRANT_FLOW
                 .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getRiskCategories)
                     .contains(RiskCategory.CRIMINAL_OR_ANTISOCIAL))
                 .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff)

@@ -34,7 +34,7 @@ public class ResumeClaim implements CcdPageConfiguration {
         pageBuilder
             .page("resumeClaim", this::midEvent)
             .pageLabel("Resume claim")
-            .showWhen(HAS_UNSUBMITTED_CASE_DATA)
+            .showCondition(HAS_UNSUBMITTED_CASE_DATA)
             .readonly(PCSCase::getHasUnsubmittedCaseData, NEVER_SHOW)
             .label("resumeClaim-info", """
                 ---

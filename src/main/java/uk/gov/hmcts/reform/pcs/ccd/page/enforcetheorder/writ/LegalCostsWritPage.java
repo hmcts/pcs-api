@@ -20,13 +20,13 @@ public class LegalCostsWritPage implements CcdPageConfiguration {
         pageBuilder
                 .page("legalCostsWrit")
                 .pageLabel("Legal costs")
-                .showWhen(WRIT_FLOW)
+                .showCondition(WRIT_FLOW)
                 .label("legalCostsWrit-line-separator", "---")
                 .complex(PCSCase::getEnforcementOrder)
                 .complex(EnforcementOrder::getWritDetails)
                 .complex(WritDetails::getLegalCosts)
                 .mandatory(LegalCosts::getAreLegalCostsToBeClaimed)
-                .mandatoryWhen(LegalCosts::getAmountOfLegalCosts,
+                .mandatory(LegalCosts::getAmountOfLegalCosts,
                     when(EnforcementOrder::getWritDetails, WritDetails::getLegalCosts,
                         LegalCosts::getAreLegalCostsToBeClaimed).is(YES))
                 .done()

@@ -32,7 +32,7 @@ public class FirearmsPossessionRiskPage implements CcdPageConfiguration {
         pageBuilder
             .page("firearmsPossessionRisk", this::midEvent)
             .pageLabel("Their history of firearm possession")
-            .showWhen(WARRANT_FLOW
+            .showCondition(WARRANT_FLOW
                 .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getRiskCategories)
                     .contains(RiskCategory.FIREARMS_POSSESSION))
                 .and(when(EnforcementOrder::getWarrantDetails, WarrantDetails::getAnyRiskToBailiff)
