@@ -9,13 +9,9 @@ import uk.gov.hmcts.reform.pcs.ccd.common.PageConfigurer;
 @AllArgsConstructor
 public class WarrantOfRestitutionPageConfigurer implements PageConfigurer {
 
-    private final ExplainHowDefendantsReturnedPage explainHowDefendantsReturnedPage;
-
     @Override
     public void configurePages(PageBuilder pageBuilder) {
         pageBuilder
-            .add(new ShareEvidenceWithJudgePage())
-            .add(explainHowDefendantsReturnedPage)
-            .add(new EvidenceDefendantsAtPropertyPage());
+            .add(new PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder());
     }
 }

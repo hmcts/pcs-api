@@ -7,7 +7,7 @@ export class InputTextAction implements IAction {
       ? await this.getStringFieldLocator(page, fieldParams)
       : page.locator(`fieldset:has(h2:has-text("${fieldParams.text}")) textarea:visible:enabled,
       :has-text("${fieldParams.text}") ~ input:visible:enabled,
-      label:has-text("${fieldParams.text}") ~ textarea`).nth(Number(fieldParams.index));
+      label:has-text("${fieldParams}") ~ textarea`).nth(Number(fieldParams.index));
     await locator.fill(value);
   }
 
