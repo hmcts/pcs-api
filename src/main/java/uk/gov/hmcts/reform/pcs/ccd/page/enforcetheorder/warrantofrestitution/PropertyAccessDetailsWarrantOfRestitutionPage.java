@@ -11,7 +11,6 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.domain.VerticalYesNo;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.common.PropertyAccessDetails;
-import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrant.WarrantDetails;
 import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.warrantofrestitution.WarrantOfRestitutionDetails;
 import uk.gov.hmcts.reform.pcs.ccd.page.CommonPageContent;
 import static uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder.ShowConditionsEnforcementType.WARRANT_OF_RESTITUTION_FLOW;
@@ -64,9 +63,10 @@ public class PropertyAccessDetailsWarrantOfRestitutionPage implements CcdPageCon
         List<String> errors = new ArrayList<>();
 
         String txt = data.getEnforcementOrder()
-                .getWarrantDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
+                .getWarrantOfRestitutionDetails().getPropertyAccessDetails().getClarificationOnAccessDifficultyText();
 
-        if (data.getEnforcementOrder().getWarrantDetails().getPropertyAccessDetails().getIsDifficultToAccessProperty()
+        if (data.getEnforcementOrder().getWarrantOfRestitutionDetails().getPropertyAccessDetails()
+            .getIsDifficultToAccessProperty()
             .equals(VerticalYesNo.YES)) {
             errors.addAll(textAreaValidationService.validateSingleTextArea(
                 txt,

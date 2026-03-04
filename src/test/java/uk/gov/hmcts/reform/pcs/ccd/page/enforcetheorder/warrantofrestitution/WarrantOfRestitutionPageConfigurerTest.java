@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
@@ -26,6 +27,9 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
     @InjectMocks
     private WarrantOfRestitutionPageConfigurer warrantOfRestitutionPageConfigurer;
 
+    @Mock
+    private PropertyAccessDetailsWarrantOfRestitutionPage propertyAccessDetailsWarrantOfRestitutionPage;
+
     @Test
     void shouldConfigurePagesInCorrectOrder() {
         // Given
@@ -42,8 +46,9 @@ class WarrantOfRestitutionPageConfigurerTest extends BasePageTest {
         AtomicInteger verificationCount = new AtomicInteger(0);
         verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder.class,
                 verificationCount);
-        verifyAndCount(inOrder,pageBuilder, PropertyAccessDetailsWarrantOfRestitutionPage.class, verificationCount);
-        verifyAndCount(inOrder, pageBuilder, PeopleWhoWillBeEvictedWarrantRestitutionPlaceholder.class, verificationCount);
+        verifyAndCount(inOrder,pageBuilder, propertyAccessDetailsWarrantOfRestitutionPage, verificationCount);
+        verifyAndCount(inOrder, pageBuilder, AnythingElseToHelpTheEvictionPlaceholder.class,
+                       verificationCount);
 
         int numberOfPages = pageCaptor.getAllValues().size();
         assertThat(verificationCount.get()).isEqualTo(numberOfPages);
