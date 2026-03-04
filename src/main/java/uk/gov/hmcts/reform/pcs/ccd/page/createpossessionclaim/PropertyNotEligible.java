@@ -73,8 +73,8 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                       </strong>
                     </div>
                     </section>
-                    """, when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ENGLAND)
-                .or(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.WALES)))
+                    """, when(PCSCase::getLegislativeCountry)
+                        .isAnyOf(LegislativeCountry.ENGLAND, LegislativeCountry.WALES))
 
 
             // Scotland-specific guidance section
@@ -136,8 +136,8 @@ public class PropertyNotEligible implements CcdPageConfiguration {
                   </strong>
                 </div>
                 </section>
-                """, when(PCSCase::getLegislativeCountry).is(LegislativeCountry.CHANNEL_ISLANDS)
-                .or(when(PCSCase::getLegislativeCountry).is(LegislativeCountry.ISLE_OF_MAN)));
+                """, when(PCSCase::getLegislativeCountry)
+                    .isAnyOf(LegislativeCountry.CHANNEL_ISLANDS, LegislativeCountry.ISLE_OF_MAN));
     }
 
 

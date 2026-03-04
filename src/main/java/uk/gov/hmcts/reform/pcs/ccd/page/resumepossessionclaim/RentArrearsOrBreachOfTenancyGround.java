@@ -27,9 +27,7 @@ public class RentArrearsOrBreachOfTenancyGround implements CcdPageConfiguration 
             .page("rentArrearsOrBreachOfTenancyGround", this::midEvent)
             .pageLabel(SecureOrFlexibleDiscretionaryGrounds.RENT_ARREARS_OR_BREACH_OF_TENANCY.getLabel())
             .showCondition(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
-                .is(SECURE_TENANCY)
-                .or(when(PCSCase::getTenancyLicenceDetails, TenancyLicenceDetails::getTypeOfTenancyLicence)
-                    .is(FLEXIBLE_TENANCY))
+                .isAnyOf(SECURE_TENANCY, FLEXIBLE_TENANCY)
                 .and(when(PCSCase::getSecureOrFlexiblePossessionGrounds,
                     SecureOrFlexiblePossessionGrounds::getSecureOrFlexibleDiscretionaryGrounds)
                     .contains(RENT_ARREARS_OR_BREACH_OF_TENANCY))

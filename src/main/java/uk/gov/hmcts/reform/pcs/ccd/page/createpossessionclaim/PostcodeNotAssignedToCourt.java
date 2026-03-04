@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PostcodeNotAssignedView;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 
 import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.NEVER_SHOW;
@@ -23,11 +22,11 @@ public class PostcodeNotAssignedToCourt implements CcdPageConfiguration {
 
     private static final ShowCondition SHOW_PAGE = when(PCSCase::getShowPostcodeNotAssignedToCourt).is(YesOrNo.YES);
     private static final ShowCondition SHOW_ENGLAND =
-        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is(PostcodeNotAssignedView.ENGLAND));
+        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is("ENGLAND"));
     private static final ShowCondition SHOW_WALES =
-        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is(PostcodeNotAssignedView.WALES));
+        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is("WALES"));
     private static final ShowCondition SHOW_ALL =
-        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is(PostcodeNotAssignedView.ALL_COUNTRIES));
+        SHOW_PAGE.and(when(PCSCase::getPostcodeNotAssignedView).is("ALL_COUNTRIES"));
 
     @Override
     public void addTo(PageBuilder pageBuilder) {

@@ -10,7 +10,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PostcodeNotAssignedView;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.ccd.service.AddressValidator;
 import uk.gov.hmcts.reform.pcs.ccd.type.DynamicStringList;
@@ -85,7 +84,7 @@ public class EnterPropertyAddress implements CcdPageConfiguration {
                 caseData.setShowCrossBorderPage(YesOrNo.NO);
                 caseData.setShowPropertyNotEligiblePage(YesOrNo.NO);
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
-                caseData.setPostcodeNotAssignedView(PostcodeNotAssignedView.ALL_COUNTRIES);
+                caseData.setPostcodeNotAssignedView("ALL_COUNTRIES");
                 caseData.setLegislativeCountry(null);
             }
             case MULTIPLE_MATCHES_FOUND -> {

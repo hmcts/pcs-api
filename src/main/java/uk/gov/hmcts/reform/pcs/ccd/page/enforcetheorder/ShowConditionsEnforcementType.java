@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.pcs.ccd.page.enforcetheorder;
 
-import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.is;
-import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.ref;
+import static uk.gov.hmcts.ccd.sdk.api.ShowCondition.when;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WARRANT_OF_RESTITUTION;
 import static uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.SelectEnforcementType.WRIT;
@@ -15,10 +14,10 @@ import uk.gov.hmcts.reform.pcs.ccd.domain.enforcetheorder.EnforcementOrder;
 public final class ShowConditionsEnforcementType {
 
     public static final ShowCondition WARRANT_FLOW =
-        is(ref(EnforcementOrder::getSelectEnforcementType), WARRANT);
+        when(EnforcementOrder::getSelectEnforcementType).is(WARRANT);
     public static final ShowCondition WRIT_FLOW =
-        is(ref(EnforcementOrder::getSelectEnforcementType), WRIT);
+        when(EnforcementOrder::getSelectEnforcementType).is(WRIT);
     public static final ShowCondition WARRANT_OF_RESTITUTION_FLOW =
-        is(ref(EnforcementOrder::getSelectEnforcementType), WARRANT_OF_RESTITUTION);
+        when(EnforcementOrder::getSelectEnforcementType).is(WARRANT_OF_RESTITUTION);
 
 }

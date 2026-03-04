@@ -12,7 +12,6 @@ import uk.gov.hmcts.ccd.sdk.type.YesOrNo;
 import uk.gov.hmcts.reform.pcs.ccd.common.CcdPageConfiguration;
 import uk.gov.hmcts.reform.pcs.ccd.common.PageBuilder;
 import uk.gov.hmcts.reform.pcs.ccd.domain.PCSCase;
-import uk.gov.hmcts.reform.pcs.ccd.domain.PostcodeNotAssignedView;
 import uk.gov.hmcts.reform.pcs.ccd.domain.State;
 import uk.gov.hmcts.reform.pcs.postcodecourt.exception.EligibilityCheckException;
 import uk.gov.hmcts.reform.pcs.postcodecourt.model.EligibilityResult;
@@ -108,10 +107,10 @@ public class CrossBorderPostcodeSelection implements CcdPageConfiguration {
                 caseData.setShowPostcodeNotAssignedToCourt(YesOrNo.YES);
 
                 // Determine which view to show based on selected country
-                PostcodeNotAssignedView view = switch (selectedCountry) {
-                    case ENGLAND -> PostcodeNotAssignedView.ENGLAND;
-                    case WALES -> PostcodeNotAssignedView.WALES;
-                    default -> PostcodeNotAssignedView.ALL_COUNTRIES;
+                String view = switch (selectedCountry) {
+                    case ENGLAND -> "ENGLAND";
+                    case WALES -> "WALES";
+                    default -> "ALL_COUNTRIES";
                 };
                 caseData.setPostcodeNotAssignedView(view);
             }
